@@ -8,6 +8,7 @@ conservation rules of :mod:`.conservationrules`.
 from copy import deepcopy
 from enum import Enum
 from collections import OrderedDict
+from numpy import arange
 
 from constraint import (Problem, Constraint, Unassigned)
 
@@ -165,32 +166,51 @@ class CSPPropagator():
                 self.problem.addConstraint(constraint, var_list)
 
     def prepare_qns(self, qn_names, qn_domains, type_to_filter):
-        if ParticleQuantumNumberNames.All in qn_names:
-            qn_names = {}
+        qn_names_dict = qn_names
+        if ParticleQuantumNumberNames.All in qn_names_dict:
+            qn_names_dict = {}
             for qnname in ParticleQuantumNumberNames:
                 if qnname != ParticleQuantumNumberNames.All:
-                    qn_names[qnname] = [XMLLabelConstants.Value]
+                    qn_names_dict[qnname] = [XMLLabelConstants.Value]
                     for qnatt in get_attributes_for_qn(qnname):
-                        qn_names[qnname].append(qnatt[0])
+                        qn_names_dict[qnname].append(qnatt[0])
 
-        part_qn_dict = {
-            x: (y, qn_domains[x])
-            for x, y in qn_names.items() if (isinstance(x, type_to_filter))}
+        part_qn_dict = {}
+        for qn_name, qn_attrs in qn_names_dict.items():
+            if isinstance(qn_name, type_to_filter):
+                part_qn_dict[qn_name] = []
+                for qn_att in qn_attrs:
+                    part_qn_dict[qn_name].append(
+                        (qn_att, self.get_default_domain(qn_name,
+                                                         qn_att,
+                                                         qn_domains)))
         return part_qn_dict
+
+    def get_default_domain(self, qn_name, qn_att, qn_domains):
+        qn_domain = qn_domains[qn_name]
+        if (qn_name is ParticleQuantumNumberNames.Spin and
+                qn_att is XMLLabelConstants.Projection):
+            new_qn_domain = set()
+            for x in qn_domain:
+                new_qn_domain.update(arange(-x, x + 1, 1.0))
+            qn_domain = list(new_qn_domain)
+
+        return qn_domain
 
     def create_node_variables(self, node_id, qn_dict):
         """
         Creates variables for the quantum numbers of the specified node.
         """
         variables = set()
-        for qn_name, (qn_attr, qn_domain) in qn_dict.items():
-            for qn_att in qn_attr:
+        for qn_name, qn_att_list in qn_dict.items():
+            for (qn_att, qn_domain) in qn_att_list:
                 var_info = VariableInfo(graph_element_types.node,
                                         node_id,
                                         qn_name,
                                         qn_att
                                         )
-                key = self.add_variable(var_info, qn_domain)
+                domain_values = self.determine_domain(var_info, [], qn_domain)
+                key = self.add_variable(var_info, domain_values)
                 variables.add(key)
         return variables
 
@@ -214,9 +234,9 @@ class CSPPropagator():
                 edge_props = self.graph.edge_props[edge_id]
                 edge_qns = edge_props[qns_label]
 
-            for qn_name, (qn_attr, qn_domain) in qn_dict.items():
+            for qn_name, qn_att_list in qn_dict.items():
                 # loop over qn attributes
-                for qn_att in qn_attr:
+                for (qn_att, qn_domain) in qn_att_list:
                     var_info = VariableInfo(graph_element_types.edge,
                                             edge_id,
                                             qn_name,
@@ -279,8 +299,8 @@ class CSPPropagator():
         initial_edges = get_initial_state_edges(self.graph)
         final_edges = get_final_state_edges(self.graph)
 
-        qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
         type_label = get_xml_label(XMLLabelConstants.Type)
+        class_label = get_xml_label(XMLLabelConstants.Class)
 
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
@@ -290,28 +310,46 @@ class CSPPropagator():
                 ele_id = var_info.element_id
                 qn_name = var_info.qn_name
                 value_label = get_xml_label(var_info.qn_attr)
-                class_label = get_xml_label(XMLLabelConstants.Class)
                 class_name = get_xml_label(QNNameClassMapping[qn_name])
                 if var_info.graph_element_type is graph_element_types.edge:
                     if ele_id in initial_edges or ele_id in final_edges:
                         # skip if its an initial or final state edge
                         continue
-                    if ele_id not in graph_copy.edge_props:
-                        graph_copy.edge_props[ele_id] = {qns_label: {
-                            type_label: qn_name.name, class_label: class_name}}
-
-                    graph_copy.edge_props[ele_id][qns_label][value_label] = value
+                    add_qn_to_graph_element(graph_copy.edge_props, ele_id,
+                                            {type_label: qn_name.name,
+                                             class_label: class_name,
+                                             value_label: value})
                 else:
-                    if ele_id not in graph_copy.node_props:
-                        graph_copy.node_props[ele_id] = {qns_label: {
-                            type_label: qn_name.name, class_label: class_name}}
-
-                    graph_copy.node_props[ele_id][qns_label][value_label] = value
-
-            # TODO: i guess i have to pack all that stuff in OrderdDicts...
-            # because of the xmltodict module
+                    add_qn_to_graph_element(graph_copy.node_props, ele_id,
+                                            {type_label: qn_name.name,
+                                             class_label: class_name,
+                                             value_label: value})
             solution_graphs.append(graph_copy)
         return solution_graphs
+
+
+def add_qn_to_graph_element(graph_prop_dict, element_id, qn_property):
+    # TODO: i guess i have to pack all that stuff in OrderdDicts...
+    # because of the xmltodict module
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    class_label = get_xml_label(XMLLabelConstants.Class)
+
+    if element_id not in graph_prop_dict:
+        graph_prop_dict[element_id] = {qns_label: []}
+
+    found_entry_indices = [graph_prop_dict[element_id][qns_label].index(x)
+                           for x in graph_prop_dict[element_id][qns_label]
+                           if (type_label in x and class_label in x) and
+                           (x[type_label] == qn_property[type_label] and
+                            x[class_label] == qn_property[class_label])]
+    if not found_entry_indices:
+        graph_prop_dict[element_id][qns_label].append(qn_property)
+    else:
+        for key, value in qn_property.items():
+            if (key is not (type_label and class_label)):
+                graph_prop_dict[element_id][qns_label][found_entry_indices[0]
+                                                       ][key] = value
 
 
 class ConservationLawConstraintWrapper(Constraint):
@@ -351,11 +389,15 @@ class ConservationLawConstraintWrapper(Constraint):
         if missing:
             return True
         self.update_variable_lists(params)
+        force_passed = self.rule.force_check(self.part_in, self.part_out,
+                                             self.interaction_qns)
         passed = self.rule.check(self.part_in, self.part_out,
                                  self.interaction_qns)
         if self.is_strict:
-            return passed
+            return (passed and force_passed)
         else:
+            if not force_passed:
+                return False
             if not passed:
                 self.non_conserved_scenarios.append(
                     (self.part_in, self.part_out, self.interaction_qns))

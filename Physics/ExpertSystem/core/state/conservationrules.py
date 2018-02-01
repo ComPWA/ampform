@@ -46,6 +46,9 @@ class AbstractRule(ABC):
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         pass
 
+    def force_check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        return True
+
 
 class ChargeConservation(AbstractRule):
     def specify_required_qns(self):
@@ -78,6 +81,24 @@ class ParityConservation(AbstractRule):
             lambda x, y: x * y[parity_label][value_label], outgoing_part_qns, 1)
         ang_mom = interaction_qns[InteractionQuantumNumberNames.L][value_label]
         if parity_in == parity_out * (-1)**ang_mom:
+            return True
+        return False
+
+
+class CParityConservation(AbstractRule):
+    def specify_required_qns(self):
+        self.add_required_qn(ParticleQuantumNumberNames.Cparity)
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        """ implements C_in = C_out """
+        # is this valid for two outgoing particles only?
+        cparity_label = ParticleQuantumNumberNames.Cparity
+        value_label = XMLLabelConstants.Value
+        cparity_in = reduce(
+            lambda x, y: x * y[cparity_label][value_label], ingoing_part_qns, 1)
+        cparity_out = reduce(
+            lambda x, y: x * y[cparity_label][value_label], outgoing_part_qns, 1)
+        if cparity_in == cparity_out:
             return True
         return False
 
@@ -161,8 +182,22 @@ class SpinConservation(AbstractRule):
             return True
         return False
 
+    def force_check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        if (self.use_projection):
+            spin_label = self.spinlike_qn
+            in_spins = [x[spin_label] for x in ingoing_part_qns]
+            out_spins = [x[spin_label] for x in outgoing_part_qns]
+            proj_label = XMLLabelConstants.Projection
+            value_label = XMLLabelConstants.Value
+            # check that M <= S for each particle
+            for part in in_spins + out_spins:
+                if abs(part[proj_label]) > part[value_label]:
+                    return False
+        return True
+
     def check_projections(self, in_part, out_part):
         proj_label = XMLLabelConstants.Projection
+
         in_proj = [x[proj_label] for x in in_part]
         out_proj = [x[proj_label] for x in out_part]
         return sum(in_proj) == sum(out_proj)
@@ -193,6 +228,7 @@ class SpinConservation(AbstractRule):
         then check if the other daugther has (-1)^(S-M) == -1
         if so then return False
         '''
+        pass
 
     def spin_couplings(self, spin1, spin2):
         """
@@ -212,5 +248,24 @@ class HelicityConservation(AbstractRule):
         """
         implement |lambda2-lambda3| <= S1
         """
-        # only valid for two particles?
+        if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
+            spin_label = ParticleQuantumNumberNames.Spin
+            proj_label = XMLLabelConstants.Projection
+            value_label = XMLLabelConstants.Value
+
+            mother_spin = ingoing_part_qns[0][spin_label][value_label]
+            daughter_hel = [x[spin_label][proj_label]
+                            for x in outgoing_part_qns]
+            if mother_spin >= abs(daughter_hel[0] - daughter_hel[1]):
+                return True
+        return False
+
+    def force_check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        # check that M <= S for each particle
+        spin_label = ParticleQuantumNumberNames.Spin
+        proj_label = XMLLabelConstants.Projection
+        value_label = XMLLabelConstants.Value
+        for part in [x[spin_label] for x in ingoing_part_qns + outgoing_part_qns]:
+            if abs(part[proj_label]) > part[value_label]:
+                return False
         return True

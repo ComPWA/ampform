@@ -1,6 +1,6 @@
 """ This module defines a particle as a collection of quantum numbers and
 things related to this"""
-
+from copy import deepcopy
 from enum import Enum
 
 import xmltodict
@@ -69,21 +69,22 @@ def initialize_graph(graph, initial_state, final_state):
                          "state are of different size! (" +
                          str(len(is_edges)) + " != " +
                          str(len(initial_state)) + ")")
-    initialize_edges(graph, is_edges, initial_state)
-
     fs_edges = get_final_state_edges(graph)
     if len(final_state) != len(fs_edges):
         raise ValueError("The graph final state and the supplied final"
                          "state are of different size! (" +
                          str(len(fs_edges)) + " != " +
                          str(len(final_state)) + ")")
-    initialize_edges(graph, fs_edges, final_state)
 
-    return graph
+    new_graphs = initialize_edges(
+        graph, is_edges + fs_edges, initial_state + final_state)
+
+    return new_graphs
 
 
 def initialize_edges(graph, edges, particles):
-    for edge in zip(edges, particles):
+    # TODO: combinatorics here!
+    for edge in zip(edges, [x[0] for x in particles]):
         # lookup the particle in the list
         name_label = get_xml_label(XMLLabelConstants.Name)
         found_particles = [
@@ -95,8 +96,41 @@ def initialize_edges(graph, edges, particles):
                     "more than one particle with name "
                     + str(edge[1]) + " found!")
             graph.edge_props[edge[0]] = found_particles[0]
-        # now add more quantum numbers given by user (spin_projection)
 
+    # now add more quantum numbers given by user (spin_projection)
+    new_graphs = [graph]
+    for edge in zip(edges, [x[1] for x in particles]):
+        temp_graphs = new_graphs
+        new_graphs = []
+        for g in temp_graphs:
+            new_graphs.extend(
+                populate_edge_with_spin_projections(g, edge[0], edge[1]))
+
+    return new_graphs
+
+
+def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    class_label = get_xml_label(XMLLabelConstants.Class)
+    type_value = ParticleQuantumNumberNames.Spin
+    class_value = QNNameClassMapping[type_value]
+
+    new_graphs = []
+
+    qn_list = graph.edge_props[edge_id][qns_label]
+    index_list = [qn_list.index(x) for x in qn_list
+                  if (type_label in x and class_label in x) and
+                  (x[type_label] == type_value.name and
+                   x[class_label] == class_value.name)]
+    if index_list:
+        for spin_proj in spin_projections:
+            graph_copy = deepcopy(graph)
+            graph_copy.edge_props[edge_id][qns_label][index_list[0]][get_xml_label(
+                XMLLabelConstants.Projection)] = spin_proj
+            new_graphs.append(graph_copy)
+
+    return new_graphs
 
 
 def load_particle_list_from_xml(file_path):
