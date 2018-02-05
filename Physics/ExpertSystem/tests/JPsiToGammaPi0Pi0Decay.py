@@ -1,14 +1,13 @@
 """ sample script for the testing purposes using the decay
     JPsi -> gamma pi0 pi0
 """
-
 from core.topology.graph import InteractionNode
 from core.topology.topologybuilder import SimpleStateTransitionTopologyBuilder
 
 from core.state.particle import (
     load_particle_list_from_xml, particle_list,
     initialize_graph, ParticleQuantumNumberNames,
-    InteractionQuantumNumberNames)
+    InteractionQuantumNumberNames, create_spin_domain)
 from core.state.propagation import (CSPPropagator)
 from core.state.conservationrules import (ChargeConservation,
                                           ParityConservation,
@@ -38,6 +37,7 @@ init_graphs = initialize_graph(
 print("initialized " + str(len(init_graphs)) + " graphs!")
 test_graph = init_graphs[0]
 
+
 conservation_rules = {'strict':
                       [ChargeConservation(),
                        ParityConservation(),
@@ -53,9 +53,9 @@ conservation_rules = {'strict':
 quantum_number_domains = {ParticleQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
                           ParticleQuantumNumberNames.Parity: [-1, 1],
                           ParticleQuantumNumberNames.Cparity: [-1, 1],
-                          ParticleQuantumNumberNames.Spin: [0, 1, 2],
-                          ParticleQuantumNumberNames.IsoSpin: [0, 1],
-                          InteractionQuantumNumberNames.L: [0, 1, 2]}
+                          ParticleQuantumNumberNames.Spin: create_spin_domain([0, 1, 2]),
+                          ParticleQuantumNumberNames.IsoSpin: create_spin_domain([0, 1]),
+                          InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2], True)}
 
 propagator = CSPPropagator(test_graph)
 propagator.assign_conservation_laws_to_all_nodes(

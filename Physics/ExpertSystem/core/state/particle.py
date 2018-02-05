@@ -2,6 +2,8 @@
 things related to this"""
 from copy import deepcopy
 from enum import Enum
+from abc import ABC, abstractmethod
+from numpy import arange
 
 import xmltodict
 
@@ -27,6 +29,39 @@ def get_xml_label(enum):
         return attribute_prefix + enum.name
 
 
+class Spin():
+    def __init__(self, mag, proj):
+        self.__magnitude = float(mag)
+        self.__projection = float(proj)
+        if self.__magnitude < self.__projection:
+            raise ValueError("The spin projection cannot be larger than the"
+                             "magnitude")
+
+    def magnitude(self):
+        return self.__magnitude
+
+    def projection(self):
+        return self.__projection
+
+    def __eq__(self, other):
+        if isinstance(other, Spin):
+            return (self.__magnitude == other.magnitude() and
+                    self.__projection == other.projection())
+        else:
+            return NotImplemented
+
+
+def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
+    domain_list = []
+    for mag in list_of_magnitudes:
+        if set_projection_zero:
+            domain_list.append(Spin(mag, 0.0))
+        else:
+            for proj in arange(-mag, mag + 1, 1.0):
+                domain_list.append(Spin(mag, proj))
+    return domain_list
+
+
 QuantumNumberClasses = Enum('QuantumNumberClasses', 'Int Spin')
 
 """definition of quantum number names for particles"""
@@ -44,19 +79,62 @@ QNNameClassMapping = {ParticleQuantumNumberNames.Charge: QuantumNumberClasses.In
                       InteractionQuantumNumberNames.L: QuantumNumberClasses.Spin
                       }
 
-QNAttributeOption = Enum('QNAttributeOption', 'Required Optional')
 
-QNClassAttributes = {QuantumNumberClasses.Spin: [
-    (XMLLabelConstants.Projection, QNAttributeOption.Required)]}
+class AbstractQNConverter(ABC):
+    @abstractmethod
+    def parse_from_dict(self, data_dict):
+        pass
+
+    @abstractmethod
+    def convert_to_dict(self, qn_type, qn_value):
+        pass
 
 
-def get_attributes_for_qn(qn_name):
+class IntQNConverter(AbstractQNConverter):
+    value_label = get_xml_label(XMLLabelConstants.Value)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    class_label = get_xml_label(XMLLabelConstants.Class)
+
+    def parse_from_dict(self, data_dict):
+        return int(data_dict[self.value_label])
+
+    def convert_to_dict(self, qn_type, qn_value):
+        return {self.type_label: qn_type.name,
+                self.class_label: QuantumNumberClasses.Int.name,
+                self.value_label: str(qn_value)}
+
+
+class SpinQNConverter(AbstractQNConverter):
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    class_label = get_xml_label(XMLLabelConstants.Class)
+    value_label = get_xml_label(XMLLabelConstants.Value)
+    proj_label = get_xml_label(XMLLabelConstants.Projection)
+
+    def parse_from_dict(self, data_dict):
+        mag = data_dict[self.value_label]
+        proj = data_dict[self.proj_label]
+        return Spin(mag, proj)
+
+    def convert_to_dict(self, qn_type, qn_value):
+        return {self.type_label: qn_type.name,
+                self.class_label: QuantumNumberClasses.Spin.name,
+                self.value_label: str(qn_value.magnitude()),
+                self.proj_label: str(qn_value.projection())}
+
+
+QNClassConverterMapping = {
+    QuantumNumberClasses.Int: IntQNConverter(),
+    QuantumNumberClasses.Spin: SpinQNConverter()
+}
+
+
+'''def get_attributes_for_qn(qn_name):
     qn_attr = []
     if qn_name in QNNameClassMapping:
         qn_class = QNNameClassMapping[qn_name]
         if qn_class in QNClassAttributes:
             qn_attr = QNClassAttributes[qn_class]
-    return qn_attr
+    return qn_attr'''
 
 
 particle_list = []

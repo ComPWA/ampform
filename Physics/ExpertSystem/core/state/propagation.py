@@ -20,21 +20,18 @@ from core.state.conservationrules import AbstractRule
 from core.state.particle import (get_xml_label, XMLLabelConstants,
                                  ParticleQuantumNumberNames,
                                  InteractionQuantumNumberNames,
-                                 get_attributes_for_qn,
                                  QNNameClassMapping,
-                                 QuantumNumberClasses,
-                                 QNAttributeOption)
+                                 QNClassConverterMapping)
 
 
 graph_element_types = Enum('GraphElementTypes', 'node edge')
 
 
 class VariableInfo():
-    def __init__(self, graph_element_type, element_id, qn_name, qn_att):
+    def __init__(self, graph_element_type, element_id, qn_name):
         self.graph_element_type = graph_element_type
         self.element_id = element_id
         self.qn_name = qn_name
-        self.qn_attr = qn_att
 
 
 def decode_variable_name(variable_name, delimiter):
@@ -42,7 +39,7 @@ def decode_variable_name(variable_name, delimiter):
     Decodes the variable name (see ::func::`.encode_variable_name`)
     """
     split_name = variable_name.split(delimiter)
-    if not len(split_name) == 4:
+    if not len(split_name) == 3:
         raise ValueError(
             "The variable name does not follow the scheme: " + variable_name)
     qn_name = None
@@ -55,29 +52,24 @@ def decode_variable_name(variable_name, delimiter):
         qn_name = ParticleQuantumNumberNames[split_name[2]]
         graph_element_type = graph_element_types.edge
 
-    qn_att = XMLLabelConstants[split_name[3]]
-    return VariableInfo(graph_element_type, element_id, qn_name, qn_att)
+    return VariableInfo(graph_element_type, element_id, qn_name)
 
 
 def encode_variable_name(variable_info, delimiter):
     """
     The variable names are encoded as a concatenated string of the form
     graph element type + delimiter + element id + delimiter + qn name
-    (optionally: + delimiter + qn attribute)
-    The variable of type ::class::`.VariableInfo` and must contain:
+    The variable of type ::class::`.VariableInfo` and contains:
       - graph_element_type: is either "node" or "edge" (enum)
       - element_id: is the id of that node/edge
         (as it is defined in the graph)
       - qn_name: the quantum number name (enum)
-      - qn_attr (optional): an attribute of this quantum number
     """
     if not isinstance(variable_info, VariableInfo):
         raise TypeError('parameter variable_info must be of type VariableInfo')
     var_name = variable_info.graph_element_type.name \
         + delimiter + str(variable_info.element_id) \
         + delimiter + variable_info.qn_name.name
-    if variable_info.qn_attr:
-        var_name = var_name + delimiter + variable_info.qn_attr.name
     return var_name
 
 
@@ -166,52 +158,32 @@ class CSPPropagator():
                 self.problem.addConstraint(constraint, var_list)
 
     def prepare_qns(self, qn_names, qn_domains, type_to_filter):
-        qn_names_dict = qn_names
-        if ParticleQuantumNumberNames.All in qn_names_dict:
-            qn_names_dict = {}
+        qn_names_used = qn_names
+        if ParticleQuantumNumberNames.All in qn_names:
+            qn_names_used = []
             for qnname in ParticleQuantumNumberNames:
                 if qnname != ParticleQuantumNumberNames.All:
-                    qn_names_dict[qnname] = [XMLLabelConstants.Value]
-                    for qnatt in get_attributes_for_qn(qnname):
-                        qn_names_dict[qnname].append(qnatt[0])
+                    qn_names_used.append(qnname)
 
         part_qn_dict = {}
-        for qn_name, qn_attrs in qn_names_dict.items():
+        for qn_name in qn_names_used:
             if isinstance(qn_name, type_to_filter):
-                part_qn_dict[qn_name] = []
-                for qn_att in qn_attrs:
-                    part_qn_dict[qn_name].append(
-                        (qn_att, self.get_default_domain(qn_name,
-                                                         qn_att,
-                                                         qn_domains)))
+                part_qn_dict[qn_name] = qn_domains[qn_name]
         return part_qn_dict
-
-    def get_default_domain(self, qn_name, qn_att, qn_domains):
-        qn_domain = qn_domains[qn_name]
-        if (qn_name is ParticleQuantumNumberNames.Spin and
-                qn_att is XMLLabelConstants.Projection):
-            new_qn_domain = set()
-            for x in qn_domain:
-                new_qn_domain.update(arange(-x, x + 1, 1.0))
-            qn_domain = list(new_qn_domain)
-
-        return qn_domain
 
     def create_node_variables(self, node_id, qn_dict):
         """
         Creates variables for the quantum numbers of the specified node.
         """
         variables = set()
-        for qn_name, qn_att_list in qn_dict.items():
-            for (qn_att, qn_domain) in qn_att_list:
-                var_info = VariableInfo(graph_element_types.node,
-                                        node_id,
-                                        qn_name,
-                                        qn_att
-                                        )
-                domain_values = self.determine_domain(var_info, [], qn_domain)
-                key = self.add_variable(var_info, domain_values)
-                variables.add(key)
+        for qn_name, qn_domain in qn_dict.items():
+            var_info = VariableInfo(graph_element_types.node,
+                                    node_id,
+                                    qn_name
+                                    )
+            domain_values = self.determine_domain(var_info, [], qn_domain)
+            key = self.add_variable(var_info, domain_values)
+            variables.add(key)
         return variables
 
     def create_edge_variables(self, edge_ids, qn_dict):
@@ -234,18 +206,15 @@ class CSPPropagator():
                 edge_props = self.graph.edge_props[edge_id]
                 edge_qns = edge_props[qns_label]
 
-            for qn_name, qn_att_list in qn_dict.items():
-                # loop over qn attributes
-                for (qn_att, qn_domain) in qn_att_list:
-                    var_info = VariableInfo(graph_element_types.edge,
-                                            edge_id,
-                                            qn_name,
-                                            qn_att
-                                            )
-                    domain_values = self.determine_domain(
-                        var_info, edge_qns, qn_domain)
-                    if domain_values:
-                        var_list.append((var_info, domain_values))
+            for qn_name, qn_domain in qn_dict.items():
+                var_info = VariableInfo(graph_element_types.edge,
+                                        edge_id,
+                                        qn_name
+                                        )
+                domain_values = self.determine_domain(
+                    var_info, edge_qns, qn_domain)
+                if domain_values:
+                    var_list.append((var_info, domain_values))
 
             # add all variables for this edge/particle
             for x in var_list:
@@ -255,23 +224,16 @@ class CSPPropagator():
 
     def determine_domain(self, var_info, edge_qns, default_qn_domain):
         type_label = get_xml_label(XMLLabelConstants.Type)
-        value_label = get_xml_label(var_info.qn_attr)
         domain_values = []
 
         if edge_qns:
-            domain_values = [x[value_label]
+            converter = QNClassConverterMapping[
+                QNNameClassMapping[var_info.qn_name]]
+            domain_values = [converter.parse_from_dict(x)
                              for x in edge_qns if (
-                x[type_label] == var_info.qn_name.name
-                and value_label in x)]
+                x[type_label] == var_info.qn_name.name)]
         else:
             domain_values = default_qn_domain
-
-        # convert into correct value type
-        qn_class = QNNameClassMapping[var_info.qn_name]
-        if qn_class is QuantumNumberClasses.Int:
-            domain_values = [int(x) for x in domain_values]
-        if qn_class is QuantumNumberClasses.Spin:
-            domain_values = [float(x) for x in domain_values]
 
         return domain_values
 
@@ -299,57 +261,43 @@ class CSPPropagator():
         initial_edges = get_initial_state_edges(self.graph)
         final_edges = get_final_state_edges(self.graph)
 
-        type_label = get_xml_label(XMLLabelConstants.Type)
-        class_label = get_xml_label(XMLLabelConstants.Class)
-
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
             for var_name, value in solution.items():
                 var_info = decode_variable_name(
                     var_name, self.particle_variable_delimiter)
                 ele_id = var_info.element_id
-                qn_name = var_info.qn_name
-                value_label = get_xml_label(var_info.qn_attr)
-                class_name = get_xml_label(QNNameClassMapping[qn_name])
+
                 if var_info.graph_element_type is graph_element_types.edge:
                     if ele_id in initial_edges or ele_id in final_edges:
                         # skip if its an initial or final state edge
                         continue
-                    add_qn_to_graph_element(graph_copy.edge_props, ele_id,
-                                            {type_label: qn_name.name,
-                                             class_label: class_name,
-                                             value_label: value})
-                else:
-                    add_qn_to_graph_element(graph_copy.node_props, ele_id,
-                                            {type_label: qn_name.name,
-                                             class_label: class_name,
-                                             value_label: value})
+
+                add_qn_to_graph_element(graph_copy, var_info, value)
+
             solution_graphs.append(graph_copy)
         return solution_graphs
 
 
-def add_qn_to_graph_element(graph_prop_dict, element_id, qn_property):
+def add_qn_to_graph_element(graph, var_info, value):
     # TODO: i guess i have to pack all that stuff in OrderdDicts...
     # because of the xmltodict module
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
-    type_label = get_xml_label(XMLLabelConstants.Type)
-    class_label = get_xml_label(XMLLabelConstants.Class)
+
+    element_id = var_info.element_id
+    qn_name = var_info.qn_name
+    graph_prop_dict = graph.edge_props
+    if var_info.graph_element_type is graph_element_types.node:
+        graph_prop_dict = graph.node_props
+
+    converter = QNClassConverterMapping[
+        QNNameClassMapping[qn_name]]
 
     if element_id not in graph_prop_dict:
         graph_prop_dict[element_id] = {qns_label: []}
 
-    found_entry_indices = [graph_prop_dict[element_id][qns_label].index(x)
-                           for x in graph_prop_dict[element_id][qns_label]
-                           if (type_label in x and class_label in x) and
-                           (x[type_label] == qn_property[type_label] and
-                            x[class_label] == qn_property[class_label])]
-    if not found_entry_indices:
-        graph_prop_dict[element_id][qns_label].append(qn_property)
-    else:
-        for key, value in qn_property.items():
-            if (key is not (type_label and class_label)):
-                graph_prop_dict[element_id][qns_label][found_entry_indices[0]
-                                                       ][key] = value
+    graph_prop_dict[element_id][qns_label].append(converter.convert_to_dict(
+        qn_name, value))
 
 
 class ConservationLawConstraintWrapper(Constraint):
@@ -389,22 +337,19 @@ class ConservationLawConstraintWrapper(Constraint):
         if missing:
             return True
         self.update_variable_lists(params)
-        force_passed = self.rule.force_check(self.part_in, self.part_out,
-                                             self.interaction_qns)
         passed = self.rule.check(self.part_in, self.part_out,
                                  self.interaction_qns)
         if self.is_strict:
-            return (passed and force_passed)
+            return passed
         else:
-            if not force_passed:
-                return False
             if not passed:
                 self.non_conserved_scenarios.append(
                     (self.part_in, self.part_out, self.interaction_qns))
             return True
 
     def initialize_particle_lists(self):
-        """Fill the name decoding map and initialize the in and out particle
+        """
+        Fill the name decoding map and initialize the in and out particle
         lists. The variable names follow the scheme edge_id(delimiter)qn_name.
         This method creates a dict linking the var name to a list that consists
         of the particle list index and the qn name
@@ -417,7 +362,7 @@ class ConservationLawConstraintWrapper(Constraint):
                 var_name, self.name_delimiter)
             self.interaction_qns[var_info.qn_name] = {}
             self.variable_name_decoding_map[var_name] = (
-                0, var_info.qn_name, var_info.qn_attr)
+                0, var_info.qn_name)
 
     def initialize_particle_list(self, variable_set, list_to_init):
         temp_var_dict = {}
@@ -426,29 +371,26 @@ class ConservationLawConstraintWrapper(Constraint):
                 var_name, self.name_delimiter)
             if var_info.element_id not in temp_var_dict:
                 temp_var_dict[var_info.element_id] = {
-                    var_name: (var_info.qn_name, var_info.qn_attr)}
+                    var_name: var_info.qn_name}
             else:
-                temp_var_dict[var_info.element_id][var_name] = (
-                    var_info.qn_name, var_info.qn_attr)
+                temp_var_dict[var_info.element_id][var_name] = var_info.qn_name
 
         for key, value in temp_var_dict.items():
             index = len(list_to_init)
             list_to_init.append({})
-            for var_name, (qn_name, qn_att) in value.items():
+            for var_name, qn_name in value.items():
                 self.variable_name_decoding_map[var_name] = (
-                    index, qn_name, qn_att)
-                list_to_init[index][qn_name] = {}
+                    index, qn_name)
 
     def update_variable_lists(self, parameters):
         for [var_name, value] in parameters:
-            (index, qn_name,
-             qn_att) = self.variable_name_decoding_map[var_name]
+            (index, qn_name) = self.variable_name_decoding_map[var_name]
             if var_name in self.in_variable_set:
-                self.part_in[index][qn_name][qn_att] = value
+                self.part_in[index][qn_name] = value
             elif var_name in self.out_variable_set:
-                self.part_out[index][qn_name][qn_att] = value
+                self.part_out[index][qn_name] = value
             elif var_name in self.interaction_variable_set:
-                self.interaction_qns[qn_name][qn_att] = value
+                self.interaction_qns[qn_name] = value
             else:
                 raise ValueError("The variable with name " +
                                  var_name +
