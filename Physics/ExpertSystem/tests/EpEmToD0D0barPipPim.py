@@ -1,6 +1,7 @@
 """ sample script for the testing purposes using the decay
-    JPsi -> gamma pi0 pi0
+    e+e- -> D0 D0bar pi+ pi-
 """
+
 from core.topology.graph import InteractionNode
 from core.topology.topologybuilder import SimpleStateTransitionTopologyBuilder
 
@@ -26,7 +27,7 @@ TwoBodyDecayNode = InteractionNode("TwoBodyDecay", 1, 2)
 
 SimpleBuilder = SimpleStateTransitionTopologyBuilder([TwoBodyDecayNode])
 
-all_graphs = SimpleBuilder.build_graphs(1, 3)
+all_graphs = SimpleBuilder.build_graphs(1, 4)
 
 print("we have " + str(len(all_graphs)) + " tolopogy graphs!\n")
 print(all_graphs)
@@ -38,41 +39,47 @@ load_particle_list_from_xml('../particle_list.xml')
 # print(particle_list)
 print("loaded " + str(len(particle_list)) + " particles from xml file!")
 
-# initialize the graph edges (intial and final state)
-initial_state = [("J/psi", [-1, 1])]
-final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
+# initialize the graph edges (initial and final state)
+initial_state = [("EpEm", [-1, 1])]
+final_state = [("D0", [0]), ("D0bar", [0]), ("pi+", [0]), ("pi-", [0])]
 init_graphs = initialize_graph(
-    all_graphs[0], initial_state, final_state)
+    all_graphs[1], initial_state, final_state)
 print("initialized " + str(len(init_graphs)) + " graphs!")
-test_graph = init_graphs[0]
 
+test_graph = init_graphs[12]
+print("pick one test graph:")
+print(test_graph)
 
 conservation_rules = {
     'strict':
-    [AdditiveQuantumNumberConservation(ParticleQuantumNumberNames.Charge),
+    [GellMannNishijimaRule(),
+     AdditiveQuantumNumberConservation(ParticleQuantumNumberNames.Charge),
+     SpinConservation(
+        ParticleQuantumNumberNames.IsoSpin),
+     AdditiveQuantumNumberConservation(ParticleQuantumNumberNames.Charm),
      AdditiveQuantumNumberConservation(
          ParticleQuantumNumberNames.BaryonNumber),
+
      #  AdditiveQuantumNumberConservation(
      #      ParticleQuantumNumberNames.LeptonNumber),
-     ParityConservation(),
-     IdenticalParticleSymmetrization(),
      SpinConservation(ParticleQuantumNumberNames.Spin, False),
      HelicityConservation(),
-     GellMannNishijimaRule()
+     ParityConservation(),
+     # IdenticalParticleSymmetrization(),
      ],
     'non-strict':
-    [SpinConservation(
-        ParticleQuantumNumberNames.IsoSpin)]
+    []
 }
 
 quantum_number_domains = {
-    ParticleQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
-    ParticleQuantumNumberNames.BaryonNumber: [-2, -1, 0, 1, 2],
+    ParticleQuantumNumberNames.Charge: [-1, 0, 1],
+    ParticleQuantumNumberNames.BaryonNumber: [0],
     #  ParticleQuantumNumberNames.LeptonNumber: [-2, -1, 0, 1, 2],
     ParticleQuantumNumberNames.Parity: [-1, 1],
-    ParticleQuantumNumberNames.Spin: create_spin_domain([0, 1, 2]),
-    ParticleQuantumNumberNames.IsoSpin: create_spin_domain([0]),
-    InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2], True)
+    ParticleQuantumNumberNames.Spin: create_spin_domain([0, 1]),
+    ParticleQuantumNumberNames.IsoSpin: create_spin_domain([0, 0.5, 1]),
+    ParticleQuantumNumberNames.Charm: [-1, 0, 1],
+    InteractionQuantumNumberNames.L: create_spin_domain([0, 1], True)
 }
 
 propagator = CSPPropagator(test_graph)
@@ -86,6 +93,7 @@ for g in solutions:
     print(g.node_props[0])
     print(g.node_props[1])
     print(g.edge_props[1])
+    print(g.edge_props[3])
 
 # ------------------ second stage of QN propagation ------------------
 
@@ -95,20 +103,17 @@ allowed_intermediate_particles = []
 
 full_particle_graphs = initialize_graphs_with_particles(
     solutions, allowed_intermediate_particles)
-
-# C and G parity need to know the actual particle (pid)
-# so these rules only work in the second stage
+print("Number of initialized graph: " + str(len(full_particle_graphs)))
+# C parity needs to know the actual particle (pid)
+# so this rule only works in the second stage
 test_graph = full_particle_graphs[0]
+print("initialized graph used in second stage")
 print(test_graph)
+
 propagator_stage2 = CSPPropagator(test_graph)
 propagator_stage2.assign_conservation_laws_to_all_nodes(
     {'strict': [CParityConservation()]},
-    {ParticleQuantumNumberNames.Cparity: [-1, 1]})
-propagator_stage2.assign_conservation_laws_to_node(
-    1,
-    {'strict': [
-        GParityConservation()]},
-    {ParticleQuantumNumberNames.Gparity: [-1, 1]}
+    {ParticleQuantumNumberNames.Cparity: [-1, 1]}
 )
 solutions_stage2 = propagator_stage2.find_solutions()
 

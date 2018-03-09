@@ -6,25 +6,47 @@ from numpy import arange
 from core.state.particle import (ParticleQuantumNumberNames,
                                  InteractionQuantumNumberNames,
                                  QNNameClassMapping,
-                                 QuantumNumberClasses)
+                                 QuantumNumberClasses,
+                                 get_xml_label,
+                                 XMLLabelConstants)
+
+
+''' functions which do quantum number condition checks '''
+
+
+def defined_for_all(qn_names, graph_elements):
+    qn_list_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    qn_type_label = get_xml_label(XMLLabelConstants.Type)
+    for qn_name in qn_names:
+        for element in graph_elements:
+            if not [1 for x in element[qn_list_label]
+                    if qn_name.name in x[qn_type_label]]:
+                return False
+    return True
 
 
 class AbstractRule(ABC):
     def __init__(self):
         self.required_qn_names = []
+        self.qn_conditions = []
         self.specify_required_qns()
+
+    def get_qn_conditions(self):
+        return self.qn_conditions
 
     @abstractmethod
     def specify_required_qns(self):
         pass
 
-    def add_required_qn(self, qn_name):
+    def add_required_qn(self, qn_name, qn_condition_functions=[]):
         if not (isinstance(qn_name, ParticleQuantumNumberNames) or
                 isinstance(qn_name, InteractionQuantumNumberNames)):
             raise TypeError('qn_name has to be of type '
                             + 'ParticleQuantumNumberNames or '
                             + 'InteractionQuantumNumberNames')
         self.required_qn_names.append(qn_name)
+        for cond in qn_condition_functions:
+            self.qn_conditions.append(([qn_name], cond))
 
     def get_required_qn_names(self):
         return self.required_qn_names
@@ -34,24 +56,32 @@ class AbstractRule(ABC):
         pass
 
 
-class ChargeConservation(AbstractRule):
+class AdditiveQuantumNumberConservation(AbstractRule):
+    """
+    implements sum(Q_in) == sum(Q_out), which is used for etc 
+    electric charge, baryon number, lepton number conservation
+    """
+
+    def __init__(self, qn_name):
+        self.qn_name = qn_name
+        super().__init__()
+
     def specify_required_qns(self):
-        self.add_required_qn(ParticleQuantumNumberNames.Charge)
+        self.add_required_qn(self.qn_name, [defined_for_all])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        charge_name = ParticleQuantumNumberNames.Charge
-
-        in_charge = sum([part[charge_name]
-                         for part in ingoing_part_qns if charge_name in part])
-        out_charge = sum([part[charge_name]
+        in_qn_sum = sum([part[self.qn_name]
+                         for part in ingoing_part_qns if self.qn_name in part])
+        out_qn_sum = sum([part[self.qn_name]
                           for part in outgoing_part_qns if (
-                              charge_name in part)])
-        return in_charge == out_charge
+                              self.qn_name in part)])
+        return in_qn_sum == out_qn_sum
 
 
 class ParityConservation(AbstractRule):
     def specify_required_qns(self):
-        self.add_required_qn(ParticleQuantumNumberNames.Parity)
+        self.add_required_qn(
+            ParticleQuantumNumberNames.Parity, [defined_for_all])
         self.add_required_qn(InteractionQuantumNumberNames.L)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
@@ -71,16 +101,69 @@ class ParityConservation(AbstractRule):
 class CParityConservation(AbstractRule):
     def specify_required_qns(self):
         self.add_required_qn(ParticleQuantumNumberNames.Cparity)
+        self.add_required_qn(ParticleQuantumNumberNames.Spin)
+        self.add_required_qn(InteractionQuantumNumberNames.L)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """ implements C_in = C_out """
         # is this valid for two outgoing particles only?
         cparity_label = ParticleQuantumNumberNames.Cparity
+        in_part_no_cpar = [1 for x in ingoing_part_qns
+                           if cparity_label not in x]
+        if in_part_no_cpar:
+            return True
         cparity_in = reduce(
             lambda x, y: x * y[cparity_label], ingoing_part_qns, 1)
-        cparity_out = reduce(
-            lambda x, y: x * y[cparity_label], outgoing_part_qns, 1)
-        if cparity_in == cparity_out:
+
+        out_part_no_cpar = [1 for x in outgoing_part_qns
+                            if cparity_label not in x]
+
+        cparity_out = None
+        if out_part_no_cpar:
+            cparity_out = self.get_cparity_outgoing(
+                outgoing_part_qns, interaction_qns)
+            if cparity_out is None:
+                return True
+        else:
+            cparity_out = reduce(
+                lambda x, y: x * y[cparity_label], outgoing_part_qns, 1)
+        return cparity_in == cparity_out
+
+    def get_cparity_outgoing(self, outgoing_part_qns, interaction_qns):
+        # this only works for two outgoing particles
+        spin_label = ParticleQuantumNumberNames.Spin
+        pid_label = XMLLabelConstants.Pid
+        ang_mom_label = InteractionQuantumNumberNames.L
+        if len(outgoing_part_qns) == 2:
+            if (outgoing_part_qns[0][pid_label]
+                    == -outgoing_part_qns[1][pid_label]):
+                if abs(outgoing_part_qns[0][spin_label] % 1) < 0.01:
+                    ang_mom = interaction_qns[ang_mom_label].magnitude()
+                    return (-1)**ang_mom
+
+        return None
+
+
+class GParityConservation(AbstractRule):
+    def specify_required_qns(self):
+        self.add_required_qn(ParticleQuantumNumberNames.Gparity)
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        """ implements G_in = G_out """
+        gparity_label = ParticleQuantumNumberNames.Gparity
+        in_part_no_gpar = [1 for x in ingoing_part_qns
+                           if gparity_label not in x]
+        if in_part_no_gpar:
+            return True
+        out_part_no_gpar = [1 for x in outgoing_part_qns
+                            if gparity_label not in x]
+        if out_part_no_gpar:
+            return True
+        gparity_in = reduce(
+            lambda x, y: x * y[gparity_label], ingoing_part_qns, 1)
+        gparity_out = reduce(
+            lambda x, y: x * y[gparity_label], outgoing_part_qns, 1)
+        if gparity_in == gparity_out:
             return True
         return False
 
@@ -136,7 +219,7 @@ class SpinConservation(AbstractRule):
         super().__init__()
 
     def specify_required_qns(self):
-        self.add_required_qn(self.spinlike_qn)
+        self.add_required_qn(self.spinlike_qn, [defined_for_all])
         # for actual spins we include the angular momentum
         if self.spinlike_qn is ParticleQuantumNumberNames.Spin:
             self.add_required_qn(InteractionQuantumNumberNames.L)
@@ -204,7 +287,8 @@ class SpinConservation(AbstractRule):
 
 class HelicityConservation(AbstractRule):
     def specify_required_qns(self):
-        self.add_required_qn(ParticleQuantumNumberNames.Spin)
+        self.add_required_qn(
+            ParticleQuantumNumberNames.Spin, [defined_for_all])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
@@ -219,3 +303,44 @@ class HelicityConservation(AbstractRule):
             if mother_spin >= abs(daughter_hel[0] - daughter_hel[1]):
                 return True
         return False
+
+
+class GellMannNishijimaRule(AbstractRule):
+    def specify_required_qns(self):
+        self.add_required_qn(
+            ParticleQuantumNumberNames.Charge, [defined_for_all])
+        self.add_required_qn(
+            ParticleQuantumNumberNames.IsoSpin, [defined_for_all])
+        self.add_required_qn(ParticleQuantumNumberNames.Strangeness)
+        self.add_required_qn(ParticleQuantumNumberNames.Charm)
+        self.add_required_qn(ParticleQuantumNumberNames.Bottomness)
+        self.add_required_qn(ParticleQuantumNumberNames.Topness)
+        self.add_required_qn(ParticleQuantumNumberNames.BaryonNumber)
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        """
+        implement hypercharge  (Y=S+C+B+T+B, last B is baryon number) 
+        and the Gell-Mann–Nishijima formula for each particle: Q=I_3+Y/2
+        """
+        charge_label = ParticleQuantumNumberNames.Charge
+        isospin_label = ParticleQuantumNumberNames.IsoSpin
+
+        for particle in ingoing_part_qns + outgoing_part_qns:
+            isospin_3 = 0
+            if isospin_label in particle:
+                isospin_3 = particle[isospin_label].projection()
+            if (float(particle[charge_label]) !=
+                    (isospin_3 + 0.5 * self.calculate_hypercharge(particle))):
+                return False
+        return True
+
+    def calculate_hypercharge(self, particle):
+        qn_labels = [
+            ParticleQuantumNumberNames.Strangeness,
+            ParticleQuantumNumberNames.Charm,
+            ParticleQuantumNumberNames.Bottomness,
+            ParticleQuantumNumberNames.Topness,
+            ParticleQuantumNumberNames.BaryonNumber
+        ]
+        qn_values = [particle[x] for x in qn_labels if x in particle]
+        return sum(qn_values)

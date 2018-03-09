@@ -10,7 +10,7 @@ from enum import Enum
 from collections import OrderedDict
 from numpy import arange
 
-from constraint import (Problem, Constraint, Unassigned)
+from constraint import (Problem, Constraint, Unassigned, BacktrackingSolver)
 
 from core.topology.graph import (get_initial_state_edges,
                                  get_final_state_edges,
@@ -89,7 +89,8 @@ class CSPPropagator():
         self.node_conservation_laws = {}
         self.variable_set = set()
         self.graph = graph
-        self.problem = Problem()
+        solver = BacktrackingSolver(True)
+        self.problem = Problem(solver)
         self.particle_variable_delimiter = "-*-"
 
     def find_solutions(self):
@@ -106,8 +107,19 @@ class CSPPropagator():
 
     def assign_conservation_laws_to_node(self, node_id, conservation_laws,
                                          quantum_number_domains):
-        self.node_conservation_laws[node_id] = (
-            conservation_laws, quantum_number_domains)
+        if node_id not in self.node_conservation_laws:
+            self.node_conservation_laws[node_id] = (
+                {'strict': [],
+                 'non-strict': []
+                 },
+                {}
+            )
+        (cl, qnd) = self.node_conservation_laws[node_id]
+        if 'strict' in conservation_laws:
+            cl['strict'].extend(conservation_laws['strict'])
+        if 'non-strict' in conservation_laws:
+            cl['non-strict'].extend(conservation_laws['non-strict'])
+        qnd.update(quantum_number_domains)
 
     def initialize_contraints(self):
         """
@@ -126,13 +138,13 @@ class CSPPropagator():
             new_cons_laws = [(x, True) for x in cons_laws['strict']]
             new_cons_laws.extend([(x, False) for x in cons_laws['non-strict']])
             for (cons_law, is_strict) in new_cons_laws:
+                variable_mapping = {}
                 # from cons law and graph determine needed var lists
                 qn_names = cons_law.get_required_qn_names()
+
                 # create needed variables for edges/particle qns
                 part_qn_dict = self.prepare_qns(
                     qn_names, qn_domains, ParticleQuantumNumberNames)
-
-                variable_mapping = {}
                 in_edges = get_edges_ingoing_to_node(self.graph, node_id)
                 variable_mapping["ingoing"] = self.create_edge_variables(
                     in_edges, part_qn_dict)
@@ -141,6 +153,7 @@ class CSPPropagator():
                 variable_mapping["outgoing"] = self.create_edge_variables(
                     out_edges, part_qn_dict)
                 var_list.extend([key for key in variable_mapping["outgoing"]])
+
                 # now create variables for node/interaction qns
                 int_qn_dict = self.prepare_qns(
                     qn_names, qn_domains, InteractionQuantumNumberNames)
@@ -148,9 +161,13 @@ class CSPPropagator():
                     node_id, int_qn_dict)
                 var_list.extend(
                     [key for key in variable_mapping["interaction"]])
+
                 # create constraint
+                # verify rule conditions / throws exception otherwise
+                self.verify_rule_conditions(cons_law, node_id)
                 constraint = ConservationLawConstraintWrapper(
-                    cons_law, variable_mapping,
+                    cons_law,
+                    variable_mapping,
                     self.particle_variable_delimiter)
                 constraint.register_graph_node(node_id)
                 if is_strict:
@@ -168,7 +185,13 @@ class CSPPropagator():
         part_qn_dict = {}
         for qn_name in qn_names_used:
             if isinstance(qn_name, type_to_filter):
-                part_qn_dict[qn_name] = qn_domains[qn_name]
+                if qn_name in qn_domains:
+                    part_qn_dict[qn_name] = qn_domains[qn_name]
+                else:
+                    print("Warning: no default domain for quantum number " +
+                          qn_name.name + " given. Using empty domain [] as a"
+                          " fallback!")
+                    part_qn_dict[qn_name] = []
         return part_qn_dict
 
     def create_node_variables(self, node_id, qn_dict):
@@ -244,6 +267,30 @@ class CSPPropagator():
             self.variable_set.add(key)
             self.problem.addVariable(key, domain)
         return key
+
+    def verify_rule_conditions(self, cons_law, node_id):
+        in_edges = get_edges_ingoing_to_node(self.graph, node_id)
+        out_edges = get_edges_outgoing_to_node(self.graph, node_id)
+        initial_edges = get_initial_state_edges(self.graph)
+        final_edges = get_final_state_edges(self.graph)
+
+        graph_elements = [self.graph.edge_props[x] for x in list(
+            set(in_edges + out_edges).intersection(
+                set(initial_edges + final_edges)))]
+        for (qn_name_list, cond_func) in cons_law.get_qn_conditions():
+            part_qn_list = [x for x in qn_name_list
+                            if isinstance(x, ParticleQuantumNumberNames)
+                            ]
+            if not cond_func(part_qn_list, graph_elements):
+                raise ValueError("Error in create_constraint method: "
+                                 "quantum number condition << "
+                                 + cond_func.__name__ + " >> "
+                                 + "of conservation law "
+                                 + type(cons_law).__name__
+                                 + " when looking for qns:\n"
+                                 + str([x.name for x in part_qn_list]))
+
+        return
 
     def apply_solutions_to_graph(self, solutions):
         """
