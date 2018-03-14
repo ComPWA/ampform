@@ -1,13 +1,15 @@
 """ sample script for the testing purposes using the decay
     JPsi -> gamma pi0 pi0
 """
+import os
+
 from core.topology.graph import InteractionNode
 from core.topology.topologybuilder import SimpleStateTransitionTopologyBuilder
 
 from core.state.particle import (
     load_particle_list_from_xml, particle_list,
     initialize_graph, initialize_graphs_with_particles,
-    ParticleQuantumNumberNames, InteractionQuantumNumberNames,
+    StateQuantumNumberNames, InteractionQuantumNumberNames,
     create_spin_domain)
 from core.state.propagation import (CSPPropagator)
 from core.state.conservationrules import (AdditiveQuantumNumberConservation,
@@ -47,37 +49,43 @@ print("initialized " + str(len(init_graphs)) + " graphs!")
 test_graph = init_graphs[0]
 
 
-conservation_rules = {
-    'strict':
-    [AdditiveQuantumNumberConservation(ParticleQuantumNumberNames.Charge),
-     AdditiveQuantumNumberConservation(
-         ParticleQuantumNumberNames.BaryonNumber),
-     #  AdditiveQuantumNumberConservation(
-     #      ParticleQuantumNumberNames.LeptonNumber),
-     ParityConservation(),
-     IdenticalParticleSymmetrization(),
-     SpinConservation(ParticleQuantumNumberNames.Spin, False),
-     HelicityConservation(),
-     GellMannNishijimaRule()
-     ],
-    'non-strict':
-    [SpinConservation(
-        ParticleQuantumNumberNames.IsoSpin)]
-}
+strict_conservation_rules = [
+    AdditiveQuantumNumberConservation(StateQuantumNumberNames.Charge),
+    AdditiveQuantumNumberConservation(
+        StateQuantumNumberNames.BaryonNumber),
+    #  AdditiveQuantumNumberConservation(
+    #      ParticleQuantumNumberNames.LeptonNumber),
+    ParityConservation(),
+    CParityConservation(),
+    IdenticalParticleSymmetrization(),
+    SpinConservation(StateQuantumNumberNames.Spin, False),
+    HelicityConservation(),
+    GellMannNishijimaRule()
+]
+
+non_strict_conservation_rules = [
+    SpinConservation(
+        StateQuantumNumberNames.IsoSpin)
+]
 
 quantum_number_domains = {
-    ParticleQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
-    ParticleQuantumNumberNames.BaryonNumber: [-2, -1, 0, 1, 2],
+    StateQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
+    StateQuantumNumberNames.BaryonNumber: [-2, -1, 0, 1, 2],
     #  ParticleQuantumNumberNames.LeptonNumber: [-2, -1, 0, 1, 2],
-    ParticleQuantumNumberNames.Parity: [-1, 1],
-    ParticleQuantumNumberNames.Spin: create_spin_domain([0, 1, 2]),
-    ParticleQuantumNumberNames.IsoSpin: create_spin_domain([0]),
-    InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2], True)
+    StateQuantumNumberNames.Parity: [-1, 1],
+    StateQuantumNumberNames.Cparity: [-1, 1],
+    StateQuantumNumberNames.Spin: create_spin_domain([0, 1, 2]),
+    StateQuantumNumberNames.IsoSpin: create_spin_domain([0]),
+    InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2], True),
+    InteractionQuantumNumberNames.S: create_spin_domain([0, 1], True)
 }
 
 propagator = CSPPropagator(test_graph)
 propagator.assign_conservation_laws_to_all_nodes(
-    conservation_rules, quantum_number_domains)
+    strict_conservation_rules)
+propagator.assign_conservation_laws_to_all_nodes(
+    non_strict_conservation_rules, False)
+propagator.assign_qn_domains_to_all_nodes(quantum_number_domains)
 solutions = propagator.find_solutions()
 
 print("found " + str(len(solutions)) + " solutions!")
@@ -95,24 +103,6 @@ allowed_intermediate_particles = []
 
 full_particle_graphs = initialize_graphs_with_particles(
     solutions, allowed_intermediate_particles)
-
-# C and G parity need to know the actual particle (pid)
-# so these rules only work in the second stage
-test_graph = full_particle_graphs[0]
-print(test_graph)
-propagator_stage2 = CSPPropagator(test_graph)
-propagator_stage2.assign_conservation_laws_to_all_nodes(
-    {'strict': [CParityConservation()]},
-    {ParticleQuantumNumberNames.Cparity: [-1, 1]})
-propagator_stage2.assign_conservation_laws_to_node(
-    1,
-    {'strict': [
-        GParityConservation()]},
-    {ParticleQuantumNumberNames.Gparity: [-1, 1]}
-)
-solutions_stage2 = propagator_stage2.find_solutions()
-
-print("found " + str(len(solutions_stage2)) + " particle solutions!")
-
-for g in solutions_stage2:
+print("Number of initialized graphs: " + str(len(full_particle_graphs)))
+for g in full_particle_graphs:
     print(g)

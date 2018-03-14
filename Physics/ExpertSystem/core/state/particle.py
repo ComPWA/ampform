@@ -78,38 +78,45 @@ def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
 
 QuantumNumberClasses = Enum('QuantumNumberClasses', 'Int Float Spin')
 
-"""definition of quantum number names for particles"""
-ParticleQuantumNumberNames = Enum(
-    'ParticleQuantumNumbers', 'All Charge Spin Parity Cparity Gparity IsoSpin\
+"""definition of quantum number names for states"""
+StateQuantumNumberNames = Enum(
+    'StateQuantumNumberNames', 'Charge Spin Parity Cparity Gparity IsoSpin\
     Strangeness Charm Bottomness Topness BaryonNumber LeptonNumber')
 
+"""definition of properties names of particles"""
+ParticlePropertyNames = Enum(
+    'ParticlePropertyNames', 'Pid Mass')
+
 """definition of quantum number names for interaction nodes"""
-InteractionQuantumNumberNames = Enum('InteractionQuantumNumbers', 'L')
+InteractionQuantumNumberNames = Enum('InteractionQuantumNumbers', 'L S')
 
 QNDefaultValues = {
-    ParticleQuantumNumberNames.Charge: 0,
-    ParticleQuantumNumberNames.IsoSpin: Spin(0.0, 0.0),
-    ParticleQuantumNumberNames.Strangeness: 0,
-    ParticleQuantumNumberNames.Charm: 0,
-    ParticleQuantumNumberNames.Bottomness: 0,
-    ParticleQuantumNumberNames.Topness: 0,
-    ParticleQuantumNumberNames.BaryonNumber: 0
+    StateQuantumNumberNames.Charge: 0,
+    StateQuantumNumberNames.IsoSpin: Spin(0.0, 0.0),
+    StateQuantumNumberNames.Strangeness: 0,
+    StateQuantumNumberNames.Charm: 0,
+    StateQuantumNumberNames.Bottomness: 0,
+    StateQuantumNumberNames.Topness: 0,
+    StateQuantumNumberNames.BaryonNumber: 0
 }
 
 QNNameClassMapping = {
-    ParticleQuantumNumberNames.Charge: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.LeptonNumber: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.BaryonNumber: QuantumNumberClasses.Float,
-    ParticleQuantumNumberNames.Spin: QuantumNumberClasses.Spin,
-    ParticleQuantumNumberNames.Parity: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.Cparity: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.Gparity: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.IsoSpin: QuantumNumberClasses.Spin,
-    ParticleQuantumNumberNames.Strangeness: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.Charm: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.Bottomness: QuantumNumberClasses.Int,
-    ParticleQuantumNumberNames.Topness: QuantumNumberClasses.Int,
-    InteractionQuantumNumberNames.L: QuantumNumberClasses.Spin
+    StateQuantumNumberNames.Charge: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.LeptonNumber: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.BaryonNumber: QuantumNumberClasses.Float,
+    StateQuantumNumberNames.Spin: QuantumNumberClasses.Spin,
+    StateQuantumNumberNames.Parity: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.Cparity: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.Gparity: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.IsoSpin: QuantumNumberClasses.Spin,
+    StateQuantumNumberNames.Strangeness: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.Charm: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.Bottomness: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.Topness: QuantumNumberClasses.Int,
+    InteractionQuantumNumberNames.L: QuantumNumberClasses.Spin,
+    InteractionQuantumNumberNames.S: QuantumNumberClasses.Spin,
+    ParticlePropertyNames.Pid: QuantumNumberClasses.Int,
+    ParticlePropertyNames.Mass: QuantumNumberClasses.Float,
 }
 
 
@@ -174,6 +181,11 @@ QNClassConverterMapping = {
     QuantumNumberClasses.Float: FloatQNConverter(),
     QuantumNumberClasses.Spin: SpinQNConverter()
 }
+
+
+def is_boson(qn_dict):
+    spin_label = StateQuantumNumberNames.Spin
+    return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
 
 
 '''def get_attributes_for_qn(qn_name):
@@ -360,7 +372,7 @@ def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
     type_label = get_xml_label(XMLLabelConstants.Type)
     class_label = get_xml_label(XMLLabelConstants.Class)
-    type_value = ParticleQuantumNumberNames.Spin
+    type_value = StateQuantumNumberNames.Spin
     class_value = QNNameClassMapping[type_value]
 
     new_graphs = []
@@ -397,8 +409,8 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
                 print(graph.edge_props[int_edge_id])
             new_graphs_temp = []
             for curr_new_graph in current_new_graphs:
-                temp_graph = deepcopy(curr_new_graph)
                 for particle_edge in particle_edges:
+                    temp_graph = deepcopy(curr_new_graph)
                     temp_graph.edge_props[int_edge_id] = particle_edge
                     new_graphs_temp.append(temp_graph)
             current_new_graphs = new_graphs_temp
@@ -431,20 +443,20 @@ def check_qns_equal(qns_state, qns_particle):
         for par_qn_entry in qns_particle:
             # first check if the type and class of these
             # qn entries are the same
-            if (ParticleQuantumNumberNames[qn_entry[type_label]]
-                is ParticleQuantumNumberNames[par_qn_entry[type_label]] and
+            if (StateQuantumNumberNames[qn_entry[type_label]]
+                is StateQuantumNumberNames[par_qn_entry[type_label]] and
                     QuantumNumberClasses[qn_entry[class_label]]
                     is QuantumNumberClasses[par_qn_entry[class_label]]):
                 qn_found = True
-                if get_qn_value(qn_entry) == get_qn_value(par_qn_entry):
+                if compare_qns(qn_entry, par_qn_entry):
                     qn_value_match = True
                 break
         if not qn_found:
             # check if there is a default value
-            qn_name = ParticleQuantumNumberNames[qn_entry[type_label]]
+            qn_name = StateQuantumNumberNames[qn_entry[type_label]]
             if qn_name in QNDefaultValues:
-                if(get_qn_value(qn_entry) ==
-                        QNDefaultValues[qn_name]):
+                if compare_qns(qn_entry,
+                               QNDefaultValues[qn_name]):
                     qn_found = True
                     qn_value_match = True
 
@@ -454,23 +466,36 @@ def check_qns_equal(qns_state, qns_particle):
     return equal
 
 
-def get_qn_value(qn_dict):
+def compare_qns(qn_dict, qn_dict2):
     qn_class = QuantumNumberClasses[qn_dict[get_xml_label(
         XMLLabelConstants.Class)]]
     value_label = get_xml_label(XMLLabelConstants.Value)
 
+    val1 = None
+    val2 = qn_dict2
     if qn_class is QuantumNumberClasses.Int:
-        return int(qn_dict[value_label])
+        val1 = int(qn_dict[value_label])
+        if isinstance(qn_dict2, dict):
+            val2 = int(qn_dict2[value_label])
     elif qn_class is QuantumNumberClasses.Float:
-        return float(qn_dict[value_label])
+        val1 = float(qn_dict[value_label])
+        if isinstance(qn_dict2, dict):
+            val2 = float(qn_dict2[value_label])
     elif qn_class is QuantumNumberClasses.Spin:
-        if get_xml_label(XMLLabelConstants.Projection) in qn_dict:
-            return Spin(qn_dict[value_label],
-                        qn_dict[get_xml_label(XMLLabelConstants.Projection)])
+        spin_proj_label = get_xml_label(XMLLabelConstants.Projection)
+        if isinstance(qn_dict2, dict):
+            if spin_proj_label in qn_dict and spin_proj_label in qn_dict2:
+                val1 = Spin(qn_dict[value_label], qn_dict[spin_proj_label])
+                val2 = Spin(qn_dict2[value_label], qn_dict2[spin_proj_label])
+            else:
+                val1 = float(qn_dict[value_label])
+                val2 = float(qn_dict2[value_label])
         else:
-            return Spin(qn_dict[value_label], 0.0)
+            val1 = Spin(qn_dict[value_label], qn_dict[spin_proj_label])
     else:
         raise ValueError("Unknown quantum number class " + qn_class)
+
+    return val1 == val2
 
 
 def merge_qn_props(qns_state, qns_particle):
@@ -480,11 +505,12 @@ def merge_qn_props(qns_state, qns_particle):
     for qn_entry in qns_state:
         qn_found = False
         for par_qn_entry in qns:
-            if (ParticleQuantumNumberNames[qn_entry[type_label]]
-                is ParticleQuantumNumberNames[par_qn_entry[type_label]] and
+            if (StateQuantumNumberNames[qn_entry[type_label]]
+                is StateQuantumNumberNames[par_qn_entry[type_label]] and
                     QuantumNumberClasses[qn_entry[class_label]]
                     is QuantumNumberClasses[par_qn_entry[class_label]]):
                 qn_found = True
+                par_qn_entry.update(qn_entry)
                 break
         if not qn_found:
             qns.append(qn_entry)

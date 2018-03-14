@@ -18,8 +18,9 @@ from core.topology.graph import (get_initial_state_edges,
                                  get_edges_outgoing_to_node)
 from core.state.conservationrules import AbstractRule
 from core.state.particle import (get_xml_label, XMLLabelConstants,
-                                 ParticleQuantumNumberNames,
+                                 StateQuantumNumberNames,
                                  InteractionQuantumNumberNames,
+                                 ParticlePropertyNames,
                                  QNNameClassMapping,
                                  QNClassConverterMapping)
 
@@ -49,7 +50,7 @@ def decode_variable_name(variable_name, delimiter):
         qn_name = InteractionQuantumNumberNames[split_name[2]]
         graph_element_type = graph_element_types.node
     else:
-        qn_name = ParticleQuantumNumberNames[split_name[2]]
+        qn_name = StateQuantumNumberNames[split_name[2]]
         graph_element_type = graph_element_types.edge
 
     return VariableInfo(graph_element_type, element_id, qn_name)
@@ -73,6 +74,36 @@ def encode_variable_name(variable_info, delimiter):
     return var_name
 
 
+def assign_conservation_laws_to_node(node_conservation_laws,
+                                     node_id, conservation_laws,
+                                     strict):
+    if node_id not in node_conservation_laws:
+        node_conservation_laws[node_id] = (
+            {'strict': [],
+             'non-strict': []
+             },
+            {}
+        )
+    cl = node_conservation_laws[node_id][0]
+    if strict:
+        cl['strict'].extend(conservation_laws)
+    else:
+        cl['non-strict'].extend(conservation_laws)
+
+
+def assign_qn_domains_to_node(node_conservation_laws,
+                              node_id, quantum_number_domains):
+    if node_id not in node_conservation_laws:
+        node_conservation_laws[node_id] = (
+            {'strict': [],
+             'non-strict': []
+             },
+            {}
+        )
+    qnd = node_conservation_laws[node_id][1]
+    qnd.update(quantum_number_domains)
+
+
 class CSPPropagator():
     """
     Quantum number propagator reducing the problem to a constraint
@@ -87,7 +118,9 @@ class CSPPropagator():
 
     def __init__(self, graph):
         self.node_conservation_laws = {}
+        self.node_postponed_conservation_laws = {}
         self.variable_set = set()
+        self.constraints = []
         self.graph = graph
         solver = BacktrackingSolver(True)
         self.problem = Problem(solver)
@@ -97,29 +130,33 @@ class CSPPropagator():
         self.initialize_contraints()
         solutions = self.problem.getSolutions()
         solution_graphs = self.apply_solutions_to_graph(solutions)
+        for constraint in self.constraints:
+            if constraint.conditions_never_met:
+                print("conditions never met for")
+                print(constraint.rule)
+                print(constraint.node_id)
         return solution_graphs
 
     def assign_conservation_laws_to_all_nodes(self, conservation_laws,
-                                              quantum_number_domains):
+                                              strict=True):
         for node_id in self.graph.nodes:
             self.assign_conservation_laws_to_node(
-                node_id, conservation_laws, quantum_number_domains)
+                node_id, conservation_laws, strict)
 
     def assign_conservation_laws_to_node(self, node_id, conservation_laws,
-                                         quantum_number_domains):
-        if node_id not in self.node_conservation_laws:
-            self.node_conservation_laws[node_id] = (
-                {'strict': [],
-                 'non-strict': []
-                 },
-                {}
-            )
-        (cl, qnd) = self.node_conservation_laws[node_id]
-        if 'strict' in conservation_laws:
-            cl['strict'].extend(conservation_laws['strict'])
-        if 'non-strict' in conservation_laws:
-            cl['non-strict'].extend(conservation_laws['non-strict'])
-        qnd.update(quantum_number_domains)
+                                         strict):
+        assign_conservation_laws_to_node(self.node_conservation_laws,
+                                         node_id, conservation_laws,
+                                         strict)
+
+    def assign_qn_domains_to_all_nodes(self, quantum_number_domains):
+        for node_id in self.graph.nodes:
+            self.assign_qn_domain_to_node(
+                node_id, quantum_number_domains)
+
+    def assign_qn_domain_to_node(self, node_id, quantum_number_domains):
+        assign_qn_domains_to_node(
+            self.node_conservation_laws, node_id, quantum_number_domains)
 
     def initialize_contraints(self):
         """
@@ -142,16 +179,24 @@ class CSPPropagator():
                 # from cons law and graph determine needed var lists
                 qn_names = cons_law.get_required_qn_names()
 
-                # create needed variables for edges/particle qns
-                part_qn_dict = self.prepare_qns(
-                    qn_names, qn_domains, ParticleQuantumNumberNames)
+                # create needed variables for edges state qns
+                part_qn_dict = self.prepare_qns(qn_names, qn_domains,
+                                                (StateQuantumNumberNames,
+                                                 ParticlePropertyNames)
+                                                )
                 in_edges = get_edges_ingoing_to_node(self.graph, node_id)
-                variable_mapping["ingoing"] = self.create_edge_variables(
+
+                in_edge_vars = self.create_edge_variables(
                     in_edges, part_qn_dict)
+                variable_mapping["ingoing"] = in_edge_vars[0]
+                variable_mapping["ingoing-fixed"] = in_edge_vars[1]
                 var_list = [key for key in variable_mapping["ingoing"]]
+
                 out_edges = get_edges_outgoing_to_node(self.graph, node_id)
-                variable_mapping["outgoing"] = self.create_edge_variables(
+                out_edge_vars = self.create_edge_variables(
                     out_edges, part_qn_dict)
+                variable_mapping["outgoing"] = out_edge_vars[0]
+                variable_mapping["outgoing-fixed"] = out_edge_vars[1]
                 var_list.extend([key for key in variable_mapping["outgoing"]])
 
                 # now create variables for node/interaction qns
@@ -162,9 +207,6 @@ class CSPPropagator():
                 var_list.extend(
                     [key for key in variable_mapping["interaction"]])
 
-                # create constraint
-                # verify rule conditions / throws exception otherwise
-                self.verify_rule_conditions(cons_law, node_id)
                 constraint = ConservationLawConstraintWrapper(
                     cons_law,
                     variable_mapping,
@@ -172,26 +214,16 @@ class CSPPropagator():
                 constraint.register_graph_node(node_id)
                 if is_strict:
                     constraint.set_strict()
+                self.constraints.append(constraint)
                 self.problem.addConstraint(constraint, var_list)
 
     def prepare_qns(self, qn_names, qn_domains, type_to_filter):
-        qn_names_used = qn_names
-        if ParticleQuantumNumberNames.All in qn_names:
-            qn_names_used = []
-            for qnname in ParticleQuantumNumberNames:
-                if qnname != ParticleQuantumNumberNames.All:
-                    qn_names_used.append(qnname)
-
         part_qn_dict = {}
-        for qn_name in qn_names_used:
-            if isinstance(qn_name, type_to_filter):
-                if qn_name in qn_domains:
-                    part_qn_dict[qn_name] = qn_domains[qn_name]
-                else:
-                    print("Warning: no default domain for quantum number " +
-                          qn_name.name + " given. Using empty domain [] as a"
-                          " fallback!")
-                    part_qn_dict[qn_name] = []
+        for qn_name in [x for x in qn_names if isinstance(x, type_to_filter)]:
+            if qn_name in qn_domains:
+                part_qn_dict[qn_name] = qn_domains[qn_name]
+            else:
+                part_qn_dict[qn_name] = []
         return part_qn_dict
 
     def create_node_variables(self, node_id, qn_dict):
@@ -204,8 +236,8 @@ class CSPPropagator():
                                     node_id,
                                     qn_name
                                     )
-            domain_values = self.determine_domain(var_info, [], qn_domain)
-            key = self.add_variable(var_info, domain_values)
+           # domain_values = self.determine_domain(var_info, [], )
+            key = self.add_variable(var_info, qn_domain)
             variables.add(key)
         return variables
 
@@ -217,48 +249,51 @@ class CSPPropagator():
         Intermediate edges are initialized with the default domains of that
         quantum number.
         """
-        variables = set()
+        variables = (set(), {})
         qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+        type_label = get_xml_label(XMLLabelConstants.Type)
+        value_label = get_xml_label(XMLLabelConstants.Value)
 
         for edge_id in edge_ids:
-            var_list = []
-            edge_qns = []
-            # fill edge qn list if its a initial or final state variable
+            # if its a initial or final state edge we create a fixed var
             if (edge_id in get_initial_state_edges(self.graph) or
                     edge_id in get_final_state_edges(self.graph)):
                 edge_props = self.graph.edge_props[edge_id]
                 edge_qns = edge_props[qns_label]
+                for qn_name, qn_domain in qn_dict.items():
+                    converter = QNClassConverterMapping[
+                        QNNameClassMapping[qn_name]]
+                    found_prop = None
+                    if isinstance(qn_name, StateQuantumNumberNames):
+                        for x in edge_qns:
+                            if (x[type_label] == qn_name.name):
+                                found_prop = x
+                                break
+                    else:
+                        for key, val in edge_props.items():
+                            if (key == qn_name.name):
+                                found_prop = {value_label: val}
+                                break
+                            if (key == 'Parameter' and
+                                    val[type_label] == qn_name.name):
+                                # parameters have a seperate value tag
+                                tagname = XMLLabelConstants.Value.name
+                                found_prop = {value_label: val[tagname]}
+                                break
 
-            for qn_name, qn_domain in qn_dict.items():
-                var_info = VariableInfo(graph_element_types.edge,
-                                        edge_id,
-                                        qn_name
-                                        )
-                domain_values = self.determine_domain(
-                    var_info, edge_qns, qn_domain)
-                if domain_values:
-                    var_list.append((var_info, domain_values))
-
-            # add all variables for this edge/particle
-            for x in var_list:
-                key = self.add_variable(x[0], x[1])
-                variables.add(key)
+                    if found_prop is not None:
+                        value = converter.parse_from_dict(found_prop)
+                        variables[1][(edge_id, qn_name)] = value
+            else:
+                for qn_name, qn_domain in qn_dict.items():
+                    var_info = VariableInfo(graph_element_types.edge,
+                                            edge_id,
+                                            qn_name
+                                            )
+                    if qn_domain:
+                        key = self.add_variable(var_info, qn_domain)
+                        variables[0].add(key)
         return variables
-
-    def determine_domain(self, var_info, edge_qns, default_qn_domain):
-        type_label = get_xml_label(XMLLabelConstants.Type)
-        domain_values = []
-
-        if edge_qns:
-            converter = QNClassConverterMapping[
-                QNNameClassMapping[var_info.qn_name]]
-            domain_values = [converter.parse_from_dict(x)
-                             for x in edge_qns if (
-                x[type_label] == var_info.qn_name.name)]
-        else:
-            domain_values = default_qn_domain
-
-        return domain_values
 
     def add_variable(self, var_info, domain):
         key = encode_variable_name(var_info,
@@ -267,30 +302,6 @@ class CSPPropagator():
             self.variable_set.add(key)
             self.problem.addVariable(key, domain)
         return key
-
-    def verify_rule_conditions(self, cons_law, node_id):
-        in_edges = get_edges_ingoing_to_node(self.graph, node_id)
-        out_edges = get_edges_outgoing_to_node(self.graph, node_id)
-        initial_edges = get_initial_state_edges(self.graph)
-        final_edges = get_final_state_edges(self.graph)
-
-        graph_elements = [self.graph.edge_props[x] for x in list(
-            set(in_edges + out_edges).intersection(
-                set(initial_edges + final_edges)))]
-        for (qn_name_list, cond_func) in cons_law.get_qn_conditions():
-            part_qn_list = [x for x in qn_name_list
-                            if isinstance(x, ParticleQuantumNumberNames)
-                            ]
-            if not cond_func(part_qn_list, graph_elements):
-                raise ValueError("Error in create_constraint method: "
-                                 "quantum number condition << "
-                                 + cond_func.__name__ + " >> "
-                                 + "of conservation law "
-                                 + type(cons_law).__name__
-                                 + " when looking for qns:\n"
-                                 + str([x.name for x in part_qn_list]))
-
-        return
 
     def apply_solutions_to_graph(self, solutions):
         """
@@ -329,6 +340,8 @@ class CSPPropagator():
 def add_qn_to_graph_element(graph, var_info, value):
     # TODO: i guess i have to pack all that stuff in OrderdDicts...
     # because of the xmltodict module
+    if value is None:
+        return
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
 
     element_id = var_info.element_id
@@ -366,8 +379,11 @@ class ConservationLawConstraintWrapper(Constraint):
         self.part_out = []
         self.interaction_qns = {}
         self.variable_name_decoding_map = {}
-        self.initialize_particle_lists()
+
+        self.initialize_particle_lists(variable_mapping["ingoing-fixed"],
+                                       variable_mapping["outgoing-fixed"])
         self.node_id = None
+        self.conditions_never_met = False
         self.non_conserved_scenarios = []
         self.is_strict = False
 
@@ -377,13 +393,74 @@ class ConservationLawConstraintWrapper(Constraint):
     def set_strict(self):
         self.is_strict = True
 
+    def initialize_particle_lists(self, fixed_in_variables,
+                                  fixed_out_variables):
+        """
+        Fill the name decoding map and initialize the in and out particle
+        lists. The variable names follow the scheme edge_id(delimiter)qn_name.
+        This method creates a dict linking the var name to a list that consists
+        of the particle list index and the qn name
+        """
+        self.initialize_particle_list(self.in_variable_set,
+                                      fixed_in_variables,
+                                      self.part_in)
+        self.initialize_particle_list(self.out_variable_set,
+                                      fixed_out_variables,
+                                      self.part_out)
+        # and now interaction node variables
+        for var_name in self.interaction_variable_set:
+            var_info = decode_variable_name(
+                var_name, self.name_delimiter)
+            self.interaction_qns[var_info.qn_name] = {}
+            self.variable_name_decoding_map[var_name] = (
+                0, var_info.qn_name)
+
+    def initialize_particle_list(self, variable_set, fixed_variables, list_to_init):
+        temp_var_dict = {}
+        for var_name in variable_set:
+            var_info = decode_variable_name(
+                var_name, self.name_delimiter)
+            if var_info.element_id not in temp_var_dict:
+                temp_var_dict[var_info.element_id] = {
+                    'vars': {var_name: var_info.qn_name}}
+            else:
+                temp_var_dict[var_info.element_id]['vars'][var_name] = var_info.qn_name
+
+        for var_info, val in fixed_variables.items():
+            if var_info[0] not in temp_var_dict:
+                temp_var_dict[var_info[0]] = {
+                    'fixed-vars': [(var_info[1], val)]}
+            else:
+                if 'fixed-vars' not in temp_var_dict[var_info[0]]:
+                    temp_var_dict[var_info[0]
+                                  ]['fixed-vars'] = [(var_info[1], val)]
+                else:
+                    temp_var_dict[var_info[0]
+                                  ]['fixed-vars'].append((var_info[1], val))
+
+        for key, value in temp_var_dict.items():
+            index = len(list_to_init)
+            list_to_init.append({})
+            if 'vars' in value:
+                for var_name, qn_name in value['vars'].items():
+                    self.variable_name_decoding_map[var_name] = (
+                        index, qn_name)
+            if 'fixed-vars' in value:
+                for item in value['fixed-vars']:
+                    list_to_init[-1][item[0]] = item[1]
+
     def __call__(self, variables, domains, assignments, forwardcheck=False,
                  _unassigned=Unassigned):
+        if self.conditions_never_met:
+            return True
         params = [(x, assignments.get(x, _unassigned)) for x in variables]
         missing = [name for (name, val) in params if val is _unassigned]
         if missing:
             return True
         self.update_variable_lists(params)
+        if not self.verify_rule_conditions():
+            self.conditions_never_met = True
+            return True
         passed = self.rule.check(self.part_in, self.part_out,
                                  self.interaction_qns)
         if self.is_strict:
@@ -394,40 +471,26 @@ class ConservationLawConstraintWrapper(Constraint):
                     (self.part_in, self.part_out, self.interaction_qns))
             return True
 
-    def initialize_particle_lists(self):
-        """
-        Fill the name decoding map and initialize the in and out particle
-        lists. The variable names follow the scheme edge_id(delimiter)qn_name.
-        This method creates a dict linking the var name to a list that consists
-        of the particle list index and the qn name
-        """
-        self.initialize_particle_list(self.in_variable_set, self.part_in)
-        self.initialize_particle_list(self.out_variable_set, self.part_out)
-        # and now interaction node variables
-        for var_name in self.interaction_variable_set:
-            var_info = decode_variable_name(
-                var_name, self.name_delimiter)
-            self.interaction_qns[var_info.qn_name] = {}
-            self.variable_name_decoding_map[var_name] = (
-                0, var_info.qn_name)
+    def verify_rule_conditions(self):
+        for (qn_name_list, cond_functor) in self.rule.get_qn_conditions():
+            if not cond_functor.check(qn_name_list,
+                                      self.part_in,
+                                      self.part_out,
+                                      self.interaction_qns):
+                part_props = [x for x in qn_name_list if isinstance(
+                    x, ParticlePropertyNames)]
+                if part_props:
+                    return False
 
-    def initialize_particle_list(self, variable_set, list_to_init):
-        temp_var_dict = {}
-        for var_name in variable_set:
-            var_info = decode_variable_name(
-                var_name, self.name_delimiter)
-            if var_info.element_id not in temp_var_dict:
-                temp_var_dict[var_info.element_id] = {
-                    var_name: var_info.qn_name}
-            else:
-                temp_var_dict[var_info.element_id][var_name] = var_info.qn_name
-
-        for key, value in temp_var_dict.items():
-            index = len(list_to_init)
-            list_to_init.append({})
-            for var_name, qn_name in value.items():
-                self.variable_name_decoding_map[var_name] = (
-                    index, qn_name)
+                raise ValueError("Error: "
+                                 "quantum number condition << "
+                                 + str(cond_functor.__class__) + " >> "
+                                 + "of conservation law "
+                                 + type(self.rule).__name__
+                                 + " when looking for qns:\n"
+                                 + str([x.name for x in qn_name_list])
+                                 + "\non node with id " + str(self.node_id))
+        return True
 
     def update_variable_lists(self, parameters):
         for [var_name, value] in parameters:
