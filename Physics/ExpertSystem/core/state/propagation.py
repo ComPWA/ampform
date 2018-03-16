@@ -132,9 +132,10 @@ class CSPPropagator():
         solution_graphs = self.apply_solutions_to_graph(solutions)
         for constraint in self.constraints:
             if constraint.conditions_never_met:
-                print("conditions never met for")
-                print(constraint.rule)
-                print(constraint.node_id)
+                assign_conservation_laws_to_node(
+                    self.node_postponed_conservation_laws,
+                    constraint.node_id, [constraint.rule],
+                    constraint.is_strict)
         return solution_graphs
 
     def assign_conservation_laws_to_all_nodes(self, conservation_laws,

@@ -62,7 +62,7 @@ strict_conservation_rules = [
     #      ParticleQuantumNumberNames.LeptonNumber),
     SpinConservation(StateQuantumNumberNames.Spin, False),
     HelicityConservation(),
-    #ParityConservation(),
+    ParityConservation(),
     CParityConservation(),
     IdenticalParticleSymmetrization()
 ]
@@ -76,11 +76,11 @@ quantum_number_domains = {
     #  ParticleQuantumNumberNames.LeptonNumber: [-2, -1, 0, 1, 2],
     StateQuantumNumberNames.Parity: [-1, 1],
     StateQuantumNumberNames.Cparity: [-1, 1, None],
-    StateQuantumNumberNames.Spin: create_spin_domain([0, 1]),
+    StateQuantumNumberNames.Spin: create_spin_domain([0, 1, 2]),
     StateQuantumNumberNames.IsoSpin: create_spin_domain([0, 0.5, 1]),
     StateQuantumNumberNames.Charm: [-1, 0, 1],
     InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2], True),
-    InteractionQuantumNumberNames.S: create_spin_domain([0, 1, 2], True)
+    InteractionQuantumNumberNames.S: create_spin_domain([0, 1], True)
 }
 
 propagator = CSPPropagator(test_graph)
@@ -96,6 +96,7 @@ print("found " + str(len(solutions)) + " solutions!")
 for g in solutions:
     print(g.node_props[0])
     print(g.node_props[1])
+    print(g.node_props[2])
     print(g.edge_props[1])
     print(g.edge_props[3])
 

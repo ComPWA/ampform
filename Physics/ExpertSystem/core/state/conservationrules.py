@@ -40,6 +40,14 @@ class DefinedForAllOutgoingEdges(AbstractConditionFunctor):
         return True
 
 
+class DefinedForInteractionNode(AbstractConditionFunctor):
+    def check(self, qn_names, in_edges, out_edges, int_node):
+        for qn_name in qn_names:
+            if qn_name not in int_node:
+                return False
+        return True
+
+
 class DefinedIfOtherQnNotDefinedInOutSeperate(AbstractConditionFunctor):
     '''
     Implements logic for...
@@ -160,7 +168,7 @@ class ParityConservation(AbstractRule):
         parity_out = reduce(
             lambda x, y: x * y[parity_label], outgoing_part_qns, 1)
         ang_mom = interaction_qns[InteractionQuantumNumberNames.L].magnitude()
-        if parity_in == parity_out * (-1)**ang_mom:
+        if parity_in == (parity_out * (-1)**ang_mom):
             return True
         return False
 
@@ -281,7 +289,7 @@ class IdenticalParticleSymmetrization(AbstractRule):
 
     def check_particles_identical(self, particles):
         # check if pids match
-        pid_label = StateQuantumNumberNames.Parity
+        pid_label = ParticlePropertyNames.Pid
         reference_pid = particles[0][pid_label]
         for p in particles[1:]:
             if p[pid_label] != reference_pid:
@@ -311,8 +319,10 @@ class SpinConservation(AbstractRule):
         self.add_required_qn(self.spinlike_qn, [DefinedForAllEdges()])
         # for actual spins we include the angular momentum
         if self.spinlike_qn is StateQuantumNumberNames.Spin:
-            self.add_required_qn(InteractionQuantumNumberNames.L)
-            self.add_required_qn(InteractionQuantumNumberNames.S)
+            self.add_required_qn(InteractionQuantumNumberNames.L, [
+                                 DefinedForInteractionNode()])
+            self.add_required_qn(InteractionQuantumNumberNames.S, [
+                                 DefinedForInteractionNode()])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
@@ -434,3 +444,34 @@ class GellMannNishijimaRule(AbstractRule):
         ]
         qn_values = [particle[x] for x in qn_labels if x in particle]
         return sum(qn_values)
+
+
+class MassConservation(AbstractRule):
+    def __init__(self, width_factor=3):
+        self.width_factor = width_factor
+
+    def specify_required_qns(self):
+        self.add_required_qn(
+            ParticlePropertyNames.Mass, [DefinedForAllEdges()])
+        self.add_required_qn(
+            ParticlePropertyNames.Width)
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        """
+        implement mass check, which makes sure that 
+        the outgoing state has a net mass that lies "well" below 
+        the net mass of the ingoing state plus the width times a width factor
+        M_in + factor * W_in >= M_out 
+        """
+        mass_label = ParticlePropertyNames.Mass
+        width_label = ParticlePropertyNames.Width
+
+        mass_in = sum([x[mass_label] for x in ingoing_part_qns])
+        width_in = sum([x[width_label]
+                        for x in ingoing_part_qns if width_label in x])
+        mass_out = sum([x[mass_label] for x in outgoing_part_qns])
+        width_out = sum([x[width_label]
+                         for x in outgoing_part_qns if width_label in x])
+
+        return ((mass_in + self.width_factor * width_in) >=
+                (mass_out - self.width_factor * width_out))

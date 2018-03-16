@@ -85,7 +85,7 @@ StateQuantumNumberNames = Enum(
 
 """definition of properties names of particles"""
 ParticlePropertyNames = Enum(
-    'ParticlePropertyNames', 'Pid Mass')
+    'ParticlePropertyNames', 'Pid Mass Width')
 
 """definition of quantum number names for interaction nodes"""
 InteractionQuantumNumberNames = Enum('InteractionQuantumNumbers', 'L S')
@@ -117,6 +117,7 @@ QNNameClassMapping = {
     InteractionQuantumNumberNames.S: QuantumNumberClasses.Spin,
     ParticlePropertyNames.Pid: QuantumNumberClasses.Int,
     ParticlePropertyNames.Mass: QuantumNumberClasses.Float,
+    ParticlePropertyNames.Width: QuantumNumberClasses.Float
 }
 
 
@@ -397,6 +398,7 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
     if len(allowed_particle_list) == 0:
         allowed_particle_list = particle_list
     for graph in graphs:
+        print("initializing graph...")
         intermediate_edges = get_intermediate_state_edges(graph)
         current_new_graphs = [graph]
         for int_edge_id in intermediate_edges:
