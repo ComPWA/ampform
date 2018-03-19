@@ -1,16 +1,16 @@
 """ sample script for the testing purposes using the decay
     e+e- -> D0 D0bar pi+ pi-
 """
+import logging
 
 from core.topology.graph import InteractionNode
 from core.topology.topologybuilder import SimpleStateTransitionTopologyBuilder
 
 from core.state.particle import (
     load_particle_list_from_xml, particle_list,
-    initialize_graph, initialize_graphs_with_particles,
-    StateQuantumNumberNames, InteractionQuantumNumberNames,
+    initialize_graph, StateQuantumNumberNames, InteractionQuantumNumberNames,
     create_spin_domain)
-from core.state.propagation import (CSPPropagator)
+from core.state.propagation import (FullPropagator)
 from core.state.conservationrules import (AdditiveQuantumNumberConservation,
                                           ParityConservation,
                                           IdenticalParticleSymmetrization,
@@ -18,8 +18,11 @@ from core.state.conservationrules import (AdditiveQuantumNumberConservation,
                                           HelicityConservation,
                                           CParityConservation,
                                           GParityConservation,
-                                          GellMannNishijimaRule)
+                                          GellMannNishijimaRule,
+                                          MassConservation)
 
+# uncomment line below to enable debug output
+#logging.basicConfig(level=logging.DEBUG)
 
 # ------------------ Creation of topology graphs ------------------
 
@@ -64,7 +67,8 @@ strict_conservation_rules = [
     HelicityConservation(),
     ParityConservation(),
     CParityConservation(),
-    IdenticalParticleSymmetrization()
+    IdenticalParticleSymmetrization(),
+    MassConservation()
 ]
 
 non_strict_conservation_rules = [
@@ -83,31 +87,25 @@ quantum_number_domains = {
     InteractionQuantumNumberNames.S: create_spin_domain([0, 1], True)
 }
 
-propagator = CSPPropagator(test_graph)
+propagator = FullPropagator(test_graph)
 propagator.assign_conservation_laws_to_all_nodes(
     strict_conservation_rules)
 propagator.assign_conservation_laws_to_all_nodes(
     non_strict_conservation_rules, False)
 propagator.assign_qn_domains_to_all_nodes(quantum_number_domains)
+
+# specify set of particles which are allowed to be intermediate particles
+# if list is empty, then all particles in the default particle list are used
+allowed_intermediate_particles = []
+propagator.set_allowed_intermediate_particles(allowed_intermediate_particles)
+
 solutions = propagator.find_solutions()
 
 print("found " + str(len(solutions)) + " solutions!")
-
+'''
 for g in solutions:
     print(g.node_props[0])
     print(g.node_props[1])
     print(g.node_props[2])
     print(g.edge_props[1])
-    print(g.edge_props[3])
-
-# ------------------ second stage of QN propagation ------------------
-
-# specify set of particles which are allowed to be intermediate particles
-# if list is empty, then all particles in the default particle list are used
-allowed_intermediate_particles = []
-
-full_particle_graphs = initialize_graphs_with_particles(
-    solutions, allowed_intermediate_particles)
-print("Number of initialized graphs: " + str(len(full_particle_graphs)))
-for g in full_particle_graphs:
-    print(g)
+    print(g.edge_props[3])'''

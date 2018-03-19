@@ -11,7 +11,7 @@ from core.state.particle import (
     initialize_graph, initialize_graphs_with_particles,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
     create_spin_domain)
-from core.state.propagation import (CSPPropagator)
+from core.state.propagation import (FullPropagator)
 from core.state.conservationrules import (AdditiveQuantumNumberConservation,
                                           ParityConservation,
                                           IdenticalParticleSymmetrization,
@@ -80,12 +80,17 @@ quantum_number_domains = {
     InteractionQuantumNumberNames.S: create_spin_domain([0, 1], True)
 }
 
-propagator = CSPPropagator(test_graph)
+propagator = FullPropagator(test_graph)
 propagator.assign_conservation_laws_to_all_nodes(
     strict_conservation_rules)
 propagator.assign_conservation_laws_to_all_nodes(
     non_strict_conservation_rules, False)
 propagator.assign_qn_domains_to_all_nodes(quantum_number_domains)
+# specify set of particles which are allowed to be intermediate particles
+# if list is empty, then all particles in the default particle list are used
+allowed_intermediate_particles = []
+propagator.set_allowed_intermediate_particles(allowed_intermediate_particles)
+
 solutions = propagator.find_solutions()
 
 print("found " + str(len(solutions)) + " solutions!")
@@ -97,12 +102,4 @@ for g in solutions:
 
 # ------------------ second stage of QN propagation ------------------
 
-# specify set of particles which are allowed to be intermediate particles
-# if list is empty, then all particles in the default particle list are used
-allowed_intermediate_particles = []
 
-full_particle_graphs = initialize_graphs_with_particles(
-    solutions, allowed_intermediate_particles)
-print("Number of initialized graphs: " + str(len(full_particle_graphs)))
-for g in full_particle_graphs:
-    print(g)

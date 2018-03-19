@@ -2,6 +2,7 @@
 This module defines a particle as a collection of quantum numbers and
 things related to this
 """
+import logging
 from copy import deepcopy
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -398,17 +399,17 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
     if len(allowed_particle_list) == 0:
         allowed_particle_list = particle_list
     for graph in graphs:
-        print("initializing graph...")
+        logging.debug("initializing graph...")
         intermediate_edges = get_intermediate_state_edges(graph)
         current_new_graphs = [graph]
         for int_edge_id in intermediate_edges:
             particle_edges = get_particle_candidates_for_state(
                 graph.edge_props[int_edge_id], allowed_particle_list)
             if len(particle_edges) == 0:
-                print("Did not find any particle candidates for")
-                print("edge id: " + str(int_edge_id))
-                print("edge properties:")
-                print(graph.edge_props[int_edge_id])
+                logging.debug("Did not find any particle candidates for")
+                logging.debug("edge id: " + str(int_edge_id))
+                logging.debug("edge properties:")
+                logging.debug(graph.edge_props[int_edge_id])
             new_graphs_temp = []
             for curr_new_graph in current_new_graphs:
                 for particle_edge in particle_edges:

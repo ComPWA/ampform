@@ -449,6 +449,7 @@ class GellMannNishijimaRule(AbstractRule):
 class MassConservation(AbstractRule):
     def __init__(self, width_factor=3):
         self.width_factor = width_factor
+        super().__init__()
 
     def specify_required_qns(self):
         self.add_required_qn(
