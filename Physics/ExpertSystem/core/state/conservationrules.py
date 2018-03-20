@@ -195,13 +195,13 @@ class CParityConservation(AbstractRule):
         """ implements C_in = C_out """
         cparity_in = self.get_cparity_multiparticle(
             ingoing_part_qns, interaction_qns)
-        # if cparity_in is None:
-        #    return True
+        if cparity_in is None:
+            return True
 
         cparity_out = self.get_cparity_multiparticle(
             outgoing_part_qns, interaction_qns)
-        # if cparity_out is None:
-        #    return True
+        if cparity_out is None:
+            return True
 
         return cparity_in == cparity_out
 
@@ -217,7 +217,7 @@ class CParityConservation(AbstractRule):
         if not no_cpar_part:
             return reduce(lambda x, y: x * y[cparity_label], part_qns, 1)
 
-        # is this valid for two outgoing particles only?
+        # two particle case
         if len(part_qns) == 2:
             if (self.is_particle_antiparticle_pair(part_qns[0][pid_label],
                                                    part_qns[1][pid_label])):
@@ -228,6 +228,19 @@ class CParityConservation(AbstractRule):
                 else:
                     coupled_spin = interaction_qns[int_spin_label].magnitude()
                     return (-1)**(ang_mom + coupled_spin)
+        '''elif len(no_cpar_part) > 0 and len(no_cpar_part) % 2 == 0:
+            # does this also work for more than 2 particles?
+            # try to find pairs of particle antiparticle
+            pids = [x[pid_label] for x in part_qns]
+            while pids:
+                found = False
+                ref_pid = pids.pop()
+                for x in pids:
+                    if is_particle_antiparticle_pair(ref_pid, x):
+                        found = True
+                        break
+                if not found:
+                    break'''
 
         return None
 
