@@ -6,6 +6,7 @@ responsible for building all possible topologies base on basic user input
 
 import copy
 import itertools
+import logging
 
 from core.topology.graph import (
     StateTransitionGraph, InteractionNode, are_graphs_isomorphic)
@@ -36,7 +37,7 @@ class SimpleStateTransitionTopologyBuilder():
         if number_of_final_edges < 1:
             raise ValueError("number_of_final_edges has to be larger than 0")
 
-        print('building topology graphs...')
+        logging.info('building topology graphs...')
         # result list
         graph_tuple_list = []
         # create seed graph
@@ -66,7 +67,7 @@ class SimpleStateTransitionTopologyBuilder():
                     extendable_graph_list.remove(
                         extendable_graph_list[graph_index2])
 
-        print('finished building topology graphs...')
+        logging.info('finished building topology graphs...')
         # strip the current open end edges list from the result graph tuples
         result_graph_list = []
         for graph_tuple in graph_tuple_list:

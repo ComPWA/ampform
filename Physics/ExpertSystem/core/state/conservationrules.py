@@ -93,8 +93,8 @@ class DefinedIfOtherQnNotDefinedInOutSeperate(AbstractConditionFunctor):
 
     def find_in_dict(self, name, props):
         found = False
-        for ele in props:
-            if name == ele:
+        for key,val in props.items():
+            if name == key and val is not None:
                 found = True
                 break
         return found

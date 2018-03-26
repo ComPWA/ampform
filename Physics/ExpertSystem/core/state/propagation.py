@@ -8,6 +8,7 @@ conservation rules of :mod:`.conservationrules`.
 from copy import deepcopy
 from enum import Enum
 from abc import ABC, abstractmethod
+import logging
 
 from constraint import (Problem, Constraint, Unassigned, BacktrackingSolver)
 
@@ -105,15 +106,15 @@ class FullPropagator(AbstractPropagator):
         propagator.node_conservation_laws = self.node_conservation_laws
 
         solutions = propagator.find_solutions()
-        print("found " + str(len(solutions)) + " solutions!")
+        logging.info("found " + str(len(solutions)) + " solutions!")
 
         full_particle_graphs = initialize_graphs_with_particles(
             solutions, self.allowed_intermediate_particles)
-        print("Number of initialized graphs: " +
-              str(len(full_particle_graphs)))
+        logging.info("Number of initialized graphs: " +
+                     str(len(full_particle_graphs)))
 
         if len(propagator.node_postponed_conservation_laws) > 0:
-            print("validating graphs")
+            logging.info("validating graphs")
             temp_solution_graphs = full_particle_graphs
             full_particle_graphs = []
             for graph in temp_solution_graphs:
@@ -123,7 +124,8 @@ class FullPropagator(AbstractPropagator):
                     validator.assign_conservation_laws_to_node(node_id, cl)
                 if validator.validate_graph():
                     full_particle_graphs.append(graph)
-        print("final number of solutions: " + str(len(full_particle_graphs)))
+        logging.info("final number of solutions: " +
+                     str(len(full_particle_graphs)))
 
         return full_particle_graphs
 
