@@ -85,10 +85,10 @@ class AbstractPropagator(ABC):
 
     def assign_qn_domains_to_all_nodes(self, quantum_number_domains):
         for node_id in self.graph.nodes:
-            self.assign_qn_domain_to_node(
+            self.assign_qn_domains_to_node(
                 node_id, quantum_number_domains)
 
-    def assign_qn_domain_to_node(self, node_id, quantum_number_domains):
+    def assign_qn_domains_to_node(self, node_id, quantum_number_domains):
         assign_qn_domains_to_node(
             self.node_conservation_laws, node_id, quantum_number_domains)
 

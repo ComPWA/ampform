@@ -1,6 +1,8 @@
 """graph module - some description here."""
 
 from copy import deepcopy
+from collections import OrderedDict
+from json import loads, dumps
 
 
 def are_graphs_isomorphic(graph1, graph2):
@@ -177,6 +179,23 @@ class StateTransitionGraph:
         return_string = return_string + "}\n"
         return return_string
 
+    def __eq__(self, other):
+        """
+        defines the equal operator for the graph class
+        """
+        if isinstance(other, StateTransitionGraph):
+            if set(self.nodes) != set(other.nodes):
+                return False
+            if set(self.edges) != set(other.edges):
+                return False
+            if set(self.node_props) != set(other.node_props):
+                return False
+            if loads(dumps(self.edge_props)) != loads(dumps(other.edge_props)):
+                return False
+            return True
+        else:
+            return NotImplemented
+
     def add_node(self, node_id):
         """Adds a node with id node_id. Raises an value error,
         if node_id already exists"""
@@ -285,3 +304,13 @@ class Edge:
 
     def __repr__(self):
         return str((self.ending_node_id, self.originating_node_id))
+
+    def __eq__(self, other):
+        """
+        defines the equal operator for the graph class
+        """
+        if isinstance(other, Edge):
+            return (self.ending_node_id == other.ending_node_id and
+                    self.originating_node_id == other.originating_node_id)
+        else:
+            return NotImplemented

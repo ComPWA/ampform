@@ -93,11 +93,17 @@ class DefinedIfOtherQnNotDefinedInOutSeperate(AbstractConditionFunctor):
 
     def find_in_dict(self, name, props):
         found = False
-        for key,val in props.items():
+        for key, val in props.items():
             if name == key and val is not None:
                 found = True
                 break
         return found
+
+
+def is_particle_antiparticle_pair(pid1, pid2):
+        # we just check if the pid is opposite in sign
+        # this is a requirement of the pid numbers of course
+    return pid1 == -pid2
 
 
 class AbstractRule(ABC):
@@ -221,8 +227,8 @@ class CParityConservation(AbstractRule):
 
         # two particle case
         if len(part_qns) == 2:
-            if (self.is_particle_antiparticle_pair(part_qns[0][pid_label],
-                                                   part_qns[1][pid_label])):
+            if (is_particle_antiparticle_pair(part_qns[0][pid_label],
+                                              part_qns[1][pid_label])):
                 ang_mom = interaction_qns[ang_mom_label].magnitude()
                 # if boson
                 if is_boson(part_qns[0]):
@@ -246,34 +252,81 @@ class CParityConservation(AbstractRule):
 
         return None
 
-    def is_particle_antiparticle_pair(self, pid1, pid2):
-        # we just check if the pid is opposite in sign
-        # this is a requirement of the pid numbers of course
-        return pid1 == -pid2
-
 
 class GParityConservation(AbstractRule):
     def specify_required_qns(self):
         self.add_required_qn(StateQuantumNumberNames.Gparity)
+        # the spin quantum number is required to check if the daughter
+        # particles are fermions or bosons
+        self.add_required_qn(StateQuantumNumberNames.Spin,
+                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                                 [StateQuantumNumberNames.Gparity])])
+        self.add_required_qn(InteractionQuantumNumberNames.L,
+                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                                 [StateQuantumNumberNames.Gparity])])
+        self.add_required_qn(InteractionQuantumNumberNames.S,
+                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                                 [StateQuantumNumberNames.Gparity])])
+        self.add_required_qn(StateQuantumNumberNames.IsoSpin,
+                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                                 [StateQuantumNumberNames.Gparity])])
+        self.add_required_qn(ParticlePropertyNames.Pid,
+                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                                 [StateQuantumNumberNames.Gparity])])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """ implements G_in = G_out """
         gparity_label = StateQuantumNumberNames.Gparity
-        in_part_no_gpar = [1 for x in ingoing_part_qns
-                           if gparity_label not in x]
-        if in_part_no_gpar:
-            return True
-        out_part_no_gpar = [1 for x in outgoing_part_qns
-                            if gparity_label not in x]
-        if out_part_no_gpar:
-            return True
-        gparity_in = reduce(
-            lambda x, y: x * y[gparity_label], ingoing_part_qns, 1)
-        gparity_out = reduce(
-            lambda x, y: x * y[gparity_label], outgoing_part_qns, 1)
-        if gparity_in == gparity_out:
-            return True
-        return False
+        no_gpar_inpart = [ingoing_part_qns.index(x) for x in ingoing_part_qns
+                          if gparity_label not in x or x[gparity_label] is None]
+        no_gpar_outpart = [outgoing_part_qns.index(x) for x in outgoing_part_qns
+                           if gparity_label not in x or x[gparity_label] is None]
+        # if all states have g parity defined, then just multiply them
+        if not no_gpar_inpart + no_gpar_outpart:
+            in_gpar = reduce(lambda x, y: x * y[gparity_label],
+                             ingoing_part_qns, 1)
+            out_gpar = reduce(lambda x, y: x * y[gparity_label],
+                              outgoing_part_qns, 1)
+            return in_gpar == out_gpar
+
+        # two particle case
+        particle_counts = (len(ingoing_part_qns), len(outgoing_part_qns))
+        if particle_counts == (1, 2):
+            if gparity_label in ingoing_part_qns[0]:
+                out_gpar = self.check_multistate_gparity(ingoing_part_qns,
+                                                         outgoing_part_qns,
+                                                         interaction_qns)
+                in_gpar = ingoing_part_qns[0][gparity_label]
+                if out_gpar is not None and in_gpar is not None:
+                    return out_gpar == in_gpar
+
+        if particle_counts == (2, 1):
+            if gparity_label in outgoing_part_qns[0]:
+                in_gpar = self.check_multistate_gparity(outgoing_part_qns,
+                                                        ingoing_part_qns,
+                                                        interaction_qns)
+                out_gpar = outgoing_part_qns[0][gparity_label]
+                if out_gpar is not None and in_gpar is not None:
+                    return out_gpar == in_gpar
+        return True
+
+    def check_multistate_gparity(self, single_state_qns,
+                                 double_state_qns, interaction_qns):
+        isospin_label = StateQuantumNumberNames.IsoSpin
+        pid_label = ParticlePropertyNames.Pid
+        ang_mom_label = InteractionQuantumNumberNames.L
+        int_spin_label = InteractionQuantumNumberNames.S
+        if (is_particle_antiparticle_pair(double_state_qns[0][pid_label],
+                                          double_state_qns[1][pid_label])):
+            ang_mom = interaction_qns[ang_mom_label].magnitude()
+            isospin = single_state_qns[0][isospin_label].magnitude()
+            # if boson
+            if is_boson(double_state_qns[0]):
+                return (-1)**(ang_mom + isospin)
+            else:
+                coupled_spin = interaction_qns[int_spin_label].magnitude()
+                return (-1)**(ang_mom + coupled_spin + isospin)
+        return None
 
 
 class IdenticalParticleSymmetrization(AbstractRule):

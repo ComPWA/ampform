@@ -54,6 +54,14 @@ class Spin():
     def projection(self):
         return self.__projection
 
+    def __str__(self):
+        return 'mag: ' + str(self.__magnitude) + ', proj: ' \
+            + str(self.__projection)
+
+    def __repr__(self):
+        return 'mag: ' + str(self.__magnitude) + ', proj: ' \
+            + str(self.__projection)
+
     def __eq__(self, other):
         """
         define the equal operator for the spin class, which is needed for
@@ -396,15 +404,25 @@ def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
 
 def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
     initialized_graphs = []
+    mod_allowed_particle_list = []
     if len(allowed_particle_list) == 0:
-        allowed_particle_list = particle_list
+        mod_allowed_particle_list = particle_list
+    else:
+        for x in allowed_particle_list:
+            if isinstance(x, str):
+                for p in particle_list:
+                    if x in p[get_xml_label(XMLLabelConstants.Name)]:
+                        mod_allowed_particle_list.append(p)
+            else:
+                mod_allowed_particle_list.append(x)
+
     for graph in graphs:
         logging.debug("initializing graph...")
         intermediate_edges = get_intermediate_state_edges(graph)
         current_new_graphs = [graph]
         for int_edge_id in intermediate_edges:
             particle_edges = get_particle_candidates_for_state(
-                graph.edge_props[int_edge_id], allowed_particle_list)
+                graph.edge_props[int_edge_id], mod_allowed_particle_list)
             if len(particle_edges) == 0:
                 logging.debug("Did not find any particle candidates for")
                 logging.debug("edge id: " + str(int_edge_id))

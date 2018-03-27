@@ -11,10 +11,11 @@ from core.ui.decay_manager import TwoBodyDecayManager
 initial_state = [("D0", [0])]
 final_state = [("K_S0", [0]), ("K+", [0]), ("K-", [0])]
 
-tbd_manager = TwoBodyDecayManager(initial_state, final_state,
-                                  'helicity', 'weak')
+tbd_manager = TwoBodyDecayManager(initial_state, final_state, [], 'weak')
 
-solutions = tbd_manager.find_solutions()
+graph_node_setting_pairs = tbd_manager.prepare_graphs()
+solutions = tbd_manager.find_solutions(graph_node_setting_pairs)
+
 print("found " + str(len(solutions)) + " solutions!")
 
 for g in solutions:

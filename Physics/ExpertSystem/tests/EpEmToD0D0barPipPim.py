@@ -13,7 +13,9 @@ final_state = [("D0", [0]), ("D0bar", [0]), ("pi+", [0]), ("pi-", [0])]
 
 tbd_manager = TwoBodyDecayManager(initial_state, final_state)
 
-solutions = tbd_manager.find_solutions()
+graph_node_setting_pairs = tbd_manager.prepare_graphs()
+solutions = tbd_manager.find_solutions(graph_node_setting_pairs)
+
 print("found " + str(len(solutions)) + " solutions!")
 
 for g in solutions:
