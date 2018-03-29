@@ -3,7 +3,8 @@
 """
 import logging
 
-from core.ui.decay_manager import TwoBodyDecayManager
+from core.ui.decay_manager import (TwoBodyDecayManager, 
+                                   HelicityDecayAmplitudeGeneratorXML)
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -21,3 +22,6 @@ print("found " + str(len(solutions)) + " solutions!")
 print("intermediate states:")
 for g in solutions:
     print(g.edge_props[1]['@Name'])
+
+xml_generator = HelicityDecayAmplitudeGeneratorXML(solutions)
+xml_generator.write_to_xml('output.xml')
