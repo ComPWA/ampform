@@ -3,8 +3,8 @@
 """
 import logging
 
-from core.ui.decay_manager import (TwoBodyDecayManager, 
-                                   HelicityDecayAmplitudeGeneratorXML)
+from core.ui.system_control import (StateTransitionManager,
+                                    HelicityDecayAmplitudeGeneratorXML)
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -12,10 +12,10 @@ from core.ui.decay_manager import (TwoBodyDecayManager,
 initial_state = [("J/psi", [-1, 1])]
 final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
 
-tbd_manager = TwoBodyDecayManager(initial_state, final_state)
+tbd_manager = StateTransitionManager(initial_state, final_state)
 
 graph_node_setting_pairs = tbd_manager.prepare_graphs()
-solutions = tbd_manager.find_solutions(graph_node_setting_pairs)
+(solutions, violated_rules) = tbd_manager.find_solutions(graph_node_setting_pairs)
 
 print("found " + str(len(solutions)) + " solutions!")
 

@@ -51,7 +51,8 @@ class SimpleStateTransitionTopologyBuilder():
             extendable_graph_list = []
             for active_graph in active_graph_list:
                 # check if finished
-                if len(active_graph[1]) == number_of_final_edges:
+                if (len(active_graph[1]) == number_of_final_edges
+                        and len(active_graph[0].nodes) > 0):
                     if active_graph[0].verify():
                         graph_tuple_list.append(active_graph)
                     continue

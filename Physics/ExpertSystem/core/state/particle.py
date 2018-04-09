@@ -90,7 +90,7 @@ QuantumNumberClasses = Enum('QuantumNumberClasses', 'Int Float Spin')
 """definition of quantum number names for states"""
 StateQuantumNumberNames = Enum(
     'StateQuantumNumberNames', 'Charge Spin Parity Cparity Gparity IsoSpin\
-    Strangeness Charm Bottomness Topness BaryonNumber LeptonNumber')
+    Strangeness Charm Bottomness Topness BaryonNumber ElectronLN MuonLN TauLN')
 
 """definition of properties names of particles"""
 ParticlePropertyNames = Enum(
@@ -106,13 +106,18 @@ QNDefaultValues = {
     StateQuantumNumberNames.Charm: 0,
     StateQuantumNumberNames.Bottomness: 0,
     StateQuantumNumberNames.Topness: 0,
-    StateQuantumNumberNames.BaryonNumber: 0
+    StateQuantumNumberNames.BaryonNumber: 0,
+    StateQuantumNumberNames.ElectronLN: 0,
+    StateQuantumNumberNames.MuonLN: 0,
+    StateQuantumNumberNames.TauLN: 0
 }
 
 QNNameClassMapping = {
     StateQuantumNumberNames.Charge: QuantumNumberClasses.Int,
-    StateQuantumNumberNames.LeptonNumber: QuantumNumberClasses.Int,
-    StateQuantumNumberNames.BaryonNumber: QuantumNumberClasses.Float,
+    StateQuantumNumberNames.ElectronLN: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.MuonLN: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.TauLN: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.BaryonNumber: QuantumNumberClasses.Int,
     StateQuantumNumberNames.Spin: QuantumNumberClasses.Spin,
     StateQuantumNumberNames.Parity: QuantumNumberClasses.Int,
     StateQuantumNumberNames.Cparity: QuantumNumberClasses.Int,
@@ -174,9 +179,19 @@ class SpinQNConverter(AbstractQNConverter):
     value_label = get_xml_label(XMLLabelConstants.Value)
     proj_label = get_xml_label(XMLLabelConstants.Projection)
 
+    def __init__(self, parse_projection=True):
+        self.parse_projection = parse_projection
+
     def parse_from_dict(self, data_dict):
         mag = data_dict[self.value_label]
-        proj = data_dict[self.proj_label]
+        proj = 0.0
+        if self.parse_projection:
+            if self.proj_label not in data_dict:
+                if float(mag) != 0.0:
+                    raise ValueError(
+                        "No projection set for spin-like quantum number!")
+            else:
+                proj = data_dict[self.proj_label]
         return Spin(mag, proj)
 
     def convert_to_dict(self, qn_type, qn_value):
@@ -214,7 +229,7 @@ def load_particle_list_from_xml(file_path):
     with open(file_path, "rb") as xmlfile:
         full_dict = xmltodict.parse(xmlfile)
         for p in full_dict['ParticleList']['Particle']:
-            particle_list.append(p)
+            particle_list.append(dict(p))
     """tree = ET.parse(file_path)
     root = tree.getroot()
     # loop over particles
@@ -252,6 +267,55 @@ def extract_particle(particle_xml):
 """
 
 
+def get_particle_with_name(particle_name):
+    name_label = get_xml_label(XMLLabelConstants.Name)
+    found_particles = [
+        p for p in particle_list if (p[name_label] == particle_name)]
+    if len(found_particles) == 0:
+        raise ValueError(
+            "No particle with name " + str(particle_name) + " found!")
+    elif len(found_particles) > 1:
+        raise ValueError(
+            "more than one particle with name " + str(particle_name)
+            + " found!")
+    return found_particles[0]
+
+
+def get_particle_property(particle_properties, qn_name, converter=None):
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    value_label = get_xml_label(XMLLabelConstants.Value)
+
+    found_prop = None
+    if isinstance(qn_name, StateQuantumNumberNames):
+        particle_qns = particle_properties[qns_label]
+        for x in particle_qns:
+            if (x[type_label] == qn_name.name):
+                found_prop = x
+                break
+    else:
+        for key, val in particle_properties.items():
+            if (key == qn_name.name):
+                found_prop = {value_label: val}
+                break
+            if (key == 'Parameter' and
+                    val[type_label] == qn_name.name):
+                # parameters have a seperate value tag
+                tagname = XMLLabelConstants.Value.name
+                found_prop = {value_label: val[tagname]}
+                break
+    # check for default value
+    property_value = None
+    if found_prop is not None:
+        if converter is None:
+            converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
+        property_value = converter.parse_from_dict(found_prop)
+    else:
+        if qn_name in QNDefaultValues:
+            property_value = QNDefaultValues[qn_name]
+    return property_value
+
+
 def initialize_graph(graph, initial_state, final_state):
     is_edges = get_initial_state_edges(graph)
     if len(initial_state) != len(is_edges):
@@ -265,6 +329,10 @@ def initialize_graph(graph, initial_state, final_state):
                          "state are of different size! (" +
                          str(len(fs_edges)) + " != " +
                          str(len(final_state)) + ")")
+
+    # check if all initial and final state particles have spin projections set
+    initial_state = [check_if_spin_projections_set(x) for x in initial_state]
+    final_state = [check_if_spin_projections_set(x) for x in final_state]
 
     same_node_edges = get_edge_groups_full_attached_node(graph, is_edges)
     is_edge_particle_pairs = calculate_combinatorics(
@@ -280,6 +348,26 @@ def initialize_graph(graph, initial_state, final_state):
                 graph, is_pair + fs_pair))
 
     return new_graphs
+
+
+def check_if_spin_projections_set(state):
+    spin_label = StateQuantumNumberNames.Spin
+    mass_label = ParticlePropertyNames.Mass
+    if isinstance(state, str):
+        particle = get_particle_with_name(state)
+        spin = get_particle_property(particle, spin_label,
+                                     SpinQNConverter(False))
+        if not isinstance(spin, Spin):
+            raise ValueError(
+                "Spin not defined for particle: \n" + str(particle))
+        mag = spin.magnitude()
+        spin_projs = arange(-mag, mag + 1, 1.0).tolist()
+        mass = get_particle_property(particle, mass_label)
+        if mass == 0.0:
+            if 0.0 in spin_projs:
+                del spin_projs[spin_projs.index(0.0)]
+        state = (state, spin_projs)
+    return state
 
 
 def calculate_combinatorics(edges, state_particles, same_node_edges):
@@ -354,15 +442,8 @@ def initialize_edges(graph, edge_particle_pairs):
     for edge, particle in edge_particle_pairs:
         # lookup the particle in the list
         name_label = get_xml_label(XMLLabelConstants.Name)
-        found_particles = [
-            p for p in particle_list if (p[name_label] == particle[0])]
-        # and attach quantum numbers
-        if found_particles:
-            if len(found_particles) > 1:
-                raise ValueError(
-                    "more than one particle with name "
-                    + str(edge[1]) + " found!")
-            graph.edge_props[edge] = found_particles[0]
+        found_particle = get_particle_with_name(particle[0])
+        graph.edge_props[edge] = deepcopy(found_particle)
 
     # now add more quantum numbers given by user (spin_projection)
     new_graphs = [graph]

@@ -137,6 +137,25 @@ def get_edges_outgoing_to_node(graph, node_id):
     return edge_list
 
 
+def get_originating_final_state_edges(graph, node_id):
+    if not isinstance(graph, StateTransitionGraph):
+        raise TypeError("graph must be a StateTransitionGraph")
+    fs_edges = get_final_state_edges(graph)
+    edge_list = []
+    temp_edge_list = get_edges_outgoing_to_node(graph, node_id)
+    while temp_edge_list:
+        new_temp_edge_list = []
+        for edge_id in temp_edge_list:
+            if edge_id in fs_edges:
+                edge_list.append(edge_id)
+            else:
+                new_node_id = graph.edges[edge_id].ending_node_id
+                new_temp_edge_list.extend(
+                    get_edges_outgoing_to_node(graph, new_node_id))
+        temp_edge_list = new_temp_edge_list
+    return edge_list
+
+
 class StateTransitionGraph:
     """
         Graph class which contains edges and nodes, similar to feynman graphs.

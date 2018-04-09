@@ -107,10 +107,17 @@ def is_particle_antiparticle_pair(pid1, pid2):
 
 
 class AbstractRule(ABC):
-    def __init__(self):
+    def __init__(self, rule_name):
+        self.rule_name = str(rule_name)
         self.required_qn_names = []
         self.qn_conditions = []
         self.specify_required_qns()
+
+    def __repr__(self):
+        return str(self.rule_name)
+
+    def __str__(self):
+        return str(self.rule_name)
 
     def get_qn_conditions(self):
         return self.qn_conditions
@@ -147,7 +154,7 @@ class AdditiveQuantumNumberConservation(AbstractRule):
 
     def __init__(self, qn_name):
         self.qn_name = qn_name
-        super().__init__()
+        super().__init__(qn_name.name + 'Conservation')
 
     def specify_required_qns(self):
         self.add_required_qn(self.qn_name, [DefinedForAllEdges()])
@@ -162,10 +169,14 @@ class AdditiveQuantumNumberConservation(AbstractRule):
 
 
 class ParityConservation(AbstractRule):
+    def __init__(self):
+        super().__init__('ParityConservation')
+
     def specify_required_qns(self):
         self.add_required_qn(
             StateQuantumNumberNames.Parity, [DefinedForAllEdges()])
-        self.add_required_qn(InteractionQuantumNumberNames.L)
+        self.add_required_qn(InteractionQuantumNumberNames.L, [
+            DefinedForInteractionNode()])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """ implements P_in = P_out * (-1)^L+1 """
@@ -182,6 +193,9 @@ class ParityConservation(AbstractRule):
 
 
 class CParityConservation(AbstractRule):
+    def __init__(self):
+        super().__init__('CParityConservation')
+
     def specify_required_qns(self):
         self.add_required_qn(StateQuantumNumberNames.Cparity)
         # the spin quantum number is required to check if the daughter
@@ -254,6 +268,9 @@ class CParityConservation(AbstractRule):
 
 
 class GParityConservation(AbstractRule):
+    def __init__(self):
+        super().__init__('GParityConservation')
+
     def specify_required_qns(self):
         self.add_required_qn(StateQuantumNumberNames.Gparity)
         # the spin quantum number is required to check if the daughter
@@ -330,6 +347,9 @@ class GParityConservation(AbstractRule):
 
 
 class IdenticalParticleSymmetrization(AbstractRule):
+    def __init__(self):
+        super().__init__('IdenticalParticleSymmetrization')
+
     def specify_required_qns(self):
         self.add_required_qn(StateQuantumNumberNames.Parity)
         self.add_required_qn(ParticlePropertyNames.Pid,
@@ -356,11 +376,15 @@ class IdenticalParticleSymmetrization(AbstractRule):
         return True
 
     def check_particles_identical(self, particles):
-        # check if pids match
+        # check if pids and spins match
         pid_label = ParticlePropertyNames.Pid
+        spin_label = StateQuantumNumberNames.Spin
         reference_pid = particles[0][pid_label]
+        reference_spin = particles[0][spin_label]
         for p in particles[1:]:
             if p[pid_label] != reference_pid:
+                return False
+            if p[spin_label] != reference_spin:
                 return False
         return True
 
@@ -381,7 +405,7 @@ class SpinConservation(AbstractRule):
             raise ValueError('spinlike_qn is not of class Spin')
         self.spinlike_qn = spinlike_qn
         self.use_projection = use_projection
-        super().__init__()
+        super().__init__(spinlike_qn.name + 'Conservation')
 
     def specify_required_qns(self):
         self.add_required_qn(self.spinlike_qn, [DefinedForAllEdges()])
@@ -399,8 +423,8 @@ class SpinConservation(AbstractRule):
         also checks M1 + M2 == M
         and if clebsch gordan coefficients are 0
         """
-        # only valid for two particle decays?
-        if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
+        # only valid for two body states?
+        if len(ingoing_part_qns) < 3 and len(outgoing_part_qns) < 3:
             spin_label = self.spinlike_qn
 
             in_spins = [x[spin_label] for x in ingoing_part_qns]
@@ -409,7 +433,7 @@ class SpinConservation(AbstractRule):
                     not self.check_projections(in_spins, out_spins)):
                 return False
             return self.check_magnitude(in_spins, out_spins, interaction_qns)
-        return False
+        return True
 
     def check_projections(self, in_part, out_part):
         in_proj = [x.projection() for x in in_part]
@@ -417,23 +441,47 @@ class SpinConservation(AbstractRule):
         return sum(in_proj) == sum(out_proj)
 
     def check_magnitude(self, in_part, out_part, interaction_qns):
-        spin_mother = in_part[0].magnitude()
-        spins_daughters_coupled = self.spin_couplings(
-            out_part[0].magnitude(),
-            out_part[1].magnitude())
-        if InteractionQuantumNumberNames.L in interaction_qns:
-            L = interaction_qns[InteractionQuantumNumberNames.L].magnitude()
-            S = interaction_qns[InteractionQuantumNumberNames.S].magnitude()
-            if S not in spins_daughters_coupled:
-                return False
-            else:
-                possible_total_spins = self.spin_couplings(S, L)
-                if spin_mother in possible_total_spins:
-                    return True
-        else:
-            if spin_mother in spins_daughters_coupled:
-                return True
+        in_tot_spins = self.calculate_total_spins(in_part, interaction_qns)
+        out_tot_spins = self.calculate_total_spins(out_part, interaction_qns)
+        matching_spins = in_tot_spins.intersection(out_tot_spins)
+        if len(matching_spins) > 0:
+            return True
         return False
+
+    def calculate_total_spins(self, part_list, interaction_qns):
+        total_spins = set()
+        if len(part_list) == 1:
+            total_spins.add(part_list[0].magnitude())
+        else:
+            # first couple all spins together
+            spins_daughters_coupled = set()
+            mag_list = [x.magnitude() for x in part_list]
+            while mag_list:
+                if spins_daughters_coupled:
+                    temp_coupled_spins = set()
+                    for s in spins_daughters_coupled:
+                        temp_coupled_spins.update(
+                            self.spin_couplings(s, mag_list.pop()))
+                    spins_daughters_coupled = temp_coupled_spins
+                else:
+                    spins_daughters_coupled.add(mag_list.pop())
+            if InteractionQuantumNumberNames.L in interaction_qns:
+                L = interaction_qns[InteractionQuantumNumberNames.L].magnitude(
+                )
+                S = interaction_qns[InteractionQuantumNumberNames.S].magnitude(
+                )
+                if S in spins_daughters_coupled:
+                    total_spins.update(self.spin_couplings(S, L))
+            else:
+                total_spins = spins_daughters_coupled
+        return total_spins
+
+    def spin_couplings(self, spin1, spin2):
+        """
+        implements the coupling of two spins
+        |S1 - S2| <= S <= |S1 + S2| and M1 + M2 == M
+        """
+        return arange(abs(spin1 - spin2), spin1 + spin2 + 1, 1).tolist()
 
     def clebsch_gordan_coefficient(self, spin1, spin2, spin_coupled):
         '''
@@ -445,15 +493,11 @@ class SpinConservation(AbstractRule):
         '''
         pass
 
-    def spin_couplings(self, spin1, spin2):
-        """
-        implements the coupling of two spins
-        |S1 - S2| <= S <= |S1 + S2| and M1 + M2 == M
-        """
-        return arange(abs(spin1 - spin2), spin1 + spin2 + 1, 1).tolist()
-
 
 class HelicityConservation(AbstractRule):
+    def __init__(self):
+        super().__init__('HelicityConservation')
+
     def specify_required_qns(self):
         self.add_required_qn(
             StateQuantumNumberNames.Spin, [DefinedForAllEdges()])
@@ -474,6 +518,9 @@ class HelicityConservation(AbstractRule):
 
 
 class GellMannNishijimaRule(AbstractRule):
+    def __init__(self):
+        super().__init__('GellMannNishijimaRule')
+
     def specify_required_qns(self):
         self.add_required_qn(
             StateQuantumNumberNames.Charge, [DefinedForAllEdges()])
@@ -484,6 +531,9 @@ class GellMannNishijimaRule(AbstractRule):
         self.add_required_qn(StateQuantumNumberNames.Bottomness)
         self.add_required_qn(StateQuantumNumberNames.Topness)
         self.add_required_qn(StateQuantumNumberNames.BaryonNumber)
+        self.add_required_qn(StateQuantumNumberNames.ElectronLN)
+        self.add_required_qn(StateQuantumNumberNames.MuonLN)
+        self.add_required_qn(StateQuantumNumberNames.TauLN)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
@@ -493,7 +543,15 @@ class GellMannNishijimaRule(AbstractRule):
         charge_label = StateQuantumNumberNames.Charge
         isospin_label = StateQuantumNumberNames.IsoSpin
 
+        eln = StateQuantumNumberNames.ElectronLN
+        mln = StateQuantumNumberNames.MuonLN
+        tln = StateQuantumNumberNames.TauLN
+
         for particle in ingoing_part_qns + outgoing_part_qns:
+            if sum([abs(particle[x])
+                    for x in [eln, mln, tln] if x in particle]) > 0.0:
+                # if particle is a lepton then skip the check
+                continue
             isospin_3 = 0
             if isospin_label in particle:
                 isospin_3 = particle[isospin_label].projection()
@@ -517,7 +575,7 @@ class GellMannNishijimaRule(AbstractRule):
 class MassConservation(AbstractRule):
     def __init__(self, width_factor=3):
         self.width_factor = width_factor
-        super().__init__()
+        super().__init__('MassConservation')
 
     def specify_required_qns(self):
         self.add_required_qn(
