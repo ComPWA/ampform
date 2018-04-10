@@ -1,5 +1,5 @@
-from core.state.conservationrules import MassConservation
-from core.state.particle import (ParticlePropertyNames)
+from expertsystem.state.conservationrules import MassConservation
+from expertsystem.state.particle import (ParticlePropertyNames)
 
 
 class TestMass(object):

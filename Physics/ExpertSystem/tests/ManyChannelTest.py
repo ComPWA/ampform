@@ -1,9 +1,6 @@
 import logging
 
-from core.ui.system_control import (StateTransitionManager)
-
-from core.topology.graph import InteractionNode
-from core.topology.topologybuilder import SimpleStateTransitionTopologyBuilder
+from expertsystem.ui.system_control import (StateTransitionManager)
 
 # logging.basicConfig(level=logging.DEBUG)
 

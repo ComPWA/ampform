@@ -1,11 +1,10 @@
 from itertools import (product)
 
-from core.state.conservationrules import SpinConservation
-from core.state.particle import (StateQuantumNumberNames,
-                                 XMLLabelConstants,
-                                 InteractionQuantumNumberNames,
-                                 Spin,
-                                 create_spin_domain)
+from expertsystem.state.conservationrules import SpinConservation
+from expertsystem.state.particle import (StateQuantumNumberNames,
+                                         InteractionQuantumNumberNames,
+                                         Spin,
+                                         create_spin_domain)
 
 
 class TestSpin(object):

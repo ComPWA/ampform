@@ -3,7 +3,7 @@
 """
 import logging
 
-from core.ui.system_control import StateTransitionManager
+from expertsystem.ui.system_control import StateTransitionManager
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -15,7 +15,8 @@ tbd_manager = StateTransitionManager(initial_state, final_state,
                                      [], 'helicity', 'weak')
 
 graph_node_setting_pairs = tbd_manager.prepare_graphs()
-(solutions, violated_rules) = tbd_manager.find_solutions(graph_node_setting_pairs)
+(solutions, violated_rules) = tbd_manager.find_solutions(
+    graph_node_setting_pairs)
 
 print("found " + str(len(solutions)) + " solutions!")
 

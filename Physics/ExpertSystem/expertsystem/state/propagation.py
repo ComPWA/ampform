@@ -12,20 +12,20 @@ import logging
 
 from constraint import (Problem, Constraint, Unassigned, BacktrackingSolver)
 
-from core.topology.graph import (get_initial_state_edges,
-                                 get_final_state_edges,
-                                 get_edges_ingoing_to_node,
-                                 get_edges_outgoing_to_node,
-                                 get_intermediate_state_edges)
-from core.state.conservationrules import AbstractRule
-from core.state.particle import (get_xml_label, XMLLabelConstants,
-                                 StateQuantumNumberNames,
-                                 InteractionQuantumNumberNames,
-                                 ParticlePropertyNames,
-                                 get_particle_property,
-                                 QNNameClassMapping,
-                                 QNClassConverterMapping,
-                                 initialize_graphs_with_particles)
+from expertsystem.topology.graph import (get_initial_state_edges,
+                                         get_final_state_edges,
+                                         get_edges_ingoing_to_node,
+                                         get_edges_outgoing_to_node,
+                                         get_intermediate_state_edges)
+from expertsystem.state.conservationrules import AbstractRule
+from expertsystem.state.particle import (get_xml_label, XMLLabelConstants,
+                                         StateQuantumNumberNames,
+                                         InteractionQuantumNumberNames,
+                                         ParticlePropertyNames,
+                                         get_particle_property,
+                                         QNNameClassMapping,
+                                         QNClassConverterMapping,
+                                         initialize_graphs_with_particles)
 
 
 graph_element_types = Enum('GraphElementTypes', 'node edge')

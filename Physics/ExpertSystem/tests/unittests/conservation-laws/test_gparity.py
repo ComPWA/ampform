@@ -1,10 +1,10 @@
 from itertools import (product)
 
-from core.state.conservationrules import GParityConservation
-from core.state.particle import (StateQuantumNumberNames,
-                                 ParticlePropertyNames,
-                                 InteractionQuantumNumberNames,
-                                 Spin)
+from expertsystem.state.conservationrules import GParityConservation
+from expertsystem.state.particle import (StateQuantumNumberNames,
+                                         ParticlePropertyNames,
+                                         InteractionQuantumNumberNames,
+                                         Spin)
 
 
 class TestGParity(object):

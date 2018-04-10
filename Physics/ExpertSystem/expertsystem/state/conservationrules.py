@@ -5,7 +5,7 @@ from functools import reduce
 
 from numpy import arange
 
-from core.state.particle import (StateQuantumNumberNames,
+from expertsystem.state.particle import (StateQuantumNumberNames,
                                  InteractionQuantumNumberNames,
                                  ParticlePropertyNames,
                                  QNNameClassMapping,

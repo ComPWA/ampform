@@ -8,7 +8,7 @@ import copy
 import itertools
 import logging
 
-from core.topology.graph import (
+from expertsystem.topology.graph import (
     StateTransitionGraph, InteractionNode, are_graphs_isomorphic)
 
 

@@ -3,7 +3,7 @@
 """
 import logging
 
-from core.ui.system_control import StateTransitionManager
+from expertsystem.ui.system_control import StateTransitionManager
 
 logging.basicConfig(level=logging.INFO)
 

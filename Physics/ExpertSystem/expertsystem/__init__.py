@@ -1,1 +1,1 @@
-__all__ = ['state', 'topology', 'ui']
+__all__ = ['amplitude', 'state', 'topology', 'ui']

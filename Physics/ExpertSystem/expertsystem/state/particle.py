@@ -11,7 +11,7 @@ from itertools import permutations
 
 import xmltodict
 
-from core.topology.graph import (
+from expertsystem.topology.graph import (
     get_initial_state_edges,
     get_final_state_edges,
     get_intermediate_state_edges,

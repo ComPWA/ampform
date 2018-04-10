@@ -3,10 +3,12 @@
 """
 import logging
 
-from core.ui.system_control import (StateTransitionManager,
-                                    HelicityDecayAmplitudeGeneratorXML)
+from expertsystem.ui.system_control import StateTransitionManager
 
-#logging.basicConfig(level=logging.DEBUG)
+from expertsystem.amplitude.helicitydecay import (
+    HelicityDecayAmplitudeGeneratorXML)
+
+logging.basicConfig(level=logging.INFO)
 
 # initialize the graph edges (initial and final state)
 initial_state = [("J/psi", [-1, 1])]
@@ -15,7 +17,8 @@ final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
 tbd_manager = StateTransitionManager(initial_state, final_state)
 
 graph_node_setting_pairs = tbd_manager.prepare_graphs()
-(solutions, violated_rules) = tbd_manager.find_solutions(graph_node_setting_pairs)
+(solutions, violated_rules) = tbd_manager.find_solutions(
+    graph_node_setting_pairs)
 
 print("found " + str(len(solutions)) + " solutions!")
 
