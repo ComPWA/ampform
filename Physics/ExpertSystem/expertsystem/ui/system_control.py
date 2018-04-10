@@ -132,8 +132,11 @@ class StateTransitionManager():
                 "NBodyScattering",
                 len(initial_state),
                 len(final_state)))
-            self.interaction_settings = InteractionTypeSettings(
-                formalism_type, False).get_settings()
+            # turn of mass conservation, in case more than one initial state
+            # particle is present
+            if len(initial_state) > 1:
+                self.interaction_settings = InteractionTypeSettings(
+                    formalism_type, False).get_settings()
         self.topology_builder = SimpleStateTransitionTopologyBuilder(
             int_nodes)
 
