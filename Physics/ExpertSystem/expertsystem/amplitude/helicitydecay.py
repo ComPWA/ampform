@@ -1,4 +1,6 @@
 from collections import OrderedDict
+import json
+import logging
 
 import xmltodict
 
@@ -7,8 +9,6 @@ from expertsystem.topology.graph import (StateTransitionGraph,
                                          get_final_state_edges,
                                          get_edges_ingoing_to_node,
                                          get_edges_outgoing_to_node)
-
-
 from expertsystem.state.particle import (
     StateQuantumNumberNames, XMLLabelConstants, get_xml_label)
 
@@ -25,7 +25,18 @@ def group_graphs_same_initial_and_final(graphs):
     Returns:
         graph groups ([[:class:`.StateTransitionGraph`]])
     '''
-    return [graphs]
+    graph_groups = dict()
+    for graph in graphs:
+        ise = get_final_state_edges(graph)
+        fse = get_initial_state_edges(graph)
+        ifsg = (tuple([json.dumps(graph.edge_props[x]) for x in ise]),
+                tuple([json.dumps(graph.edge_props[x]) for x in fse]))
+        if ifsg not in graph_groups:
+            graph_groups[ifsg] = []
+        graph_groups[ifsg].append(graph)
+
+    graph_group_list = [graph_groups[x] for x in graph_groups.keys()]
+    return graph_group_list
 
 
 def get_helicity_from_edge_props(edge_props):
@@ -40,6 +51,14 @@ def get_helicity_from_edge_props(edge_props):
     raise ValueError("Could not find spin projection quantum number!")
 
 
+def determine_attached_final_state_string(graph, edge_id):
+    edge_ids = determine_attached_final_state(graph, edge_id)
+    fs_string = ""
+    for eid in edge_ids:
+        fs_string += " " + str(eid)
+    return fs_string[1:]
+
+
 def determine_attached_final_state(graph, edge_id):
     '''
     Determines all final state particles of a graph, which are attached
@@ -52,7 +71,18 @@ def determine_attached_final_state(graph, edge_id):
         list of final state edge ids ([int])
     '''
     final_state_edge_ids = []
-
+    all_final_state_edges = get_final_state_edges(graph)
+    current_edges = [edge_id]
+    while current_edges:
+        temp_current_edges = current_edges
+        current_edges = []
+        for curr_edge in temp_current_edges:
+            if curr_edge in all_final_state_edges:
+                final_state_edge_ids.append(curr_edge)
+            else:
+                node_id = graph.edges[curr_edge].ending_node_id
+                current_edges.extend(get_edges_outgoing_to_node(graph,
+                                                                node_id))
     return final_state_edge_ids
 
 
@@ -67,7 +97,15 @@ def get_recoil_edge(graph, edge_id):
     Returns:
         recoil edge id (int)
     '''
-    return 0
+    node_id = graph.edges[edge_id].originating_node_id
+    if node_id is None:
+        return None
+    outgoing_edges = get_edges_outgoing_to_node(graph, node_id)
+    outgoing_edges.remove(edge_id)
+    if len(outgoing_edges) != 1:
+        raise ValueError("The node with id " + str(node_id) +
+                         " has more than 2 outgoing edges \n" + str(graph))
+    return outgoing_edges[0]
 
 
 def get_final_state_edge_ids(graph, list_of_particle_names):
@@ -110,7 +148,13 @@ class HelicityDecayAmplitudeGeneratorXML():
 
     def generate_amplitude_info(self):
         graph_groups = group_graphs_same_initial_and_final(self.graphs)
+        logging.debug("There are " + str(len(graph_groups)) + " graph groups")
 
+        class_label = get_xml_label(XMLLabelConstants.Class)
+        name_label = get_xml_label(XMLLabelConstants.Name)
+        type_label = get_xml_label(XMLLabelConstants.Type)
+        parameter_label = get_xml_label(XMLLabelConstants.Parameter)
+        
         # for each graph group we create a coherent amplitude
         coherent_amplitudes = []
         for graph_group in graph_groups:
@@ -120,12 +164,14 @@ class HelicityDecayAmplitudeGeneratorXML():
                     self.generate_sequential_decay(graph))
 
             # in each coherent amplitude we create a product of partial decays
-            coherent_amp_name = "coherent"
+            coherent_amp_name = "coherent_" + \
+                str(graph_groups.index(graph_group))
             coherent_amplitudes.append({
-                '@Class': 'Coherent', '@Name': coherent_amp_name,
-                'Parameter': {'@Class': "Double", '@Type': "Strength",
-                              '@Name': "strength_" + coherent_amp_name,
-                              'Value': 1, 'Fix': True},
+                class_label: 'Coherent', name_label: coherent_amp_name,
+                parameter_label: {class_label: "Double",
+                                  type_label: "Strength",
+                                  name_label: "strength_" + coherent_amp_name,
+                                  'Value': 1, 'Fix': True},
                 'Amplitude': seq_partial_decays
             })
 
@@ -133,10 +179,12 @@ class HelicityDecayAmplitudeGeneratorXML():
         incoherent_amp_name = "incoherent"
         self.helicity_amplitudes = {
             'Intensity': {
-                '@Class': "Incoherent", '@Name': incoherent_amp_name,
-                'Parameter': {'@Class': "Double", '@Type': "Strength",
-                              '@Name': "strength_" + incoherent_amp_name,
-                              'Value': 1, 'Fix': True},
+                class_label: "Incoherent", name_label: incoherent_amp_name,
+                parameter_label: {class_label: "Double",
+                                  type_label: "Strength",
+                                  name_label: "strength_" +
+                                  incoherent_amp_name,
+                                  'Value': 1, 'Fix': True},
                 'Intensity': coherent_amplitudes
             }
         }
@@ -166,17 +214,27 @@ class HelicityDecayAmplitudeGeneratorXML():
                                                       node_id):
             decay_products.append({
                 '@Name': graph.edge_props[out_edge_id]['@Name'],
-                '@FinalState': determine_attached_final_state(graph,
-                                                              out_edge_id),
+                '@FinalState': determine_attached_final_state_string(
+                    graph,
+                    out_edge_id),
                 '@Helicity': get_helicity_from_edge_props(
                     graph.edge_props[out_edge_id])
             })
+
         in_edge_ids = get_edges_ingoing_to_node(graph, node_id)
         if len(in_edge_ids) != 1:
             raise ValueError(
                 "This node does not represent a two body decay!")
         dec_part = graph.edge_props[in_edge_ids[0]]
         dec_part_name = dec_part['@Name']
+
+        recoil_edge_id = get_recoil_edge(graph, in_edge_ids[0])
+        recoil_system_dict = {}
+        if recoil_edge_id is not None:
+            recoil_system_dict['RecoilSystem'] = {
+                '@FinalState':
+                determine_attached_final_state_string(graph, recoil_edge_id)
+            },
 
         partial_decay_dict = {
             'Parameter': [{'@Class': "Double", '@Type': "Magnitude",
@@ -189,15 +247,9 @@ class HelicityDecayAmplitudeGeneratorXML():
                 '@Name': dec_part['@Name'],
                 '@Helicity': get_helicity_from_edge_props(dec_part)
             },
-            'RecoilSystem': {'@FinalState':
-                             determine_attached_final_state(
-                                 graph,
-                                 get_recoil_edge(
-                                     graph, in_edge_ids[0])
-                             )
-                             },
             'DecayProducts': {'Particle': decay_products}
         }
+        partial_decay_dict.update(recoil_system_dict)
 
         return partial_decay_dict
 

@@ -10,7 +10,10 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import logging
 
-from constraint import (Problem, Constraint, Unassigned, BacktrackingSolver)
+from expertsystem.solvers.constraint import (Problem,
+                                             Constraint,
+                                             Unassigned,
+                                             BacktrackingSolver)
 
 from expertsystem.topology.graph import (get_initial_state_edges,
                                          get_final_state_edges,

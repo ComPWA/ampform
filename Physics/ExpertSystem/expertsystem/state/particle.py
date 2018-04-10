@@ -29,8 +29,8 @@ def get_xml_label(enum):
 
     # the xml attribute prefix is needed as the xmltodict module uses that
     attribute_prefix = '@'
-    if enum is (XMLLabelConstants.QuantumNumber or
-                XMLLabelConstants.Parameter):
+    if (enum is XMLLabelConstants.QuantumNumber
+            or enum is XMLLabelConstants.Parameter):
         return enum.name
     else:
         return attribute_prefix + enum.name
