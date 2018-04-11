@@ -2,17 +2,19 @@
 
 from abc import ABC, abstractmethod
 from functools import reduce
+from copy import deepcopy
 
 from numpy import arange
 
 from expertsystem.state.particle import (StateQuantumNumberNames,
-                                 InteractionQuantumNumberNames,
-                                 ParticlePropertyNames,
-                                 QNNameClassMapping,
-                                 QuantumNumberClasses,
-                                 get_xml_label,
-                                 XMLLabelConstants,
-                                 is_boson)
+                                         InteractionQuantumNumberNames,
+                                         ParticlePropertyNames,
+                                         QNNameClassMapping,
+                                         QuantumNumberClasses,
+                                         get_xml_label,
+                                         XMLLabelConstants,
+                                         is_boson,
+                                         Spin)
 
 
 ''' Functors for quantum number condition checks '''
@@ -451,25 +453,25 @@ class SpinConservation(AbstractRule):
     def calculate_total_spins(self, part_list, interaction_qns):
         total_spins = set()
         if len(part_list) == 1:
-            total_spins.add(part_list[0].magnitude())
+            total_spins.add(part_list[0])
         else:
             # first couple all spins together
             spins_daughters_coupled = set()
-            mag_list = [x.magnitude() for x in part_list]
-            while mag_list:
+            spin_list = deepcopy(part_list)
+            while spin_list:
                 if spins_daughters_coupled:
                     temp_coupled_spins = set()
                     for s in spins_daughters_coupled:
-                        temp_coupled_spins.update(
-                            self.spin_couplings(s, mag_list.pop()))
+                        tempspin = spin_list.pop()
+                        coupled_spins = self.spin_couplings(
+                            s, tempspin)
+                        temp_coupled_spins.update(coupled_spins)
                     spins_daughters_coupled = temp_coupled_spins
                 else:
-                    spins_daughters_coupled.add(mag_list.pop())
+                    spins_daughters_coupled.add(spin_list.pop())
             if InteractionQuantumNumberNames.L in interaction_qns:
-                L = interaction_qns[InteractionQuantumNumberNames.L].magnitude(
-                )
-                S = interaction_qns[InteractionQuantumNumberNames.S].magnitude(
-                )
+                L = interaction_qns[InteractionQuantumNumberNames.L]
+                S = interaction_qns[InteractionQuantumNumberNames.S]
                 if S in spins_daughters_coupled:
                     total_spins.update(self.spin_couplings(S, L))
             else:
@@ -481,17 +483,35 @@ class SpinConservation(AbstractRule):
         implements the coupling of two spins
         |S1 - S2| <= S <= |S1 + S2| and M1 + M2 == M
         """
-        return arange(abs(spin1 - spin2), spin1 + spin2 + 1, 1).tolist()
+        m = spin1.projection() + spin2.projection()
+        j1 = spin1.magnitude()
+        j2 = spin2.magnitude()
+        possible_spins = [Spin(x, m) for x in arange(
+            abs(j1 - j2), j1 + j2 + 1, 1).tolist() if x >= abs(m)]
 
-    def clebsch_gordan_coefficient(self, spin1, spin2, spin_coupled):
-        '''
-        implement clebsch gordan check
-        if spin mother is same as one of daughters
-        and their projections are equal but opposite sign
-        then check if the other daugther has (-1)^(S-M) == -1
-        if so then return False
-        '''
-        pass
+        return [x for x in possible_spins
+                if not self.is_clebsch_gordan_coefficient_zero(
+                    spin1, spin2, x)]
+
+    def is_clebsch_gordan_coefficient_zero(self, spin1, spin2, spin_coupled):
+        m1 = spin1.projection()
+        j1 = spin1.magnitude()
+        m2 = spin2.projection()
+        j2 = spin2.magnitude()
+        m = spin_coupled.magnitude()
+        j = spin_coupled.magnitude()
+        iszero = False
+        if ((j1 == j2 and m1 == m2) or
+                (m1 == 0.0 and m2 == 0.0)):
+            if abs(j - j1 - j2) % 2 == 1:
+                iszero = True
+        elif j1 == j and m1 == -m:
+            if abs(j2 - j1 - j) % 2 == 1:
+                iszero = True
+        elif j2 == j and m2 == -m:
+            if abs(j1 - j2 - j) % 2 == 1:
+                iszero = True
+        return iszero
 
 
 class HelicityConservation(AbstractRule):
@@ -585,10 +605,10 @@ class MassConservation(AbstractRule):
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
-        implement mass check, which makes sure that 
-        the outgoing state has a net mass that lies "well" below 
+        implement mass check, which makes sure that
+        the outgoing state has a net mass that lies "well" below
         the net mass of the ingoing state plus the width times a width factor
-        M_in + factor * W_in >= M_out 
+        M_in + factor * W_in >= M_out
         """
         mass_label = ParticlePropertyNames.Mass
         width_label = ParticlePropertyNames.Width

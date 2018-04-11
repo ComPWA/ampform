@@ -73,6 +73,9 @@ class Spin():
         else:
             return NotImplemented
 
+    def __hash__(self):
+        return hash(repr(self))
+
 
 def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
     domain_list = []

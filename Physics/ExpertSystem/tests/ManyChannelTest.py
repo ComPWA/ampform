@@ -28,7 +28,12 @@ cases = [
     (['Xi0'], ['p', 'pi-']),
     (['pi-', 'p'], ['lambda', 'K_S0']),
     (['pi0'], ['gamma', 'gamma']),
-    (['sigma-'], ['n', 'e-', 'vebar'])
+    (['sigma-'], ['n', 'e-', 'vebar']),
+    (['rho(770)0'], ['pi0', 'pi0']),
+    (['J/psi'], ['pi0', 'eta']),
+    (['J/psi'], ['rho(770)0', 'rho(770)0']),
+    (['K_S0'], ['pi+', 'pi-', 'pi0'])
+
 ]
 
 for case in cases:

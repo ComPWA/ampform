@@ -1,7 +1,8 @@
 import logging
 from copy import deepcopy
 
-from expertsystem.topology.graph import (InteractionNode,
+from expertsystem.topology.graph import (StateTransitionGraph,
+                                         InteractionNode,
                                          get_edges_outgoing_to_node,
                                          get_final_state_edges,
                                          get_initial_state_edges,
@@ -26,6 +27,19 @@ from expertsystem.state.conservationrules import (
     GParityConservation,
     GellMannNishijimaRule,
     MassConservation)
+
+
+def get_final_state_edge_ids(graph, list_of_particle_names):
+    if not isinstance(graph, StateTransitionGraph):
+        raise TypeError("graph must be a StateTransitionGraph")
+    name_label = get_xml_label(XMLLabelConstants.Name)
+    fsp_names = {graph.edge_props[i][name_label]: i
+                 for i in get_final_state_edges(graph)}
+    edge_list = []
+    for particle_name in list_of_particle_names:
+        if particle_name in fsp_names:
+            edge_list.append(fsp_names[particle_name])
+    return edge_list
 
 
 class InteractionTypeSettings:
@@ -77,7 +91,7 @@ class InteractionTypeSettings:
                 InteractionQuantumNumberNames.L: create_spin_domain(
                     [0, 1, 2], True),
                 InteractionQuantumNumberNames.S: create_spin_domain(
-                    [0, 0.5, 1], True)
+                    [0, 0.5, 1])
             }
         )
         em_cons_law_list = deepcopy(self.interaction_settings['weak'][0])

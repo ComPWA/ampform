@@ -114,6 +114,7 @@ class FullPropagator():
     def __init__(self, graph):
         if len(get_intermediate_state_edges(graph)) > 0:
             self.propagator = CSPPropagator(graph)
+            logging.info("using CSP propagator")
         else:
             self.propagator = ParticleStateTransitionGraphValidator(graph)
 
@@ -149,6 +150,10 @@ class FullPropagator():
 
     def find_solutions(self):
         solutions = self.propagator.find_solutions()
+        logging.info("Number of solutions after propgator: " +
+                     str(len(solutions)))
+        if not solutions:
+            logging.debug(self.propagator.graph)
 
         full_particle_graphs = initialize_graphs_with_particles(
             solutions, self.propagator.allowed_intermediate_particles)
@@ -160,6 +165,7 @@ class FullPropagator():
             logging.info("validating graphs")
             temp_solution_graphs = full_particle_graphs
             full_particle_graphs = []
+            violated_rules = []
             for graph in temp_solution_graphs:
                 validator = ParticleStateTransitionGraphValidator(graph)
                 postponed_rules = self.propagator.node_postponed_conservation_laws
@@ -173,8 +179,12 @@ class FullPropagator():
                         cons_laws[0]['non-strict'],
                         False)
                 full_particle_graphs.extend(validator.find_solutions())
-        logging.info("final number of solutions: " +
-                     str(len(full_particle_graphs)))
+                violated_rules.append(validator.node_non_satisfied_laws)
+
+            logging.info("final number of solutions: " +
+                         str(len(full_particle_graphs)))
+            if len(full_particle_graphs) == 0:
+                logging.info("violated rules: " + str(violated_rules))
 
         return full_particle_graphs
 
@@ -186,12 +196,12 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
     def find_solutions(self):
         logging.debug("validating graph...")
         for node_id, (cons_laws, qn_domains) in self.node_conservation_laws.items():
-            new_cons_laws = [(x, True) for x in cons_laws['strict']]
+            new_cons_laws=[(x, True) for x in cons_laws['strict']]
             new_cons_laws.extend([(x, False) for x in cons_laws['non-strict']])
             for (cons_law, is_strict) in new_cons_laws:
                 # get the needed qns for this conservation law
                 # for all edges and the node
-                var_containers = self.create_variable_containers(
+                var_containers=self.create_variable_containers(
                     node_id, cons_law)
                 # check the requirements
                 if self.check_rule_requirements(cons_law, var_containers):

@@ -4,8 +4,7 @@ import logging
 
 import xmltodict
 
-from expertsystem.topology.graph import (StateTransitionGraph,
-                                         get_initial_state_edges,
+from expertsystem.topology.graph import (get_initial_state_edges,
                                          get_final_state_edges,
                                          get_edges_ingoing_to_node,
                                          get_edges_outgoing_to_node)
@@ -108,19 +107,6 @@ def get_recoil_edge(graph, edge_id):
     return outgoing_edges[0]
 
 
-def get_final_state_edge_ids(graph, list_of_particle_names):
-    if not isinstance(graph, StateTransitionGraph):
-        raise TypeError("graph must be a StateTransitionGraph")
-    name_label = get_xml_label(XMLLabelConstants.Name)
-    fsp_names = {graph.edge_props[i][name_label]: i
-                 for i in get_final_state_edges(graph)}
-    edge_list = []
-    for particle_name in list_of_particle_names:
-        if particle_name in fsp_names:
-            edge_list.append(fsp_names[particle_name])
-    return edge_list
-
-
 class HelicityDecayAmplitudeGeneratorXML():
     def __init__(self, graphs):
         self.particle_list = {}
@@ -133,6 +119,14 @@ class HelicityDecayAmplitudeGeneratorXML():
         self.generate_particle_list()
         self.generate_kinematics()
         self.generate_amplitude_info()
+
+    def generate_parameter_name(self)
+        [{'@Class': "Double", '@Type': "Magnitude",
+                           '@Name': "Magnitude_" + seq_decay_amp_name,
+                           'Value': 1.0, 'Fix': True},
+                          {'@Class': "Double", '@Type': "Phase",
+                           '@Name': "Phase_" + seq_decay_amp_name,
+                           'Value': 0.0, 'Fix': True}]
 
     def generate_particle_list(self):
         # create particle entries
@@ -154,7 +148,7 @@ class HelicityDecayAmplitudeGeneratorXML():
         name_label = get_xml_label(XMLLabelConstants.Name)
         type_label = get_xml_label(XMLLabelConstants.Type)
         parameter_label = get_xml_label(XMLLabelConstants.Parameter)
-        
+
         # for each graph group we create a coherent amplitude
         coherent_amplitudes = []
         for graph_group in graph_groups:
@@ -194,16 +188,11 @@ class HelicityDecayAmplitudeGeneratorXML():
         for node_id in graph.nodes:
             partial_decays.append(self.generate_partial_decay(graph, node_id))
 
-        seq_decay_amp_name = "asdfsadf"
+        seq_decay_params = generate_parameters()
         seq_decay_dict = {
             '@Class': "SequentialPartialAmplitude",
             '@Name': seq_decay_amp_name,
-            'Parameter': [{'@Class': "Double", '@Type': "Magnitude",
-                           '@Name': "Magnitude_" + seq_decay_amp_name,
-                           'Value': 1.0, 'Fix': True},
-                          {'@Class': "Double", '@Type': "Phase",
-                           '@Name': "Phase_" + seq_decay_amp_name,
-                           'Value': 0.0, 'Fix': True}],
+            'Parameter': seq_decay_params,
             'PartialAmplitude': partial_decays
         }
         return seq_decay_dict
@@ -226,7 +215,6 @@ class HelicityDecayAmplitudeGeneratorXML():
             raise ValueError(
                 "This node does not represent a two body decay!")
         dec_part = graph.edge_props[in_edge_ids[0]]
-        dec_part_name = dec_part['@Name']
 
         recoil_edge_id = get_recoil_edge(graph, in_edge_ids[0])
         recoil_system_dict = {}
@@ -236,13 +224,9 @@ class HelicityDecayAmplitudeGeneratorXML():
                 determine_attached_final_state_string(graph, recoil_edge_id)
             },
 
+        part_decay_params = generate_parameter_name(graph, edge_id)
         partial_decay_dict = {
-            'Parameter': [{'@Class': "Double", '@Type': "Magnitude",
-                           '@Name': "Magnitude_" + dec_part_name,
-                           'Value': 1.0, 'Fix': True},
-                          {'@Class': "Double", '@Type': "Phase",
-                           '@Name': "Phase_" + dec_part_name,
-                           'Value': 0.0, 'Fix': True}],
+            'Parameter': part_decay_params,
             'DecayParticle': {
                 '@Name': dec_part['@Name'],
                 '@Helicity': get_helicity_from_edge_props(dec_part)
