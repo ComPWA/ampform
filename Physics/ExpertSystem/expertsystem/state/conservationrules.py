@@ -194,6 +194,46 @@ class ParityConservation(AbstractRule):
         return False
 
 
+class ParityConservationHelicity(AbstractRule):
+    def __init__(self):
+        super().__init__('ParityConservationHelicity')
+
+    def specify_required_qns(self):
+        self.add_required_qn(
+            StateQuantumNumberNames.Parity, [DefinedForAllEdges()])
+        self.add_required_qn(
+            StateQuantumNumberNames.Spin, [DefinedForAllEdges()])
+        self.add_required_qn(InteractionQuantumNumberNames.ParityPrefactor)
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        """
+        Implements the check A_-h1-h2 = P1*P2*P3*(-1)^(S2+S3-S1)*A_h1h2
+        Notice that only the special case h1=h2=0 may return False
+        """
+        if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
+            spin_label = StateQuantumNumberNames.Spin
+            parity_label = StateQuantumNumberNames.Parity
+
+            spins = [x[spin_label].magnitude()
+                     for x in ingoing_part_qns + outgoing_part_qns]
+            parity_product = reduce(lambda x, y: x * y[parity_label],
+                                    ingoing_part_qns + outgoing_part_qns,
+                                    1)
+
+            prefactor = (parity_product *
+                         (-1.0)**(spins[1] + spins[2] - spins[0]))
+
+            daughter_hel = [0 for x in outgoing_part_qns
+                            if x[spin_label].projection() == 0.0]
+            if len(daughter_hel) == 2:
+                if prefactor == -1:
+                    return False
+            else:
+                pf_label = InteractionQuantumNumberNames.ParityPrefactor
+                return prefactor == interaction_qns[pf_label]
+        return True
+
+
 class CParityConservation(AbstractRule):
     def __init__(self):
         super().__init__('CParityConservation')
@@ -453,7 +493,10 @@ class SpinConservation(AbstractRule):
     def calculate_total_spins(self, part_list, interaction_qns):
         total_spins = set()
         if len(part_list) == 1:
-            total_spins.add(part_list[0])
+            if self.use_projection:
+                total_spins.add(part_list[0])
+            else:
+                total_spins.add(Spin(part_list[0].magnitude(), 0))
         else:
             # first couple all spins together
             spins_daughters_coupled = set()
@@ -472,10 +515,19 @@ class SpinConservation(AbstractRule):
             if InteractionQuantumNumberNames.L in interaction_qns:
                 L = interaction_qns[InteractionQuantumNumberNames.L]
                 S = interaction_qns[InteractionQuantumNumberNames.S]
-                if S in spins_daughters_coupled:
-                    total_spins.update(self.spin_couplings(S, L))
+                if self.use_projection:
+                    if S in spins_daughters_coupled:
+                        total_spins.update(self.spin_couplings(S, L))
+                else:
+                    if S.magnitude() in [
+                            x.magnitude() for x in spins_daughters_coupled]:
+                        total_spins.update(self.spin_couplings(S, L))
             else:
-                total_spins = spins_daughters_coupled
+                if self.use_projection:
+                    total_spins = spins_daughters_coupled
+                else:
+                    total_spins = [Spin(x.magnitude(), 0.0)
+                                   for x in spins_daughters_coupled]
         return total_spins
 
     def spin_couplings(self, spin1, spin2):
@@ -483,15 +535,19 @@ class SpinConservation(AbstractRule):
         implements the coupling of two spins
         |S1 - S2| <= S <= |S1 + S2| and M1 + M2 == M
         """
-        m = spin1.projection() + spin2.projection()
         j1 = spin1.magnitude()
         j2 = spin2.magnitude()
-        possible_spins = [Spin(x, m) for x in arange(
-            abs(j1 - j2), j1 + j2 + 1, 1).tolist() if x >= abs(m)]
+        if self.use_projection:
+            m = spin1.projection() + spin2.projection()
+            possible_spins = [Spin(x, m) for x in arange(
+                abs(j1 - j2), j1 + j2 + 1, 1).tolist() if x >= abs(m)]
 
-        return [x for x in possible_spins
-                if not self.is_clebsch_gordan_coefficient_zero(
-                    spin1, spin2, x)]
+            return [x for x in possible_spins
+                    if not self.is_clebsch_gordan_coefficient_zero(
+                        spin1, spin2, x)]
+        else:
+            return [Spin(x, 0) for x in arange(
+                abs(j1 - j2), j1 + j2 + 1, 1).tolist()]
 
     def is_clebsch_gordan_coefficient_zero(self, spin1, spin2, spin_coupled):
         m1 = spin1.projection()

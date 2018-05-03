@@ -20,7 +20,13 @@ from expertsystem.topology.graph import (
 
 XMLLabelConstants = Enum('XMLLabelConstants',
                          'Name Pid Type Value QuantumNumber \
-                          Class Projection Parameter')
+                          Class Projection Parameter PreFactor')
+
+XMLLabelTags = [
+    XMLLabelConstants.QuantumNumber,
+    XMLLabelConstants.Parameter,
+    XMLLabelConstants.PreFactor
+]
 
 
 def get_xml_label(enum):
@@ -29,8 +35,7 @@ def get_xml_label(enum):
 
     # the xml attribute prefix is needed as the xmltodict module uses that
     attribute_prefix = '@'
-    if (enum is XMLLabelConstants.QuantumNumber
-            or enum is XMLLabelConstants.Parameter):
+    if (enum in XMLLabelTags):
         return enum.name
     else:
         return attribute_prefix + enum.name
@@ -100,7 +105,8 @@ ParticlePropertyNames = Enum(
     'ParticlePropertyNames', 'Pid Mass Width')
 
 """definition of quantum number names for interaction nodes"""
-InteractionQuantumNumberNames = Enum('InteractionQuantumNumbers', 'L S')
+InteractionQuantumNumberNames = Enum('InteractionQuantumNumberNames',
+                                     'L S ParityPrefactor')
 
 QNDefaultValues = {
     StateQuantumNumberNames.Charge: 0,
@@ -132,6 +138,8 @@ QNNameClassMapping = {
     StateQuantumNumberNames.Topness: QuantumNumberClasses.Int,
     InteractionQuantumNumberNames.L: QuantumNumberClasses.Spin,
     InteractionQuantumNumberNames.S: QuantumNumberClasses.Spin,
+    InteractionQuantumNumberNames.ParityPrefactor:
+    QuantumNumberClasses.Int,
     ParticlePropertyNames.Pid: QuantumNumberClasses.Int,
     ParticlePropertyNames.Mass: QuantumNumberClasses.Float,
     ParticlePropertyNames.Width: QuantumNumberClasses.Float

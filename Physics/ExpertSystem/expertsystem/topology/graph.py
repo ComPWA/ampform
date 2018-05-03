@@ -29,7 +29,7 @@ def get_initial_state_edges(graph):
     for edge_id, edge in graph.edges.items():
         if edge.originating_node_id is None:
             is_list.append(edge_id)
-    return is_list
+    return sorted(is_list)
 
 
 def get_final_state_edges(graph):
@@ -37,7 +37,7 @@ def get_final_state_edges(graph):
     for edge_id, edge in graph.edges.items():
         if edge.ending_node_id is None:
             fs_list.append(edge_id)
-    return fs_list
+    return sorted(fs_list)
 
 
 def get_intermediate_state_edges(graph):
@@ -46,7 +46,7 @@ def get_intermediate_state_edges(graph):
         if (edge.ending_node_id is not None and
                 edge.originating_node_id is not None):
             is_list.append(edge_id)
-    return is_list
+    return sorted(is_list)
 
 
 def get_edge_groups_full_attached_node(graph, edge_ids):

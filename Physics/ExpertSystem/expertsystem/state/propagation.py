@@ -150,9 +150,11 @@ class FullPropagator():
 
     def find_solutions(self):
         solutions = self.propagator.find_solutions()
-        logging.info("Number of solutions after propgator: " +
+        logging.info("Number of solutions after propagator: " +
                      str(len(solutions)))
         if not solutions:
+            violated_rules = self.propagator.node_non_satisfied_laws
+            logging.info("violated rules: " + str(violated_rules))
             logging.debug(self.propagator.graph)
 
         full_particle_graphs = initialize_graphs_with_particles(

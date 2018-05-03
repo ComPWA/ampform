@@ -2,7 +2,7 @@ import logging
 
 from expertsystem.ui.system_control import (StateTransitionManager)
 
-# logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.INFO)
 
 # define all of the different decay scenarios
 cases = [
@@ -30,21 +30,21 @@ cases = [
     (['pi0'], ['gamma', 'gamma']),
     (['sigma-'], ['n', 'e-', 'vebar']),
     (['rho(770)0'], ['pi0', 'pi0']),
+    (['rho(770)0'], ['gamma', 'gamma']),
     (['J/psi'], ['pi0', 'eta']),
     (['J/psi'], ['rho(770)0', 'rho(770)0']),
     (['K_S0'], ['pi+', 'pi-', 'pi0'])
-
 ]
 
 for case in cases:
     print("processing case:" + str(case))
 
     tbd_manager = StateTransitionManager(case[0], case[1], [],
-                                         'canonical', 'strong', 'nbody')
+                                         'canonical', 'nbody')
 
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
+    graph_interaction_settings = tbd_manager.prepare_graphs()
     (solutions, violated_rules) = tbd_manager.find_solutions(
-        graph_node_setting_pairs)
+        graph_interaction_settings)
 
     if len(solutions) > 0:
         print("is valid")
