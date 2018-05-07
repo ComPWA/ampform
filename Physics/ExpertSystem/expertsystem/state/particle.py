@@ -8,6 +8,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from numpy import arange
 from itertools import permutations
+from json import loads, dumps
 
 import xmltodict
 
@@ -20,12 +21,13 @@ from expertsystem.topology.graph import (
 
 XMLLabelConstants = Enum('XMLLabelConstants',
                          'Name Pid Type Value QuantumNumber \
-                          Class Projection Parameter PreFactor')
+                          Class Projection Parameter PreFactor DecayInfo')
 
 XMLLabelTags = [
     XMLLabelConstants.QuantumNumber,
     XMLLabelConstants.Parameter,
-    XMLLabelConstants.PreFactor
+    XMLLabelConstants.PreFactor,
+    XMLLabelConstants.DecayInfo
 ]
 
 
@@ -224,15 +226,6 @@ def is_boson(qn_dict):
     return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
 
 
-'''def get_attributes_for_qn(qn_name):
-    qn_attr = []
-    if qn_name in QNNameClassMapping:
-        qn_class = QNNameClassMapping[qn_name]
-        if qn_class in QNClassAttributes:
-            qn_attr = QNClassAttributes[qn_class]
-    return qn_attr'''
-
-
 particle_list = []
 
 
@@ -241,41 +234,6 @@ def load_particle_list_from_xml(file_path):
         full_dict = xmltodict.parse(xmlfile)
         for p in full_dict['ParticleList']['Particle']:
             particle_list.append(dict(p))
-    """tree = ET.parse(file_path)
-    root = tree.getroot()
-    # loop over particles
-    for particle_xml in root:
-        extract_particle(particle_xml)"""
-
-
-"""
-def extract_particle(particle_xml):
-    particle = {}
-    QN_LIST_LABEL = XMLLabelConstants.QN_LIST_LABEL
-    QN_CLASS_LABEL = XMLLabelConstants.QN_CLASS_LABEL
-    TYPE_LABEL = XMLLabelConstants.VAR_TYPE_LABEL
-    VALUE_LABEL = XMLLabelConstants.VAR_VALUE_LABEL
-    QN_PROJECTION_LABEL = XMLLabelConstants.QN_PROJECTION_LABEL
-
-    particle['Name'] = particle_xml.attrib['Name']
-    for part_prop in particle_xml:
-        if "Parameter" in part_prop.tag:
-            if 'Parameters' not in particle:
-                particle['Parameters'] = []
-            particle['Parameters'].append(
-                {TYPE_LABEL: part_prop.attrib[TYPE_LABEL], VALUE_LABEL: part_prop.find(VALUE_LABEL).text})
-        elif QN_LIST_LABEL in part_prop.tag:
-            if QN_LIST_LABEL not in particle:
-                particle[QN_LIST_LABEL] = []
-            particle[QN_LIST_LABEL].append(
-                {TYPE_LABEL: part_prop.attrib[TYPE_LABEL], VALUE_LABEL: part_prop.attrib[VALUE_LABEL]})
-        elif "DecayInfo" in part_prop.tag:
-            continue
-        else:
-            particle[part_prop.tag] = part_prop.text
-
-    particle_list.append(particle)
-"""
 
 
 def get_particle_with_name(particle_name):
@@ -325,6 +283,59 @@ def get_particle_property(particle_properties, qn_name, converter=None):
         if qn_name in QNDefaultValues:
             property_value = QNDefaultValues[qn_name]
     return property_value
+
+
+def get_interaction_property(interaction_properties, qn_name, converter=None):
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+
+    found_prop = None
+    if isinstance(qn_name, InteractionQuantumNumberNames):
+        interaction_qns = interaction_properties[qns_label]
+        for x in interaction_qns:
+            if (x[type_label] == qn_name.name):
+                found_prop = x
+                break
+    # check for default value
+    property_value = None
+    if found_prop is not None:
+        if converter is None:
+            converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
+        property_value = converter.parse_from_dict(found_prop)
+    else:
+        if qn_name in QNDefaultValues:
+            property_value = QNDefaultValues[qn_name]
+    return property_value
+
+
+def compare_edge_properties(edge_props1, edge_props2):
+    copy_edge_props1 = deepcopy(edge_props1)
+    copy_edge_props2 = deepcopy(edge_props2)
+    # first clean up the edge qn list, by converting it to a dict
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    for edge_props in copy_edge_props1.values():
+        if qns_label in edge_props:
+            new_qns = {}
+            for x in edge_props[qns_label]:
+                temp_qn_dict = dict(x)
+                type_name = temp_qn_dict[type_label]
+                del temp_qn_dict[type_label]
+                new_qns[type_name] = temp_qn_dict
+            edge_props[qns_label] = new_qns
+    for edge_props in copy_edge_props2.values():
+        if qns_label in edge_props:
+            new_qns = {}
+            for x in edge_props[qns_label]:
+                temp_qn_dict = dict(x)
+                type_name = temp_qn_dict[type_label]
+                del temp_qn_dict[type_label]
+                new_qns[type_name] = temp_qn_dict
+            edge_props[qns_label] = new_qns
+    if (loads(dumps(copy_edge_props1, sort_keys=True))
+            != loads(dumps(copy_edge_props2, sort_keys=True))):
+        return False
+    return True
 
 
 def initialize_graph(graph, initial_state, final_state):

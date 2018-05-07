@@ -17,7 +17,8 @@ from expertsystem.topology.topologybuilder import (
 from expertsystem.state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
     get_particle_property, XMLLabelConstants, get_xml_label,
-    StateQuantumNumberNames, InteractionQuantumNumberNames, create_spin_domain)
+    StateQuantumNumberNames, InteractionQuantumNumberNames,
+    ParticlePropertyNames, create_spin_domain, compare_edge_properties)
 
 from expertsystem.state.propagation import (FullPropagator)
 
@@ -218,11 +219,77 @@ def get_final_state_edge_ids(graph, list_of_particle_names):
     return edge_list
 
 
+def remove_qns_from_graph(graph, qn_list):
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+
+    int_qns = [x for x in qn_list if isinstance(
+        x, InteractionQuantumNumberNames)]
+    state_qns = [x for x in qn_list if isinstance(
+        x, StateQuantumNumberNames)]
+    part_props = [x for x in qn_list if isinstance(
+        x, ParticlePropertyNames)]
+
+    graph_copy = deepcopy(graph)
+
+    for int_qn in int_qns:
+        for props in graph_copy.node_props.values():
+            if qns_label in props:
+                for qn_entry in props[qns_label]:
+                    if (InteractionQuantumNumberNames[qn_entry[type_label]]
+                            is int_qn):
+                        del props[qns_label][props[qns_label].index(qn_entry)]
+                        break
+
+    for state_qn in state_qns:
+        for props in graph_copy.edge_props.values():
+            if qns_label in props:
+                for qn_entry in props[qns_label]:
+                    if (StateQuantumNumberNames[qn_entry[type_label]]
+                            is state_qn):
+                        del props[qns_label][props[qns_label].index(qn_entry)]
+                        break
+
+    for part_prop in part_props:
+        for props in graph_copy.edge_props.values():
+            if qns_label in props:
+                for qn_entry in graph_copy.edge_props[qns_label]:
+                    if (ParticlePropertyNames[qn_entry[type_label]]
+                            is part_prop):
+                        del props[qns_label][props[qns_label].index(qn_entry)]
+                        break
+
+    return graph_copy
+
+
+def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
+    """
+    defines the equal operator for the graphs ignoring certain quantum numbers
+    """
+    if not isinstance(ref_graph, StateTransitionGraph):
+        raise TypeError(
+            "Reference graph has to be of type StateTransitionGraph")
+
+    ref_graph_copy = remove_qns_from_graph(ref_graph, ignored_qn_list)
+    found_graph = None
+
+    for graph in solutions:
+        if isinstance(graph, StateTransitionGraph):
+            # first copy prop dicts and remove ignored qns
+            graph_copy = remove_qns_from_graph(graph, ignored_qn_list)
+            if ref_graph_copy == graph_copy:
+                found_graph = graph
+                break
+
+    return found_graph
+
+
 def filter_solutions(results):
     filtered_results = {}
     int_spin_label = InteractionQuantumNumberNames.S
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
     type_label = get_xml_label(XMLLabelConstants.Type)
+    parity_prefactor_label = InteractionQuantumNumberNames.ParityPrefactor
     solutions = []
     remove_counter = 0
     for strength, group_results in results.items():
@@ -237,10 +304,15 @@ def filter_solutions(results):
                                 del props[qns_label][props[qns_label].index(
                                     qn_entry)]
                                 break
-                if sol_graph not in solutions:
+
+                found_graph = check_equal_ignoring_qns(sol_graph, solutions,
+                                                       [parity_prefactor_label])
+                if found_graph is None:
                     solutions.append(sol_graph)
                     temp_graphs.append(sol_graph)
                 else:
+                    # check if found solution also has the prefactors
+                    # if not overwrite them
                     remove_counter += 1
 
             if strength not in filtered_results:
@@ -367,6 +439,7 @@ class StateTransitionManager():
         # initialize the graph edges (intial and final state)
         init_graphs = []
         for tgraph in topology_graphs:
+            tgraph.set_edge_properties_comparator(compare_edge_properties)
             init_graphs.extend(initialize_graph(
                 tgraph, self.initial_state, self.final_state))
 
@@ -469,10 +542,10 @@ class StateTransitionManager():
             temp_results = []
             with Pool(self.number_of_threads) as p:
                 temp_results = p.imap_unordered(self.propagate_quantum_numbers,
-                                          graph_setting_group, 1)
+                                                graph_setting_group, 1)
                 p.close()
                 p.join()
-            
+
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)

@@ -171,6 +171,10 @@ class StateTransitionGraph:
         self.edges = {}
         self.node_props = {}
         self.edge_props = {}
+        self.edge_properties_comparator = None
+
+    def set_edge_properties_comparator(self, edge_properties_comparator):
+        self.edge_properties_comparator = edge_properties_comparator
 
     def __repr__(self):
         return_string = "\nnodes: " + \
@@ -209,8 +213,13 @@ class StateTransitionGraph:
                 return False
             if set(self.node_props) != set(other.node_props):
                 return False
-            if loads(dumps(self.edge_props)) != loads(dumps(other.edge_props)):
-                return False
+            if self.edge_properties_comparator is not None:
+                return self.edge_properties_comparator(self.edge_props,
+                                                       other.edge_props)
+            else:
+                if (loads(dumps(self.edge_props, sort_keys=True))
+                        != loads(dumps(other.edge_props, sort_keys=True))):
+                    return False
             return True
         else:
             return NotImplemented

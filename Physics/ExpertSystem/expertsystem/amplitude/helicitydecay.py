@@ -15,7 +15,8 @@ from expertsystem.topology.graph import (get_initial_state_edges,
                                          get_edges_outgoing_to_node)
 from expertsystem.state.particle import (
     StateQuantumNumberNames, InteractionQuantumNumberNames,
-    XMLLabelConstants, get_xml_label, get_particle_property)
+    XMLLabelConstants, get_xml_label, get_interaction_property,
+    get_particle_property)
 
 
 def group_graphs_same_initial_and_final(graphs):
@@ -121,8 +122,8 @@ def get_prefactor(graph):
     prefactor = None
     for node_id in graph.nodes:
         if node_id in graph.node_props:
-            temp_prefactor = get_particle_property(graph.node_props[node_id],
-                                                   prefactor_label)
+            temp_prefactor = get_interaction_property(
+                graph.node_props[node_id], prefactor_label)
             if temp_prefactor is not None:
                 if prefactor is None:
                     prefactor = temp_prefactor
@@ -207,16 +208,29 @@ class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
 
 
 class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
-    def __init__(self, use_parity_conservation=None):
+    def __init__(self, top_node_no_dynamics=True, use_parity_conservation=None):
         self.particle_list = {}
         self.helicity_amplitudes = {}
         self.kinematics = {}
         self.use_parity_conservation = use_parity_conservation
+        self.top_node_no_dynamics = top_node_no_dynamics
 
     def generate(self, graphs):
         if len(graphs) <= 0:
             raise ValueError(
                 "Number of solution graphs is not larger than zero!")
+
+        decay_info = {get_xml_label(XMLLabelConstants.Type): 'NonResonant'}
+        decay_info_label = get_xml_label(XMLLabelConstants.DecayInfo)
+        for g in graphs:
+            if self.top_node_no_dynamics:
+                init_edges = get_initial_state_edges(g)
+                if len(init_edges) > 1:
+                    raise ValueError(
+                        "Only a single initial state particle allowed")
+                eprops = g.edge_props[init_edges[0]]
+                eprops[decay_info_label] = decay_info
+
         self.particle_list = generate_particle_list(graphs)
         self.kinematics = generate_kinematics(graphs)
 
@@ -245,8 +259,6 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                     fit_params.add('Magnitude_' + y['ParameterNameSuffix'])
                 if not y['Phase'][1]:
                     fit_params.add('Phase_' + y['ParameterNameSuffix'])
-        fit_params = [x for x in fit_params if 'Magnitude' in x]
-        print(fit_params)
         logging.info("Number of parameters:" + str(len(fit_params)))
         self.generate_amplitude_info(graph_groups, parameter_mapping)
 
@@ -348,8 +360,31 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     def generate_sequential_decay(self, graph, parameter_props):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
+        spin_label = StateQuantumNumberNames.Spin
+        decay_info_label = get_xml_label(XMLLabelConstants.DecayInfo)
+        type_label = get_xml_label(XMLLabelConstants.Type)
         partial_decays = []
         for node_id in graph.nodes:
+            # in case a scalar without dynamics decays into daughters with no
+            # net helicity, the partial amplitude can be dropped
+            # (it is just a constant)
+            in_edges = get_edges_ingoing_to_node(graph, node_id)
+            out_edges = get_edges_outgoing_to_node(graph, node_id)
+            # check mother particle is spin 0
+            in_spin = get_particle_property(
+                graph.edge_props[in_edges[0]], spin_label)
+            out_spins = [get_particle_property(
+                graph.edge_props[x], spin_label) for x in out_edges]
+            if (in_spin is not None and None not in out_spins
+                    and in_spin.magnitude() == 0):
+                if abs(out_spins[0].projection()
+                       - out_spins[1].projection()) == 0.0:
+                    # check if dynamics is non resonsant (constant)
+                    if ('NonResonant' ==
+                        graph.edge_props[in_edges[0]][
+                            decay_info_label][type_label]):
+                        continue
+
             partial_decays.append(self.generate_partial_decay(graph,
                                                               node_id,
                                                               parameter_props)

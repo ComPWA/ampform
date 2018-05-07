@@ -15,6 +15,15 @@ class TestSpin(object):
         spin_rule = SpinConservation(spin_label)
         cases = []
 
+        for case in [([0], True), ([1, 2, 3], False)]:
+            for spin_mag in case[0]:
+                temp_case = ([{spin_label: Spin(0, 0)}],
+                             [{spin_label: Spin(0, 0)}, {
+                                 spin_label: Spin(0, 0)}],
+                             {angmom_label: Spin(spin_mag, 0),
+                              intspin_label: Spin(0, 0)},
+                             case[1])
+                cases.append(temp_case)
         for case in [([0, 1, 2], True)]:
             for spin_mag in case[0]:
                 temp_case = ([{spin_label: Spin(spin_mag, 0)}],
