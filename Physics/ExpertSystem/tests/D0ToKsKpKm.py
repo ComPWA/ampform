@@ -15,7 +15,7 @@ initial_state = [("D0", [0])]
 final_state = [("K_S0", [0]), ("K+", [0]), ("K-", [0])]
 
 tbd_manager = StateTransitionManager(initial_state, final_state,
-                                     ['f0', 'a0', 'phi', 'a2(1320)-'])
+                                     ['a0', 'phi', 'a2(1320)-'])
 tbd_manager.number_of_threads = 4
 
 graph_interaction_settings_groups = tbd_manager.prepare_graphs()

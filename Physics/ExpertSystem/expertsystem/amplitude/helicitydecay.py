@@ -141,13 +141,19 @@ def generate_kinematics(graphs):
         'InitialState': {'Particle': []}, 'FinalState': {'Particle': []}
     }
     is_edge_ids = get_initial_state_edges(graphs[0])
+    counter = 0
     for x in is_edge_ids:
         tempdict['InitialState']['Particle'].append(
-            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x})
+            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x,
+             '@PositionIndex': counter})
+        counter += 1
     fs_edge_ids = get_final_state_edges(graphs[0])
+    counter = 0
     for x in fs_edge_ids:
         tempdict['FinalState']['Particle'].append(
-            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x})
+            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x,
+             '@PositionIndex': counter})
+        counter += 1
     return {'HelicityKinematics': tempdict}
 
 
@@ -208,7 +214,8 @@ class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
 
 
 class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
-    def __init__(self, top_node_no_dynamics=True, use_parity_conservation=None):
+    def __init__(self, top_node_no_dynamics=True,
+                 use_parity_conservation=None):
         self.particle_list = {}
         self.helicity_amplitudes = {}
         self.kinematics = {}
@@ -220,7 +227,7 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             raise ValueError(
                 "Number of solution graphs is not larger than zero!")
 
-        decay_info = {get_xml_label(XMLLabelConstants.Type): 'NonResonant'}
+        decay_info = {get_xml_label(XMLLabelConstants.Type): 'nonResonant'}
         decay_info_label = get_xml_label(XMLLabelConstants.DecayInfo)
         for g in graphs:
             if self.top_node_no_dynamics:
