@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from itertools import product
+from itertools import product, permutations
 from abc import ABC, abstractmethod
 from enum import Enum
 from multiprocessing import Pool
@@ -48,7 +48,7 @@ def create_default_settings(formalism_type, use_mass_conservation=True):
         2. list of quantum number domains
         3. strength scale parameter (higher value means stronger force)
     '''
-    InteractionTypeSettings = {}
+    interaction_type_settings = {}
     formalism_conservation_laws = []
     formalism_qn_domains = {}
     formalism_type = formalism_type
@@ -105,13 +105,13 @@ def create_default_settings(formalism_type, use_mass_conservation=True):
     }
     qn_domains.update(formalism_qn_domains)
 
-    InteractionTypeSettings[InteractionTypes.Weak] = (
+    interaction_type_settings[InteractionTypes.Weak] = (
         weak_conservation_laws,
         [],
         qn_domains,
         10**(-4)
     )
-    em_cons_law_list = deepcopy(InteractionTypeSettings[
+    em_cons_law_list = deepcopy(interaction_type_settings[
         InteractionTypes.Weak][0])
     em_cons_law_list.extend(
         [AdditiveQuantumNumberConservation(
@@ -122,7 +122,7 @@ def create_default_settings(formalism_type, use_mass_conservation=True):
             CParityConservation()
          ]
     )
-    em_qn_domains = InteractionTypeSettings[
+    em_qn_domains = interaction_type_settings[
         InteractionTypes.Weak][2]
     if formalism_type == 'helicity':
         em_cons_law_list.append(ParityConservationHelicity())
@@ -130,26 +130,26 @@ def create_default_settings(formalism_type, use_mass_conservation=True):
             InteractionQuantumNumberNames.ParityPrefactor: [-1, 1]
         })
 
-    InteractionTypeSettings[InteractionTypes.EM] = (
+    interaction_type_settings[InteractionTypes.EM] = (
         em_cons_law_list,
-        InteractionTypeSettings[InteractionTypes.Weak][1],
+        interaction_type_settings[InteractionTypes.Weak][1],
         em_qn_domains,
         1
     )
-    strong_cons_law_list = deepcopy(InteractionTypeSettings[
+    strong_cons_law_list = deepcopy(interaction_type_settings[
         InteractionTypes.EM][0])
     strong_cons_law_list.extend(
         [SpinConservation(
             StateQuantumNumberNames.IsoSpin),
             GParityConservation()]
     )
-    InteractionTypeSettings[InteractionTypes.Strong] = (
+    interaction_type_settings[InteractionTypes.Strong] = (
         strong_cons_law_list,
-        InteractionTypeSettings[InteractionTypes.EM][1],
-        InteractionTypeSettings[InteractionTypes.EM][2],
+        interaction_type_settings[InteractionTypes.EM][1],
+        interaction_type_settings[InteractionTypes.EM][2],
         60
     )
-    return InteractionTypeSettings
+    return interaction_type_settings
 
 
 def filter_interaction_types(interaction_types, allowed_interaction_types):
@@ -206,17 +206,46 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
         return node_interaction_type
 
 
-def get_final_state_edge_ids(graph, list_of_particle_names):
+def get_final_state_edge_ids(graph, list_of_particle_name_lists):
     if not isinstance(graph, StateTransitionGraph):
         raise TypeError("graph must be a StateTransitionGraph")
     name_label = get_xml_label(XMLLabelConstants.Name)
-    fsp_names = {graph.edge_props[i][name_label]: i
-                 for i in get_final_state_edges(graph)}
-    edge_list = []
-    for particle_name in list_of_particle_names:
-        if particle_name in fsp_names:
-            edge_list.append(fsp_names[particle_name])
-    return edge_list
+    fsp_name_id_map = {}
+    for i in get_final_state_edges(graph):
+        if graph.edge_props[i][name_label] not in fsp_name_id_map:
+            fsp_name_id_map[graph.edge_props[i][name_label]] = []
+        fsp_name_id_map[graph.edge_props[i][name_label]].append(i)
+
+    fsp_name_id_maps = [{}]
+    for k, v in fsp_name_id_map.items():
+        all_permutations = permutations(v)
+        temp_fsp_name_id_maps = []
+        for current_fsp_permutation in product(fsp_name_id_maps,
+                                               all_permutations):
+            temp_fsp_name_id_map = deepcopy(current_fsp_permutation[0])
+            temp_fsp_name_id_map[k] = list(current_fsp_permutation[1])
+            temp_fsp_name_id_maps.append(temp_fsp_name_id_map)
+        fsp_name_id_maps = temp_fsp_name_id_maps
+
+    edge_lists_combinations = []
+    for current_fsp_name_id_map in fsp_name_id_maps:
+        current_edge_list_combination = []
+        for particle_name_list in list_of_particle_name_lists:
+            current_fs_group = set()
+            for particle_name in particle_name_list:
+                if (particle_name not in current_fsp_name_id_map
+                        or len(current_fsp_name_id_map[particle_name]) == 0):
+                    raise ValueError(
+                        "No final state particle with name " + particle_name
+                        + " exists.\n Final state particles are:\n"
+                        + current_fsp_name_id_map)
+                possible_edge_ids = current_fsp_name_id_map[particle_name]
+                current_fs_group.add(possible_edge_ids[0])
+                del possible_edge_ids[0]
+            current_edge_list_combination.append(current_fs_group)
+        edge_lists_combinations.append(
+            current_edge_list_combination)
+    return edge_lists_combinations
 
 
 def remove_qns_from_graph(graph, qn_list):
@@ -451,24 +480,29 @@ class StateTransitionManager():
                 for fs_grouping in self.final_state_groupings:
                     # check if this grouping is available in this graph
                     valid_grouping = True
-                    for fs_group in fs_grouping:
-                        group_fs_list = set(get_final_state_edge_ids(igraph,
-                                                                     fs_group))
-                        fs_group_found = False
-                        for node_id in igraph.nodes:
-                            node_fs_list = set(
-                                get_originating_final_state_edges(
-                                    igraph, node_id))
-                            if group_fs_list == node_fs_list:
-                                fs_group_found = True
+
+                    possible_fs_groupings = get_final_state_edge_ids(
+                        igraph,
+                        fs_grouping)
+                    for possible_fs_grouping in possible_fs_groupings:
+                        for group_fs_list in possible_fs_grouping:
+                            fs_group_found = False
+                            for node_id in igraph.nodes:
+                                node_fs_list = set(
+                                    get_originating_final_state_edges(
+                                        igraph, node_id))
+                                if group_fs_list == node_fs_list:
+                                    fs_group_found = True
+                                    break
+                            if not fs_group_found:
+                                valid_grouping = False
                                 break
-                        if not fs_group_found:
-                            valid_grouping = False
+                        if valid_grouping:
+                            valid_groupings.append(
+                                self.final_state_groupings.index(fs_grouping)
+                            )
                             break
                     if valid_grouping:
-                        valid_groupings.append(
-                            self.final_state_groupings.index(fs_grouping)
-                        )
                         break
                 if len(valid_groupings) == 0:
                     graphs_to_remove.append(init_graphs.index(igraph))
