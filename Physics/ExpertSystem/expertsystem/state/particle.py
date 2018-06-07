@@ -62,12 +62,12 @@ class Spin():
         return self.__projection
 
     def __str__(self):
-        return 'mag: ' + str(self.__magnitude) + ', proj: ' \
-            + str(self.__projection)
+        return '(mag: ' + str(self.__magnitude) + ', proj: ' \
+            + str(self.__projection) + ')'
 
     def __repr__(self):
-        return 'mag: ' + str(self.__magnitude) + ', proj: ' \
-            + str(self.__projection)
+        return '(mag: ' + str(self.__magnitude) + ', proj: ' \
+            + str(self.__projection) + ')'
 
     def __eq__(self, other):
         """

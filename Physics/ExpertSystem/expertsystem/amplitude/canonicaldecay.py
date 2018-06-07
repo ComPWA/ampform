@@ -1,5 +1,4 @@
 from collections import OrderedDict
-import json
 import logging
 
 import xmltodict
@@ -10,207 +9,19 @@ from expertsystem.amplitude.abstractgenerator import (
 )
 
 from expertsystem.topology.graph import (get_initial_state_edges,
-                                         get_final_state_edges,
                                          get_edges_ingoing_to_node,
                                          get_edges_outgoing_to_node)
 from expertsystem.state.particle import (
-    StateQuantumNumberNames, InteractionQuantumNumberNames,
-    XMLLabelConstants, get_xml_label, get_interaction_property,
+    StateQuantumNumberNames, XMLLabelConstants, get_xml_label,
     get_particle_property)
 
+from expertsystem.amplitude.helicitydecay import (
+    HelicityPartialDecayNameGenerator, generate_particle_list, 
+    generate_kinematics, get_prefactor, group_graphs_same_initial_and_final,
+    determine_attached_final_state_string, get_recoil_edge, 
+    get_helicity_from_edge_props
+)
 
-def group_graphs_same_initial_and_final(graphs):
-    '''
-    Each graph corresponds to a specific state transition amplitude.
-    This function groups together graphs, which have the same initial and
-    final state (including spin). This is needed to determine the coherency of
-    the individual amplitude parts.
-
-    Args:
-        graphs ([:class:`.StateTransitionGraph`])
-    Returns:
-        graph groups ([[:class:`.StateTransitionGraph`]])
-    '''
-    graph_groups = dict()
-    for graph in graphs:
-        ise = get_final_state_edges(graph)
-        fse = get_initial_state_edges(graph)
-        ifsg = (tuple(sorted([json.dumps(graph.edge_props[x]) for x in ise])),
-                tuple(sorted([json.dumps(graph.edge_props[x]) for x in fse])))
-        if ifsg not in graph_groups:
-            graph_groups[ifsg] = []
-        graph_groups[ifsg].append(graph)
-
-    graph_group_list = [graph_groups[x] for x in graph_groups.keys()]
-    return graph_group_list
-
-
-def get_helicity_from_edge_props(edge_props):
-    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
-    type_label = get_xml_label(XMLLabelConstants.Type)
-    spin_label = StateQuantumNumberNames.Spin
-    proj_label = get_xml_label(XMLLabelConstants.Projection)
-    for qn in edge_props[qns_label]:
-        if qn[type_label] == spin_label.name:
-            return qn[proj_label]
-    logging.error(edge_props[qns_label])
-    raise ValueError("Could not find spin projection quantum number!")
-
-
-def determine_attached_final_state_string(graph, edge_id):
-    edge_ids = determine_attached_final_state(graph, edge_id)
-    fs_string = ""
-    for eid in edge_ids:
-        fs_string += " " + str(eid)
-    return fs_string[1:]
-
-
-def determine_attached_final_state(graph, edge_id):
-    '''
-    Determines all final state particles of a graph, which are attached
-    downward (forward in time) for a given edge (resembling the root)
-
-    Args:
-        graph (:class:`.StateTransitionGraph`)
-        edge_id (int): id of the edge, which is taken as the root
-    Returns:
-        list of final state edge ids ([int])
-    '''
-    final_state_edge_ids = []
-    all_final_state_edges = get_final_state_edges(graph)
-    current_edges = [edge_id]
-    while current_edges:
-        temp_current_edges = current_edges
-        current_edges = []
-        for curr_edge in temp_current_edges:
-            if curr_edge in all_final_state_edges:
-                final_state_edge_ids.append(curr_edge)
-            else:
-                node_id = graph.edges[curr_edge].ending_node_id
-                current_edges.extend(get_edges_outgoing_to_node(graph,
-                                                                node_id))
-    return final_state_edge_ids
-
-
-def get_recoil_edge(graph, edge_id):
-    '''
-    Determines the id of the recoil edge for the specified edge of a graph.
-
-    Args:
-        graph (:class:`.StateTransitionGraph`)
-        edge_id (int): id of the edge, for which the recoil partner is
-            determined
-    Returns:
-        recoil edge id (int)
-    '''
-    node_id = graph.edges[edge_id].originating_node_id
-    if node_id is None:
-        return None
-    outgoing_edges = get_edges_outgoing_to_node(graph, node_id)
-    outgoing_edges.remove(edge_id)
-    if len(outgoing_edges) != 1:
-        raise ValueError("The node with id " + str(node_id) +
-                         " has more than 2 outgoing edges \n" + str(graph))
-    return outgoing_edges[0]
-
-
-def get_prefactor(graph):
-    '''
-    calculates the product of all prefactors defined in this graph as a double
-    '''
-    prefactor_label = InteractionQuantumNumberNames.ParityPrefactor
-    prefactor = None
-    for node_id in graph.nodes:
-        if node_id in graph.node_props:
-            temp_prefactor = get_interaction_property(
-                graph.node_props[node_id], prefactor_label)
-            if temp_prefactor is not None:
-                if prefactor is None:
-                    prefactor = temp_prefactor
-                else:
-                    prefactor *= temp_prefactor
-            else:
-                prefactor = None
-                break
-    return prefactor
-
-
-def generate_kinematics(graphs):
-    tempdict = {
-        # <PhspVolume>0.541493</PhspVolume>
-        'InitialState': {'Particle': []}, 'FinalState': {'Particle': []}
-    }
-    is_edge_ids = get_initial_state_edges(graphs[0])
-    counter = 0
-    for x in is_edge_ids:
-        tempdict['InitialState']['Particle'].append(
-            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x,
-             '@PositionIndex': counter})
-        counter += 1
-    fs_edge_ids = get_final_state_edges(graphs[0])
-    counter = 0
-    for x in fs_edge_ids:
-        tempdict['FinalState']['Particle'].append(
-            {'@Name': graphs[0].edge_props[x]['@Name'], '@Id': x,
-             '@PositionIndex': counter})
-        counter += 1
-    return {'HelicityKinematics': tempdict}
-
-
-def generate_particle_list(graphs):
-    # create particle entries
-    temp_particle_names = []
-    particles = []
-    for g in graphs:
-        for edge_props in g.edge_props.values():
-            par_name = edge_props[get_xml_label(XMLLabelConstants.Name)]
-            if par_name not in temp_particle_names:
-                particles.append(edge_props)
-                temp_particle_names.append(par_name)
-    return {'ParticleList': {'Particle': particles}}
-
-
-class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
-    def __init__(self, use_parity_conservation):
-        self.use_parity_conservation = use_parity_conservation
-        self.generated_parameter_names = []
-
-    def generate(self, graph, node_id):
-        # get ending node of the edge
-        # then make name for
-        in_edges = get_edges_ingoing_to_node(graph, node_id)
-        out_edges = get_edges_outgoing_to_node(graph, node_id)
-        name_label = get_xml_label(XMLLabelConstants.Name)
-        names = []
-        hel = []
-        for i in in_edges + out_edges:
-            names.append(graph.edge_props[i][name_label])
-            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
-            # remove .0
-            if temphel % 1 == 0:
-                temphel = int(temphel)
-            hel.append(temphel)
-
-        par_name_suffix = '_to_'
-        par_name_suffix += names[1] + '_' + str(hel[1])
-        par_name_suffix += '+' + names[2] + '_' + str(hel[2])
-        name = names[0] + '_' + str(hel[0]) + par_name_suffix
-        par_name_suffix = names[0] + par_name_suffix
-        if par_name_suffix not in self.generated_parameter_names:
-            append_name = True
-            if self.use_parity_conservation:
-                # first check if parity partner exists
-                pp_par_name_suffix = names[0]
-                pp_par_name_suffix += '_to_'
-                pp_par_name_suffix += names[1] + '_' + str(-1 * hel[1])
-                pp_par_name_suffix += '+' + \
-                    names[2] + '_' + str(-1 * hel[2])
-                if pp_par_name_suffix in self.generated_parameter_names:
-                    par_name_suffix = pp_par_name_suffix
-                    append_name = False
-            if append_name:
-                self.generated_parameter_names.append(par_name_suffix)
-        return (name, par_name_suffix)
 
 class CanonicalDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     '''
@@ -221,10 +32,11 @@ class CanonicalDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     F^J_lambda1,lambda2 = sum_LS { norm * a^J_LS * CG * CG }
     Here CG stands for Clebsch-Gordan factor.
     '''
+
     def __init__(self, top_node_no_dynamics=True,
                  use_parity_conservation=None):
         self.particle_list = {}
-        self.helicity_amplitudes = {}
+        self.canonical_amplitudes = {}
         self.kinematics = {}
         self.use_parity_conservation = use_parity_conservation
         self.top_node_no_dynamics = top_node_no_dynamics
@@ -460,6 +272,13 @@ class CanonicalDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         }
         # partial_decay_dict.update(self.generate_magnitude_and_phase(amp_name))
         partial_decay_dict.update(recoil_system_dict)
+
+        # now we add clebsch gordan coefficients based on the
+        
+        #<CanonicalSum L = "1" S = "0">
+        #  <ClebschGorden Type = "LS" j1 = "1" m1 = "0" j2 = "0" m2 = "0" J = "1" M = "0"/>
+        #  <ClebschGorden Type = "s2s3" j1 = "0" m1 = "0" j2 = "0" m2 = "0" J = "0" M = "0"/>
+        #</CanonicalSum>
 
         return partial_decay_dict
 

@@ -2,7 +2,6 @@ import logging
 from copy import deepcopy
 from itertools import product, permutations
 from abc import ABC, abstractmethod
-from enum import Enum
 from multiprocessing import Pool
 
 from expertsystem.topology.graph import (StateTransitionGraph,
@@ -18,138 +17,21 @@ from expertsystem.state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
     get_particle_property, XMLLabelConstants, get_xml_label,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
-    ParticlePropertyNames, create_spin_domain, compare_edge_properties)
+    ParticlePropertyNames, compare_edge_properties)
 
-from expertsystem.state.propagation import (FullPropagator)
+from expertsystem.state.propagation import (
+    FullPropagator, InteractionTypes, InteractionNodeSettings)
 
-from expertsystem.state.conservationrules import (
-    AdditiveQuantumNumberConservation,
-    ParityConservation,
-    ParityConservationHelicity,
-    IdenticalParticleSymmetrization,
-    SpinConservation,
-    HelicityConservation,
-    CParityConservation,
-    GParityConservation,
-    GellMannNishijimaRule,
-    MassConservation)
+from expertsystem.ui.default_settings import (
+    create_default_interaction_settings
+)
 
 
-InteractionTypes = Enum('InteractionTypes', 'Undefined Strong EM Weak')
-
-
-def create_default_settings(formalism_type, use_mass_conservation=True):
-    '''
-    Create a container, which holds the settings for the various interactions
-    (e.g.: strong, em and weak interaction).
-    Each settings is a tuple of four values:
-        1. list of strict conservation laws
-        2. list of non-strict conservation laws
-        2. list of quantum number domains
-        3. strength scale parameter (higher value means stronger force)
-    '''
-    interaction_type_settings = {}
-    formalism_conservation_laws = []
-    formalism_qn_domains = {}
-    formalism_type = formalism_type
-    if formalism_type is 'helicity':
-        formalism_conservation_laws = [
-            SpinConservation(StateQuantumNumberNames.Spin, False),
-            HelicityConservation()]
-        formalism_qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain(
-                [0, 1, 2], True),
-            InteractionQuantumNumberNames.S: create_spin_domain(
-                [0, 0.5, 1, 1.5, 2], True)}
-    elif formalism_type is 'canonical':
-        formalism_conservation_laws = [
-            SpinConservation(StateQuantumNumberNames.Spin)]
-        formalism_qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain(
-                [0, 1, 2]),
-            InteractionQuantumNumberNames.S: create_spin_domain(
-                [0, 0.5, 1, 2])}
-    if use_mass_conservation:
-        formalism_conservation_laws.append(MassConservation())
-
-    weak_conservation_laws = formalism_conservation_laws
-    weak_conservation_laws.extend([
-        GellMannNishijimaRule(),
-        AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.Charge),
-        AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.ElectronLN),
-        AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.MuonLN),
-        AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.TauLN),
-        AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.BaryonNumber),
-        IdenticalParticleSymmetrization()
-    ])
-    qn_domains = {
-        StateQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
-        StateQuantumNumberNames.BaryonNumber: [-1, 0, 1],
-        StateQuantumNumberNames.ElectronLN: [-1, 0, 1],
-        StateQuantumNumberNames.MuonLN: [-1, 0, 1],
-        StateQuantumNumberNames.TauLN: [-1, 0, 1],
-        StateQuantumNumberNames.Parity: [-1, 1],
-        StateQuantumNumberNames.Cparity: [-1, 1, None],
-        StateQuantumNumberNames.Gparity: [-1, 1, None],
-        StateQuantumNumberNames.Spin: create_spin_domain(
-            [0, 0.5, 1, 1.5, 2]),
-        StateQuantumNumberNames.IsoSpin: create_spin_domain(
-            [0, 0.5, 1, 1.5]),
-        StateQuantumNumberNames.Charm: [-1, 0, 1],
-        StateQuantumNumberNames.Strangeness: [-1, 0, 1]
-    }
-    qn_domains.update(formalism_qn_domains)
-
-    interaction_type_settings[InteractionTypes.Weak] = (
-        weak_conservation_laws,
-        [],
-        qn_domains,
-        10**(-4)
-    )
-    em_cons_law_list = deepcopy(interaction_type_settings[
-        InteractionTypes.Weak][0])
-    em_cons_law_list.extend(
-        [AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.Charm),
-            AdditiveQuantumNumberConservation(
-            StateQuantumNumberNames.Strangeness),
-            ParityConservation(),
-            CParityConservation()
-         ]
-    )
-    em_qn_domains = interaction_type_settings[
-        InteractionTypes.Weak][2]
-    if formalism_type == 'helicity':
-        em_cons_law_list.append(ParityConservationHelicity())
-        em_qn_domains.update({
-            InteractionQuantumNumberNames.ParityPrefactor: [-1, 1]
-        })
-
-    interaction_type_settings[InteractionTypes.EM] = (
-        em_cons_law_list,
-        interaction_type_settings[InteractionTypes.Weak][1],
-        em_qn_domains,
-        1
-    )
-    strong_cons_law_list = deepcopy(interaction_type_settings[
-        InteractionTypes.EM][0])
-    strong_cons_law_list.extend(
-        [SpinConservation(
-            StateQuantumNumberNames.IsoSpin),
-            GParityConservation()]
-    )
-    interaction_type_settings[InteractionTypes.Strong] = (
-        strong_cons_law_list,
-        interaction_type_settings[InteractionTypes.EM][1],
-        interaction_type_settings[InteractionTypes.EM][2],
-        60
-    )
-    return interaction_type_settings
+def change_qn_domain(interaction_settings, qn_name, new_domain):
+    if not isinstance(interaction_settings, InteractionNodeSettings):
+        raise TypeError(
+            "interaction_settings has to be of type InteractionNodeSettings")
+    interaction_settings.qn_domains.update({qn_name: new_domain})
 
 
 def filter_interaction_types(interaction_types, allowed_interaction_types):
@@ -206,7 +88,7 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
         return node_interaction_type
 
 
-def get_final_state_edge_ids(graph, list_of_particle_name_lists):
+def convert_fs_names_to_edge_ids(graph, list_of_particle_name_lists):
     if not isinstance(graph, StateTransitionGraph):
         raise TypeError("graph must be a StateTransitionGraph")
     name_label = get_xml_label(XMLLabelConstants.Name)
@@ -386,20 +268,24 @@ def create_setting_combinations(node_settings):
 def calculate_strength(node_interaction_settings):
     strength = 1.0
     for int_setting in node_interaction_settings.values():
-        strength *= int_setting[3]
+        strength *= int_setting.interaction_strength
     return strength
 
 
 class StateTransitionManager():
     def __init__(self, initial_state, final_state,
                  allowed_intermediate_particles=[],
+                 interaction_type_settings={},
                  formalism_type='helicity',
                  topology_building='isobar',
                  number_of_threads=4):
         self.number_of_threads = number_of_threads
         self.initial_state = initial_state
         self.final_state = final_state
-        self.InteractionTypeSettings = create_default_settings(formalism_type)
+        self.interaction_type_settings = interaction_type_settings
+        if not self.interaction_type_settings:
+            self.interaction_type_settings = create_default_interaction_settings(
+                formalism_type)
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
         self.allowed_intermediate_particles = allowed_intermediate_particles
         self.final_state_groupings = []
@@ -418,7 +304,7 @@ class StateTransitionManager():
             # turn of mass conservation, in case more than one initial state
             # particle is present
             if len(initial_state) > 1:
-                self.InteractionTypeSettings = create_default_settings(
+                self.interaction_type_settings = create_default_interaction_settings(
                     formalism_type,
                     False)
         self.topology_builder = SimpleStateTransitionTopologyBuilder(
@@ -443,8 +329,8 @@ class StateTransitionManager():
             if not isinstance(x, InteractionTypes):
                 raise TypeError("allowed interaction types must be of type"
                                 "[InteractionTypes]")
-            if x not in self.InteractionTypeSettings:
-                logging.info(self.InteractionTypeSettings.keys())
+            if x not in self.interaction_type_settings:
+                logging.info(self.interaction_type_settings.keys())
                 raise ValueError("interaction " + str(x) +
                                  " not found in settings")
         self.allowed_interaction_types = allowed_interaction_types
@@ -481,7 +367,7 @@ class StateTransitionManager():
                     # check if this grouping is available in this graph
                     valid_grouping = True
 
-                    possible_fs_groupings = get_final_state_edge_ids(
+                    possible_fs_groupings = convert_fs_names_to_edge_ids(
                         igraph,
                         fs_grouping)
                     for possible_fs_grouping in possible_fs_groupings:
@@ -544,7 +430,7 @@ class StateTransitionManager():
                 logging.debug(
                     "using " + str(node_int_types)
                     + " interaction order for node: " + str(node_id))
-                node_settings[node_id] = [self.InteractionTypeSettings[x]
+                node_settings[node_id] = [self.interaction_type_settings[x]
                                           for x in node_int_types]
             graph_node_setting_pairs.append((graph, node_settings))
         return graph_node_setting_pairs
@@ -612,17 +498,8 @@ class StateTransitionManager():
     def initialize_qn_propagator(self, state_graph, node_settings):
         propagator = FullPropagator(state_graph)
         for node_id, interaction_settings in node_settings.items():
-            propagator.assign_conservation_laws_to_node(
-                node_id,
-                interaction_settings[0],
-                True)
-            propagator.assign_conservation_laws_to_node(
-                node_id,
-                interaction_settings[1],
-                False)
-            propagator.assign_qn_domains_to_node(
-                node_id,
-                interaction_settings[2])
+            propagator.assign_settings_to_node(
+                node_id, interaction_settings)
         # specify set of particles which are allowed to be intermediate
         # particles. If list is empty, then all particles in the default
         # particle list are used
