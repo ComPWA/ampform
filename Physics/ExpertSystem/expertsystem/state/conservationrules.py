@@ -11,8 +11,6 @@ from expertsystem.state.particle import (StateQuantumNumberNames,
                                          ParticlePropertyNames,
                                          QNNameClassMapping,
                                          QuantumNumberClasses,
-                                         get_xml_label,
-                                         XMLLabelConstants,
                                          is_boson,
                                          Spin)
 

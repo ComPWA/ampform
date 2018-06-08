@@ -33,4 +33,4 @@ for g in solutions:
 
 xml_generator = HelicityDecayAmplitudeGeneratorXML()
 xml_generator.generate(solutions)
-xml_generator.write_to_file('output.xml')
+xml_generator.write_to_file('JPsiToGammaPi0Pi0.xml')

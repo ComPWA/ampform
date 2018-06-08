@@ -110,17 +110,19 @@ def convert_fs_names_to_edge_ids(graph, list_of_particle_name_lists):
         fsp_name_id_maps = temp_fsp_name_id_maps
 
     edge_lists_combinations = []
-    for current_fsp_name_id_map in fsp_name_id_maps:
+    for fsp_name_id_map in fsp_name_id_maps:
         current_edge_list_combination = []
         for particle_name_list in list_of_particle_name_lists:
+            current_fsp_name_id_map = deepcopy(fsp_name_id_map)
             current_fs_group = set()
             for particle_name in particle_name_list:
                 if (particle_name not in current_fsp_name_id_map
                         or len(current_fsp_name_id_map[particle_name]) == 0):
                     raise ValueError(
-                        "No final state particle with name " + particle_name
-                        + " exists.\n Final state particles are:\n"
-                        + current_fsp_name_id_map)
+                        "Too many final state particles with name "
+                        + particle_name + " were requested.\nThe existing "
+                        + "final state particles are:\n"
+                        + str(fsp_name_id_map))
                 possible_edge_ids = current_fsp_name_id_map[particle_name]
                 current_fs_group.add(possible_edge_ids[0])
                 del possible_edge_ids[0]
@@ -358,6 +360,9 @@ class StateTransitionManager():
             init_graphs.extend(initialize_graph(
                 tgraph, self.initial_state, self.final_state))
 
+        logging.info("initialized " + str(len(init_graphs)) + " graphs!")
+        logging.info("Now removing graphs based on required final state"
+                     " groupings")
         graphs_to_remove = []
         # remove graphs which do not show the final state groupings
         if self.final_state_groupings:
@@ -365,12 +370,13 @@ class StateTransitionManager():
                 valid_groupings = []
                 for fs_grouping in self.final_state_groupings:
                     # check if this grouping is available in this graph
-                    valid_grouping = True
+                    valid_grouping = False
 
                     possible_fs_groupings = convert_fs_names_to_edge_ids(
-                        igraph,
-                        fs_grouping)
+                        igraph, fs_grouping)
+
                     for possible_fs_grouping in possible_fs_groupings:
+                        valid_current_fs_grouping_val = True
                         for group_fs_list in possible_fs_grouping:
                             fs_group_found = False
                             for node_id in igraph.nodes:
@@ -381,9 +387,10 @@ class StateTransitionManager():
                                     fs_group_found = True
                                     break
                             if not fs_group_found:
-                                valid_grouping = False
+                                valid_current_fs_grouping_val = False
                                 break
-                        if valid_grouping:
+                        if valid_current_fs_grouping_val:
+                            valid_grouping = True
                             valid_groupings.append(
                                 self.final_state_groupings.index(fs_grouping)
                             )
@@ -450,10 +457,12 @@ class StateTransitionManager():
     def find_solutions(self, graph_setting_groups):
         results = {}
         # check for solutions for a specific set of interaction settings
+        logging.info("Number of interaction settings groups being processed: "
+                     + str(len(graph_setting_groups)))
         for strength, graph_setting_group in sorted(
                 graph_setting_groups.items(), reverse=True):
-            logging.debug("processing interaction settings group with "
-                          "strength " + str(strength))
+            logging.info("processing interaction settings group with "
+                         "strength " + str(strength))
             logging.info(str(len(graph_setting_group)) +
                          " entries in this group")
             logging.info("running with " +

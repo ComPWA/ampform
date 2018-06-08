@@ -1,5 +1,5 @@
 """ sample script for the testing purposes using the decay
-    JPsi -> gamma pi0 pi0
+    D0 -> K_S0 K+ K-
 """
 import logging
 
@@ -30,4 +30,4 @@ for g in solutions:
 
 xml_generator = HelicityDecayAmplitudeGeneratorXML()
 xml_generator.generate(solutions)
-xml_generator.write_to_file('output2.xml')
+xml_generator.write_to_file('D0ToKs0KpKm.xml')

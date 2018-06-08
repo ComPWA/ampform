@@ -114,6 +114,29 @@ def get_recoil_edge(graph, edge_id):
     return outgoing_edges[0]
 
 
+def get_parent_recoil_edge(graph, edge_id):
+    '''
+    Determines the id of the recoil edge of the parent edge for the specified
+    edge of a graph.
+
+    Args:
+        graph (:class:`.StateTransitionGraph`)
+        edge_id (int): id of the edge, for which the parents recoil partner is
+            determined
+    Returns:
+        parent recoil edge id (int)
+    '''
+    node_id = graph.edges[edge_id].originating_node_id
+    if node_id is None:
+        return None
+    ingoing_edges = get_edges_ingoing_to_node(graph, node_id)
+    if len(ingoing_edges) != 1:
+        raise ValueError("The node with id " + str(node_id) +
+                         " does not have a single ingoing edge!\n" +
+                         str(graph))
+    return get_recoil_edge(graph, ingoing_edges[0])
+
+
 def get_prefactor(graph):
     '''
     calculates the product of all prefactors defined in this graph as a double
@@ -434,12 +457,20 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         dec_part = graph.edge_props[in_edge_ids[0]]
 
         recoil_edge_id = get_recoil_edge(graph, in_edge_ids[0])
+        parent_recoil_edge_id = get_parent_recoil_edge(graph, in_edge_ids[0])
         recoil_system_dict = {}
         if recoil_edge_id is not None:
-            recoil_system_dict['RecoilSystem'] = {
-                '@FinalState':
+            tempdict = {
+                '@RecoilFinalState':
                 determine_attached_final_state_string(graph, recoil_edge_id)
-            },
+            }
+            if parent_recoil_edge_id is not None:
+                tempdict.update({
+                    '@ParentRecoilFinalState':
+                    determine_attached_final_state_string(
+                        graph, parent_recoil_edge_id)
+                })
+            recoil_system_dict['RecoilSystem'] = tempdict
 
         amp_name = parameter_props[node_id]['Name']
         partial_decay_dict = {
