@@ -323,9 +323,14 @@ class StateTransitionManager():
         self.topology_builder = topology_builder
 
     def add_final_state_grouping(self, fs_group):
-        self.final_state_groupings.append(fs_group)
+        if not isinstance(fs_group, list):
+            raise ValueError("The final state grouping has to be of type list.")
+        if len(fs_group) > 0:
+            if not isinstance(fs_group[0], list):
+                fs_group = [fs_group]
+            self.final_state_groupings.append(fs_group)
 
-    def set_interaction_settings(self, allowed_interaction_types):
+    def set_allowed_interaction_types(self, allowed_interaction_types):
         # verify order
         for x in allowed_interaction_types:
             if not isinstance(x, InteractionTypes):

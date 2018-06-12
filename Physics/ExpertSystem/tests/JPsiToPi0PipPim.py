@@ -1,5 +1,5 @@
 """ sample script for the testing purposes using the decay
-    JPsi -> gamma pi0 pi0
+    JPsi -> pi0 pi+ pi-
 """
 import logging
 
@@ -12,14 +12,15 @@ from expertsystem.amplitude.helicitydecay import (
 logging.basicConfig(level=logging.INFO)
 
 # initialize the graph edges (initial and final state)
-initial_state = [("J/psi", [-1, 1])]
-final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
+initial_state = [("J/psi", [1])]
+final_state = [("pi0", [0]), ("pi+", [0]), ("pi-", [0])]
 
 tbd_manager = StateTransitionManager(initial_state, final_state,
-                                     ['f0', 'f2', 'omega'])
+                                     ['rho'])
 #tbd_manager.number_of_threads = 1
+tbd_manager.add_final_state_grouping(['pi+', 'pi-'])
 tbd_manager.set_allowed_interaction_types(
-    [InteractionTypes.Strong, InteractionTypes.EM])
+    [InteractionTypes.EM])
 graph_interaction_settings_groups = tbd_manager.prepare_graphs()
 
 (solutions, violated_rules) = tbd_manager.find_solutions(
@@ -33,4 +34,4 @@ for g in solutions:
 
 xml_generator = HelicityDecayAmplitudeGeneratorXML()
 xml_generator.generate(solutions)
-xml_generator.write_to_file('JPsiToGammaPi0Pi0.xml')
+xml_generator.write_to_file('test.xml')

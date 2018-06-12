@@ -36,7 +36,7 @@ change_qn_domain(int_settings[InteractionTypes.Strong],
 tbd_manager = StateTransitionManager(initial_state, final_state, ['D*'],
                                      interaction_type_settings=int_settings)
 
-tbd_manager.set_interaction_settings([InteractionTypes.Strong])
+tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
 tbd_manager.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
 tbd_manager.number_of_threads = 1
 

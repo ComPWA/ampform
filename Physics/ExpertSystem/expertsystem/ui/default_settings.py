@@ -49,8 +49,8 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
         formalism_conservation_laws.append(MassConservation())
 
     weak_settings = InteractionNodeSettings()
-    weak_settings.strict_conservation_laws = formalism_conservation_laws
-    weak_settings.strict_conservation_laws.extend([
+    weak_settings.conservation_laws = formalism_conservation_laws
+    weak_settings.conservation_laws.extend([
         GellMannNishijimaRule(),
         AdditiveQuantumNumberConservation(
             StateQuantumNumberNames.Charge),
@@ -86,7 +86,7 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
     interaction_type_settings[InteractionTypes.Weak] = weak_settings
 
     em_settings = deepcopy(weak_settings)
-    em_settings.strict_conservation_laws.extend(
+    em_settings.conservation_laws.extend(
         [AdditiveQuantumNumberConservation(
             StateQuantumNumberNames.Charm),
             AdditiveQuantumNumberConservation(
@@ -96,7 +96,7 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
          ]
     )
     if formalism_type == 'helicity':
-        em_settings.strict_conservation_laws.append(
+        em_settings.conservation_laws.append(
             ParityConservationHelicity())
         em_settings.qn_domains.update({
             InteractionQuantumNumberNames.ParityPrefactor: [-1, 1]
@@ -106,7 +106,7 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
     interaction_type_settings[InteractionTypes.EM] = em_settings
 
     strong_settings = deepcopy(em_settings)
-    strong_settings.strict_conservation_laws.extend(
+    strong_settings.conservation_laws.extend(
         [SpinConservation(
             StateQuantumNumberNames.IsoSpin),
             GParityConservation()]

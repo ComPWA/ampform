@@ -1,6 +1,7 @@
 import logging
 
-from expertsystem.ui.system_control import (StateTransitionManager)
+from expertsystem.ui.system_control import (
+    StateTransitionManager, InteractionTypes)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -9,8 +10,9 @@ initial_state = [("EpEm", [-1, 1])]
 final_state = [("Chic1", [-1, 1]), ("pi+", [0]), ("pi-", [0])]
 
 tbd_manager = StateTransitionManager(initial_state, final_state,
-                                     [], 'canonical', 'em')
+                                     [], {}, 'canonical')
 tbd_manager.add_final_state_grouping([["Chic1", "pi+"]])
+tbd_manager.set_allowed_interaction_types([InteractionTypes.EM])
 
 graph_node_setting_pairs = tbd_manager.prepare_graphs()
 (solutions, violated_rules) = tbd_manager.find_solutions(
