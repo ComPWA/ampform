@@ -1,7 +1,7 @@
-import logging
-
 from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes)
+
+import pytest
 
 
 # logging.basicConfig(level=logging.INFO)
@@ -61,29 +61,22 @@ def test_general_reaction():
             assert set(violated_rules) == set(case[2])
 
 
-def test_strong_reactions():
-    em_cases = [
-        (['f0(980)'], ['pi+', 'pi-'], []),
-        (['J/psi'], ['pi0', 'f0(980)'], ['IsoSpinConservation',
-                                         'CParityConservation'])
-    ]
-
+@pytest.mark.parametrize("test_input,expected", [
+    ((['f0(980)'], ['pi+', 'pi-']), []),
+    ((['J/psi'], ['pi0', 'f0(980)']), ['IsoSpinConservation',
+                                       'CParityConservation'])
+])
+def test_strong_reactions(test_input, expected):
     # general checks
-    for case in em_cases:
-        print("processing case:" + str(case))
+    print("processing case:" + str(test_input))
 
-        tbd_manager = StateTransitionManager(case[0], case[1], [], {},
-                                             'canonical', 'nbody')
+    tbd_manager = StateTransitionManager(test_input[0], test_input[1], [], {},
+                                         'canonical', 'nbody')
 
-        tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
+    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
 
-        graph_interaction_settings = tbd_manager.prepare_graphs()
-        (solutions, violated_rules) = tbd_manager.find_solutions(
-            graph_interaction_settings)
+    graph_interaction_settings = tbd_manager.prepare_graphs()
+    (solutions, violated_rules) = tbd_manager.find_solutions(
+        graph_interaction_settings)
 
-        if len(solutions) > 0:
-            print("is valid")
-            assert len(case[2]) == 0
-        else:
-            print("not allowed! violates: " + str(violated_rules))
-            assert set(violated_rules) == set(case[2])
+    assert set(violated_rules) == set(expected)
