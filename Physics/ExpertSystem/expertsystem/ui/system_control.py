@@ -112,8 +112,8 @@ def convert_fs_names_to_edge_ids(graph, list_of_particle_name_lists):
     edge_lists_combinations = []
     for fsp_name_id_map in fsp_name_id_maps:
         current_edge_list_combination = []
+        current_fsp_name_id_map = deepcopy(fsp_name_id_map)
         for particle_name_list in list_of_particle_name_lists:
-            current_fsp_name_id_map = deepcopy(fsp_name_id_map)
             current_fs_group = set()
             for particle_name in particle_name_list:
                 if (particle_name not in current_fsp_name_id_map
@@ -197,29 +197,18 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
     return found_graph
 
 
-def filter_solutions(results):
+def filter_solutions(results, remove_qns_list, ingore_qns_list):
     filtered_results = {}
-    int_spin_label = InteractionQuantumNumberNames.S
-    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
-    type_label = get_xml_label(XMLLabelConstants.Type)
-    parity_prefactor_label = InteractionQuantumNumberNames.ParityPrefactor
     solutions = []
     remove_counter = 0
     for strength, group_results in results.items():
         for (sol_graphs, rule_violations) in group_results:
             temp_graphs = []
             for sol_graph in sol_graphs:
-                for props in sol_graph.node_props.values():
-                    if qns_label in props:
-                        for qn_entry in props[qns_label]:
-                            if (InteractionQuantumNumberNames[
-                                    qn_entry[type_label]] is int_spin_label):
-                                del props[qns_label][props[qns_label].index(
-                                    qn_entry)]
-                                break
+                sol_graph = remove_qns_from_graph(sol_graph, remove_qns_list)
 
                 found_graph = check_equal_ignoring_qns(sol_graph, solutions,
-                                                       [parity_prefactor_label])
+                                                       ingore_qns_list)
                 if found_graph is None:
                     solutions.append(sol_graph)
                     temp_graphs.append(sol_graph)
@@ -294,6 +283,12 @@ class StateTransitionManager():
         self.allowed_interaction_types = [InteractionTypes.Strong,
                                           InteractionTypes.EM,
                                           InteractionTypes.Weak]
+        self.filter_remove_qns = []
+        self.filter_ignore_qns = []
+        if formalism_type == 'helicity':
+            self.filter_remove_qns = [InteractionQuantumNumberNames.S]
+            self.filter_ignore_qns = [
+                InteractionQuantumNumberNames.ParityPrefactor]
         int_nodes = []
         if topology_building == 'isobar':
             if len(initial_state) == 1:
@@ -324,7 +319,8 @@ class StateTransitionManager():
 
     def add_final_state_grouping(self, fs_group):
         if not isinstance(fs_group, list):
-            raise ValueError("The final state grouping has to be of type list.")
+            raise ValueError(
+                "The final state grouping has to be of type list.")
         if len(fs_group) > 0:
             if not isinstance(fs_group[0], list):
                 fs_group = [fs_group]
@@ -486,7 +482,8 @@ class StateTransitionManager():
 
         # filter solutions, by removing those which only differ in
         # the interaction S qn
-        results = filter_solutions(results)
+        results = filter_solutions(results, self.filter_remove_qns,
+                                   self.filter_ignore_qns)
 
         node_non_satisfied_rules = []
         solutions = []

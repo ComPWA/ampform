@@ -19,7 +19,7 @@ from expertsystem.state.particle import (
 logging.basicConfig(level=logging.INFO)
 
 # initialize the graph edges (intial and final state)
-initial_state = [("Y", [-1, 1])]
+initial_state = [("Y", [-1])]
 final_state = [("D0", [0]), ("D0bar", [0]), ("pi0", [0]), ("pi0", [0])]
 
 # because the amount of solutions is too big we change the default domains
@@ -38,10 +38,11 @@ tbd_manager = StateTransitionManager(initial_state, final_state, ['D*'],
 
 tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
 tbd_manager.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
-tbd_manager.number_of_threads = 1
+tbd_manager.number_of_threads = 2
+tbd_manager.filter_remove_qns = []
 
 graph_node_setting_pairs = tbd_manager.prepare_graphs()
-print(graph_node_setting_pairs)
+#print(graph_node_setting_pairs)
 
 (solutions, violated_rules) = tbd_manager.find_solutions(
     graph_node_setting_pairs)
