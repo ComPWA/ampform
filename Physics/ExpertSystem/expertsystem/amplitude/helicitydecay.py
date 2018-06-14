@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import json
 import logging
+from copy import deepcopy
 
 import xmltodict
 
@@ -186,12 +187,28 @@ def generate_particle_list(graphs):
     particles = []
     for g in graphs:
         for edge_props in g.edge_props.values():
-            par_name = edge_props[get_xml_label(XMLLabelConstants.Name)]
+            new_edge_props = remove_spin_projection(edge_props)
+            par_name = new_edge_props[get_xml_label(XMLLabelConstants.Name)]
             if par_name not in temp_particle_names:
-                particles.append(edge_props)
+                particles.append(new_edge_props)
                 temp_particle_names.append(par_name)
     return {'ParticleList': {'Particle': particles}}
 
+
+def remove_spin_projection(edge_props):
+    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+    type_label = get_xml_label(XMLLabelConstants.Type)
+    spin_label = StateQuantumNumberNames.Spin
+    proj_label = get_xml_label(XMLLabelConstants.Projection)
+
+    new_edge_props = deepcopy(edge_props)
+
+    for qn_entry in new_edge_props[qns_label]:
+        if (StateQuantumNumberNames[qn_entry[type_label]]
+                is spin_label):
+            del qn_entry[proj_label]
+            break
+    return new_edge_props
 
 class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
     def __init__(self, use_parity_conservation):
