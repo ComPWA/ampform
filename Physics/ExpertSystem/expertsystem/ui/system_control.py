@@ -292,6 +292,9 @@ class StateTransitionManager():
             self.filter_remove_qns = [InteractionQuantumNumberNames.S]
             self.filter_ignore_qns = [
                 InteractionQuantumNumberNames.ParityPrefactor]
+        if formalism_type == 'canonical_from_helicity':
+            self.filter_ignore_qns = [
+                InteractionQuantumNumberNames.ParityPrefactor]
         int_nodes = []
         if topology_building == 'isobar':
             if len(initial_state) == 1:

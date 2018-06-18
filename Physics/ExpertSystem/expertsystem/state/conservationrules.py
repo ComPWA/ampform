@@ -541,31 +541,70 @@ class SpinConservation(AbstractRule):
                 abs(j1 - j2), j1 + j2 + 1, 1).tolist() if x >= abs(m)]
 
             return [x for x in possible_spins
-                    if not self.is_clebsch_gordan_coefficient_zero(
-                        spin1, spin2, x)]
+                    if not is_clebsch_gordan_coefficient_zero(spin1, spin2, x)]
         else:
             return [Spin(x, 0) for x in arange(
                 abs(j1 - j2), j1 + j2 + 1, 1).tolist()]
 
-    def is_clebsch_gordan_coefficient_zero(self, spin1, spin2, spin_coupled):
-        m1 = spin1.projection()
-        j1 = spin1.magnitude()
-        m2 = spin2.projection()
-        j2 = spin2.magnitude()
-        m = spin_coupled.magnitude()
-        j = spin_coupled.magnitude()
-        iszero = False
-        if ((j1 == j2 and m1 == m2) or
-                (m1 == 0.0 and m2 == 0.0)):
-            if abs(j - j1 - j2) % 2 == 1:
-                iszero = True
-        elif j1 == j and m1 == -m:
-            if abs(j2 - j1 - j) % 2 == 1:
-                iszero = True
-        elif j2 == j and m2 == -m:
-            if abs(j1 - j2 - j) % 2 == 1:
-                iszero = True
-        return iszero
+
+def is_clebsch_gordan_coefficient_zero(spin1, spin2, spin_coupled):
+    m1 = spin1.projection()
+    j1 = spin1.magnitude()
+    m2 = spin2.projection()
+    j2 = spin2.magnitude()
+    m = spin_coupled.magnitude()
+    j = spin_coupled.magnitude()
+    iszero = False
+    if ((j1 == j2 and m1 == m2) or
+            (m1 == 0.0 and m2 == 0.0)):
+        if abs(j - j1 - j2) % 2 == 1:
+            iszero = True
+    elif j1 == j and m1 == -m:
+        if abs(j2 - j1 - j) % 2 == 1:
+            iszero = True
+    elif j2 == j and m2 == -m:
+        if abs(j1 - j2 - j) % 2 == 1:
+            iszero = True
+    return iszero
+
+
+class ClebschGordanCheckHelicityToCanonical(AbstractRule):
+    """
+    implements clebsch gordan checks for S1S2 to S and the LS to J coupling
+    based on the conversion of helicity to canonical amplitude sums
+    """
+
+    def __init__(self):
+        super().__init__('ClebschGordanCheckHelicityToCanonical')
+
+    def specify_required_qns(self):
+        self.add_required_qn(
+            StateQuantumNumberNames.Spin, [DefinedForAllEdges()])
+        self.add_required_qn(InteractionQuantumNumberNames.L, [
+            DefinedForInteractionNode()])
+        self.add_required_qn(InteractionQuantumNumberNames.S, [
+            DefinedForInteractionNode()])
+
+    def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
+        if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
+            spin_label = StateQuantumNumberNames.Spin
+            in_spins = [x[spin_label] for x in ingoing_part_qns]
+            out_spins = [x[spin_label] for x in outgoing_part_qns]
+            out_spins[1] = Spin(out_spins[1].magnitude(),
+                                -out_spins[1].projection())
+            helicity_diff = sum([x.projection() for x in out_spins])
+            L = interaction_qns[InteractionQuantumNumberNames.L]
+            S = interaction_qns[InteractionQuantumNumberNames.S]
+            if (S.magnitude() < abs(helicity_diff) or
+                    in_spins[0].magnitude() < abs(helicity_diff)):
+                return False
+            S = Spin(S.magnitude(), helicity_diff)
+            if is_clebsch_gordan_coefficient_zero(out_spins[0],
+                                                  out_spins[1], S):
+                return False
+            in_spins[0] = Spin(in_spins[0].magnitude(), helicity_diff)
+            return not is_clebsch_gordan_coefficient_zero(L, S, in_spins[0])
+        return False
 
 
 class HelicityConservation(AbstractRule):
