@@ -32,15 +32,6 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
     if formalism_type is 'helicity':
         formalism_conservation_laws = [
             SpinConservation(StateQuantumNumberNames.Spin, False),
-            HelicityConservation()]
-        formalism_qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain(
-                [0, 1, 2], True),
-            InteractionQuantumNumberNames.S: create_spin_domain(
-                [0, 0.5, 1, 1.5, 2], True)}
-    if formalism_type is 'canonical_from_helicity':
-        formalism_conservation_laws = [
-            SpinConservation(StateQuantumNumberNames.Spin, False),
             HelicityConservation(),
             ClebschGordanCheckHelicityToCanonical()]
         formalism_qn_domains = {

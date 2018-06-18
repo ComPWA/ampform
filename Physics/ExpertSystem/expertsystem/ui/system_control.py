@@ -292,9 +292,6 @@ class StateTransitionManager():
             self.filter_remove_qns = [InteractionQuantumNumberNames.S]
             self.filter_ignore_qns = [
                 InteractionQuantumNumberNames.ParityPrefactor]
-        if formalism_type == 'canonical_from_helicity':
-            self.filter_ignore_qns = [
-                InteractionQuantumNumberNames.ParityPrefactor]
         int_nodes = []
         if topology_building == 'isobar':
             if len(initial_state) == 1:
@@ -491,11 +488,6 @@ class StateTransitionManager():
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)
-
-        for v1 in results.values():
-            for v2 in v1:
-                for v3 in v2[0]:
-                    print(v3.node_props)
 
         # filter solutions, by removing those which only differ in
         # the interaction S qn

@@ -3,14 +3,14 @@
 """
 import logging
 
+from expertsystem.amplitude.canonicaldecay import (
+    CanonicalDecayAmplitudeGeneratorXML
+)
 from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes, change_qn_domain
 )
 from expertsystem.ui.default_settings import (
     create_default_interaction_settings
-)
-from expertsystem.amplitude.canonicaldecay import (
-    CanonicalDecayAmplitudeGeneratorXML
 )
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames, create_spin_domain
@@ -23,19 +23,19 @@ initial_state = [("Y", [-1])]
 final_state = [("D0", [0]), ("D0bar", [0]), ("pi0", [0]), ("pi0", [0])]
 
 # because the amount of solutions is too big we change the default domains
-'''int_settings = create_default_interaction_settings('canonical_from_helicity')
+int_settings = create_default_interaction_settings('helicity')
 change_qn_domain(int_settings[InteractionTypes.Strong],
                  InteractionQuantumNumberNames.L,
                  create_spin_domain([0, 1], True)
                  )
 change_qn_domain(int_settings[InteractionTypes.Strong],
                  InteractionQuantumNumberNames.S,
-                 create_spin_domain([0, 1], True)
-                 )'''
+                 create_spin_domain([0, 1, 2], True)
+                 )
 
 tbd_manager = StateTransitionManager(initial_state, final_state, ['D*'],
-                                     #interaction_type_settings=int_settings,
-                                     formalism_type='canonical_from_helicity')
+                                     interaction_type_settings=int_settings,
+                                     formalism_type='helicity')
 
 tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
 tbd_manager.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
