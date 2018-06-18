@@ -149,7 +149,7 @@ class FullPropagator():
                 full_particle_graphs.extend(validator.find_solutions())
                 violated_rules.append(validator.node_non_satisfied_laws)
 
-            logging.info("final number of solutions: " +
+            logging.info("Number of solutions after full propagator: " +
                          str(len(full_particle_graphs)))
             if len(full_particle_graphs) == 0:
                 logging.info("violated rules: " + str(violated_rules))

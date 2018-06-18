@@ -17,7 +17,7 @@ from expertsystem.state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
     get_particle_property, XMLLabelConstants, get_xml_label,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
-    ParticlePropertyNames, compare_edge_properties)
+    ParticlePropertyNames, compare_graph_element_properties)
 
 from expertsystem.state.propagation import (
     FullPropagator, InteractionTypes, InteractionNodeSettings)
@@ -198,6 +198,9 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
 
 
 def filter_solutions(results, remove_qns_list, ingore_qns_list):
+    logging.info("filtering solutions...")
+    logging.info("removing these qns from graphs: " + str(remove_qns_list))
+    logging.info("ignoring qns in graph comparison: " + str(ingore_qns_list))
     filtered_results = {}
     solutions = []
     remove_counter = 0
@@ -357,7 +360,8 @@ class StateTransitionManager():
         # initialize the graph edges (intial and final state)
         init_graphs = []
         for tgraph in topology_graphs:
-            tgraph.set_edge_properties_comparator(compare_edge_properties)
+            tgraph.set_graph_element_properties_comparator(
+                compare_graph_element_properties)
             init_graphs.extend(initialize_graph(
                 tgraph, self.initial_state, self.final_state))
 
@@ -438,8 +442,9 @@ class StateTransitionManager():
                 logging.debug(
                     "using " + str(node_int_types)
                     + " interaction order for node: " + str(node_id))
-                node_settings[node_id] = [self.interaction_type_settings[x]
-                                          for x in node_int_types]
+                node_settings[node_id] = [
+                    deepcopy(self.interaction_type_settings[x])
+                    for x in node_int_types]
             graph_node_setting_pairs.append((graph, node_settings))
         return graph_node_setting_pairs
 
@@ -451,8 +456,7 @@ class StateTransitionManager():
                 strength = calculate_strength(setting)
                 if strength not in graph_settings_groups:
                     graph_settings_groups[strength] = []
-                graph_settings_groups[strength].append((graph,
-                                                        setting))
+                graph_settings_groups[strength].append((graph, setting))
         return graph_settings_groups
 
     def find_solutions(self, graph_setting_groups):
@@ -470,15 +474,25 @@ class StateTransitionManager():
                          str(self.number_of_threads) + " threads...")
 
             temp_results = []
-            with Pool(self.number_of_threads) as p:
-                temp_results = p.imap_unordered(self.propagate_quantum_numbers,
-                                                graph_setting_group, 1)
-                p.close()
-                p.join()
+            if self.number_of_threads > 1:
+                with Pool(self.number_of_threads) as p:
+                    temp_results = p.imap_unordered(
+                        self.propagate_quantum_numbers, graph_setting_group, 1)
+                    p.close()
+                    p.join()
+            else:
+                for graph_setting_pair in graph_setting_group:
+                    temp_results.append(self.propagate_quantum_numbers(
+                        graph_setting_pair))
 
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)
+
+        for v1 in results.values():
+            for v2 in v1:
+                for v3 in v2[0]:
+                    print(v3.node_props)
 
         # filter solutions, by removing those which only differ in
         # the interaction S qn

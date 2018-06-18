@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from numpy import arange
 from itertools import permutations
 from json import loads, dumps
+from collections import OrderedDict
 
 import xmltodict
 
@@ -308,7 +309,7 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
     return property_value
 
 
-def compare_edge_properties(edge_props1, edge_props2):
+def compare_graph_element_properties(edge_props1, edge_props2):
     copy_edge_props1 = deepcopy(edge_props1)
     copy_edge_props2 = deepcopy(edge_props2)
     # first clean up the edge qn list, by converting it to a dict
@@ -332,8 +333,10 @@ def compare_edge_properties(edge_props1, edge_props2):
                 del temp_qn_dict[type_label]
                 new_qns[type_name] = temp_qn_dict
             edge_props[qns_label] = new_qns
-    if (loads(dumps(copy_edge_props1, sort_keys=True))
-            != loads(dumps(copy_edge_props2, sort_keys=True))):
+    if (loads(dumps(copy_edge_props1, sort_keys=True),
+              object_pairs_hook=OrderedDict)
+            != loads(dumps(copy_edge_props2, sort_keys=True),
+                     object_pairs_hook=OrderedDict)):
         return False
     return True
 

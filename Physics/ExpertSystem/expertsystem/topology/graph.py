@@ -156,6 +156,11 @@ def get_originating_final_state_edges(graph, node_id):
     return edge_list
 
 
+def dicts_unequal(dict1, dict2):
+    return (OrderedDict(sorted(dict1.items())) !=
+            OrderedDict(sorted(dict2.items())))
+
+
 class StateTransitionGraph:
     """
         Graph class which contains edges and nodes, similar to feynman graphs.
@@ -171,10 +176,10 @@ class StateTransitionGraph:
         self.edges = {}
         self.node_props = {}
         self.edge_props = {}
-        self.edge_properties_comparator = None
+        self.graph_element_properties_comparator = None
 
-    def set_edge_properties_comparator(self, edge_properties_comparator):
-        self.edge_properties_comparator = edge_properties_comparator
+    def set_graph_element_properties_comparator(self, comparator):
+        self.graph_element_properties_comparator = comparator
 
     def __repr__(self):
         return_string = "\nnodes: " + \
@@ -209,17 +214,17 @@ class StateTransitionGraph:
         if isinstance(other, StateTransitionGraph):
             if set(self.nodes) != set(other.nodes):
                 return False
-            if set(self.edges) != set(other.edges):
+            if dicts_unequal(self.edges, other.edges):
                 return False
-            if set(self.node_props) != set(other.node_props):
-                return False
-            if self.edge_properties_comparator is not None:
-                return self.edge_properties_comparator(self.edge_props,
-                                                       other.edge_props)
-            else:
-                if (loads(dumps(self.edge_props, sort_keys=True))
-                        != loads(dumps(other.edge_props, sort_keys=True))):
+            if self.graph_element_properties_comparator is not None:
+                if not self.graph_element_properties_comparator(
+                        self.node_props, other.node_props):
                     return False
+                return self.graph_element_properties_comparator(
+                    self.edge_props, other.edge_props)
+            else:
+                raise NotImplementedError(
+                    "Graph element properties comparator is not set!")
             return True
         else:
             return NotImplemented
