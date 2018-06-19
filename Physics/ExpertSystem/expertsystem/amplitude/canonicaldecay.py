@@ -12,24 +12,38 @@ from expertsystem.state.particle import (
     get_particle_property, get_interaction_property)
 
 from expertsystem.amplitude.helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML
+    HelicityDecayAmplitudeGeneratorXML,
+    HelicityPartialDecayNameGenerator
 )
 
 
-'''
-def get_spin_info_from_edge_props(edge_props):
-    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
-    type_label = get_xml_label(XMLLabelConstants.Type)
-    spin_label = StateQuantumNumberNames.Spin
-    proj_label = get_xml_label(XMLLabelConstants.Projection)
-    val_label = get_xml_label(XMLLabelConstants.Value)
+class CanonicalPartialDecayNameGenerator(HelicityPartialDecayNameGenerator):
+    '''
+    asdf
+    '''
+    def _canonical_ls_decorator(generate_function):
+        '''
+        Decorator method which adds two clebsch gordan coefficients based on
+        the translation of helicity amplitudes to canonical ones.
+        '''
 
-    for qn in edge_props[qns_label]:
-        if qn[type_label] == spin_label.name:
-            return Spin(qn[val_label], qn[proj_label])
-    logging.error(edge_props[qns_label])
-    raise ValueError("Could not find spin quantum number!")
-'''
+        def wrapper(self, graph, node_id):
+            name_pair = generate_function(self, graph, node_id)
+            node_props = graph.node_props[node_id]
+            L = get_interaction_property(node_props,
+                                         InteractionQuantumNumberNames.L)
+            S = get_interaction_property(node_props,
+                                         InteractionQuantumNumberNames.S)
+            addition_string = '_L_' + str(L.magnitude()) + \
+                '_S_' + str(S.magnitude())
+            return (name_pair[0] + addition_string,
+                    name_pair[1] + addition_string)
+
+        return wrapper
+
+    @_canonical_ls_decorator
+    def generate(self, graph, node_id):
+        return super().generate(graph, node_id)
 
 
 class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
@@ -41,6 +55,12 @@ class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
     F^J_lambda1,lambda2 = sum_LS { norm * a^J_LS * CG * CG }
     Here CG stands for Clebsch-Gordan factor.
     '''
+
+    def __init__(self, top_node_no_dynamics=True,
+                 use_parity_conservation=None):
+        super().__init__(top_node_no_dynamics, use_parity_conservation)
+        self.name_generator = CanonicalPartialDecayNameGenerator(
+            self.use_parity_conservation)
 
     def _clebsch_gordan_decorator(decay_generate_function):
         '''

@@ -261,6 +261,8 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         self.kinematics = {}
         self.use_parity_conservation = use_parity_conservation
         self.top_node_no_dynamics = top_node_no_dynamics
+        self.name_generator = HelicityPartialDecayNameGenerator(
+            self.use_parity_conservation)
 
     def generate(self, graphs):
         if len(graphs) <= 0:
@@ -293,11 +295,9 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                              "parameters together with prefactors.")
         graph_groups = group_graphs_same_initial_and_final(graphs)
         logging.debug("There are " + str(len(graph_groups)) + " graph groups")
-        # At first we need to define the fit paramteres
-        name_generator = HelicityPartialDecayNameGenerator(
-            self.use_parity_conservation)
+        # At first we need to define the fit parameters
         parameter_mapping = self.generate_fit_parameters(graph_groups,
-                                                         name_generator)
+                                                         self.name_generator)
         self.fix_parameters_unambiguously(parameter_mapping)
         fit_params = set()
         for x in parameter_mapping.values():
