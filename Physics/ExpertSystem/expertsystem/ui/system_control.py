@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from itertools import product, permutations
+from itertools import product
 from abc import ABC, abstractmethod
 from multiprocessing import Pool
 
@@ -8,8 +8,7 @@ from expertsystem.topology.graph import (StateTransitionGraph,
                                          InteractionNode,
                                          get_edges_outgoing_to_node,
                                          get_final_state_edges,
-                                         get_initial_state_edges,
-                                         get_originating_final_state_edges)
+                                         get_initial_state_edges)
 from expertsystem.topology.topologybuilder import (
     SimpleStateTransitionTopologyBuilder)
 
@@ -86,50 +85,6 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
                 if edge_props[self.qns_label] != 0:
                     node_interaction_type = InteractionTypes.EM
         return node_interaction_type
-
-
-def convert_fs_names_to_edge_ids(graph, list_of_particle_name_lists):
-    if not isinstance(graph, StateTransitionGraph):
-        raise TypeError("graph must be a StateTransitionGraph")
-    name_label = get_xml_label(XMLLabelConstants.Name)
-    fsp_name_id_map = {}
-    for i in get_final_state_edges(graph):
-        if graph.edge_props[i][name_label] not in fsp_name_id_map:
-            fsp_name_id_map[graph.edge_props[i][name_label]] = []
-        fsp_name_id_map[graph.edge_props[i][name_label]].append(i)
-
-    fsp_name_id_maps = [{}]
-    for k, v in fsp_name_id_map.items():
-        all_permutations = permutations(v)
-        temp_fsp_name_id_maps = []
-        for current_fsp_permutation in product(fsp_name_id_maps,
-                                               all_permutations):
-            temp_fsp_name_id_map = deepcopy(current_fsp_permutation[0])
-            temp_fsp_name_id_map[k] = list(current_fsp_permutation[1])
-            temp_fsp_name_id_maps.append(temp_fsp_name_id_map)
-        fsp_name_id_maps = temp_fsp_name_id_maps
-
-    edge_lists_combinations = []
-    for fsp_name_id_map in fsp_name_id_maps:
-        current_edge_list_combination = []
-        current_fsp_name_id_map = deepcopy(fsp_name_id_map)
-        for particle_name_list in list_of_particle_name_lists:
-            current_fs_group = set()
-            for particle_name in particle_name_list:
-                if (particle_name not in current_fsp_name_id_map
-                        or len(current_fsp_name_id_map[particle_name]) == 0):
-                    raise ValueError(
-                        "Too many final state particles with name "
-                        + particle_name + " were requested.\nThe existing "
-                        + "final state particles are:\n"
-                        + str(fsp_name_id_map))
-                possible_edge_ids = current_fsp_name_id_map[particle_name]
-                current_fs_group.add(possible_edge_ids[0])
-                del possible_edge_ids[0]
-            current_edge_list_combination.append(current_fs_group)
-        edge_lists_combinations.append(
-            current_edge_list_combination)
-    return edge_lists_combinations
 
 
 def remove_qns_from_graph(graph, qn_list):
@@ -363,50 +318,8 @@ class StateTransitionManager():
             tgraph.set_graph_element_properties_comparator(
                 compare_graph_element_properties)
             init_graphs.extend(initialize_graph(
-                tgraph, self.initial_state, self.final_state))
-
-        logging.info("initialized " + str(len(init_graphs)) + " graphs!")
-        logging.info("Now removing graphs based on required final state"
-                     " groupings")
-        graphs_to_remove = []
-        # remove graphs which do not show the final state groupings
-        if self.final_state_groupings:
-            for igraph in init_graphs:
-                valid_groupings = []
-                for fs_grouping in self.final_state_groupings:
-                    # check if this grouping is available in this graph
-                    valid_grouping = False
-
-                    possible_fs_groupings = convert_fs_names_to_edge_ids(
-                        igraph, fs_grouping)
-
-                    for possible_fs_grouping in possible_fs_groupings:
-                        valid_current_fs_grouping_val = True
-                        for group_fs_list in possible_fs_grouping:
-                            fs_group_found = False
-                            for node_id in igraph.nodes:
-                                node_fs_list = set(
-                                    get_originating_final_state_edges(
-                                        igraph, node_id))
-                                if group_fs_list == node_fs_list:
-                                    fs_group_found = True
-                                    break
-                            if not fs_group_found:
-                                valid_current_fs_grouping_val = False
-                                break
-                        if valid_current_fs_grouping_val:
-                            valid_grouping = True
-                            valid_groupings.append(
-                                self.final_state_groupings.index(fs_grouping)
-                            )
-                            break
-                    if valid_grouping:
-                        break
-                if len(valid_groupings) == 0:
-                    graphs_to_remove.append(init_graphs.index(igraph))
-        graphs_to_remove.sort(reverse=True)
-        for i in graphs_to_remove:
-            del init_graphs[i]
+                tgraph, self.initial_state, self.final_state,
+                self.final_state_groupings))
 
         logging.info("initialized " + str(len(init_graphs)) + " graphs!")
         return init_graphs

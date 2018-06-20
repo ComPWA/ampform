@@ -17,7 +17,8 @@ from expertsystem.topology.graph import (
     get_initial_state_edges,
     get_final_state_edges,
     get_intermediate_state_edges,
-    get_edge_groups_full_attached_node)
+    get_originating_initial_state_edges,
+    get_originating_final_state_edges)
 
 
 XMLLabelConstants = Enum('XMLLabelConstants',
@@ -341,7 +342,7 @@ def compare_graph_element_properties(edge_props1, edge_props2):
     return True
 
 
-def initialize_graph(graph, initial_state, final_state):
+def initialize_graph(graph, initial_state, final_state, final_state_groupings):
     is_edges = get_initial_state_edges(graph)
     if len(initial_state) != len(is_edges):
         raise ValueError("The graph initial state and the supplied initial"
@@ -359,18 +360,22 @@ def initialize_graph(graph, initial_state, final_state):
     initial_state = [check_if_spin_projections_set(x) for x in initial_state]
     final_state = [check_if_spin_projections_set(x) for x in final_state]
 
-    same_node_edges = get_edge_groups_full_attached_node(graph, is_edges)
+    attached_is_edges = [get_originating_initial_state_edges(graph, i)
+                         for i in graph.nodes]
     is_edge_particle_pairs = calculate_combinatorics(
-        is_edges, initial_state, same_node_edges)
-    same_node_edges = get_edge_groups_full_attached_node(graph, fs_edges)
+        is_edges, initial_state, attached_is_edges)
+    attached_fs_edges = [get_originating_final_state_edges(graph, i)
+                         for i in graph.nodes]
     fs_edge_particle_pairs = calculate_combinatorics(
-        fs_edges, final_state, same_node_edges)
+        fs_edges, final_state, attached_fs_edges, final_state_groupings)
 
     new_graphs = []
     for is_pair in is_edge_particle_pairs:
         for fs_pair in fs_edge_particle_pairs:
+            merged_dicts = is_pair.copy()
+            merged_dicts.update(fs_pair)
             new_graphs.extend(initialize_edges(
-                graph, is_pair + fs_pair))
+                graph, merged_dicts))
 
     return new_graphs
 
@@ -395,17 +400,52 @@ def check_if_spin_projections_set(state):
     return state
 
 
-def calculate_combinatorics(edges, state_particles, same_node_edges):
-    combinatorics_list = [list(zip(edges, particles))
+def calculate_combinatorics(edges, state_particles,
+                            attached_external_edges_per_node,
+                            allowed_particle_groupings=[]):
+    combinatorics_list = [dict(zip(edges, particles))
                           for particles in permutations(state_particles)]
+
+    # now initialize the attached external edge list with the particles
+    comb_attached_ext_edges = [initialize_external_edge_lists(
+        attached_external_edges_per_node, x) for x in combinatorics_list]
+
+    # remove combinations with wrong particle groupings
+    if allowed_particle_groupings:
+        sorted_allowed_particle_groupings = [
+            sorted(y) for y in allowed_particle_groupings]
+
+        combinations_to_remove = set()
+        index_counter = 0
+        for attached_ext_edge_comb in comb_attached_ext_edges:
+            found_valid_grouping = False
+            for particle_grouping in sorted_allowed_particle_groupings:
+                # check if this grouping is available in this graph
+                valid_grouping = True
+                for y in particle_grouping:
+                    found = False
+                    for ext_edge_group in attached_ext_edge_comb:
+                        blub = [x[0] for x in ext_edge_group]
+                        if blub == y:
+                            found = True
+                            break
+                    if not found:
+                        valid_grouping = False
+                        break
+                if valid_grouping:
+                    found_valid_grouping = True
+            if not found_valid_grouping:
+                combinations_to_remove.add(index_counter)
+            index_counter += 1
+        for i in sorted(combinations_to_remove, reverse=True):
+            del comb_attached_ext_edges[i]
+            del combinatorics_list[i]
 
     # remove equal combinations
     combinations_to_remove = set()
-    for i in range(len(combinatorics_list)):
-        for j in range(i + 1, len(combinatorics_list)):
-            if combinations_equal(combinatorics_list[i],
-                                  combinatorics_list[j],
-                                  same_node_edges):
+    for i in range(len(comb_attached_ext_edges)):
+        for j in range(i + 1, len(comb_attached_ext_edges)):
+            if comb_attached_ext_edges[i] == comb_attached_ext_edges[j]:
                 combinations_to_remove.add(i)
                 break
 
@@ -414,72 +454,32 @@ def calculate_combinatorics(edges, state_particles, same_node_edges):
     return combinatorics_list
 
 
-def combinations_equal(comb1, comb2, same_node_edges):
-    # if a node has all in or outgoing edges defined
-    # (by initial and final state particles) and they are permuted
-
-    # first check which edge ids are different
-    different_edge_ids = []
-    comp_dict = {}
-    for eid, part in comb1:
-        comp_dict[eid] = [part[0]]
-    for eid, part in comb2:
-        comp_dict[eid].append(part[0])
-    for key, val in comp_dict.items():
-        if val[0] != val[1]:
-            different_edge_ids.append(key)
-
-    if len(different_edge_ids) == 0:
-        return True
-
-    # check if the different edges are all belonging to the same node
-    # and also check if all different edges belong to the same time level
-    possible_time_level = -1
-    for time_level, edge_lists in same_node_edges.items():
-        edges_this_time_level = []
-        for edge_list in edge_lists:
-            if all(elem in edge_list for elem in different_edge_ids):
-                return True
-            for ele in different_edge_ids:
-                if ele in edge_list:
-                    edges_this_time_level.append(ele)
-        if edges_this_time_level is different_edge_ids:
-            possible_time_level = time_level
-
-    if possible_time_level > 0:
-        edge_lists = same_node_edges[possible_time_level]
-        for perm in permutations(range(len(edge_lists))):
-            good_permutation = True
-            for i in range(len(edge_lists)):
-                list1 = [x[1][0] for x in comb1 if x[0]
-                         == eid for eid in edge_lists[perm[i]]]
-                list2 = [comb2[eid][0] for eid in edge_lists[i]]
-                if set(list1) == set(list2):
-                    good_permutation = False
-                    break
-            if good_permutation:
-                return True
-
-    return False
+def initialize_external_edge_lists(attached_external_edges_per_node,
+                                   edge_particle_mapping):
+    init_edge_lists = []
+    for edge_list in attached_external_edges_per_node:
+        init_edge_lists.append(
+            sorted([edge_particle_mapping[i] for i in edge_list])
+        )
+    return sorted(init_edge_lists)
 
 
-def initialize_edges(graph, edge_particle_pairs):
-    for edge, particle in edge_particle_pairs:
+def initialize_edges(graph, edge_particle_dict):
+    for edge, particle in edge_particle_dict.items():
         # lookup the particle in the list
-        name_label = get_xml_label(XMLLabelConstants.Name)
         found_particle = get_particle_with_name(particle[0])
         graph.edge_props[edge] = deepcopy(found_particle)
 
     # now add more quantum numbers given by user (spin_projection)
     new_graphs = [graph]
-    for edge_part_pair in edge_particle_pairs:
+    for edge, particle in edge_particle_dict.items():
         temp_graphs = new_graphs
         new_graphs = []
         for g in temp_graphs:
             new_graphs.extend(
                 populate_edge_with_spin_projections(g,
-                                                    edge_part_pair[0],
-                                                    edge_part_pair[1][1]))
+                                                    edge,
+                                                    particle[1]))
 
     return new_graphs
 

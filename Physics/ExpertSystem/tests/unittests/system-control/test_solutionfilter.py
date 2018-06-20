@@ -1,5 +1,3 @@
-from itertools import (product)
-
 from expertsystem.ui.system_control import (filter_solutions,
                                             compare_graph_element_properties)
 from expertsystem.topology.graph import StateTransitionGraph

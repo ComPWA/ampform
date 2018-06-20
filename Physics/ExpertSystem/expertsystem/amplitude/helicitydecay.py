@@ -210,6 +210,7 @@ def remove_spin_projection(edge_props):
             break
     return new_edge_props
 
+
 class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
     def __init__(self, use_parity_conservation):
         self.use_parity_conservation = use_parity_conservation
