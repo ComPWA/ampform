@@ -334,10 +334,12 @@ class GParityConservation(AbstractRule):
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """ implements G_in = G_out """
         gparity_label = StateQuantumNumberNames.Gparity
-        no_gpar_inpart = [ingoing_part_qns.index(x) for x in ingoing_part_qns
-                          if gparity_label not in x or x[gparity_label] is None]
-        no_gpar_outpart = [outgoing_part_qns.index(x) for x in outgoing_part_qns
-                           if gparity_label not in x or x[gparity_label] is None]
+        no_gpar_inpart = [ingoing_part_qns.index(x)
+                          for x in ingoing_part_qns if gparity_label not in x
+                          or x[gparity_label] is None]
+        no_gpar_outpart = [outgoing_part_qns.index(x)
+                           for x in outgoing_part_qns if gparity_label not in x
+                           or x[gparity_label] is None]
         # if all states have g parity defined, then just multiply them
         if not no_gpar_inpart + no_gpar_outpart:
             in_gpar = reduce(lambda x, y: x * y[gparity_label],

@@ -20,7 +20,8 @@ from expertsystem.state.conservationrules import (
     MassConservation)
 
 
-def create_default_interaction_settings(formalism_type, use_mass_conservation=True):
+def create_default_interaction_settings(formalism_type,
+                                        use_mass_conservation=True):
     '''
     Create a container, which holds the settings for the various interactions
     (e.g.: strong, em and weak interaction).
