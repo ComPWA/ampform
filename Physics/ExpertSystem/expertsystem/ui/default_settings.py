@@ -29,17 +29,16 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
     formalism_conservation_laws = []
     formalism_qn_domains = {}
     formalism_type = formalism_type
-    if formalism_type is 'helicity':
+    if 'helicity' in formalism_type:
         formalism_conservation_laws = [
             SpinConservation(StateQuantumNumberNames.Spin, False),
-            HelicityConservation(),
-            ClebschGordanCheckHelicityToCanonical()]
+            HelicityConservation()]
         formalism_qn_domains = {
             InteractionQuantumNumberNames.L: create_spin_domain(
                 [0, 1, 2], True),
             InteractionQuantumNumberNames.S: create_spin_domain(
                 [0, 0.5, 1, 1.5, 2], True)}
-    elif formalism_type is 'canonical':
+    elif formalism_type == 'canonical':
         formalism_conservation_laws = [
             SpinConservation(StateQuantumNumberNames.Spin)]
         formalism_qn_domains = {
@@ -47,6 +46,9 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
                 [0, 1, 2]),
             InteractionQuantumNumberNames.S: create_spin_domain(
                 [0, 0.5, 1, 2])}
+    if formalism_type == 'canonical-helicity':
+        formalism_conservation_laws.append(
+            ClebschGordanCheckHelicityToCanonical())
     if use_mass_conservation:
         formalism_conservation_laws.append(MassConservation())
 
@@ -97,7 +99,7 @@ def create_default_interaction_settings(formalism_type, use_mass_conservation=Tr
             CParityConservation()
          ]
     )
-    if formalism_type == 'helicity':
+    if 'helicity' in formalism_type:
         em_settings.conservation_laws.append(
             ParityConservationHelicity())
         em_settings.qn_domains.update({

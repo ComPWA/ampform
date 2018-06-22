@@ -1,6 +1,7 @@
 import logging
 from copy import deepcopy
-from itertools import product
+from itertools import product, permutations
+from collections import OrderedDict
 from abc import ABC, abstractmethod
 from multiprocessing import Pool
 
@@ -221,6 +222,120 @@ def calculate_strength(node_interaction_settings):
     return strength
 
 
+def match_external_edges(graphs):
+    if not isinstance(graphs, list):
+        raise TypeError("graphs argument is not of type list!")
+    if not graphs:
+        return
+    ref_graph_id = 0
+    match_external_edge_ids(graphs, ref_graph_id, get_final_state_edges)
+    match_external_edge_ids(graphs, ref_graph_id, get_initial_state_edges)
+
+
+def match_external_edge_ids(graphs, ref_graph_id,
+                            external_edge_getter_function):
+
+    ref_graph = graphs[ref_graph_id]
+    # create external edge to particle mapping
+    ref_edge_id_particle_mapping = create_edge_id_particle_mapping(
+        ref_graph, external_edge_getter_function)
+
+    for graph in graphs[:ref_graph_id] + graphs[ref_graph_id + 1:]:
+        edge_id_particle_mapping = create_edge_id_particle_mapping(
+            graph, external_edge_getter_function)
+        # remove matching entries
+        ref_mapping_copy = deepcopy(ref_edge_id_particle_mapping)
+        edge_ids_mapping = {}
+        for k, v in edge_id_particle_mapping.items():
+            if k in ref_mapping_copy and v == ref_mapping_copy[k]:
+                del ref_mapping_copy[k]
+            else:
+                for k2, v2 in ref_mapping_copy.items():
+                    if v == v2:
+                        edge_ids_mapping[k] = k2
+                        del ref_mapping_copy[k2]
+                        break
+        if len(ref_mapping_copy) != 0:
+            raise ValueError("Unable to match graphs, due to inherent graph"
+                             " structure mismatch")
+        swappings = calculate_swappings(edge_ids_mapping)
+        for edge_id1, edge_id2 in swappings.items():
+            graph.swap_edges(edge_id1, edge_id2)
+
+
+def calculate_swappings(id_mapping):
+        # calculate edge id swappings
+        # its important to use an ordered dict as the swappings do not commute!
+    swappings = OrderedDict()
+    for k, v in id_mapping.items():
+        # go through existing swappings and use them
+        newkey = k
+        while newkey in swappings:
+            newkey = swappings[newkey]
+        if v != newkey:
+            swappings[v] = newkey
+    return swappings
+
+
+def create_edge_id_particle_mapping(graph, external_edge_getter_function):
+    name_label = get_xml_label(XMLLabelConstants.Name)
+    return {i: graph.edge_props[i][name_label]
+            for i in external_edge_getter_function(graph)}
+
+
+def perform_external_edge_identical_particle_combinatorics(graph):
+    '''
+    Creates combinatorics clones of the StateTransitionGraph in case of
+    identical particles in the initial or final state. Only identical
+    particles, which do not enter or exit the same node allow for
+    combinatorics!
+    '''
+    if not isinstance(graph, StateTransitionGraph):
+        raise TypeError("graph argument is not of type StateTransitionGraph!")
+    temp_new_graphs = external_edge_identical_particle_combinatorics(
+        graph, get_final_state_edges)
+    new_graphs = []
+    for g in temp_new_graphs:
+        new_graphs.extend(external_edge_identical_particle_combinatorics(
+            g, get_initial_state_edges))
+    return new_graphs
+
+
+def external_edge_identical_particle_combinatorics(
+        graph, external_edge_getter_function):
+    new_graphs = [graph]
+    edge_particle_mapping = create_edge_id_particle_mapping(
+        graph, external_edge_getter_function)
+    identical_particle_groups = {}
+    for k, v in edge_particle_mapping.items():
+        if v not in identical_particle_groups:
+            identical_particle_groups[v] = set()
+        identical_particle_groups[v].add(k)
+    identical_particle_groups = {
+        k: v for k, v in identical_particle_groups.items() if len(v) > 1}
+    # now for each identical particle group perform all permutations
+    for particle, edge_group in identical_particle_groups.items():
+        combinations = permutations(edge_group)
+        graph_combinations = set()
+        ext_edge_combinations = []
+        ref_node_origin = graph.get_originating_node_list(edge_group)
+        for comb in combinations:
+            temp_edge_node_mapping = tuple(sorted(zip(comb, ref_node_origin)))
+            if temp_edge_node_mapping not in graph_combinations:
+                graph_combinations.add(temp_edge_node_mapping)
+                ext_edge_combinations.append(dict(zip(edge_group, comb)))
+        temp_new_graphs = []
+        for g in new_graphs:
+            for c in ext_edge_combinations:
+                gnew = deepcopy(g)
+                swappings = calculate_swappings(c)
+                for edge_id1, edge_id2 in swappings.items():
+                    gnew.swap_edges(edge_id1, edge_id2)
+                temp_new_graphs.append(gnew)
+        new_graphs = temp_new_graphs
+    return new_graphs
+
+
 class StateTransitionManager():
     def __init__(self, initial_state, final_state,
                  allowed_intermediate_particles=[],
@@ -244,7 +359,9 @@ class StateTransitionManager():
         self.filter_remove_qns = []
         self.filter_ignore_qns = []
         if formalism_type == 'helicity':
-            self.filter_remove_qns = [InteractionQuantumNumberNames.S]
+            self.filter_remove_qns = [InteractionQuantumNumberNames.S,
+                                      InteractionQuantumNumberNames.L]
+        if 'helicity' in formalism_type:
             self.filter_ignore_qns = [
                 InteractionQuantumNumberNames.ParityPrefactor]
         int_nodes = []
@@ -268,7 +385,6 @@ class StateTransitionManager():
         # load default particles from database/file
         if len(particle_list) == 0:
             load_particle_list_from_xml('../particle_list.xml')
-            # print(particle_list)
             logging.info("loaded " + str(len(particle_list))
                          + " particles from xml file!")
 
@@ -419,7 +535,17 @@ class StateTransitionManager():
         if len(solutions) == 0:
             violated_laws = analyse_solution_failure(node_non_satisfied_rules)
 
-        return (solutions, violated_laws)
+        # finally perform combinatorics of identical external edges
+        # (initial or final state edges) and prepare graphs for
+        # amplitude generation
+        match_external_edges(solutions)
+        final_solutions = []
+        for sol in solutions:
+            final_solutions.extend(
+                perform_external_edge_identical_particle_combinatorics(sol)
+            )
+
+        return (final_solutions, violated_laws)
 
     def propagate_quantum_numbers(self, state_graph_node_settings_pair):
         propagator = self.initialize_qn_propagator(

@@ -413,8 +413,7 @@ def calculate_combinatorics(edges, state_particles,
     # remove combinations with wrong particle groupings
     if allowed_particle_groupings:
         sorted_allowed_particle_groupings = [
-            sorted(y) for y in allowed_particle_groupings]
-
+            sorted(sorted(x) for x in y) for y in allowed_particle_groupings]
         combinations_to_remove = set()
         index_counter = 0
         for attached_ext_edge_comb in comb_attached_ext_edges:
@@ -425,8 +424,7 @@ def calculate_combinatorics(edges, state_particles,
                 for y in particle_grouping:
                     found = False
                     for ext_edge_group in attached_ext_edge_comb:
-                        blub = [x[0] for x in ext_edge_group]
-                        if blub == y:
+                        if sorted([x[0] for x in ext_edge_group]) == y:
                             found = True
                             break
                     if not found:

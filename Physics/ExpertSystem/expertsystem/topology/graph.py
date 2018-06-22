@@ -250,6 +250,24 @@ class StateTransitionGraph:
             node_list.append(self.edges[edge_id].originating_node_id)
         return node_list
 
+    def swap_edges(self, edge_id1, edge_id2):
+        val1 = self.edges.pop(edge_id1)
+        val2 = self.edges.pop(edge_id2)
+
+        self.edges[edge_id2] = val1
+        self.edges[edge_id1] = val2
+
+        val1 = None
+        val2 = None
+        if edge_id1 in self.edge_props:
+            val1 = self.edge_props.pop(edge_id1)
+        if edge_id2 in self.edge_props:
+            val2 = self.edge_props.pop(edge_id2)
+        if val1:
+            self.edge_props[edge_id2] = val1
+        if val2:
+            self.edge_props[edge_id1] = val2
+
     def verify(self):
         """ Verify the graph is connected,
         so no dangling parts which are not connected"""
