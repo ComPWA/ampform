@@ -508,17 +508,8 @@ def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
 
 def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
     initialized_graphs = []
-    mod_allowed_particle_list = []
-    if len(allowed_particle_list) == 0:
-        mod_allowed_particle_list = particle_list
-    else:
-        for x in allowed_particle_list:
-            if isinstance(x, str):
-                for p in particle_list:
-                    if x in p[get_xml_label(XMLLabelConstants.Name)]:
-                        mod_allowed_particle_list.append(p)
-            else:
-                mod_allowed_particle_list.append(x)
+    mod_allowed_particle_list = initialize_allowed_particle_list(
+        allowed_particle_list)
 
     for graph in graphs:
         logging.debug("initializing graph...")
@@ -542,6 +533,21 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
 
         initialized_graphs.extend(current_new_graphs)
     return initialized_graphs
+
+
+def initialize_allowed_particle_list(allowed_particle_list):
+    mod_allowed_particle_list = []
+    if len(allowed_particle_list) == 0:
+        mod_allowed_particle_list = particle_list
+    else:
+        for x in allowed_particle_list:
+            if isinstance(x, str):
+                for p in particle_list:
+                    if x in p[get_xml_label(XMLLabelConstants.Name)]:
+                        mod_allowed_particle_list.append(p)
+            else:
+                mod_allowed_particle_list.append(x)
+    return mod_allowed_particle_list
 
 
 def get_particle_candidates_for_state(state, allowed_particle_list):

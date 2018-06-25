@@ -31,7 +31,9 @@ from expertsystem.state.particle import (get_xml_label, XMLLabelConstants,
                                          get_particle_property,
                                          QNNameClassMapping,
                                          QNClassConverterMapping,
-                                         initialize_graphs_with_particles)
+                                         initialize_graphs_with_particles,
+                                         get_particle_candidates_for_state,
+                                         initialize_allowed_particle_list)
 
 
 graph_element_types = Enum('GraphElementTypes', 'node edge')
@@ -330,8 +332,8 @@ class CSPPropagator(AbstractPropagator):
         solution_graphs = self.apply_solutions_to_graph(solutions)
         for constraint in self.constraints:
             if constraint.conditions_never_met:
-                self.node_postponed_conservation_laws[constraint.node_id].append(
-                    constraint.rule)
+                self.node_postponed_conservation_laws[
+                    constraint.node_id].append(constraint.rule)
             if (sum(constraint.scenario_results) > 0 and
                     constraint.scenario_results[1] == 0):
                 self.node_non_satisfied_laws[constraint.node_id].append(
@@ -460,8 +462,8 @@ class CSPPropagator(AbstractPropagator):
         """
         Apply the CSP solutions to the graph instance.
         In other words attach the solution quantum numbers as properties to
-        the edges.
-
+        the edges. Also the solutions are filtered using the allowed
+        intermediate particle list, to avoid large memory consumption.
         Args:
             solutions ([{constraint variables}]): solutions of the
                 constraint (csp solving module).
@@ -472,9 +474,13 @@ class CSPPropagator(AbstractPropagator):
         initial_edges = get_initial_state_edges(self.graph)
         final_edges = get_final_state_edges(self.graph)
 
-        logging.debug("atempting to copy graph for " +
-                      str(len(solutions)) + " solutions")
-        bar = IncrementalBar('Copying solutions', max=len(solutions))
+        full_allowed_particle_list = initialize_allowed_particle_list(
+            self.allowed_intermediate_particles)
+
+        logging.info("attempting to filter " + str(len(solutions)) +
+                     " solutions for allowed intermediate particles and"
+                     " create a copy graph")
+        bar = IncrementalBar('Filtering solutions', max=len(solutions))
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
             for var_name, value in solution.items():
@@ -489,11 +495,19 @@ class CSPPropagator(AbstractPropagator):
 
                 add_qn_to_graph_element(graph_copy, var_info, value)
 
-            solution_graphs.append(graph_copy)
+            solution_valid = True
+            if self.allowed_intermediate_particles:
+                for int_edge_id in get_intermediate_state_edges(graph_copy):
+                    candidates = get_particle_candidates_for_state(
+                        graph_copy.edge_props[int_edge_id],
+                        full_allowed_particle_list)
+                    if not candidates:
+                        solution_valid = False
+                        break
+            if solution_valid:
+                solution_graphs.append(graph_copy)
             bar.next()
         bar.finish()
-        logging.debug("atempting to copy graph for " +
-                      str(len(solutions)) + " solutions")
         return solution_graphs
 
 
