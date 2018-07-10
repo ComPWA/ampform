@@ -4,6 +4,8 @@ from itertools import product, permutations
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 from multiprocessing import Pool
+import inspect
+from os import path
 
 from expertsystem.topology.graph import (StateTransitionGraph,
                                          InteractionNode,
@@ -394,9 +396,12 @@ class StateTransitionManager():
 
         # load default particles from database/file
         if len(particle_list) == 0:
-            load_particle_list_from_xml('../particle_list.xml')
-            logging.info("loaded " + str(len(particle_list))
-                         + " particles from xml file!")
+            load_particle_list_from_xml(
+                path.dirname(inspect.getfile(StateTransitionManager)) +
+                '/../../particle_list.xml')
+            # print(particle_list)
+            logging.info("loaded " + str(len(particle_list)) +
+                         " particles from xml file!")
 
     def set_topology_builder(self, topology_builder):
         self.topology_builder = topology_builder
