@@ -172,7 +172,9 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
                 var_containers = self.create_variable_containers(
                     node_id, cons_law)
                 # check the requirements
-                if self.check_rule_requirements(cons_law, var_containers):
+                if cons_law.check_requirements(var_containers[0],
+                                               var_containers[1],
+                                               var_containers[2]):
                     # and run the rule check
                     if not cons_law.check(var_containers[0],
                                           var_containers[1],
@@ -184,6 +186,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
                     self.node_postponed_conservation_laws[node_id].append(
                         cons_law)
         if len(self.node_non_satisfied_laws) > 0:
+            return []
+        if len(self.node_postponed_conservation_laws) > 0:
             return []
         return [self.graph]
 
@@ -216,6 +220,7 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
             for qn_name in qn_list:
                 converter = QNClassConverterMapping[
                     QNNameClassMapping[qn_name]]
+                found_prop = None
                 for node_qn in self.graph.node_props[node_id][qns_label]:
                     if (node_qn[type_label] == qn_name.name):
                         found_prop = node_qn
@@ -243,21 +248,6 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
                     edge_vars[qn_name] = value
             variables.append(edge_vars)
         return variables
-
-    def check_rule_requirements(self, rule, var_containers):
-        logging.debug("checking conditions for rule " + str(rule.__class__))
-        for (qn_name_list, cond_functor) in rule.get_qn_conditions():
-            logging.debug(str(cond_functor.__class__))
-            logging.debug(qn_name_list)
-            logging.debug(var_containers)
-            if not cond_functor.check(qn_name_list,
-                                      var_containers[0],
-                                      var_containers[1],
-                                      var_containers[2]):
-                logging.debug("not satisfied!")
-                return False
-        logging.debug("all satisfied")
-        return True
 
 
 class VariableInfo():
@@ -625,7 +615,9 @@ class ConservationLawConstraintWrapper(Constraint):
         if missing:
             return True
         self.update_variable_lists(params)
-        if not self.verify_rule_conditions():
+        if not self.rule.check_requirements(self.part_in,
+                                            self.part_out,
+                                            self.interaction_qns):
             self.conditions_never_met = True
             return True
         passed = self.rule.check(self.part_in, self.part_out,
@@ -637,27 +629,6 @@ class ConservationLawConstraintWrapper(Constraint):
         else:
             self.scenario_results[0] += 1
         return passed
-
-    def verify_rule_conditions(self):
-        for (qn_name_list, cond_functor) in self.rule.get_qn_conditions():
-            if not cond_functor.check(qn_name_list,
-                                      self.part_in,
-                                      self.part_out,
-                                      self.interaction_qns):
-                part_props = [x for x in qn_name_list if isinstance(
-                    x, ParticlePropertyNames)]
-                if part_props:
-                    return False
-
-                raise ValueError("Error: "
-                                 "quantum number condition << "
-                                 + str(cond_functor.__class__) + " >> "
-                                 + "of conservation law "
-                                 + type(self.rule).__name__
-                                 + " when looking for qns:\n"
-                                 + str([x.name for x in qn_name_list])
-                                 + "\non node with id " + str(self.node_id))
-        return True
 
     def update_variable_lists(self, parameters):
         for [var_name, value] in parameters:

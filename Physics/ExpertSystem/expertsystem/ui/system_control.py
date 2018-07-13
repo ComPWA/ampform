@@ -34,6 +34,16 @@ def change_qn_domain(interaction_settings, qn_name, new_domain):
     interaction_settings.qn_domains.update({qn_name: new_domain})
 
 
+def remove_conservation_law(interaction_settings, cons_law):
+    if not isinstance(interaction_settings, InteractionNodeSettings):
+        raise TypeError(
+            "interaction_settings has to be of type InteractionNodeSettings")
+    for i, x in enumerate(interaction_settings.conservation_laws):
+        if x.__class__.__name__ == cons_law.__class__.__name__:
+            del interaction_settings.conservation_laws[i]
+            break
+
+
 def filter_interaction_types(interaction_types, allowed_interaction_types):
     current_lowest_type = InteractionTypes.Strong.value
     for int_type in interaction_types:

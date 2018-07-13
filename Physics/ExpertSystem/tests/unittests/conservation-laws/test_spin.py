@@ -33,7 +33,7 @@ class TestSpin(object):
                               intspin_label: Spin(0, 0)},
                              case[1])
                 cases.append(temp_case)
-        for case in [([0, 2], True), ([1, 3], False)]:
+        for case in [([0, 1, 2], True), ([3], False)]:
             for spin_mag in case[0]:
                 temp_case = ([{spin_label: Spin(spin_mag, 0)}],
                              [{spin_label: Spin(1, -1)}, {

@@ -5,6 +5,7 @@ from functools import reduce
 from copy import deepcopy
 
 from numpy import arange
+import logging
 
 from expertsystem.state.particle import (StateQuantumNumberNames,
                                          InteractionQuantumNumberNames,
@@ -145,6 +146,25 @@ class AbstractRule(ABC):
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         pass
 
+    def check_requirements(self, in_edges, out_edges, int_node):
+        logging.debug("checking conditions for rule " + str(self.__class__))
+        for (qn_name_list, cond_functor) in self.get_qn_conditions():
+            logging.debug(str(cond_functor.__class__))
+            logging.debug(qn_name_list)
+            logging.debug([in_edges, out_edges, int_node])
+
+            # part_props = [x for x in qn_name_list if isinstance(
+            #    x, ParticlePropertyNames)]
+            # if part_props:
+            #    return False
+
+            if not cond_functor.check(qn_name_list, in_edges,
+                                      out_edges, int_node):
+                logging.debug("not satisfied")
+                return False
+        logging.debug("all satisfied")
+        return True
+
 
 class AdditiveQuantumNumberConservation(AbstractRule):
     """
@@ -201,7 +221,8 @@ class ParityConservationHelicity(AbstractRule):
             StateQuantumNumberNames.Parity, [DefinedForAllEdges()])
         self.add_required_qn(
             StateQuantumNumberNames.Spin, [DefinedForAllEdges()])
-        self.add_required_qn(InteractionQuantumNumberNames.ParityPrefactor)
+        self.add_required_qn(InteractionQuantumNumberNames.ParityPrefactor,
+                             [DefinedForInteractionNode()])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
@@ -554,7 +575,7 @@ def is_clebsch_gordan_coefficient_zero(spin1, spin2, spin_coupled):
     j1 = spin1.magnitude()
     m2 = spin2.projection()
     j2 = spin2.magnitude()
-    m = spin_coupled.magnitude()
+    m = spin_coupled.projection()
     j = spin_coupled.magnitude()
     iszero = False
     if ((j1 == j2 and m1 == m2) or
