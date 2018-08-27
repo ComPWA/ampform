@@ -498,6 +498,9 @@ class CSPPropagator(AbstractPropagator):
                 solution_graphs.append(graph_copy)
             bar.next()
         bar.finish()
+        if solutions and not solution_graphs:
+            logging.warning(
+                "No intermediate state particles match the found solutions!")
         return solution_graphs
 
 
