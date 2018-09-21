@@ -7,11 +7,14 @@ from multiprocessing import Pool
 import inspect
 from os import path
 
-from expertsystem.topology.graph import (StateTransitionGraph,
-                                         InteractionNode,
-                                         get_edges_outgoing_to_node,
-                                         get_final_state_edges,
-                                         get_initial_state_edges)
+from tools.progress.bar import IncrementalBar
+
+from expertsystem.topology.graph import (
+    StateTransitionGraph,
+    InteractionNode,
+    get_edges_outgoing_to_node,
+    get_final_state_edges,
+    get_initial_state_edges)
 from expertsystem.topology.topologybuilder import (
     SimpleStateTransitionTopologyBuilder)
 
@@ -100,6 +103,36 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
         return node_interaction_type
 
 
+def filter_solutions(results, remove_qns_list, ingore_qns_list):
+    logging.info("filtering solutions...")
+    logging.info("removing these qns from graphs: " + str(remove_qns_list))
+    logging.info("ignoring qns in graph comparison: " + str(ingore_qns_list))
+    filtered_results = {}
+    solutions = []
+    remove_counter = 0
+    for strength, group_results in results.items():
+        for (sol_graphs, rule_violations) in group_results:
+            temp_graphs = []
+            for sol_graph in sol_graphs:
+                sol_graph = remove_qns_from_graph(sol_graph, remove_qns_list)
+                found_graph = check_equal_ignoring_qns(sol_graph, solutions,
+                                                       ingore_qns_list)
+                if found_graph is None:
+                    solutions.append(sol_graph)
+                    temp_graphs.append(sol_graph)
+                else:
+                    # check if found solution also has the prefactors
+                    # if not overwrite them
+                    remove_counter += 1
+
+            if strength not in filtered_results:
+                filtered_results[strength] = []
+            filtered_results[strength].append(
+                (temp_graphs, rule_violations))
+    logging.info("removed " + str(remove_counter) + " solutions")
+    return filtered_results
+
+
 def remove_qns_from_graph(graph, qn_list):
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
     type_label = get_xml_label(XMLLabelConstants.Type)
@@ -163,37 +196,6 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
                 break
 
     return found_graph
-
-
-def filter_solutions(results, remove_qns_list, ingore_qns_list):
-    logging.info("filtering solutions...")
-    logging.info("removing these qns from graphs: " + str(remove_qns_list))
-    logging.info("ignoring qns in graph comparison: " + str(ingore_qns_list))
-    filtered_results = {}
-    solutions = []
-    remove_counter = 0
-    for strength, group_results in results.items():
-        for (sol_graphs, rule_violations) in group_results:
-            temp_graphs = []
-            for sol_graph in sol_graphs:
-                sol_graph = remove_qns_from_graph(sol_graph, remove_qns_list)
-
-                found_graph = check_equal_ignoring_qns(sol_graph, solutions,
-                                                       ingore_qns_list)
-                if found_graph is None:
-                    solutions.append(sol_graph)
-                    temp_graphs.append(sol_graph)
-                else:
-                    # check if found solution also has the prefactors
-                    # if not overwrite them
-                    remove_counter += 1
-
-            if strength not in filtered_results:
-                filtered_results[strength] = []
-            filtered_results[strength].append(
-                (temp_graphs, rule_violations))
-    logging.info("removed " + str(remove_counter) + " solutions")
-    return filtered_results
 
 
 def analyse_solution_failure(violated_laws_per_node_and_graph):
@@ -354,8 +356,10 @@ class StateTransitionManager():
                  interaction_type_settings={},
                  formalism_type='helicity',
                  topology_building='isobar',
-                 number_of_threads=4):
+                 number_of_threads=4,
+                 propagation_mode='fast'):
         self.number_of_threads = number_of_threads
+        self.propagation_mode = propagation_mode
         self.initial_state = initial_state
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
@@ -434,6 +438,10 @@ class StateTransitionManager():
         # create groups of settings ordered by "probablity"
         graph_settings_groups = self.create_interaction_setting_groups(
             graph_node_setting_pairs)
+        # initialize graph nodes which are fully connected,
+        # using given interaction qn domains
+        # graph_settings_groups = initialize_fully_connected_nodes(
+        #    graph_settings_groups)
         return graph_settings_groups
 
     def build_topologies(self):
@@ -518,21 +526,36 @@ class StateTransitionManager():
                          str(self.number_of_threads) + " threads...")
 
             temp_results = []
+            bar = IncrementalBar('Propagating quantum numbers...',
+                                 max=len(graph_setting_group))
             if self.number_of_threads > 1:
                 with Pool(self.number_of_threads) as p:
-                    temp_results = p.imap_unordered(
-                        self.propagate_quantum_numbers, graph_setting_group, 1)
+                    # temp_results = p.imap_unordered(
+                    #    self.propagate_quantum_numbers,
+                    #    graph_setting_group, 1)
+                    temp_results = [p.apply_async(
+                        self.propagate_quantum_numbers, (x,),
+                        callback=bar.next()) for x in graph_setting_group]
                     p.close()
                     p.join()
+                    temp_results = [x.get() for x in temp_results]
             else:
                 for graph_setting_pair in graph_setting_group:
                     temp_results.append(self.propagate_quantum_numbers(
                         graph_setting_pair))
-
+                    bar.next()
+            bar.finish()
+            print('\n')
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)
 
+        for k, v in results.items():
+            logging.info("strength: " + str(k))
+            logging.info(
+                "number of solutions for strength ("
+                + str(k) + ") after qn propagation: "
+                + str(len([x for x in v if x[0]])))
         # filter solutions, by removing those which only differ in
         # the interaction S qn
         results = filter_solutions(results, self.filter_remove_qns,
@@ -549,6 +572,7 @@ class StateTransitionManager():
         violated_laws = []
         if len(solutions) == 0:
             violated_laws = analyse_solution_failure(node_non_satisfied_rules)
+            logging.info("violated rules: " + str(violated_laws))
 
         # finally perform combinatorics of identical external edges
         # (initial or final state edges) and prepare graphs for
@@ -570,7 +594,7 @@ class StateTransitionManager():
         return (solutions, propagator.get_non_satisfied_conservation_laws())
 
     def initialize_qn_propagator(self, state_graph, node_settings):
-        propagator = FullPropagator(state_graph)
+        propagator = FullPropagator(state_graph, self.propagation_mode)
         for node_id, interaction_settings in node_settings.items():
             propagator.assign_settings_to_node(
                 node_id, interaction_settings)

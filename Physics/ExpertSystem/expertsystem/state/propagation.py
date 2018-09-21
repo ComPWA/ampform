@@ -29,6 +29,7 @@ from expertsystem.state.particle import (get_xml_label, XMLLabelConstants,
                                          InteractionQuantumNumberNames,
                                          ParticlePropertyNames,
                                          get_particle_property,
+                                         get_interaction_property,
                                          QNNameClassMapping,
                                          QNClassConverterMapping,
                                          initialize_graphs_with_particles,
@@ -54,7 +55,7 @@ class InteractionNodeSettings:
 
     def __init__(self):
         self.conservation_laws = []
-        self.qn_domains = []
+        self.qn_domains = {}
         self.interaction_strength = 1.0
 
     def __repr__(self):
@@ -96,12 +97,12 @@ class AbstractPropagator(ABC):
 
 
 class FullPropagator():
-    def __init__(self, graph):
-        if len(get_intermediate_state_edges(graph)) > 0:
-            self.propagator = CSPPropagator(graph)
-            logging.info("using CSP propagator")
-        else:
-            self.propagator = ParticleStateTransitionGraphValidator(graph)
+    def __init__(self, graph, propagation_mode='fast'):
+        self.propagator = CSPPropagator(graph)
+        self.propagation_mode = propagation_mode
+        logging.debug("using CSP propagator")
+
+        self.node_non_satisfied_laws = defaultdict(list)
 
     def assign_settings_to_all_nodes(self, interaction_settings):
         for node_id in self.propagator.graph.nodes:
@@ -120,41 +121,58 @@ class FullPropagator():
         self.propagator.allowed_intermediate_particles = allowed_intermediate_particles
 
     def get_non_satisfied_conservation_laws(self):
-        return self.propagator.node_non_satisfied_laws
+        return self.node_non_satisfied_laws
 
     def find_solutions(self):
+        run_validation = False
         solutions = self.propagator.find_solutions()
-        logging.info("Number of solutions after propagator: " +
-                     str(len(solutions)))
+        logging.debug("Number of solutions after propagator: " +
+                      str(len(solutions)))
         if not solutions:
-            violated_rules = self.propagator.node_non_satisfied_laws
-            logging.info("violated rules: " + str(violated_rules))
-            logging.debug(self.propagator.graph)
+            self.node_non_satisfied_laws = self.propagator.node_non_satisfied_laws
+            if not self.node_non_satisfied_laws:
+                run_validation = True
+            else:
+                logging.debug("violated rules: " +
+                              str(self.node_non_satisfied_laws))
+                logging.debug(self.propagator.graph)
 
         full_particle_graphs = initialize_graphs_with_particles(
             solutions, self.propagator.allowed_intermediate_particles)
-        logging.info("Number of fully initialized graphs: " +
-                     str(len(full_particle_graphs)))
+        logging.debug("Number of fully initialized graphs: " +
+                      str(len(full_particle_graphs)))
 
-        if (not isinstance(self.propagator, ParticleStateTransitionGraphValidator)
-                and len(self.propagator.node_postponed_conservation_laws) > 0):
-            logging.info("validating graphs")
-            temp_solution_graphs = full_particle_graphs
-            full_particle_graphs = []
-            violated_rules = []
-            for graph in temp_solution_graphs:
+        if self.propagator.node_postponed_conservation_laws:
+            logging.debug("validating graphs")
+            if (self.propagation_mode == 'full' and not full_particle_graphs
+                    or run_validation):
+                graph = self.propagator.graph
                 validator = ParticleStateTransitionGraphValidator(graph)
                 postponed_rules = self.propagator.node_postponed_conservation_laws
                 for node_id, cons_laws in postponed_rules.items():
                     validator.assign_settings_to_node(
                         node_id, cons_laws)
                 full_particle_graphs.extend(validator.find_solutions())
-                violated_rules.append(validator.node_non_satisfied_laws)
+                for k, v in validator.node_non_satisfied_laws.items():
+                    self.node_non_satisfied_laws[k].extend(v)
+            else:
+                temp_solution_graphs = full_particle_graphs
+                full_particle_graphs = []
+                for graph in temp_solution_graphs:
+                    validator = ParticleStateTransitionGraphValidator(graph)
+                    postponed_rules = self.propagator.node_postponed_conservation_laws
+                    for node_id, cons_laws in postponed_rules.items():
+                        validator.assign_settings_to_node(
+                            node_id, cons_laws)
+                    full_particle_graphs.extend(validator.find_solutions())
+                    self.node_non_satisfied_laws.update(
+                        validator.node_non_satisfied_laws)
 
-            logging.info("Number of solutions after full propagator: " +
-                         str(len(full_particle_graphs)))
-            if len(full_particle_graphs) == 0:
-                logging.info("violated rules: " + str(violated_rules))
+        logging.debug("Number of solutions after full propagator: " +
+                      str(len(full_particle_graphs)))
+        if len(full_particle_graphs) == 0:
+            logging.debug("violated rules: " +
+                          str(self.node_non_satisfied_laws))
 
         return full_particle_graphs
 
@@ -240,13 +258,14 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
         """
         variables = []
         for edge_id in edge_ids:
-            edge_vars = {}
-            edge_props = self.graph.edge_props[edge_id]
-            for qn_name in qn_list:
-                value = get_particle_property(edge_props, qn_name)
-                if value is not None:
-                    edge_vars[qn_name] = value
-            variables.append(edge_vars)
+            if edge_id in self.graph.edge_props:
+                edge_vars = {}
+                edge_props = self.graph.edge_props[edge_id]
+                for qn_name in qn_list:
+                    value = get_particle_property(edge_props, qn_name)
+                    if value is not None:
+                        edge_vars[qn_name] = value
+                variables.append(edge_vars)
         return variables
 
 
@@ -321,7 +340,8 @@ class CSPPropagator(AbstractPropagator):
         solutions = self.problem.getSolutions()
         solution_graphs = self.apply_solutions_to_graph(solutions)
         for constraint in self.constraints:
-            if constraint.conditions_never_met:
+            if (constraint.conditions_never_met or
+                    sum(constraint.scenario_results) == 0):
                 self.node_postponed_conservation_laws[
                     constraint.node_id].append(constraint.rule)
             if (sum(constraint.scenario_results) > 0 and
@@ -370,8 +390,10 @@ class CSPPropagator(AbstractPropagator):
                 int_qn_dict = self.prepare_qns(
                     qn_names, interaction_settings.qn_domains,
                     InteractionQuantumNumberNames)
-                variable_mapping["interaction"] = self.create_node_variables(
+                int_node_vars = self.create_node_variables(
                     node_id, int_qn_dict)
+                variable_mapping["interaction"] = int_node_vars[0]
+                variable_mapping["interaction-fixed"] = int_node_vars[1]
                 var_list.extend(
                     [key for key in variable_mapping["interaction"]])
 
@@ -398,32 +420,47 @@ class CSPPropagator(AbstractPropagator):
     def create_node_variables(self, node_id, qn_dict):
         """
         Creates variables for the quantum numbers of the specified node.
+
+        If a quantum number is already defined for a node, then a fixed
+        variable is created, which cannot be changed by the csp solver.
+        Otherwise the node is initialized with the specified domain of
+        that quantum number.
         """
-        variables = set()
-        for qn_name, qn_domain in qn_dict.items():
-            var_info = VariableInfo(graph_element_types.node,
-                                    node_id,
-                                    qn_name
-                                    )
-            # domain_values = self.determine_domain(var_info, [], )
-            key = self.add_variable(var_info, qn_domain)
-            variables.add(key)
+        variables = (set(), set())
+
+        if node_id in self.graph.node_props:
+            node_props = self.graph.node_props[node_id]
+            for qn_name, qn_domain in qn_dict.items():
+                value = get_interaction_property(node_props, qn_name)
+                if value is not None:
+                    variables[1].add((qn_name, value))
+        else:
+            for qn_name, qn_domain in qn_dict.items():
+                var_info = VariableInfo(
+                    graph_element_types.node,
+                    node_id,
+                    qn_name
+                )
+                # domain_values = self.determine_domain(var_info, [], )
+                if qn_domain:
+                    key = self.add_variable(var_info, qn_domain)
+                    variables[0].add(key)
         return variables
 
     def create_edge_variables(self, edge_ids, qn_dict):
         """
         Creates variables for the quantum numbers of the specified edges.
 
-        Initial and final state edges just get a single domain value.
-        Intermediate edges are initialized with the default domains of that
-        quantum number.
+        If a quantum number is already defined for an edge, then a fixed
+        variable is created, which cannot be changed by the csp solver.
+        This is the case for initial and final state edges.
+        Otherwise the edges are initialized with the specified domains of
+        that quantum number.
         """
         variables = (set(), {})
         for edge_id in edge_ids:
             variables[1][edge_id] = []
-            # if its a initial or final state edge we create a fixed var
-            if (edge_id in get_initial_state_edges(self.graph) or
-                    edge_id in get_final_state_edges(self.graph)):
+            if edge_id in self.graph.edge_props:
                 edge_props = self.graph.edge_props[edge_id]
                 for qn_name, qn_domain in qn_dict.items():
                     value = get_particle_property(edge_props, qn_name)
@@ -467,10 +504,10 @@ class CSPPropagator(AbstractPropagator):
         full_allowed_particle_list = initialize_allowed_particle_list(
             self.allowed_intermediate_particles)
 
-        logging.info("attempting to filter " + str(len(solutions)) +
-                     " solutions for allowed intermediate particles and"
-                     " create a copy graph")
-        bar = IncrementalBar('Filtering solutions', max=len(solutions))
+        # logging.info("attempting to filter " + str(len(solutions)) +
+        #             " solutions for allowed intermediate particles and"
+        #             " create a copy graph")
+        #bar = IncrementalBar('Filtering solutions', max=len(solutions))
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
             for var_name, value in solution.items():
@@ -496,8 +533,8 @@ class CSPPropagator(AbstractPropagator):
                         break
             if solution_valid:
                 solution_graphs.append(graph_copy)
-            bar.next()
-        bar.finish()
+            # bar.next()
+        # bar.finish()
         if solutions and not solution_graphs:
             logging.warning(
                 "No intermediate state particles match the found solutions!")
@@ -541,6 +578,8 @@ class ConservationLawConstraintWrapper(Constraint):
         self.out_variable_set = variable_mapping["outgoing"]
         self.fixed_out_variables = variable_mapping["outgoing-fixed"]
         self.interaction_variable_set = variable_mapping["interaction"]
+        self.fixed_interaction_variable_set = variable_mapping[
+            "interaction-fixed"]
         self.name_delimiter = name_delimiter
         self.part_in = []
         self.part_out = []
@@ -576,6 +615,8 @@ class ConservationLawConstraintWrapper(Constraint):
             self.interaction_qns[var_info.qn_name] = {}
             self.variable_name_decoding_map[var_name] = (
                 0, var_info.qn_name)
+        for qn_name, value in self.fixed_interaction_variable_set:
+            self.interaction_qns[qn_name] = value
 
     def initialize_particle_list(self, variable_set, fixed_variables,
                                  list_to_init):

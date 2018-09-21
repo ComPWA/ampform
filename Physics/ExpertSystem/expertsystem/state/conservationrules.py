@@ -199,7 +199,7 @@ class ParityConservation(AbstractRule):
             DefinedForInteractionNode()])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """ implements P_in = P_out * (-1)^L+1 """
+        """ implements P_in = P_out * (-1)^L """
         # is this valid for two outgoing particles only?
         parity_label = StateQuantumNumberNames.Parity
         parity_in = reduce(
@@ -486,17 +486,14 @@ class SpinConservation(AbstractRule):
         also checks M1 + M2 == M
         and if clebsch gordan coefficients are 0
         """
-        # only valid for two body states?
-        if len(ingoing_part_qns) < 3 and len(outgoing_part_qns) < 3:
-            spin_label = self.spinlike_qn
+        spin_label = self.spinlike_qn
 
-            in_spins = [x[spin_label] for x in ingoing_part_qns]
-            out_spins = [x[spin_label] for x in outgoing_part_qns]
-            if (self.use_projection and
-                    not self.check_projections(in_spins, out_spins)):
-                return False
-            return self.check_magnitude(in_spins, out_spins, interaction_qns)
-        return True
+        in_spins = [x[spin_label] for x in ingoing_part_qns]
+        out_spins = [x[spin_label] for x in outgoing_part_qns]
+        if (self.use_projection and
+                not self.check_projections(in_spins, out_spins)):
+            return False
+        return self.check_magnitude(in_spins, out_spins, interaction_qns)
 
     def check_projections(self, in_part, out_part):
         in_proj = [x.projection() for x in in_part]
@@ -525,8 +522,8 @@ class SpinConservation(AbstractRule):
             while spin_list:
                 if spins_daughters_coupled:
                     temp_coupled_spins = set()
+                    tempspin = spin_list.pop()
                     for s in spins_daughters_coupled:
-                        tempspin = spin_list.pop()
                         coupled_spins = self.spin_couplings(
                             s, tempspin)
                         temp_coupled_spins.update(coupled_spins)
