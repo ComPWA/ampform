@@ -53,6 +53,9 @@ class Spin():
     def __init__(self, mag, proj):
         self.__magnitude = float(mag)
         self.__projection = float(proj)
+        # remove negative zero projections -0.0
+        if self.__projection == -0.0:
+            self.__projection += 0
         if self.__magnitude < abs(self.__projection):
             raise ValueError("The spin projection cannot be larger than the"
                              " magnitude " + self.__str__())
