@@ -2,7 +2,7 @@ import pytest
 
 from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes,
-    filter_solutions, compare_graph_element_properties,
+    filter_solutions, CompareGraphElementPropertiesFunctor,
     match_external_edges, create_edge_id_particle_mapping,
     perform_external_edge_identical_particle_combinatorics)
 from expertsystem.topology.graph import (
@@ -65,7 +65,7 @@ def test_external_edge_initialization(initial_state, final_state,
 def make_ls_test_graph(angular_momentum_magnitude, coupled_spin_magnitude):
     graph = StateTransitionGraph()
     graph.set_graph_element_properties_comparator(
-        compare_graph_element_properties)
+        CompareGraphElementPropertiesFunctor())
     graph.node_props[0] = {'QuantumNumber': [
         {'@Value': str(coupled_spin_magnitude), '@Type': 'S',
          '@Projection': '0.0', '@Class': 'Spin'},
@@ -79,7 +79,7 @@ def make_ls_test_graph_scrambled(angular_momentum_magnitude,
                                  coupled_spin_magnitude):
     graph = StateTransitionGraph()
     graph.set_graph_element_properties_comparator(
-        compare_graph_element_properties)
+        CompareGraphElementPropertiesFunctor())
     graph.node_props[0] = {'QuantumNumber': [
         {'@Class': 'Spin', '@Value': str(angular_momentum_magnitude),
          '@Type': 'L', '@Projection': '0.0'},

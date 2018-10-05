@@ -313,36 +313,76 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
     return property_value
 
 
-def compare_graph_element_properties(edge_props1, edge_props2):
-    copy_edge_props1 = deepcopy(edge_props1)
-    copy_edge_props2 = deepcopy(edge_props2)
-    # first clean up the edge qn list, by converting it to a dict
-    qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
-    type_label = get_xml_label(XMLLabelConstants.Type)
-    for edge_props in copy_edge_props1.values():
-        if qns_label in edge_props:
-            new_qns = {}
-            for x in edge_props[qns_label]:
+class CompareGraphElementPropertiesFunctor():
+    def __init__(self, ignored_qn_list=[]):
+        self.ignored_qn_list = [x.name for x in ignored_qn_list
+                                if isinstance(x,
+                                              (StateQuantumNumberNames,
+                                               InteractionQuantumNumberNames))]
+
+    def compare_qn_numbers(self, qns1, qns2):
+        new_qns1 = {}
+        new_qns2 = {}
+        type_label = get_xml_label(XMLLabelConstants.Type)
+        for x in qns1:
+            if x[type_label] not in self.ignored_qn_list:
                 temp_qn_dict = dict(x)
                 type_name = temp_qn_dict[type_label]
                 del temp_qn_dict[type_label]
-                new_qns[type_name] = temp_qn_dict
-            edge_props[qns_label] = new_qns
-    for edge_props in copy_edge_props2.values():
-        if qns_label in edge_props:
-            new_qns = {}
-            for x in edge_props[qns_label]:
+                new_qns1[type_name] = temp_qn_dict
+        for x in qns2:
+            if x[type_label] not in self.ignored_qn_list:
                 temp_qn_dict = dict(x)
                 type_name = temp_qn_dict[type_label]
                 del temp_qn_dict[type_label]
-                new_qns[type_name] = temp_qn_dict
-            edge_props[qns_label] = new_qns
-    if (loads(dumps(copy_edge_props1, sort_keys=True),
-              object_pairs_hook=OrderedDict)
-            != loads(dumps(copy_edge_props2, sort_keys=True),
-                     object_pairs_hook=OrderedDict)):
-        return False
-    return True
+                new_qns2[type_name] = temp_qn_dict
+        return (loads(dumps(new_qns1, sort_keys=True),
+                      object_pairs_hook=OrderedDict)
+                == loads(dumps(new_qns2, sort_keys=True),
+                         object_pairs_hook=OrderedDict))
+
+    def __call__(self, props1, props2):
+        # for more speed first compare the names (if they exist)
+
+        name_label = get_xml_label(XMLLabelConstants.Name)
+        names1 = {k: v[name_label]
+                  for k, v in props1.items() if name_label in v}
+        names2 = {k: v[name_label]
+                  for k, v in props2.items() if name_label in v}
+        if set(names1.keys()) != set(names2.keys()):
+            return False
+        for k in names1.keys():
+            if names1[k] != names2[k]:
+                return False
+
+        # then compare the qn lists (if they exist)
+        qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+        for ele_id, props in props1.items():
+            qns1 = []
+            qns2 = []
+            if qns_label in props:
+                qns1 = props[qns_label]
+            if ele_id in props2 and qns_label in props2[ele_id]:
+                qns2 = props2[ele_id][qns_label]
+            if not self.compare_qn_numbers(qns1, qns2):
+                return False
+        # if they are equal we have to make a deeper comparison
+        copy_props1 = deepcopy(props1)
+        copy_props2 = deepcopy(props2)
+        # remove the qn dicts
+        qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
+        for ele_id in props1.keys():
+            if qns_label in copy_props1[ele_id]:
+                del copy_props1[ele_id][qns_label]
+            if qns_label in copy_props2[ele_id]:
+                del copy_props2[ele_id][qns_label]
+
+        if (loads(dumps(copy_props1, sort_keys=True),
+                  object_pairs_hook=OrderedDict)
+                != loads(dumps(copy_props2, sort_keys=True),
+                         object_pairs_hook=OrderedDict)):
+            return False
+        return True
 
 
 def initialize_graph(graph, initial_state, final_state, final_state_groupings):

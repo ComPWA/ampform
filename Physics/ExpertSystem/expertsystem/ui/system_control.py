@@ -22,7 +22,7 @@ from expertsystem.state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
     get_particle_property, XMLLabelConstants, get_xml_label,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
-    ParticlePropertyNames, compare_graph_element_properties)
+    ParticlePropertyNames, CompareGraphElementPropertiesFunctor)
 
 from expertsystem.state.propagation import (
     FullPropagator, InteractionTypes, InteractionNodeSettings)
@@ -172,7 +172,6 @@ def remove_qns_from_graph(graph, qn_list):
                             is part_prop):
                         del props[qns_label][props[qns_label].index(qn_entry)]
                         break
-
     return graph_copy
 
 
@@ -180,21 +179,20 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
     """
     defines the equal operator for the graphs ignoring certain quantum numbers
     """
+
     if not isinstance(ref_graph, StateTransitionGraph):
         raise TypeError(
             "Reference graph has to be of type StateTransitionGraph")
-
-    ref_graph_copy = remove_qns_from_graph(ref_graph, ignored_qn_list)
     found_graph = None
-
+    old_comparator = ref_graph.graph_element_properties_comparator
+    ref_graph.set_graph_element_properties_comparator(
+        CompareGraphElementPropertiesFunctor(ignored_qn_list))
     for graph in solutions:
         if isinstance(graph, StateTransitionGraph):
-            # first copy prop dicts and remove ignored qns
-            graph_copy = remove_qns_from_graph(graph, ignored_qn_list)
-            if ref_graph_copy == graph_copy:
+            if ref_graph == graph:
                 found_graph = graph
                 break
-
+    ref_graph.set_graph_element_properties_comparator(old_comparator)
     return found_graph
 
 
@@ -438,10 +436,6 @@ class StateTransitionManager():
         # create groups of settings ordered by "probablity"
         graph_settings_groups = self.create_interaction_setting_groups(
             graph_node_setting_pairs)
-        # initialize graph nodes which are fully connected,
-        # using given interaction qn domains
-        # graph_settings_groups = initialize_fully_connected_nodes(
-        #    graph_settings_groups)
         return graph_settings_groups
 
     def build_topologies(self):
@@ -455,7 +449,7 @@ class StateTransitionManager():
         init_graphs = []
         for tgraph in topology_graphs:
             tgraph.set_graph_element_properties_comparator(
-                compare_graph_element_properties)
+                CompareGraphElementPropertiesFunctor())
             init_graphs.extend(initialize_graph(
                 tgraph, self.initial_state, self.final_state,
                 self.final_state_groupings))
@@ -551,11 +545,10 @@ class StateTransitionManager():
             results[strength].extend(temp_results)
 
         for k, v in results.items():
-            logging.info("strength: " + str(k))
             logging.info(
                 "number of solutions for strength ("
                 + str(k) + ") after qn propagation: "
-                + str(len([x for x in v if x[0]])))
+                + str(sum([len(x[0]) for x in v])))
         # filter solutions, by removing those which only differ in
         # the interaction S qn
         results = filter_solutions(results, self.filter_remove_qns,
