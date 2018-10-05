@@ -247,9 +247,9 @@ class ParityConservationHelicity(AbstractRule):
             if len(daughter_hel) == 2:
                 if prefactor == -1:
                     return False
-            else:
-                pf_label = InteractionQuantumNumberNames.ParityPrefactor
-                return prefactor == interaction_qns[pf_label]
+
+            pf_label = InteractionQuantumNumberNames.ParityPrefactor
+            return prefactor == interaction_qns[pf_label]
         return True
 
 
