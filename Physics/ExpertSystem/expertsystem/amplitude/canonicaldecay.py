@@ -11,39 +11,58 @@ from expertsystem.state.particle import (
     XMLLabelConstants, get_xml_label,
     get_particle_property, get_interaction_property)
 
+from expertsystem.amplitude.abstractgenerator import (
+    AbstractAmplitudeNameGenerator
+)
+
 from expertsystem.amplitude.helicitydecay import (
     HelicityDecayAmplitudeGeneratorXML,
-    HelicityPartialDecayNameGenerator
+    get_helicity_from_edge_props
 )
 
 
-class CanonicalPartialDecayNameGenerator(HelicityPartialDecayNameGenerator):
+class CanonicalPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
     '''
-    asdf
+    Generates names for canonical partial decays using the properties of
+    the decay.
     '''
-    def _canonical_ls_decorator(generate_function):
+
+    def generate(self, graph, node_id):
         '''
-        Decorator method which adds two clebsch gordan coefficients based on
+        Method which adds two clebsch gordan coefficients based on
         the translation of helicity amplitudes to canonical ones.
         '''
+        # get ending node of the edge
+        # then make name for
+        in_edges = get_edges_ingoing_to_node(graph, node_id)
+        out_edges = get_edges_outgoing_to_node(graph, node_id)
+        name_label = get_xml_label(XMLLabelConstants.Name)
+        names = []
+        hel = []
+        for i in in_edges + out_edges:
+            names.append(graph.edge_props[i][name_label])
+            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+            # remove .0
+            if temphel % 1 == 0:
+                temphel = int(temphel)
+            hel.append(temphel)
 
-        def wrapper(self, graph, node_id):
-            name_pair = generate_function(self, graph, node_id)
-            node_props = graph.node_props[node_id]
-            L = get_interaction_property(node_props,
-                                         InteractionQuantumNumberNames.L)
-            S = get_interaction_property(node_props,
-                                         InteractionQuantumNumberNames.S)
-            addition_string = '_L_' + str(L.magnitude()) + \
-                '_S_' + str(S.magnitude())
-            return (name_pair[0] + addition_string,
-                    name_pair[1] + addition_string)
+        par_name_suffix = '_to_'
+        par_name_suffix += names[1] + '_' + str(hel[1])
+        par_name_suffix += '+' + names[2] + '_' + str(hel[2])
+        name = names[0] + '_' + str(hel[0]) + '_to_' + names[1] + \
+            '_' + str(hel[1]) + '+' + names[2] + '_' + str(hel[2])
+        par_name_suffix = names[0] + '_to_' + names[1] + '+' + names[2]
 
-        return wrapper
-
-    @_canonical_ls_decorator
-    def generate(self, graph, node_id):
-        return super().generate(graph, node_id)
+        node_props = graph.node_props[node_id]
+        L = get_interaction_property(node_props,
+                                     InteractionQuantumNumberNames.L)
+        S = get_interaction_property(node_props,
+                                     InteractionQuantumNumberNames.S)
+        addition_string = '_L_' + str(L.magnitude()) + \
+            '_S_' + str(S.magnitude())
+        return (name + addition_string,
+                par_name_suffix + addition_string)
 
 
 class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
@@ -59,8 +78,7 @@ class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
     def __init__(self, top_node_no_dynamics=True,
                  use_parity_conservation=None):
         super().__init__(top_node_no_dynamics, use_parity_conservation)
-        self.name_generator = CanonicalPartialDecayNameGenerator(
-            self.use_parity_conservation)
+        self.name_generator = CanonicalPartialDecayNameGenerator()
 
     def _clebsch_gordan_decorator(decay_generate_function):
         '''

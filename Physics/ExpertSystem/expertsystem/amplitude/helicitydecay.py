@@ -264,6 +264,7 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         self.top_node_no_dynamics = top_node_no_dynamics
         self.name_generator = HelicityPartialDecayNameGenerator(
             self.use_parity_conservation)
+        self.fit_parameters = set()
 
     def generate(self, graphs):
         if len(graphs) <= 0:
@@ -287,13 +288,17 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         # if use_parity_conservation flag is set to None, use automatic
         # settings. check if the parity prefactor is defined, if so use
         # parity conservation
-        if self.use_parity_conservation is None:
+        if (self.use_parity_conservation is None and
+                isinstance(self.name_generator,
+                           HelicityPartialDecayNameGenerator)):
             prefactors = [x for x in graphs if get_prefactor(x) is not None]
             self.use_parity_conservation = False
             if prefactors:
                 self.use_parity_conservation = True
-                logging.info("Using parity conservation to connect fit "
-                             "parameters together with prefactors.")
+                self.name_generator = HelicityPartialDecayNameGenerator(
+                    self.use_parity_conservation)
+                logging.debug("Using parity conservation to connect fit "
+                              "parameters together with prefactors.")
         graph_groups = group_graphs_same_initial_and_final(graphs)
         logging.debug("There are " + str(len(graph_groups)) + " graph groups")
         # At first we need to define the fit parameters
@@ -308,6 +313,7 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                 if not y['Phase'][1]:
                     fit_params.add('Phase_' + y['ParameterNameSuffix'])
         logging.info("Number of parameters:" + str(len(fit_params)))
+        self.fit_parameters = fit_params
         self.generate_amplitude_info(graph_groups, parameter_mapping)
 
     def generate_fit_parameters(self, graph_groups, name_generator_functor):
