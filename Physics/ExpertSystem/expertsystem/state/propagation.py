@@ -508,6 +508,9 @@ class CSPPropagator(AbstractPropagator):
         #             " solutions for allowed intermediate particles and"
         #             " create a copy graph")
         #bar = IncrementalBar('Filtering solutions', max=len(solutions))
+
+        found_JPs = set()
+
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
             for var_name, value in solution.items():
@@ -525,6 +528,17 @@ class CSPPropagator(AbstractPropagator):
             solution_valid = True
             if self.allowed_intermediate_particles:
                 for int_edge_id in get_intermediate_state_edges(graph_copy):
+                    # for documentation in case of failure
+                    spin = get_particle_property(
+                        graph_copy.edge_props[int_edge_id],
+                        StateQuantumNumberNames.Spin)
+                    parity = get_particle_property(
+                        graph_copy.edge_props[int_edge_id],
+                        StateQuantumNumberNames.Parity)
+                    found_JPs.add(str(spin.magnitude()) +
+                                  ("-" if parity == -1 or parity == -1.0
+                                   else "+"))
+                    # now do actual candidate finding
                     candidates = get_particle_candidates_for_state(
                         graph_copy.edge_props[int_edge_id],
                         full_allowed_particle_list)
@@ -537,7 +551,9 @@ class CSPPropagator(AbstractPropagator):
         # bar.finish()
         if solutions and not solution_graphs:
             logging.warning(
-                "No intermediate state particles match the found solutions!")
+                "No intermediate state particles match the found "
+                + str(len(solutions)) + " solutions!")
+            logging.warning("solution inter. state J^P: " + str(found_JPs))
         return solution_graphs
 
 

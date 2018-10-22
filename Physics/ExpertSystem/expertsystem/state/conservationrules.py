@@ -147,12 +147,7 @@ class AbstractRule(ABC):
         pass
 
     def check_requirements(self, in_edges, out_edges, int_node):
-        logging.debug("checking conditions for rule " + str(self.__class__))
         for (qn_name_list, cond_functor) in self.get_qn_conditions():
-            logging.debug(str(cond_functor.__class__))
-            logging.debug(qn_name_list)
-            logging.debug([in_edges, out_edges, int_node])
-
             # part_props = [x for x in qn_name_list if isinstance(
             #    x, ParticlePropertyNames)]
             # if part_props:
@@ -160,9 +155,10 @@ class AbstractRule(ABC):
 
             if not cond_functor.check(qn_name_list, in_edges,
                                       out_edges, int_node):
-                logging.debug("not satisfied")
+                logging.debug("condition " + str(cond_functor.__class__) +
+                              " for rule " + str(self.__class__) +
+                              " not satisfied")
                 return False
-        logging.debug("all satisfied")
         return True
 
 
