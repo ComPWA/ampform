@@ -17,7 +17,8 @@ from expertsystem.amplitude.abstractgenerator import (
 
 from expertsystem.amplitude.helicitydecay import (
     HelicityDecayAmplitudeGeneratorXML,
-    get_helicity_from_edge_props
+    get_helicity_from_edge_props,
+    generate_particles_string
 )
 
 
@@ -37,22 +38,26 @@ class CanonicalPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
         in_edges = get_edges_ingoing_to_node(graph, node_id)
         out_edges = get_edges_outgoing_to_node(graph, node_id)
         name_label = get_xml_label(XMLLabelConstants.Name)
-        names = []
-        hel = []
-        for i in in_edges + out_edges:
-            names.append(graph.edge_props[i][name_label])
+        in_names_hel_dict = {}
+        out_names_hel_dict = {}
+        for i in in_edges:
             temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
             # remove .0
             if temphel % 1 == 0:
                 temphel = int(temphel)
-            hel.append(temphel)
+            in_names_hel_dict[graph.edge_props[i][name_label]] = temphel
+        for i in out_edges:
+            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+            # remove .0
+            if temphel % 1 == 0:
+                temphel = int(temphel)
+            out_names_hel_dict[graph.edge_props[i][name_label]] = temphel
 
-        par_name_suffix = '_to_'
-        par_name_suffix += names[1] + '_' + str(hel[1])
-        par_name_suffix += '+' + names[2] + '_' + str(hel[2])
-        name = names[0] + '_' + str(hel[0]) + '_to_' + names[1] + \
-            '_' + str(hel[1]) + '+' + names[2] + '_' + str(hel[2])
-        par_name_suffix = names[0] + '_to_' + names[1] + '+' + names[2]
+        name = generate_particles_string(in_names_hel_dict) + \
+            '_to_' + generate_particles_string(out_names_hel_dict)
+        par_name_suffix = generate_particles_string(
+            in_names_hel_dict, False) + '_to_' +\
+            generate_particles_string(out_names_hel_dict, False)
 
         node_props = graph.node_props[node_id]
         L = get_interaction_property(node_props,

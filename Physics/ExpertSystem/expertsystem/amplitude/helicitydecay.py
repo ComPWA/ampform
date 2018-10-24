@@ -211,41 +211,66 @@ def remove_spin_projection(edge_props):
     return new_edge_props
 
 
+def generate_particles_string(name_hel_dict, use_helicity=True,
+                              make_parity_partner=False):
+    string = ""
+    for name in sorted(name_hel_dict.keys()):
+        string += name
+        if use_helicity:
+            hel = name_hel_dict[name]
+            if make_parity_partner:
+                string += '_' + str(-1 * hel)
+            else:
+                string += '_' + str(hel)
+        string += '+'
+    return string[:-1]
+
+
 class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
     def __init__(self, use_parity_conservation):
         self.use_parity_conservation = use_parity_conservation
         self.generated_parameter_names = []
 
     def generate(self, graph, node_id):
+        '''
+        Generates partial amplitude name and fit parameter suffix.
+        The fit parameters with the same name are connected and treated as one.
+        For these fit parameter suffixes, a name sorted scheme is used.
+        On the other hand amplitude names are purely cosmetic!
+        '''
         # get ending node of the edge
         # then make name for
         in_edges = get_edges_ingoing_to_node(graph, node_id)
         out_edges = get_edges_outgoing_to_node(graph, node_id)
         name_label = get_xml_label(XMLLabelConstants.Name)
-        names = []
-        hel = []
-        for i in in_edges + out_edges:
-            names.append(graph.edge_props[i][name_label])
+        in_names_hel_dict = {}
+        out_names_hel_dict = {}
+        for i in in_edges:
             temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
             # remove .0
             if temphel % 1 == 0:
                 temphel = int(temphel)
-            hel.append(temphel)
+            in_names_hel_dict[graph.edge_props[i][name_label]] = temphel
+        for i in out_edges:
+            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+            # remove .0
+            if temphel % 1 == 0:
+                temphel = int(temphel)
+            out_names_hel_dict[graph.edge_props[i][name_label]] = temphel
 
-        par_name_suffix = '_to_'
-        par_name_suffix += names[1] + '_' + str(hel[1])
-        par_name_suffix += '+' + names[2] + '_' + str(hel[2])
-        name = names[0] + '_' + str(hel[0]) + par_name_suffix
-        par_name_suffix = names[0] + par_name_suffix
+        par_name_suffix = '_to_' + \
+            generate_particles_string(out_names_hel_dict)
+        name = generate_particles_string(in_names_hel_dict) + par_name_suffix
+        par_name_suffix = generate_particles_string(
+            in_names_hel_dict, False) + par_name_suffix
         if par_name_suffix not in self.generated_parameter_names:
             append_name = True
             if self.use_parity_conservation:
                 # first check if parity partner exists
-                pp_par_name_suffix = names[0]
-                pp_par_name_suffix += '_to_'
-                pp_par_name_suffix += names[1] + '_' + str(-1 * hel[1])
-                pp_par_name_suffix += '+' + \
-                    names[2] + '_' + str(-1 * hel[2])
+                pp_par_name_suffix = generate_particles_string(
+                    in_names_hel_dict, False) + '_to_' + \
+                    generate_particles_string(out_names_hel_dict,
+                                              make_parity_partner=True)
                 if pp_par_name_suffix in self.generated_parameter_names:
                     par_name_suffix = pp_par_name_suffix
                     append_name = False
