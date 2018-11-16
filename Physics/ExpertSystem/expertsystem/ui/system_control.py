@@ -539,7 +539,7 @@ class StateTransitionManager():
                         graph_setting_pair))
                     bar.next()
             bar.finish()
-            print('Finished!')
+            logging.info('Finished!')
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)
