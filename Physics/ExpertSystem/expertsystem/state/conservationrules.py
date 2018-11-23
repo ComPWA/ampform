@@ -10,6 +10,7 @@ import logging
 from expertsystem.state.particle import (StateQuantumNumberNames,
                                          InteractionQuantumNumberNames,
                                          ParticlePropertyNames,
+                                         ParticleDecayPropertyNames,
                                          QNNameClassMapping,
                                          QuantumNumberClasses,
                                          is_boson,
@@ -130,7 +131,8 @@ class AbstractRule(ABC):
     def add_required_qn(self, qn_name, qn_condition_functions=[]):
         if not (isinstance(qn_name, StateQuantumNumberNames) or
                 isinstance(qn_name, InteractionQuantumNumberNames) or
-                isinstance(qn_name, ParticlePropertyNames)):
+                isinstance(qn_name, ParticlePropertyNames) or 
+                isinstance(qn_name, ParticleDecayPropertyNames)):
             raise TypeError('qn_name has to be of type '
                             + 'ParticleQuantumNumberNames or '
                             + 'InteractionQuantumNumberNames or '
@@ -710,7 +712,7 @@ class MassConservation(AbstractRule):
         self.add_required_qn(
             ParticlePropertyNames.Mass, [DefinedForAllEdges()])
         self.add_required_qn(
-            ParticlePropertyNames.Width)
+            ParticleDecayPropertyNames.Width)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
@@ -720,7 +722,7 @@ class MassConservation(AbstractRule):
         M_in + factor * W_in >= M_out
         """
         mass_label = ParticlePropertyNames.Mass
-        width_label = ParticlePropertyNames.Width
+        width_label = ParticleDecayPropertyNames.Width
 
         mass_in = sum([x[mass_label] for x in ingoing_part_qns])
         width_in = sum([x[width_label]

@@ -109,7 +109,11 @@ StateQuantumNumberNames = Enum(
 
 """definition of properties names of particles"""
 ParticlePropertyNames = Enum(
-    'ParticlePropertyNames', 'Pid Mass Width')
+    'ParticlePropertyNames', 'Pid Mass')
+
+"""definition of decay properties names of particles"""
+ParticleDecayPropertyNames = Enum(
+    'ParticleDecayPropertyNames', 'Width')
 
 """definition of quantum number names for interaction nodes"""
 InteractionQuantumNumberNames = Enum('InteractionQuantumNumberNames',
@@ -149,7 +153,7 @@ QNNameClassMapping = {
     QuantumNumberClasses.Int,
     ParticlePropertyNames.Pid: QuantumNumberClasses.Int,
     ParticlePropertyNames.Mass: QuantumNumberClasses.Float,
-    ParticlePropertyNames.Width: QuantumNumberClasses.Float
+    ParticleDecayPropertyNames.Width: QuantumNumberClasses.Float
 }
 
 
@@ -244,14 +248,17 @@ def load_particle_list_from_xml(file_path):
 def get_particle_with_name(particle_name):
     name_label = get_xml_label(XMLLabelConstants.Name)
     found_particles = [
-        p for p in particle_list if (p[name_label] == particle_name)]
+        p for p in particle_list if (str(particle_name) == p[name_label])]
     if len(found_particles) == 0:
-        raise ValueError(
-            "No particle with name " + str(particle_name) + " found!")
-    elif len(found_particles) > 1:
-        raise ValueError(
-            "more than one particle with name " + str(particle_name)
-            + " found!")
+        found_particles = [
+            p for p in particle_list if (str(particle_name) in p[name_label])]
+        if len(found_particles) == 0:
+            raise ValueError(
+                "No particle with name " + str(particle_name) + " found!")
+        elif len(found_particles) > 1:
+            raise ValueError(
+                "more than one particle with name " + str(particle_name)
+                + " found!")
     return found_particles[0]
 
 
@@ -277,6 +284,24 @@ def get_particle_property(particle_properties, qn_name, converter=None):
                 # parameters have a seperate value tag
                 tagname = XMLLabelConstants.Value.name
                 found_prop = {value_label: val[tagname]}
+                break
+            if key == XMLLabelConstants.DecayInfo.name:
+                for decinfo_key, decinfo_val in val.items():
+                    if (decinfo_key == qn_name.name):
+                        found_prop = {value_label: decinfo_val}
+                        break
+                    if (decinfo_key == 'Parameter'):
+                        if not isinstance(decinfo_val, list):
+                            decinfo_val = [decinfo_val]
+                        for parval in decinfo_val:
+                            if parval[type_label] == qn_name.name:
+                                # parameters have a seperate value tag
+                                tagname = XMLLabelConstants.Value.name
+                                found_prop = {value_label: parval[tagname]}
+                                break
+                        if found_prop:
+                            break
+            if found_prop:
                 break
     # check for default value
     property_value = None

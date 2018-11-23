@@ -1,11 +1,12 @@
 from expertsystem.state.conservationrules import MassConservation
-from expertsystem.state.particle import (ParticlePropertyNames)
+from expertsystem.state.particle import (
+    ParticlePropertyNames, ParticleDecayPropertyNames)
 
 
 class TestMass(object):
     def test_mass_two_body_decay_stable_outgoing(self):
         mass_label = ParticlePropertyNames.Mass
-        width_label = ParticlePropertyNames.Width
+        width_label = ParticleDecayPropertyNames.Width
         mass_rule = MassConservation(5)
         cases = []
 
