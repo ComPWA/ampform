@@ -1,1 +1,1 @@
-__all__ = ['conservationrules', 'particle', 'propagation', 'validation']
+__all__ = ['conservationrules', 'particle', 'propagation']
