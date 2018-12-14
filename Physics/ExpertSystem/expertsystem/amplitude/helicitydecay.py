@@ -414,11 +414,8 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             coherent_amp_name = "coherent_" + \
                 str(graph_groups.index(graph_group))
             coherent_amplitudes.append({
-                class_label: 'Coherent', name_label: coherent_amp_name,
-                parameter_label: {class_label: "Double",
-                                  type_label: "Strength",
-                                  name_label: "strength_" + coherent_amp_name,
-                                  'Value': 1, 'Fix': True},
+                class_label: 'CoherentIntensity',
+                name_label: coherent_amp_name,
                 'Amplitude': seq_partial_decays
             })
 
@@ -426,13 +423,18 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         incoherent_amp_name = "incoherent"
         self.helicity_amplitudes = {
             'Intensity': {
-                class_label: "Incoherent", name_label: incoherent_amp_name,
+                class_label: "StrengthIntensity",
+                name_label: incoherent_amp_name+"_with_strength",
                 parameter_label: {class_label: "Double",
                                   type_label: "Strength",
                                   name_label: "strength_" +
                                   incoherent_amp_name,
                                   'Value': 1, 'Fix': True},
-                'Intensity': coherent_amplitudes
+                'Intensity': {
+                    class_label: "IncoherentIntensity",
+                    name_label: incoherent_amp_name,
+                    'Intensity': coherent_amplitudes
+                }
             }
         }
 
@@ -471,9 +473,13 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
 
         amp_name = parameter_props['AmplitudeName']
         seq_decay_dict = {
-            class_label: "SequentialPartialAmplitude",
+            class_label: "CoefficientAmplitude",
             name_label: amp_name,
-            'PartialAmplitude': partial_decays
+            'Amplitude': {
+                class_label: "SequentialAmplitude",
+                name_label: amp_name,
+                'Amplitude': partial_decays
+            }
         }
         seq_decay_dict.update(
             self.generate_magnitude_and_phase(parameter_props))
