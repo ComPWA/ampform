@@ -1,7 +1,9 @@
-""" module topologybuilder
+""" 
+module topologybuilder
 responsible for building all possible topologies base on basic user input
-  -number of initial state particles
-  -number of final state particles
+
+  - number of initial state particles
+  - number of final state particles
 """
 
 import copy
@@ -13,9 +15,11 @@ from expertsystem.topology.graph import (
 
 
 class SimpleStateTransitionTopologyBuilder():
-    """Simple topology builder. Recursively trys to add the interaction nodes
+    """
+    Simple topology builder. Recursively trys to add the interaction nodes
     to available open end edges/lines in all combinations until the number of
-    open end lines matches the final state lines"""
+    open end lines matches the final state lines
+    """
 
     def __init__(self, interaction_node_set):
         if not isinstance(interaction_node_set, list):

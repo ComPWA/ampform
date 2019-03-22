@@ -48,9 +48,10 @@ class InteractionNodeSettings:
     Container class for the interaction settings, which can be assigned to each
     node of a state transition graph. Hence these settings contain the complete
     configuration information which is required for the solution finding, e.g:
-        - list of conservation laws
-        - list of quantum number domains
-        - strength scale parameter (higher value means stronger force)
+
+      - list of conservation laws
+      - list of quantum number domains
+      - strength scale parameter (higher value means stronger force)
     '''
 
     def __init__(self):
@@ -278,7 +279,7 @@ class VariableInfo():
 
 def decode_variable_name(variable_name, delimiter):
     """
-    Decodes the variable name (see ::func::`.encode_variable_name`)
+    Decodes the variable name (see :func:`.encode_variable_name`)
     """
     split_name = variable_name.split(delimiter)
     if not len(split_name) == 3:
@@ -301,7 +302,8 @@ def encode_variable_name(variable_info, delimiter):
     """
     The variable names are encoded as a concatenated string of the form
     graph element type + delimiter + element id + delimiter + qn name
-    The variable of type ::class::`.VariableInfo` and contains:
+    The variable of type :class:`.VariableInfo` and contains:
+    
       - graph_element_type: is either "node" or "edge" (enum)
       - element_id: is the id of that node/edge
         (as it is defined in the graph)
@@ -324,7 +326,7 @@ class CSPPropagator(AbstractPropagator):
     composite quantum numbers which are attributed to the interaction nodes
     (such as angular momentum L).
     The conservation laws serve as the constraints and are wrapped with a
-    special class ::class::`.ConservationLawConstraintWrapper`.
+    special class :class:`.ConservationLawConstraintWrapper`.
     """
 
     def __init__(self, graph):
@@ -491,11 +493,12 @@ class CSPPropagator(AbstractPropagator):
         In other words attach the solution quantum numbers as properties to
         the edges. Also the solutions are filtered using the allowed
         intermediate particle list, to avoid large memory consumption.
+
         Args:
-            solutions ([{constraint variables}]): solutions of the
-                constraint (csp solving module).
+          solutions: list of solutions of the csp solver
+        
         Returns:
-            solution graphs ([:class:`.StateTransitionGraph`])
+          solution graphs ([:class:`.StateTransitionGraph`])
         """
         solution_graphs = []
         initial_edges = get_initial_state_edges(self.graph)
