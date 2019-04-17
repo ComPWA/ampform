@@ -20,6 +20,29 @@ from pycompwa.expertsystem.state.conservationrules import (
     MassConservation)
 
 
+# If a conservation law is not listed here, a default priority of 1 is assumed.
+# Higher number means higher priority
+default_conservation_law_priorities = {
+    'SpinConservation': 8,
+    'HelicityConservation': 7,
+    'MassConservation': 10,
+    'GellMannNishijimaRule': 50,
+    'ChargeConservation': 100,
+    'ElectronLNConservation': 45,
+    'MuonLNConservation': 44,
+    'TauLNConservation': 43,
+    'BaryonNumberConservation': 90,
+    'IdenticalParticleSymmetrization': 2,
+    'CharmConservation': 70,
+    'StrangenessConservation': 69,
+    'ParityConservation': 6,
+    'CParityConservation': 5,
+    'ParityConservationHelicity': 4,
+    'IsoSpinConservation': 60,
+    'GParityConservation': 3
+}
+
+
 def create_default_interaction_settings(formalism_type,
                                         use_mass_conservation=True):
     '''
@@ -114,9 +137,30 @@ def create_default_interaction_settings(formalism_type,
     strong_settings.conservation_laws.extend(
         [SpinConservation(
             StateQuantumNumberNames.IsoSpin),
-            GParityConservation()]
+         GParityConservation()]
     )
     strong_settings.interaction_strength = 60
     interaction_type_settings[InteractionTypes.Strong] = strong_settings
 
+    # reorder conservation laws according to priority
+    weak_settings.conservation_laws = reorder_list_by_priority(
+        weak_settings.conservation_laws,
+        default_conservation_law_priorities)
+    em_settings.conservation_laws = reorder_list_by_priority(
+        em_settings.conservation_laws,
+        default_conservation_law_priorities)
+    strong_settings.conservation_laws = reorder_list_by_priority(
+        strong_settings.conservation_laws,
+        default_conservation_law_priorities)
+
     return interaction_type_settings
+
+
+def reorder_list_by_priority(alist, priority_mapping):
+    # first add priorities to the entries
+    priority_list = [(x, priority_mapping[str(x)]) if str(
+        x) in priority_mapping else (x, 1) for x in alist]
+    # then sort according to priority
+    sorted_list = sorted(priority_list, key=lambda x: x[1], reverse=True)
+    # and strip away the priorities again
+    return [x[0] for x in sorted_list]
