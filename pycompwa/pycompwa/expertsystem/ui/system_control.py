@@ -49,14 +49,21 @@ def remove_conservation_law(interaction_settings, cons_law):
             break
 
 
-def filter_interaction_types(interaction_types, allowed_interaction_types):
-    current_lowest_type = InteractionTypes.Strong.value
-    for int_type in interaction_types:
-        if int_type.value > current_lowest_type:
-            current_lowest_type = int_type.value
+def filter_interaction_types(valid_determined_interaction_types,
+                             allowed_interaction_types):
+    int_type_intersection = list(set(allowed_interaction_types) & set(
+        valid_determined_interaction_types))
+    if int_type_intersection:
+        return int_type_intersection
+    else:
+        logging.warning(
+            "The specified list of interaction types "
+            + str(allowed_interaction_types)
+            + " does not intersect with the valid list of interaction types "
+            + str(valid_determined_interaction_types)
+            + ".\nUsing valid list instead.")
 
-    return [x for x in InteractionTypes if x.value >= current_lowest_type
-            and x in allowed_interaction_types]
+        return valid_determined_interaction_types
 
 
 class InteractionDeterminationFunctorInterface(ABC):
@@ -69,13 +76,13 @@ class GammaCheck(InteractionDeterminationFunctorInterface):
     name_label = get_xml_label(XMLLabelConstants.Name)
 
     def check(self, in_edge_props, out_edge_props, node_props):
-        int_type = InteractionTypes.Undefined
+        int_types = [x for x in InteractionTypes]
         for edge_props in in_edge_props + out_edge_props:
             if ('gamma' in edge_props[self.name_label]):
-                int_type = InteractionTypes.EM
+                int_types = [InteractionTypes.EM, InteractionTypes.Weak]
                 break
 
-        return int_type
+        return int_types
 
 
 class LeptonCheck(InteractionDeterminationFunctorInterface):
@@ -88,7 +95,7 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
 
     def check(self, in_edge_props, out_edge_props, node_props):
-        node_interaction_type = InteractionTypes.Undefined
+        node_interaction_types = [x for x in InteractionTypes]
         for edge_props in in_edge_props + out_edge_props:
             if sum([get_particle_property(edge_props, x)
                     for x in self.lepton_flavour_labels
@@ -96,11 +103,12 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
                 if [x for x in
                         ['ve', 'vebar', 'vmu', 'vmubar', 'vtau', 'vtaubar']
                         if x == edge_props[self.name_label]]:
-                    node_interaction_type = InteractionTypes.Weak
+                    node_interaction_types = [InteractionTypes.Weak]
                     break
                 if edge_props[self.qns_label] != 0:
-                    node_interaction_type = InteractionTypes.EM
-        return node_interaction_type
+                    node_interaction_types = [InteractionTypes.EM,
+                                              InteractionTypes.Weak]
+        return node_interaction_types
 
 
 def filter_solutions(results, remove_qns_list, ingore_qns_list):
@@ -276,8 +284,8 @@ def match_external_edge_ids(graphs, ref_graph_id,
 
 
 def calculate_swappings(id_mapping):
-        # calculate edge id swappings
-        # its important to use an ordered dict as the swappings do not commute!
+    # calculate edge id swappings
+    # its important to use an ordered dict as the swappings do not commute!
     swappings = OrderedDict()
     for k, v in id_mapping.items():
         # go through existing swappings and use them
@@ -477,11 +485,14 @@ class StateTransitionManager():
                 if node_id in graph.node_props:
                     node_props = graph.node_props[node_id]
                 for int_det in self.interaction_determinators:
-                    node_int_types.append(
-                        int_det.check(in_edge_props,
-                                      out_edge_props,
-                                      node_props)
-                    )
+                    determined_interactions = int_det.check(in_edge_props,
+                                                            out_edge_props,
+                                                            node_props)
+                    if node_int_types:
+                        node_int_types = list(
+                            set(determined_interactions) & set(node_int_types))
+                    else:
+                        node_int_types = determined_interactions
                 node_int_types = filter_interaction_types(
                     node_int_types,
                     self.allowed_interaction_types)
@@ -522,17 +533,14 @@ class StateTransitionManager():
             temp_results = []
             bar = IncrementalBar('Propagating quantum numbers...',
                                  max=len(graph_setting_group))
+            bar.update()
             if self.number_of_threads > 1:
                 with Pool(self.number_of_threads) as p:
-                    # temp_results = p.imap_unordered(
-                    #    self.propagate_quantum_numbers,
-                    #    graph_setting_group, 1)
-                    temp_results = [p.apply_async(
-                        self.propagate_quantum_numbers, (x,),
-                        callback=bar.next()) for x in graph_setting_group]
-                    p.close()
-                    p.join()
-                    temp_results = [x.get() for x in temp_results]
+                    for result in p.imap_unordered(
+                            self.propagate_quantum_numbers,
+                            graph_setting_group, 1):
+                        temp_results.append(result)
+                        bar.next()
             else:
                 for graph_setting_pair in graph_setting_group:
                     temp_results.append(self.propagate_quantum_numbers(

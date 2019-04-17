@@ -13,34 +13,37 @@ import logging
 
 from pycompwa.tools.progress.bar import IncrementalBar
 
-from pycompwa.expertsystem.solvers.constraint import (Problem,
-                                             Constraint,
-                                             Unassigned,
-                                             BacktrackingSolver)
+from pycompwa.expertsystem.solvers.constraint import (
+    Problem,
+    Constraint,
+    Unassigned,
+    BacktrackingSolver)
 
-from pycompwa.expertsystem.topology.graph import (get_initial_state_edges,
-                                         get_final_state_edges,
-                                         get_edges_ingoing_to_node,
-                                         get_edges_outgoing_to_node,
-                                         get_intermediate_state_edges)
+from pycompwa.expertsystem.topology.graph import (
+    get_initial_state_edges,
+    get_final_state_edges,
+    get_edges_ingoing_to_node,
+    get_edges_outgoing_to_node,
+    get_intermediate_state_edges)
 from pycompwa.expertsystem.state.conservationrules import AbstractRule
-from pycompwa.expertsystem.state.particle import (get_xml_label, XMLLabelConstants,
-                                         StateQuantumNumberNames,
-                                         InteractionQuantumNumberNames,
-                                         ParticlePropertyNames,
-                                         get_particle_property,
-                                         get_interaction_property,
-                                         QNNameClassMapping,
-                                         QNClassConverterMapping,
-                                         initialize_graphs_with_particles,
-                                         get_particle_candidates_for_state,
-                                         initialize_allowed_particle_list)
+from pycompwa.expertsystem.state.particle import (
+    get_xml_label, XMLLabelConstants,
+    StateQuantumNumberNames,
+    InteractionQuantumNumberNames,
+    ParticlePropertyNames,
+    get_particle_property,
+    get_interaction_property,
+    QNNameClassMapping,
+    QNClassConverterMapping,
+    initialize_graphs_with_particles,
+    get_particle_candidates_for_state,
+    initialize_allowed_particle_list)
 
 
 graph_element_types = Enum('GraphElementTypes', 'node edge')
 
 
-InteractionTypes = Enum('InteractionTypes', 'Undefined Strong EM Weak')
+InteractionTypes = Enum('InteractionTypes', 'Strong EM Weak')
 
 
 class InteractionNodeSettings:
@@ -303,7 +306,7 @@ def encode_variable_name(variable_info, delimiter):
     The variable names are encoded as a concatenated string of the form
     graph element type + delimiter + element id + delimiter + qn name
     The variable of type :class:`.VariableInfo` and contains:
-    
+
       - graph_element_type: is either "node" or "edge" (enum)
       - element_id: is the id of that node/edge
         (as it is defined in the graph)
@@ -496,7 +499,7 @@ class CSPPropagator(AbstractPropagator):
 
         Args:
           solutions: list of solutions of the csp solver
-        
+
         Returns:
           solution graphs ([:class:`.StateTransitionGraph`])
         """

@@ -7,14 +7,15 @@ from copy import deepcopy
 from numpy import arange
 import logging
 
-from pycompwa.expertsystem.state.particle import (StateQuantumNumberNames,
-                                         InteractionQuantumNumberNames,
-                                         ParticlePropertyNames,
-                                         ParticleDecayPropertyNames,
-                                         QNNameClassMapping,
-                                         QuantumNumberClasses,
-                                         is_boson,
-                                         Spin)
+from pycompwa.expertsystem.state.particle import (
+    StateQuantumNumberNames,
+    InteractionQuantumNumberNames,
+    ParticlePropertyNames,
+    ParticleDecayPropertyNames,
+    QNNameClassMapping,
+    QuantumNumberClasses,
+    is_boson,
+    Spin)
 
 
 ''' Functors for quantum number condition checks '''
@@ -158,6 +159,7 @@ class AbstractRule(ABC):
             if not cond_functor.check(qn_name_list, in_edges,
                                       out_edges, int_node):
                 logging.debug("condition " + str(cond_functor.__class__) +
+                              " for quantum numbers " + str(qn_name_list) +
                               " for rule " + str(self.__class__) +
                               " not satisfied")
                 return False
