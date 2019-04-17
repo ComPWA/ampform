@@ -104,8 +104,8 @@ class DefinedIfOtherQnNotDefinedInOutSeperate(AbstractConditionFunctor):
 
 
 def is_particle_antiparticle_pair(pid1, pid2):
-        # we just check if the pid is opposite in sign
-        # this is a requirement of the pid numbers of course
+    # we just check if the pid is opposite in sign
+    # this is a requirement of the pid numbers of course
     return pid1 == -pid2
 
 
@@ -171,7 +171,7 @@ class AdditiveQuantumNumberConservation(AbstractRule):
     checks for the conservation of an additive quantum number such as electric
     charge, baryon number, lepton number
 
-    :math:`\sum q_{in} = \sum q_{out}`
+    :math:`\\sum q_{in} = \\sum q_{out}`
     """
 
     def __init__(self, qn_name):
@@ -201,7 +201,7 @@ class ParityConservation(AbstractRule):
             DefinedForInteractionNode()])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """ implements :math:`P_{in} = P_{out} \cdot (-1)^L` """
+        """ implements :math:`P_{in} = P_{out} \\cdot (-1)^L` """
         # is this valid for two outgoing particles only?
         parity_label = StateQuantumNumberNames.Parity
         parity_in = reduce(
@@ -230,9 +230,9 @@ class ParityConservationHelicity(AbstractRule):
         """
         Implements the check
 
-        :math:`A_{-\lambda_1-\lambda_2} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1} A_{\lambda_1\lambda_2}`
+        :math:`A_{-\\lambda_1-\\lambda_2} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1} A_{\\lambda_1\\lambda_2}`
 
-        Notice that only the special case :math:`\lambda_1=\lambda_2=0`
+        Notice that only the special case :math:`\\lambda_1=\\lambda_2=0`
         may return False
         """
         if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
@@ -461,7 +461,7 @@ class IdenticalParticleSymmetrization(AbstractRule):
 class SpinConservation(AbstractRule):
     """
     Implements conservation of a spin-like quantum number for a two body decay
-    (coupling of two particle states). See ::meth::`check` for details.
+    (coupling of two particle states). See :py:meth:`check` for details.
     """
 
     def __init__(self, spinlike_qn, use_projection=True):
@@ -487,9 +487,9 @@ class SpinConservation(AbstractRule):
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
-        implements :math:`|S_1 - S_2| \leq S \leq |S_1 + S_2|` and optionally
-        :math:`|L - S| \leq J \leq |L + S|`. Also checks :math:`M_1 + M_2 = M`
-        and if clebsch gordan coefficients are 0
+        implements :math:`|S_1 - S_2| \\leq S \\leq |S_1 + S_2|` and optionally
+        :math:`|L - S| \\leq J \\leq |L + S|`. Also checks
+        :math:`M_1 + M_2 = M` and if clebsch gordan coefficients are 0
         """
         spin_label = self.spinlike_qn
 
@@ -556,7 +556,7 @@ class SpinConservation(AbstractRule):
     def spin_couplings(self, spin1, spin2):
         """
         implements the coupling of two spins
-        :math:`|S_1 - S_2| \leq S \leq |S_1 + S_2|` and :math:`M_1 + M_2 = M`
+        :math:`|S_1 - S_2| \\leq S \\leq |S_1 + S_2|` and :math:`M_1 + M_2 = M`
         """
         j1 = spin1.magnitude()
         j2 = spin2.magnitude()
@@ -643,7 +643,7 @@ class HelicityConservation(AbstractRule):
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """
-        implements :math:`|\lambda_2-\lambda_3| \leq S_1`
+        implements :math:`|\\lambda_2-\\lambda_3| \\leq S_1`
         """
         if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
             spin_label = StateQuantumNumberNames.Spin
@@ -729,7 +729,7 @@ class MassConservation(AbstractRule):
         """
         implements the mass check
 
-        :math:`M_{out} - N \cdot W_{out} < M_{in} + N \cdot W_{in}`
+        :math:`M_{out} - N \\cdot W_{out} < M_{in} + N \\cdot W_{in}`
 
         It makes sure that the net mass outgoing state :math:`M_{out}` is
         smaller than the net mass of the ingoing state :math:`M_{in}`. Also
