@@ -9,25 +9,25 @@ from os import path
 
 from pycompwa.tools.progress.bar import IncrementalBar
 
-from pycompwa.expertsystem.topology.graph import (
+from ..topology.graph import (
     StateTransitionGraph,
     InteractionNode,
     get_edges_outgoing_to_node,
     get_final_state_edges,
     get_initial_state_edges)
-from pycompwa.expertsystem.topology.topologybuilder import (
+from ..topology.topologybuilder import (
     SimpleStateTransitionTopologyBuilder)
 
-from pycompwa.expertsystem.state.particle import (
+from ..state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
     get_particle_property, XMLLabelConstants, get_xml_label,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
     ParticlePropertyNames, CompareGraphElementPropertiesFunctor)
 
-from pycompwa.expertsystem.state.propagation import (
+from ..state.propagation import (
     FullPropagator, InteractionTypes, InteractionNodeSettings)
 
-from pycompwa.expertsystem.ui.default_settings import (
+from .default_settings import (
     create_default_interaction_settings
 )
 

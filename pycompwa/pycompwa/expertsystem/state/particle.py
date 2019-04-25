@@ -13,7 +13,7 @@ from collections import OrderedDict
 
 import xmltodict
 
-from pycompwa.expertsystem.topology.graph import (
+from ..topology.graph import (
     get_initial_state_edges,
     get_final_state_edges,
     get_intermediate_state_edges,

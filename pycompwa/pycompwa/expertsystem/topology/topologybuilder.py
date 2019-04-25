@@ -1,4 +1,4 @@
-""" 
+"""
 module topologybuilder
 responsible for building all possible topologies base on basic user input
 
@@ -10,7 +10,7 @@ import copy
 import itertools
 import logging
 
-from pycompwa.expertsystem.topology.graph import (
+from .graph import (
     StateTransitionGraph, InteractionNode, are_graphs_isomorphic)
 
 

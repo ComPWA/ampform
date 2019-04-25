@@ -11,22 +11,20 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import logging
 
-from pycompwa.tools.progress.bar import IncrementalBar
-
-from pycompwa.expertsystem.solvers.constraint import (
+from ..solvers.constraint import (
     Problem,
     Constraint,
     Unassigned,
     BacktrackingSolver)
 
-from pycompwa.expertsystem.topology.graph import (
+from ..topology.graph import (
     get_initial_state_edges,
     get_final_state_edges,
     get_edges_ingoing_to_node,
     get_edges_outgoing_to_node,
     get_intermediate_state_edges)
-from pycompwa.expertsystem.state.conservationrules import AbstractRule
-from pycompwa.expertsystem.state.particle import (
+from ..state.conservationrules import AbstractRule
+from ..state.particle import (
     get_xml_label, XMLLabelConstants,
     StateQuantumNumberNames,
     InteractionQuantumNumberNames,

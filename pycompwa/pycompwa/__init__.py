@@ -1,4 +1,5 @@
-__all__ = ['plotting', 'expertsystem', 'tools']
-import pycompwa.plotting
-import pycompwa.expertsystem
-import pycompwa.ui
+__all__ = ['plotting', 'expertsystem', 'ui']
+
+from . import plotting
+from . import expertsystem
+from . import ui

@@ -1,12 +1,12 @@
 from copy import deepcopy
 
-from pycompwa.expertsystem.state.particle import (
+from ..state.particle import (
     StateQuantumNumberNames, InteractionQuantumNumberNames, create_spin_domain)
 
-from pycompwa.expertsystem.state.propagation import (
+from ..state.propagation import (
     InteractionNodeSettings, InteractionTypes)
 
-from pycompwa.expertsystem.state.conservationrules import (
+from ..state.conservationrules import (
     AdditiveQuantumNumberConservation,
     ParityConservation,
     ParityConservationHelicity,

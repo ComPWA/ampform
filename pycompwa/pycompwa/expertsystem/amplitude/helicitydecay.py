@@ -5,16 +5,16 @@ from copy import deepcopy
 
 import xmltodict
 
-from pycompwa.expertsystem.amplitude.abstractgenerator import (
+from .abstractgenerator import (
     AbstractAmplitudeNameGenerator,
     AbstractAmplitudeGenerator
 )
 
-from pycompwa.expertsystem.topology.graph import (get_initial_state_edges,
-                                         get_final_state_edges,
-                                         get_edges_ingoing_to_node,
-                                         get_edges_outgoing_to_node)
-from pycompwa.expertsystem.state.particle import (
+from ..topology.graph import (get_initial_state_edges,
+                              get_final_state_edges,
+                              get_edges_ingoing_to_node,
+                              get_edges_outgoing_to_node)
+from ..state.particle import (
     StateQuantumNumberNames, InteractionQuantumNumberNames,
     XMLLabelConstants, get_xml_label, get_interaction_property,
     get_particle_property)

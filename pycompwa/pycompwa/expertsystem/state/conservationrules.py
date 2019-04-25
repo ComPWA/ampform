@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from abc import ABC, abstractmethod
 from functools import reduce
 from copy import deepcopy
@@ -7,7 +5,7 @@ from copy import deepcopy
 from numpy import arange
 import logging
 
-from pycompwa.expertsystem.state.particle import (
+from .particle import (
     StateQuantumNumberNames,
     InteractionQuantumNumberNames,
     ParticlePropertyNames,

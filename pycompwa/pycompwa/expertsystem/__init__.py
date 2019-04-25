@@ -1,8 +1,8 @@
 __all__ = ['amplitude', 'state', 'topology', 'ui']
-import pycompwa.expertsystem.amplitude
-import pycompwa.expertsystem.state
-import pycompwa.expertsystem.topology
-import pycompwa.expertsystem.ui
+from . import amplitude
+from . import state
+from . import topology
+from . import ui
 
 
 if(__name__ == "__main__"):
