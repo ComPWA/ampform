@@ -335,6 +335,12 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
     else:
         if qn_name in QNDefaultValues:
             property_value = QNDefaultValues[qn_name]
+        else:
+            logging.warning("Requested quantum number " + str(qn_name)
+                            + " was not found in the interaction properties."
+                            + "\nAlso no default setting for this quantum "
+                            + "number is available. Perhaps you are using the"
+                            + " wrong formalism?")
     return property_value
 
 

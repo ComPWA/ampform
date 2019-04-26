@@ -2,11 +2,16 @@ import pytest
 
 from pycompwa.expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes,
-    filter_solutions, CompareGraphElementPropertiesFunctor,
+    remove_duplicate_solutions, CompareGraphElementPropertiesFunctor,
     match_external_edges, create_edge_id_particle_mapping,
-    perform_external_edge_identical_particle_combinatorics)
+    perform_external_edge_identical_particle_combinatorics,
+    filter_graphs, require_interaction_property)
 from pycompwa.expertsystem.topology.graph import (
     StateTransitionGraph, get_final_state_edges, get_initial_state_edges)
+from pycompwa.expertsystem.state.particle import (
+    create_spin_domain, InteractionQuantumNumberNames,
+    get_xml_label, XMLLabelConstants
+)
 
 
 @pytest.mark.parametrize(
@@ -66,6 +71,7 @@ def make_ls_test_graph(angular_momentum_magnitude, coupled_spin_magnitude):
     graph = StateTransitionGraph()
     graph.set_graph_element_properties_comparator(
         CompareGraphElementPropertiesFunctor())
+    graph.nodes.append(0)
     graph.node_props[0] = {'QuantumNumber': [
         {'@Value': str(coupled_spin_magnitude), '@Type': 'S',
          '@Projection': '0.0', '@Class': 'Spin'},
@@ -80,6 +86,7 @@ def make_ls_test_graph_scrambled(angular_momentum_magnitude,
     graph = StateTransitionGraph()
     graph.set_graph_element_properties_comparator(
         CompareGraphElementPropertiesFunctor())
+    graph.nodes.append(0)
     graph.node_props[0] = {'QuantumNumber': [
         {'@Class': 'Spin', '@Value': str(angular_momentum_magnitude),
          '@Type': 'L', '@Projection': '0.0'},
@@ -95,21 +102,62 @@ class TestSolutionFilter(object):
         [([(1, 0), (1, 1)], 2),
          ([(1, 0), (1, 0)], 1),
          ])
-    def test_interaction_qns(self, LS_pairs, result):
+    def test_remove_duplicates(self, LS_pairs, result):
         graphs = {'test': []}
         for x in LS_pairs:
             graphs['test'].append(([make_ls_test_graph(x[0], x[1])], []))
 
-        results = filter_solutions(graphs, [], [])
+        results = remove_duplicate_solutions(graphs)
         num_solutions = [len(x[0]) for x in results['test']]
         assert sum(num_solutions) == result
 
         for x in LS_pairs:
             graphs['test'].append(([make_ls_test_graph_scrambled(x[0], x[1])],
                                    []))
-        results = filter_solutions(graphs, [], [])
+        results = remove_duplicate_solutions(graphs)
         num_solutions = [len(x[0]) for x in results['test']]
         assert sum(num_solutions) == result
+
+    @pytest.mark.parametrize(
+        "input_values,filter_parameters,result",
+        [
+            ([('foo', (1, 0)), ('foo', (1, 1))],
+             ('foo', InteractionQuantumNumberNames.L,
+                create_spin_domain([1], True)),
+                2),
+            ([('foo', (1, 0)), ('foo', (2, 1))],
+             ('foo', InteractionQuantumNumberNames.L,
+                create_spin_domain([1], True)),
+             1),
+            ([('foo', (1, 0)), ('foo', (1, 1))],
+             ('foobar', InteractionQuantumNumberNames.L,
+                create_spin_domain([1], True)),
+             0),
+            ([('foo', (0, 0)), ('foo', (1, 1)), ('foo', (2, 1))],
+             ('foo', InteractionQuantumNumberNames.L,
+                create_spin_domain([1, 2], True)),
+             2),
+            ([('foo', (1, 0)), ('foo', (1, 1))],
+             ('foo', InteractionQuantumNumberNames.S,
+                create_spin_domain([1], True)),
+             1),
+        ])
+    def test_filter_graphs_for_interaction_qns(self, input_values,
+                                               filter_parameters, result):
+        graphs = []
+        name_label = get_xml_label(XMLLabelConstants.Name)
+        value_label = get_xml_label(XMLLabelConstants.Value)
+        for x in input_values:
+            tempgraph = make_ls_test_graph(x[1][0], x[1][1])
+            tempgraph.add_edges([0])
+            tempgraph.attach_edges_to_node_ingoing([0], 0)
+            tempgraph.edge_props[0] = {name_label: {value_label: x[0]}}
+            graphs.append(tempgraph)
+
+        myfilter = require_interaction_property(
+            *filter_parameters)
+        filtered_graphs = filter_graphs(graphs, [myfilter])
+        assert len(filtered_graphs) == result
 
 
 @pytest.mark.parametrize(
@@ -215,7 +263,7 @@ def test_external_edge_identical_particle_combinatorics(initial_state,
 
     init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
     match_external_edges(init_graphs)
-    
+
     comb_graphs = []
     for x in init_graphs:
         comb_graphs.extend(

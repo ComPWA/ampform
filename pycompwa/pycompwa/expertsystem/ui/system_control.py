@@ -14,13 +14,15 @@ from ..topology.graph import (
     InteractionNode,
     get_edges_outgoing_to_node,
     get_final_state_edges,
-    get_initial_state_edges)
+    get_initial_state_edges,
+    get_edges_ingoing_to_node)
 from ..topology.topologybuilder import (
     SimpleStateTransitionTopologyBuilder)
 
 from ..state.particle import (
     load_particle_list_from_xml, particle_list, initialize_graph,
-    get_particle_property, XMLLabelConstants, get_xml_label,
+    get_particle_property, get_interaction_property,
+    XMLLabelConstants, get_xml_label,
     StateQuantumNumberNames, InteractionQuantumNumberNames,
     ParticlePropertyNames, CompareGraphElementPropertiesFunctor)
 
@@ -111,8 +113,9 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
         return node_interaction_types
 
 
-def filter_solutions(results, remove_qns_list, ingore_qns_list):
-    logging.info("filtering solutions...")
+def remove_duplicate_solutions(results, remove_qns_list=[],
+                               ingore_qns_list=[]):
+    logging.info("removing duplicate solutions...")
     logging.info("removing these qns from graphs: " + str(remove_qns_list))
     logging.info("ignoring qns in graph comparison: " + str(ingore_qns_list))
     filtered_results = {}
@@ -202,6 +205,94 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
                 break
     ref_graph.set_graph_element_properties_comparator(old_comparator)
     return found_graph
+
+
+def filter_graphs(graphs, filters):
+    """
+    Implements filtering of a list of :py:class:`.StateTransitionGraph` 's.
+
+    This function can be used to select a subset of
+    :py:class:`.StateTransitionGraph` 's from a list. Only the graphs passing
+    all supplied filters will be returned.
+
+    Note:
+        For the more advanced user, lambda functions can be used as filters.
+
+    Args:
+        graphs ([:py:class:`.StateTransitionGraph`]): list of graphs to be
+            filtered
+        filters ([function]): list of functions, which take a single
+            :py:class:`.StateTransitionGraph` as an argument
+    Returns:
+        [:py:class:`.StateTransitionGraph`]: filtered list of graphs
+
+    Example:
+        Selecting only the solutions, in which the :math:`\\rho` decays via
+        p-wave:
+
+        >>> myfilter = require_interaction_property(
+                'rho', InteractionQuantumNumberNames.L,
+                create_spin_domain([1], True))
+        >>> filtered_solutions = filter_graphs(solutions, [myfilter])
+    """
+    filtered_graphs = graphs
+    for x in filters:
+        if not filtered_graphs:
+            break
+        filtered_graphs = list(filter(x, filtered_graphs))
+    return filtered_graphs
+
+
+def require_interaction_property(ingoing_particle_name,
+                                 interaction_qn, allowed_values):
+    """
+    Closure, which can be used as a filter function in
+    :py:func:`.filter_graphs`.
+
+    It selects graphs based on a requirement on the property of specific
+    interaction nodes.
+
+    Args:
+        ingoing_particle_name (str): name of particle, used to find nodes which
+            have a particle with this name as "ingoing"
+        interaction_qn (:py:class:`.InteractionQuantumNumberNames`):
+            interaction quantum number
+        allowed_values (list): list of allowed values, that the interaction
+            quantum number may take
+
+    Return:
+        bool:
+            - *True* if the graph has nodes with an ingoing particle of the
+              given name, and the graph fullfills the quantum number
+              requirement
+            - *False* otherwise
+    """
+    def check(graph):
+        node_ids = _find_node_ids_with_ingoing_particle_name(
+            graph, ingoing_particle_name)
+        if not node_ids:
+            return False
+        for i in node_ids:
+            if (get_interaction_property(graph.node_props[i], interaction_qn)
+                    not in allowed_values):
+                return False
+        return True
+    return check
+
+
+def _find_node_ids_with_ingoing_particle_name(graph, ingoing_particle_name):
+    name_label = get_xml_label(XMLLabelConstants.Name)
+    found_node_ids = []
+    for node_id in graph.nodes:
+        edge_ids = get_edges_ingoing_to_node(graph, node_id)
+        for edge_id in edge_ids:
+            edge_props = graph.edge_props[edge_id]
+            if name_label in edge_props:
+                edge_particle_name = edge_props[name_label]
+                if (str(ingoing_particle_name) in str(edge_particle_name)):
+                    found_node_ids.append(node_id)
+                    break
+    return found_node_ids
 
 
 def analyse_solution_failure(violated_laws_per_node_and_graph):
@@ -557,10 +648,10 @@ class StateTransitionManager():
                 "number of solutions for strength ("
                 + str(k) + ") after qn propagation: "
                 + str(sum([len(x[0]) for x in v])))
-        # filter solutions, by removing those which only differ in
-        # the interaction S qn
-        results = filter_solutions(results, self.filter_remove_qns,
-                                   self.filter_ignore_qns)
+
+        # remove duplicate solutions, which only differ in the interaction qn S
+        results = remove_duplicate_solutions(results, self.filter_remove_qns,
+                                             self.filter_ignore_qns)
 
         node_non_satisfied_rules = []
         solutions = []
