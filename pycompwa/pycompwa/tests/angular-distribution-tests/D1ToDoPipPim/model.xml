@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+	<ParticleList>
+		<Particle Name="D1(2420)0">
+			<Pid>10423</Pid>
+			<Parameter Type="Mass" Name="Mass_D1(2420)0">
+				<Value>2.4214</Value>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="-0.5"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<DecayInfo Type="nonResonant"></DecayInfo>
+		</Particle>
+		<Particle Name="pi-">
+			<Pid>-211</Pid>
+			<Parameter Type="Mass" Name="Mass_chargedPion">
+				<Value>0.13957018</Value>
+				<Error>0.00000035</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="1" Projection="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		</Particle>
+		<Particle Name="pi+">
+			<Pid>211</Pid>
+			<Parameter Type="Mass" Name="Mass_chargedPion">
+				<Value>0.13957018</Value>
+				<Error>0.00000035</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="+1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="1" Projection="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		</Particle>
+		<Particle Name="D0">
+			<Pid>421</Pid>
+			<Parameter Type="Mass" Name="Mass_neutralD">
+				<Value>1.86483</Value>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="-0.5"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<DecayInfo Type="nonResonant"></DecayInfo>
+		</Particle>
+		<Particle Name="D*(2010)+">
+			<Pid>413</Pid>
+			<Parameter Type="Mass" Name="Mass_D*(2010)+">
+				<Value>2.01</Value>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="1.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="0.5"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="nonResonant"></DecayInfo>
+		</Particle>
+	</ParticleList>
+	<HelicityKinematics>
+		<InitialState>
+			<Particle Name="D1(2420)0" Id="0" PositionIndex="0"></Particle>
+		</InitialState>
+		<FinalState>
+			<Particle Name="pi-" Id="2" PositionIndex="0"></Particle>
+			<Particle Name="pi+" Id="3" PositionIndex="1"></Particle>
+			<Particle Name="D0" Id="4" PositionIndex="2"></Particle>
+		</FinalState>
+	</HelicityKinematics>
+	<Intensity Class="IncoherentIntensity" Name="IncoherentIntensity">
+		<Parameter Class="Double" Type="Strength" Name="strength_IncoherentIntensity">
+			<Value>1</Value>
+			<Fix>True</Fix>
+		</Parameter>
+		<Intensity Class="CoherentIntensity" Name="coherent_0">
+			<Parameter Class="Double" Type="Strength" Name="strength_coherent_0">
+				<Value>1</Value>
+				<Fix>True</Fix>
+			</Parameter>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_1+pi-_0;D*(2010)+_1_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_1+pi-_0;D*(2010)+_1_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_-1_to_D*(2010)+_1+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="-1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="1.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_1_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="1.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>1.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_0+pi-_0;D*(2010)+_0_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_0+pi-_0;D*(2010)+_0_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_-1_to_D*(2010)+_0+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="-1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="0.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_0_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="0.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_0+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.5</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_0+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_-1+pi-_0;D*(2010)+_-1_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_-1_to_D*(2010)+_-1+pi-_0;D*(2010)+_-1_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_-1_to_D*(2010)+_-1+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="-1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="-1.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_-1_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="-1.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>1.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+		</Intensity>
+		<Intensity Class="CoherentIntensity" Name="coherent_1">
+			<Parameter Class="Double" Type="Strength" Name="strength_coherent_1">
+				<Value>1</Value>
+				<Fix>True</Fix>
+			</Parameter>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_1_to_D*(2010)+_1+pi-_0;D*(2010)+_1_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_1_to_D*(2010)+_1+pi-_0;D*(2010)+_1_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_1_to_D*(2010)+_1+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="1.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_1_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="1.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>1.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_1_to_D*(2010)+_0+pi-_0;D*(2010)+_0_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_1_to_D*(2010)+_0+pi-_0;D*(2010)+_0_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_1_to_D*(2010)+_0+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="0.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_0_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="0.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_0+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.5</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_0+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+			<Amplitude Class="CoefficientAmplitude" Name="D1(2420)0_1_to_D*(2010)+_-1+pi-_0;D*(2010)+_-1_to_D0_0+pi+_0;">
+				<Amplitude Class="SequentialAmplitude" Name="D1(2420)0_1_to_D*(2010)+_-1+pi-_0;D*(2010)+_-1_to_D0_0+pi+_0;">
+					<Amplitude Name="D1(2420)0_1_to_D*(2010)+_-1+pi-_0" Class="HelicityDecay">
+						<DecayParticle Name="D1(2420)0" Helicity="1"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="D*(2010)+" FinalState="3 4" Helicity="-1.0"></Particle>
+							<Particle Name="pi-" FinalState="2" Helicity="0"></Particle>
+						</DecayProducts>
+					</Amplitude>
+					<Amplitude Name="D*(2010)+_-1_to_D0_0+pi+_0" Class="HelicityDecay">
+						<DecayParticle Name="D*(2010)+" Helicity="-1.0"></DecayParticle>
+						<DecayProducts>
+							<Particle Name="pi+" FinalState="3" Helicity="0"></Particle>
+							<Particle Name="D0" FinalState="4" Helicity="0"></Particle>
+						</DecayProducts>
+						<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+					</Amplitude>
+				</Amplitude>
+				<Parameter Class="Double" Type="Magnitude" Name="Magnitude_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>1.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+				<Parameter Class="Double" Type="Phase" Name="Phase_D1(2420)0_to_D*(2010)+_1+pi-_0;D*(2010)+_to_D0_0+pi+_0;">
+					<Value>0.0</Value>
+					<Fix>False</Fix>
+				</Parameter>
+			</Amplitude>
+		</Intensity>
+	</Intensity>
