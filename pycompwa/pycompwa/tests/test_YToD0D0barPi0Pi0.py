@@ -4,10 +4,10 @@
 import logging
 
 from pycompwa.expertsystem.amplitude.canonicaldecay import (
-    CanonicalDecayAmplitudeGeneratorXML
+    CanonicalAmplitudeGeneratorXML
 )
 from pycompwa.expertsystem.amplitude.helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML
+    HelicityAmplitudeGeneratorXML
 )
 from pycompwa.expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes, change_qn_domain
@@ -54,7 +54,7 @@ def test_script_simple():
 
     print("found " + str(len(solutions)) + " solutions!")
 
-    canonical_xml_generator = CanonicalDecayAmplitudeGeneratorXML()
+    canonical_xml_generator = CanonicalAmplitudeGeneratorXML()
     canonical_xml_generator.generate(solutions)
 
     # because the amount of solutions is too big we change the default domains
@@ -81,13 +81,11 @@ def test_script_simple():
         graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
-    helicity_xml_generator = HelicityDecayAmplitudeGeneratorXML()
+    helicity_xml_generator = HelicityAmplitudeGeneratorXML()
     helicity_xml_generator.generate(solutions)
 
-    #print(helicity_xml_generator.fit_parameters,
-    #      canonical_xml_generator.fit_parameters)
-    assert (len(helicity_xml_generator.fit_parameters) ==
-            len(canonical_xml_generator.fit_parameters))
+    assert (len(helicity_xml_generator.get_fit_parameters()) ==
+            len(canonical_xml_generator.get_fit_parameters()))
 
 
 def test_script_full():
@@ -122,7 +120,7 @@ def test_script_full():
 
     print("found " + str(len(solutions)) + " solutions!")
 
-    canonical_xml_generator = CanonicalDecayAmplitudeGeneratorXML()
+    canonical_xml_generator = CanonicalAmplitudeGeneratorXML()
     canonical_xml_generator.generate(solutions)
 
     # because the amount of solutions is too big we change the default domains
@@ -150,13 +148,11 @@ def test_script_full():
         graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
-    helicity_xml_generator = HelicityDecayAmplitudeGeneratorXML()
+    helicity_xml_generator = HelicityAmplitudeGeneratorXML()
     helicity_xml_generator.generate(solutions)
 
-    #print(helicity_xml_generator.fit_parameters,
-    #      canonical_xml_generator.fit_parameters)
-    assert (len(helicity_xml_generator.fit_parameters) ==
-            len(canonical_xml_generator.fit_parameters))
+    assert (len(helicity_xml_generator.get_fit_parameters()) ==
+            len(canonical_xml_generator.get_fit_parameters()))
 
 
 if __name__ == '__main__':

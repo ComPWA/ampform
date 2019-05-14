@@ -6,7 +6,7 @@ import logging
 from pycompwa.expertsystem.ui.system_control import StateTransitionManager
 
 from pycompwa.expertsystem.amplitude.helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML)
+    HelicityAmplitudeGeneratorXML)
 
 
 def test_script():
@@ -30,7 +30,7 @@ def test_script():
     for g in solutions:
         print(g.edge_props[1]['@Name'])
 
-    xml_generator = HelicityDecayAmplitudeGeneratorXML()
+    xml_generator = HelicityAmplitudeGeneratorXML()
     xml_generator.generate(solutions)
     xml_generator.write_to_file('D0ToKs0KpKm.xml')
 

@@ -3,7 +3,11 @@ from abc import ABC, abstractmethod
 
 class AbstractAmplitudeNameGenerator(ABC):
     @abstractmethod
-    def generate(self, graph, node_id):
+    def generate_unique_amplitude_name(self, graph, node_id):
+        pass
+
+    @abstractmethod
+    def generate_amplitude_coefficient_infos(self, graph):
         pass
 
 
@@ -15,4 +19,3 @@ class AbstractAmplitudeGenerator(ABC):
     @abstractmethod
     def write_to_file(self, filename):
         pass
-

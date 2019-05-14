@@ -12,7 +12,7 @@ from pycompwa.expertsystem.ui.system_control import (
     create_edge_id_particle_mapping)
 
 from pycompwa.expertsystem.amplitude.helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML)
+    HelicityAmplitudeGeneratorXML)
 
 
 def test_script():
@@ -51,7 +51,7 @@ def test_script():
         intermediate_states.add(g.edge_props[int_edge_id]['@Name'])
     print(intermediate_states)
 
-    xml_generator = HelicityDecayAmplitudeGeneratorXML()
+    xml_generator = HelicityAmplitudeGeneratorXML()
     xml_generator.generate(solutions)
     xml_generator.write_to_file('JPsiToGammaPi0Pi0.xml')
 

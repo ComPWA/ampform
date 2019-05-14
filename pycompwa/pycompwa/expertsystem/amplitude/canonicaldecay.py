@@ -5,69 +5,63 @@ from ..topology.graph import (get_edges_ingoing_to_node,
 
 from ..state.particle import (
     StateQuantumNumberNames, InteractionQuantumNumberNames,
-    XMLLabelConstants, get_xml_label,
     get_particle_property, get_interaction_property)
 
-from .abstractgenerator import (
-    AbstractAmplitudeNameGenerator
-)
-
 from .helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML,
-    get_helicity_from_edge_props,
+    HelicityAmplitudeGeneratorXML,
+    HelicityAmplitudeNameGenerator,
     generate_particles_string
 )
 
 
-class CanonicalPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
+def generate_clebsch_gordan_string(graph, node_id):
+    node_props = graph.node_props[node_id]
+    L = get_interaction_property(node_props,
+                                 InteractionQuantumNumberNames.L)
+    S = get_interaction_property(node_props,
+                                 InteractionQuantumNumberNames.S)
+    return '_L_' + str(L.magnitude()) + '_S_' + str(S.magnitude())
+
+
+class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     '''
     Generates names for canonical partial decays using the properties of
     the decay.
     '''
 
-    def generate(self, graph, node_id):
-        '''
-        Method which adds two clebsch gordan coefficients based on
-        the translation of helicity amplitudes to canonical ones.
-        '''
-        # get ending node of the edge
-        # then make name for
-        in_edges = get_edges_ingoing_to_node(graph, node_id)
-        out_edges = get_edges_outgoing_to_node(graph, node_id)
-        name_label = get_xml_label(XMLLabelConstants.Name)
-        in_names_hel_dict = {}
-        out_names_hel_dict = {}
-        for i in in_edges:
-            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
-            # remove .0
-            if temphel % 1 == 0:
-                temphel = int(temphel)
-            in_names_hel_dict[graph.edge_props[i][name_label]] = temphel
-        for i in out_edges:
-            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
-            # remove .0
-            if temphel % 1 == 0:
-                temphel = int(temphel)
-            out_names_hel_dict[graph.edge_props[i][name_label]] = temphel
+    def __init__(self, use_parity_conservation=False):
+        super().__init__(use_parity_conservation)
 
-        name = generate_particles_string(in_names_hel_dict) + \
-            '_to_' + generate_particles_string(out_names_hel_dict)
+    def generate_amplitude_coefficient_names(self, graph, node_id):
+        (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
+                                                                  node_id)
         par_name_suffix = generate_particles_string(
-            in_names_hel_dict, False) + '_to_' +\
-            generate_particles_string(out_names_hel_dict, False)
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info, False)
 
-        node_props = graph.node_props[node_id]
-        L = get_interaction_property(node_props,
-                                     InteractionQuantumNumberNames.L)
-        S = get_interaction_property(node_props,
-                                     InteractionQuantumNumberNames.S)
-        addition_string = '_L_' + str(L.magnitude()) + \
-            '_S_' + str(S.magnitude())
-        return (name + addition_string,
-                par_name_suffix + addition_string)
+        pp_par_name_suffix = generate_particles_string(
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info,
+                                      use_helicity=False,
+                                      make_parity_partner=True)
+
+        cg_suffix = generate_clebsch_gordan_string(graph, node_id)
+        return (par_name_suffix + cg_suffix,
+                pp_par_name_suffix + cg_suffix)
+
+    def generate_unique_amplitude_name(self, graph, node_id=None):
+        name = ''
+        if isinstance(node_id, int):
+            nodelist = [node_id]
+        else:
+            nodelist = graph.nodes
+        for node_id in nodelist:
+            name += super().generate_unique_amplitude_name(graph, node_id)[:-1] \
+                + generate_clebsch_gordan_string(graph, node_id) + ';'
+        return name
 
 
-class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
+class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
     '''
     This class defines a full amplitude in the canonical formalism, using the
     heliclty formalism as a foundation.
@@ -78,9 +72,9 @@ class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
     '''
 
     def __init__(self, top_node_no_dynamics=True,
-                 use_parity_conservation=None):
-        super().__init__(top_node_no_dynamics, use_parity_conservation)
-        self.name_generator = CanonicalPartialDecayNameGenerator()
+                 name_generator=CanonicalAmplitudeNameGenerator(None)):
+        super().__init__(top_node_no_dynamics,
+                         name_generator=name_generator)
 
     def _clebsch_gordan_decorator(decay_generate_function):
         '''
@@ -88,10 +82,10 @@ class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
         the translation of helicity amplitudes to canonical ones.
         '''
 
-        def wrapper(self, graph, node_id, parameter_props):
+        def wrapper(self, graph, node_id):
             spinqn = StateQuantumNumberNames.Spin
             partial_decay_dict = decay_generate_function(
-                self, graph, node_id, parameter_props)
+                self, graph, node_id)
             node_props = graph.node_props[node_id]
             L = get_interaction_property(node_props,
                                          InteractionQuantumNumberNames.L)
@@ -144,5 +138,5 @@ class CanonicalDecayAmplitudeGeneratorXML(HelicityDecayAmplitudeGeneratorXML):
         return wrapper
 
     @_clebsch_gordan_decorator
-    def generate_partial_decay(self, graph, node_id, parameter_props):
-        return super().generate_partial_decay(graph, node_id, parameter_props)
+    def generate_partial_decay(self, graph, node_id):
+        return super().generate_partial_decay(graph, node_id)

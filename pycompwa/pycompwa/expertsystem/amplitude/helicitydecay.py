@@ -226,18 +226,102 @@ def generate_particles_string(name_hel_dict, use_helicity=True,
     return string[:-1]
 
 
-class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
-    def __init__(self, use_parity_conservation):
+class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
+    def __init__(self, use_parity_conservation=False):
+        self.partial_amp_coefficient_infos = set()
         self.use_parity_conservation = use_parity_conservation
-        self.generated_parameter_names = []
 
-    def generate(self, graph, node_id):
+        # automatically determine parity conservation settings
+        if self.use_parity_conservation is None:
+            self.use_parity_conservation = True
+            logging.debug("Using parity conservation to connect fit "
+                          "parameters together with prefactors.")
+
+    def generate_amplitude_coefficient_infos(self, graph):
         '''
-        Generates partial amplitude name and fit parameter suffix.
-        The fit parameters with the same name are connected and treated as one.
-        For these fit parameter suffixes, a name sorted scheme is used.
-        On the other hand amplitude names are purely cosmetic!
+        Generates coefficient info for a sequential amplitude graph.
+
+        Generally, each partial amplitude of a sequential amplitude graph
+        should check itself if it or a parity partner is already defined. If so
+        a coupled coefficient is introduced.
         '''
+
+        seq_par_suffix = ''
+        use_prefactor = False
+        # loop over decay nodes in time order
+        for node_id in graph.nodes:
+            (coeff_suffix,
+             pp_coeff_suffix) = self.generate_amplitude_coefficient_names(
+                graph, node_id)
+
+            if coeff_suffix in self.partial_amp_coefficient_infos:
+                seq_par_suffix += coeff_suffix + ';'
+            else:
+                if (self.use_parity_conservation and
+                        pp_coeff_suffix in self.partial_amp_coefficient_infos):
+                    seq_par_suffix += pp_coeff_suffix + ';'
+                    use_prefactor = True
+                else:
+                    seq_par_suffix += coeff_suffix + ';'
+                    self.partial_amp_coefficient_infos.add(coeff_suffix)
+
+        par_label = get_xml_label(XMLLabelConstants.Parameter)
+        amplitude_coefficient_infos = {
+            par_label: [{'@Class': "Double", '@Type': "Magnitude",
+                         '@Name': "Magnitude_" + seq_par_suffix,
+                         'Value': 1.0, 'Fix': False},
+                        {'@Class': "Double", '@Type': "Phase",
+                            '@Name': "Phase_" + seq_par_suffix,
+                            'Value': 0.0, 'Fix': False}]
+        }
+
+        # add potential prefactor
+        if self.use_parity_conservation and use_prefactor:
+            prefactor = get_prefactor(graph)
+            if prefactor != 1.0 and prefactor is not None:
+                prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
+                amplitude_coefficient_infos[prefactor_label] = {
+                    '@Magnitude': prefactor,
+                    '@Phase': 0.0}
+        return amplitude_coefficient_infos
+
+    def generate_amplitude_coefficient_names(self, graph, node_id):
+        '''
+        Generates partial amplitude coefficient name suffixes.
+        '''
+        (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
+                                                                  node_id)
+        par_name_suffix = generate_particles_string(
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info)
+
+        pp_par_name_suffix = generate_particles_string(
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info,
+                                      make_parity_partner=True)
+        return (par_name_suffix, pp_par_name_suffix)
+
+    def generate_unique_amplitude_name(self, graph, node_id=None):
+        '''
+        Generates a unique name for the amplitude corresponding to the given
+        :py:class:`StateTransitionGraph`. If :py:var:`node_id` is given, it
+        generates a unique name for the partial amplitude corresponding to the
+        interaction node of the given :py:class:`StateTransitionGraph`.
+        '''
+        name = ''
+        if isinstance(node_id, int):
+            nodelist = [node_id]
+        else:
+            nodelist = graph.nodes
+        for node_id in nodelist:
+            (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
+                                                                      node_id)
+
+            name += generate_particles_string(in_hel_info) + '_to_' + \
+                generate_particles_string(out_hel_info) + ';'
+        return name
+
+    def retrieve_helicity_info(self, graph, node_id):
         # get ending node of the edge
         # then make name for
         in_edges = get_edges_ingoing_to_node(graph, node_id)
@@ -258,38 +342,18 @@ class HelicityPartialDecayNameGenerator(AbstractAmplitudeNameGenerator):
                 temphel = int(temphel)
             out_names_hel_dict[graph.edge_props[i][name_label]] = temphel
 
-        par_name_suffix = '_to_' + \
-            generate_particles_string(out_names_hel_dict)
-        name = generate_particles_string(in_names_hel_dict) + par_name_suffix
-        par_name_suffix = generate_particles_string(
-            in_names_hel_dict, False) + par_name_suffix
-        if par_name_suffix not in self.generated_parameter_names:
-            append_name = True
-            if self.use_parity_conservation:
-                # first check if parity partner exists
-                pp_par_name_suffix = generate_particles_string(
-                    in_names_hel_dict, False) + '_to_' + \
-                    generate_particles_string(out_names_hel_dict,
-                                              make_parity_partner=True)
-                if pp_par_name_suffix in self.generated_parameter_names:
-                    par_name_suffix = pp_par_name_suffix
-                    append_name = False
-            if append_name:
-                self.generated_parameter_names.append(par_name_suffix)
-        return (name, par_name_suffix)
+        return (in_names_hel_dict, out_names_hel_dict)
 
 
-class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
+class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     def __init__(self, top_node_no_dynamics=True,
-                 use_parity_conservation=None):
+                 name_generator=HelicityAmplitudeNameGenerator(None)):
         self.particle_list = {}
         self.helicity_amplitudes = {}
         self.kinematics = {}
-        self.use_parity_conservation = use_parity_conservation
         self.top_node_no_dynamics = top_node_no_dynamics
-        self.name_generator = HelicityPartialDecayNameGenerator(
-            self.use_parity_conservation)
-        self.fit_parameters = set()
+        self.name_generator = name_generator
+        self.fit_parameter_names = set()
 
     def generate(self, graphs):
         if len(graphs) <= 0:
@@ -310,70 +374,14 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         self.particle_list = generate_particle_list(graphs)
         self.kinematics = generate_kinematics(graphs)
 
-        # if use_parity_conservation flag is set to None, use automatic
-        # settings. check if the parity prefactor is defined, if so use
-        # parity conservation
-        if (self.use_parity_conservation is None and
-                isinstance(self.name_generator,
-                           HelicityPartialDecayNameGenerator)):
-            prefactors = [x for x in graphs if get_prefactor(x) is not None]
-            self.use_parity_conservation = False
-            if prefactors:
-                self.use_parity_conservation = True
-                self.name_generator = HelicityPartialDecayNameGenerator(
-                    self.use_parity_conservation)
-                logging.debug("Using parity conservation to connect fit "
-                              "parameters together with prefactors.")
         graph_groups = group_graphs_same_initial_and_final(graphs)
         logging.debug("There are " + str(len(graph_groups)) + " graph groups")
-        # At first we need to define the fit parameters
-        parameter_mapping = self.generate_fit_parameters(graph_groups,
-                                                         self.name_generator)
-        self.fix_parameters_unambiguously(parameter_mapping)
-        fit_params = set()
-        for x in parameter_mapping.values():
-            for y in x.values():
-                if not y['Magnitude'][1]:
-                    fit_params.add('Magnitude_' + y['ParameterNameSuffix'])
-                if not y['Phase'][1]:
-                    fit_params.add('Phase_' + y['ParameterNameSuffix'])
-        logging.info("Number of parameters:" + str(len(fit_params)))
-        self.fit_parameters = fit_params
-        self.generate_amplitude_info(graph_groups, parameter_mapping)
 
-    def generate_fit_parameters(self, graph_groups, name_generator_functor):
-        '''
-        Defines fit parameters and their connections. Parameters with the same
-        name (all other properties also have to be the same) will automatically
-        be treated as the same parameter in the c++ helicity module.
-        '''
-        parameter_mapping = {}
-        for graph_group in graph_groups:
-            graph_group_parameters = {}
-            for graph in graph_group:
-                # loop over decay nodes in time order
-                seq_dec_amp_name = ''
-                seq_dec_par_suffix = ''
-                parameter_props = {}
-                for node_id in graph.nodes:
-                    (amp_name, par_suffix) = name_generator_functor.generate(
-                        graph, node_id)
-                    parameter_props.update({node_id: {'Name': amp_name}})
-                    seq_dec_amp_name += amp_name + ';'
-                    seq_dec_par_suffix += par_suffix + ';'
-                parameter_props.update({'AmplitudeName': seq_dec_amp_name,
-                                        'ParameterNameSuffix':
-                                        seq_dec_par_suffix,
-                                        'Magnitude': (1.0, False),
-                                        'Phase': (0.0, False)
-                                        })
-                gi = graph_group.index(graph)
-                graph_group_parameters[gi] = parameter_props
-            ggi = graph_groups.index(graph_group)
-            parameter_mapping[ggi] = graph_group_parameters
-        return parameter_mapping
+        self.fix_parameters_unambiguously()
 
-    def fix_parameters_unambiguously(self, parameter_mapping):
+        self.generate_amplitude_info(graph_groups)
+
+    def fix_parameters_unambiguously(self):
         '''
         Fix parameters, so that the total amplitude is unambiguous, with regard
         to the fit parameters. In other words: all fit parameters per graph,
@@ -381,19 +389,7 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         '''
         pass
 
-    def generate_magnitude_and_phase(self, parameter_mapping):
-        par_label = get_xml_label(XMLLabelConstants.Parameter)
-        par_suffix = parameter_mapping['ParameterNameSuffix']
-        mag = parameter_mapping['Magnitude']
-        phase = parameter_mapping['Phase']
-        return {par_label: [{'@Class': "Double", '@Type': "Magnitude",
-                             '@Name': "Magnitude_" + par_suffix,
-                             'Value': mag[0], 'Fix': mag[1]},
-                            {'@Class': "Double", '@Type': "Phase",
-                             '@Name': "Phase_" + par_suffix,
-                             'Value': phase[0], 'Fix': phase[1]}]}
-
-    def generate_amplitude_info(self, graph_groups, parameter_mapping):
+    def generate_amplitude_info(self, graph_groups):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
         type_label = get_xml_label(XMLLabelConstants.Type)
@@ -403,12 +399,9 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         coherent_amplitudes = []
         for graph_group in graph_groups:
             seq_partial_decays = []
-            ggi = graph_groups.index(graph_group)
             for graph in graph_group:
-                gi = graph_group.index(graph)
                 seq_partial_decays.append(
-                    self.generate_sequential_decay(graph,
-                                                   parameter_mapping[ggi][gi]))
+                    self.generate_sequential_decay(graph))
 
             # in each coherent amplitude we create a product of partial decays
             coherent_amp_name = "coherent_" + \
@@ -438,7 +431,7 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             }
         }
 
-    def generate_sequential_decay(self, graph, parameter_props):
+    def generate_sequential_decay(self, graph):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
         spin_label = StateQuantumNumberNames.Spin
@@ -466,31 +459,36 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                             decay_info_label][type_label]):
                         continue
 
-            partial_decays.append(self.generate_partial_decay(graph,
-                                                              node_id,
-                                                              parameter_props)
-                                  )
+            partial_decays.append(self.generate_partial_decay(graph, node_id))
 
-        amp_name = parameter_props['AmplitudeName']
-        seq_decay_dict = {
+        gen = self.name_generator
+        amp_name = gen.generate_unique_amplitude_name(graph)
+        amp_coeff_infos = gen.generate_amplitude_coefficient_infos(graph)
+        sequential_amplitude_dict = {
+            class_label: "SequentialAmplitude",
+            name_label: amp_name,
+            'Amplitude': partial_decays
+        }
+        prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
+        if prefactor_label in amp_coeff_infos:
+            sequential_amplitude_dict.update(
+                {prefactor_label:
+                 amp_coeff_infos[prefactor_label]})
+
+        par_label = get_xml_label(XMLLabelConstants.Parameter)
+        coefficient_amplitude_dict = {
             class_label: "CoefficientAmplitude",
             name_label: amp_name,
-            'Amplitude': {
-                class_label: "SequentialAmplitude",
-                name_label: amp_name,
-                'Amplitude': partial_decays
-            }
+            par_label: amp_coeff_infos[par_label],
+            'Amplitude': sequential_amplitude_dict
         }
-        seq_decay_dict.update(
-            self.generate_magnitude_and_phase(parameter_props))
-        prefactor = get_prefactor(graph)
-        if prefactor != 1.0 and prefactor is not None:
-            prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
-            seq_decay_dict[prefactor_label] = {'@Magnitude': prefactor,
-                                               '@Phase': 0.0}
-        return seq_decay_dict
 
-    def generate_partial_decay(self, graph, node_id, parameter_props):
+        self.fit_parameter_names.add(amp_coeff_infos[par_label][0][name_label])
+        self.fit_parameter_names.add(amp_coeff_infos[par_label][1][name_label])
+
+        return coefficient_amplitude_dict
+
+    def generate_partial_decay(self, graph, node_id):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
         decay_products = []
@@ -527,7 +525,8 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                 })
             recoil_system_dict['RecoilSystem'] = tempdict
 
-        amp_name = parameter_props[node_id]['Name']
+        amp_name = self.name_generator.generate_unique_amplitude_name(graph,
+                                                                      node_id)
         partial_decay_dict = {
             name_label: amp_name,
             class_label: "HelicityDecay",
@@ -537,10 +536,15 @@ class HelicityDecayAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             },
             'DecayProducts': {'Particle': decay_products}
         }
-        # partial_decay_dict.update(self.generate_magnitude_and_phase(amp_name))
+
         partial_decay_dict.update(recoil_system_dict)
 
         return partial_decay_dict
+
+    def get_fit_parameters(self):
+        logging.info("Number of parameters:" + str(
+            len(self.fit_parameter_names)))
+        return self.fit_parameter_names
 
     def write_to_file(self, filename):
         with open(filename, mode='w') as xmlfile:
