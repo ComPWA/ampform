@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ParticleList>
+	<Particle Name="EpEm">
+		<Pid>0</Pid>
+		<Parameter Type="Mass" Name="Mass_EpEm">
+			<Value>4.36</Value>
+		</Parameter>
+		<QuantumNumber Class="Spin" Type="Spin" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Cparity" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Spin" Type="IsoSpin" Value="0" Projection="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		<DecayInfo Type="nonResonant"></DecayInfo>
+	</Particle>
+	<Particle Name="D-">
+		<Pid>7</Pid>
+		<Parameter Type="Mass" Name="Mass_D-">
+			<Value>1.86962</Value>
+		</Parameter>
+		<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charge" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="-0.5"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charm" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		<DecayInfo Type="nonResonant"/>
+	</Particle>
+	<Particle Name="D0">
+		<Pid>5</Pid>
+		<Parameter Type="Mass" Name="Mass_D0">
+			<Value>1.86486</Value>
+		</Parameter>
+		<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="-0.5"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charm" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		<DecayInfo Type="nonResonant"/>
+	</Particle>
+	<Particle Name="pion+">
+		<Pid>2</Pid>
+		<Parameter Type="Mass" Name="Mass_pion+">
+			<Value>0.13957</Value>
+		</Parameter>
+		<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charge" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+		<QuantumNumber Class="Spin" Type="IsoSpin" Value="1" Projection="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		<DecayInfo Type="nonResonant"/>
+	</Particle>
+	<Particle Name="D2*(2460)+">
+		<Pid>24</Pid>
+		<Parameter Type="Mass" Name="Mass_D2*(2460)+">
+			<Value>2.46555</Value>
+		</Parameter>
+		<QuantumNumber Class="Spin" Type="Spin" Value="2.0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charge" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.5" Projection="0.5"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Charm" Value="1"></QuantumNumber>
+		<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+		<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+		<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+		<DecayInfo Type="nonResonant"/>
+	</Particle>
+</ParticleList>
+
+<HelicityKinematics>
+	<InitialState>
+		<Particle Name="EpEm" Id="0"></Particle>
+	</InitialState>
+	<FinalState>
+		<Particle Name="D-" Id="2"></Particle>
+		<Particle Name="D0" Id="3"></Particle>
+		<Particle Name="pion+" Id="4"></Particle>
+	</FinalState>
+</HelicityKinematics>
+<Intensity Class="CoherentIntensity" Name="coherent_0">
+	<Amplitude Class="SequentialAmplitude" Name="EpEm_-1_to_D-_0+D2*(2460)+_1_L_2.0_S_2.0;D2*(2460)+_1_to_D0_0+pion+_0_L_2.0_S_0.0;">
+		<Amplitude Name="EpEm_-1_to_D-_0+D2*(2460)+_1_L_2.0_S_2.0;" Class="HelicityDecay">
+			<DecayParticle Name="EpEm" Helicity="-1"></DecayParticle>
+			<DecayProducts>
+				<Particle Name="D2*(2460)+" FinalState="3 4" Helicity="1.0"></Particle>
+				<Particle Name="D-" FinalState="2" Helicity="0"></Particle>
+			</DecayProducts>
+		</Amplitude>
+		<Amplitude Name="D2*(2460)+_1_to_D0_0+pion+_0_L_2.0_S_0.0;" Class="HelicityDecay">
+			<DecayParticle Name="D2*(2460)+" Helicity="1.0"></DecayParticle>
+			<DecayProducts>
+				<Particle Name="D0" FinalState="3" Helicity="0"></Particle>
+				<Particle Name="pion+" FinalState="4" Helicity="0"></Particle>
+			</DecayProducts>
+			<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+		</Amplitude>
+	</Amplitude>
+	<Amplitude Class="SequentialAmplitude" Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;">
+		<Amplitude Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;" Class="HelicityDecay">
+			<DecayParticle Name="EpEm" Helicity="-1"></DecayParticle>
+			<DecayProducts>
+				<Particle Name="D2*(2460)+" FinalState="3 4" Helicity="-1.0"></Particle>
+				<Particle Name="D-" FinalState="2" Helicity="0"></Particle>
+			</DecayProducts>
+		</Amplitude>
+		<Amplitude Name="D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;" Class="HelicityDecay">
+			<DecayParticle Name="D2*(2460)+" Helicity="-1.0"></DecayParticle>
+			<DecayProducts>
+				<Particle Name="D0" FinalState="3" Helicity="0"></Particle>
+				<Particle Name="pion+" FinalState="4" Helicity="0"></Particle>
+			</DecayProducts>
+			<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+		</Amplitude>
+		<PreFactor Real="-1" Imaginary="0.0"></PreFactor>
+	</Amplitude>
+</Intensity>
