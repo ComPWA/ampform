@@ -281,8 +281,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
             if prefactor != 1.0 and prefactor is not None:
                 prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
                 amplitude_coefficient_infos[prefactor_label] = {
-                    '@Magnitude': prefactor,
-                    '@Phase': 0.0}
+                    '@Real': prefactor}
         return amplitude_coefficient_infos
 
     def generate_amplitude_coefficient_names(self, graph, node_id):
