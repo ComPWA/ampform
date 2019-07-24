@@ -22,10 +22,12 @@ def generate_data_samples(model_filename, number_of_events):
 
     # Generate phase space sample
     gen = ui.EvtGenGenerator(
-        kin.get_particle_state_transition_kinematics_info(), 1234)
+        kin.get_particle_state_transition_kinematics_info())
+    
+    rand_gen = ui.StdUniformRealGenerator(123)
 
     # Generate Data
-    sample = ui.generate(number_of_events, kin, gen, intens)
+    sample = ui.generate(number_of_events, kin, gen, intens, rand_gen)
 
     # Plotting
     kin.create_all_subsystems()
