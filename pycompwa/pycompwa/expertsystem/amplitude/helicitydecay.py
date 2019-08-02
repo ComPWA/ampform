@@ -422,10 +422,15 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                                   name_label: "strength_" +
                                   incoherent_amp_name,
                                   'Value': 1, 'Fix': True},
+
                 'Intensity': {
-                    class_label: "IncoherentIntensity",
-                    name_label: incoherent_amp_name,
-                    'Intensity': coherent_amplitudes
+                    class_label: "NormalizedIntensity",
+                    name_label: incoherent_amp_name+"_normalized",
+                    'Intensity': {
+                        class_label: "IncoherentIntensity",
+                        name_label: incoherent_amp_name,
+                        'Intensity': coherent_amplitudes
+                    }
                 }
             }
         }

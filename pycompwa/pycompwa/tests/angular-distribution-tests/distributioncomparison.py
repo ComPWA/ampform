@@ -18,13 +18,21 @@ def test_angular_distributions(model_file, distribution_test_tuples,
 
 
 def generate_data_samples(model_filename, number_of_events):
-    intens, kin = ui.create_intensity_and_kinematics(model_filename)
+    ParticleList = ui.PartList()
+    ui.read_particles(ParticleList, model_filename)
 
-    # Generate phase space sample
+    kin = ui.create_helicity_kinematics(model_filename, ParticleList)
+
     gen = ui.EvtGenGenerator(
         kin.get_particle_state_transition_kinematics_info())
-    
+
     rand_gen = ui.StdUniformRealGenerator(123)
+
+    # Generate phase space sample
+    phsp_sample = ui.generate_phsp(number_of_events, gen, rand_gen)
+
+    intens = ui.create_intensity(
+        model_filename, ParticleList, kin, phsp_sample)
 
     # Generate Data
     sample = ui.generate(number_of_events, kin, gen, intens, rand_gen)
