@@ -127,7 +127,7 @@ class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
             cg_ss['@M'] = decay_particle_lambda
             cg_dict = {
                 'CanonicalSum': {
-                    '@L': L.magnitude(),
+                    '@L': int(L.magnitude()),
                     '@S': S.magnitude(),
                     'ClebschGordan': [cg_ls, cg_ss]
                 }
