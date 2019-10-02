@@ -19,6 +19,11 @@ from ..state.conservationrules import (
     GellMannNishijimaRule,
     MassConservation)
 
+default_particle_list_search_paths = [
+    "../../../../Physics",
+    "../../../..",
+    "../../"
+]
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority

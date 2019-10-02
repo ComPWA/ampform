@@ -30,7 +30,8 @@ from ..state.propagation import (
     FullPropagator, InteractionTypes, InteractionNodeSettings)
 
 from .default_settings import (
-    create_default_interaction_settings
+    create_default_interaction_settings,
+    default_particle_list_search_paths
 )
 
 
@@ -461,8 +462,8 @@ class StateTransitionManager():
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
         if not self.interaction_type_settings:
-            self.interaction_type_settings = create_default_interaction_settings(
-                formalism_type)
+            self.interaction_type_settings = \
+                create_default_interaction_settings(formalism_type)
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
         self.allowed_intermediate_particles = allowed_intermediate_particles
         self.final_state_groupings = []
@@ -489,20 +490,24 @@ class StateTransitionManager():
             # turn of mass conservation, in case more than one initial state
             # particle is present
             if len(initial_state) > 1:
-                self.interaction_type_settings = create_default_interaction_settings(
-                    formalism_type,
-                    False)
+                self.interaction_type_settings = \
+                    create_default_interaction_settings(
+                        formalism_type,
+                        False)
         self.topology_builder = SimpleStateTransitionTopologyBuilder(
             int_nodes)
 
         # load default particles from database/file
         if len(particle_list) == 0:
-            load_particle_list_from_xml(
-                path.dirname(inspect.getfile(StateTransitionManager)) +
-                '/../../particle_list.xml')
-            # print(particle_list)
-            logging.info("loaded " + str(len(particle_list)) +
-                         " particles from xml file!")
+            for search_path in default_particle_list_search_paths:
+                file_path = path.dirname(inspect.getfile(
+                    StateTransitionManager)) + "/" + search_path \
+                    + "/particle_list.xml"
+                if path.exists(file_path):
+                    load_particle_list_from_xml(file_path)
+                    logging.info("loaded " + str(len(particle_list)) +
+                                 " particles from xml file!")
+                    break
 
     def set_topology_builder(self, topology_builder):
         self.topology_builder = topology_builder

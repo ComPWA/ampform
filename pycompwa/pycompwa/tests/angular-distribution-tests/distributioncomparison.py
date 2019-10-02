@@ -18,8 +18,7 @@ def test_angular_distributions(model_file, distribution_test_tuples,
 
 
 def generate_data_samples(model_filename, number_of_events):
-    ParticleList = ui.PartList()
-    ui.read_particles(ParticleList, model_filename)
+    ParticleList = ui.read_particles(model_filename)
 
     kin = ui.create_helicity_kinematics(model_filename, ParticleList)
 
