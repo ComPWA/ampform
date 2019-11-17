@@ -34,10 +34,9 @@ XMLLabelTags = [
 
 
 def get_xml_label(enum):
-    """return the the correctly formatted xml label
-    as required by ComPWA and xmltodict"""
-
-    # the xml attribute prefix is needed as the xmltodict module uses that
+    """
+    Return the the correctly formatted XML label as required by ComPWA and xmltodict
+    """
     attribute_prefix = '@'
     if (enum in XMLLabelTags):
         return enum.name
@@ -47,7 +46,7 @@ def get_xml_label(enum):
 
 class Spin():
     """
-    Simple struct-like class defining spin as a magintude plus the projection
+    Simple struct-like class defining spin as a magnitude plus the projection
     """
 
     def __init__(self, mag, proj):
@@ -235,31 +234,54 @@ def is_boson(qn_dict):
     return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
 
 
-particle_list = []
+particle_list = {}
 
 
 def load_particle_list_from_xml(file_path):
+    """
+    By default, the expert system loads the ``particle_database``
+    from the XML file ``particle_list.xml`` located in the ComPWA module.
+    Use ``load_particle_list_from_xml`` to append to the ``particle_database``.
+    .. note::
+    If a particle name in the loaded XML file already exists in the ``particle_database``,
+    the one in the ``particle_database`` will be overwritten.
+    """
+    name_label = get_xml_label(XMLLabelConstants.Name)
     with open(file_path, "rb") as xmlfile:
         full_dict = xmltodict.parse(xmlfile)
         for p in full_dict['ParticleList']['Particle']:
-            particle_list.append(dict(p))
+            entry = dict(p)
+            particle_list[entry[name_label]] = entry
+
+
+def add_to_particle_list(particle):
+    """
+    Add a particle dictionary object to the ``particle_list`` dictionary.
+    The key will be extracted from the ``particle`` name (XML tag ``@Name``).
+    If the key already exists, the entry in ``particle_list`` will be overwritten
+    by this one.
+    """
+    if not isinstance(particle, dict):
+        logging.warning("Can only add dictionary entries to particle_list")
+        return
+    particle_name = particle[get_xml_label(XMLLabelConstants.Name)]
+    particle_list[particle_name] = particle
 
 
 def get_particle_with_name(particle_name):
-    name_label = get_xml_label(XMLLabelConstants.Name)
-    found_particles = [
-        p for p in particle_list if (str(particle_name) == p[name_label])]
-    if len(found_particles) == 0:
-        found_particles = [
-            p for p in particle_list if (str(particle_name) in p[name_label])]
-        if len(found_particles) == 0:
-            raise ValueError(
-                "No particle with name " + str(particle_name) + " found!")
-        elif len(found_particles) > 1:
-            raise ValueError(
-                "more than one particle with name " + str(particle_name)
-                + " found!")
-    return found_particles[0]
+    """
+    .. deprecated:: 0.2.0
+    ``particle_list`` has become a dictionary, so you can already access its entries with a string index.
+    """
+    return particle_list[particle_name]
+
+
+def get_particle_copy_by_name(particle_name):
+    """
+    Get a `deepcopy` of a particle from the ``particle_list`` dictionary so you can manipulate it and
+    add it to the particle data base.
+    """
+    return deepcopy(particle_list[particle_name])
 
 
 def get_particle_property(particle_properties, qn_name, converter=None):
@@ -281,7 +303,7 @@ def get_particle_property(particle_properties, qn_name, converter=None):
                 break
             if (key == 'Parameter' and
                     val[type_label] == qn_name.name):
-                # parameters have a seperate value tag
+                # parameters have a separate value tag
                 tagname = XMLLabelConstants.Value.name
                 found_prop = {value_label: val[tagname]}
                 break
@@ -295,7 +317,7 @@ def get_particle_property(particle_properties, qn_name, converter=None):
                             decinfo_val = [decinfo_val]
                         for parval in decinfo_val:
                             if parval[type_label] == qn_name.name:
-                                # parameters have a seperate value tag
+                                # parameters have a separate value tag
                                 tagname = XMLLabelConstants.Value.name
                                 found_prop = {value_label: parval[tagname]}
                                 break
@@ -612,13 +634,13 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
 def initialize_allowed_particle_list(allowed_particle_list):
     mod_allowed_particle_list = []
     if len(allowed_particle_list) == 0:
-        mod_allowed_particle_list = particle_list
+        mod_allowed_particle_list = list(particle_list.values())
     else:
         for x in allowed_particle_list:
             if isinstance(x, str):
-                for p in particle_list:
-                    if x in p[get_xml_label(XMLLabelConstants.Name)]:
-                        mod_allowed_particle_list.append(p)
+                for name, value in particle_list.items():
+                    if x in name:
+                        mod_allowed_particle_list.append(value)
             else:
                 mod_allowed_particle_list.append(x)
     return mod_allowed_particle_list

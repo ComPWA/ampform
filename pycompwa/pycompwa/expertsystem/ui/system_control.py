@@ -115,10 +115,10 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
 
 
 def remove_duplicate_solutions(results, remove_qns_list=[],
-                               ingore_qns_list=[]):
+                               ignore_qns_list=[]):
     logging.info("removing duplicate solutions...")
     logging.info("removing these qns from graphs: " + str(remove_qns_list))
-    logging.info("ignoring qns in graph comparison: " + str(ingore_qns_list))
+    logging.info("ignoring qns in graph comparison: " + str(ignore_qns_list))
     filtered_results = {}
     solutions = []
     remove_counter = 0
@@ -128,7 +128,7 @@ def remove_duplicate_solutions(results, remove_qns_list=[],
             for sol_graph in sol_graphs:
                 sol_graph = remove_qns_from_graph(sol_graph, remove_qns_list)
                 found_graph = check_equal_ignoring_qns(sol_graph, solutions,
-                                                       ingore_qns_list)
+                                                       ignore_qns_list)
                 if found_graph is None:
                     solutions.append(sol_graph)
                     temp_graphs.append(sol_graph)
@@ -545,11 +545,11 @@ class StateTransitionManager():
     def build_topologies(self):
         all_graphs = self.topology_builder.build_graphs(
             len(self.initial_state), len(self.final_state))
-        logging.info("number of tolopogy graphs: " + str(len(all_graphs)))
+        logging.info("number of topology graphs: " + str(len(all_graphs)))
         return all_graphs
 
     def create_seed_graphs(self, topology_graphs):
-        # initialize the graph edges (intial and final state)
+        # initialize the graph edges (initial and final state)
         init_graphs = []
         for tgraph in topology_graphs:
             tgraph.set_graph_element_properties_comparator(
