@@ -171,7 +171,7 @@ class Problem(object):
         True
 
         @param variables: Any object containing a sequence of objects
-                          represeting problem variables
+                          representing problem variables
         @type  variables: sequence of hashable objects
         @param domain: Set of items defining the possible values that
                        the given variables may assume
@@ -225,10 +225,10 @@ class Problem(object):
         @return: Solution for the problem
         @rtype: dictionary mapping variables to values
         """
-        domains, constraints, vconstraints = self._getArgs()
+        domains, constraints, v_constraints = self._getArgs()
         if not domains:
             return None
-        return self._solver.getSolution(domains, constraints, vconstraints)
+        return self._solver.getSolution(domains, constraints, v_constraints)
 
     def getSolutions(self):
         """
@@ -312,7 +312,7 @@ def getArcs(domains, constraints):
     """
     arcs = {}
     for x in constraints:
-        constraint, variables = x
+        variables = x
         if len(variables) == 2:
             variable1, variable2 = variables
             arcs.setdefault(variable1, {})\
@@ -471,10 +471,9 @@ class BacktrackingSolver(Solver):
 
         while True:
 
-            # Mix the Degree and Minimum Remaing Values (MRV) heuristics
-            lst = [(-len(vconstraints[variable]),
-                    len(domains[variable]), variable) for variable in domains]
-            lst.sort()
+            # Mix the Degree and Minimum Remaining Values (MRV) heuristics
+            lst = sorted([(-len(vconstraints[variable]),
+                           len(domains[variable]), variable) for variable in domains])
             for item in lst:
                 if item[-1] not in assignments:
                     # Found unassigned variable
@@ -590,10 +589,9 @@ class RecursiveBacktrackingSolver(Solver):
     def recursiveBacktracking(self, solutions, domains, vconstraints,
                               assignments, single):
 
-        # Mix the Degree and Minimum Remaing Values (MRV) heuristics
-        lst = [(-len(vconstraints[variable]),
-                len(domains[variable]), variable) for variable in domains]
-        lst.sort()
+        # Mix the Degree and Minimum Remaining Values (MRV) heuristics
+        lst = sorted([(-len(vconstraints[variable]),
+                       len(domains[variable]), variable) for variable in domains])
         for item in lst:
             if item[-1] not in assignments:
                 # Found an unassigned variable. Let's go.
@@ -741,6 +739,7 @@ class Variable(object):
 
     def __repr__(self):
         return self.name
+
 
 Unassigned = Variable("Unassigned")
 
@@ -954,13 +953,13 @@ class FunctionConstraint(Constraint):
 
     def __call__(self, variables, domains, assignments, forwardcheck=False,
                  _unassigned=Unassigned):
-        parms = [assignments.get(x, _unassigned) for x in variables]
-        missing = parms.count(_unassigned)
+        params = [assignments.get(x, _unassigned) for x in variables]
+        missing = params.count(_unassigned)
         if missing:
-            return ((self._assigned or self._func(*parms)) and
+            return ((self._assigned or self._func(*params)) and
                     (not forwardcheck or missing != 1 or
                      self.forwardCheck(variables, domains, assignments)))
-        return self._func(*parms)
+        return self._func(*params)
 
 
 class AllDifferentConstraint(Constraint):
@@ -1082,7 +1081,7 @@ class MaxSumConstraint(Constraint):
             for variable, multiplier in zip(variables, multipliers):
                 if variable in assignments:
                     sum += assignments[variable] * multiplier
-            if type(sum) is float:
+            if isinstance(sum, float):
                 sum = round(sum, 10)
             if sum > maxsum:
                 return False
@@ -1099,7 +1098,7 @@ class MaxSumConstraint(Constraint):
             for variable in variables:
                 if variable in assignments:
                     sum += assignments[variable]
-            if type(sum) is float:
+            if isinstance(sum, float):
                 sum = round(sum, 10)
             if sum > maxsum:
                 return False
@@ -1169,7 +1168,7 @@ class ExactSumConstraint(Constraint):
                     sum += assignments[variable] * multiplier
                 else:
                     missing = True
-            if type(sum) is float:
+            if isinstance(sum, float):
                 sum = round(sum, 10)
             if sum > exactsum:
                 return False
@@ -1188,7 +1187,7 @@ class ExactSumConstraint(Constraint):
                     sum += assignments[variable]
                 else:
                     missing = True
-            if type(sum) is float:
+            if isinstance(sum, float):
                 sum = round(sum, 10)
             if sum > exactsum:
                 return False
@@ -1246,7 +1245,7 @@ class MinSumConstraint(Constraint):
             else:
                 for variable in variables:
                     sum += assignments[variable]
-            if type(sum) is float:
+            if isinstance(sum, float):
                 sum = round(sum, 10)
             return sum >= minsum
 

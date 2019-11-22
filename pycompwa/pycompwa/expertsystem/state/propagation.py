@@ -339,7 +339,7 @@ class CSPPropagator(AbstractPropagator):
         super().__init__(graph)
 
     def find_solutions(self):
-        self.initialize_contraints()
+        self.initialize_constraints()
         solutions = self.problem.getSolutions()
         solution_graphs = self.apply_solutions_to_graph(solutions)
         for constraint in self.constraints:
@@ -353,7 +353,7 @@ class CSPPropagator(AbstractPropagator):
                     constraint.rule)
         return solution_graphs
 
-    def initialize_contraints(self):
+    def initialize_constraints(self):
         """
         Initializes all of the constraints for this graph. For each interaction
         node a set of independent constraints/conservation laws are created.
@@ -659,7 +659,7 @@ class ConservationLawConstraintWrapper(Constraint):
                 if 'fixed-vars' not in temp_var_dict[edge_id]:
                     temp_var_dict[edge_id]['fixed-vars'] = varlist
 
-        for key, value in temp_var_dict.items():
+        for value in temp_var_dict.values():
             index = len(list_to_init)
             list_to_init.append({})
             if 'vars' in value:

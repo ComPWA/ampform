@@ -62,15 +62,15 @@ def test_angular_distributions(make_plots=False):
     # phi distribution of the D* decay should be 1 - 1/2.25*cos(2*phi)
 
     tuples = [
-        ComparisonTuple('theta_34_2', lambda x: 1.25+0.75*x*x,
+        ComparisonTuple('theta_34_2', lambda x: 1.25 + 0.75 * x * x,
                         chisquare_test, **{'number_of_bins': 80}),
-        ComparisonTuple('theta_3_4_vs_2', lambda x: 1-0.75*x*x,
+        ComparisonTuple('theta_3_4_vs_2', lambda x: 1 - 0.75 * x * x,
                         chisquare_test, **{'number_of_bins': 80}),
-        ComparisonTuple('phi_3_4_vs_2', lambda x: 1-1/2.25 *
-                        cos(2*x), chisquare_test, **{'number_of_bins': 80})
+        ComparisonTuple('phi_3_4_vs_2', lambda x: 1 - 1 / 2.25 *
+                        cos(2 * x), chisquare_test, **{'number_of_bins': 80})
     ]
     test_angular_distributions(
-        thisdirectory+"/model.xml", tuples, 20000, make_plots=make_plots)
+        thisdirectory + "/model.xml", tuples, 20000, make_plots=make_plots)
 
 
 if __name__ == '__main__':

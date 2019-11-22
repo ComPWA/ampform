@@ -329,17 +329,17 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         in_names_hel_dict = {}
         out_names_hel_dict = {}
         for i in in_edges:
-            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+            temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
             # remove .0
-            if temphel % 1 == 0:
-                temphel = int(temphel)
-            in_names_hel_dict[graph.edge_props[i][name_label]] = temphel
+            if temp_hel % 1 == 0:
+                temp_hel = int(temp_hel)
+            in_names_hel_dict[graph.edge_props[i][name_label]] = temp_hel
         for i in out_edges:
-            temphel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+            temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
             # remove .0
-            if temphel % 1 == 0:
-                temphel = int(temphel)
-            out_names_hel_dict[graph.edge_props[i][name_label]] = temphel
+            if temp_hel % 1 == 0:
+                temp_hel = int(temp_hel)
+            out_names_hel_dict[graph.edge_props[i][name_label]] = temp_hel
 
         return (in_names_hel_dict, out_names_hel_dict)
 
@@ -416,7 +416,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         self.helicity_amplitudes = {
             'Intensity': {
                 class_label: "StrengthIntensity",
-                name_label: incoherent_amp_name+"_with_strength",
+                name_label: incoherent_amp_name + "_with_strength",
                 parameter_label: {class_label: "Double",
                                   type_label: "Strength",
                                   name_label: "strength_" +
@@ -425,7 +425,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
 
                 'Intensity': {
                     class_label: "NormalizedIntensity",
-                    name_label: incoherent_amp_name+"_normalized",
+                    name_label: incoherent_amp_name + "_normalized",
                     'Intensity': {
                         class_label: "IncoherentIntensity",
                         name_label: incoherent_amp_name,
@@ -457,7 +457,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                     and in_spin.magnitude() == 0):
                 if abs(out_spins[0].projection()
                        - out_spins[1].projection()) == 0.0:
-                    # check if dynamics is non resonsant (constant)
+                    # check if dynamics is non-resonant (constant)
                     if ('NonResonant' ==
                         graph.edge_props[in_edges[0]][
                             decay_info_label][type_label]):

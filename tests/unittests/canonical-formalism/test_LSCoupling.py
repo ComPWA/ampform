@@ -54,8 +54,8 @@ from pycompwa.expertsystem.state.conservationrules import ParityConservationHeli
          [("D*(2007)0bar", [0]), ("D*(2007)0", [-1])],
          Spin(1, 0), Spin(2, 0), 1),
     ])
-def test_canonical_clebsch_gordan_ls_couling(initial_state, final_state,
-                                             L, S, solution_count):
+def test_canonical_clebsch_gordan_ls_coupling(initial_state, final_state,
+                                              L, S, solution_count):
     # because the amount of solutions is too big we change the default domains
     formalism_type = 'canonical-helicity'
     int_settings = create_default_interaction_settings(formalism_type)
@@ -84,11 +84,10 @@ def test_canonical_clebsch_gordan_ls_couling(initial_state, final_state,
         ]}
     }
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    for k, v in graph_node_setting_pairs.items():
+    for v in graph_node_setting_pairs.values():
         for e in v:
             e[0].node_props = node_props
 
-    (solutions, violated_rules) = tbd_manager.find_solutions(
-        graph_node_setting_pairs)
+    solutions = tbd_manager.find_solutions(graph_node_setting_pairs)[0]
 
     assert len(solutions) == solution_count

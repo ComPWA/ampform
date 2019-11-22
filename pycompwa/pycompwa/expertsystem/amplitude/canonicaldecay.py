@@ -64,7 +64,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
     '''
     This class defines a full amplitude in the canonical formalism, using the
-    heliclty formalism as a foundation.
+    helicity formalism as a foundation.
     The key here is that we take the full helicity intensity as a template, and
     just exchange the helicity amplitudes F as a sum of canonical amplitudes a:
     F^J_lambda1,lambda2 = sum_LS { norm * a^J_LS * CG * CG }
@@ -83,7 +83,7 @@ class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
         '''
 
         def wrapper(self, graph, node_id):
-            spinqn = StateQuantumNumberNames.Spin
+            spin = StateQuantumNumberNames.Spin
             partial_decay_dict = decay_generate_function(
                 self, graph, node_id)
             node_props = graph.node_props[node_id]
@@ -95,13 +95,13 @@ class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
             in_edge_ids = get_edges_ingoing_to_node(graph, node_id)
 
             parent_spin = get_particle_property(
-                graph.edge_props[in_edge_ids[0]], spinqn)
+                graph.edge_props[in_edge_ids[0]], spin)
 
             daughter_spins = []
 
             for out_edge_id in get_edges_outgoing_to_node(graph, node_id):
                 daughter_spins.append(get_particle_property(
-                    graph.edge_props[out_edge_id], spinqn)
+                    graph.edge_props[out_edge_id], spin)
                 )
 
             decay_particle_lambda = (daughter_spins[0].projection() -

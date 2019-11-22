@@ -2,9 +2,9 @@ from itertools import (product)
 
 from pycompwa.expertsystem.state.conservationrules import SpinConservation
 from pycompwa.expertsystem.state.particle import (StateQuantumNumberNames,
-                                         InteractionQuantumNumberNames,
-                                         Spin,
-                                         create_spin_domain)
+                                                  InteractionQuantumNumberNames,
+                                                  Spin,
+                                                  create_spin_domain)
 
 
 class TestSpin(object):

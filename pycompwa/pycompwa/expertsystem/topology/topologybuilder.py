@@ -16,7 +16,7 @@ from .graph import (
 
 class SimpleStateTransitionTopologyBuilder():
     """
-    Simple topology builder. Recursively trys to add the interaction nodes
+    Simple topology builder. Recursively tries to add the interaction nodes
     to available open end edges/lines in all combinations until the number of
     open end lines matches the final state lines
     """
@@ -24,18 +24,13 @@ class SimpleStateTransitionTopologyBuilder():
     def __init__(self, interaction_node_set):
         if not isinstance(interaction_node_set, list):
             raise TypeError("interaction_node_set must be a list")
-            if not all((isinstance(Item, InteractionNode)
-                        for Item in interaction_node_set)):
-                raise TypeError(
-                    "interaction_node_set must be a list of InteractionNode"
-                    " instances")
         self.interaction_node_set = interaction_node_set
 
-    def build_graphs(self, number_of_intial_edges, number_of_final_edges):
-        if not isinstance(number_of_intial_edges, int):
-            raise TypeError("number_of_intial_edges must be an integer")
-        if number_of_intial_edges < 1:
-            raise ValueError("number_of_intial_edges has to be larger than 0")
+    def build_graphs(self, number_of_initial_edges, number_of_final_edges):
+        if not isinstance(number_of_initial_edges, int):
+            raise TypeError("number_of_initial_edges must be an integer")
+        if number_of_initial_edges < 1:
+            raise ValueError("number_of_initial_edges has to be larger than 0")
         if not isinstance(number_of_final_edges, int):
             raise TypeError("number_of_final_edges must be an integer")
         if number_of_final_edges < 1:
@@ -46,7 +41,7 @@ class SimpleStateTransitionTopologyBuilder():
         graph_tuple_list = []
         # create seed graph
         seed_graph = StateTransitionGraph()
-        current_open_end_edges = list(range(number_of_intial_edges))
+        current_open_end_edges = list(range(number_of_initial_edges))
         seed_graph.add_edges(current_open_end_edges)
         extendable_graph_list = [(seed_graph, current_open_end_edges)]
 

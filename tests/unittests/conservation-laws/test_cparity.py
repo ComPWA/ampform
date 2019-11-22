@@ -2,9 +2,9 @@ from itertools import (product)
 
 from pycompwa.expertsystem.state.conservationrules import CParityConservation
 from pycompwa.expertsystem.state.particle import (StateQuantumNumberNames,
-                                         ParticlePropertyNames,
-                                         InteractionQuantumNumberNames,
-                                         Spin)
+                                                  ParticlePropertyNames,
+                                                  InteractionQuantumNumberNames,
+                                                  Spin)
 
 
 class TestCParity(object):

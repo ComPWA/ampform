@@ -12,7 +12,7 @@ from pycompwa.expertsystem.amplitude.helicitydecay import (
 def test_script():
     logging.basicConfig(level=logging.INFO)
     logging.getLogger().setLevel(logging.INFO)
-    # initialize the graph edges (intial and final state)
+    # initialize the graph edges (initial and final state)
     initial_state = [("D0", [0])]
     final_state = [("K_S0", [0]), ("K+", [0]), ("K-", [0])]
 

@@ -7,7 +7,7 @@ from pycompwa.expertsystem.ui.system_control import StateTransitionManager
 
 logging.basicConfig(level=logging.INFO)
 
-# initialize the graph edges (intial and final state)
+# initialize the graph edges (initial and final state)
 initial_state = [("EpEm", [-1, 1])]
 final_state = [("D0", [0]), ("D0bar", [0]), ("pi+", [0]), ("pi-", [0])]
 
@@ -19,6 +19,6 @@ graph_node_setting_pairs = tbd_manager.prepare_graphs()
 print("found " + str(len(solutions)) + " solutions!")
 
 for g in solutions:
-    #print(g.node_props[0])
-    #print(g.node_props[1])
+    # print(g.node_props[0])
+    # print(g.node_props[1])
     print(g.edge_props[1]['@Name'])

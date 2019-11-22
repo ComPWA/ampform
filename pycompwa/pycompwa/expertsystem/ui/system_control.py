@@ -426,7 +426,7 @@ def external_edge_identical_particle_combinatorics(
     identical_particle_groups = {
         k: v for k, v in identical_particle_groups.items() if len(v) > 1}
     # now for each identical particle group perform all permutations
-    for particle, edge_group in identical_particle_groups.items():
+    for edge_group in identical_particle_groups.values():
         combinations = permutations(edge_group)
         graph_combinations = set()
         ext_edge_combinations = []
@@ -537,7 +537,7 @@ class StateTransitionManager():
         topology_graphs = self.build_topologies()
         init_graphs = self.create_seed_graphs(topology_graphs)
         graph_node_setting_pairs = self.determine_node_settings(init_graphs)
-        # create groups of settings ordered by "probablity"
+        # create groups of settings ordered by "probability"
         graph_settings_groups = self.create_interaction_setting_groups(
             graph_node_setting_pairs)
         return graph_settings_groups

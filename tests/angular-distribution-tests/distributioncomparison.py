@@ -92,6 +92,5 @@ def compare_data_samples_and_theory(plot_data,
                 plot_histogram_difference_2d(
                     hist_bundle, xtitle=xtitle, ytitle=ytitle)
 
-            value, expected, error = x.test_function(
-                data_hist, x.required_distribution)
+            x.test_function(data_hist, x.required_distribution)
             #assert(abs(expected - value) < error)

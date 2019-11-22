@@ -51,7 +51,7 @@ class DefinedForInteractionNode(AbstractConditionFunctor):
         return True
 
 
-class DefinedIfOtherQnNotDefinedInOutSeperate(AbstractConditionFunctor):
+class DefinedIfOtherQnNotDefinedInOutSeparate(AbstractConditionFunctor):
     '''
     Implements logic for...
     '''
@@ -266,16 +266,16 @@ class CParityConservation(AbstractRule):
         # the spin quantum number is required to check if the daughter
         # particles are fermions or bosons
         self.add_required_qn(StateQuantumNumberNames.Spin,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Cparity])])
         self.add_required_qn(InteractionQuantumNumberNames.L,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Cparity])])
         self.add_required_qn(InteractionQuantumNumberNames.S,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Cparity])])
         self.add_required_qn(ParticlePropertyNames.Pid,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Cparity])])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
@@ -341,19 +341,19 @@ class GParityConservation(AbstractRule):
         # the spin quantum number is required to check if the daughter
         # particles are fermions or bosons
         self.add_required_qn(StateQuantumNumberNames.Spin,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Gparity])])
         self.add_required_qn(InteractionQuantumNumberNames.L,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Gparity])])
         self.add_required_qn(InteractionQuantumNumberNames.S,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Gparity])])
         self.add_required_qn(StateQuantumNumberNames.IsoSpin,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Gparity])])
         self.add_required_qn(ParticlePropertyNames.Pid,
-                             [DefinedIfOtherQnNotDefinedInOutSeperate(
+                             [DefinedIfOtherQnNotDefinedInOutSeparate(
                                  [StateQuantumNumberNames.Gparity])])
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
@@ -467,7 +467,7 @@ class SpinConservation(AbstractRule):
             raise TypeError('Expecting Emum of the type \
                 ParticleQuantumNumberNames for spinlike_qn')
         if spinlike_qn not in QNNameClassMapping:
-            raise ValueError('spinlike_qn is not associacted with a QN class')
+            raise ValueError('spinlike_qn is not associated with a QN class')
         if QNNameClassMapping[spinlike_qn] is not QuantumNumberClasses.Spin:
             raise ValueError('spinlike_qn is not of class Spin')
         self.spinlike_qn = spinlike_qn
@@ -487,7 +487,7 @@ class SpinConservation(AbstractRule):
         """
         implements :math:`|S_1 - S_2| \\leq S \\leq |S_1 + S_2|` and optionally
         :math:`|L - S| \\leq J \\leq |L + S|`. Also checks
-        :math:`M_1 + M_2 = M` and if clebsch gordan coefficients are 0
+        :math:`M_1 + M_2 = M` and if Clebsch-Gordan coefficients are 0
         """
         spin_label = self.spinlike_qn
 
