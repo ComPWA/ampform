@@ -105,22 +105,32 @@
 			<RecoilSystem RecoilFinalState="2"></RecoilSystem>
 		</Amplitude>
 	</Amplitude>
-	<Amplitude Class="SequentialAmplitude" Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;">
-		<Amplitude Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;" Class="HelicityDecay">
-			<DecayParticle Name="EpEm" Helicity="-1"></DecayParticle>
-			<DecayProducts>
-				<Particle Name="D2*(2460)+" FinalState="3 4" Helicity="-1.0"></Particle>
-				<Particle Name="D-" FinalState="2" Helicity="0"></Particle>
-			</DecayProducts>
-		</Amplitude>
-		<Amplitude Name="D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;" Class="HelicityDecay">
-			<DecayParticle Name="D2*(2460)+" Helicity="-1.0"></DecayParticle>
-			<DecayProducts>
-				<Particle Name="D0" FinalState="3" Helicity="0"></Particle>
-				<Particle Name="pion+" FinalState="4" Helicity="0"></Particle>
-			</DecayProducts>
-			<RecoilSystem RecoilFinalState="2"></RecoilSystem>
-		</Amplitude>
+	<Amplitude Class="CoefficientAmplitude" Name="CoeffAmp_EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;">
+		<Parameter Class='Double' Type="Magnitude" Name="Magnitude_dummy">
+			<Value>1.0</Value>
+			<Fix>true</Fix>
+		</Parameter>
+		<Parameter Class='Double' Type="Phase" Name="Phase_dummy">
+			<Value>0.0</Value>
+			<Fix>true</Fix>
+		</Parameter>
 		<PreFactor Real="-1" Imaginary="0.0"></PreFactor>
+		<Amplitude Class="SequentialAmplitude" Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;">
+			<Amplitude Name="EpEm_-1_to_D-_0+D2*(2460)+_-1_L_2.0_S_2.0;" Class="HelicityDecay">
+				<DecayParticle Name="EpEm" Helicity="-1"></DecayParticle>
+				<DecayProducts>
+					<Particle Name="D2*(2460)+" FinalState="3 4" Helicity="-1.0"></Particle>
+					<Particle Name="D-" FinalState="2" Helicity="0"></Particle>
+				</DecayProducts>
+			</Amplitude>
+			<Amplitude Name="D2*(2460)+_-1_to_D0_0+pion+_0_L_2.0_S_0.0;" Class="HelicityDecay">
+				<DecayParticle Name="D2*(2460)+" Helicity="-1.0"></DecayParticle>
+				<DecayProducts>
+					<Particle Name="D0" FinalState="3" Helicity="0"></Particle>
+					<Particle Name="pion+" FinalState="4" Helicity="0"></Particle>
+				</DecayProducts>
+				<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+			</Amplitude>
+		</Amplitude>
 	</Amplitude>
 </Intensity>
