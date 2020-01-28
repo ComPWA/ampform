@@ -473,11 +473,6 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             name_label: amp_name,
             'Amplitude': partial_decays
         }
-        prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
-        if prefactor_label in amp_coeff_infos:
-            sequential_amplitude_dict.update(
-                {prefactor_label:
-                 amp_coeff_infos[prefactor_label]})
 
         par_label = get_xml_label(XMLLabelConstants.Parameter)
         coefficient_amplitude_dict = {
@@ -486,6 +481,11 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
             par_label: amp_coeff_infos[par_label],
             'Amplitude': sequential_amplitude_dict
         }
+
+        prefactor_label = get_xml_label(XMLLabelConstants.PreFactor)
+        if prefactor_label in amp_coeff_infos:
+            coefficient_amplitude_dict.update(
+                {prefactor_label: amp_coeff_infos[prefactor_label]})
 
         self.fit_parameter_names.add(amp_coeff_infos[par_label][0][name_label])
         self.fit_parameter_names.add(amp_coeff_infos[par_label][1][name_label])
