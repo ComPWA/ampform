@@ -30,8 +30,9 @@ def generate_data_samples(model_filename, number_of_events):
     # Generate phase space sample
     phsp_sample = ui.generate_phsp(number_of_events, gen, rand_gen)
 
-    intens = ui.create_intensity(
+    builder = ui.IntensityBuilderXML(
         model_filename, ParticleList, kin, phsp_sample)
+    intens = builder.create_intensity()
 
     # Generate Data
     sample = ui.generate(number_of_events, kin, gen, intens, rand_gen)
