@@ -410,7 +410,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         parameter_label = get_xml_label(XMLLabelConstants.Parameter)
 
         # for each graph group we create a coherent amplitude
-        coherent_amplitudes = []
+        coherent_intensites = []
         for graph_group in graph_groups:
             seq_partial_decays = []
 
@@ -429,6 +429,15 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
 
         # now wrap it with an incoherent intensity
         incoherent_amp_name = "incoherent"
+
+        if len(coherent_intensites) > 1:
+            coherent_intensites_dict = {
+                class_label: "IncoherentIntensity",
+                'Intensity': coherent_intensites
+            }
+        else:
+            coherent_intensites_dict = coherent_intensites[0]
+
         self.helicity_amplitudes = {
             'Intensity': {
                 class_label: "StrengthIntensity",
@@ -441,10 +450,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
 
                 'Intensity': {
                     class_label: "NormalizedIntensity",
-                    'Intensity': {
-                        class_label: "IncoherentIntensity",
-                        'Intensity': coherent_amplitudes
-                    }
+                    'Intensity': coherent_intensites_dict
                 }
             }
         }
