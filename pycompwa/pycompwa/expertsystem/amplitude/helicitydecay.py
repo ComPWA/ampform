@@ -46,6 +46,18 @@ def group_graphs_same_initial_and_final(graphs):
     return graph_group_list
 
 
+def get_graph_group_unique_label(graph_group):
+    label = ""
+    if graph_group:
+        ise = get_initial_state_edges(graph_group[0])
+        fse = get_final_state_edges(graph_group[0])
+        is_names = __get_name_hel_list(graph_group[0], ise)
+        fs_names = __get_name_hel_list(graph_group[0], fse)
+        label += generate_particles_string(is_names) + "_to_" + \
+            generate_particles_string(fs_names)
+    return label
+
+
 def get_helicity_from_edge_props(edge_props):
     qns_label = get_xml_label(XMLLabelConstants.QuantumNumber)
     type_label = get_xml_label(XMLLabelConstants.Type)
@@ -211,19 +223,60 @@ def remove_spin_projection(edge_props):
     return new_edge_props
 
 
-def generate_particles_string(name_hel_dict, use_helicity=True,
+def generate_particles_string(name_hel_list, use_helicity=True,
                               make_parity_partner=False):
     string = ""
-    for name in sorted(name_hel_dict.keys()):
+    for name, hel in name_hel_list:
         string += name
         if use_helicity:
-            hel = name_hel_dict[name]
             if make_parity_partner:
                 string += '_' + str(-1 * hel)
             else:
                 string += '_' + str(hel)
         string += '+'
     return string[:-1]
+
+
+def __get_name_hel_list(graph, edge_ids):
+    name_label = get_xml_label(XMLLabelConstants.Name)
+    name_hel_list = []
+    for i in edge_ids:
+        temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
+        # remove .0
+        if temp_hel % 1 == 0:
+            temp_hel = int(temp_hel)
+        name_hel_list.append(
+            (graph.edge_props[i][name_label], temp_hel))
+    return name_hel_list
+
+
+def retrieve_helicity_info(graph, node_id):
+    # get ending node of the edge
+    # then make name for
+    in_edges = get_edges_ingoing_to_node(graph, node_id)
+    out_edges = get_edges_outgoing_to_node(graph, node_id)
+
+    in_names_hel_list = __get_name_hel_list(graph, in_edges)
+    out_names_hel_list = __get_name_hel_list(graph, out_edges)
+
+    return (in_names_hel_list, out_names_hel_list)
+
+
+def generate_amplitude_coefficient_names(graph, node_id):
+    '''
+    Generates partial amplitude coefficient name suffixes.
+    '''
+    (in_hel_info, out_hel_info) = retrieve_helicity_info(graph,
+                                                         node_id)
+    par_name_suffix = generate_particles_string(
+        in_hel_info, False) + '_to_' + \
+        generate_particles_string(out_hel_info)
+
+    pp_par_name_suffix = generate_particles_string(
+        in_hel_info, False) + '_to_' + \
+        generate_particles_string(out_hel_info,
+                                  make_parity_partner=True)
+    return (par_name_suffix, pp_par_name_suffix)
 
 
 class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
@@ -251,7 +304,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         # loop over decay nodes in time order
         for node_id in graph.nodes:
             (coeff_suffix,
-             pp_coeff_suffix) = self.generate_amplitude_coefficient_names(
+             pp_coeff_suffix) = generate_amplitude_coefficient_names(
                 graph, node_id)
 
             if coeff_suffix in self.partial_amp_coefficient_infos:
@@ -284,22 +337,6 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
                     '@Real': prefactor}
         return amplitude_coefficient_infos
 
-    def generate_amplitude_coefficient_names(self, graph, node_id):
-        '''
-        Generates partial amplitude coefficient name suffixes.
-        '''
-        (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
-                                                                  node_id)
-        par_name_suffix = generate_particles_string(
-            in_hel_info, False) + '_to_' + \
-            generate_particles_string(out_hel_info)
-
-        pp_par_name_suffix = generate_particles_string(
-            in_hel_info, False) + '_to_' + \
-            generate_particles_string(out_hel_info,
-                                      make_parity_partner=True)
-        return (par_name_suffix, pp_par_name_suffix)
-
     def generate_unique_amplitude_name(self, graph, node_id=None):
         '''
         Generates a unique name for the amplitude corresponding to the given
@@ -313,35 +350,12 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         else:
             nodelist = graph.nodes
         for node_id in nodelist:
-            (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
-                                                                      node_id)
+            (in_hel_info, out_hel_info) = retrieve_helicity_info(graph,
+                                                                 node_id)
 
             name += generate_particles_string(in_hel_info) + '_to_' + \
                 generate_particles_string(out_hel_info) + ';'
         return name
-
-    def retrieve_helicity_info(self, graph, node_id):
-        # get ending node of the edge
-        # then make name for
-        in_edges = get_edges_ingoing_to_node(graph, node_id)
-        out_edges = get_edges_outgoing_to_node(graph, node_id)
-        name_label = get_xml_label(XMLLabelConstants.Name)
-        in_names_hel_dict = {}
-        out_names_hel_dict = {}
-        for i in in_edges:
-            temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
-            # remove .0
-            if temp_hel % 1 == 0:
-                temp_hel = int(temp_hel)
-            in_names_hel_dict[graph.edge_props[i][name_label]] = temp_hel
-        for i in out_edges:
-            temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
-            # remove .0
-            if temp_hel % 1 == 0:
-                temp_hel = int(temp_hel)
-            out_names_hel_dict[graph.edge_props[i][name_label]] = temp_hel
-
-        return (in_names_hel_dict, out_names_hel_dict)
 
 
 class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
@@ -391,6 +405,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     def generate_amplitude_info(self, graph_groups):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
+        component_label = get_xml_label(XMLLabelConstants.Component)
         type_label = get_xml_label(XMLLabelConstants.Type)
         parameter_label = get_xml_label(XMLLabelConstants.Parameter)
 
@@ -398,16 +413,17 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         coherent_amplitudes = []
         for graph_group in graph_groups:
             seq_partial_decays = []
+
             for graph in graph_group:
                 seq_partial_decays.append(
                     self.generate_sequential_decay(graph))
 
             # in each coherent amplitude we create a product of partial decays
             coherent_amp_name = "coherent_" + \
-                str(graph_groups.index(graph_group))
-            coherent_amplitudes.append({
+                get_graph_group_unique_label(graph_group)
+            coherent_intensites.append({
                 class_label: 'CoherentIntensity',
-                name_label: coherent_amp_name,
+                component_label: coherent_amp_name,
                 'Amplitude': seq_partial_decays
             })
 
@@ -416,7 +432,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         self.helicity_amplitudes = {
             'Intensity': {
                 class_label: "StrengthIntensity",
-                name_label: incoherent_amp_name + "_with_strength",
+                component_label: incoherent_amp_name + "_with_strength",
                 parameter_label: {class_label: "Double",
                                   type_label: "Strength",
                                   name_label: "strength_" +
@@ -425,10 +441,8 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
 
                 'Intensity': {
                     class_label: "NormalizedIntensity",
-                    name_label: incoherent_amp_name + "_normalized",
                     'Intensity': {
                         class_label: "IncoherentIntensity",
-                        name_label: incoherent_amp_name,
                         'Intensity': coherent_amplitudes
                     }
                 }
@@ -438,6 +452,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
     def generate_sequential_decay(self, graph):
         class_label = get_xml_label(XMLLabelConstants.Class)
         name_label = get_xml_label(XMLLabelConstants.Name)
+        component_label = get_xml_label(XMLLabelConstants.Component)
         spin_label = StateQuantumNumberNames.Spin
         decay_info_label = get_xml_label(XMLLabelConstants.DecayInfo)
         type_label = get_xml_label(XMLLabelConstants.Type)
@@ -470,14 +485,13 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         amp_coeff_infos = gen.generate_amplitude_coefficient_infos(graph)
         sequential_amplitude_dict = {
             class_label: "SequentialAmplitude",
-            name_label: amp_name,
             'Amplitude': partial_decays
         }
 
         par_label = get_xml_label(XMLLabelConstants.Parameter)
         coefficient_amplitude_dict = {
             class_label: "CoefficientAmplitude",
-            name_label: amp_name,
+            component_label: amp_name,
             par_label: amp_coeff_infos[par_label],
             'Amplitude': sequential_amplitude_dict
         }
@@ -529,10 +543,7 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                 })
             recoil_system_dict['RecoilSystem'] = tempdict
 
-        amp_name = self.name_generator.generate_unique_amplitude_name(graph,
-                                                                      node_id)
         partial_decay_dict = {
-            name_label: amp_name,
             class_label: "HelicityDecay",
             'DecayParticle': {
                 name_label: dec_part[name_label],

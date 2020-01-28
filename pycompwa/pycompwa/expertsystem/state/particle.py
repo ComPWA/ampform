@@ -22,8 +22,8 @@ from ..topology.graph import (
 
 
 XMLLabelConstants = Enum('XMLLabelConstants',
-                         'Name Pid Type Value QuantumNumber \
-                          Class Projection Parameter PreFactor DecayInfo')
+                         'Name Pid Type Value QuantumNumber Class Projection \
+                          Component Parameter PreFactor DecayInfo')
 
 XMLLabelTags = [
     XMLLabelConstants.QuantumNumber,
