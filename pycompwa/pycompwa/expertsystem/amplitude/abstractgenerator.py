@@ -10,6 +10,10 @@ class AbstractAmplitudeNameGenerator(ABC):
     def generate_amplitude_coefficient_infos(self, graph):
         pass
 
+    @abstractmethod
+    def _generate_amplitude_coefficient_names(self, graph, node_id):
+        pass
+
 
 class AbstractAmplitudeGenerator(ABC):
     @abstractmethod

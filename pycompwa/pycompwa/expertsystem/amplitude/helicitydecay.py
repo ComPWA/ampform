@@ -51,8 +51,8 @@ def get_graph_group_unique_label(graph_group):
     if graph_group:
         ise = get_initial_state_edges(graph_group[0])
         fse = get_final_state_edges(graph_group[0])
-        is_names = __get_name_hel_list(graph_group[0], ise)
-        fs_names = __get_name_hel_list(graph_group[0], fse)
+        is_names = _get_name_hel_list(graph_group[0], ise)
+        fs_names = _get_name_hel_list(graph_group[0], fse)
         label += generate_particles_string(is_names) + "_to_" + \
             generate_particles_string(fs_names)
     return label
@@ -237,7 +237,7 @@ def generate_particles_string(name_hel_list, use_helicity=True,
     return string[:-1]
 
 
-def __get_name_hel_list(graph, edge_ids):
+def _get_name_hel_list(graph, edge_ids):
     name_label = get_xml_label(XMLLabelConstants.Name)
     name_hel_list = []
     for i in edge_ids:
@@ -248,35 +248,6 @@ def __get_name_hel_list(graph, edge_ids):
         name_hel_list.append(
             (graph.edge_props[i][name_label], temp_hel))
     return name_hel_list
-
-
-def retrieve_helicity_info(graph, node_id):
-    # get ending node of the edge
-    # then make name for
-    in_edges = get_edges_ingoing_to_node(graph, node_id)
-    out_edges = get_edges_outgoing_to_node(graph, node_id)
-
-    in_names_hel_list = __get_name_hel_list(graph, in_edges)
-    out_names_hel_list = __get_name_hel_list(graph, out_edges)
-
-    return (in_names_hel_list, out_names_hel_list)
-
-
-def generate_amplitude_coefficient_names(graph, node_id):
-    '''
-    Generates partial amplitude coefficient name suffixes.
-    '''
-    (in_hel_info, out_hel_info) = retrieve_helicity_info(graph,
-                                                         node_id)
-    par_name_suffix = generate_particles_string(
-        in_hel_info, False) + '_to_' + \
-        generate_particles_string(out_hel_info)
-
-    pp_par_name_suffix = generate_particles_string(
-        in_hel_info, False) + '_to_' + \
-        generate_particles_string(out_hel_info,
-                                  make_parity_partner=True)
-    return (par_name_suffix, pp_par_name_suffix)
 
 
 class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
@@ -304,7 +275,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         # loop over decay nodes in time order
         for node_id in graph.nodes:
             (coeff_suffix,
-             pp_coeff_suffix) = generate_amplitude_coefficient_names(
+             pp_coeff_suffix) = self._generate_amplitude_coefficient_names(
                 graph, node_id)
 
             if coeff_suffix in self.partial_amp_coefficient_infos:
@@ -350,12 +321,39 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         else:
             nodelist = graph.nodes
         for node_id in nodelist:
-            (in_hel_info, out_hel_info) = retrieve_helicity_info(graph,
-                                                                 node_id)
+            (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
+                graph, node_id)
 
             name += generate_particles_string(in_hel_info) + '_to_' + \
                 generate_particles_string(out_hel_info) + ';'
         return name
+
+    def _retrieve_helicity_info(self, graph, node_id):
+        # get ending node of the edge
+        # then make name for
+        in_edges = get_edges_ingoing_to_node(graph, node_id)
+        out_edges = get_edges_outgoing_to_node(graph, node_id)
+
+        in_names_hel_list = _get_name_hel_list(graph, in_edges)
+        out_names_hel_list = _get_name_hel_list(graph, out_edges)
+
+        return (in_names_hel_list, out_names_hel_list)
+
+    def _generate_amplitude_coefficient_names(self, graph, node_id):
+        '''
+        Generates partial amplitude coefficient name suffixes.
+        '''
+        (in_hel_info, out_hel_info) = self._retrieve_helicity_info(graph,
+                                                                   node_id)
+        par_name_suffix = generate_particles_string(
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info)
+
+        pp_par_name_suffix = generate_particles_string(
+            in_hel_info, False) + '_to_' + \
+            generate_particles_string(out_hel_info,
+                                      make_parity_partner=True)
+        return (par_name_suffix, pp_par_name_suffix)
 
 
 class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):

@@ -32,9 +32,9 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     def __init__(self, use_parity_conservation=False):
         super().__init__(use_parity_conservation)
 
-    def generate_amplitude_coefficient_names(self, graph, node_id):
-        (in_hel_info, out_hel_info) = self.retrieve_helicity_info(graph,
-                                                                  node_id)
+    def _generate_amplitude_coefficient_names(self, graph, node_id):
+        (in_hel_info, out_hel_info) = self._retrieve_helicity_info(graph,
+                                                                    node_id)
         par_name_suffix = generate_particles_string(
             in_hel_info, False) + '_to_' + \
             generate_particles_string(out_hel_info, False)
@@ -56,7 +56,8 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         else:
             nodelist = graph.nodes
         for node_id in nodelist:
-            name += super().generate_unique_amplitude_name(graph, node_id)[:-1] \
+            name += super().generate_unique_amplitude_name(
+                graph, node_id)[:-1] \
                 + generate_clebsch_gordan_string(graph, node_id) + ';'
         return name
 
