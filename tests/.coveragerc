@@ -1,0 +1,2 @@
+[run]
+omit = */pycompwa/expertsystem/solvers/constraint/*
