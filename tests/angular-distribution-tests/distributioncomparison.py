@@ -40,7 +40,7 @@ def generate_data_samples(model_filename, number_of_events):
     # Plotting
     kin.create_all_subsystems()
     # create dataset
-    dataset = ui.convert_events_to_dataset(sample, kin)
+    dataset = kin.convert(sample)
 
     # use the direct data point access
     from pycompwa.plotting import (PlotData, create_nprecord)
