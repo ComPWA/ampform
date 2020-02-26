@@ -2,6 +2,7 @@
     Y -> D*0 D*0bar -> D0 D0bar pi0 pi0
 """
 import logging
+import pytest
 
 from pycompwa.expertsystem.amplitude.canonicaldecay import (
     CanonicalAmplitudeGeneratorXML
@@ -49,7 +50,7 @@ def test_script_simple():
 
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
 
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_node_setting_pairs)
 
     print("found " + str(len(solutions)) + " solutions!")
@@ -77,7 +78,7 @@ def test_script_simple():
     tbd_manager.number_of_threads = 2
 
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
@@ -88,6 +89,7 @@ def test_script_simple():
             len(canonical_xml_generator.get_fit_parameters()))
 
 
+@pytest.mark.slow
 def test_script_full():
     # initialize the graph edges (initial and final state)
     initial_state = [("Y", [-1, 1])]
@@ -115,7 +117,7 @@ def test_script_full():
 
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
 
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_node_setting_pairs)
 
     print("found " + str(len(solutions)) + " solutions!")
@@ -144,7 +146,7 @@ def test_script_full():
     tbd_manager.number_of_threads = 2
 
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
