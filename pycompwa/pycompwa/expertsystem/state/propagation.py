@@ -29,6 +29,7 @@ from ..state.particle import (
     StateQuantumNumberNames,
     InteractionQuantumNumberNames,
     ParticlePropertyNames,
+    ParticleDecayPropertyNames,
     get_particle_property,
     get_interaction_property,
     QNNameClassMapping,
@@ -217,7 +218,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
 
         qn_names = cons_law.get_required_qn_names()
         qn_list = self.prepare_qns(qn_names, (StateQuantumNumberNames,
-                                              ParticlePropertyNames))
+                                              ParticlePropertyNames,
+                                              ParticleDecayPropertyNames))
         in_edges_vars = self.create_edge_variables(in_edges, qn_list)
         out_edges_vars = self.create_edge_variables(out_edges, qn_list)
 
@@ -372,7 +374,8 @@ class CSPPropagator(AbstractPropagator):
                 # create needed variables for edges state qns
                 part_qn_dict = self.prepare_qns(
                     qn_names, interaction_settings.qn_domains,
-                    (StateQuantumNumberNames, ParticlePropertyNames)
+                    (StateQuantumNumberNames, ParticlePropertyNames,
+                     ParticleDecayPropertyNames)
                 )
                 in_edges = get_edges_ingoing_to_node(self.graph, node_id)
 
