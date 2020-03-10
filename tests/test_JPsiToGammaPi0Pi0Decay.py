@@ -3,15 +3,15 @@
 """
 import logging
 
-from pycompwa.expertsystem.topology.graph import (
+from expertsystem.topology.graph import (
     get_final_state_edges, get_initial_state_edges,
     get_intermediate_state_edges)
 
-from pycompwa.expertsystem.ui.system_control import (
+from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes,
     create_edge_id_particle_mapping)
 
-from pycompwa.expertsystem.amplitude.helicitydecay import (
+from expertsystem.amplitude.helicitydecay import (
     HelicityAmplitudeGeneratorXML)
 
 

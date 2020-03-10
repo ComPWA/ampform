@@ -1,2 +1,2 @@
 [run]
-omit = */pycompwa/expertsystem/solvers/constraint/*
+omit = */expertsystem/solvers/constraint/*

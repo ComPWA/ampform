@@ -1,5 +1,5 @@
-from pycompwa.expertsystem.topology.graph import InteractionNode
-from pycompwa.expertsystem.topology.topologybuilder import (
+from expertsystem.topology.graph import InteractionNode
+from expertsystem.topology.topologybuilder import (
     SimpleStateTransitionTopologyBuilder)
 
 

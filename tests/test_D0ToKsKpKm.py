@@ -3,9 +3,9 @@
 """
 import logging
 
-from pycompwa.expertsystem.ui.system_control import StateTransitionManager
+from expertsystem.ui.system_control import StateTransitionManager
 
-from pycompwa.expertsystem.amplitude.helicitydecay import (
+from expertsystem.amplitude.helicitydecay import (
     HelicityAmplitudeGeneratorXML)
 
 

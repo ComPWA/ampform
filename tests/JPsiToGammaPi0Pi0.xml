@@ -1,0 +1,1534 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+	<ParticleList>
+		<Particle Name="J/psi">
+			<Pid>443</Pid>
+			<Parameter Type="Mass" Name="Mass_jpsi">
+				<Value>3.096900</Value>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0" Projection="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+			<DecayInfo Type="nonResonant"></DecayInfo>
+		</Particle>
+		<Particle Name="gamma">
+			<Pid>22</Pid>
+			<Parameter Type="Mass" Name="Mass_gamma">
+				<Value>0.0</Value>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0" Projection="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		</Particle>
+		<Particle Name="pi0">
+			<Pid>111</Pid>
+			<Parameter Type="Mass" Name="Mass_neutralPion">
+				<Value>0.1349766</Value>
+				<Error>0.000006</Error>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="1" Projection="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="BaryonNumber" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charm" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Strangeness" Value="0"></QuantumNumber>
+		</Particle>
+		<Particle Name="f2(1270)">
+			<Pid>225</Pid>
+			<Parameter Type="Mass" Name="mass_f21270">
+				<Value>1.2751</Value>
+				<Error>0.0012</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="2.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="1"></QuantumNumber>
+			<QuantumNumber Type="IsoSpin" Class="Spin" Value="0.0" Projection="0.0"></QuantumNumber>
+			<QuantumNumber Type="BaryonNumber" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Charm" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="relativisticBreitWigner">
+				<FormFactor Type="BlattWeisskopf"></FormFactor>
+				<Parameter Type="Width" Name="width_f21270">
+					<Value>0.185</Value>
+				</Parameter>
+				<Parameter Type="MesonRadius" Name="Radius_f21270">
+					<Value>1</Value>
+					<Fix>true</Fix>
+					<Min>0.0</Min>
+					<Max>2.0</Max>
+				</Parameter>
+			</DecayInfo>
+		</Particle>
+		<Particle Name="f2(1950)">
+			<Pid>9050225</Pid>
+			<Parameter Type="Mass" Name="mass_f21950">
+				<Value>1.944</Value>
+				<Error>0.012</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="2.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="1"></QuantumNumber>
+			<QuantumNumber Type="IsoSpin" Class="Spin" Value="0.0" Projection="0.0"></QuantumNumber>
+			<QuantumNumber Type="BaryonNumber" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Charm" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="relativisticBreitWigner">
+				<FormFactor Type="BlattWeisskopf"></FormFactor>
+				<Parameter Type="Width" Name="width_f21950">
+					<Value>0.472</Value>
+				</Parameter>
+				<Parameter Type="MesonRadius" Name="Radius_f21950">
+					<Value>1</Value>
+					<Fix>true</Fix>
+					<Min>0.0</Min>
+					<Max>2.0</Max>
+				</Parameter>
+			</DecayInfo>
+		</Particle>
+		<Particle Name="f0(980)">
+			<Pid>9010221</Pid>
+			<Parameter Type="Mass" Name="mass_f0980">
+				<Value>0.994</Value>
+				<Error>0.001</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.0" Projection="0.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="1"></QuantumNumber>
+			<QuantumNumber Type="BaryonNumber" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Charm" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="relativisticBreitWigner">
+				<FormFactor Type="BlattWeisskopf"></FormFactor>
+				<Parameter Type="Width" Name="width_f0980">
+					<Value>0.070</Value>
+				</Parameter>
+				<Parameter Type="MesonRadius" Name="Radius_f0980">
+					<Value>1</Value>
+					<Fix>true</Fix>
+					<Min>0.0</Min>
+					<Max>2.0</Max>
+				</Parameter>
+			</DecayInfo>
+		</Particle>
+		<Particle Name="f0(1500)">
+			<Pid>9030221</Pid>
+			<Parameter Type="Mass" Name="mass_f01500">
+				<Value>1.505</Value>
+				<Error>0.006</Error>
+				<Fix>true</Fix>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="0.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="1"></QuantumNumber>
+			<QuantumNumber Type="IsoSpin" Class="Spin" Value="0.0" Projection="0.0"></QuantumNumber>
+			<QuantumNumber Type="BaryonNumber" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Charm" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="relativisticBreitWigner">
+				<FormFactor Type="BlattWeisskopf"></FormFactor>
+				<Parameter Type="Width" Name="width_f01500">
+					<Value>0.109</Value>
+				</Parameter>
+				<Parameter Type="MesonRadius" Name="Radius_f01500">
+					<Value>1</Value>
+					<Fix>true</Fix>
+					<Min>0.0</Min>
+					<Max>2.0</Max>
+				</Parameter>
+			</DecayInfo>
+		</Particle>
+		<Particle Name="omega(782)">
+			<Pid>223</Pid>
+			<Parameter Type="Mass" Name="Mass_omega782">
+				<Value>0.78265</Value>
+				<Error>0.00012</Error>
+			</Parameter>
+			<QuantumNumber Class="Spin" Type="Spin" Value="1.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Charge" Value="0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Parity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Cparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Class="Spin" Type="IsoSpin" Value="0.0" Projection="0.0"></QuantumNumber>
+			<QuantumNumber Class="Int" Type="Gparity" Value="-1"></QuantumNumber>
+			<QuantumNumber Type="BaryonNumber" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Charm" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="ElectronLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="MuonLN" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="Strangeness" Class="Int" Value="0"></QuantumNumber>
+			<QuantumNumber Type="TauLN" Class="Int" Value="0"></QuantumNumber>
+			<DecayInfo Type="relativisticBreitWigner">
+				<FormFactor Type="BlattWeisskopf"></FormFactor>
+				<Parameter Type="Width" Name="Width_omega782">
+					<Value>0.000001491</Value>
+				</Parameter>
+				<Parameter Type="MesonRadius" Name="Radius_omega782">
+					<Value>2.5</Value>
+					<Fix>true</Fix>
+					<Min>2.0</Min>
+					<Max>3.0</Max>
+				</Parameter>
+			</DecayInfo>
+		</Particle>
+	</ParticleList>
+	<HelicityKinematics>
+		<InitialState>
+			<Particle Name="J/psi" Id="0" PositionIndex="0"></Particle>
+		</InitialState>
+		<FinalState>
+			<Particle Name="gamma" Id="2" PositionIndex="0"></Particle>
+			<Particle Name="pi0" Id="3" PositionIndex="1"></Particle>
+			<Particle Name="pi0" Id="4" PositionIndex="2"></Particle>
+		</FinalState>
+	</HelicityKinematics>
+	<Intensity Class="StrengthIntensity" Component="incoherent_with_strength">
+		<Parameter Class="Double" Type="Strength" Name="strength_incoherent">
+			<Value>1</Value>
+			<Fix>true</Fix>
+		</Parameter>
+		<Intensity Class="NormalizedIntensity">
+			<Intensity Class="IncoherentIntensity">
+				<Intensity Class="CoherentIntensity" Component="coherent_J/psi_-1_to_gamma_1+pi0_0+pi0_0">
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_2+gamma_1;f2(1270)_2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_2+gamma_1;f2(1950)_2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_1+gamma_1;f2(1270)_1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_1+gamma_1;f2(1950)_1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_0+gamma_1;f2(1270)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_0+gamma_1;f2(1950)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(980)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(980)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(1500)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(1500)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+				</Intensity>
+				<Intensity Class="CoherentIntensity" Component="coherent_J/psi_-1_to_gamma_-1+pi0_0+pi0_0">
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_0+gamma_-1;f2(1270)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_0+gamma_-1;f2(1950)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_-1+gamma_-1;f2(1270)_-1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="-1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_-1+gamma_-1;f2(1950)_-1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="-1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1270)_-2+gamma_-1;f2(1270)_-2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="-2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="-2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f2(1950)_-2+gamma_-1;f2(1950)_-2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="-2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="-2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(980)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(980)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(1500)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(1500)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_-1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="-1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+				</Intensity>
+				<Intensity Class="CoherentIntensity" Component="coherent_J/psi_1_to_gamma_-1+pi0_0+pi0_0">
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_0+gamma_-1;f2(1270)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_0+gamma_-1;f2(1950)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_-1+gamma_-1;f2(1270)_-1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="-1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_-1+gamma_-1;f2(1950)_-1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="-1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_-2+gamma_-1;f2(1270)_-2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="-2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="-2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_-2+gamma_-1;f2(1950)_-2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="-2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="-2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(980)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(980)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(1500)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(1500)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_-1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="-1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+				</Intensity>
+				<Intensity Class="CoherentIntensity" Component="coherent_J/psi_1_to_gamma_1+pi0_0+pi0_0">
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_2+gamma_1;f2(1270)_2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_2+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_2+gamma_1;f2(1950)_2_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_2+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="2.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="2.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_1+gamma_1;f2(1270)_1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_1+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_1+gamma_1;f2(1950)_1_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_1+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="1.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1270)_0+gamma_1;f2(1270)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1270)_0+gamma_1;f2(1270)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1270)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1270)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f2(1950)_0+gamma_1;f2(1950)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f2(1950)_0+gamma_1;f2(1950)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f2(1950)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f2(1950)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(980)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(980)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="f0(1500)" FinalState="3 4" Helicity="0.0"></Particle>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="f0(1500)" Helicity="0.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="2"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_1+pi0_0;omega(782)_1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 4" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="3"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+					<Amplitude Class="CoefficientAmplitude" Component="J/psi_1_to_omega(782)_-1+pi0_0;omega(782)_-1_to_gamma_1+pi0_0;">
+						<Parameter Class="Double" Type="Magnitude" Name="Magnitude_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>1.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Parameter Class="Double" Type="Phase" Name="Phase_J/psi_to_omega(782)_1+pi0_0;omega(782)_to_gamma_1+pi0_0;">
+							<Value>0.0</Value>
+							<Fix>false</Fix>
+						</Parameter>
+						<Amplitude Class="SequentialAmplitude">
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="J/psi" Helicity="1"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="omega(782)" FinalState="2 3" Helicity="-1.0"></Particle>
+									<Particle Name="pi0" FinalState="4" Helicity="0"></Particle>
+								</DecayProducts>
+							</Amplitude>
+							<Amplitude Class="HelicityDecay">
+								<DecayParticle Name="omega(782)" Helicity="-1.0"></DecayParticle>
+								<DecayProducts>
+									<Particle Name="gamma" FinalState="2" Helicity="1"></Particle>
+									<Particle Name="pi0" FinalState="3" Helicity="0"></Particle>
+								</DecayProducts>
+								<RecoilSystem RecoilFinalState="4"></RecoilSystem>
+							</Amplitude>
+						</Amplitude>
+					</Amplitude>
+				</Intensity>
+			</Intensity>
+		</Intensity>
+	</Intensity>

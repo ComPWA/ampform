@@ -1,14 +1,14 @@
 import pytest
 
-from pycompwa.expertsystem.ui.system_control import (
+from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes,
     remove_duplicate_solutions, CompareGraphElementPropertiesFunctor,
     match_external_edges, create_edge_id_particle_mapping,
     perform_external_edge_identical_particle_combinatorics,
     filter_graphs, require_interaction_property)
-from pycompwa.expertsystem.topology.graph import (
+from expertsystem.topology.graph import (
     StateTransitionGraph, get_final_state_edges, get_initial_state_edges)
-from pycompwa.expertsystem.state.particle import (
+from expertsystem.state.particle import (
     create_spin_domain, InteractionQuantumNumberNames,
     get_xml_label, XMLLabelConstants
 )

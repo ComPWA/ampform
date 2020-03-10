@@ -1,17 +1,17 @@
 import pytest
 
-from pycompwa.expertsystem.ui.system_control import (
+from expertsystem.ui.system_control import (
     StateTransitionManager, InteractionTypes,
     remove_conservation_law
 )
-from pycompwa.expertsystem.ui.default_settings import (
+from expertsystem.ui.default_settings import (
     create_default_interaction_settings
 )
-from pycompwa.expertsystem.state.particle import (
+from expertsystem.state.particle import (
     InteractionQuantumNumberNames, SpinQNConverter, Spin,
     XMLLabelConstants
 )
-from pycompwa.expertsystem.state.conservationrules import ParityConservationHelicity
+from expertsystem.state.conservationrules import ParityConservationHelicity
 
 
 @pytest.mark.parametrize(

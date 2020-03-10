@@ -7,7 +7,7 @@ from multiprocessing import Pool
 import inspect
 from os import path
 
-from pycompwa.tools.progress.bar import IncrementalBar
+from progress.bar import IncrementalBar
 
 from ..topology.graph import (
     StateTransitionGraph,
