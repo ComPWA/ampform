@@ -34,7 +34,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
     def _generate_amplitude_coefficient_names(self, graph, node_id):
         (in_hel_info, out_hel_info) = self._retrieve_helicity_info(graph,
-                                                                    node_id)
+                                                                   node_id)
         par_name_suffix = generate_particles_string(
             in_hel_info, False) + '_to_' + \
             generate_particles_string(out_hel_info, False)

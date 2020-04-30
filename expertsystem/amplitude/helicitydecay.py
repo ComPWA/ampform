@@ -311,7 +311,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
     def generate_unique_amplitude_name(self, graph, node_id=None):
         '''
         Generates a unique name for the amplitude corresponding to the given
-        :py:class:`StateTransitionGraph`. If :py:var:`node_id` is given, it
+        :py:class:`StateTransitionGraph`. If ``node_id`` is given, it
         generates a unique name for the partial amplitude corresponding to the
         interaction node of the given :py:class:`StateTransitionGraph`.
         '''

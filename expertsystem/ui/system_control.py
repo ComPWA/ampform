@@ -222,7 +222,7 @@ def filter_graphs(graphs, filters):
     Args:
         graphs ([:py:class:`.StateTransitionGraph`]): list of graphs to be
             filtered
-        filters ([function]): list of functions, which take a single
+        filters (list): list of functions, which take a single
             :py:class:`.StateTransitionGraph` as an argument
     Returns:
         [:py:class:`.StateTransitionGraph`]: filtered list of graphs

@@ -24,14 +24,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-@var Unassigned: Helper object instance representing unassigned values
+:var Unassigned: Helper object instance representing unassigned values
 
-@sort: Problem, Variable, Domain
-@group Solvers: Solver,
+:sort: Problem, Variable, Domain
+:group Solvers: Solver,
                 BacktrackingSolver,
                 RecursiveBacktrackingSolver,
                 MinConflictsSolver
-@group Constraints: Constraint,
+:group Constraints: Constraint,
                     FunctionConstraint,
                     AllDifferentConstraint,
                     AllEqualConstraint,
@@ -70,9 +70,9 @@ class Problem(object):
 
     def __init__(self, solver=None):
         """
-        @param solver: Problem solver used to find solutions
+        :param solver: Problem solver used to find solutions
                        (default is L{BacktrackingSolver})
-        @type solver:  instance of a L{Solver} subclass
+        :type solver:  Solver
         """
         self._solver = solver or BacktrackingSolver()
         self._constraints = []
@@ -104,8 +104,8 @@ class Problem(object):
         >>> problem.getSolver() is solver
         True
 
-        @param solver: New problem solver
-        @type  solver: instance of a C{Solver} subclass
+        :param solver: New problem solver
+        :type  solver: Solver
         """
         self._solver = solver
 
@@ -120,8 +120,7 @@ class Problem(object):
         >>> problem.getSolver() is solver
         True
 
-        @return: Solver currently in use
-        @rtype: instance of a L{Solver} subclass
+        :return: Solver
         """
         return self._solver
 
@@ -136,11 +135,10 @@ class Problem(object):
         >>> problem.getSolution() in ({'a': 1}, {'a': 2})
         True
 
-        @param variable: Object representing a problem variable
-        @type  variable: hashable object
-        @param domain: Set of items defining the possible values that
+        :param variable: Object representing a problem variable
+        :param domain: Set of items defining the possible values that
                        the given variable may assume
-        @type  domain: list, tuple, or instance of C{Domain}
+        :type  domain: list, tuple, or Domain
         """
         if variable in self._variables:
             msg = "Tried to insert duplicated variable %s" % repr(variable)
@@ -170,12 +168,11 @@ class Problem(object):
         >>> {'a': 3, 'b': 1} in solutions
         True
 
-        @param variables: Any object containing a sequence of objects
+        :param variables: Any object containing a sequence of objects
                           representing problem variables
-        @type  variables: sequence of hashable objects
-        @param domain: Set of items defining the possible values that
+        :param domain: Set of items defining the possible values that
                        the given variables may assume
-        @type  domain: list, tuple, or instance of C{Domain}
+        :type  domain: list, tuple, or Domain
         """
         for variable in variables:
             self.addVariable(variable, domain)
@@ -192,13 +189,11 @@ class Problem(object):
         >>> solutions = problem.getSolutions()
         >>>
 
-        @param constraint: Constraint to be included in the problem
-        @type  constraint: instance a L{Constraint} subclass or a
-                           function to be wrapped by L{FunctionConstraint}
-        @param variables: Variables affected by the constraint (default to
+        :param constraint: Constraint to be included in the problem
+        :param variables: Variables affected by the constraint (default to
                           all variables). Depending on the constraint type
                           the order may be important.
-        @type  variables: set or sequence of variables
+        :type  variables: set
         """
         if not isinstance(constraint, Constraint):
             if callable(constraint):
@@ -222,8 +217,7 @@ class Problem(object):
         >>> problem.getSolution()
         {'a': 42}
 
-        @return: Solution for the problem
-        @rtype: dictionary mapping variables to values
+        Returns: Dictionary mapping variables to values
         """
         domains, constraints, v_constraints = self._getArgs()
         if not domains:
@@ -243,8 +237,7 @@ class Problem(object):
         >>> problem.getSolutions()
         [{'a': 42}]
 
-        @return: All solutions for the problem
-        @rtype: list of dictionaries mapping variables to values
+        Returns: List of dictionaries mapping variables to values
         """
         domains, constraints, vconstraints = self._getArgs()
         if not domains:
@@ -308,7 +301,7 @@ def getArcs(domains, constraints):
     """
     Return a dictionary mapping pairs (arcs) of constrained variables
 
-    @attention: Currently unused.
+    :attention: Currently unused.
     """
     arcs = {}
     for x in constraints:
@@ -328,7 +321,7 @@ def doArc8(arcs, domains, assignments):
     """
     Perform the ARC-8 arc checking algorithm and prune domains
 
-    @attention: Currently unused.
+    :attention: Currently unused.
     """
     check = dict.fromkeys(domains, True)
     while check:
@@ -374,20 +367,20 @@ class Solver(object):
     """
     Abstract base class for solvers
 
-    @sort: getSolution, getSolutions, getSolutionIter
+    :sort: getSolution, getSolutions, getSolutionIter
     """
 
     def getSolution(self, domains, constraints, vconstraints):
         """
         Return one solution for the given problem
 
-        @param domains: Dictionary mapping variables to their domains
-        @type  domains: dict
-        @param constraints: List of pairs of (constraint, variables)
-        @type  constraints: list
-        @param vconstraints: Dictionary mapping variables to a list of
+        :param domains: Dictionary mapping variables to their domains
+        :type  domains: dict
+        :param constraints: List of pairs of (constraint, variables)
+        :type  constraints: list
+        :param vconstraints: Dictionary mapping variables to a list of
                              constraints affecting the given variables.
-        @type  vconstraints: dict
+        :type  vconstraints: dict
         """
         msg = "%s is an abstract class" % self.__class__.__name__
         raise NotImplementedError(msg)
@@ -396,13 +389,13 @@ class Solver(object):
         """
         Return all solutions for the given problem
 
-        @param domains: Dictionary mapping variables to domains
-        @type  domains: dict
-        @param constraints: List of pairs of (constraint, variables)
-        @type  constraints: list
-        @param vconstraints: Dictionary mapping variables to a list of
+        :param domains: Dictionary mapping variables to domains
+        :type  domains: dict
+        :param constraints: List of pairs of (constraint, variables)
+        :type  constraints: list
+        :param vconstraints: Dictionary mapping variables to a list of
                              constraints affecting the given variables.
-        @type  vconstraints: dict
+        :type  vconstraints: dict
         """
         msg = "%s provides only a single solution" % self.__class__.__name__
         raise NotImplementedError(msg)
@@ -411,13 +404,13 @@ class Solver(object):
         """
         Return an iterator for the solutions of the given problem
 
-        @param domains: Dictionary mapping variables to domains
-        @type  domains: dict
-        @param constraints: List of pairs of (constraint, variables)
-        @type  constraints: list
-        @param vconstraints: Dictionary mapping variables to a list of
+        :param domains: Dictionary mapping variables to domains
+        :type  domains: dict
+        :param constraints: List of pairs of (constraint, variables)
+        :type  constraints: list
+        :param vconstraints: Dictionary mapping variables to a list of
                              constraints affecting the given variables.
-        @type  vconstraints: dict
+        :type  vconstraints: dict
         """
         msg = "%s doesn't provide iteration" % self.__class__.__name__
         raise NotImplementedError(msg)
@@ -456,10 +449,10 @@ class BacktrackingSolver(Solver):
 
     def __init__(self, forwardcheck=True):
         """
-        @param forwardcheck: If false forward checking will not be requested
+        :param forwardcheck: If false forward checking will not be requested
                              to constraints while looking for solutions
                              (default is true)
-        @type  forwardcheck: bool
+        :type  forwardcheck: bool
         """
         self._forwardcheck = forwardcheck
 
@@ -579,10 +572,10 @@ class RecursiveBacktrackingSolver(Solver):
 
     def __init__(self, forwardcheck=True):
         """
-        @param forwardcheck: If false forward checking will not be requested
+        :param forwardcheck: If false forward checking will not be requested
                              to constraints while looking for solutions
                              (default is true)
-        @type  forwardcheck: bool
+        :type  forwardcheck: bool
         """
         self._forwardcheck = forwardcheck
 
@@ -673,9 +666,9 @@ class MinConflictsSolver(Solver):
 
     def __init__(self, steps=1000):
         """
-        @param steps: Maximum number of steps to perform before giving up
+        :param steps: Maximum number of steps to perform before giving up
                       when looking for a solution (default is 1000)
-        @type  steps: int
+        :type  steps: int
         """
         self._steps = steps
 
@@ -732,8 +725,8 @@ class Variable(object):
 
     def __init__(self, name):
         """
-        @param name: Generic variable name for problem-specific purposes
-        @type  name: string
+        :param name: Generic variable name for problem-specific purposes
+        :type  name: str
         """
         self.name = name
 
@@ -758,8 +751,8 @@ class Domain(list):
 
     def __init__(self, set):
         """
-        @param set: Set of values that the given variables may assume
-        @type  set: set of objects comparable by equality
+        :param set: Set of values that the given variables may assume
+        :type  set: set
         """
         list.__init__(self, set)
         self._hidden = []
@@ -802,7 +795,7 @@ class Domain(list):
         on that domain anymore. The hidden value will be restored when the
         previous saved state is popped.
 
-        @param value: Object currently available in the domain
+        :param value: Object currently available in the domain
         """
         list.remove(self, value)
         self._hidden.append(value)
@@ -827,19 +820,18 @@ class Constraint(object):
         unassigned variables to prevent them from being used, and thus
         prune the search space.
 
-        @param variables: Variables affected by that constraint, in the
+        :param variables: Variables affected by that constraint, in the
                           same order provided by the user
-        @type  variables: sequence
-        @param domains: Dictionary mapping variables to their domains
-        @type  domains: dict
-        @param assignments: Dictionary mapping assigned variables to their
+        :param domains: Dictionary mapping variables to their domains
+        :type  domains: dict
+        :param assignments: Dictionary mapping assigned variables to their
                             current assumed value
-        @type  assignments: dict
-        @param forwardcheck: Boolean value stating whether forward checking
+        :type  assignments: dict
+        :param forwardcheck: Boolean value stating whether forward checking
                              should be performed or not
-        @return: Boolean value stating if this constraint is currently
+        :return: Boolean value stating if this constraint is currently
                  broken or not
-        @rtype: bool
+        :rtype: bool
         """
         return True
 
@@ -854,16 +846,16 @@ class Constraint(object):
         since they may act on individual values even without further
         knowledge about other assignments.
 
-        @param variables: Variables affected by that constraint, in the
+        :param variables: Variables affected by that constraint, in the
                           same order provided by the user
-        @type  variables: sequence
-        @param domains: Dictionary mapping variables to their domains
-        @type  domains: dict
-        @param constraints: List of pairs of (constraint, variables)
-        @type  constraints: list
-        @param vconstraints: Dictionary mapping variables to a list of
+        :type  variables: list
+        :param domains: Dictionary mapping variables to their domains
+        :type  domains: dict
+        :param constraints: List of pairs of (constraint, variables)
+        :type  constraints: list
+        :param vconstraints: Dictionary mapping variables to a list of
                              constraints affecting the given variables.
-        @type  vconstraints: dict
+        :type  vconstraints: dict
         """
         if len(variables) == 1:
             variable = variables[0]
@@ -882,17 +874,17 @@ class Constraint(object):
         Currently, this method acts only when there's a single
         unassigned variable.
 
-        @param variables: Variables affected by that constraint, in the
+        :param variables: Variables affected by that constraint, in the
                           same order provided by the user
-        @type  variables: sequence
-        @param domains: Dictionary mapping variables to their domains
-        @type  domains: dict
-        @param assignments: Dictionary mapping assigned variables to their
+        :type  variables: list
+        :param domains: Dictionary mapping variables to their domains
+        :type  domains: dict
+        :param assignments: Dictionary mapping assigned variables to their
                             current assumed value
-        @type  assignments: dict
-        @return: Boolean value stating if this constraint is currently
+        :type  assignments: dict
+        :return: Boolean value stating if this constraint is currently
                  broken or not
-        @rtype: bool
+        :rtype: bool
         """
         unassignedvariable = _unassigned
         for variable in variables:
@@ -942,11 +934,10 @@ class FunctionConstraint(Constraint):
 
     def __init__(self, func, assigned=True):
         """
-        @param func: Function wrapped and queried for constraint logic
-        @type  func: callable object
-        @param assigned: Whether the function may receive unassigned
+        :param func: Function wrapped and queried for constraint logic
+        :param assigned: Whether the function may receive unassigned
                          variables or not
-        @type  assigned: bool
+        :type  assigned: bool
         """
         self._func = func
         self._assigned = assigned
@@ -1046,11 +1037,10 @@ class MaxSumConstraint(Constraint):
 
     def __init__(self, maxsum, multipliers=None):
         """
-        @param maxsum: Value to be considered as the maximum sum
-        @type  maxsum: number
-        @param multipliers: If given, variable values will be multiplied by
+        :param maxsum: Value to be considered as the maximum sum
+        :type  maxsum: float
+        :param multipliers: If given, variable values will be multiplied by
                             the given factors before being summed to be checked
-        @type  multipliers: sequence of numbers
         """
         self._maxsum = maxsum
         self._multipliers = multipliers
@@ -1130,11 +1120,10 @@ class ExactSumConstraint(Constraint):
 
     def __init__(self, exactsum, multipliers=None):
         """
-        @param exactsum: Value to be considered as the exact sum
-        @type  exactsum: number
-        @param multipliers: If given, variable values will be multiplied by
+        :param exactsum: Value to be considered as the exact sum
+        :type  exactsum: float
+        :param multipliers: If given, variable values will be multiplied by
                             the given factors before being summed to be checked
-        @type  multipliers: sequence of numbers
         """
         self._exactsum = exactsum
         self._multipliers = multipliers
@@ -1222,11 +1211,10 @@ class MinSumConstraint(Constraint):
 
     def __init__(self, minsum, multipliers=None):
         """
-        @param minsum: Value to be considered as the minimum sum
-        @type  minsum: number
-        @param multipliers: If given, variable values will be multiplied by
+        :param minsum: Value to be considered as the minimum sum
+        :type  minsum: float
+        :param multipliers: If given, variable values will be multiplied by
                             the given factors before being summed to be checked
-        @type  multipliers: sequence of numbers
         """
         self._minsum = minsum
         self._multipliers = multipliers
@@ -1266,8 +1254,8 @@ class InSetConstraint(Constraint):
 
     def __init__(self, set):
         """
-        @param set: Set of allowed values
-        @type  set: set
+        :param set: Set of allowed values
+        :type  set: set
         """
         self._set = set
 
@@ -1302,8 +1290,8 @@ class NotInSetConstraint(Constraint):
 
     def __init__(self, set):
         """
-        @param set: Set of disallowed values
-        @type  set: set
+        :param set: Set of disallowed values
+        :type  set: set
         """
         self._set = set
 
@@ -1338,14 +1326,14 @@ class SomeInSetConstraint(Constraint):
 
     def __init__(self, set, n=1, exact=False):
         """
-        @param set: Set of values to be checked
-        @type  set: set
-        @param n: Minimum number of assigned values that should be present
+        :param set: Set of values to be checked
+        :type  set: set
+        :param n: Minimum number of assigned values that should be present
                   in set (default is 1)
-        @type  n: int
-        @param exact: Whether the number of assigned values which are
+        :type  n: int
+        :param exact: Whether the number of assigned values which are
                       present in set must be exactly C{n}
-        @type  exact: bool
+        :type  exact: bool
         """
         self._set = set
         self._n = n
@@ -1404,14 +1392,14 @@ class SomeNotInSetConstraint(Constraint):
 
     def __init__(self, set, n=1, exact=False):
         """
-        @param set: Set of values to be checked
-        @type  set: set
-        @param n: Minimum number of assigned values that should not be present
+        :param set: Set of values to be checked
+        :type  set: set
+        :param n: Minimum number of assigned values that should not be present
                   in set (default is 1)
-        @type  n: int
-        @param exact: Whether the number of assigned values which are
+        :type  n: int
+        :param exact: Whether the number of assigned values which are
                       not present in set must be exactly C{n}
-        @type  exact: bool
+        :type  exact: bool
         """
         self._set = set
         self._n = n

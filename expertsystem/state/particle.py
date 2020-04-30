@@ -35,7 +35,8 @@ XMLLabelTags = [
 
 def get_xml_label(enum):
     """
-    Return the the correctly formatted XML label as required by ComPWA and xmltodict
+    Return the the correctly formatted XML label as required by ComPWA and
+    ``xmltodict``.
     """
     attribute_prefix = '@'
     if (enum in XMLLabelTags):
@@ -234,17 +235,17 @@ def is_boson(qn_dict):
     return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
 
 
-particle_list = {}
+particle_list = dict()
 
 
 def load_particle_list_from_xml(file_path):
     """
-    By default, the expert system loads the ``particle_database``
+    By default, the expert system loads the ``particle_list``
     from the XML file ``particle_list.xml`` located in the ComPWA module.
-    Use ``load_particle_list_from_xml`` to append to the ``particle_database``.
+    Use `.load_particle_list_from_xml` to append to the ``particle_list``.
     .. note::
-    If a particle name in the loaded XML file already exists in the ``particle_database``,
-    the one in the ``particle_database`` will be overwritten.
+    If a particle name in the loaded XML file already exists in the
+    ``particle_list``, the one in the ``particle_list`` will be overwritten.
     """
     name_label = get_xml_label(XMLLabelConstants.Name)
     with open(file_path, "rb") as xmlfile:
@@ -254,12 +255,21 @@ def load_particle_list_from_xml(file_path):
             particle_list[entry[name_label]] = entry
 
 
+def write_particle_list_to_xml(file_path: str):
+    """Write ``particle_list`` instance to XML file."""
+    entries = [entry for entry in particle_list.values()]
+    particle_dict = {'ParticleList': {'Particle': entries}}
+    with open('new_particle_list.xml', 'w') as output_file:
+        output_file.write(xmltodict.unparse(
+            particle_dict, full_document=False, pretty=True))
+
+
 def add_to_particle_list(particle):
     """
     Add a particle dictionary object to the ``particle_list`` dictionary.
     The key will be extracted from the ``particle`` name (XML tag ``@Name``).
-    If the key already exists, the entry in ``particle_list`` will be overwritten
-    by this one.
+    If the key already exists, the entry in ``particle_list`` will be
+    overwritten by this one.
     """
     if not isinstance(particle, dict):
         logging.warning("Can only add dictionary entries to particle_list")
@@ -271,15 +281,16 @@ def add_to_particle_list(particle):
 def get_particle_with_name(particle_name):
     """
     .. deprecated:: 0.2.0
-    ``particle_list`` has become a dictionary, so you can already access its entries with a string index.
+        ``particle_list`` has become a dictionary, so you can already access
+        its entries with a string index.
     """
     return particle_list[particle_name]
 
 
 def get_particle_copy_by_name(particle_name):
     """
-    Get a `deepcopy` of a particle from the ``particle_list`` dictionary so you can manipulate it and
-    add it to the particle data base.
+    Get a `~copy.deepcopy` of a particle from the ``particle_list``
+    dictionary so you can manipulate it and add it to the particle data base.
     """
     return deepcopy(particle_list[particle_name])
 
