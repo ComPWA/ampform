@@ -1,6 +1,8 @@
 from expertsystem.state.conservationrules import MassConservation
 from expertsystem.state.particle import (
-    ParticlePropertyNames, ParticleDecayPropertyNames)
+    ParticlePropertyNames,
+    ParticleDecayPropertyNames,
+)
 
 
 class TestMass(object):
@@ -12,17 +14,23 @@ class TestMass(object):
 
         # we assume a two charged pion final state here
         # units are always in GeV
-        for case in [([(0.280, 0.0), (0.260, 0.010), (0.300, 0.05)], True),
-                     ([(0.270, 0.0), (0.250, 0.005), (0.200, 0.01)], False)]:
+        for case in [
+            ([(0.280, 0.0), (0.260, 0.010), (0.300, 0.05)], True),
+            ([(0.270, 0.0), (0.250, 0.005), (0.200, 0.01)], False),
+        ]:
             for in_mass_case in case[0]:
-                temp_case = ([{mass_label: in_mass_case[0],
-                               width_label: in_mass_case[1]}],
-                             [{mass_label: 0.139},
-                              {mass_label: 0.139}],
-                             {},
-                             case[1])
+                temp_case = (
+                    [
+                        {
+                            mass_label: in_mass_case[0],
+                            width_label: in_mass_case[1],
+                        }
+                    ],
+                    [{mass_label: 0.139}, {mass_label: 0.139}],
+                    {},
+                    case[1],
+                )
                 cases.append(temp_case)
 
         for case in cases:
-            assert mass_rule.check(
-                case[0], case[1], case[2]) is case[3]
+            assert mass_rule.check(case[0], case[1], case[2]) is case[3]

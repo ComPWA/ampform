@@ -1,2 +1,2 @@
-__all__ = ['graphvis']
+__all__ = ["graphvis"]
 from . import graphvis

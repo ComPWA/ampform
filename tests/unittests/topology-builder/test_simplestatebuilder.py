@@ -1,6 +1,7 @@
 from expertsystem.topology.graph import InteractionNode
 from expertsystem.topology.topologybuilder import (
-    SimpleStateTransitionTopologyBuilder)
+    SimpleStateTransitionTopologyBuilder,
+)
 
 
 class TestSimpleStateBuilder(object):
@@ -8,7 +9,8 @@ class TestSimpleStateBuilder(object):
         TwoBodyDecayNode = InteractionNode("TwoBodyDecay", 1, 2)
 
         SimpleBuilder = SimpleStateTransitionTopologyBuilder(
-            [TwoBodyDecayNode])
+            [TwoBodyDecayNode]
+        )
 
         all_graphs = SimpleBuilder.build_graphs(1, 3)
 

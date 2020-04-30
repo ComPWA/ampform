@@ -10,11 +10,10 @@ import copy
 import itertools
 import logging
 
-from .graph import (
-    StateTransitionGraph, InteractionNode, are_graphs_isomorphic)
+from .graph import StateTransitionGraph, InteractionNode, are_graphs_isomorphic
 
 
-class SimpleStateTransitionTopologyBuilder():
+class SimpleStateTransitionTopologyBuilder:
     """
     Simple topology builder. Recursively tries to add the interaction nodes
     to available open end edges/lines in all combinations until the number of
@@ -36,7 +35,7 @@ class SimpleStateTransitionTopologyBuilder():
         if number_of_final_edges < 1:
             raise ValueError("number_of_final_edges has to be larger than 0")
 
-        logging.info('building topology graphs...')
+        logging.info("building topology graphs...")
         # result list
         graph_tuple_list = []
         # create seed graph
@@ -50,8 +49,10 @@ class SimpleStateTransitionTopologyBuilder():
             extendable_graph_list = []
             for active_graph in active_graph_list:
                 # check if finished
-                if (len(active_graph[1]) == number_of_final_edges
-                        and len(active_graph[0].nodes) > 0):
+                if (
+                    len(active_graph[1]) == number_of_final_edges
+                    and len(active_graph[0].nodes) > 0
+                ):
                     if active_graph[0].verify():
                         graph_tuple_list.append(active_graph)
                     continue
@@ -60,14 +61,17 @@ class SimpleStateTransitionTopologyBuilder():
 
             # check if two topologies are the same
             for graph_index1, graph_index2 in itertools.combinations(
-                    range(len(extendable_graph_list)), 2):
+                range(len(extendable_graph_list)), 2
+            ):
                 if are_graphs_isomorphic(
-                        extendable_graph_list[graph_index1][0],
-                        extendable_graph_list[graph_index2][0]):
+                    extendable_graph_list[graph_index1][0],
+                    extendable_graph_list[graph_index2][0],
+                ):
                     extendable_graph_list.remove(
-                        extendable_graph_list[graph_index2])
+                        extendable_graph_list[graph_index2]
+                    )
 
-        logging.info('finished building topology graphs...')
+        logging.info("finished building topology graphs...")
         # strip the current open end edges list from the result graph tuples
         result_graph_list = []
         for graph_tuple in graph_tuple_list:
@@ -82,21 +86,27 @@ class SimpleStateTransitionTopologyBuilder():
         # Try to extend the graph with interaction nodes
         # that have equal or less ingoing lines than active lines
         for interaction_node in self.interaction_node_set:
-            if (interaction_node.number_of_ingoing_edges
-                    <= len(current_open_end_edges)):
+            if interaction_node.number_of_ingoing_edges <= len(
+                current_open_end_edges
+            ):
                 # make all combinations
-                combis = list(itertools.combinations(
-                    current_open_end_edges,
-                    interaction_node.number_of_ingoing_edges))
+                combis = list(
+                    itertools.combinations(
+                        current_open_end_edges,
+                        interaction_node.number_of_ingoing_edges,
+                    )
+                )
                 # remove all combinations that originate from the same nodes
                 for comb1, comb2 in itertools.combinations(combis, 2):
-                    if (graph[0].get_originating_node_list(comb1)
-                            == graph[0].get_originating_node_list(comb2)):
+                    if graph[0].get_originating_node_list(comb1) == graph[
+                        0
+                    ].get_originating_node_list(comb2):
                         combis.remove(comb2)
 
                 for combi in combis:
                     new_graph = attach_node_to_edges(
-                        graph, interaction_node, combi)
+                        graph, interaction_node, combi
+                    )
                     extended_graph_list.append(new_graph)
 
         return extended_graph_list
@@ -119,8 +129,11 @@ def attach_node_to_edges(graph, interaction_node, ingoing_edge_ids):
     # make new edges for the outgoing lines
     new_edge_start_id = len(temp_graph.edges)
     new_edge_ids = list(
-        range(new_edge_start_id,
-              new_edge_start_id + interaction_node.number_of_outgoing_edges))
+        range(
+            new_edge_start_id,
+            new_edge_start_id + interaction_node.number_of_outgoing_edges,
+        )
+    )
     temp_graph.add_edges(new_edge_ids)
     temp_graph.attach_edges_to_node_outgoing(new_edge_ids, new_node_id)
     for edge_id in new_edge_ids:

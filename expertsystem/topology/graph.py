@@ -41,8 +41,10 @@ def get_final_state_edges(graph):
 def get_intermediate_state_edges(graph):
     is_list = []
     for edge_id, edge in graph.edges.items():
-        if (edge.ending_node_id is not None and
-                edge.originating_node_id is not None):
+        if (
+            edge.ending_node_id is not None
+            and edge.originating_node_id is not None
+        ):
             is_list.append(edge_id)
     return sorted(is_list)
 
@@ -81,7 +83,8 @@ def get_originating_final_state_edges(graph, node_id):
             else:
                 new_node_id = graph.edges[edge_id].ending_node_id
                 new_temp_edge_list.extend(
-                    get_edges_outgoing_to_node(graph, new_node_id))
+                    get_edges_outgoing_to_node(graph, new_node_id)
+                )
         temp_edge_list = new_temp_edge_list
     return edge_list
 
@@ -100,14 +103,16 @@ def get_originating_initial_state_edges(graph, node_id):
             else:
                 new_node_id = graph.edges[edge_id].originating_node_id
                 new_temp_edge_list.extend(
-                    get_edges_ingoing_to_node(graph, new_node_id))
+                    get_edges_ingoing_to_node(graph, new_node_id)
+                )
         temp_edge_list = new_temp_edge_list
     return edge_list
 
 
 def dicts_unequal(dict1, dict2):
-    return (OrderedDict(sorted(dict1.items())) !=
-            OrderedDict(sorted(dict2.items())))
+    return OrderedDict(sorted(dict1.items())) != OrderedDict(
+        sorted(dict2.items())
+    )
 
 
 class StateTransitionGraph:
@@ -131,8 +136,13 @@ class StateTransitionGraph:
         self.graph_element_properties_comparator = comparator
 
     def __repr__(self):
-        return_string = "\nnodes: " + \
-            str(self.nodes) + "\nedges: " + str(self.edges) + "\n"
+        return_string = (
+            "\nnodes: "
+            + str(self.nodes)
+            + "\nedges: "
+            + str(self.edges)
+            + "\n"
+        )
         return_string = return_string + "node props: {\n"
         for x, y in self.node_props.items():
             return_string = return_string + str(x) + ": " + str(y) + "\n"
@@ -144,8 +154,9 @@ class StateTransitionGraph:
         return return_string
 
     def __str__(self):
-        return_string = "\nnodes: " + \
-            str(self.nodes) + "\nedges: " + str(self.edges)
+        return_string = (
+            "\nnodes: " + str(self.nodes) + "\nedges: " + str(self.edges)
+        )
         return_string = return_string + "\nnode props: {\n"
         for x, y in self.node_props.items():
             return_string = return_string + str(x) + ": " + str(y) + "\n"
@@ -167,13 +178,16 @@ class StateTransitionGraph:
                 return False
             if self.graph_element_properties_comparator is not None:
                 if not self.graph_element_properties_comparator(
-                        self.node_props, other.node_props):
+                    self.node_props, other.node_props
+                ):
                     return False
                 return self.graph_element_properties_comparator(
-                    self.edge_props, other.edge_props)
+                    self.edge_props, other.edge_props
+                )
             else:
                 raise NotImplementedError(
-                    "Graph element properties comparator is not set!")
+                    "Graph element properties comparator is not set!"
+                )
             return True
         else:
             return NotImplemented
@@ -182,16 +196,18 @@ class StateTransitionGraph:
         """Adds a node with id node_id. Raises an value error,
         if node_id already exists"""
         if node_id in self.nodes:
-            raise ValueError('Node with id ' +
-                             str(node_id) + ' already exists!')
+            raise ValueError(
+                "Node with id " + str(node_id) + " already exists!"
+            )
         self.nodes.append(node_id)
 
     def add_edges(self, edge_ids):
         """Adds edges with the ids in the edge_ids list"""
         for edge_id in edge_ids:
             if edge_id in self.edges:
-                raise ValueError('Edge with id ' +
-                                 str(edge_id) + ' already exists!')
+                raise ValueError(
+                    "Edge with id " + str(edge_id) + " already exists!"
+                )
             self.edges[edge_id] = Edge()
 
     def attach_edges_to_node_ingoing(self, ingoing_edge_ids, node_id):
@@ -208,12 +224,16 @@ class StateTransitionGraph:
         # first check if the ingoing edges are all available
         for edge_id in ingoing_edge_ids:
             if edge_id not in self.edges:
-                raise ValueError('Edge with id ' + str(edge_id)
-                                 + ' does not exist!')
+                raise ValueError(
+                    "Edge with id " + str(edge_id) + " does not exist!"
+                )
             if self.edges[edge_id].ending_node_id is not None:
-                raise ValueError('Edge with id ' + str(edge_id)
-                                 + ' is already ingoing to node '
-                                 + str(self.edges[edge_id].ending_node_id))
+                raise ValueError(
+                    "Edge with id "
+                    + str(edge_id)
+                    + " is already ingoing to node "
+                    + str(self.edges[edge_id].ending_node_id)
+                )
 
         # update the newly connected edges
         for edge_id in ingoing_edge_ids:
@@ -223,13 +243,16 @@ class StateTransitionGraph:
         # first check if the ingoing edges are all available
         for edge_id in outgoing_edge_ids:
             if edge_id not in self.edges:
-                raise ValueError('Edge with id ' + str(edge_id)
-                                 + ' does not exist!')
+                raise ValueError(
+                    "Edge with id " + str(edge_id) + " does not exist!"
+                )
             if self.edges[edge_id].originating_node_id is not None:
-                raise ValueError('Edge with id ' + str(edge_id)
-                                 + ' is already outgoing from node '
-                                 + str(
-                                     self.edges[edge_id].originating_node_id))
+                raise ValueError(
+                    "Edge with id "
+                    + str(edge_id)
+                    + " is already outgoing from node "
+                    + str(self.edges[edge_id].originating_node_id)
+                )
 
         # update the edges
         for edge_id in outgoing_edge_ids:
@@ -278,8 +301,9 @@ class StateTransitionGraph:
 class InteractionNode:
     """struct-like definition of an interaction node"""
 
-    def __init__(self, type_name, number_of_ingoing_edges,
-                 number_of_outgoing_edges):
+    def __init__(
+        self, type_name, number_of_ingoing_edges, number_of_outgoing_edges
+    ):
         if not isinstance(number_of_ingoing_edges, int):
             raise TypeError("NumberOfIngoingEdges must be an integer")
         if not isinstance(number_of_outgoing_edges, int):
@@ -311,7 +335,9 @@ class Edge:
         defines the equal operator for the graph class
         """
         if isinstance(other, Edge):
-            return (self.ending_node_id == other.ending_node_id and
-                    self.originating_node_id == other.originating_node_id)
+            return (
+                self.ending_node_id == other.ending_node_id
+                and self.originating_node_id == other.originating_node_id
+            )
         else:
             return NotImplemented
