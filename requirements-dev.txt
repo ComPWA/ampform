@@ -1,0 +1,13 @@
+-r tests/requirements.txt
+black==19.10b0
+flake8==3.7.9
+flake8-blind-except
+flake8-builtins
+flake8-docstrings
+flake8-import-order
+flake8-rst-docstrings
+mypy==0.770
+pep8-naming
+pre-commit==2.2.0
+pylint==2.4.4
+tox==3.14.6

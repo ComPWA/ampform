@@ -16,6 +16,9 @@ __pycache__/
 htmlcov/
 *.egg-info/
 
+# Virtual environments
+*venv/
+
 # Visual Studio Code
 **.code-workspace
 .vscode/

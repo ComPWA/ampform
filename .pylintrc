@@ -1,0 +1,18 @@
+# To see other available options:
+#   pylint --generate-rcfile > .pylintrc_new
+# and compare the output
+
+[VARIABLES]
+init-import=yes
+
+[MESSAGES CONTROL]
+disable=C0116, C0330, RST203, RST301
+
+[MASTER]
+ignore=conf.py
+
+[DESIGN]
+# Minimum number of public methods for a class (see R0903). Default is 2. We
+# decrease this to 1, since some interface classes just have a single (public)
+# method
+min-public-methods=1
