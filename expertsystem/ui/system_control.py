@@ -572,12 +572,15 @@ class StateTransitionManager:
         # load default particles from database/file
         if len(particle_list) == 0:
             for search_path in default_particle_list_search_paths:
-                file_path = (
-                    path.dirname(inspect.getfile(StateTransitionManager))
-                    + "/"
-                    + search_path
-                    + "/particle_list.xml"
-                )
+                if search_path.startswith("/"):  # absolute path
+                    file_path = search_path
+                else:  # relative path
+                    file_path = (
+                        path.dirname(inspect.getfile(StateTransitionManager))
+                        + "/"
+                        + search_path
+                    )
+                file_path += "/particle_list.xml"
                 if path.exists(file_path):
                     load_particle_list_from_xml(file_path)
                     logging.info(
@@ -586,6 +589,11 @@ class StateTransitionManager:
                         + " particles from xml file!"
                     )
                     break
+        if len(particle_list) == 0:
+            raise FileNotFoundError(
+                "\n  Failed to load particle_list.xml from search paths!"
+                "\n  Please contact the developers: https://github.com/ComPWA"
+            )
 
     def set_topology_builder(self, topology_builder):
         self.topology_builder = topology_builder

@@ -8,7 +8,7 @@ https://packaging.python.org/guides/distributing-packages-using-setuptools/
 import setuptools
 
 DATA_FILES = [
-    "particle_list.xml",
+    ("share", ["particle_list.xml"]),
 ]
 
 INSTALL_REQUIRES = [
@@ -26,14 +26,18 @@ def long_description():
 
 setuptools.setup(
     name="expertsystem",
-    version="0.1-alpha1",
+    version="0.0-alpha1",
+    author="The ComPWA team",
+    maintainer_email="compwa-admin@ep1.rub.de",
+    url="https://github.com/ComPWA/expertsystem",
     long_description=long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/ComPWA/expertsystem",
     packages=setuptools.find_packages(),
     license="GPLv3 or later",
     python_requires=">=3.3",
+    tests_require=["pytest"],
     install_requires=INSTALL_REQUIRES,
-    package_data={"expertsystem": DATA_FILES},
+    data_files=DATA_FILES,
+    package_data=dict(DATA_FILES),
     include_package_data=True,
 )
