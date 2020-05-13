@@ -1,7 +1,9 @@
 """ sample script for the testing purposes using the decay
     JPsi -> gamma pi0 pi0
 """
+
 import logging
+import pytest
 
 from expertsystem.topology.graph import (
     get_final_state_edges,
@@ -18,6 +20,7 @@ from expertsystem.ui.system_control import (
 from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
 
 
+@pytest.mark.slow
 def test_script():
     logging.basicConfig(level=logging.INFO)
     # initialize the graph edges (initial and final state)

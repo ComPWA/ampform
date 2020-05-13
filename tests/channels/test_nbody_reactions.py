@@ -9,6 +9,7 @@ from expertsystem.ui.system_control import (
 import pytest
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "test_input,expected",
     [

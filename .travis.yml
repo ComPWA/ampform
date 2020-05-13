@@ -19,6 +19,8 @@ before_script:
 script:
   - cd tests
   - pytest
+    --cov=expertsystem
+    --cov-config=.coveragerc
 
 jobs:
   include:
