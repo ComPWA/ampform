@@ -8,7 +8,7 @@ https://packaging.python.org/guides/distributing-packages-using-setuptools/
 import setuptools
 
 DATA_FILES = [
-    ("share", ["particle_list.xml"]),
+    ("share", ["particle_list.xml", "particle_list.yml"]),
 ]
 
 INSTALL_REQUIRES = [
