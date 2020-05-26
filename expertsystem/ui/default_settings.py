@@ -24,10 +24,8 @@ from ..state.conservationrules import (
 )
 
 default_particle_list_search_paths = [
-    "../../../../Physics",
-    "../../../..",
-    "../../",
-    "../",
+    ".",
+    "..",
 ]
 default_particle_list_search_paths += [sys.prefix + "/share"]
 default_particle_list_search_paths += [path + "/share" for path in sys.path]

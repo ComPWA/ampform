@@ -16,11 +16,10 @@ from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
 )
+from expertsystem.state import particle
 from expertsystem.state.particle import (
     create_spin_domain,
     InteractionQuantumNumberNames,
-    get_xml_label,
-    XMLLabelConstants,
 )
 
 
@@ -110,16 +109,16 @@ def make_ls_test_graph(angular_momentum_magnitude, coupled_spin_magnitude):
     graph.node_props[0] = {
         "QuantumNumber": [
             {
-                "@Value": str(coupled_spin_magnitude),
-                "@Type": "S",
-                "@Projection": "0.0",
-                "@Class": "Spin",
+                "Value": str(coupled_spin_magnitude),
+                "Type": "S",
+                "Projection": "0.0",
+                "Class": "Spin",
             },
             {
-                "@Value": str(angular_momentum_magnitude),
-                "@Type": "L",
-                "@Projection": "0.0",
-                "@Class": "Spin",
+                "Value": str(angular_momentum_magnitude),
+                "Type": "L",
+                "Projection": "0.0",
+                "Class": "Spin",
             },
         ]
     }
@@ -137,16 +136,16 @@ def make_ls_test_graph_scrambled(
     graph.node_props[0] = {
         "QuantumNumber": [
             {
-                "@Class": "Spin",
-                "@Value": str(angular_momentum_magnitude),
-                "@Type": "L",
-                "@Projection": "0.0",
+                "Class": "Spin",
+                "Value": str(angular_momentum_magnitude),
+                "Type": "L",
+                "Projection": "0.0",
             },
             {
-                "@Projection": "0.0",
-                "@Class": "Spin",
-                "@Value": str(coupled_spin_magnitude),
-                "@Type": "S",
+                "Projection": "0.0",
+                "Class": "Spin",
+                "Value": str(coupled_spin_magnitude),
+                "Type": "S",
             },
         ]
     }
@@ -228,8 +227,8 @@ class TestSolutionFilter(object):
         self, input_values, filter_parameters, result
     ):
         graphs = []
-        name_label = get_xml_label(XMLLabelConstants.Name)
-        value_label = get_xml_label(XMLLabelConstants.Value)
+        name_label = particle.LABELS.Name.name
+        value_label = particle.LABELS.Value.name
         for x in input_values:
             tempgraph = make_ls_test_graph(x[1][0], x[1][1])
             tempgraph.add_edges([0])

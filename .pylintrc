@@ -6,7 +6,13 @@
 init-import=yes
 
 [MESSAGES CONTROL]
-disable=C0116, C0330, RST203, RST301
+disable=
+    C0114, # done by pydocstyle
+    C0115, # done by pydocstyle
+    C0116, # done by pydocstyle
+    C0330, # https://github.com/psf/black/issues/48
+    RST203, # unexpected indentation
+    RST301, # related to google style docstring
 
 [MASTER]
 ignore=conf.py

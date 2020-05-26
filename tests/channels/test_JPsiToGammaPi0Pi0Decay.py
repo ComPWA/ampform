@@ -61,7 +61,7 @@ def test_script():
     intermediate_states = set()
     for g in solutions:
         int_edge_id = get_intermediate_state_edges(g)[0]
-        intermediate_states.add(g.edge_props[int_edge_id]["@Name"])
+        intermediate_states.add(g.edge_props[int_edge_id]["Name"])
     print(intermediate_states)
 
     xml_generator = HelicityAmplitudeGeneratorXML()

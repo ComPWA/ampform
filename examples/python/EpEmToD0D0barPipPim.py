@@ -23,4 +23,4 @@ print("found " + str(len(solutions)) + " solutions!")
 for g in solutions:
     # print(g.node_props[0])
     # print(g.node_props[1])
-    print(g.edge_props[1]["@Name"])
+    print(g.edge_props[1]["Name"])

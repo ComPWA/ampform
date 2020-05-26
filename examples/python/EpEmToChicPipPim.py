@@ -28,4 +28,4 @@ if len(solutions) == 0:
 
 print("intermediate states:")
 for g in solutions:
-    print(g.edge_props[1]["@Name"])
+    print(g.edge_props[1]["Name"])
