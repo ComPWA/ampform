@@ -1,3 +1,7 @@
+# Output files
+*.xml
+*.yml
+
 # Build output
 *.egg-info/
 *build/

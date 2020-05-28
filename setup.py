@@ -34,7 +34,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     license="GPLv3 or later",
-    python_requires=">=3.3",
+    python_requires=">=3.6",
     tests_require=["pytest"],
     install_requires=INSTALL_REQUIRES,
     data_files=DATA_FILES,

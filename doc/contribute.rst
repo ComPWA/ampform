@@ -41,8 +41,19 @@ Try to keep test coverage high. You can test current coverage by running
 Note that we navigated into the `tests
 <https://github.com/ComPWA/expertsystem/tree/master/tests>`_ directory first as
 to avoid testing the files in the :doc:`source code directory
-</install/get-the-source-code>`. You can view the coverage report by opening
-:file:`htmlcov/index.html`.
+</install/get-the-source-code>`.
+
+You can generate and view a report of the unit test coverage by running:
+
+.. code-block:: shell
+
+  cd tests
+  pytest \
+    --cov-config=.coveragerc \
+    --cov-report=html \
+    --cov=expertsystem
+
+and opening :file:`htmlcov/index.html`.
 
 Git
 ---

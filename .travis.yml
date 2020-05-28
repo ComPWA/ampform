@@ -39,9 +39,6 @@ jobs:
         - pip3 install -r requirements-dev.txt
         - black . --check
 
-    - name: "Python 3.5 on Ubuntu 18.04"
-      python: 3.5
-
     - name: "Python 3.6 on Ubuntu 18.04"
       python: 3.6
 
