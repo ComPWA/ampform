@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from expertsystem.state import particle
 from expertsystem.state.particle import particle_list
 from expertsystem.ui.system_control import load_default_particle_list
@@ -25,3 +27,16 @@ def test_xml_io() -> None:
     particle_list.clear()
     particle.load_particle_list_from_xml("test_particle_list.xml")
     assert len(particle_list) == 70
+
+
+def test_yaml_io() -> None:
+    load_default_particle_list()
+    particles_xml = deepcopy(particle_list)
+    particle.write_particle_list_to_yaml("test_particle_list.yml")
+
+    particle_list.clear()
+    particle.load_particle_list_from_yaml("test_particle_list.yml")
+
+    assert particle_list == particles_xml
+    particle_list["gamma"]["Pid"] = "23"
+    assert particle_list != particles_xml
