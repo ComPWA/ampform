@@ -1,11 +1,11 @@
 from expertsystem.state.conservationrules import MassConservation
 from expertsystem.state.particle import (
-    ParticlePropertyNames,
     ParticleDecayPropertyNames,
+    ParticlePropertyNames,
 )
 
 
-class TestMass(object):
+class TestMass:  # pylint: disable=no-self-use
     def test_mass_two_body_decay_stable_outgoing(self):
         mass_label = ParticlePropertyNames.Mass
         width_label = ParticleDecayPropertyNames.Width

@@ -1,11 +1,11 @@
 """ sample script for the testing purposes using the decay
     D0 -> K_S0 K+ K-
 """
+
 import logging
 
-from expertsystem.ui.system_control import StateTransitionManager
-
 from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
+from expertsystem.ui.system_control import StateTransitionManager
 
 
 def test_script():
@@ -21,7 +21,7 @@ def test_script():
     tbd_manager.number_of_threads = 2
 
     graph_interaction_settings_groups = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_interaction_settings_groups
     )
 
@@ -29,8 +29,8 @@ def test_script():
     assert len(solutions) == 5
 
     # print intermediate state particle names
-    for g in solutions:
-        print(g.edge_props[1]["Name"])
+    for solution in solutions:
+        print(solution.edge_props[1]["Name"])
 
     xml_generator = HelicityAmplitudeGeneratorXML()
     xml_generator.generate(solutions)

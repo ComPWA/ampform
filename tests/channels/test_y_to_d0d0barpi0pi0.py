@@ -1,24 +1,26 @@
 """ sample script for the testing purposes using the decay
     Y -> D*0 D*0bar -> D0 D0bar pi0 pi0
 """
+
 import logging
+
 import pytest
 
 from expertsystem.amplitude.canonicaldecay import (
     CanonicalAmplitudeGeneratorXML,
 )
 from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
-from expertsystem.ui.system_control import (
-    StateTransitionManager,
-    InteractionTypes,
-    change_qn_domain,
+from expertsystem.state.particle import (
+    InteractionQuantumNumberNames,
+    create_spin_domain,
 )
 from expertsystem.ui.default_settings import (
     create_default_interaction_settings,
 )
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    create_spin_domain,
+from expertsystem.ui.system_control import (
+    InteractionTypes,
+    StateTransitionManager,
+    change_qn_domain,
 )
 
 logging.basicConfig(level=logging.INFO)

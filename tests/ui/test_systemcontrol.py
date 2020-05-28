@@ -1,25 +1,25 @@
 import pytest
 
-from expertsystem.ui.system_control import (
-    StateTransitionManager,
-    InteractionTypes,
-    remove_duplicate_solutions,
-    CompareGraphElementPropertiesFunctor,
-    match_external_edges,
-    create_edge_id_particle_mapping,
-    perform_external_edge_identical_particle_combinatorics,
-    filter_graphs,
-    require_interaction_property,
+from expertsystem.state import particle
+from expertsystem.state.particle import (
+    InteractionQuantumNumberNames,
+    create_spin_domain,
 )
 from expertsystem.topology.graph import (
     StateTransitionGraph,
     get_final_state_edges,
     get_initial_state_edges,
 )
-from expertsystem.state import particle
-from expertsystem.state.particle import (
-    create_spin_domain,
-    InteractionQuantumNumberNames,
+from expertsystem.ui.system_control import (
+    CompareGraphElementPropertiesFunctor,
+    InteractionTypes,
+    StateTransitionManager,
+    create_edge_id_particle_mapping,
+    filter_graphs,
+    match_external_edges,
+    perform_external_edge_identical_particle_combinatorics,
+    remove_duplicate_solutions,
+    require_interaction_property,
 )
 
 
@@ -90,8 +90,8 @@ def test_external_edge_initialization(
     )
 
     tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    for x in final_state_groupings:
-        tbd_manager.add_final_state_grouping(x)
+    for group in final_state_groupings:
+        tbd_manager.add_final_state_grouping(group)
     tbd_manager.number_of_threads = 1
 
     topology_graphs = tbd_manager.build_topologies()
@@ -152,25 +152,27 @@ def make_ls_test_graph_scrambled(
     return graph
 
 
-class TestSolutionFilter(object):
+class TestSolutionFilter:  # pylint: disable=no-self-use
     @pytest.mark.parametrize(
-        "LS_pairs,result", [([(1, 0), (1, 1)], 2), ([(1, 0), (1, 0)], 1),]
+        "ls_pairs, result", [([(1, 0), (1, 1)], 2), ([(1, 0), (1, 0)], 1),]
     )
-    def test_remove_duplicates(self, LS_pairs, result):
+    def test_remove_duplicates(self, ls_pairs, result):
         graphs = {"test": []}
-        for x in LS_pairs:
-            graphs["test"].append(([make_ls_test_graph(x[0], x[1])], []))
+        for ls_pair in ls_pairs:
+            graphs["test"].append(
+                ([make_ls_test_graph(ls_pair[0], ls_pair[1])], [])
+            )
 
         results = remove_duplicate_solutions(graphs)
-        num_solutions = [len(x[0]) for x in results["test"]]
+        num_solutions = [len(result[0]) for result in results["test"]]
         assert sum(num_solutions) == result
 
-        for x in LS_pairs:
+        for ls_pair in ls_pairs:
             graphs["test"].append(
-                ([make_ls_test_graph_scrambled(x[0], x[1])], [])
+                ([make_ls_test_graph_scrambled(ls_pair[0], ls_pair[1])], [])
             )
         results = remove_duplicate_solutions(graphs)
-        num_solutions = [len(x[0]) for x in results["test"]]
+        num_solutions = [len(result[0]) for result in results["test"]]
         assert sum(num_solutions) == result
 
     @pytest.mark.parametrize(
@@ -229,15 +231,15 @@ class TestSolutionFilter(object):
         graphs = []
         name_label = particle.LABELS.Name.name
         value_label = particle.LABELS.Value.name
-        for x in input_values:
-            tempgraph = make_ls_test_graph(x[1][0], x[1][1])
+        for value in input_values:
+            tempgraph = make_ls_test_graph(value[1][0], value[1][1])
             tempgraph.add_edges([0])
             tempgraph.attach_edges_to_node_ingoing([0], 0)
-            tempgraph.edge_props[0] = {name_label: {value_label: x[0]}}
+            tempgraph.edge_props[0] = {name_label: {value_label: value[0]}}
             graphs.append(tempgraph)
 
-        myfilter = require_interaction_property(*filter_parameters)
-        filtered_graphs = filter_graphs(graphs, [myfilter])
+        my_filter = require_interaction_property(*filter_parameters)
+        filtered_graphs = filter_graphs(graphs, [my_filter])
         assert len(filtered_graphs) == result
 
 
@@ -261,20 +263,22 @@ def test_edge_swap(initial_state, final_state):
     topology_graphs = tbd_manager.build_topologies()
     init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
 
-    for x in init_graphs:
-        ref_mapping = create_edge_id_particle_mapping(x, get_final_state_edges)
+    for graph in init_graphs:
+        ref_mapping = create_edge_id_particle_mapping(
+            graph, get_final_state_edges
+        )
         edge_keys = list(ref_mapping.keys())
         edge1 = edge_keys[0]
-        edge1_val = x.edges[edge1]
-        edge1_props = x.edge_props[edge1]
+        edge1_val = graph.edges[edge1]
+        edge1_props = graph.edge_props[edge1]
         edge2 = edge_keys[1]
-        edge2_val = x.edges[edge2]
-        edge2_props = x.edge_props[edge2]
-        x.swap_edges(edge1, edge2)
-        assert x.edges[edge1] == edge2_val
-        assert x.edges[edge2] == edge1_val
-        assert x.edge_props[edge1] == edge2_props
-        assert x.edge_props[edge2] == edge1_props
+        edge2_val = graph.edges[edge2]
+        edge2_props = graph.edge_props[edge2]
+        graph.swap_edges(edge1, edge2)
+        assert graph.edges[edge1] == edge2_val
+        assert graph.edges[edge2] == edge1_val
+        assert graph.edge_props[edge1] == edge2_props
+        assert graph.edge_props[edge2] == edge1_props
 
 
 @pytest.mark.parametrize(
@@ -310,12 +314,12 @@ def test_match_external_edges(initial_state, final_state):
         init_graphs[0], get_initial_state_edges
     )
 
-    for x in init_graphs[1:]:
+    for graph in init_graphs[1:]:
         assert ref_mapping_fs == create_edge_id_particle_mapping(
-            x, get_final_state_edges
+            graph, get_final_state_edges
         )
         assert ref_mapping_is == create_edge_id_particle_mapping(
-            x, get_initial_state_edges
+            graph, get_initial_state_edges
         )
 
 
@@ -362,8 +366,8 @@ def test_external_edge_identical_particle_combinatorics(
     )
 
     tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    for x in final_state_groupings:
-        tbd_manager.add_final_state_grouping(x)
+    for group in final_state_groupings:
+        tbd_manager.add_final_state_grouping(group)
     tbd_manager.number_of_threads = 1
 
     topology_graphs = tbd_manager.build_topologies()
@@ -372,9 +376,9 @@ def test_external_edge_identical_particle_combinatorics(
     match_external_edges(init_graphs)
 
     comb_graphs = []
-    for x in init_graphs:
+    for group in init_graphs:
         comb_graphs.extend(
-            perform_external_edge_identical_particle_combinatorics(x)
+            perform_external_edge_identical_particle_combinatorics(group)
         )
     assert len(comb_graphs) == result_graph_count
 
@@ -385,10 +389,10 @@ def test_external_edge_identical_particle_combinatorics(
         comb_graphs[0], get_initial_state_edges
     )
 
-    for x in comb_graphs[1:]:
+    for group in comb_graphs[1:]:
         assert ref_mapping_fs == create_edge_id_particle_mapping(
-            x, get_final_state_edges
+            group, get_final_state_edges
         )
         assert ref_mapping_is == create_edge_id_particle_mapping(
-            x, get_initial_state_edges
+            group, get_initial_state_edges
         )

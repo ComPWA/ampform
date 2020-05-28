@@ -3,21 +3,20 @@
 """
 
 import logging
+
 import pytest
 
+from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
     get_intermediate_state_edges,
 )
-
 from expertsystem.ui.system_control import (
-    StateTransitionManager,
     InteractionTypes,
+    StateTransitionManager,
     create_edge_id_particle_mapping,
 )
-
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
 
 
 @pytest.mark.slow
@@ -36,7 +35,7 @@ def test_script():
     )
     graph_interaction_settings_groups = tbd_manager.prepare_graphs()
 
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    solutions, _ = tbd_manager.find_solutions(
         graph_interaction_settings_groups
     )
 
@@ -49,19 +48,19 @@ def test_script():
     ref_mapping_is = create_edge_id_particle_mapping(
         solutions[0], get_initial_state_edges
     )
-    for x in solutions[1:]:
+    for solution in solutions[1:]:
         assert ref_mapping_fs == create_edge_id_particle_mapping(
-            x, get_final_state_edges
+            solution, get_final_state_edges
         )
         assert ref_mapping_is == create_edge_id_particle_mapping(
-            x, get_initial_state_edges
+            solution, get_initial_state_edges
         )
 
     print("intermediate states:")
     intermediate_states = set()
-    for g in solutions:
-        int_edge_id = get_intermediate_state_edges(g)[0]
-        intermediate_states.add(g.edge_props[int_edge_id]["Name"])
+    for solution in solutions:
+        int_edge_id = get_intermediate_state_edges(solution)[0]
+        intermediate_states.add(solution.edge_props[int_edge_id]["Name"])
     print(intermediate_states)
 
     xml_generator = HelicityAmplitudeGeneratorXML()

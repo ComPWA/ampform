@@ -1,15 +1,12 @@
-from itertools import product
-
 from expertsystem.state.conservationrules import SpinConservation
 from expertsystem.state.particle import (
-    StateQuantumNumberNames,
     InteractionQuantumNumberNames,
     Spin,
-    create_spin_domain,
+    StateQuantumNumberNames,
 )
 
 
-class TestSpin(object):
+class TestSpin:  # pylint: disable=no-self-use
     def test_spin_all_defined(self):
         spin_label = StateQuantumNumberNames.Spin
         angmom_label = InteractionQuantumNumberNames.L

@@ -1,12 +1,9 @@
-from expertsystem.ui.system_control import (
-    StateTransitionManager,
-    InteractionTypes,
-)
-
-# import logging
-# logging.basicConfig(level=logging.INFO)
-
 import pytest
+
+from expertsystem.ui.system_control import (
+    InteractionTypes,
+    StateTransitionManager,
+)
 
 
 @pytest.mark.slow
@@ -118,9 +115,7 @@ def test_em_reactions(test_input, expected):
     tbd_manager.set_allowed_interaction_types([InteractionTypes.EM])
 
     graph_interaction_settings = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
-        graph_interaction_settings
-    )
+    _, violated_rules = tbd_manager.find_solutions(graph_interaction_settings)
 
     assert set(violated_rules) == set(expected)
 
@@ -150,8 +145,6 @@ def test_strong_reactions(test_input, expected):
     tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
 
     graph_interaction_settings = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
-        graph_interaction_settings
-    )
+    _, violated_rules = tbd_manager.find_solutions(graph_interaction_settings)
 
     assert set(violated_rules) == set(expected)

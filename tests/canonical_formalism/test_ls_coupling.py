@@ -1,24 +1,24 @@
 import pytest
 
-from expertsystem.ui.system_control import (
-    StateTransitionManager,
-    InteractionTypes,
-    remove_conservation_law,
+from expertsystem.state import particle
+from expertsystem.state.conservationrules import ParityConservationHelicity
+from expertsystem.state.particle import (
+    InteractionQuantumNumberNames,
+    Spin,
+    SpinQNConverter,
 )
 from expertsystem.ui.default_settings import (
     create_default_interaction_settings,
 )
-from expertsystem.state import particle
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    SpinQNConverter,
-    Spin,
+from expertsystem.ui.system_control import (
+    InteractionTypes,
+    StateTransitionManager,
+    remove_conservation_law,
 )
-from expertsystem.state.conservationrules import ParityConservationHelicity
 
 
 @pytest.mark.parametrize(
-    "initial_state,final_state,L,S,solution_count",
+    "initial_state, final_state, ang_mom, spin, solution_count",
     [
         (
             [("Y", [1])],
@@ -103,11 +103,11 @@ from expertsystem.state.conservationrules import ParityConservationHelicity
             Spin(1, 0),
             Spin(2, 0),
             1,
-        ),
+        ),  # pylint: disable=too-many-locals
     ],
 )
 def test_canonical_clebsch_gordan_ls_coupling(
-    initial_state, final_state, L, S, solution_count
+    initial_state, final_state, ang_mom, spin, solution_count
 ):
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
@@ -137,15 +137,15 @@ def test_canonical_clebsch_gordan_ls_coupling(
     node_props = {
         0: {
             qn_label.name: [
-                spin_converter.convert_to_dict(l_label, L),
-                spin_converter.convert_to_dict(s_label, S),
+                spin_converter.convert_to_dict(l_label, ang_mom),
+                spin_converter.convert_to_dict(s_label, spin),
             ]
         }
     }
     graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    for v in graph_node_setting_pairs.values():
-        for e in v:
-            e[0].node_props = node_props
+    for value in graph_node_setting_pairs.values():
+        for edge in value:
+            edge[0].node_props = node_props
 
     solutions = tbd_manager.find_solutions(graph_node_setting_pairs)[0]
 

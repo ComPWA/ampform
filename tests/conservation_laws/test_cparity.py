@@ -2,14 +2,14 @@ from itertools import product
 
 from expertsystem.state.conservationrules import CParityConservation
 from expertsystem.state.particle import (
-    StateQuantumNumberNames,
-    ParticlePropertyNames,
     InteractionQuantumNumberNames,
+    ParticlePropertyNames,
     Spin,
+    StateQuantumNumberNames,
 )
 
 
-class TestCParity(object):
+class TestCParity:  # pylint: disable=no-self-use
     def test_cparity_all_defined(self):
         cpar_rule = CParityConservation()
         cparity_label = StateQuantumNumberNames.Cparity
@@ -89,7 +89,9 @@ class TestCParity(object):
         for case in cases:
             assert cpar_rule.check(case[0], case[1], case[2]) is case[3]
 
-    def test_cparity_multiparticle_fermion(self):
+    def test_cparity_multiparticle_fermion(
+        self,
+    ):  # pylint: disable=too-many-locals
         cpar_rule = CParityConservation()
         cparity_label = StateQuantumNumberNames.Cparity
         spin_label = StateQuantumNumberNames.Spin
