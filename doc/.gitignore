@@ -1,3 +1,4 @@
 *.doctree
 *build/
 api/
+*.ipynb

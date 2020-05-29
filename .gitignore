@@ -8,6 +8,9 @@
 .fuse_*
 dist/
 
+# expertsystem outputfile
+*.xml
+
 # Python temporary files
 *.pyc
 .coverage

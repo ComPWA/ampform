@@ -38,6 +38,7 @@ Welcome to ComPWA Expert System!
    :hidden:
 
    installation
+   usage
    contribute
 
 

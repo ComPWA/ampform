@@ -27,11 +27,12 @@ jobs:
     - name: "Build and test documentation"
       python: 3.7
       before_script:
+        - sudo apt-get -y install pandoc
         - pip3 install -r doc/requirements.txt
       script:
         - cd doc
         - make linkcheck
-        - make html
+        - NBSPHINX_EXECUTE='' make html
 
     - name: "Style checks"
       python: 3.6
