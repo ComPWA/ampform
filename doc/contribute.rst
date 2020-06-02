@@ -7,8 +7,8 @@ Some recommended packages for Python development
 * `pytest <https://docs.pytest.org/en/latest/>`_: Run :code:`pytest` in the main
   folder of the repository to run all :file:`test_*.py` files
 
-* `pylint <https://www.pylint.org/>`_: Scan your code for naming conventions
-  and proper use of Python
+* `pylint <https://pypi.org/project/pylint/>`_: Scan your code for naming
+  conventions and proper use of Python
 
 * `rope <https://github.com/python-rope/rope>`_: Python refactoring tools
 
@@ -105,3 +105,20 @@ Python
 
   This is to facilitate eventual `diff <https://git-scm.com/docs/git-diff>`_
   comparisons in Git.
+
+
+Visual Studio code
+------------------
+
+We recommend using `Visual Studio Code <https://code.visualstudio.com/>`_ as
+it's free, regularly updated, and very flexible through it's wide offer of user
+extensions.
+
+If you add or open this repository to/as a `VSCode workspace
+<https://code.visualstudio.com/docs/editor/multi-root-workspaces>`_, the
+:file:`.vscode/settings.json` will ensure that you have the right developer
+settings for this repository.
+
+You can still specify your own settings in `either the user or encompassing
+workspace settings <https://code.visualstudio.com/docs/getstarted/settings>`_,
+as the VSCode settings that come with this are folder settings.
