@@ -58,12 +58,14 @@ author = "The ComPWA Team"
 source_suffix = [
     ".rst",
     ".ipynb",
+    ".md",
 ]
 # The master toctree document.
 master_doc = "index"
 
 extensions = [
     "nbsphinx",
+    "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autosummary",
@@ -79,6 +81,7 @@ extensions = [
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
+    "adr/template.md",
     "test",
     "tests",
 ]

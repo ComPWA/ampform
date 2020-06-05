@@ -47,6 +47,7 @@ Welcome to ComPWA Expert System!
    :hidden:
 
    api
+   adr/index
 
 
 expertsystem API
