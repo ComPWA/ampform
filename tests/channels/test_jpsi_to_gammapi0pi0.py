@@ -6,7 +6,7 @@ import logging
 
 import pytest
 
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
+from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
@@ -63,7 +63,7 @@ def test_script():
         intermediate_states.add(solution.edge_props[int_edge_id]["Name"])
     print(intermediate_states)
 
-    xml_generator = HelicityAmplitudeGeneratorXML()
+    xml_generator = HelicityAmplitudeGenerator()
     xml_generator.generate(solutions)
     xml_generator.write_to_file("JPsiToGammaPi0Pi0.xml")
 

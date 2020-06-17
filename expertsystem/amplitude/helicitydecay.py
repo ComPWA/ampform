@@ -3,8 +3,16 @@ import json
 import logging
 from copy import deepcopy
 
+from typing import (
+    Any,
+    Dict,
+)
+
 import xmltodict
 
+import yaml
+
+from . import _yaml_adapter
 from .abstractgenerator import (
     AbstractAmplitudeNameGenerator,
     AbstractAmplitudeGenerator,
@@ -408,7 +416,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         return (par_name_suffix, pp_par_name_suffix)
 
 
-class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
+class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
     def __init__(
         self,
         top_node_no_dynamics=True,
@@ -644,14 +652,32 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
         )
         return self.fit_parameter_names
 
-    def write_to_file(self, filename):
+    def write_to_file(self, filename: str) -> None:
+        file_extension = filename.lower().split(".")[-1]
+        recipe_dict = self._create_recipe_dict()
+        if file_extension in ["xml"]:
+            self._write_recipe_to_xml(recipe_dict, filename)
+        elif file_extension in ["yaml", "yml"]:
+            self._write_recipe_to_yml(recipe_dict, filename)
+        else:
+            raise NotImplementedError(
+                f'Cannot write to file type "{file_extension}"'
+            )
+
+    def _create_recipe_dict(self) -> Dict[str, Any]:
+        recipe_dict = self.particle_list
+        recipe_dict.update(self.kinematics)
+        recipe_dict.update(self.helicity_amplitudes)
+        return recipe_dict
+
+    @staticmethod
+    def _write_recipe_to_xml(
+        recipe_dict: Dict[str, Any], filename: str
+    ) -> None:
         with open(filename, mode="w") as xmlfile:
-            full_dict = self.particle_list
-            full_dict.update(self.kinematics)
-            full_dict.update(self.helicity_amplitudes)
             # xmltodict only allows a single xml root
             xmlstring = xmltodict.unparse(
-                OrderedDict({"root": full_dict}), pretty=True
+                OrderedDict({"root": recipe_dict}), pretty=True
             )
             # before writing it to file we remove the root tag again
             xmlstring = xmlstring.replace("<root>", "", 1)
@@ -659,4 +685,41 @@ class HelicityAmplitudeGeneratorXML(AbstractAmplitudeGenerator):
                 "</root>", "", 1
             )
             xmlfile.write(xmlstring)
-            xmlfile.close()
+
+    @staticmethod
+    def _write_recipe_to_yml(
+        recipe_dict: Dict[str, Any], filename: str
+    ) -> None:
+        particle_dict = _yaml_adapter.to_particle_dict(recipe_dict)
+        parameter_list = _yaml_adapter.to_parameter_list(recipe_dict)
+        kinematics = _yaml_adapter.to_kinematics_dict(recipe_dict)
+        dynamics = _yaml_adapter.to_dynamics(recipe_dict)
+        intensity = _yaml_adapter.to_intensity(recipe_dict)
+
+        class IncreasedIndent(yaml.Dumper):
+            def increase_indent(self, flow=False, indentless=False):  # type: ignore
+                return super(IncreasedIndent, self).increase_indent(
+                    flow, False
+                )
+
+            def write_line_break(self, data=None):  # type: ignore
+                """See https://stackoverflow.com/a/44284819"""
+                super().write_line_break(data)
+                if len(self.indents) == 1:
+                    super().write_line_break()
+
+        with open(filename, "w") as output_file:
+            output_dict = {
+                "Kinematics": kinematics,
+                "Parameters": parameter_list,
+                "Intensity": intensity,
+                "ParticleList": particle_dict,
+                "Dynamics": dynamics,
+            }
+            yaml.dump(
+                output_dict,
+                output_file,
+                sort_keys=False,
+                Dumper=IncreasedIndent,
+                default_flow_style=False,
+            )

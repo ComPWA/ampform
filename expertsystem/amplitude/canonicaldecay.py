@@ -13,7 +13,7 @@ from ..state.particle import (
 )
 
 from .helicitydecay import (
-    HelicityAmplitudeGeneratorXML,
+    HelicityAmplitudeGenerator,
     HelicityAmplitudeNameGenerator,
     generate_particles_string,
 )
@@ -71,7 +71,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         return name
 
 
-class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGeneratorXML):
+class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGenerator):
     """
     This class defines a full amplitude in the canonical formalism, using the
     helicity formalism as a foundation.

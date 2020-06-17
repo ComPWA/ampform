@@ -9,7 +9,7 @@ import pytest
 from expertsystem.amplitude.canonicaldecay import (
     CanonicalAmplitudeGeneratorXML,
 )
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGeneratorXML
+from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     create_spin_domain,
@@ -95,7 +95,7 @@ def test_script_simple():
     solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
-    helicity_xml_generator = HelicityAmplitudeGeneratorXML()
+    helicity_xml_generator = HelicityAmplitudeGenerator()
     helicity_xml_generator.generate(solutions)
 
     assert len(helicity_xml_generator.get_fit_parameters()) == len(
@@ -174,7 +174,7 @@ def test_script_full():
     solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
-    helicity_xml_generator = HelicityAmplitudeGeneratorXML()
+    helicity_xml_generator = HelicityAmplitudeGenerator()
     helicity_xml_generator.generate(solutions)
 
     assert len(helicity_xml_generator.get_fit_parameters()) == len(
