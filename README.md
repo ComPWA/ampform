@@ -3,37 +3,40 @@
 [![Test coverage](https://codecov.io/gh/ComPWA/expertsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/ComPWA/expertsystem)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db355758fb0e4654818b85997f03e3b8)](https://www.codacy.com/gh/ComPWA/expertsystem)
 [![Documentation build status](https://readthedocs.org/projects/expertsystem/badge/?version=latest)](https://pwa.readthedocs.io/projects/expertsystem/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen)](https://github.com/pre-commit/pre-commit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # PWA Expert System
 
-The goal is to build state transition graphs, going from an initial state to a
-final state. A state transition graph consists of nodes and edges/lines (in
-correspondence to Feynman graphs):
+Visit
+[expertsystem.rtfd.io](https://pwa.readthedocs.io/projects/expertsystem/en/latest/)
+for an introduction to the Particle Wave Analysis Expert System!
 
-- We call the connection lines **particle lines**. These are basically a list
-  of quantum numbers (QN) that define the particle state. (This list can be
-  empty at first).
-- The nodes are of type `InteractionNode` and contain all information for the
-  transition of this specific step. An interaction node has 𝑀 ingoing lines
-  and 𝑁 outgoing lines (𝑀, 𝑁 ∈ 𝕫, 𝑀 > 0, 𝑁 > 0).
+## Available features
 
-## Concept of building graphs
-
-### Step 1
-Building of all possible topologies. A **topology** is a graph, in which the
-edges and nodes are empty (no QN information). See the topology sub-modules.
-
-### Step 2
-Filling the topology graphs with QN information. This means initializing the
-topology graphs with the initial and final state QNs and *propagating* these
-numbers through the complete graph. Here, the combinatorics of the initial and
-final state should also be taken into account.
-
-### Step 3
-Duplicate the graphs and insert concrete particles for the edges (inserting the
-mass variable).
-
-### Step 4
-Write output to XML model file.
+- **Input**: Particle database
+  - [ ] Source of truth: PDG
+  - [x] Predefined particle list file
+  - [x] Option to overwrite and append with custom particle definitions
+- **State transition graph**
+  - [x] Feynman graph like description of the reactions
+- **Conservation rules**
+  - [x] Open-closed design
+  - [x] Large set of predefined rules
+    - [x] Spin/Angular momentum conservation
+    - [x] Quark and Lepton flavour conservation (incl. isospin)
+    - [x] Baryon number conservation
+    - [x] EM-charge conservation
+    - [x] Parity, C-Parity, G-Parity conservation
+    - [ ] CP-Parity conservation
+    - [x] Mass conservation
+  - [x] Predefined sets of conservation rules representing Strong, EM, Weak
+        interactions
+- **PWA formalisms (for amplitude model generation)**
+  - [x] Helicity formalism
+  - [x] Canonical formalism
+  - [ ] Tensor formalisms
+- **Output**: Write transition graph to human-readable recipe file
+  - [x] XML (*old format for [ComPWA](https://compwa.github.io/)*)
+  - [ ] YAML (*new format for
+    [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves/en/latest)*)
