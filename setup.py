@@ -26,7 +26,7 @@ def long_description():
 
 setuptools.setup(
     name="expertsystem",
-    version="0.1-alpha",
+    version="0.1.1-alpha",
     author="The ComPWA team",
     maintainer_email="compwa-admin@ep1.rub.de",
     url="https://github.com/ComPWA/expertsystem",
