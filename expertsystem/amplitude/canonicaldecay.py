@@ -71,7 +71,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         return name
 
 
-class CanonicalAmplitudeGeneratorXML(HelicityAmplitudeGenerator):
+class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
     """
     This class defines a full amplitude in the canonical formalism, using the
     helicity formalism as a foundation.

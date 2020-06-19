@@ -6,9 +6,7 @@ import logging
 
 import pytest
 
-from expertsystem.amplitude.canonicaldecay import (
-    CanonicalAmplitudeGeneratorXML,
-)
+from expertsystem.amplitude.canonicaldecay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
@@ -63,7 +61,7 @@ def test_script_simple():
 
     print("found " + str(len(solutions)) + " solutions!")
 
-    canonical_xml_generator = CanonicalAmplitudeGeneratorXML()
+    canonical_xml_generator = CanonicalAmplitudeGenerator()
     canonical_xml_generator.generate(solutions)
 
     # because the amount of solutions is too big we change the default domains
@@ -141,7 +139,7 @@ def test_script_full():
 
     print("found " + str(len(solutions)) + " solutions!")
 
-    canonical_xml_generator = CanonicalAmplitudeGeneratorXML()
+    canonical_xml_generator = CanonicalAmplitudeGenerator()
     canonical_xml_generator.generate(solutions)
 
     # because the amount of solutions is too big we change the default domains

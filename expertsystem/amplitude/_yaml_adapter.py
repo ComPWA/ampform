@@ -320,6 +320,27 @@ def _extract_intensity_component(definition: Dict[str, Any]) -> Dict[str, Any]:
                 recoil_system["RecoilFinalState"]
             )
             output_dict["RecoilSystem"] = recoil_system
+        if "CanonicalSum" in definition:
+            cano_sum_old = definition["CanonicalSum"]
+            cano_sum_new = dict()
+            clebsch_gordan_list = _safe_wrap_in_list(
+                cano_sum_old["ClebschGordan"]
+            )
+            for clebsch_gordan_old in clebsch_gordan_list:
+                type_name = clebsch_gordan_old["Type"]
+                clebsch_gordan_new = {
+                    "J": clebsch_gordan_old["J"],
+                    "M": clebsch_gordan_old["M"],
+                }
+                attributes = {
+                    key[1:]: value
+                    for key, value in clebsch_gordan_old.items()
+                    if key.startswith("@")
+                }
+                clebsch_gordan_new.update(attributes)
+                embed_clebsch_gordan = {"ClebschGordan": clebsch_gordan_new}
+                cano_sum_new[type_name] = embed_clebsch_gordan
+            output_dict["Canonical"] = cano_sum_new
     return output_dict
 
 
