@@ -1,28 +1,27 @@
 {
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "cSpell.language": "en-US",
-  "editor.rulers": [
-    80
-  ],
+  "editor.rulers": [80],
   "git.rebaseWhenSync": true,
   "python.formatting.provider": "black",
-  "python.jediEnabled": true,
+  "python.languageServer": "Jedi",
   "python.linting.flake8Enabled": true,
-  "python.linting.mypyArgs": [
-    "--config-file=tox.ini",
-    "--follow-imports=skip"
-  ],
+  "python.linting.mypyArgs": ["--config-file=tox.ini", "--follow-imports=skip"],
   "python.linting.mypyEnabled": true,
-  "python.linting.pydocstyleArgs": [
-    "--match='(?!test_).*\\.py'"
-  ],
+  "python.linting.pydocstyleArgs": ["--match='(?!test_).*\\.py'"],
   "python.linting.pydocstyleEnabled": true,
   "python.linting.pylintCategorySeverity.refactor": "Information",
   "python.linting.pylintEnabled": true,
   "python.linting.pylintUseMinimalCheckers": false,
-  "python.testing.pytestArgs": [ // https://github.com/microsoft/vscode-python/issues/693
-    "tests",
-    "--no-cov",
-  ],
+  "python.testing.pytestArgs": ["tests", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "restructuredtext.builtDocumentationPath": "${workspaceFolder}/doc/_build/html",
   "restructuredtext.confPath": "${workspaceFolder}/doc",

@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v3.1.0
     hooks:
       - id: check-case-conflict
       - id: check-docstring-first
@@ -17,10 +17,15 @@ repos:
       - id: black
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.3.7
+    rev: 0.3.8
     hooks:
       - id: nbstripout
         files: ".ipynb"
+
+  - repo: https://github.com/prettier/prettier
+    rev: 2.0.5
+    hooks:
+      - id: prettier
 
   - repo: local
     hooks:
@@ -30,18 +35,21 @@ repos:
         language: system
         types:
           - python
+
       - id: mypy
         name: mypy
         entry: mypy --config-file=tox.ini
         language: system
         types:
           - python
+
       - id: pylint
         name: pylint
         entry: pylint
         language: system
         types:
           - python
+
       - id: pydocstyle
         name: pydocstyle
         entry: pydocstyle
