@@ -66,7 +66,9 @@ class TestHelicityAmplitudeGeneratorYAML:
             self.amplitude_generator.write_to_file("JPsiToGammaPi0Pi0.csv")
 
     def test_create_recipe_dict(self):
-        recipe = self.amplitude_generator._create_recipe_dict()
+        recipe = (
+            self.amplitude_generator._create_recipe_dict()  # pylint: disable=protected-access
+        )
         assert len(recipe) == 3
 
     def test_particle_section(self):

@@ -60,7 +60,7 @@ def group_graphs_same_initial_and_final(graphs):
             graph_groups[ifsg] = []
         graph_groups[ifsg].append(graph)
 
-    graph_group_list = [graph_groups[x] for x in graph_groups.keys()]
+    graph_group_list = list(graph_groups.values())
     return graph_group_list
 
 
@@ -84,9 +84,9 @@ def get_helicity_from_edge_props(edge_props):
     type_label = particle.Labels.Type.name
     spin_label = StateQuantumNumberNames.Spin.name
     proj_label = particle.Labels.Projection.name
-    for qn in edge_props[qns_label]:
-        if qn[type_label] == spin_label:
-            return qn[proj_label]
+    for quantum_number in edge_props[qns_label]:
+        if quantum_number[type_label] == spin_label:
+            return quantum_number[proj_label]
     logging.error(edge_props[qns_label])
     raise ValueError("Could not find spin projection quantum number!")
 
@@ -202,22 +202,22 @@ def generate_kinematics(graphs):
     }
     is_edge_ids = get_initial_state_edges(graphs[0])
     counter = 0
-    for x in is_edge_ids:
+    for edge_id in is_edge_ids:
         tempdict["InitialState"]["Particle"].append(
             {
-                "Name": graphs[0].edge_props[x]["Name"],
-                "Id": x,
+                "Name": graphs[0].edge_props[edge_id]["Name"],
+                "Id": edge_id,
                 "PositionIndex": counter,
             }
         )
         counter += 1
     fs_edge_ids = get_final_state_edges(graphs[0])
     counter = 0
-    for x in fs_edge_ids:
+    for edge_id in fs_edge_ids:
         tempdict["FinalState"]["Particle"].append(
             {
-                "Name": graphs[0].edge_props[x]["Name"],
-                "Id": x,
+                "Name": graphs[0].edge_props[edge_id]["Name"],
+                "Id": edge_id,
                 "PositionIndex": counter,
             }
         )
@@ -229,8 +229,8 @@ def generate_particle_list(graphs):
     # create particle entries
     temp_particle_names = []
     particles = []
-    for g in graphs:
-        for edge_props in g.edge_props.values():
+    for graph in graphs:
+        for edge_props in graph.edge_props.values():
             new_edge_props = remove_spin_projection(edge_props)
             par_name = new_edge_props[particle.Labels.Name.name]
             if par_name not in temp_particle_names:
@@ -368,9 +368,9 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
             nodelist = [node_id]
         else:
             nodelist = graph.nodes
-        for node_id in nodelist:
+        for node in nodelist:
             (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
-                graph, node_id
+                graph, node
             )
 
             name += (
@@ -381,9 +381,8 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
             )
         return name
 
-    def _retrieve_helicity_info(self, graph, node_id):
-        # get ending node of the edge
-        # then make name for
+    @staticmethod
+    def _retrieve_helicity_info(graph, node_id):
         in_edges = get_edges_ingoing_to_node(graph, node_id)
         out_edges = get_edges_outgoing_to_node(graph, node_id)
 
@@ -434,21 +433,21 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
 
         decay_info = {particle.Labels.Type.name: "nonResonant"}
         decay_info_label = particle.Labels.DecayInfo.name
-        for g in graphs:
+        for graph in graphs:
             if self.top_node_no_dynamics:
-                init_edges = get_initial_state_edges(g)
+                init_edges = get_initial_state_edges(graph)
                 if len(init_edges) > 1:
                     raise ValueError(
                         "Only a single initial state particle allowed"
                     )
-                eprops = g.edge_props[init_edges[0]]
+                eprops = graph.edge_props[init_edges[0]]
                 eprops[decay_info_label] = decay_info
 
         self.particle_list = generate_particle_list(graphs)
         self.kinematics = generate_kinematics(graphs)
 
         graph_groups = group_graphs_same_initial_and_final(graphs)
-        logging.debug("There are " + str(len(graph_groups)) + " graph groups")
+        logging.debug("There are %d graph groups", len(graph_groups))
 
         self.fix_parameters_unambiguously()
 
@@ -461,7 +460,6 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         fit parameters per graph, except one, will all be fixed. It's fine if
         they are all already fixed.
         """
-        pass
 
     def generate_amplitude_info(self, graph_groups):
         class_label = particle.Labels.Class.name
@@ -521,7 +519,9 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             }
         }
 
-    def generate_sequential_decay(self, graph):
+    def generate_sequential_decay(
+        self, graph
+    ):  # pylint: disable=too-many-locals
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         component_label = particle.Labels.Component.name
@@ -554,10 +554,10 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 ):
                     # check if dynamics is non-resonant (constant)
                     if (
-                        "NonResonant"
-                        == graph.edge_props[in_edges[0]][decay_info_label][
+                        graph.edge_props[in_edges[0]][decay_info_label][
                             type_label
                         ]
+                        == "NonResonant"
                     ):
                         continue
 
@@ -590,7 +590,8 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
 
         return coefficient_amplitude_dict
 
-    def generate_partial_decay(self, graph, node_id):
+    @staticmethod
+    def generate_partial_decay(graph, node_id):
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         decay_products = []
@@ -645,9 +646,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         return partial_decay_dict
 
     def get_fit_parameters(self):
-        logging.info(
-            "Number of parameters:" + str(len(self.fit_parameter_names))
-        )
+        logging.info("Number of parameters: %d", len(self.fit_parameter_names))
         return self.fit_parameter_names
 
     def write_to_file(self, filename: str) -> None:
@@ -695,6 +694,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         intensity = _yaml_adapter.to_intensity(recipe_dict)
 
         class IncreasedIndent(yaml.Dumper):
+            # pylint: disable=too-many-ancestors
             def increase_indent(self, flow=False, indentless=False):  # type: ignore
                 return super(IncreasedIndent, self).increase_indent(
                     flow, False

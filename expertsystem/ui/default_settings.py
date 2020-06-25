@@ -70,7 +70,6 @@ def create_default_interaction_settings(
     interaction_type_settings = {}
     formalism_conservation_laws = []
     formalism_qn_domains = {}
-    formalism_type = formalism_type
     if "helicity" in formalism_type:
         formalism_conservation_laws = [
             SpinConservation(StateQuantumNumberNames.Spin, False),

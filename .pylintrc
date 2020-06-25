@@ -7,10 +7,10 @@ init-import=yes
 
 [MESSAGES CONTROL]
 disable=
-    C0114, # done by pydocstyle
-    C0115, # done by pydocstyle
-    C0116, # done by pydocstyle
-    C0330, # https://github.com/psf/black/issues/48
+    C0114,  # done by pydocstyle
+    C0115,  # done by pydocstyle
+    C0116,  # done by pydocstyle
+    C0330,  # https://github.com/psf/black/issues/48
     RST203, # unexpected indentation
     RST301, # related to google style docstring
 
@@ -18,7 +18,10 @@ disable=
 ignore=conf.py
 
 [DESIGN]
-# Minimum number of public methods for a class (see R0903). Default is 2. We
-# decrease this to 1, since some interface classes just have a single (public)
-# method
+# Minimum number of public methods for a class (see R0903). Default is 2.
+# We decrease this to 1, since some interface classes just have a single
+# (public) method
 min-public-methods=1
+
+[SIMILARITIES]
+ignore-imports=yes # https://stackoverflow.com/a/30007053

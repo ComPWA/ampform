@@ -153,7 +153,7 @@ class FullPropagator:
         run_validation = False
         solutions = self.propagator.find_solutions()
         logging.debug(
-            "Number of solutions after propagator: " + str(len(solutions))
+            "Number of solutions after propagator: %s", len(solutions)
         )
         if not solutions:
             self.node_non_satisfied_laws = (
@@ -163,7 +163,7 @@ class FullPropagator:
                 run_validation = True
             else:
                 logging.debug(
-                    "violated rules: " + str(self.node_non_satisfied_laws)
+                    "violated rules: %s", str(self.node_non_satisfied_laws)
                 )
                 logging.debug(self.propagator.graph)
 
@@ -171,8 +171,7 @@ class FullPropagator:
             solutions, self.propagator.allowed_intermediate_particles
         )
         logging.debug(
-            "Number of fully initialized graphs: "
-            + str(len(full_particle_graphs))
+            "Number of fully initialized graphs: %d", len(full_particle_graphs)
         )
 
         if self.propagator.node_postponed_conservation_laws:
@@ -190,8 +189,8 @@ class FullPropagator:
                 for node_id, cons_laws in postponed_rules.items():
                     validator.assign_settings_to_node(node_id, cons_laws)
                 full_particle_graphs.extend(validator.find_solutions())
-                for k, v in validator.node_non_satisfied_laws.items():
-                    self.node_non_satisfied_laws[k].extend(v)
+                for key, value in validator.node_non_satisfied_laws.items():
+                    self.node_non_satisfied_laws[key].extend(value)
             else:
                 temp_solution_graphs = full_particle_graphs
                 full_particle_graphs = []
@@ -208,12 +207,12 @@ class FullPropagator:
                     )
 
         logging.debug(
-            "Number of solutions after full propagator: "
-            + str(len(full_particle_graphs))
+            "Number of solutions after full propagator: %d",
+            len(full_particle_graphs),
         )
         if len(full_particle_graphs) == 0:
             logging.debug(
-                "violated rules: " + str(self.node_non_satisfied_laws)
+                "violated rules: %s", str(self.node_non_satisfied_laws)
             )
 
         return full_particle_graphs
@@ -221,9 +220,6 @@ class FullPropagator:
 
 class ParticleStateTransitionGraphValidator(AbstractPropagator):
     """Validate particle states in a transition graph."""
-
-    def __init__(self, graph):
-        super().__init__(graph)
 
     def find_solutions(self):
         logging.debug("validating graph...")
@@ -277,7 +273,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
 
         return (in_edges_vars, out_edges_vars, node_vars)
 
-    def prepare_qns(self, qn_names, type_to_filter):
+    @staticmethod
+    def prepare_qns(qn_names, type_to_filter):
         return [x for x in qn_names if isinstance(x, type_to_filter)]
 
     def create_node_variables(self, node_id, qn_list):
@@ -322,6 +319,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
 
 class VariableInfo:
     """Data container for variable information."""
+
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, graph_element_type, element_id, qn_name):
         self.graph_element_type = graph_element_type
@@ -417,7 +416,7 @@ class CSPPropagator(AbstractPropagator):
                 )
         return solution_graphs
 
-    def initialize_constraints(self):
+    def initialize_constraints(self):  # pylint: disable=too-many-locals
         """Initialize all of the constraints for this graph.
 
         For each interaction node a set of independent constraints/conservation
@@ -450,7 +449,7 @@ class CSPPropagator(AbstractPropagator):
                 )
                 variable_mapping["ingoing"] = in_edge_vars[0]
                 variable_mapping["ingoing-fixed"] = in_edge_vars[1]
-                var_list = [key for key in variable_mapping["ingoing"]]
+                var_list = list(variable_mapping["ingoing"])
 
                 out_edges = get_edges_outgoing_to_node(self.graph, node_id)
                 out_edge_vars = self.create_edge_variables(
@@ -458,7 +457,7 @@ class CSPPropagator(AbstractPropagator):
                 )
                 variable_mapping["outgoing"] = out_edge_vars[0]
                 variable_mapping["outgoing-fixed"] = out_edge_vars[1]
-                var_list.extend([key for key in variable_mapping["outgoing"]])
+                var_list.extend(list(variable_mapping["outgoing"]))
 
                 # now create variables for node/interaction qns
                 int_qn_dict = self.prepare_qns(
@@ -471,9 +470,7 @@ class CSPPropagator(AbstractPropagator):
                 )
                 variable_mapping["interaction"] = int_node_vars[0]
                 variable_mapping["interaction-fixed"] = int_node_vars[1]
-                var_list.extend(
-                    [key for key in variable_mapping["interaction"]]
-                )
+                var_list.extend(list(variable_mapping["interaction"]))
 
                 constraint = ConservationLawConstraintWrapper(
                     cons_law,
@@ -487,7 +484,8 @@ class CSPPropagator(AbstractPropagator):
                 else:
                     self.constraints[-1].conditions_never_met = True
 
-    def prepare_qns(self, qn_names, qn_domains, type_to_filter):
+    @staticmethod
+    def prepare_qns(qn_names, qn_domains, type_to_filter):
         part_qn_dict = {}
         for qn_name in [x for x in qn_names if isinstance(x, type_to_filter)]:
             if qn_name in qn_domains:
@@ -557,7 +555,9 @@ class CSPPropagator(AbstractPropagator):
             self.problem.addVariable(key, domain)
         return key
 
-    def apply_solutions_to_graph(self, solutions):
+    def apply_solutions_to_graph(
+        self, solutions
+    ):  # pylint: disable=too-many-locals
         """Apply the CSP solutions to the graph instance.
 
         In other words attach the solution quantum numbers as properties to the
@@ -614,7 +614,7 @@ class CSPPropagator(AbstractPropagator):
                     )
                     found_jps.add(
                         str(spin.magnitude())
-                        + ("-" if parity == -1 or parity == -1.0 else "+")
+                        + ("-" if parity in (-1, -1.0) else "+")
                     )
                     # now do actual candidate finding
                     candidates = get_particle_candidates_for_state(
@@ -630,11 +630,10 @@ class CSPPropagator(AbstractPropagator):
         # bar.finish()
         if solutions and not solution_graphs:
             logging.warning(
-                "No intermediate state particles match the found "
-                + str(len(solutions))
-                + " solutions!"
+                "No intermediate state particles match the found %d solutions!",
+                len(solutions),
             )
-            logging.warning("solution inter. state J^P: " + str(found_jps))
+            logging.warning("solution inter. state J^P: %s", str(found_jps))
         return solution_graphs
 
 
@@ -665,6 +664,8 @@ class ConservationLawConstraintWrapper(Constraint):
     This allows a customized definition of conservation laws, and hence a
     cleaner user interface.
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, rule, variable_mapping, name_delimiter):
         if not isinstance(rule, AbstractRule):

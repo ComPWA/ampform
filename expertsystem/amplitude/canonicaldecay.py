@@ -37,9 +37,6 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     That is, using the properties of the decay.
     """
 
-    def __init__(self, use_parity_conservation=False):
-        super().__init__(use_parity_conservation)
-
     def _generate_amplitude_coefficient_names(self, graph, node_id):
         (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
             graph, node_id
@@ -67,10 +64,10 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             nodelist = [node_id]
         else:
             nodelist = graph.nodes
-        for node_id in nodelist:
+        for node in nodelist:
             name += (
-                super().generate_unique_amplitude_name(graph, node_id)[:-1]
-                + generate_clebsch_gordan_string(graph, node_id)
+                super().generate_unique_amplitude_name(graph, node)[:-1]
+                + generate_clebsch_gordan_string(graph, node)
                 + ";"
             )
         return name
@@ -83,7 +80,7 @@ def _clebsch_gordan_decorator(decay_generate_function):
     the translation of helicity amplitudes to canonical ones.
     """
 
-    def wrapper(self, graph, node_id):
+    def wrapper(self, graph, node_id):  # pylint: disable=too-many-locals
         spin_type = StateQuantumNumberNames.Spin
         partial_decay_dict = decay_generate_function(self, graph, node_id)
         node_props = graph.node_props[node_id]

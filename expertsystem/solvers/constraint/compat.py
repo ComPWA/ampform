@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=all
+
 import sys
 
 PY2 = sys.version_info[0] == 2

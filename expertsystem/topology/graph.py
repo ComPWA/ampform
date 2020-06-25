@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 
-def are_graphs_isomorphic(graph1, graph2):
+def are_graphs_isomorphic(graph1, graph2):  # pylint: disable=unused-argument
     """Check if two graphs are isomorphic.
 
     Returns:
@@ -149,12 +149,12 @@ class StateTransitionGraph:
             + "\n"
         )
         return_string = return_string + "node props: {\n"
-        for x, y in self.node_props.items():
-            return_string = return_string + str(x) + ": " + str(y) + "\n"
+        for key, value in self.node_props.items():
+            return_string = return_string + str(key) + ": " + str(value) + "\n"
         return_string = return_string + "}\n"
         return_string = return_string + "edge props: {\n"
-        for x, y in self.edge_props.items():
-            return_string = return_string + str(x) + ": " + str(y) + "\n"
+        for key, value in self.edge_props.items():
+            return_string = return_string + str(key) + ": " + str(value) + "\n"
         return_string = return_string + "}\n"
         return return_string
 
@@ -163,12 +163,12 @@ class StateTransitionGraph:
             "\nnodes: " + str(self.nodes) + "\nedges: " + str(self.edges)
         )
         return_string = return_string + "\nnode props: {\n"
-        for x, y in self.node_props.items():
-            return_string = return_string + str(x) + ": " + str(y) + "\n"
+        for key, value in self.node_props.items():
+            return_string = return_string + str(key) + ": " + str(value) + "\n"
         return_string = return_string + "}\n"
         return_string = return_string + "\nedge props: {\n"
-        for x, y in self.edge_props.items():
-            return_string = return_string + str(x) + ": " + str(y) + "\n"
+        for key, value in self.edge_props.items():
+            return_string = return_string + str(key) + ": " + str(value) + "\n"
         return_string = return_string + "}\n"
         return return_string
 
@@ -186,13 +186,10 @@ class StateTransitionGraph:
                 return self.graph_element_properties_comparator(
                     self.edge_props, other.edge_props
                 )
-            else:
-                raise NotImplementedError(
-                    "Graph element properties comparator is not set!"
-                )
-            return True
-        else:
-            return NotImplemented
+            raise NotImplementedError(
+                "Graph element properties comparator is not set!"
+            )
+        return NotImplemented
 
     def add_node(self, node_id):
         """Adds a node with id node_id.
@@ -298,7 +295,7 @@ class StateTransitionGraph:
         if val2:
             self.edge_props[edge_id1] = val2
 
-    def verify(self):
+    def verify(self):  # pylint: disable=no-self-use
         """Verify if the graph is connected.
 
         So that no dangling parts which are not connected.
@@ -306,7 +303,7 @@ class StateTransitionGraph:
         return True
 
 
-class InteractionNode:
+class InteractionNode:  # pylint: disable=too-few-public-methods
     """Struct-like definition of an interaction node."""
 
     def __init__(
@@ -344,5 +341,4 @@ class Edge:
                 self.ending_node_id == other.ending_node_id
                 and self.originating_node_id == other.originating_node_id
             )
-        else:
-            return NotImplemented
+        return NotImplemented

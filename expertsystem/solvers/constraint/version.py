@@ -1,3 +1,5 @@
+# pylint: disable=all
+
 __author__ = "Gustavo Niemeyer"
 __copyright__ = (
     "Copyright (c) 2005-2014 - Gustavo Niemeyer <gustavo@niemeyer.net>"

@@ -62,8 +62,8 @@ def remove_conservation_law(interaction_settings, cons_law):
         raise TypeError(
             "interaction_settings has to be of type InteractionNodeSettings"
         )
-    for i, x in enumerate(interaction_settings.conservation_laws):
-        if x.__class__.__name__ == cons_law.__class__.__name__:
+    for i, law in enumerate(interaction_settings.conservation_laws):
+        if law.__class__.__name__ == cons_law.__class__.__name__:
             del interaction_settings.conservation_laws[i]
             break
 
@@ -77,16 +77,14 @@ def filter_interaction_types(
     )
     if int_type_intersection:
         return int_type_intersection
-    else:
-        logging.warning(
-            "The specified list of interaction types "
-            + str(allowed_interaction_types)
-            + " does not intersect with the valid list of interaction types "
-            + str(valid_determined_interaction_types)
-            + ".\nUsing valid list instead."
-        )
-
-        return valid_determined_interaction_types
+    logging.warning(
+        "The specified list of interaction types %s"
+        " does not intersect with the valid list of interaction types %s"
+        ".\nUsing valid list instead.",
+        allowed_interaction_types,
+        valid_determined_interaction_types,
+    )
+    return valid_determined_interaction_types
 
 
 class InteractionDeterminationFunctorInterface(ABC):
@@ -103,7 +101,7 @@ class GammaCheck(InteractionDeterminationFunctorInterface):
     name_label = particle.Labels.Name.name
 
     def check(self, in_edge_props, out_edge_props, node_props):
-        int_types = [x for x in InteractionTypes]
+        int_types = list(InteractionTypes)
         for edge_props in in_edge_props + out_edge_props:
             if "gamma" in edge_props[self.name_label]:
                 int_types = [InteractionTypes.EM, InteractionTypes.Weak]
@@ -124,7 +122,7 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
     qns_label = particle.Labels.QuantumNumber.name
 
     def check(self, in_edge_props, out_edge_props, node_props):
-        node_interaction_types = [x for x in InteractionTypes]
+        node_interaction_types = list(InteractionTypes)
         for edge_props in in_edge_props + out_edge_props:
             if sum(
                 [
@@ -156,11 +154,15 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
 
 
 def remove_duplicate_solutions(
-    results, remove_qns_list=[], ignore_qns_list=[]
+    results, remove_qns_list=None, ignore_qns_list=None
 ):
+    if remove_qns_list is None:
+        remove_qns_list = []
+    if ignore_qns_list is None:
+        ignore_qns_list = []
     logging.info("removing duplicate solutions...")
-    logging.info("removing these qns from graphs: " + str(remove_qns_list))
-    logging.info("ignoring qns in graph comparison: " + str(ignore_qns_list))
+    logging.info("removing these qns from graphs: %s", str(remove_qns_list))
+    logging.info("ignoring qns in graph comparison: %s", str(ignore_qns_list))
     filtered_results = {}
     solutions = []
     remove_counter = 0
@@ -183,11 +185,11 @@ def remove_duplicate_solutions(
             if strength not in filtered_results:
                 filtered_results[strength] = []
             filtered_results[strength].append((temp_graphs, rule_violations))
-    logging.info("removed " + str(remove_counter) + " solutions")
+    logging.info("removed %s solutions", str(remove_counter))
     return filtered_results
 
 
-def remove_qns_from_graph(graph, qn_list):
+def remove_qns_from_graph(graph, qn_list):  # pylint: disable=too-many-branches
     qns_label = particle.Labels.QuantumNumber.name
     type_label = particle.Labels.Type.name
 
@@ -282,10 +284,10 @@ def filter_graphs(graphs, filters):
         >>> filtered_solutions = filter_graphs(solutions, [my_filter])
     """
     filtered_graphs = graphs
-    for x in filters:
+    for filt in filters:
         if not filtered_graphs:
             break
-        filtered_graphs = list(filter(x, filtered_graphs))
+        filtered_graphs = list(filter(filt, filtered_graphs))
     return filtered_graphs
 
 
@@ -367,10 +369,9 @@ def analyse_solution_failure(violated_laws_per_node_and_graph):
             violated_laws.append(rule_name)
 
     logging.debug(
-        "no solutions could be found, because the following "
-        + "rules are violated:"
+        "no solutions could be found, because the following rules are violated:\n%r",
+        violated_laws,
     )
-    logging.debug(violated_laws)
 
     return violated_laws
 
@@ -399,10 +400,9 @@ def match_external_edges(graphs):
     match_external_edge_ids(graphs, ref_graph_id, get_initial_state_edges)
 
 
-def match_external_edge_ids(
+def match_external_edge_ids(  # pylint: disable=too-many-locals
     graphs, ref_graph_id, external_edge_getter_function
 ):
-
     ref_graph = graphs[ref_graph_id]
     # create external edge to particle mapping
     ref_edge_id_particle_mapping = create_edge_id_particle_mapping(
@@ -416,14 +416,14 @@ def match_external_edge_ids(
         # remove matching entries
         ref_mapping_copy = deepcopy(ref_edge_id_particle_mapping)
         edge_ids_mapping = {}
-        for k, v in edge_id_particle_mapping.items():
-            if k in ref_mapping_copy and v == ref_mapping_copy[k]:
-                del ref_mapping_copy[k]
+        for key, value in edge_id_particle_mapping.items():
+            if key in ref_mapping_copy and value == ref_mapping_copy[key]:
+                del ref_mapping_copy[key]
             else:
-                for k2, v2 in ref_mapping_copy.items():
-                    if v == v2:
-                        edge_ids_mapping[k] = k2
-                        del ref_mapping_copy[k2]
+                for key_2, value_2 in ref_mapping_copy.items():
+                    if value == value_2:
+                        edge_ids_mapping[key] = key_2
+                        del ref_mapping_copy[key_2]
                         break
         if len(ref_mapping_copy) != 0:
             raise ValueError(
@@ -436,16 +436,18 @@ def match_external_edge_ids(
 
 
 def calculate_swappings(id_mapping):
-    # calculate edge id swappings
-    # its important to use an ordered dict as the swappings do not commute!
+    """Calculate edge id swappings.
+
+    Its important to use an ordered dict as the swappings do not commute!
+    """
     swappings = OrderedDict()
-    for k, v in id_mapping.items():
+    for key, value in id_mapping.items():
         # go through existing swappings and use them
-        newkey = k
+        newkey = key
         while newkey in swappings:
             newkey = swappings[newkey]
-        if v != newkey:
-            swappings[v] = newkey
+        if value != newkey:
+            swappings[value] = newkey
     return swappings
 
 
@@ -470,10 +472,10 @@ def perform_external_edge_identical_particle_combinatorics(graph):
         graph, get_final_state_edges
     )
     new_graphs = []
-    for g in temp_new_graphs:
+    for new_graph in temp_new_graphs:
         new_graphs.extend(
             external_edge_identical_particle_combinatorics(
-                g, get_initial_state_edges
+                new_graph, get_initial_state_edges
             )
         )
     return new_graphs
@@ -482,17 +484,20 @@ def perform_external_edge_identical_particle_combinatorics(graph):
 def external_edge_identical_particle_combinatorics(
     graph, external_edge_getter_function
 ):
+    # pylint: disable=too-many-locals
     new_graphs = [graph]
     edge_particle_mapping = create_edge_id_particle_mapping(
         graph, external_edge_getter_function
     )
     identical_particle_groups = {}
-    for k, v in edge_particle_mapping.items():
-        if v not in identical_particle_groups:
-            identical_particle_groups[v] = set()
-        identical_particle_groups[v].add(k)
+    for key, value in edge_particle_mapping.items():
+        if value not in identical_particle_groups:
+            identical_particle_groups[value] = set()
+        identical_particle_groups[value].add(key)
     identical_particle_groups = {
-        k: v for k, v in identical_particle_groups.items() if len(v) > 1
+        key: value
+        for key, value in identical_particle_groups.items()
+        if len(value) > 1
     }
     # now for each identical particle group perform all permutations
     for edge_group in identical_particle_groups.values():
@@ -506,10 +511,10 @@ def external_edge_identical_particle_combinatorics(
                 graph_combinations.add(temp_edge_node_mapping)
                 ext_edge_combinations.append(dict(zip(edge_group, comb)))
         temp_new_graphs = []
-        for g in new_graphs:
-            for c in ext_edge_combinations:
-                gnew = deepcopy(g)
-                swappings = calculate_swappings(c)
+        for new_graph in new_graphs:
+            for combination in ext_edge_combinations:
+                gnew = deepcopy(new_graph)
+                swappings = calculate_swappings(combination)
                 for edge_id1, edge_id2 in swappings.items():
                     gnew.swap_edges(edge_id1, edge_id2)
                 temp_new_graphs.append(gnew)
@@ -517,20 +522,24 @@ def external_edge_identical_particle_combinatorics(
     return new_graphs
 
 
-class StateTransitionManager:
+class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     """Main handler for decay topologies."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         initial_state,
         final_state,
-        allowed_intermediate_particles=[],
-        interaction_type_settings={},
+        allowed_intermediate_particles=None,
+        interaction_type_settings=None,
         formalism_type="helicity",
         topology_building="isobar",
         number_of_threads=4,
         propagation_mode="fast",
     ):
+        if allowed_intermediate_particles is None:
+            allowed_intermediate_particles = []
+        if interaction_type_settings is None:
+            interaction_type_settings = {}
         self.number_of_threads = number_of_threads
         self.propagation_mode = propagation_mode
         self.initial_state = initial_state
@@ -594,16 +603,16 @@ class StateTransitionManager:
 
     def set_allowed_interaction_types(self, allowed_interaction_types):
         # verify order
-        for x in allowed_interaction_types:
-            if not isinstance(x, InteractionTypes):
+        for allowed_types in allowed_interaction_types:
+            if not isinstance(allowed_types, InteractionTypes):
                 raise TypeError(
                     "allowed interaction types must be of type"
                     "[InteractionTypes]"
                 )
-            if x not in self.interaction_type_settings:
+            if allowed_types not in self.interaction_type_settings:
                 logging.info(self.interaction_type_settings.keys())
                 raise ValueError(
-                    "interaction " + str(x) + " not found in settings"
+                    f"interaction {allowed_types} not found in settings"
                 )
         self.allowed_interaction_types = allowed_interaction_types
 
@@ -621,7 +630,7 @@ class StateTransitionManager:
         all_graphs = self.topology_builder.build_graphs(
             len(self.initial_state), len(self.final_state)
         )
-        logging.info("number of topology graphs: " + str(len(all_graphs)))
+        logging.info("number of topology graphs: %d", len(all_graphs))
         return all_graphs
 
     def create_seed_graphs(self, topology_graphs):
@@ -640,10 +649,11 @@ class StateTransitionManager:
                 )
             )
 
-        logging.info("initialized " + str(len(init_graphs)) + " graphs!")
+        logging.info("initialized %d graphs!", len(init_graphs))
         return init_graphs
 
     def determine_node_settings(self, graphs):
+        # pylint: disable=too-many-locals
         graph_node_setting_pairs = []
         for graph in graphs:
             final_state_edges = get_final_state_edges(graph)
@@ -682,10 +692,9 @@ class StateTransitionManager:
                     node_int_types, self.allowed_interaction_types
                 )
                 logging.debug(
-                    "using "
-                    + str(node_int_types)
-                    + " interaction order for node: "
-                    + str(node_id)
+                    "using %s interaction order for node: %s",
+                    str(node_int_types),
+                    str(node_id),
                 )
                 node_settings[node_id] = [
                     deepcopy(self.interaction_type_settings[x])
@@ -694,7 +703,8 @@ class StateTransitionManager:
             graph_node_setting_pairs.append((graph, node_settings))
         return graph_node_setting_pairs
 
-    def create_interaction_setting_groups(self, graph_node_setting_pairs):
+    @staticmethod
+    def create_interaction_setting_groups(graph_node_setting_pairs):
         graph_settings_groups = {}
         for (graph, node_settings) in graph_node_setting_pairs:
             setting_combinations = create_setting_combinations(node_settings)
@@ -705,57 +715,54 @@ class StateTransitionManager:
                 graph_settings_groups[strength].append((graph, setting))
         return graph_settings_groups
 
-    def find_solutions(self, graph_setting_groups):
+    def find_solutions(
+        self, graph_setting_groups
+    ):  # pylint: disable=too-many-locals
+        """Check for solutions for a specific set of interaction settings."""
         results = {}
-        # check for solutions for a specific set of interaction settings
         logging.info(
-            "Number of interaction settings groups being processed: "
-            + str(len(graph_setting_groups))
+            "Number of interaction settings groups being processed: %s",
+            str(len(graph_setting_groups)),
         )
         for strength, graph_setting_group in sorted(
             graph_setting_groups.items(), reverse=True
         ):
             logging.info(
-                "processing interaction settings group with "
-                "strength " + str(strength)
+                "processing interaction settings group with " "strength %s",
+                str(strength),
             )
-            logging.info(
-                str(len(graph_setting_group)) + " entries in this group"
-            )
-            logging.info(
-                "running with " + str(self.number_of_threads) + " threads..."
-            )
+            logging.info("%s entries in this group", len(graph_setting_group))
+            logging.info("running with %d threads...", self.number_of_threads)
 
             temp_results = []
-            bar = IncrementalBar(
+            progress_bar = IncrementalBar(
                 "Propagating quantum numbers...", max=len(graph_setting_group)
             )
-            bar.update()
+            progress_bar.update()
             if self.number_of_threads > 1:
-                with Pool(self.number_of_threads) as p:
-                    for result in p.imap_unordered(
+                with Pool(self.number_of_threads) as pool:
+                    for result in pool.imap_unordered(
                         self.propagate_quantum_numbers, graph_setting_group, 1
                     ):
                         temp_results.append(result)
-                        bar.next()
+                        progress_bar.next()
             else:
                 for graph_setting_pair in graph_setting_group:
                     temp_results.append(
                         self.propagate_quantum_numbers(graph_setting_pair)
                     )
-                    bar.next()
-            bar.finish()
+                    progress_bar.next()
+            progress_bar.finish()
             logging.info("Finished!")
             if strength not in results:
                 results[strength] = []
             results[strength].extend(temp_results)
 
-        for k, v in results.items():
+        for key, value in results.items():
             logging.info(
-                "number of solutions for strength ("
-                + str(k)
-                + ") after qn propagation: "
-                + str(sum([len(x[0]) for x in v]))
+                "number of solutions for strength (%s) after qn propagation: %s",
+                str(key),
+                str(sum([len(x[0]) for x in value])),
             )
 
         # remove duplicate solutions, which only differ in the interaction qn S
@@ -769,11 +776,11 @@ class StateTransitionManager:
             for (tempsolutions, non_satisfied_laws) in result:
                 solutions.extend(tempsolutions)
                 node_non_satisfied_rules.append(non_satisfied_laws)
-        logging.info("total number of found solutions: " + str(len(solutions)))
+        logging.info("total number of found solutions: %d", len(solutions))
         violated_laws = []
         if len(solutions) == 0:
             violated_laws = analyse_solution_failure(node_non_satisfied_rules)
-            logging.info("violated rules: " + str(violated_laws))
+            logging.info("violated rules: %s", violated_laws)
 
         # finally perform combinatorics of identical external edges
         # (initial or final state edges) and prepare graphs for
@@ -825,9 +832,7 @@ def load_default_particle_list(
             if path.exists(file_path):
                 method(file_path)
                 logging.info(
-                    "loaded "
-                    + str(len(particle_list))
-                    + " particles from xml file!"
+                    "loaded %d particles from xml file!", len(particle_list)
                 )
                 break
     if len(particle_list) == 0:

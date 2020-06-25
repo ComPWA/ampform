@@ -88,8 +88,7 @@ class Spin:
                 self.__magnitude == other.magnitude()
                 and self.__projection == other.projection()
             )
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __hash__(self):
         return hash(repr(self))
@@ -379,6 +378,7 @@ def get_particle_copy_by_name(particle_name):
 
 
 def get_particle_property(particle_properties, qn_name, converter=None):
+    # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
     value_label = Labels.Value.name
@@ -386,9 +386,9 @@ def get_particle_property(particle_properties, qn_name, converter=None):
     found_prop = None
     if isinstance(qn_name, StateQuantumNumberNames):
         particle_qns = particle_properties[qns_label]
-        for x in particle_qns:
-            if x[type_label] == qn_name.name:
-                found_prop = x
+        for quantum_number in particle_qns:
+            if quantum_number[type_label] == qn_name.name:
+                found_prop = quantum_number
                 break
     else:
         for key, val in particle_properties.items():
@@ -425,8 +425,7 @@ def get_particle_property(particle_properties, qn_name, converter=None):
             converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
         property_value = converter.parse_from_dict(found_prop)
     else:
-        if qn_name in QNDefaultValues:
-            property_value = QNDefaultValues[qn_name]
+        property_value = QNDefaultValues.get(qn_name, property_value)
     return property_value
 
 
@@ -437,9 +436,9 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
     found_prop = None
     if isinstance(qn_name, InteractionQuantumNumberNames):
         interaction_qns = interaction_properties[qns_label]
-        for x in interaction_qns:
-            if x[type_label] == qn_name.name:
-                found_prop = x
+        for quantum_number in interaction_qns:
+            if quantum_number[type_label] == qn_name.name:
+                found_prop = quantum_number
                 break
     # check for default value
     property_value = None
@@ -452,12 +451,12 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
             property_value = QNDefaultValues[qn_name]
         else:
             logging.warning(
-                "Requested quantum number "
-                + str(qn_name)
-                + " was not found in the interaction properties."
-                + "\nAlso no default setting for this quantum "
-                + "number is available. Perhaps you are using the"
-                + " wrong formalism?"
+                "Requested quantum number %s"
+                " was not found in the interaction properties."
+                "\nAlso no default setting for this quantum"
+                " number is available. Perhaps you are using the"
+                " wrong formalism?",
+                str(qn_name),
             )
     return property_value
 
@@ -465,7 +464,9 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
 class CompareGraphElementPropertiesFunctor:
     """Functor for comparing graph elements."""
 
-    def __init__(self, ignored_qn_list=[]):
+    def __init__(self, ignored_qn_list=None):
+        if ignored_qn_list is None:
+            ignored_qn_list = []
         self.ignored_qn_list = [
             x.name
             for x in ignored_qn_list
@@ -478,15 +479,15 @@ class CompareGraphElementPropertiesFunctor:
         new_qns1 = {}
         new_qns2 = {}
         type_label = Labels.Type.name
-        for x in qns1:
-            if x[type_label] not in self.ignored_qn_list:
-                temp_qn_dict = dict(x)
+        for quantum_number in qns1:
+            if quantum_number[type_label] not in self.ignored_qn_list:
+                temp_qn_dict = dict(quantum_number)
                 type_name = temp_qn_dict[type_label]
                 del temp_qn_dict[type_label]
                 new_qns1[type_name] = temp_qn_dict
-        for x in qns2:
-            if x[type_label] not in self.ignored_qn_list:
-                temp_qn_dict = dict(x)
+        for quantum_number in qns2:
+            if quantum_number[type_label] not in self.ignored_qn_list:
+                temp_qn_dict = dict(quantum_number)
                 type_name = temp_qn_dict[type_label]
                 del temp_qn_dict[type_label]
                 new_qns2[type_name] = temp_qn_dict
@@ -620,8 +621,8 @@ def calculate_combinatorics(
     edges,
     state_particles,
     attached_external_edges_per_node,
-    allowed_particle_groupings=[],
-):
+    allowed_particle_groupings=None,
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
     combinatorics_list = [
         dict(zip(edges, particles))
         for particles in permutations(state_particles)
@@ -636,7 +637,8 @@ def calculate_combinatorics(
     # remove combinations with wrong particle groupings
     if allowed_particle_groupings:
         sorted_allowed_particle_groupings = [
-            sorted(sorted(x) for x in y) for y in allowed_particle_groupings
+            sorted(sorted(group) for group in grouping)
+            for grouping in allowed_particle_groupings
         ]
         combinations_to_remove = set()
         index_counter = 0
@@ -645,10 +647,13 @@ def calculate_combinatorics(
             for particle_grouping in sorted_allowed_particle_groupings:
                 # check if this grouping is available in this graph
                 valid_grouping = True
-                for y in particle_grouping:
+                for grouping in particle_grouping:
                     found = False
                     for ext_edge_group in attached_ext_edge_comb:
-                        if sorted([x[0] for x in ext_edge_group]) == y:
+                        if (
+                            sorted([group[0] for group in ext_edge_group])
+                            == grouping
+                        ):
                             found = True
                             break
                     if not found:
@@ -665,7 +670,7 @@ def calculate_combinatorics(
 
     # remove equal combinations
     combinations_to_remove = set()
-    for i in range(len(comb_attached_ext_edges)):
+    for i, _ in enumerate(comb_attached_ext_edges):
         for j in range(i + 1, len(comb_attached_ext_edges)):
             if comb_attached_ext_edges[i] == comb_attached_ext_edges[j]:
                 combinations_to_remove.add(i)
@@ -698,9 +703,11 @@ def initialize_edges(graph, edge_particle_dict):
     for edge, particle in edge_particle_dict.items():
         temp_graphs = new_graphs
         new_graphs = []
-        for g in temp_graphs:
+        for temp_graph in temp_graphs:
             new_graphs.extend(
-                populate_edge_with_spin_projections(g, edge, particle[1])
+                populate_edge_with_spin_projections(
+                    temp_graph, edge, particle[1]
+                )
             )
 
     return new_graphs
@@ -736,7 +743,9 @@ def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
     return new_graphs
 
 
-def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
+def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
+    if allowed_particle_list is None:
+        allowed_particle_list = []
     initialized_graphs = []
     mod_allowed_particle_list = initialize_allowed_particle_list(
         allowed_particle_list
@@ -752,7 +761,7 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=[]):
             )
             if len(particle_edges) == 0:
                 logging.debug("Did not find any particle candidates for")
-                logging.debug("edge id: " + str(int_edge_id))
+                logging.debug("edge id: %d", int_edge_id)
                 logging.debug("edge properties:")
                 logging.debug(graph.edge_props[int_edge_id])
             new_graphs_temp = []
@@ -772,13 +781,13 @@ def initialize_allowed_particle_list(allowed_particle_list):
     if len(allowed_particle_list) == 0:
         mod_allowed_particle_list = list(particle_list.values())
     else:
-        for x in allowed_particle_list:
-            if isinstance(x, str):
+        for allowed_particle in allowed_particle_list:
+            if isinstance(allowed_particle, str):
                 for name, value in particle_list.items():
-                    if x in name:
+                    if allowed_particle in name:
                         mod_allowed_particle_list.append(value)
             else:
-                mod_allowed_particle_list.append(x)
+                mod_allowed_particle_list.append(allowed_particle)
     return mod_allowed_particle_list
 
 
