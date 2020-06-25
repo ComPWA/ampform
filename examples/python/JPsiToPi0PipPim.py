@@ -1,6 +1,8 @@
-""" sample script for the testing purposes using the decay
-    JPsi -> pi0 pi+ pi-
+r"""Sample script for the testing purposes.
+
+Analyses the decay :math:`J/\psi \to \pi^0 \pi^+ \pi^-`.
 """
+
 import logging
 
 from expertsystem.ui.system_control import (

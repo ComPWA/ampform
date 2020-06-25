@@ -1,7 +1,9 @@
+"""Collection of data structures and functions for particle information.
+
+This module defines a particle as a collection of quantum numbers and things
+related to this.
 """
-This module defines a particle as a collection of quantum numbers and
-things related to this
-"""
+
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -26,6 +28,8 @@ from ..topology.graph import (
 
 
 class Labels(Enum):
+    """Labels that are useful in the particle module."""
+
     Class = auto()
     Component = auto()
     DecayInfo = auto()
@@ -40,9 +44,7 @@ class Labels(Enum):
 
 
 class Spin:
-    """
-    Simple struct-like class defining spin as a magnitude plus the projection
-    """
+    """Simple struct-like class defining spin as magnitude plus projection."""
 
     def __init__(self, mag, proj):
         self.__magnitude = float(mag)
@@ -81,10 +83,6 @@ class Spin:
         )
 
     def __eq__(self, other):
-        """
-        define the equal operator for the spin class, which is needed for
-        equality checks of states in certain rules
-        """
         if isinstance(other, Spin):
             return (
                 self.__magnitude == other.magnitude()
@@ -109,6 +107,8 @@ def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
 
 
 class QuantumNumberClasses(Enum):
+    """Types of quantum number classes in the form of an enumerate."""
+
     Int = auto()
     Float = auto()
     Spin = auto()
@@ -134,7 +134,7 @@ class StateQuantumNumberNames(Enum):
 
 
 class ParticlePropertyNames(Enum):
-    """Definition of properties names of particles"""
+    """Definition of properties names of particles."""
 
     Pid = auto()
     Mass = auto()
@@ -192,6 +192,8 @@ QNNameClassMapping = {
 
 
 class AbstractQNConverter(ABC):
+    """Abstract interface for a quantum number converter."""
+
     @abstractmethod
     def parse_from_dict(self, data_dict):
         pass
@@ -202,6 +204,8 @@ class AbstractQNConverter(ABC):
 
 
 class IntQNConverter(AbstractQNConverter):
+    """Interface for converting `int` quantum numbers."""
+
     value_label = Labels.Value.name
     type_label = Labels.Type.name
     class_label = Labels.Class.name
@@ -218,6 +222,8 @@ class IntQNConverter(AbstractQNConverter):
 
 
 class FloatQNConverter(AbstractQNConverter):
+    """Interface for converting `float` quantum numbers."""
+
     value_label = Labels.Value.name
     type_label = Labels.Type.name
     class_label = Labels.Class.name
@@ -234,6 +240,8 @@ class FloatQNConverter(AbstractQNConverter):
 
 
 class SpinQNConverter(AbstractQNConverter):
+    """Interface for converting `.Spin` quantum numbers."""
+
     type_label = Labels.Type.name
     class_label = Labels.Class.name
     value_label = Labels.Value.name
@@ -280,8 +288,7 @@ particle_list = dict()
 
 
 def load_particle_list_from_xml(file_path: str) -> None:
-    """
-    Add entries to the ``particle_list`` from definitions in an XML file.
+    """Add entries to the ``particle_list`` from definitions in an XML file.
 
     By default, the expert system loads the ``particle_list``
     from the XML file ``particle_list.xml`` located in the ComPWA module.
@@ -315,9 +322,7 @@ def write_particle_list_to_xml(file_path: str) -> None:
 
 
 def load_particle_list_from_yaml(file_path: str) -> None:
-    """
-    Use `.load_particle_list_from_yaml` to append to the ``particle_list`` from
-    a YAML file.
+    """Use `.load_particle_list_from_yaml` to append to the ``particle_list``.
 
     .. note::
         If a particle name in the YAML file already exists in the
@@ -341,8 +346,8 @@ def write_particle_list_to_yaml(file_path: str) -> None:
 
 
 def add_to_particle_list(particle):
-    """
-    Add a particle dictionary object to the ``particle_list`` dictionary.
+    """Add a particle dictionary object to the ``particle_list`` dictionary.
+
     The key will be extracted from the ``particle`` name (XML tag ``@Name``).
     If the key already exists, the entry in ``particle_list`` will be
     overwritten by this one.
@@ -355,7 +360,8 @@ def add_to_particle_list(particle):
 
 
 def get_particle_with_name(particle_name):
-    """
+    """Get particle from the particle database by name.
+
     .. deprecated:: 0.2.0
         ``particle_list`` has become a dictionary, so you can already access
         its entries with a string index.
@@ -364,9 +370,10 @@ def get_particle_with_name(particle_name):
 
 
 def get_particle_copy_by_name(particle_name):
-    """
-    Get a `~copy.deepcopy` of a particle from the ``particle_list``
-    dictionary so you can manipulate it and add it to the particle data base.
+    """Get a `~copy.deepcopy` of a particle from the ``particle_list``.
+
+    This is useful when you want to manipulate that copy and add it as a new
+    entry to the particle data base.
     """
     return deepcopy(particle_list[particle_name])
 
@@ -456,6 +463,8 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
 
 
 class CompareGraphElementPropertiesFunctor:
+    """Functor for comparing graph elements."""
+
     def __init__(self, ignored_qn_list=[]):
         self.ignored_qn_list = [
             x.name

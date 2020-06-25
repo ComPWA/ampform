@@ -19,7 +19,6 @@
   "python.linting.flake8Enabled": true,
   "python.linting.mypyArgs": ["--config-file=tox.ini", "--follow-imports=skip"],
   "python.linting.mypyEnabled": true,
-  "python.linting.pydocstyleArgs": ["--match='(?!test_).*\\.py'"],
   "python.linting.pydocstyleEnabled": true,
   "python.linting.pylintCategorySeverity.refactor": "Information",
   "python.linting.pylintEnabled": true,

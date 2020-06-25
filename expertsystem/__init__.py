@@ -1,5 +1,4 @@
-"""
-The expert system facilitates building an amplitude model.
+"""The expert system facilitates building an amplitude model.
 
 An amplitude model describes the reaction process you want to study with
 partial wave analysis techniques. The responsibility of the expert system is to

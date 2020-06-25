@@ -1,2 +1,7 @@
-__all__ = ["constraint"]
+"""Collection of solver modules."""
+
+__all__ = [
+    "constraint",
+]
+
 from . import constraint

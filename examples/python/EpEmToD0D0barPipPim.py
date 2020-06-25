@@ -1,6 +1,8 @@
-""" sample script for the testing purposes using the decay
-    e+e- -> D0 D0bar pi+ pi-
+r"""Sample script for the testing purposes.
+
+Using the decay :math:`e^+e^- \to D^0 \overline{D}^0 \pi^+ \pi^-`.
 """
+
 import logging
 
 from expertsystem.ui.system_control import StateTransitionManager

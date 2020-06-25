@@ -1,3 +1,5 @@
+"""Implementation of the canonical formalism for amplitude model generation."""
+
 from collections import OrderedDict
 
 from ..topology.graph import (
@@ -27,9 +29,9 @@ def generate_clebsch_gordan_string(graph, node_id):
 
 
 class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
-    """
-    Generates names for canonical partial decays using the properties of
-    the decay.
+    """Generate names for canonical partial decays.
+
+    That is, using the properties of the decay.
     """
 
     def __init__(self, use_parity_conservation=False):
@@ -72,13 +74,14 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
 
 class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
-    """
+    r"""Amplitude model generator for the canonical helicity formalism.
+
     This class defines a full amplitude in the canonical formalism, using the
-    helicity formalism as a foundation.
-    The key here is that we take the full helicity intensity as a template, and
-    just exchange the helicity amplitudes F as a sum of canonical amplitudes a:
-    F^J_lambda1,lambda2 = sum_LS { norm * a^J_LS * CG * CG }
-    Here CG stands for Clebsch-Gordan factor.
+    helicity formalism as a foundation. The key here is that we take the full
+    helicity intensity as a template, and just exchange the helicity amplitudes
+    :math:`F` as a sum of canonical amplitudes a:
+    :math:`F^J_{\lambda_1},\lambda_2 = sum_LS { norm * a^J_LS * CG * CG }`.
+    Here, :math:`CG` stands for Clebsch-Gordan factor.
     """
 
     def __init__(
@@ -89,7 +92,8 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
         super().__init__(top_node_no_dynamics, name_generator=name_generator)
 
     def _clebsch_gordan_decorator(decay_generate_function):
-        """
+        """Decorate a function with Clebsch-Gordan functionality.
+
         Decorator method which adds two clebsch gordan coefficients based on
         the translation of helicity amplitudes to canonical ones.
         """

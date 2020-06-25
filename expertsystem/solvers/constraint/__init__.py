@@ -883,8 +883,7 @@ class Constraint(object):
         return True
 
     def preProcess(self, variables, domains, constraints, vconstraints):
-        """
-        Preprocess variable domains
+        """Preprocess variable domains.
 
         This method is called before starting to look for solutions,
         and is used to prune domains with specific constraint logic

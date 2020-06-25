@@ -1,12 +1,11 @@
 -r doc/requirements.txt
 -r tests/requirements.txt
 black>=19.10b0
+flake8>=3.7 # for per-file-ignores
 flake8-blind-except
 flake8-builtins
-flake8-docstrings
 flake8-import-order
 flake8-rst-docstrings
-flake8>=3.7 # for per-file-ignores
 mypy>=0.770
 pep8-naming
 pre-commit>=2.2.0

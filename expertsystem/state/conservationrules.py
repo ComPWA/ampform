@@ -1,3 +1,9 @@
+"""Collection of quantum number conservation rules for particle reactions.
+
+Contains:
+- Functors for quantum number condition checks.
+"""
+
 from abc import ABC, abstractmethod
 from functools import reduce
 from copy import deepcopy
@@ -17,16 +23,17 @@ from .particle import (
 )
 
 
-""" Functors for quantum number condition checks """
-
-
 class AbstractConditionFunctor(ABC):
+    """Abstract interface of a condition functor."""
+
     @abstractmethod
     def check(self, qn_names, in_edges, out_edges, int_node):
         pass
 
 
 class DefinedForAllEdges(AbstractConditionFunctor):
+    """Check if a graph has all edges defined."""
+
     def check(self, qn_names, in_edges, out_edges, int_node):
         for qn_name in qn_names:
             for edge in in_edges + out_edges:
@@ -36,6 +43,8 @@ class DefinedForAllEdges(AbstractConditionFunctor):
 
 
 class DefinedForAllOutgoingEdges(AbstractConditionFunctor):
+    """Check if all outgoing edges are defined."""
+
     def check(self, qn_names, in_edges, out_edges, int_node):
         for qn_name in qn_names:
             for edge in out_edges:
@@ -45,6 +54,8 @@ class DefinedForAllOutgoingEdges(AbstractConditionFunctor):
 
 
 class DefinedForInteractionNode(AbstractConditionFunctor):
+    """Check if all interaction nodes are defined."""
+
     def check(self, qn_names, in_edges, out_edges, int_node):
         for qn_name in qn_names:
             if qn_name not in int_node:
@@ -53,9 +64,7 @@ class DefinedForInteractionNode(AbstractConditionFunctor):
 
 
 class DefinedIfOtherQnNotDefinedInOutSeparate(AbstractConditionFunctor):
-    """
-    Implements logic for...
-    """
+    """Implements logic for..."""
 
     def __init__(self, other_qn_names):
         self.other_qn_names = other_qn_names
@@ -112,6 +121,8 @@ def is_particle_antiparticle_pair(pid1, pid2):
 
 
 class AbstractRule(ABC):
+    """Abstract interface for a conservation rule."""
+
     def __init__(self, rule_name):
         self.rule_name = str(rule_name)
         self.required_qn_names = []
@@ -179,11 +190,14 @@ class AbstractRule(ABC):
 
 
 class AdditiveQuantumNumberConservation(AbstractRule):
-    """
-    checks for the conservation of an additive quantum number such as electric
-    charge, baryon number, lepton number
+    r"""Check for conservation of an additive quantum numbers.
 
-    :math:`\\sum q_{in} = \\sum q_{out}`
+    :math:`\sum q_{in} = \sum q_{out}`
+
+    Additive quantum numbers are, for example:
+     - electric charge
+     - baryon number
+     - lepton number
     """
 
     def __init__(self, qn_name):
@@ -212,6 +226,8 @@ class AdditiveQuantumNumberConservation(AbstractRule):
 
 
 class ParityConservation(AbstractRule):
+    """Check parity conservation."""
+
     def __init__(self):
         super().__init__("ParityConservation")
 
@@ -224,7 +240,7 @@ class ParityConservation(AbstractRule):
         )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """ implements :math:`P_{in} = P_{out} \\cdot (-1)^L` """
+        r"""Implement :math:`P_{in} = P_{out} \cdot (-1)^L`."""
         # is this valid for two outgoing particles only?
         parity_label = StateQuantumNumberNames.Parity
         parity_in = reduce(
@@ -240,6 +256,8 @@ class ParityConservation(AbstractRule):
 
 
 class ParityConservationHelicity(AbstractRule):
+    """Check parity conservation for the helicity formalism."""
+
     def __init__(self):
         super().__init__("ParityConservationHelicity")
 
@@ -256,13 +274,15 @@ class ParityConservationHelicity(AbstractRule):
         )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """
-        Implements the check
+        r"""Implements the check parity conservation check.
 
-        :math:`A_{-\\lambda_1-\\lambda_2} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1} A_{\\lambda_1\\lambda_2}`
+        Check the following:
 
-        Notice that only the special case :math:`\\lambda_1=\\lambda_2=0`
-        may return False
+        .. math:: A_{-\lambda_1-\lambda_2} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1}
+           A_{\lambda_1\lambda_2}
+
+        Notice that only the special case :math:`\lambda_1=\lambda_2=0` may
+        return False.
         """
         if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
             spin_label = StateQuantumNumberNames.Spin
@@ -297,6 +317,8 @@ class ParityConservationHelicity(AbstractRule):
 
 
 class CParityConservation(AbstractRule):
+    """Check for :math:`C`-parity conservation."""
+
     def __init__(self):
         super().__init__("CParityConservation")
 
@@ -338,7 +360,7 @@ class CParityConservation(AbstractRule):
         )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """ implements :math:`C_{in} = C_{out}` """
+        """Check for :math:`C_{in} = C_{out}`."""
         cparity_in = self.get_cparity_multiparticle(
             ingoing_part_qns, interaction_qns
         )
@@ -398,6 +420,8 @@ class CParityConservation(AbstractRule):
 
 
 class GParityConservation(AbstractRule):
+    """Check for :math:`G`-parity conservation."""
+
     def __init__(self):
         super().__init__("GParityConservation")
 
@@ -447,7 +471,7 @@ class GParityConservation(AbstractRule):
         )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """ implements :math:`G_{in} = G_{out}` """
+        """Check for :math:`G_{in} = G_{out}`."""
         gparity_label = StateQuantumNumberNames.Gparity
         no_gpar_inpart = [
             ingoing_part_qns.index(x)
@@ -512,6 +536,8 @@ class GParityConservation(AbstractRule):
 
 
 class IdenticalParticleSymmetrization(AbstractRule):
+    """Implementation of particle symmetrization."""
+
     def __init__(self):
         super().__init__("IdenticalParticleSymmetrization")
 
@@ -557,16 +583,17 @@ class IdenticalParticleSymmetrization(AbstractRule):
 
 
 class SpinConservation(AbstractRule):
-    """
-    Implements conservation of a spin-like quantum number for a two body decay
-    (coupling of two particle states). See :py:meth:`check` for details.
+    """Implementation of conservation of a spin-like quantum number.
+
+    That is, for a two body decay (coupling of two particle states). See
+    :meth:`~.SpinConservation.check` for details.
     """
 
     def __init__(self, spinlike_qn, use_projection=True):
         if not isinstance(spinlike_qn, StateQuantumNumberNames):
             raise TypeError(
-                "Expecting Emum of the type \
-                ParticleQuantumNumberNames for spinlike_qn"
+                "Expecting Enum of the type "
+                "ParticleQuantumNumberNames for spinlike_qn"
             )
         if spinlike_qn not in QNNameClassMapping:
             raise ValueError("spinlike_qn is not associated with a QN class")
@@ -588,10 +615,20 @@ class SpinConservation(AbstractRule):
             )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """
-        implements :math:`|S_1 - S_2| \\leq S \\leq |S_1 + S_2|` and optionally
-        :math:`|L - S| \\leq J \\leq |L + S|`. Also checks
-        :math:`M_1 + M_2 = M` and if Clebsch-Gordan coefficients are 0
+        r"""Check for spin conservation.
+
+        Implements
+
+        .. math::
+            |S_1 - S_2| \leq S \leq |S_1 + S_2|
+
+        and optionally
+
+        .. math::
+            |L - S| \leq J \leq |L + S|
+
+        Also checks :math:`M_1 + M_2 = M` and if Clebsch-Gordan coefficients
+        are all 0.
         """
         spin_label = self.spinlike_qn
 
@@ -659,9 +696,9 @@ class SpinConservation(AbstractRule):
         return total_spins
 
     def spin_couplings(self, spin1, spin2):
-        """
-        implements the coupling of two spins
-        :math:`|S_1 - S_2| \\leq S \\leq |S_1 + S_2|` and :math:`M_1 + M_2 = M`
+        r"""Implement the coupling of two spins.
+
+        :math:`|S_1 - S_2| \leq S \leq |S_1 + S_2|` and :math:`M_1 + M_2 = M`
         """
         j1 = spin1.magnitude()
         j2 = spin2.magnitude()
@@ -706,10 +743,10 @@ def is_clebsch_gordan_coefficient_zero(spin1, spin2, spin_coupled):
 
 
 class ClebschGordanCheckHelicityToCanonical(AbstractRule):
-    """
-    implements clebsch gordan checks for :math:`S_1, S_2` to :math:`S` and the
-    :math:`L,S` to :math:`J` coupling based on the conversion of helicity to
-    canonical amplitude sums
+    """Implement Clebsch-Gordan checks.
+
+    For :math:`S_1, S_2` to :math:`S` and the :math:`L,S` to :math:`J` coupling
+    based on the conversion of helicity to canonical amplitude sums.
     """
 
     def __init__(self):
@@ -752,6 +789,8 @@ class ClebschGordanCheckHelicityToCanonical(AbstractRule):
 
 
 class HelicityConservation(AbstractRule):
+    """Implementation of helicity conservation."""
+
     def __init__(self):
         super().__init__("HelicityConservation")
 
@@ -761,9 +800,7 @@ class HelicityConservation(AbstractRule):
         )
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """
-        implements :math:`|\\lambda_2-\\lambda_3| \\leq S_1`
-        """
+        r"""Check for :math:`|\lambda_2-\lambda_3| \leq S_1`."""
         if len(ingoing_part_qns) == 1 and len(outgoing_part_qns) == 2:
             spin_label = StateQuantumNumberNames.Spin
 
@@ -777,6 +814,8 @@ class HelicityConservation(AbstractRule):
 
 
 class GellMannNishijimaRule(AbstractRule):
+    """Conservation rule for Gell-Mann-Nishijima."""
+
     def __init__(self):
         super().__init__("GellMannNishijimaRule")
 
@@ -797,9 +836,9 @@ class GellMannNishijimaRule(AbstractRule):
         self.add_required_qn(StateQuantumNumberNames.TauLN)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """
-        checks the Gell-Mann–Nishijima formula :math:`Q=I_3+\\frac{Y}{2}` for
-        each particle.
+        r"""Check the Gell-Mann–Nishijima formula.
+
+        :math:`Q=I_3+\frac{Y}{2}` for each particle.
         """
         charge_label = StateQuantumNumberNames.Charge
         isospin_label = StateQuantumNumberNames.IsoSpin
@@ -831,9 +870,7 @@ class GellMannNishijimaRule(AbstractRule):
         return True
 
     def calculate_hypercharge(self, particle):
-        """
-        calculates the hypercharge :math:`Y=S+C+B+T+B`
-        """
+        """Calculate the hypercharge :math:`Y=S+C+B+T+B`."""
         qn_labels = [
             StateQuantumNumberNames.Strangeness,
             StateQuantumNumberNames.Charm,
@@ -846,6 +883,8 @@ class GellMannNishijimaRule(AbstractRule):
 
 
 class MassConservation(AbstractRule):
+    """Mass conservation rule."""
+
     def __init__(self, width_factor=3):
         self.width_factor = width_factor
         super().__init__("MassConservation")
@@ -857,14 +896,13 @@ class MassConservation(AbstractRule):
         self.add_required_qn(ParticleDecayPropertyNames.Width)
 
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
-        """
-        implements the mass check
+        r"""Implement the mass check.
 
-        :math:`M_{out} - N \\cdot W_{out} < M_{in} + N \\cdot W_{in}`
+        :math:`M_{out} - N \cdot W_{out} < M_{in} + N \cdot W_{in}`
 
         It makes sure that the net mass outgoing state :math:`M_{out}` is
-        smaller than the net mass of the ingoing state :math:`M_{in}`. Also
-        the width :math:`W` of the states is taken into account.
+        smaller than the net mass of the ingoing state :math:`M_{in}`. Also the
+        width :math:`W` of the states is taken into account.
         """
         mass_label = ParticlePropertyNames.Mass
         width_label = ParticleDecayPropertyNames.Width

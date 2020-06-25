@@ -1,10 +1,12 @@
-"""
+"""Functions to propagate quantum numbers through a `.StateTransitionGraph`.
+
 This module is responsible for propagating the quantum numbers of the initial
-and final state particles through a graphs (Propagator classes). Hence it
-finds the allowed quantum numbers of the intermediate states.
-The propagator classes (e.g. :class:`.CSPPropagator`) use the implemented
-conservation rules of :mod:`.conservationrules`.
+and final state particles through a graphs (Propagator classes). Hence it finds
+the allowed quantum numbers of the intermediate states. The propagator classes
+(e.g. :class:`.CSPPropagator`) use the implemented conservation rules of
+:mod:`.conservationrules`.
 """
+
 from copy import deepcopy
 from collections import defaultdict
 from enum import Enum, auto
@@ -43,21 +45,26 @@ from ..state.particle import (
 
 
 class GraphElementTypes(Enum):
+    """Types of graph elements in the form of an enumerate."""
+
     node = auto()
     edge = auto()
 
 
 class InteractionTypes(Enum):
+    """Types of interactions in the form of an enumerate."""
+
     Strong = auto()
     EM = auto()
     Weak = auto()
 
 
 class InteractionNodeSettings:
-    """
-    Container class for the interaction settings, which can be assigned to each
-    node of a state transition graph. Hence these settings contain the complete
-    configuration information which is required for the solution finding, e.g:
+    """Container class for the interaction settings.
+
+    This class can be assigned to each node of a state transition graph. Hence,
+    these settings contain the complete configuration information which is
+    required for the solution finding, e.g:
 
       - list of conservation laws
       - list of quantum number domains
@@ -80,6 +87,8 @@ class InteractionNodeSettings:
 
 
 class AbstractPropagator(ABC):
+    """Abstract interface of a propagator."""
+
     def __init__(self, graph):
         self.node_settings = {}
         self.node_non_satisfied_laws = defaultdict(list)
@@ -108,6 +117,8 @@ class AbstractPropagator(ABC):
 
 
 class FullPropagator:
+    """Hander that combines all propagator rules."""
+
     def __init__(self, graph, propagation_mode="fast"):
         self.propagator = CSPPropagator(graph)
         self.propagation_mode = propagation_mode
@@ -210,6 +221,8 @@ class FullPropagator:
 
 
 class ParticleStateTransitionGraphValidator(AbstractPropagator):
+    """Validate particle states in a transition graph."""
+
     def __init__(self, graph):
         super().__init__(graph)
 
@@ -269,9 +282,7 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
         return [x for x in qn_names if isinstance(x, type_to_filter)]
 
     def create_node_variables(self, node_id, qn_list):
-        """
-        Creates variables for the quantum numbers of the specified node.
-        """
+        """Create variables for the quantum numbers of the specified node."""
         variables = {}
         type_label = particle.Labels.Type.name
         if node_id in self.graph.node_props:
@@ -291,8 +302,7 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
         return variables
 
     def create_edge_variables(self, edge_ids, qn_list):
-        """
-        Creates variables for the quantum numbers of the specified edges.
+        """Create variables for the quantum numbers of the specified edges.
 
         Initial and final state edges just get a single domain value.
         Intermediate edges are initialized with the default domains of that
@@ -312,6 +322,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
 
 
 class VariableInfo:
+    """Data container for variable information."""
+
     def __init__(self, graph_element_type, element_id, qn_name):
         self.graph_element_type = graph_element_type
         self.element_id = element_id
@@ -319,8 +331,9 @@ class VariableInfo:
 
 
 def decode_variable_name(variable_name, delimiter):
-    """
-    Decodes the variable name (see :func:`.encode_variable_name`)
+    """Decode the variable name.
+
+    Also see `.encode_variable_name`.
     """
     split_name = variable_name.split(delimiter)
     if not len(split_name) == 3:
@@ -341,14 +354,14 @@ def decode_variable_name(variable_name, delimiter):
 
 
 def encode_variable_name(variable_info, delimiter):
-    """
-    The variable names are encoded as a concatenated string of the form
-    graph element type + delimiter + element id + delimiter + qn name
-    The variable of type :class:`.VariableInfo` and contains:
+    """Encode variable name.
+
+    The variable names are encoded as a concatenated string of the form graph
+    element type + delimiter + element id + delimiter + qn name The variable of
+    type :class:`.VariableInfo` and contains:
 
       - graph_element_type: is either "node" or "edge" (enum)
-      - element_id: is the id of that node/edge
-        (as it is defined in the graph)
+      - element_id: is the id of that node/edge (as it is defined in the graph)
       - qn_name: the quantum number name (enum)
     """
     if not isinstance(variable_info, VariableInfo):
@@ -364,15 +377,16 @@ def encode_variable_name(variable_info, delimiter):
 
 
 class CSPPropagator(AbstractPropagator):
-    """
-    Quantum number propagator reducing the problem to a constraint
-    satisfaction problem and solving this with the python-constraint module.
+    """Quantum number propagator reducing the problem to a CSP.
+
+    Quantum number propagator reducing the problem to a constraint satisfaction
+    problem and solving this with the python-constraint module.
 
     The variables are the quantum numbers of particles/edges, but also some
     composite quantum numbers which are attributed to the interaction nodes
-    (such as angular momentum L).
-    The conservation laws serve as the constraints and are wrapped with a
-    special class :class:`.ConservationLawConstraintWrapper`.
+    (such as angular momentum :math:`L`). The conservation laws serve as the
+    constraints and are wrapped with a special class
+    :class:`.ConservationLawConstraintWrapper`.
     """
 
     def __init__(self, graph):
@@ -405,13 +419,13 @@ class CSPPropagator(AbstractPropagator):
         return solution_graphs
 
     def initialize_constraints(self):
-        """
-        Initializes all of the constraints for this graph. For each interaction
-        node a set of independent constraints/conservation laws are created.
-        For each conservation law a new CSP wrapper is created.
-        This wrapper needs all of the qn numbers/variables which
-        enter or exit the node and play a role for this conservation law.
-        Hence variables are also created within this method.
+        """Initialize all of the constraints for this graph.
+
+        For each interaction node a set of independent constraints/conservation
+        laws are created. For each conservation law a new CSP wrapper is
+        created. This wrapper needs all of the qn numbers/variables which enter
+        or exit the node and play a role for this conservation law. Hence
+        variables are also created within this method.
         """
         for node_id, interaction_settings in self.node_settings.items():
             new_cons_laws = interaction_settings.conservation_laws
@@ -484,13 +498,12 @@ class CSPPropagator(AbstractPropagator):
         return part_qn_dict
 
     def create_node_variables(self, node_id, qn_dict):
-        """
-        Creates variables for the quantum numbers of the specified node.
+        """Create variables for the quantum numbers of the specified node.
 
         If a quantum number is already defined for a node, then a fixed
         variable is created, which cannot be changed by the csp solver.
-        Otherwise the node is initialized with the specified domain of
-        that quantum number.
+        Otherwise the node is initialized with the specified domain of that
+        quantum number.
         """
         variables = (set(), set())
 
@@ -512,14 +525,12 @@ class CSPPropagator(AbstractPropagator):
         return variables
 
     def create_edge_variables(self, edge_ids, qn_dict):
-        """
-        Creates variables for the quantum numbers of the specified edges.
+        """Create variables for the quantum numbers of the specified edges.
 
         If a quantum number is already defined for an edge, then a fixed
-        variable is created, which cannot be changed by the csp solver.
-        This is the case for initial and final state edges.
-        Otherwise the edges are initialized with the specified domains of
-        that quantum number.
+        variable is created, which cannot be changed by the csp solver. This is
+        the case for initial and final state edges. Otherwise the edges are
+        initialized with the specified domains of that quantum number.
         """
         variables = (set(), {})
         for edge_id in edge_ids:
@@ -548,17 +559,17 @@ class CSPPropagator(AbstractPropagator):
         return key
 
     def apply_solutions_to_graph(self, solutions):
-        """
-        Apply the CSP solutions to the graph instance.
-        In other words attach the solution quantum numbers as properties to
-        the edges. Also the solutions are filtered using the allowed
-        intermediate particle list, to avoid large memory consumption.
+        """Apply the CSP solutions to the graph instance.
+
+        In other words attach the solution quantum numbers as properties to the
+        edges. Also the solutions are filtered using the allowed intermediate
+        particle list, to avoid large memory consumption.
 
         Args:
-          solutions: list of solutions of the csp solver
+            solutions: list of solutions of the csp solver
 
         Returns:
-          solution graphs ([:class:`.StateTransitionGraph`])
+            solution graphs ([:class:`.StateTransitionGraph`])
         """
         solution_graphs = []
         initial_edges = get_initial_state_edges(self.graph)
@@ -650,10 +661,10 @@ def add_qn_to_graph_element(graph, var_info, value):
 
 
 class ConservationLawConstraintWrapper(Constraint):
-    """
-    Wrapper class of the python-constraint Constraint class, to allow a
-    customized definition of conservation laws, and hence a cleaner
-    user interface.
+    """Wrapper class of the python-constraint Constraint class.
+
+    This allows a customized definition of conservation laws, and hence a
+    cleaner user interface.
     """
 
     def __init__(self, rule, variable_mapping, name_delimiter):
@@ -684,11 +695,12 @@ class ConservationLawConstraintWrapper(Constraint):
         self.node_id = node_id
 
     def initialize_particle_lists(self):
-        """
-        Fill the name decoding map and initialize the in and out particle
-        lists. The variable names follow the scheme edge_id(delimiter)qn_name.
-        This method creates a dict linking the var name to a list that consists
-        of the particle list index and the qn name
+        """Fill the name decoding map.
+
+        Also initialize the in and out particle lists. The variable names
+        follow the scheme edge_id(delimiter)qn_name. This method creates a dict
+        linking the var name to a list that consists of the particle list index
+        and the qn name.
         """
         self.initialize_particle_list(
             self.in_variable_set, self.fixed_in_variables, self.part_in

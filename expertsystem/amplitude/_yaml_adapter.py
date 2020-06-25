@@ -193,7 +193,7 @@ def _extract_parameter_definitions_from_intensity(
 def gen_dict_extract(
     search_term: str, dictionary: Dict[str, Any]
 ) -> Generator:
-    """See https://stackoverflow.com/a/29652561"""
+    """See https://stackoverflow.com/a/29652561."""
     for key, value in dictionary.items():
         if key == search_term:
             yield value

@@ -1,3 +1,5 @@
+"""Default configuration for the `expertsystem`."""
+
 from copy import deepcopy
 import sys
 
@@ -59,9 +61,9 @@ default_conservation_law_priorities = {
 def create_default_interaction_settings(
     formalism_type, use_mass_conservation=True
 ):
-    """
-    Create a container, which holds the settings for the various interactions
-    (e.g.: strong, em and weak interaction).
+    """Create a container that holds the settings for the various interactions.
+
+    E.g.: strong, em and weak interaction.
     """
     interaction_type_settings = {}
     formalism_conservation_laws = []

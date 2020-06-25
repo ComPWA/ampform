@@ -1,7 +1,11 @@
+"""Abstract interfaces for amplitude model generation."""
+
 from abc import ABC, abstractmethod
 
 
 class AbstractAmplitudeNameGenerator(ABC):
+    """Abstract interface for a parameter name generator."""
+
     @abstractmethod
     def generate_unique_amplitude_name(self, graph, node_id):
         pass
@@ -16,6 +20,8 @@ class AbstractAmplitudeNameGenerator(ABC):
 
 
 class AbstractAmplitudeGenerator(ABC):
+    """Abstract interface for an amplitude model generator."""
+
     @abstractmethod
     def generate(self, graphs):
         pass

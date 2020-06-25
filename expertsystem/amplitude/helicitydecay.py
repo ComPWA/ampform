@@ -1,3 +1,5 @@
+"""Implementation of the helicity formalism for amplitude model generation."""
+
 from collections import OrderedDict
 import json
 import logging
@@ -34,7 +36,8 @@ from ..state.particle import (
 
 
 def group_graphs_same_initial_and_final(graphs):
-    """
+    """Match final and initial states in groups.
+
     Each graph corresponds to a specific state transition amplitude.
     This function groups together graphs, which have the same initial and
     final state (including spin). This is needed to determine the coherency of
@@ -42,6 +45,7 @@ def group_graphs_same_initial_and_final(graphs):
 
     Args:
         graphs ([:class:`.StateTransitionGraph`])
+
     Returns:
         graph groups ([[:class:`.StateTransitionGraph`]])
     """
@@ -97,15 +101,14 @@ def determine_attached_final_state_string(graph, edge_id):
 
 
 def determine_attached_final_state(graph, edge_id):
-    """
-    Determines all final state particles of a graph, which are attached
-    downward (forward in time) for a given edge (resembling the root)
+    """Determine all final state particles of a graph.
 
-    Args:
-        graph (:class:`.StateTransitionGraph`)
-        edge_id (int): id of the edge, which is taken as the root
-    Returns:
-        list of final state edge ids ([int])
+    These are attached downward (forward in time) for a given edge (resembling
+    the root).
+
+    Args: graph (:class:`.StateTransitionGraph`) edge_id (int): id of the edge,
+        which is taken as the root Returns: list of final state edge ids
+        ([int])
     """
     final_state_edge_ids = []
     all_final_state_edges = get_final_state_edges(graph)
@@ -125,8 +128,7 @@ def determine_attached_final_state(graph, edge_id):
 
 
 def get_recoil_edge(graph, edge_id):
-    """
-    Determines the id of the recoil edge for the specified edge of a graph.
+    """Determine the id of the recoil edge for the specified edge of a graph.
 
     Args:
         graph (:class:`.StateTransitionGraph`)
@@ -151,16 +153,13 @@ def get_recoil_edge(graph, edge_id):
 
 
 def get_parent_recoil_edge(graph, edge_id):
-    """
-    Determines the id of the recoil edge of the parent edge for the specified
-    edge of a graph.
+    """Determine the id of the recoil edge of the parent edge.
 
-    Args:
-        graph (:class:`.StateTransitionGraph`)
-        edge_id (int): id of the edge, for which the parents recoil partner is
-            determined
-    Returns:
-        parent recoil edge id (int)
+    For the specified edge of a graph.
+
+    Args: graph (:class:`.StateTransitionGraph`) edge_id (int): id of the edge,
+        for which the parents recoil partner is determined Returns: parent
+        recoil edge id (int)
     """
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
@@ -177,9 +176,7 @@ def get_parent_recoil_edge(graph, edge_id):
 
 
 def get_prefactor(graph):
-    """
-    calculates the product of all prefactors defined in this graph as a double
-    """
+    """Calculate the product of all prefactors defined in this graph."""
     prefactor_label = InteractionQuantumNumberNames.ParityPrefactor
     prefactor = None
     for node_id in graph.nodes:
@@ -286,6 +283,8 @@ def _get_name_hel_list(graph, edge_ids):
 
 
 class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
+    """Parameter name generator for the helicity formalism."""
+
     def __init__(self, use_parity_conservation=False):
         self.partial_amp_coefficient_infos = set()
         self.use_parity_conservation = use_parity_conservation
@@ -299,14 +298,12 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
             )
 
     def generate_amplitude_coefficient_infos(self, graph):
-        """
-        Generates coefficient info for a sequential amplitude graph.
+        """Generate coefficient info for a sequential amplitude graph.
 
         Generally, each partial amplitude of a sequential amplitude graph
         should check itself if it or a parity partner is already defined. If so
         a coupled coefficient is introduced.
         """
-
         seq_par_suffix = ""
         use_prefactor = False
         # loop over decay nodes in time order
@@ -360,11 +357,12 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         return amplitude_coefficient_infos
 
     def generate_unique_amplitude_name(self, graph, node_id=None):
-        """
-        Generates a unique name for the amplitude corresponding to the given
-        :py:class:`StateTransitionGraph`. If ``node_id`` is given, it
-        generates a unique name for the partial amplitude corresponding to the
-        interaction node of the given :py:class:`StateTransitionGraph`.
+        """Generates a unique name for the amplitude corresponding.
+
+        That is, corresponging to the given :class:`StateTransitionGraph`. If
+        ``node_id`` is given, it generates a unique name for the partial
+        amplitude corresponding to the interaction node of the given
+        :class:`StateTransitionGraph`.
         """
         name = ""
         if isinstance(node_id, int):
@@ -396,9 +394,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         return (in_names_hel_list, out_names_hel_list)
 
     def _generate_amplitude_coefficient_names(self, graph, node_id):
-        """
-        Generates partial amplitude coefficient name suffixes.
-        """
+        """Generate partial amplitude coefficient name suffixes."""
         (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
             graph, node_id
         )
@@ -417,6 +413,8 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
 
 
 class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
+    """Amplitude model generator for the helicity formalism."""
+
     def __init__(
         self,
         top_node_no_dynamics=True,
@@ -458,10 +456,11 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         self.generate_amplitude_info(graph_groups)
 
     def fix_parameters_unambiguously(self):
-        """
-        Fix parameters, so that the total amplitude is unambiguous, with regard
-        to the fit parameters. In other words: all fit parameters per graph,
-        except one, will all be fixed. It's fine if they are all already fixed.
+        """Fix parameters, so that the total amplitude is unambiguous.
+
+        Ambiguous means with regard to the fit parameters. In other words: all
+        fit parameters per graph, except one, will all be fixed. It's fine if
+        they are all already fixed.
         """
         pass
 
@@ -703,7 +702,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 )
 
             def write_line_break(self, data=None):  # type: ignore
-                """See https://stackoverflow.com/a/44284819"""
+                """See https://stackoverflow.com/a/44284819."""
                 super().write_line_break(data)
                 if len(self.indents) == 1:
                     super().write_line_break()

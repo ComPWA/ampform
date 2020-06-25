@@ -1,3 +1,5 @@
+"""Functions that steer operations of the `expertsystem`."""
+
 import logging
 from copy import deepcopy
 from itertools import product, permutations
@@ -88,12 +90,16 @@ def filter_interaction_types(
 
 
 class InteractionDeterminationFunctorInterface(ABC):
+    """Interface for interaction determination."""
+
     @abstractmethod
     def check(self, in_edge_props, out_edge_props, node_props):
         pass
 
 
 class GammaCheck(InteractionDeterminationFunctorInterface):
+    """Conservation check for photons."""
+
     name_label = particle.Labels.Name.name
 
     def check(self, in_edge_props, out_edge_props, node_props):
@@ -107,6 +113,8 @@ class GammaCheck(InteractionDeterminationFunctorInterface):
 
 
 class LeptonCheck(InteractionDeterminationFunctorInterface):
+    """Conservation check lepton numbers."""
+
     lepton_flavour_labels = [
         StateQuantumNumberNames.ElectronLN,
         StateQuantumNumberNames.MuonLN,
@@ -227,10 +235,7 @@ def remove_qns_from_graph(graph, qn_list):
 
 
 def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
-    """
-    defines the equal operator for the graphs ignoring certain quantum numbers
-    """
-
+    """Define equal operator for the graphs ignoring certain quantum numbers."""
     if not isinstance(ref_graph, StateTransitionGraph):
         raise TypeError(
             "Reference graph has to be of type StateTransitionGraph"
@@ -250,32 +255,31 @@ def check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
 
 
 def filter_graphs(graphs, filters):
-    """
-    Implements filtering of a list of :py:class:`.StateTransitionGraph` 's.
+    r"""Implement filtering of a list of `.StateTransitionGraph` 's.
 
     This function can be used to select a subset of
-    :py:class:`.StateTransitionGraph` 's from a list. Only the graphs passing
+    `.StateTransitionGraph` 's from a list. Only the graphs passing
     all supplied filters will be returned.
 
     Note:
         For the more advanced user, lambda functions can be used as filters.
 
     Args:
-        graphs ([:py:class:`.StateTransitionGraph`]): list of graphs to be
+        graphs ([`.StateTransitionGraph`]): list of graphs to be
             filtered
         filters (list): list of functions, which take a single
-            :py:class:`.StateTransitionGraph` as an argument
+            `.StateTransitionGraph` as an argument
     Returns:
-        [:py:class:`.StateTransitionGraph`]: filtered list of graphs
+        [`.StateTransitionGraph`]: filtered list of graphs
 
     Example:
         Selecting only the solutions, in which the :math:`\\rho` decays via
         p-wave:
 
-        >>> myfilter = require_interaction_property(
+        >>> my_filter = require_interaction_property(
                 'rho', InteractionQuantumNumberNames.L,
                 create_spin_domain([1], True))
-        >>> filtered_solutions = filter_graphs(solutions, [myfilter])
+        >>> filtered_solutions = filter_graphs(solutions, [my_filter])
     """
     filtered_graphs = graphs
     for x in filters:
@@ -288,9 +292,9 @@ def filter_graphs(graphs, filters):
 def require_interaction_property(
     ingoing_particle_name, interaction_qn, allowed_values
 ):
-    """
-    Closure, which can be used as a filter function in
-    :py:func:`.filter_graphs`.
+    """Filter function.
+
+    Closure, which can be used as a filter function in :func:`.filter_graphs`.
 
     It selects graphs based on a requirement on the property of specific
     interaction nodes.
@@ -298,7 +302,7 @@ def require_interaction_property(
     Args:
         ingoing_particle_name (str): name of particle, used to find nodes which
             have a particle with this name as "ingoing"
-        interaction_qn (:py:class:`.InteractionQuantumNumberNames`):
+        interaction_qn (:class:`.InteractionQuantumNumberNames`):
             interaction quantum number
         allowed_values (list): list of allowed values, that the interaction
             quantum number may take
@@ -454,10 +458,10 @@ def create_edge_id_particle_mapping(graph, external_edge_getter_function):
 
 
 def perform_external_edge_identical_particle_combinatorics(graph):
-    """
-    Creates combinatorics clones of the StateTransitionGraph in case of
-    identical particles in the initial or final state. Only identical
-    particles, which do not enter or exit the same node allow for
+    """Create combinatorics clones of the `.StateTransitionGraph`.
+
+    In case of identical particles in the initial or final state. Only
+    identical particles, which do not enter or exit the same node allow for
     combinatorics!
     """
     if not isinstance(graph, StateTransitionGraph):
@@ -514,6 +518,8 @@ def external_edge_identical_particle_combinatorics(
 
 
 class StateTransitionManager:
+    """Main handler for decay topologies."""
+
     def __init__(
         self,
         initial_state,
