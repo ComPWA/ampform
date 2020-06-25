@@ -12,13 +12,13 @@ def test_import_xml() -> None:
     assert "mu+" in particle_list.keys()
 
     some_particle = particle_list["gamma"]
-    quantum_numbers = some_particle[particle.LABELS.QuantumNumber.name]
+    quantum_numbers = some_particle[particle.Labels.QuantumNumber.name]
     quantum_number = quantum_numbers[0]
     assert (
-        quantum_number[particle.LABELS.Class.name]
+        quantum_number[particle.Labels.Class.name]
         == particle.StateQuantumNumberNames.Spin.name
     )
-    assert int(quantum_number[particle.LABELS.Value.name]) == 1
+    assert int(quantum_number[particle.Labels.Value.name]) == 1
 
 
 def test_xml_io() -> None:

@@ -131,7 +131,7 @@ def test_canonical_clebsch_gordan_ls_coupling(
 
     l_label = InteractionQuantumNumberNames.L
     s_label = InteractionQuantumNumberNames.S
-    qn_label = particle.LABELS.QuantumNumber
+    qn_label = particle.Labels.QuantumNumber
 
     spin_converter = SpinQNConverter()
     node_props = {

@@ -94,7 +94,7 @@ class InteractionDeterminationFunctorInterface(ABC):
 
 
 class GammaCheck(InteractionDeterminationFunctorInterface):
-    name_label = particle.LABELS.Name.name
+    name_label = particle.Labels.Name.name
 
     def check(self, in_edge_props, out_edge_props, node_props):
         int_types = [x for x in InteractionTypes]
@@ -112,8 +112,8 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
         StateQuantumNumberNames.MuonLN,
         StateQuantumNumberNames.TauLN,
     ]
-    name_label = particle.LABELS.Name.name
-    qns_label = particle.LABELS.QuantumNumber.name
+    name_label = particle.Labels.Name.name
+    qns_label = particle.Labels.QuantumNumber.name
 
     def check(self, in_edge_props, out_edge_props, node_props):
         node_interaction_types = [x for x in InteractionTypes]
@@ -180,8 +180,8 @@ def remove_duplicate_solutions(
 
 
 def remove_qns_from_graph(graph, qn_list):
-    qns_label = particle.LABELS.QuantumNumber.name
-    type_label = particle.LABELS.Type.name
+    qns_label = particle.Labels.QuantumNumber.name
+    type_label = particle.Labels.Type.name
 
     int_qns = [
         x for x in qn_list if isinstance(x, InteractionQuantumNumberNames)
@@ -329,7 +329,7 @@ def require_interaction_property(
 
 
 def _find_node_ids_with_ingoing_particle_name(graph, ingoing_particle_name):
-    name_label = particle.LABELS.Name.name
+    name_label = particle.Labels.Name.name
     found_node_ids = []
     for node_id in graph.nodes:
         edge_ids = get_edges_ingoing_to_node(graph, node_id)
@@ -446,7 +446,7 @@ def calculate_swappings(id_mapping):
 
 
 def create_edge_id_particle_mapping(graph, external_edge_getter_function):
-    name_label = particle.LABELS.Name.name
+    name_label = particle.Labels.Name.name
     return {
         i: graph.edge_props[i][name_label]
         for i in external_edge_getter_function(graph)

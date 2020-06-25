@@ -77,10 +77,10 @@ def get_graph_group_unique_label(graph_group):
 
 
 def get_helicity_from_edge_props(edge_props):
-    qns_label = particle.LABELS.QuantumNumber.name
-    type_label = particle.LABELS.Type.name
+    qns_label = particle.Labels.QuantumNumber.name
+    type_label = particle.Labels.Type.name
     spin_label = StateQuantumNumberNames.Spin.name
-    proj_label = particle.LABELS.Projection.name
+    proj_label = particle.Labels.Projection.name
     for qn in edge_props[qns_label]:
         if qn[type_label] == spin_label:
             return qn[proj_label]
@@ -236,7 +236,7 @@ def generate_particle_list(graphs):
     for g in graphs:
         for edge_props in g.edge_props.values():
             new_edge_props = remove_spin_projection(edge_props)
-            par_name = new_edge_props[particle.LABELS.Name.name]
+            par_name = new_edge_props[particle.Labels.Name.name]
             if par_name not in temp_particle_names:
                 particles.append(new_edge_props)
                 temp_particle_names.append(par_name)
@@ -244,10 +244,10 @@ def generate_particle_list(graphs):
 
 
 def remove_spin_projection(edge_props):
-    qns_label = particle.LABELS.QuantumNumber.name
-    type_label = particle.LABELS.Type.name
+    qns_label = particle.Labels.QuantumNumber.name
+    type_label = particle.Labels.Type.name
     spin_label = StateQuantumNumberNames.Spin.name
-    proj_label = particle.LABELS.Projection.name
+    proj_label = particle.Labels.Projection.name
 
     new_edge_props = deepcopy(edge_props)
 
@@ -274,7 +274,7 @@ def generate_particles_string(
 
 
 def _get_name_hel_list(graph, edge_ids):
-    name_label = particle.LABELS.Name.name
+    name_label = particle.Labels.Name.name
     name_hel_list = []
     for i in edge_ids:
         temp_hel = float(get_helicity_from_edge_props(graph.edge_props[i]))
@@ -329,7 +329,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
                     seq_par_suffix += coeff_suffix + ";"
                     self.partial_amp_coefficient_infos.add(coeff_suffix)
 
-        par_label = particle.LABELS.Parameter.name
+        par_label = particle.Labels.Parameter.name
         amplitude_coefficient_infos = {
             par_label: [
                 {
@@ -353,7 +353,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         if self.use_parity_conservation and use_prefactor:
             prefactor = get_prefactor(graph)
             if prefactor != 1.0 and prefactor is not None:
-                prefactor_label = particle.LABELS.PreFactor.name
+                prefactor_label = particle.Labels.PreFactor.name
                 amplitude_coefficient_infos[prefactor_label] = {
                     "Real": prefactor
                 }
@@ -435,8 +435,8 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 "Number of solution graphs is not larger than zero!"
             )
 
-        decay_info = {particle.LABELS.Type.name: "nonResonant"}
-        decay_info_label = particle.LABELS.DecayInfo.name
+        decay_info = {particle.Labels.Type.name: "nonResonant"}
+        decay_info_label = particle.Labels.DecayInfo.name
         for g in graphs:
             if self.top_node_no_dynamics:
                 init_edges = get_initial_state_edges(g)
@@ -466,11 +466,11 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         pass
 
     def generate_amplitude_info(self, graph_groups):
-        class_label = particle.LABELS.Class.name
-        name_label = particle.LABELS.Name.name
-        component_label = particle.LABELS.Component.name
-        type_label = particle.LABELS.Type.name
-        parameter_label = particle.LABELS.Parameter.name
+        class_label = particle.Labels.Class.name
+        name_label = particle.Labels.Name.name
+        component_label = particle.Labels.Component.name
+        type_label = particle.Labels.Type.name
+        parameter_label = particle.Labels.Parameter.name
 
         # for each graph group we create a coherent amplitude
         coherent_intensites = []
@@ -524,12 +524,12 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         }
 
     def generate_sequential_decay(self, graph):
-        class_label = particle.LABELS.Class.name
-        name_label = particle.LABELS.Name.name
-        component_label = particle.LABELS.Component.name
+        class_label = particle.Labels.Class.name
+        name_label = particle.Labels.Name.name
+        component_label = particle.Labels.Component.name
         spin_label = StateQuantumNumberNames.Spin
-        decay_info_label = particle.LABELS.DecayInfo.name
-        type_label = particle.LABELS.Type.name
+        decay_info_label = particle.Labels.DecayInfo.name
+        type_label = particle.Labels.Type.name
         partial_decays = []
         for node_id in graph.nodes:
             # in case a scalar without dynamics decays into daughters with no
@@ -573,7 +573,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             "Amplitude": partial_decays,
         }
 
-        par_label = particle.LABELS.Parameter.name
+        par_label = particle.Labels.Parameter.name
         coefficient_amplitude_dict = {
             class_label: "CoefficientAmplitude",
             component_label: amp_name,
@@ -581,7 +581,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             "Amplitude": sequential_amplitude_dict,
         }
 
-        prefactor_label = particle.LABELS.PreFactor.name
+        prefactor_label = particle.Labels.PreFactor.name
         if prefactor_label in amp_coeff_infos:
             coefficient_amplitude_dict.update(
                 {prefactor_label: amp_coeff_infos[prefactor_label]}
@@ -593,8 +593,8 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         return coefficient_amplitude_dict
 
     def generate_partial_decay(self, graph, node_id):
-        class_label = particle.LABELS.Class.name
-        name_label = particle.LABELS.Name.name
+        class_label = particle.Labels.Class.name
+        name_label = particle.Labels.Name.name
         decay_products = []
         for out_edge_id in get_edges_outgoing_to_node(graph, node_id):
             decay_products.append(

@@ -229,8 +229,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         self, input_values, filter_parameters, result
     ):
         graphs = []
-        name_label = particle.LABELS.Name.name
-        value_label = particle.LABELS.Value.name
+        name_label = particle.Labels.Name.name
+        value_label = particle.Labels.Value.name
         for value in input_values:
             tempgraph = make_ls_test_graph(value[1][0], value[1][1])
             tempgraph.add_edges([0])
