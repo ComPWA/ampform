@@ -1,31 +1,63 @@
 How to contribute?
 ==================
 
-Some recommended packages for Python development
-------------------------------------------------
 
-* `pytest <https://docs.pytest.org/en/latest/>`_: Run :code:`pytest` in the main
-  folder of the repository to run all :file:`test_*.py` files
+Python developer tools
+----------------------
 
-* `pylint <https://pypi.org/project/pylint/>`_: Scan your code for naming
-  conventions and proper use of Python
-
-* `rope <https://github.com/python-rope/rope>`_: Python refactoring tools
-
-* `sphinx <https://www.sphinx-doc.org/>`_: Generate documentation of your
-  Python package
-
-* `doc8 <https://pypi.org/project/doc8/>`_: A style checker for
-  `reStructuredText
-  <https://docutils.sourceforge.io/docs/ref/rst/introduction.html>`_
-
-These packages and more can be installed using the `requirements-dev.txt
+The PWA Expert System repository comes with a set of Python developer tools.
+They are defined in the `requirements-dev.txt
 <https://github.com/ComPWA/expertsystem/blob/master/requirements-dev.txt>`_
-file:
+file, which means you can install them all in one go with:
 
 .. code-block:: shell
 
   pip install -r requirements_dev.txt
+
+Most of the tools defined come with specific configuration files (e.g.
+`pyproject.toml
+<https://github.com/ComPWA/expertsystem/blob/master/pyproject.toml>`_ for
+`black <https://black.readthedocs.io/>`_, `.pylintrc
+<https://github.com/ComPWA/expertsystem/blob/master/.pylintrc>`_ for `pylint
+<http://pylint.pycqa.org/en/latest/>`_, and `tox.ini
+<https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ for `flake8
+<https://flake8.pycqa.org/>`_ and `pydocstyle <http://www.pydocstyle.org/>`_).
+These config files **define our convention policies**. If you run into
+persistent linting errors this may mean we need to further specify our
+conventions. In that case, it's best to create an issue and propose a policy
+change that can then be formulated in the config files.
+
+All **style checks** are enforced through a tool called `pre-commit
+<https://pre-commit.com/>`_. Upon committing, :code:`pre-commit` runs a set of
+checks defined in the file `.pre-commit-config.yaml
+<https://github.com/ComPWA/expertsystem/blob/master/.pre-commit-config.yaml>`_
+over all staged files. You can also quickly run all checks over *all* indexed
+files in the repository with the command:
+
+.. code-block:: shell
+
+  pre-commit run -a
+
+This command is also run on Travis CI whenever you submit a pull request,
+ensuring that all files in the repository follow the conventions set in the
+config files of these tools.
+
+More thorough checks (that is, **runtime tests**) can be run in one go with the
+command
+
+.. code-block:: shell
+
+  tox
+
+This command will run :code`pytest`, check for :ref:`test coverage
+<contribute:Test coverage>`, verify the hyperlinks in documentation (requires
+internet connection), and run the Jupyter notebooks. All this can take a few
+minutes, but it's definitely worth it to *run tox before submitting a pull
+request!*
+
+The different :code:`tox` tests are defined in the `tox.ini
+<https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file under
+:code:`envlist`.
 
 
 Test coverage
@@ -47,6 +79,48 @@ Gutters
 extension (for this you need to run :code:`pytest` with the flag
 :code:`--cov-report=xml`).
 
+
+Documentation
+-------------
+
+The documentation that you find on `expertsystem.rtfd.io
+<http://expertsystem.rtfd.io>`_ are built from the `documentation source code
+folder <https://github.com/ComPWA/expertsystem/tree/master/doc>`_ (:file:`doc`)
+with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also builds the API and
+therefore checks whether the `docstrings
+<https://www.python.org/dev/peps/pep-0257/>`_ in the Python source code are
+valid and correctly interlinked.
+
+If you followed the section :ref:`contribute:Python developer tools`, you can
+quickly build the documentation from the root directory of this repository with
+the command:
+
+.. code-block:: shell
+
+  tox -e doc
+
+Alternatively, you can run :code:`sphinx-build` yourself. The requirements for
+that are in the `doc/requirements.txt
+<https://github.com/ComPWA/expertsystem/blob/master/doc/requirements.txt>`_
+file:
+
+.. code-block:: shell
+
+  cd doc
+  pip install -r requirements.txt
+  make html
+
+If you want to render the output of the `Jupyter notebook examples
+<https://github.com/ComPWA/expertsystem/tree/master/examples>`_, set the
+:code:`NBSPHINX_EXECUTE` environment variable first:
+
+.. code-block:: shell
+
+  NBSPHINX_EXECUTE= make html
+
+Note that the notebooks are also run if you run :code:`tox`.
+
+
 Git
 ---
 
@@ -64,8 +138,9 @@ Git
   branches, it is recommended to commit frequently (WIP keyword), but squash
   those commits upon submitting a merge request.
 
-Python
-------
+
+Python conventions
+------------------
 
 * Follow :pep:`8` conventions.
 
@@ -86,7 +161,7 @@ Python
   entries in a data container, split the entries over multiple lines and end
   the last entry with a comma, like so:
 
-  .. code-block: python
+  .. code-block:: python
 
     __all__ = [
         'core',
