@@ -2,12 +2,20 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.1.0
     hooks:
+      - id: check-ast
       - id: check-case-conflict
       - id: check-docstring-first
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-vcs-permalinks
       - id: check-xml
       - id: check-yaml
+      - id: debug-statements
       - id: end-of-file-fixer
       - id: mixed-line-ending
+      - id: name-tests-test
+        args: ["--django"]
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
@@ -43,16 +51,16 @@ repos:
         types:
           - python
 
-      - id: pylint
-        name: pylint
-        entry: pylint
+      - id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
         language: system
         types:
           - python
 
-      - id: pydocstyle
-        name: pydocstyle
-        entry: pydocstyle
+      - id: pylint
+        name: pylint
+        entry: pylint --rcfile=.pylintrc --score=no
         language: system
         types:
           - python
