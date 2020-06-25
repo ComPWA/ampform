@@ -24,8 +24,8 @@ for the `expertsystem` installation:
   conda env create -f environment.yml
 
 This command will take a few minutes, because all required dependencies will be
-installed in one go through `pip <https://pypi.org/project/pip/>`_. After Conda
-finishes creating the environment, you can activate it with as follows:
+installed in one go through `pip <https://pypi.org/project/pip/>`__. After
+Conda finishes creating the environment, you can activate it with as follows:
 
 .. code-block:: shell
 
@@ -55,7 +55,7 @@ whenever you want to run those Python packages.
   source ./venv/bin/activate
 
 Now you can safely install the required Python requirements through `pip
-<https://pypi.org/project/pip/>`_:
+<https://pypi.org/project/pip/>`__:
 
 .. code-block:: shell
 

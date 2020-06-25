@@ -20,8 +20,6 @@ things out. When using the first option, you would have to run :ref:`setuptools
 <setuptools>` again to make the changes known to the system.
 
 
-.. _setuptools:
-
 Using `setuptools <https://setuptools.readthedocs.io/>`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

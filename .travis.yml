@@ -42,6 +42,7 @@ jobs:
         - black . --check
         - pre-commit run nbstripout -a
         - pre-commit run prettier -a
+        - pre-commit run rstcheck -a
 
     - name: "Python 3.6 on Ubuntu 18.04"
       python: 3.6
