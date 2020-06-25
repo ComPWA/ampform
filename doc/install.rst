@@ -3,16 +3,11 @@ Installation
 
 There are two ways to install `expertsystem`. Even though the PyPI installation
 is the most convenient, we recommend following the :ref:`interactive
-installation <installation:Interactive installation>` procedure.
+installation <install:Interactive installation>` procedure.
 
 
 Installation through PyPI
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. attention::
-
-  `expertsystem` is currently under development, so there currently exists no
-  PyPI package!
 
 `expertsystem` is `available as a PyPI package <https://pypi.org/>`_ so
 installation is super easy:
@@ -29,7 +24,7 @@ Et voilà, that's it! You can try out whether the installation works by running:
 
 from the Python interpreter. Note that PyPI **only allows you to install
 specific releases**, so we recommend using the more dynamic, :ref:`'interactive
-installation' <installation:Interactive installation>` instead.
+installation' <install:Interactive installation>` instead.
 
 
 Interactive installation

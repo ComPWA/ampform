@@ -120,6 +120,13 @@ If you want to render the output of the `Jupyter notebook examples
 
 Note that the notebooks are also run if you run :code:`tox`.
 
+A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
+our documentation, is that documentation is built for each pull request as
+well. This means that you can view the documentation for your changes as well.
+For more info, see `here
+<https://docs.readthedocs.io/en/stable/guides/autobuild-docs-for-pull-requests.html>`__,
+or just click "details" under the RTD check once you submit your PR.
+
 
 Git
 ---
