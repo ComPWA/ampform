@@ -1,10 +1,9 @@
 """Implementation of the helicity formalism for amplitude model generation."""
 
-from collections import OrderedDict
 import json
 import logging
+from collections import OrderedDict
 from copy import deepcopy
-
 from typing import (
     Any,
     Dict,
@@ -14,24 +13,24 @@ import xmltodict
 
 import yaml
 
-from . import _yaml_adapter
-from .abstractgenerator import (
-    AbstractAmplitudeNameGenerator,
-    AbstractAmplitudeGenerator,
-)
-
-from ..topology.graph import (
-    get_initial_state_edges,
-    get_final_state_edges,
-    get_edges_ingoing_to_node,
-    get_edges_outgoing_to_node,
-)
-from ..state import particle
-from ..state.particle import (
-    StateQuantumNumberNames,
+from expertsystem.state import particle
+from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
+    StateQuantumNumberNames,
     get_interaction_property,
     get_particle_property,
+)
+from expertsystem.topology.graph import (
+    get_edges_ingoing_to_node,
+    get_edges_outgoing_to_node,
+    get_final_state_edges,
+    get_initial_state_edges,
+)
+
+from . import _yaml_adapter
+from .abstractgenerator import (
+    AbstractAmplitudeGenerator,
+    AbstractAmplitudeNameGenerator,
 )
 
 

@@ -5,15 +5,15 @@ Analyses the decay :math:`J/\psi \to \pi^0 \pi^+ \pi^-`.
 
 import logging
 
-from expertsystem.ui.system_control import (
-    StateTransitionManager,
-    InteractionTypes,
-)
-
 from expertsystem.amplitude.helicitydecay import (
     HelicityDecayAmplitudeGeneratorXML,
 )
 from expertsystem.state import particle
+from expertsystem.ui.system_control import (
+    InteractionTypes,
+    StateTransitionManager,
+)
+
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,29 +1,31 @@
 """Default configuration for the `expertsystem`."""
 
-from copy import deepcopy
 import sys
+from copy import deepcopy
 
-from ..state.particle import (
-    StateQuantumNumberNames,
-    InteractionQuantumNumberNames,
-    create_spin_domain,
-)
-
-from ..state.propagation import InteractionNodeSettings, InteractionTypes
-
-from ..state.conservationrules import (
+from expertsystem.state.conservationrules import (
     AdditiveQuantumNumberConservation,
-    ParityConservation,
-    ParityConservationHelicity,
-    IdenticalParticleSymmetrization,
-    SpinConservation,
-    ClebschGordanCheckHelicityToCanonical,
-    HelicityConservation,
     CParityConservation,
+    ClebschGordanCheckHelicityToCanonical,
     GParityConservation,
     GellMannNishijimaRule,
+    HelicityConservation,
+    IdenticalParticleSymmetrization,
     MassConservation,
+    ParityConservation,
+    ParityConservationHelicity,
+    SpinConservation,
 )
+from expertsystem.state.particle import (
+    InteractionQuantumNumberNames,
+    StateQuantumNumberNames,
+    create_spin_domain,
+)
+from expertsystem.state.propagation import (
+    InteractionNodeSettings,
+    InteractionTypes,
+)
+
 
 default_particle_list_search_paths = [
     ".",

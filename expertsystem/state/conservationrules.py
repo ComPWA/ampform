@@ -4,22 +4,22 @@ Contains:
 - Functors for quantum number condition checks.
 """
 
+import logging
 from abc import ABC, abstractmethod
-from functools import reduce
 from copy import deepcopy
+from functools import reduce
 
 from numpy import arange
-import logging
 
 from .particle import (
-    StateQuantumNumberNames,
     InteractionQuantumNumberNames,
-    ParticlePropertyNames,
     ParticleDecayPropertyNames,
+    ParticlePropertyNames,
     QNNameClassMapping,
     QuantumNumberClasses,
-    is_boson,
     Spin,
+    StateQuantumNumberNames,
+    is_boson,
 )
 
 
@@ -675,16 +675,16 @@ class SpinConservation(AbstractRule):
                 else:
                     spins_daughters_coupled.add(spin_list.pop())
             if InteractionQuantumNumberNames.L in interaction_qns:
-                L = interaction_qns[InteractionQuantumNumberNames.L]
-                S = interaction_qns[InteractionQuantumNumberNames.S]
+                ang_mom = interaction_qns[InteractionQuantumNumberNames.L]
+                spin = interaction_qns[InteractionQuantumNumberNames.S]
                 if self.use_projection:
-                    if S in spins_daughters_coupled:
-                        total_spins.update(self.spin_couplings(S, L))
+                    if spin in spins_daughters_coupled:
+                        total_spins.update(self.spin_couplings(spin, ang_mom))
                 else:
-                    if S.magnitude() in [
+                    if spin.magnitude() in [
                         x.magnitude() for x in spins_daughters_coupled
                     ]:
-                        total_spins.update(self.spin_couplings(S, L))
+                        total_spins.update(self.spin_couplings(spin, ang_mom))
             else:
                 if self.use_projection:
                     total_spins = spins_daughters_coupled
@@ -772,19 +772,21 @@ class ClebschGordanCheckHelicityToCanonical(AbstractRule):
                 out_spins[1].magnitude(), -out_spins[1].projection()
             )
             helicity_diff = sum([x.projection() for x in out_spins])
-            L = interaction_qns[InteractionQuantumNumberNames.L]
-            S = interaction_qns[InteractionQuantumNumberNames.S]
-            if S.magnitude() < abs(helicity_diff) or in_spins[
+            ang_mom = interaction_qns[InteractionQuantumNumberNames.L]
+            spin = interaction_qns[InteractionQuantumNumberNames.S]
+            if spin.magnitude() < abs(helicity_diff) or in_spins[
                 0
             ].magnitude() < abs(helicity_diff):
                 return False
-            S = Spin(S.magnitude(), helicity_diff)
+            spin = Spin(spin.magnitude(), helicity_diff)
             if is_clebsch_gordan_coefficient_zero(
-                out_spins[0], out_spins[1], S
+                out_spins[0], out_spins[1], spin
             ):
                 return False
             in_spins[0] = Spin(in_spins[0].magnitude(), helicity_diff)
-            return not is_clebsch_gordan_coefficient_zero(L, S, in_spins[0])
+            return not is_clebsch_gordan_coefficient_zero(
+                ang_mom, spin, in_spins[0]
+            )
         return False
 
 

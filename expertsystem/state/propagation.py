@@ -7,40 +7,39 @@ the allowed quantum numbers of the intermediate states. The propagator classes
 :mod:`.conservationrules`.
 """
 
-from copy import deepcopy
-from collections import defaultdict
-from enum import Enum, auto
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
+from collections import defaultdict
+from copy import deepcopy
+from enum import Enum, auto
 
-from ..solvers.constraint import (
-    Problem,
-    Constraint,
-    Unassigned,
+from expertsystem.solvers.constraint import (
     BacktrackingSolver,
+    Constraint,
+    Problem,
+    Unassigned,
 )
-
-from ..topology.graph import (
-    get_initial_state_edges,
-    get_final_state_edges,
+from expertsystem.state import particle
+from expertsystem.state.conservationrules import AbstractRule
+from expertsystem.state.particle import (
+    InteractionQuantumNumberNames,
+    ParticleDecayPropertyNames,
+    ParticlePropertyNames,
+    QNClassConverterMapping,
+    QNNameClassMapping,
+    StateQuantumNumberNames,
+    get_interaction_property,
+    get_particle_candidates_for_state,
+    get_particle_property,
+    initialize_allowed_particle_list,
+    initialize_graphs_with_particles,
+)
+from expertsystem.topology.graph import (
     get_edges_ingoing_to_node,
     get_edges_outgoing_to_node,
+    get_final_state_edges,
+    get_initial_state_edges,
     get_intermediate_state_edges,
-)
-from ..state.conservationrules import AbstractRule
-from ..state import particle
-from ..state.particle import (
-    StateQuantumNumberNames,
-    InteractionQuantumNumberNames,
-    ParticlePropertyNames,
-    ParticleDecayPropertyNames,
-    get_particle_property,
-    get_interaction_property,
-    QNNameClassMapping,
-    QNClassConverterMapping,
-    initialize_graphs_with_particles,
-    get_particle_candidates_for_state,
-    initialize_allowed_particle_list,
 )
 
 
@@ -584,7 +583,7 @@ class CSPPropagator(AbstractPropagator):
         #             " create a copy graph")
         # bar = IncrementalBar('Filtering solutions', max=len(solutions))
 
-        found_JPs = set()
+        found_jps = set()
 
         for solution in solutions:
             graph_copy = deepcopy(self.graph)
@@ -613,7 +612,7 @@ class CSPPropagator(AbstractPropagator):
                         graph_copy.edge_props[int_edge_id],
                         StateQuantumNumberNames.Parity,
                     )
-                    found_JPs.add(
+                    found_jps.add(
                         str(spin.magnitude())
                         + ("-" if parity == -1 or parity == -1.0 else "+")
                     )
@@ -635,7 +634,7 @@ class CSPPropagator(AbstractPropagator):
                 + str(len(solutions))
                 + " solutions!"
             )
-            logging.warning("solution inter. state J^P: " + str(found_JPs))
+            logging.warning("solution inter. state J^P: " + str(found_jps))
         return solution_graphs
 
 

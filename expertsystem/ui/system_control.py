@@ -1,46 +1,46 @@
 """Functions that steer operations of the `expertsystem`."""
 
 import logging
-from copy import deepcopy
-from itertools import product, permutations
-from collections import OrderedDict
 from abc import ABC, abstractmethod
+from collections import OrderedDict
+from copy import deepcopy
+from itertools import (
+    permutations,
+    product,
+)
 from multiprocessing import Pool
-import inspect
 from os import path
 from typing import Callable
 
 from progress.bar import IncrementalBar
 
 import expertsystem
-
-from ..topology.graph import (
-    StateTransitionGraph,
+from expertsystem.state import particle
+from expertsystem.state.particle import (
+    CompareGraphElementPropertiesFunctor,
+    InteractionQuantumNumberNames,
+    ParticlePropertyNames,
+    StateQuantumNumberNames,
+    get_interaction_property,
+    get_particle_property,
+    initialize_graph,
+    particle_list,
+)
+from expertsystem.state.propagation import (
+    FullPropagator,
+    InteractionNodeSettings,
+    InteractionTypes,
+)
+from expertsystem.topology.graph import (
     InteractionNode,
+    StateTransitionGraph,
+    get_edges_ingoing_to_node,
     get_edges_outgoing_to_node,
     get_final_state_edges,
     get_initial_state_edges,
-    get_edges_ingoing_to_node,
 )
-from ..topology.topologybuilder import SimpleStateTransitionTopologyBuilder
-
-from ..state import particle
-from ..state.particle import (
-    load_particle_list_from_xml,
-    particle_list,
-    initialize_graph,
-    get_particle_property,
-    get_interaction_property,
-    StateQuantumNumberNames,
-    InteractionQuantumNumberNames,
-    ParticlePropertyNames,
-    CompareGraphElementPropertiesFunctor,
-)
-
-from ..state.propagation import (
-    FullPropagator,
-    InteractionTypes,
-    InteractionNodeSettings,
+from expertsystem.topology.topologybuilder import (
+    SimpleStateTransitionTopologyBuilder,
 )
 
 from .default_settings import (

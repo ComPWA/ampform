@@ -10,7 +10,10 @@ import copy
 import itertools
 import logging
 
-from .graph import StateTransitionGraph, InteractionNode, are_graphs_isomorphic
+from .graph import (
+    StateTransitionGraph,
+    are_graphs_isomorphic,
+)
 
 
 class SimpleStateTransitionTopologyBuilder:

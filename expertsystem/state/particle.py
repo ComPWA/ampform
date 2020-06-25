@@ -4,13 +4,13 @@ This module defines a particle as a collection of quantum numbers and things
 related to this.
 """
 
+import json
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
 from enum import Enum, auto
 from itertools import permutations
-from json import loads, dumps
 
 from numpy import arange
 
@@ -18,12 +18,12 @@ import xmltodict
 
 import yaml
 
-from ..topology.graph import (
-    get_initial_state_edges,
+from expertsystem.topology.graph import (
     get_final_state_edges,
+    get_initial_state_edges,
     get_intermediate_state_edges,
-    get_originating_initial_state_edges,
     get_originating_final_state_edges,
+    get_originating_initial_state_edges,
 )
 
 
@@ -301,7 +301,7 @@ def load_particle_list_from_xml(file_path: str) -> None:
 
     def to_dict(input_ordered_dict: OrderedDict) -> dict:
         """Convert nested `OrderedDict` to a nested `dict`."""
-        return loads(dumps(input_ordered_dict))
+        return json.loads(json.dumps(input_ordered_dict))
 
     name_label = Labels.Name.name
     with open(file_path, "rb") as xmlfile:
@@ -490,10 +490,10 @@ class CompareGraphElementPropertiesFunctor:
                 type_name = temp_qn_dict[type_label]
                 del temp_qn_dict[type_label]
                 new_qns2[type_name] = temp_qn_dict
-        return loads(
-            dumps(new_qns1, sort_keys=True), object_pairs_hook=OrderedDict
-        ) == loads(
-            dumps(new_qns2, sort_keys=True), object_pairs_hook=OrderedDict
+        return json.loads(
+            json.dumps(new_qns1, sort_keys=True), object_pairs_hook=OrderedDict
+        ) == json.loads(
+            json.dumps(new_qns2, sort_keys=True), object_pairs_hook=OrderedDict
         )
 
     def __call__(self, props1, props2):
@@ -534,10 +534,12 @@ class CompareGraphElementPropertiesFunctor:
             if qns_label in copy_props2[ele_id]:
                 del copy_props2[ele_id][qns_label]
 
-        if loads(
-            dumps(copy_props1, sort_keys=True), object_pairs_hook=OrderedDict
-        ) != loads(
-            dumps(copy_props2, sort_keys=True), object_pairs_hook=OrderedDict
+        if json.loads(
+            json.dumps(copy_props1, sort_keys=True),
+            object_pairs_hook=OrderedDict,
+        ) != json.loads(
+            json.dumps(copy_props2, sort_keys=True),
+            object_pairs_hook=OrderedDict,
         ):
             return False
         return True

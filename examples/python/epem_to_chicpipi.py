@@ -3,13 +3,13 @@ r"""Sample script for the testing purposes.
 Using the decay :math:`e^+e^- \to \Chi_{c1} \pi^+ \pi^-`.
 """
 
-
 import logging
 
 from expertsystem.ui.system_control import (
-    StateTransitionManager,
     InteractionTypes,
+    StateTransitionManager,
 )
+
 
 logging.basicConfig(level=logging.INFO)
 
