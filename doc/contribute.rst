@@ -28,32 +28,24 @@ file:
   pip install -r requirements_dev.txt
 
 
-Conventions
------------
+Test coverage
+-------------
 
-Try to keep test coverage high. You can test current coverage by running
-
-.. code-block:: shell
-
-  cd tests
-  pytest
-
-Note that we navigated into the `tests
-<https://github.com/ComPWA/expertsystem/tree/master/tests>`_ directory first as
-to avoid testing the files in the :doc:`source code directory
-</install/get-the-source-code>`.
-
-You can generate and view a report of the unit test coverage by running:
+Try to keep test coverage high. You can compute current coverage by running
 
 .. code-block:: shell
 
-  cd tests
   pytest \
-    --cov-config=.coveragerc \
     --cov-report=html \
+    --cov-report=xml \
     --cov=expertsystem
 
-and opening :file:`htmlcov/index.html`.
+and opening :file:`htmlcov/index.html` in a browser. In VScode, you can
+visualize which lines in the code base are covered by tests with the `Coverage
+Gutters
+<https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters>`_
+extension (for this you need to run :code:`pytest` with the flag
+:code:`--cov-report=xml`).
 
 Git
 ---

@@ -9,6 +9,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "cSpell.language": "en-US",
+  "coverage-gutters.coverageFileNames": ["coverage.xml"],
+  "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
   "editor.rulers": [80],
   "files.associations": {
     "*.inc": "restructuredtext"

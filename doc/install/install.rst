@@ -80,6 +80,5 @@ For more thorough testing you can run the unit tests:
 
 .. code-block:: shell
 
-  cd tests
-  pip install -r requirements.txt
+  pip install -r tests/requirements.txt
   pytest -m "not slow"
