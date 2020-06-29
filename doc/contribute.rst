@@ -60,6 +60,33 @@ The different :code:`tox` tests are defined in the `tox.ini
 :code:`envlist`.
 
 
+Spelling
+--------
+
+Throughout this repository, we follow American English (`en-us
+<https://www.andiamo.co.uk/resources/iso-language-codes/>`_) spelling
+conventions. As a tool, we use `cSpell
+<https://github.com/streetsidesoftware/cspell/blob/master/packages/cspell/README.md>`_
+because it allows to check variable names in camel case and snake case.
+Accepted words are tracked through the :file:`cspell.json` file (they formulate
+our conventions), where the the :code:`words` lists words that you want to see
+as suggested corrections, while :code:`ignoreWords` are just the words that
+won't be flagged. This way, a spelling checker helps you in avoid mistakes in
+the code as well!
+
+It is easiest to use cSpell in :ref:`contribute:Visual Studio Code`, through
+the `Code Spell Checker
+<https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker>`_
+extension: it provides linting, suggests corrections from the :code:`words`
+section, and enables you to quickly add or ignore words through the
+:file:`cspell.json` file.
+
+Alternatively, you can `run cSpell
+<https://www.npmjs.com/package/cspell#installation>`__ on the entire code base
+(with :code:`cspell *`), but for that your system requires `npm
+<https://www.npmjs.com/>`_.
+
+
 Test coverage
 -------------
 

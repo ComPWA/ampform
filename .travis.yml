@@ -33,9 +33,12 @@ jobs:
 
     - name: "Style checks"
       python: 3.6
+      before_script:
+        - npm install -g cspell
       script:
         - pip3 install -r requirements-dev.txt
         - tox -e style
+        - cspell $(git diff d4f1928 --name-only)
 
     - name: "Python 3.6 on Ubuntu 18.04"
       python: 3.6

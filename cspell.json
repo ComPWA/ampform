@@ -1,0 +1,51 @@
+{
+    "version": "0.1",
+    "enableFiletypes": [
+        "git-rebase",
+        "ini",
+        "pip-requirements"
+    ],
+    "flagWords": [
+        "colour",
+        "hte",
+        "optimise"
+    ],
+    "ignorePaths": [
+        "cspell.json"
+    ],
+    "language": "en-US",
+    "words": [
+        "docstrings",
+        "expertsystem",
+        "jupyter",
+        "mypy",
+        "numpy",
+        "permalinks",
+        "pydocstyle",
+        "pylint",
+        "pypi",
+        "pytest",
+        "repos",
+        "rstcheck",
+        "xcode",
+        "xmltodict"
+    ],
+    "ignoreWords": [
+        "codecov",
+        "commit's",
+        "envlist",
+        "esbenp",
+        "htmlcov",
+        "ipynb",
+        "linkcheck",
+        "nbsphinx",
+        "nbstripout",
+        "oneline",
+        "pandoc",
+        "pylintrc",
+        "pyproject",
+        "rcfile",
+        "rtfd",
+        "sdist"
+    ]
+}

@@ -17,7 +17,7 @@ INSTALL_REQUIRES = [
 ]
 
 
-def long_description():
+def long_description() -> str:
     """Parse long description from readme."""
     with open("README.md", "r") as readme_file:
         return readme_file.read()
