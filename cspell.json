@@ -11,10 +11,12 @@
         "optimise"
     ],
     "ignorePaths": [
+        ".vscode/extensions.json",
         "cspell.json"
     ],
     "language": "en-US",
     "words": [
+        "conda",
         "docstrings",
         "expertsystem",
         "jupyter",
@@ -27,6 +29,7 @@
         "pytest",
         "repos",
         "rstcheck",
+        "venv",
         "xcode",
         "xmltodict"
     ],

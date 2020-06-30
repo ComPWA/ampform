@@ -21,7 +21,7 @@ for the `expertsystem` installation:
 
 .. code-block:: shell
 
-  conda env create -f environment.yml
+  conda env create
 
 This command will take a few minutes, because all required dependencies will be
 installed in one go through `pip <https://pypi.org/project/pip/>`__. After

@@ -215,10 +215,15 @@ We recommend using `Visual Studio Code <https://code.visualstudio.com/>`_ as
 it's free, regularly updated, and very flexible through it's wide offer of user
 extensions.
 
-If you add or open this repository to/as a `VSCode workspace
-<https://code.visualstudio.com/docs/editor/multi-root-workspaces>`_, the
-:file:`.vscode/settings.json` will ensure that you have the right developer
-settings for this repository.
+If you add or open this repository as a `VSCode workspace
+<https://code.visualstudio.com/docs/editor/multi-root-workspaces>`_, the file
+`.vscode/settings.json
+<https://github.com/ComPWA/expertsystem/blob/master/.vscode/settings.json>`_
+will ensure that you have the right developer settings for this repository. In
+addition, VSCode will automatically recommend you to install a number of
+extensions that we use when working on this code base (they are `defined
+<https://code.visualstudio.com/updates/v1_6#_workspace-extension-recommendations>`__
+:file:`.vscode/extensions.json` file).
 
 You can still specify your own settings in `either the user or encompassing
 workspace settings <https://code.visualstudio.com/docs/getstarted/settings>`_,
