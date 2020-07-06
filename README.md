@@ -21,7 +21,8 @@ for an introduction to the Particle Wave Analysis Expert System!
   - [x] Option to overwrite and append with custom particle definitions
 - **State transition graph**
   - [x] Feynman graph like description of the reactions
-  - [ ] Visualization of the topology ([`graphviz`](https://pypi.org/project/graphviz/))
+  - [ ] Visualization of the topology
+        ([`graphviz`](https://pypi.org/project/graphviz/))
 - **Conservation rules**
   - [x] Open-closed design
   - [x] Large set of predefined rules
