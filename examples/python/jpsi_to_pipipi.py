@@ -5,9 +5,8 @@ Analyses the decay :math:`J/\psi \to \pi^0 \pi^+ \pi^-`.
 
 import logging
 
-from expertsystem.amplitude.helicitydecay import (
-    HelicityDecayAmplitudeGeneratorXML,
-)
+# cspell:ignore helicitydecay
+from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
 from expertsystem.state import particle
 from expertsystem.ui.system_control import (
     InteractionTypes,
@@ -37,6 +36,6 @@ print("intermediate states:")
 for g in solutions:
     print(g.edge_props[1][particle.Labels.Name.name])
 
-xml_generator = HelicityDecayAmplitudeGeneratorXML()
+xml_generator = HelicityAmplitudeGenerator()
 xml_generator.generate(solutions)
 xml_generator.write_to_file("test.xml")

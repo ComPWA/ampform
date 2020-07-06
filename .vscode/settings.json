@@ -20,7 +20,7 @@
   "python.formatting.provider": "black",
   "python.languageServer": "Jedi",
   "python.linting.flake8Enabled": true,
-  "python.linting.mypyArgs": ["--config-file=tox.ini", "--follow-imports=skip"],
+  "python.linting.mypyArgs": ["--config-file=tox.ini"],
   "python.linting.mypyEnabled": true,
   "python.linting.pydocstyleEnabled": true,
   "python.linting.pylintCategorySeverity.refactor": "Information",

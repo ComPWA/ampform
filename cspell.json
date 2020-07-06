@@ -10,11 +10,13 @@
     ],
     "ignorePaths": [
         ".pre-commit-config.yaml",
+        ".pylintrc",
         ".travis.yml",
         ".vscode/*",
         "cspell.json",
         "doc/conf.py",
-        "setup.py"
+        "setup.py",
+        "tox.ini"
     ],
     "language": "en-US",
     "words": [
@@ -25,6 +27,9 @@
         "helicity",
         "isospin",
         "jupyter",
+        "numpy",
+        "pbar",
+        "mypy",
         "pydocstyle",
         "pylint",
         "pytest",
