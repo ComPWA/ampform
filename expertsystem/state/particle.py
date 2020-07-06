@@ -608,12 +608,12 @@ def check_if_spin_projections_set(state):
                 "Spin not defined for particle: \n" + str(particle)
             )
         mag = spin.magnitude()
-        spin_projs = arange(-mag, mag + 1, 1.0).tolist()
+        spin_projections = arange(-mag, mag + 1, 1.0).tolist()
         mass = get_particle_property(particle, mass_label)
         if mass == 0.0:
-            if 0.0 in spin_projs:
-                del spin_projs[spin_projs.index(0.0)]
-        state = (state, spin_projs)
+            if 0.0 in spin_projections:
+                del spin_projections[spin_projections.index(0.0)]
+        state = (state, spin_projections)
     return state
 
 
@@ -765,9 +765,9 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
                 logging.debug("edge properties:")
                 logging.debug(graph.edge_props[int_edge_id])
             new_graphs_temp = []
-            for curr_new_graph in current_new_graphs:
+            for current_new_graph in current_new_graphs:
                 for particle_edge in particle_edges:
-                    temp_graph = deepcopy(curr_new_graph)
+                    temp_graph = deepcopy(current_new_graph)
                     temp_graph.edge_props[int_edge_id] = particle_edge
                     new_graphs_temp.append(temp_graph)
             current_new_graphs = new_graphs_temp

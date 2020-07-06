@@ -1,3 +1,5 @@
+# cspell: ignore vebar
+
 import pytest
 
 from expertsystem.ui.system_control import (

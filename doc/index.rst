@@ -76,7 +76,7 @@ transition from one state to another.
 ~~~~~~~~~~~~~~~~~~~~~
 
 The central component of the expert system are the :mod:`conservation rules
-<.conservationrules>`. They belong to individual nodes and receive properties
+<.conservation_rules>`. They belong to individual nodes and receive properties
 about the node itself, as well as properties of the ingoing and outgoing edges
 of that node. Based on those properties the conservation rules determine
 whether edges pass or not.

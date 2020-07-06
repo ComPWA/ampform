@@ -1,4 +1,4 @@
-from expertsystem.state.conservationrules import MassConservation
+from expertsystem.state.conservation_rules import MassConservation
 from expertsystem.state.particle import (
     ParticleDecayPropertyNames,
     ParticlePropertyNames,

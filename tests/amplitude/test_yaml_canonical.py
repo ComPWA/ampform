@@ -6,7 +6,7 @@ import pytest
 
 import yaml
 
-from expertsystem.amplitude.canonicaldecay import CanonicalAmplitudeGenerator
+from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.ui.system_control import (
     InteractionTypes,
     StateTransitionManager,

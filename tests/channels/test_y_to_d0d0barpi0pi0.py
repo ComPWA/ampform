@@ -6,8 +6,8 @@ import logging
 
 import pytest
 
-from expertsystem.amplitude.canonicaldecay import CanonicalAmplitudeGenerator
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
+from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     create_spin_domain,

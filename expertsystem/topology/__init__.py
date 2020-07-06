@@ -2,8 +2,8 @@
 
 __all__ = [
     "graph",
-    "topologybuilder",
+    "topology_builder",
 ]
 
 from . import graph
-from . import topologybuilder
+from . import topology_builder

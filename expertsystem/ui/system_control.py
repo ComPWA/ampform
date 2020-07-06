@@ -1,5 +1,7 @@
 """Functions that steer operations of the `expertsystem`."""
 
+# cspell:ignore vebar, vmubar, vtau, vtaubar
+
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -39,7 +41,7 @@ from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
 )
-from expertsystem.topology.topologybuilder import (
+from expertsystem.topology.topology_builder import (
     SimpleStateTransitionTopologyBuilder,
 )
 
@@ -284,10 +286,10 @@ def filter_graphs(graphs, filters):
         >>> filtered_solutions = filter_graphs(solutions, [my_filter])
     """
     filtered_graphs = graphs
-    for filt in filters:
+    for filter_ in filters:
         if not filtered_graphs:
             break
-        filtered_graphs = list(filter(filt, filtered_graphs))
+        filtered_graphs = list(filter(filter_, filtered_graphs))
     return filtered_graphs
 
 
@@ -513,11 +515,11 @@ def external_edge_identical_particle_combinatorics(
         temp_new_graphs = []
         for new_graph in new_graphs:
             for combination in ext_edge_combinations:
-                gnew = deepcopy(new_graph)
+                graph_copy = deepcopy(new_graph)
                 swappings = calculate_swappings(combination)
                 for edge_id1, edge_id2 in swappings.items():
-                    gnew.swap_edges(edge_id1, edge_id2)
-                temp_new_graphs.append(gnew)
+                    graph_copy.swap_edges(edge_id1, edge_id2)
+                temp_new_graphs.append(graph_copy)
         new_graphs = temp_new_graphs
     return new_graphs
 
@@ -636,13 +638,13 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def create_seed_graphs(self, topology_graphs):
         # initialize the graph edges (initial and final state)
         init_graphs = []
-        for tgraph in topology_graphs:
-            tgraph.set_graph_element_properties_comparator(
+        for topology_graph in topology_graphs:
+            topology_graph.set_graph_element_properties_comparator(
                 CompareGraphElementPropertiesFunctor()
             )
             init_graphs.extend(
                 initialize_graph(
-                    tgraph,
+                    topology_graph,
                     self.initial_state,
                     self.final_state,
                     self.final_state_groupings,

@@ -1,5 +1,5 @@
 from expertsystem.topology.graph import InteractionNode
-from expertsystem.topology.topologybuilder import (
+from expertsystem.topology.topology_builder import (
     SimpleStateTransitionTopologyBuilder,
 )
 

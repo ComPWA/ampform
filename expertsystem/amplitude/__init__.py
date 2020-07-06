@@ -1,11 +1,11 @@
 """All modules related to amplitude model creation."""
 
 __all__ = [
-    "abstractgenerator",
-    "canonicaldecay",
-    "helicitydecay",
+    "abstract_generator",
+    "canonical_decay",
+    "helicity_decay",
 ]
 
-from . import abstractgenerator
-from . import canonicaldecay
-from . import helicitydecay
+from . import abstract_generator
+from . import canonical_decay
+from . import helicity_decay

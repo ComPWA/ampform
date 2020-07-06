@@ -13,7 +13,7 @@ from expertsystem.topology.graph import (
     get_edges_outgoing_to_node,
 )
 
-from .helicitydecay import (
+from .helicity_decay import (
     HelicityAmplitudeGenerator,
     HelicityAmplitudeNameGenerator,
     generate_particles_string,

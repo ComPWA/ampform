@@ -1,4 +1,4 @@
-"""Module topologybuilder.
+"""Module `.topology_builder`.
 
 Responsible for building all possible topologies base on basic user input:
 

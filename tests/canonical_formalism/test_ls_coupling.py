@@ -1,7 +1,7 @@
 import pytest
 
 from expertsystem.state import particle
-from expertsystem.state.conservationrules import ParityConservationHelicity
+from expertsystem.state.conservation_rules import ParityConservationHelicity
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     Spin,

@@ -1,4 +1,4 @@
-from expertsystem.state.conservationrules import SpinConservation
+from expertsystem.state.conservation_rules import SpinConservation
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     Spin,
@@ -9,7 +9,7 @@ from expertsystem.state.particle import (
 class TestSpin:  # pylint: disable=no-self-use
     def test_spin_all_defined(self):
         spin_label = StateQuantumNumberNames.Spin
-        angmom_label = InteractionQuantumNumberNames.L
+        ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
         spin_rule = SpinConservation(spin_label)
         cases = []
@@ -20,7 +20,7 @@ class TestSpin:  # pylint: disable=no-self-use
                     [{spin_label: Spin(0, 0)}],
                     [{spin_label: Spin(0, 0)}, {spin_label: Spin(0, 0)}],
                     {
-                        angmom_label: Spin(spin_mag, 0),
+                        ang_mom_label: Spin(spin_mag, 0),
                         intspin_label: Spin(0, 0),
                     },
                     case[1],
@@ -32,7 +32,7 @@ class TestSpin:  # pylint: disable=no-self-use
                     [{spin_label: Spin(spin_mag, 0)}],
                     [{spin_label: Spin(0, 0)}, {spin_label: Spin(0, 0)}],
                     {
-                        angmom_label: Spin(spin_mag, 0),
+                        ang_mom_label: Spin(spin_mag, 0),
                         intspin_label: Spin(0, 0),
                     },
                     case[1],
@@ -44,7 +44,7 @@ class TestSpin:  # pylint: disable=no-self-use
                     [{spin_label: Spin(spin_mag, 0)}],
                     [{spin_label: Spin(1, -1)}, {spin_label: Spin(1, 1)}],
                     {
-                        angmom_label: Spin(0, 0),
+                        ang_mom_label: Spin(0, 0),
                         intspin_label: Spin(spin_mag, 0),
                     },
                     case[1],
@@ -64,7 +64,7 @@ class TestSpin:  # pylint: disable=no-self-use
             temp_case = (
                 [{spin_label: case[0]}],
                 [{spin_label: case[1]}, {spin_label: case[2]}],
-                {angmom_label: case[3], intspin_label: case[4]},
+                {ang_mom_label: case[3], intspin_label: case[4]},
                 case[5],
             )
             cases.append(temp_case)
@@ -74,7 +74,7 @@ class TestSpin:  # pylint: disable=no-self-use
 
     def test_spin_ignore_z_component(self):
         spin_label = StateQuantumNumberNames.Spin
-        angmom_label = InteractionQuantumNumberNames.L
+        ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
         spin_rule = SpinConservation(spin_label, False)
         cases = []
@@ -88,7 +88,7 @@ class TestSpin:  # pylint: disable=no-self-use
                         {spin_label: Spin(1, -1)},
                     ],
                     {
-                        angmom_label: Spin(spin_mag[1], 0),
+                        ang_mom_label: Spin(spin_mag[1], 0),
                         intspin_label: Spin(spin_mag[2], -1),
                     },
                     case[1],

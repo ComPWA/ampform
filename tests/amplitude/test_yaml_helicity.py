@@ -6,7 +6,7 @@ import pytest
 
 import yaml
 
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.ui.system_control import (
     InteractionTypes,
     StateTransitionManager,
@@ -109,10 +109,10 @@ class TestHelicityAmplitudeGeneratorYAML:
         dynamics = self.imported_dict["Dynamics"]
         assert len(dynamics) == 5
 
-        jpsi = dynamics["J/psi"]
-        assert jpsi["Type"] == "NonDynamic"
-        assert jpsi["FormFactor"]["Type"] == "BlattWeisskopf"
-        assert jpsi["FormFactor"]["MesonRadius"] == 1.0
+        j_psi = dynamics["J/psi"]
+        assert j_psi["Type"] == "NonDynamic"
+        assert j_psi["FormFactor"]["Type"] == "BlattWeisskopf"
+        assert j_psi["FormFactor"]["MesonRadius"] == 1.0
 
         f0_980 = dynamics["f0(980)"]
         assert f0_980["Type"] == "RelativisticBreitWigner"

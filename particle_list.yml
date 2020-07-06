@@ -1,3 +1,4 @@
+# cspell:ignore lambdabar, vebar, vmubar, vtau, vtaubar
 ParticleList:
   gamma:
     PID: 22

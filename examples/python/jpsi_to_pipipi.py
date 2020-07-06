@@ -5,8 +5,7 @@ Analyses the decay :math:`J/\psi \to \pi^0 \pi^+ \pi^-`.
 
 import logging
 
-# cspell:ignore helicitydecay
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.state import particle
 from expertsystem.ui.system_control import (
     InteractionTypes,

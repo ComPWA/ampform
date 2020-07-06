@@ -4,7 +4,7 @@ This module is responsible for propagating the quantum numbers of the initial
 and final state particles through a graphs (Propagator classes). Hence it finds
 the allowed quantum numbers of the intermediate states. The propagator classes
 (e.g. :class:`.CSPPropagator`) use the implemented conservation rules of
-:mod:`.conservationrules`.
+:mod:`.conservation_rules`.
 """
 
 import logging
@@ -20,7 +20,7 @@ from expertsystem.solvers.constraint import (
     Unassigned,
 )
 from expertsystem.state import particle
-from expertsystem.state.conservationrules import AbstractRule
+from expertsystem.state.conservation_rules import AbstractRule
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     ParticleDecayPropertyNames,

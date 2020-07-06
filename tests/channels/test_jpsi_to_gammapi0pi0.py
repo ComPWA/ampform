@@ -6,7 +6,7 @@ import logging
 
 import pytest
 
-from expertsystem.amplitude.helicitydecay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,

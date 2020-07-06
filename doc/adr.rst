@@ -1,3 +1,5 @@
+.. cspell:ignore madr
+
 Architectural Decision Log
 ==========================
 

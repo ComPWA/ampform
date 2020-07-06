@@ -3,7 +3,7 @@
 import sys
 from copy import deepcopy
 
-from expertsystem.state.conservationrules import (
+from expertsystem.state.conservation_rules import (
     AdditiveQuantumNumberConservation,
     CParityConservation,
     ClebschGordanCheckHelicityToCanonical,
@@ -180,11 +180,11 @@ def create_default_interaction_settings(
     return interaction_type_settings
 
 
-def reorder_list_by_priority(alist, priority_mapping):
+def reorder_list_by_priority(some_list, priority_mapping):
     # first add priorities to the entries
     priority_list = [
         (x, priority_mapping[str(x)]) if str(x) in priority_mapping else (x, 1)
-        for x in alist
+        for x in some_list
     ]
     # then sort according to priority
     sorted_list = sorted(priority_list, key=lambda x: x[1], reverse=True)

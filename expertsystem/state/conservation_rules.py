@@ -163,8 +163,8 @@ class AbstractRule(ABC):
             )
         self.required_qn_names.append(qn_name)
         if qn_condition_functions:
-            for cond in qn_condition_functions:
-                self.qn_conditions.append(([qn_name], cond))
+            for condition in qn_condition_functions:
+                self.qn_conditions.append(([qn_name], condition))
 
     def get_required_qn_names(self):
         return self.required_qn_names
@@ -174,18 +174,18 @@ class AbstractRule(ABC):
         pass
 
     def check_requirements(self, in_edges, out_edges, int_node):
-        for (qn_name_list, cond_functor) in self.get_qn_conditions():
+        for (qn_name_list, condition_functor) in self.get_qn_conditions():
             # part_props = [x for x in qn_name_list if isinstance(
             #    x, ParticlePropertyNames)]
             # if part_props:
             #    return False
 
-            if not cond_functor.check(
+            if not condition_functor.check(
                 qn_name_list, in_edges, out_edges, int_node
             ):
                 logging.debug(
                     "condition %s for quantum numbers %s for rule %s not satisfied",
-                    cond_functor.__class__,
+                    condition_functor.__class__,
                     qn_name_list,
                     self.__class__,
                 )
@@ -386,13 +386,13 @@ class CParityConservation(AbstractRule):
         ang_mom_label = InteractionQuantumNumberNames.L
         int_spin_label = InteractionQuantumNumberNames.S
 
-        no_cpar_part = [
+        no_cparity_part = [
             part_qns.index(x)
             for x in part_qns
             if cparity_label not in x or x[cparity_label] is None
         ]
         # if all states have c parity defined, then just multiply them
-        if not no_cpar_part:
+        if not no_cparity_part:
             return reduce(lambda x, y: x * y[cparity_label], part_qns, 1)
 
         # two particle case
@@ -463,45 +463,45 @@ class GParityConservation(AbstractRule):
     def check(self, ingoing_part_qns, outgoing_part_qns, interaction_qns):
         """Check for :math:`G_{in} = G_{out}`."""
         gparity_label = StateQuantumNumberNames.Gparity
-        no_gpar_inpart = [
+        no_gparity_in_part = [
             ingoing_part_qns.index(x)
             for x in ingoing_part_qns
             if gparity_label not in x or x[gparity_label] is None
         ]
-        no_gpar_outpart = [
+        no_gparity_out_part = [
             outgoing_part_qns.index(x)
             for x in outgoing_part_qns
             if gparity_label not in x or x[gparity_label] is None
         ]
         # if all states have g parity defined, then just multiply them
-        if not no_gpar_inpart + no_gpar_outpart:
-            in_gpar = reduce(
+        if not no_gparity_in_part + no_gparity_out_part:
+            in_gparity = reduce(
                 lambda x, y: x * y[gparity_label], ingoing_part_qns, 1
             )
-            out_gpar = reduce(
+            out_gparity = reduce(
                 lambda x, y: x * y[gparity_label], outgoing_part_qns, 1
             )
-            return in_gpar == out_gpar
+            return in_gparity == out_gparity
 
         # two particle case
         particle_counts = (len(ingoing_part_qns), len(outgoing_part_qns))
         if particle_counts == (1, 2):
             if gparity_label in ingoing_part_qns[0]:
-                out_gpar = self.check_multistate_gparity(
+                out_gparity = self.check_multistate_gparity(
                     ingoing_part_qns, outgoing_part_qns, interaction_qns
                 )
-                in_gpar = ingoing_part_qns[0][gparity_label]
-                if out_gpar is not None and in_gpar is not None:
-                    return out_gpar == in_gpar
+                in_gparity = ingoing_part_qns[0][gparity_label]
+                if out_gparity is not None and in_gparity is not None:
+                    return out_gparity == in_gparity
 
         if particle_counts == (2, 1):
             if gparity_label in outgoing_part_qns[0]:
-                in_gpar = self.check_multistate_gparity(
+                in_gparity = self.check_multistate_gparity(
                     outgoing_part_qns, ingoing_part_qns, interaction_qns
                 )
-                out_gpar = outgoing_part_qns[0][gparity_label]
-                if out_gpar is not None and in_gpar is not None:
-                    return out_gpar == in_gpar
+                out_gparity = outgoing_part_qns[0][gparity_label]
+                if out_gparity is not None and in_gparity is not None:
+                    return out_gparity == in_gparity
         return True
 
     @staticmethod
@@ -721,17 +721,17 @@ def is_clebsch_gordan_coefficient_zero(spin1, spin2, spin_coupled):
     j_2 = spin2.magnitude()
     proj = spin_coupled.projection()
     mag = spin_coupled.magnitude()
-    iszero = False
+    is_zero = False
     if (j_1 == j_2 and m_1 == m_2) or (m_1 == 0.0 and m_2 == 0.0):
         if abs(mag - j_1 - j_2) % 2 == 1:
-            iszero = True
+            is_zero = True
     elif j_1 == mag and m_1 == -proj:
         if abs(j_2 - j_1 - mag) % 2 == 1:
-            iszero = True
+            is_zero = True
     elif j_2 == mag and m_2 == -proj:
         if abs(j_1 - j_2 - mag) % 2 == 1:
-            iszero = True
-    return iszero
+            is_zero = True
+    return is_zero
 
 
 class ClebschGordanCheckHelicityToCanonical(AbstractRule):

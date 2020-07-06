@@ -28,7 +28,7 @@ from expertsystem.topology.graph import (
 )
 
 from . import _yaml_adapter
-from .abstractgenerator import (
+from .abstract_generator import (
     AbstractAmplitudeGenerator,
     AbstractAmplitudeNameGenerator,
 )
@@ -52,13 +52,13 @@ def group_graphs_same_initial_and_final(graphs):
     for graph in graphs:
         ise = get_final_state_edges(graph)
         fse = get_initial_state_edges(graph)
-        ifsg = (
+        graph_group = (
             tuple(sorted([json.dumps(graph.edge_props[x]) for x in ise])),
             tuple(sorted([json.dumps(graph.edge_props[x]) for x in fse])),
         )
-        if ifsg not in graph_groups:
-            graph_groups[ifsg] = []
-        graph_groups[ifsg].append(graph)
+        if graph_group not in graph_groups:
+            graph_groups[graph_group] = []
+        graph_groups[graph_group].append(graph)
 
     graph_group_list = list(graph_groups.values())
     return graph_group_list
@@ -115,11 +115,11 @@ def determine_attached_final_state(graph, edge_id):
     while current_edges:
         temp_current_edges = current_edges
         current_edges = []
-        for curr_edge in temp_current_edges:
-            if curr_edge in all_final_state_edges:
-                final_state_edge_ids.append(curr_edge)
+        for current_edge in temp_current_edges:
+            if current_edge in all_final_state_edges:
+                final_state_edge_ids.append(current_edge)
             else:
-                node_id = graph.edges[curr_edge].ending_node_id
+                node_id = graph.edges[current_edge].ending_node_id
                 current_edges.extend(
                     get_edges_outgoing_to_node(graph, node_id)
                 )
@@ -308,22 +308,23 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         # loop over decay nodes in time order
         for node_id in graph.nodes:
             (
-                coeff_suffix,
-                pp_coeff_suffix,
+                coefficient_suffix,
+                pp_coefficient_suffix,
             ) = self._generate_amplitude_coefficient_names(graph, node_id)
 
-            if coeff_suffix in self.partial_amp_coefficient_infos:
-                seq_par_suffix += coeff_suffix + ";"
+            if coefficient_suffix in self.partial_amp_coefficient_infos:
+                seq_par_suffix += coefficient_suffix + ";"
             else:
                 if (
                     self.use_parity_conservation
-                    and pp_coeff_suffix in self.partial_amp_coefficient_infos
+                    and pp_coefficient_suffix
+                    in self.partial_amp_coefficient_infos
                 ):
-                    seq_par_suffix += pp_coeff_suffix + ";"
+                    seq_par_suffix += pp_coefficient_suffix + ";"
                     use_prefactor = True
                 else:
-                    seq_par_suffix += coeff_suffix + ";"
-                    self.partial_amp_coefficient_infos.add(coeff_suffix)
+                    seq_par_suffix += coefficient_suffix + ";"
+                    self.partial_amp_coefficient_infos.add(coefficient_suffix)
 
         par_label = particle.Labels.Parameter.name
         amplitude_coefficient_infos = {
@@ -440,8 +441,8 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                     raise ValueError(
                         "Only a single initial state particle allowed"
                     )
-                eprops = graph.edge_props[init_edges[0]]
-                eprops[decay_info_label] = decay_info
+                edge_props = graph.edge_props[init_edges[0]]
+                edge_props[decay_info_label] = decay_info
 
         self.particle_list = generate_particle_list(graphs)
         self.kinematics = generate_kinematics(graphs)
@@ -469,7 +470,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         parameter_label = particle.Labels.Parameter.name
 
         # for each graph group we create a coherent amplitude
-        coherent_intensites = []
+        coherent_intensities = []
         for graph_group in graph_groups:
             seq_partial_decays = []
 
@@ -482,7 +483,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             coherent_amp_name = "coherent_" + get_graph_group_unique_label(
                 graph_group
             )
-            coherent_intensites.append(
+            coherent_intensities.append(
                 {
                     class_label: "CoherentIntensity",
                     component_label: coherent_amp_name,
@@ -493,13 +494,13 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         # now wrap it with an incoherent intensity
         incoherent_amp_name = "incoherent"
 
-        if len(coherent_intensites) > 1:
-            coherent_intensites_dict = {
+        if len(coherent_intensities) > 1:
+            coherent_intensities_dict = {
                 class_label: "IncoherentIntensity",
-                "Intensity": coherent_intensites,
+                "Intensity": coherent_intensities,
             }
         else:
-            coherent_intensites_dict = coherent_intensites[0]
+            coherent_intensities_dict = coherent_intensities[0]
 
         self.helicity_amplitudes = {
             "Intensity": {
@@ -514,7 +515,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 },
                 "Intensity": {
                     class_label: "NormalizedIntensity",
-                    "Intensity": coherent_intensites_dict,
+                    "Intensity": coherent_intensities_dict,
                 },
             }
         }
@@ -565,7 +566,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
 
         gen = self.name_generator
         amp_name = gen.generate_unique_amplitude_name(graph)
-        amp_coeff_infos = gen.generate_amplitude_coefficient_infos(graph)
+        amp_coefficient_infos = gen.generate_amplitude_coefficient_infos(graph)
         sequential_amplitude_dict = {
             class_label: "SequentialAmplitude",
             "Amplitude": partial_decays,
@@ -575,18 +576,22 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         coefficient_amplitude_dict = {
             class_label: "CoefficientAmplitude",
             component_label: amp_name,
-            par_label: amp_coeff_infos[par_label],
+            par_label: amp_coefficient_infos[par_label],
             "Amplitude": sequential_amplitude_dict,
         }
 
         prefactor_label = particle.Labels.PreFactor.name
-        if prefactor_label in amp_coeff_infos:
+        if prefactor_label in amp_coefficient_infos:
             coefficient_amplitude_dict.update(
-                {prefactor_label: amp_coeff_infos[prefactor_label]}
+                {prefactor_label: amp_coefficient_infos[prefactor_label]}
             )
 
-        self.fit_parameter_names.add(amp_coeff_infos[par_label][0][name_label])
-        self.fit_parameter_names.add(amp_coeff_infos[par_label][1][name_label])
+        self.fit_parameter_names.add(
+            amp_coefficient_infos[par_label][0][name_label]
+        )
+        self.fit_parameter_names.add(
+            amp_coefficient_infos[par_label][1][name_label]
+        )
 
         return coefficient_amplitude_dict
 

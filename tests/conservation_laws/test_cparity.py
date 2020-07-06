@@ -1,6 +1,6 @@
 from itertools import product
 
-from expertsystem.state.conservationrules import CParityConservation
+from expertsystem.state.conservation_rules import CParityConservation
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     ParticlePropertyNames,
@@ -11,7 +11,7 @@ from expertsystem.state.particle import (
 
 class TestCParity:  # pylint: disable=no-self-use
     def test_cparity_all_defined(self):
-        cpar_rule = CParityConservation()
+        rule = CParityConservation()
         cparity_label = StateQuantumNumberNames.Cparity
         in_part_qns = [
             ([{cparity_label: 1}], True),
@@ -27,21 +27,20 @@ class TestCParity:  # pylint: disable=no-self-use
             for out_case in out_part_qns:
                 if in_case[1]:
                     assert (
-                        cpar_rule.check(in_case[0], out_case[0], [])
-                        is out_case[1]
+                        rule.check(in_case[0], out_case[0], []) is out_case[1]
                     )
                 else:
                     assert (
-                        cpar_rule.check(in_case[0], out_case[0], [])
+                        rule.check(in_case[0], out_case[0], [])
                         is not out_case[1]
                     )
 
     def test_cparity_multiparticle_boson(self):
-        cpar_rule = CParityConservation()
+        rule = CParityConservation()
         cparity_label = StateQuantumNumberNames.Cparity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
-        angmom_label = InteractionQuantumNumberNames.L
+        ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
         cases = []
 
@@ -54,7 +53,7 @@ class TestCParity:  # pylint: disable=no-self-use
                         {spin_label: Spin(0, 0), pid_label: -100},
                     ],
                     {
-                        angmom_label: Spin(ang_mom, 0),
+                        ang_mom_label: Spin(ang_mom, 0),
                         intspin_label: Spin(0, 0),
                     },
                     ang_mom_case[1],
@@ -77,7 +76,7 @@ class TestCParity:  # pylint: disable=no-self-use
                     {spin_label: Spin(0, 0), pid_label: 100},
                     {spin_label: Spin(0, 0), pid_label: 100},
                 ],
-                {angmom_label: Spin(ang_mom, 0), intspin_label: Spin(0, 0)},
+                {ang_mom_label: Spin(ang_mom, 0), intspin_label: Spin(0, 0)},
                 True,
             )
 
@@ -87,16 +86,16 @@ class TestCParity:  # pylint: disable=no-self-use
             )
 
         for case in cases:
-            assert cpar_rule.check(case[0], case[1], case[2]) is case[3]
+            assert rule.check(case[0], case[1], case[2]) is case[3]
 
     def test_cparity_multiparticle_fermion(
         self,
     ):  # pylint: disable=too-many-locals
-        cpar_rule = CParityConservation()
+        rule = CParityConservation()
         cparity_label = StateQuantumNumberNames.Cparity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
-        angmom_label = InteractionQuantumNumberNames.L
+        ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
         cases = []
 
@@ -112,7 +111,7 @@ class TestCParity:  # pylint: disable=no-self-use
                         {spin_label: Spin(0.5, 0), pid_label: -100},
                     ],
                     {
-                        angmom_label: Spin(spin_ang_mom[1], 0),
+                        ang_mom_label: Spin(spin_ang_mom[1], 0),
                         intspin_label: Spin(spin_ang_mom[0], 0),
                     },
                     spin_case[1],
@@ -135,7 +134,7 @@ class TestCParity:  # pylint: disable=no-self-use
                     {spin_label: 0.0, pid_label: 100},
                     {spin_label: 0.0, pid_label: 100},
                 ],
-                {angmom_label: Spin(0, 0), intspin_label: Spin(ang_mom, 0)},
+                {ang_mom_label: Spin(0, 0), intspin_label: Spin(ang_mom, 0)},
                 True,
             )
 
@@ -145,4 +144,4 @@ class TestCParity:  # pylint: disable=no-self-use
             )
 
         for case in cases:
-            assert cpar_rule.check(case[0], case[1], case[2]) is case[3]
+            assert rule.check(case[0], case[1], case[2]) is case[3]
