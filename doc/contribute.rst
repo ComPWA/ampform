@@ -1,4 +1,4 @@
-.. cSpell:ignore envlist, htmlcov, pylintrc
+.. cSpell:ignore docnb, htmlcov, pylintrc, testenv
 
 How to contribute?
 ==================
@@ -52,14 +52,13 @@ command
   tox
 
 This command will run :code:`pytest`, check for :ref:`test coverage
-<contribute:Test coverage>`, verify the hyperlinks in documentation (requires
-internet connection), and run the Jupyter notebooks. All this can take a few
-minutes, but it's definitely worth it to *run tox before submitting a pull
-request!*
+<contribute:Test coverage>`, verify build the documentation, and verify
+references to and in the API. It's especially recommended to *run tox before
+submitting a pull request!*
 
-The different :code:`tox` tests are defined in the `tox.ini
-<https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file under
-:code:`envlist`.
+More specialized :code:`tox` tests are defined in the `tox.ini
+<https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file, under
+each :code:`testenv`.
 
 
 Spelling
@@ -132,26 +131,25 @@ the command:
 
   tox -e doc
 
+If you want to render the output of the `Jupyter notebook examples
+<https://github.com/ComPWA/expertsystem/tree/master/examples>`_, this can be
+done with:
+
+.. code-block:: shell
+
+  tox -e docnb
+
 Alternatively, you can run :code:`sphinx-build` yourself. The requirements for
 that are in the `doc/requirements.txt
 <https://github.com/ComPWA/expertsystem/blob/master/doc/requirements.txt>`_
-file:
+file (use :code:`NBSPHINX_EXECUTE= make html` if you want to run render the
+notebook output):
 
 .. code-block:: shell
 
   cd doc
   pip install -r requirements.txt
-  make html
-
-If you want to render the output of the `Jupyter notebook examples
-<https://github.com/ComPWA/expertsystem/tree/master/examples>`_, set the
-:code:`NBSPHINX_EXECUTE` environment variable first:
-
-.. code-block:: shell
-
-  NBSPHINX_EXECUTE= make html
-
-Note that the notebooks are also run if you run :code:`tox`.
+  make html  # or NBSPHINX_EXECUTE= make html
 
 A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
 our documentation, is that documentation is built for each pull request as
