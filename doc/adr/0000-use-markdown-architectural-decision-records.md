@@ -1,3 +1,5 @@
+<!-- cSpell:ignore ADRs, joelparkerhenderson, MADR, Nygard's -->
+
 # [ADR-0000] Use Markdown Architectural Decision Records
 
 Status: **accepted**

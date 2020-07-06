@@ -1,9 +1,7 @@
 {
     "version": "0.1",
     "enableFiletypes": [
-        "git-rebase",
-        "ini",
-        "pip-requirements"
+        "git-commit"
     ],
     "flagWords": [
         "colour",
@@ -11,8 +9,12 @@
         "optimise"
     ],
     "ignorePaths": [
-        ".vscode/extensions.json",
-        "cspell.json"
+        ".pre-commit-config.yaml",
+        ".travis.yml",
+        ".vscode/*",
+        "cspell.json",
+        "doc/conf.py",
+        "setup.py"
     ],
     "language": "en-US",
     "words": [
@@ -20,35 +22,19 @@
         "docstrings",
         "expertsystem",
         "jupyter",
-        "mypy",
-        "numpy",
-        "permalinks",
         "pydocstyle",
         "pylint",
-        "pypi",
         "pytest",
-        "repos",
-        "rstcheck",
-        "venv",
-        "xcode",
-        "xmltodict"
+        "redeboer",
+        "spflueger",
+        "tensorwaves",
+        "venv"
     ],
     "ignoreWords": [
-        "codecov",
-        "commit's",
-        "envlist",
-        "esbenp",
-        "htmlcov",
-        "ipynb",
-        "linkcheck",
+        "codacy",
         "nbsphinx",
-        "nbstripout",
-        "oneline",
-        "pandoc",
-        "pylintrc",
         "pyproject",
-        "rcfile",
         "rtfd",
-        "sdist"
+        "untracked"
     ]
 }

@@ -1,3 +1,5 @@
+.. cSpell:ignore envlist, htmlcov, pylintrc
+
 How to contribute?
 ==================
 
@@ -49,7 +51,7 @@ command
 
   tox
 
-This command will run :code`pytest`, check for :ref:`test coverage
+This command will run :code:`pytest`, check for :ref:`test coverage
 <contribute:Test coverage>`, verify the hyperlinks in documentation (requires
 internet connection), and run the Jupyter notebooks. All this can take a few
 minutes, but it's definitely worth it to *run tox before submitting a pull
@@ -67,23 +69,27 @@ Throughout this repository, we follow American English (`en-us
 <https://www.andiamo.co.uk/resources/iso-language-codes/>`_) spelling
 conventions. As a tool, we use `cSpell
 <https://github.com/streetsidesoftware/cspell/blob/master/packages/cspell/README.md>`_
-because it allows to check variable names in camel case and snake case.
-Accepted words are tracked through the :file:`cspell.json` file (they formulate
-our conventions), where the the :code:`words` lists words that you want to see
-as suggested corrections, while :code:`ignoreWords` are just the words that
-won't be flagged. This way, a spelling checker helps you in avoid mistakes in
-the code as well!
+because it allows to check variable names in camel case and snake case.  This
+way, a spelling checker helps you in avoid mistakes in the code as well!
+
+Accepted words are tracked through the :file:`cspell.json` file. As with the
+other config files, :file:`cspell.json` formulates our conventions with regard
+to spelling and can be continuously updated while our code base develops. In
+the file, the :code:`words` section lists words that you want to see as
+suggested corrections, while :code:`ignoreWords` are just the words that won't
+be flagged. Try to be sparse in adding words: if some word is just specific to
+one file, you can `ignore it inline
+<https://www.npmjs.com/package/cspell#ignore>`_, or you can add the file to the
+:code:`ignorePaths` section if you want to ignore it completely.
 
 It is easiest to use cSpell in :ref:`contribute:Visual Studio Code`, through
 the `Code Spell Checker
 <https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker>`_
 extension: it provides linting, suggests corrections from the :code:`words`
 section, and enables you to quickly add or ignore words through the
-:file:`cspell.json` file.
-
-Alternatively, you can `run cSpell
+:file:`cspell.json` file. Alternatively, you can `run cSpell
 <https://www.npmjs.com/package/cspell#installation>`__ on the entire code base
-(with :code:`cspell *`), but for that your system requires `npm
+(with :code:`cspell $(git ls-files)`), but for that your system requires `npm
 <https://www.npmjs.com/>`_.
 
 
