@@ -2,7 +2,6 @@
 
 import json
 import logging
-from collections import OrderedDict
 from copy import deepcopy
 from typing import (
     Any,
@@ -676,16 +675,10 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
     def _write_recipe_to_xml(
         recipe_dict: Dict[str, Any], filename: str
     ) -> None:
+        xmlstring = xmltodict.unparse(
+            {"root": recipe_dict}, pretty=True, indent="  "
+        )
         with open(filename, mode="w") as xmlfile:
-            # xmltodict only allows a single xml root
-            xmlstring = xmltodict.unparse(
-                OrderedDict({"root": recipe_dict}), pretty=True
-            )
-            # before writing it to file we remove the root tag again
-            xmlstring = xmlstring.replace("<root>", "", 1)
-            xmlstring = xmlstring[:-10] + xmlstring[-10:].replace(
-                "</root>", "", 1
-            )
             xmlfile.write(xmlstring)
 
     @staticmethod

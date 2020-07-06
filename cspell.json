@@ -102,6 +102,7 @@
         "unparse",
         "untracked",
         "virtualenv",
-        "virtualenvwrapper"
+        "virtualenvwrapper",
+        "untracked"
     ]
 }

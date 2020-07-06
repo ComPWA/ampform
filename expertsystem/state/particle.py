@@ -305,19 +305,21 @@ def load_particle_list_from_xml(file_path: str) -> None:
     name_label = Labels.Name.name
     with open(file_path, "rb") as xmlfile:
         full_dict = xmltodict.parse(xmlfile)
-        for particle_definition in full_dict["ParticleList"]["Particle"]:
-            particle_name = particle_definition[name_label]
-            particle_list[particle_name] = to_dict(particle_definition)
+        full_dict = full_dict.get("root", full_dict)
+    for particle_definition in full_dict["ParticleList"]["Particle"]:
+        particle_name = particle_definition[name_label]
+        particle_list[particle_name] = to_dict(particle_definition)
 
 
 def write_particle_list_to_xml(file_path: str) -> None:
     """Write ``particle_list`` instance to XML file."""
     entries = list(particle_list.values())
     particle_dict = {"ParticleList": {"Particle": entries}}
+    xmlstring = xmltodict.unparse(
+        {"root": particle_dict}, pretty=True, indent="  "
+    )
     with open(file_path, "w") as output_file:
-        output_file.write(
-            xmltodict.unparse(particle_dict, full_document=False, pretty=True)
-        )
+        output_file.write(xmlstring)
 
 
 def load_particle_list_from_yaml(file_path: str) -> None:

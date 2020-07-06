@@ -7,7 +7,7 @@ from expertsystem.ui.system_control import load_default_particle_list
 
 def test_import_xml() -> None:
     load_default_particle_list()
-    assert len(particle_list) == 70
+    assert len(particle_list) == 69
     assert "sigma+" in particle_list.keys()
     assert "mu+" in particle_list.keys()
 
@@ -26,7 +26,7 @@ def test_xml_io() -> None:
     particle.write_particle_list_to_xml("test_particle_list.xml")
     particle_list.clear()
     particle.load_particle_list_from_xml("test_particle_list.xml")
-    assert len(particle_list) == 70
+    assert len(particle_list) == 69
 
 
 def test_yaml_io() -> None:
