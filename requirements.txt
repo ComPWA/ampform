@@ -1,4 +1,0 @@
-numpy
-progress
-pyyaml>=5
-xmltodict

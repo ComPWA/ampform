@@ -1,6 +1,0 @@
-jupyter
-nbsphinx==0.5.1
-recommonmark==0.6.0
-sphinx==2.4.4
-sphinx-autodoc-typehints==1.10.3
-sphinx_rtd_theme

@@ -3,21 +3,22 @@
 How to contribute?
 ==================
 
+If you have installed the `expertsystem` in :ref:`install:Development mode`, it
+is easy to tweak the source code and try out new ideas immediately, because the
+source code is considered the 'installation'.
 
-Python developer tools
-----------------------
-
-The PWA Expert System repository comes with a set of Python developer tools.
-They are defined in the `requirements-dev.txt
-<https://github.com/ComPWA/expertsystem/blob/master/requirements-dev.txt>`_
-file, which means you can install them all in one go with:
+When working on the source code of the `expertsystem`, it is highly recommended
+to install certain additional Python tools. Assuming you installed the
+`expertsystem` in :ref:`development mode <install:Development mode>`, these
+additional tools can be installed into your :ref:`virtual environment
+<install:Step 2: Create a virtual environment>` in one go:
 
 .. code-block:: shell
 
-  pip install -r requirements_dev.txt
+  pip install -e .[dev]
 
-Most of the tools defined come with specific configuration files (e.g.
-`pyproject.toml
+Most of the tools that are installed with this command use specific
+configuration files (e.g. `pyproject.toml
 <https://github.com/ComPWA/expertsystem/blob/master/pyproject.toml>`_ for
 `black <https://black.readthedocs.io/>`_, `.pylintrc
 <https://github.com/ComPWA/expertsystem/blob/master/.pylintrc>`_ for `pylint
@@ -29,9 +30,20 @@ persistent linting errors this may mean we need to further specify our
 conventions. In that case, it's best to create an issue and propose a policy
 change that can then be formulated in the config files.
 
+
+Pre-commit
+----------
+
 All **style checks** are enforced through a tool called `pre-commit
-<https://pre-commit.com/>`_. Upon committing, :code:`pre-commit` runs a set of
-checks defined in the file `.pre-commit-config.yaml
+<https://pre-commit.com/>`__. This tool needs to be activated, but only once
+after you clone the repository:
+
+.. code-block:: shell
+
+  pre-commit install
+
+Upon committing, :code:`pre-commit` now runs a set of checks as defined in the
+file `.pre-commit-config.yaml
 <https://github.com/ComPWA/expertsystem/blob/master/.pre-commit-config.yaml>`_
 over all staged files. You can also quickly run all checks over *all* indexed
 files in the repository with the command:
@@ -44,6 +56,10 @@ This command is also run on Travis CI whenever you submit a pull request,
 ensuring that all files in the repository follow the conventions set in the
 config files of these tools.
 
+
+Testing
+-------
+
 More thorough checks (that is, **runtime tests**) can be run in one go with the
 command
 
@@ -52,13 +68,71 @@ command
   tox
 
 This command will run :code:`pytest`, check for :ref:`test coverage
-<contribute:Test coverage>`, verify build the documentation, and verify
-references to and in the API. It's especially recommended to *run tox before
-submitting a pull request!*
+<contribute:Test coverage>`, build the documentation, and verify
+cross-references in the documentation and the API. It's especially recommended
+to *run tox before submitting a pull request!*
 
 More specialized :code:`tox` tests are defined in the `tox.ini
 <https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file, under
 each :code:`testenv`.
+
+Try to keep test coverage high. You can compute current coverage by running
+
+.. code-block:: shell
+
+  pytest \
+    --cov-report=html \
+    --cov-report=xml \
+    --cov=expertsystem
+
+and opening :file:`htmlcov/index.html` in a browser. In VScode, you can
+visualize which lines in the code base are covered by tests with the `Coverage
+Gutters
+<https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters>`_
+extension (for this you need to run :code:`pytest` with the flag
+:code:`--cov-report=xml`).
+
+
+Documentation
+-------------
+
+The documentation that you find on `expertsystem.rtfd.io
+<http://expertsystem.rtfd.io>`_ are built from the `documentation source code
+folder <https://github.com/ComPWA/expertsystem/tree/master/doc>`_ (:file:`doc`)
+with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also builds the API and
+therefore checks whether the `docstrings
+<https://www.python.org/dev/peps/pep-0257/>`_ in the Python source code are
+valid and correctly interlinked.
+
+You can quickly build the documentation from the root directory of this
+repository with the command:
+
+.. code-block:: shell
+
+  tox -e doc
+
+If you want to render the output of the `Jupyter notebook examples
+<https://github.com/ComPWA/expertsystem/tree/master/examples>`_, this can be
+done with:
+
+.. code-block:: shell
+
+  tox -e docnb
+
+This takes more time than :code:`tox -e doc`, because it will execute the
+notebooks. Alternatively, you can run :code:`sphinx-build` yourself as follows:
+
+.. code-block:: shell
+
+  cd doc
+  make html  # or NBSPHINX_EXECUTE= make html
+
+A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
+our documentation, is that documentation is built for each pull request as
+well. This means that you can view the documentation for your changes as well.
+For more info, see `here
+<https://docs.readthedocs.io/en/stable/guides/autobuild-docs-for-pull-requests.html>`__,
+or just click "details" under the RTD check once you submit your PR.
 
 
 Spelling
@@ -90,73 +164,6 @@ section, and enables you to quickly add or ignore words through the
 <https://www.npmjs.com/package/cspell#installation>`__ on the entire code base
 (with :code:`cspell $(git ls-files)`), but for that your system requires `npm
 <https://www.npmjs.com/>`_.
-
-
-Test coverage
--------------
-
-Try to keep test coverage high. You can compute current coverage by running
-
-.. code-block:: shell
-
-  pytest \
-    --cov-report=html \
-    --cov-report=xml \
-    --cov=expertsystem
-
-and opening :file:`htmlcov/index.html` in a browser. In VScode, you can
-visualize which lines in the code base are covered by tests with the `Coverage
-Gutters
-<https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters>`_
-extension (for this you need to run :code:`pytest` with the flag
-:code:`--cov-report=xml`).
-
-
-Documentation
--------------
-
-The documentation that you find on `expertsystem.rtfd.io
-<http://expertsystem.rtfd.io>`_ are built from the `documentation source code
-folder <https://github.com/ComPWA/expertsystem/tree/master/doc>`_ (:file:`doc`)
-with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also builds the API and
-therefore checks whether the `docstrings
-<https://www.python.org/dev/peps/pep-0257/>`_ in the Python source code are
-valid and correctly interlinked.
-
-If you followed the section :ref:`contribute:Python developer tools`, you can
-quickly build the documentation from the root directory of this repository with
-the command:
-
-.. code-block:: shell
-
-  tox -e doc
-
-If you want to render the output of the `Jupyter notebook examples
-<https://github.com/ComPWA/expertsystem/tree/master/examples>`_, this can be
-done with:
-
-.. code-block:: shell
-
-  tox -e docnb
-
-Alternatively, you can run :code:`sphinx-build` yourself. The requirements for
-that are in the `doc/requirements.txt
-<https://github.com/ComPWA/expertsystem/blob/master/doc/requirements.txt>`_
-file (use :code:`NBSPHINX_EXECUTE= make html` if you want to run render the
-notebook output):
-
-.. code-block:: shell
-
-  cd doc
-  pip install -r requirements.txt
-  make html  # or NBSPHINX_EXECUTE= make html
-
-A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
-our documentation, is that documentation is built for each pull request as
-well. This means that you can view the documentation for your changes as well.
-For more info, see `here
-<https://docs.readthedocs.io/en/stable/guides/autobuild-docs-for-pull-requests.html>`__,
-or just click "details" under the RTD check once you submit your PR.
 
 
 Git

@@ -31,11 +31,7 @@ default_particle_list_search_paths = [
     ".",
     "..",
 ]
-default_particle_list_search_paths += [sys.prefix + "/share"]
-default_particle_list_search_paths += [path + "/share" for path in sys.path]
 default_particle_list_search_paths += sys.path
-default_particle_list_search_paths += ["/usr/local/share"]
-default_particle_list_search_paths += ["/usr/share"]
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority

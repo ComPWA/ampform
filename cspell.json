@@ -25,7 +25,7 @@
         "doc/conf.py",
         "expertsystem/solvers/constraint/*",
         "pyproject.toml",
-        "requirements*.txt",
+        "setup.cfg",
         "setup.py",
         "tox.ini"
     ],

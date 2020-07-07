@@ -1,15 +1,18 @@
 # Output files
 *.xml
+*.yaml
 *.yml
+!.readthedocs.yml
+!.travis.yml
+!codecov.yml
+!environment.yml
+!expertsystem/particle_list.*
 
 # Build output
 *.egg-info/
 *build/
 .fuse_*
 dist/
-
-# expertsystem outputfile
-*.xml
 
 # Python temporary files
 *.pyc

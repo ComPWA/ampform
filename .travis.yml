@@ -10,11 +10,7 @@ branches:
     - gh-pages
 
 install:
-  - pip3 install -r requirements.txt
-  - pip3 install .
-
-before_script:
-  - pip3 install -r tests/requirements.txt
+  - pip3 install .[test]
 
 script:
   - pytest --cov=expertsystem
@@ -23,9 +19,9 @@ jobs:
   include:
     - name: "Build and test documentation"
       python: 3.7
-      before_script:
+      install:
         - sudo apt-get -y install pandoc
-        - pip3 install -r doc/requirements.txt
+        - pip3 install .[doc]
       script:
         - cd doc
         - make linkcheck
@@ -33,10 +29,10 @@ jobs:
 
     - name: "Style checks"
       python: 3.6
-      before_script:
+      install:
         - npm install -g cspell
+        - pip3 install .[dev]
       script:
-        - pip3 install -r requirements-dev.txt
         - tox -e sty
         - cspell $(git ls-files)
 
@@ -60,7 +56,6 @@ jobs:
     - name: "Deploy PyPI package"
       install: echo "Skipping install stage"
       script: echo "Skipping script stage"
-      before_script: echo "Skipping before_script stage"
       deploy:
         edge: true
         provider: pypi

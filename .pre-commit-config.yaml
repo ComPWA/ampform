@@ -22,7 +22,6 @@ repos:
       - id: mixed-line-ending
       - id: name-tests-test
         args: ["--django"]
-      - id: requirements-txt-fixer
       - id: trailing-whitespace
 
   - repo: https://github.com/psf/black
