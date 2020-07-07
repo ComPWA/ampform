@@ -1,6 +1,5 @@
 """Default configuration for the `expertsystem`."""
 
-import sys
 from copy import deepcopy
 from typing import (
     Any,
@@ -31,12 +30,6 @@ from expertsystem.state.propagation import (
     InteractionTypes,
 )
 
-
-SYSTEM_SEARCH_PATHS = [
-    ".",
-    "..",
-]
-SYSTEM_SEARCH_PATHS += sys.path
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority

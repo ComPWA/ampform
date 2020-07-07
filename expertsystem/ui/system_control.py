@@ -44,10 +44,10 @@ from expertsystem.topology.topology_builder import (
     SimpleStateTransitionTopologyBuilder,
 )
 
-from .default_settings import (
-    SYSTEM_SEARCH_PATHS,
-    create_default_interaction_settings,
-)
+from .default_settings import create_default_interaction_settings
+
+
+_EXPERT_SYSTEM_PATH = path.dirname(path.realpath(expertsystem.__file__))
 
 
 def change_qn_domain(interaction_settings, qn_name, new_domain):
@@ -162,8 +162,8 @@ def remove_duplicate_solutions(
     if ignore_qns_list is None:
         ignore_qns_list = []
     logging.info("removing duplicate solutions...")
-    logging.info("removing these qns from graphs: %s", str(remove_qns_list))
-    logging.info("ignoring qns in graph comparison: %s", str(ignore_qns_list))
+    logging.info(f"removing these qns from graphs: {remove_qns_list}")
+    logging.info(f"ignoring qns in graph comparison: {ignore_qns_list}")
     filtered_results = {}
     solutions = []
     remove_counter = 0
@@ -186,7 +186,7 @@ def remove_duplicate_solutions(
             if strength not in filtered_results:
                 filtered_results[strength] = []
             filtered_results[strength].append((temp_graphs, rule_violations))
-    logging.info("removed %s solutions", str(remove_counter))
+    logging.info(f"removed {remove_counter} solutions")
     return filtered_results
 
 
@@ -631,7 +631,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         all_graphs = self.topology_builder.build_graphs(
             len(self.initial_state), len(self.final_state)
         )
-        logging.info("number of topology graphs: %d", len(all_graphs))
+        logging.info(f"number of topology graphs: {len(all_graphs)}")
         return all_graphs
 
     def create_seed_graphs(self, topology_graphs):
@@ -650,7 +650,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
             )
 
-        logging.info("initialized %d graphs!", len(init_graphs))
+        logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs
 
     def determine_node_settings(self, graphs):
@@ -722,18 +722,18 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         """Check for solutions for a specific set of interaction settings."""
         results = {}
         logging.info(
-            "Number of interaction settings groups being processed: %s",
-            str(len(graph_setting_groups)),
+            "Number of interaction settings groups being processed: %d",
+            len(graph_setting_groups),
         )
         for strength, graph_setting_group in sorted(
             graph_setting_groups.items(), reverse=True
         ):
             logging.info(
-                "processing interaction settings group with " "strength %s",
-                str(strength),
+                "processing interaction settings group with "
+                f"strength {strength}",
             )
-            logging.info("%s entries in this group", len(graph_setting_group))
-            logging.info("running with %d threads...", self.number_of_threads)
+            logging.info(f"{graph_setting_group} entries in this group")
+            logging.info(f"running with {self.number_of_threads} threads...")
 
             temp_results = []
             progress_bar = IncrementalBar(
@@ -761,9 +761,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         for key, value in results.items():
             logging.info(
-                "number of solutions for strength (%s) after qn propagation: %s",
-                str(key),
-                str(sum([len(x[0]) for x in value])),
+                f"number of solutions for strength ({key}) "
+                f"after qn propagation: {sum([len(x[0]) for x in value])}",
             )
 
         # remove duplicate solutions, which only differ in the interaction qn S
@@ -777,11 +776,11 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             for (tempsolutions, non_satisfied_laws) in result:
                 solutions.extend(tempsolutions)
                 node_non_satisfied_rules.append(non_satisfied_laws)
-        logging.info("total number of found solutions: %d", len(solutions))
+        logging.info(f"total number of found solutions: {len(solutions)}")
         violated_laws = []
         if len(solutions) == 0:
             violated_laws = analyse_solution_failure(node_non_satisfied_rules)
-            logging.info("violated rules: %s", violated_laws)
+            logging.info(f"violated rules: {violated_laws}")
 
         # finally perform combinatorics of identical external edges
         # (initial or final state edges) and prepare graphs for
@@ -821,24 +820,21 @@ def load_default_particle_list(
     method: Callable = particle.load_particle_list_from_xml,
 ) -> None:
     """Load the default particle list that comes with the expertsystem."""
-    if len(particle.DATABASE) == 0:
-        for search_path in SYSTEM_SEARCH_PATHS:
-            if search_path.startswith("/"):  # absolute path
-                file_path = search_path
-            else:  # relative path
-                file_path = (
-                    path.dirname(expertsystem.__file__) + "/" + search_path
-                )
-            file_path += "/particle_list.xml"
-            if path.exists(file_path):
-                method(file_path)
-                logging.info(
-                    "loaded %d particles from xml file!",
-                    len(particle.DATABASE),
-                )
-                break
-    if len(particle.DATABASE) == 0:
+    if len(particle.DATABASE) != 0:
+        return
+    if method is particle.load_particle_list_from_xml:
+        particle_list_file = "particle_list.xml"
+    elif method is particle.load_particle_list_from_yaml:
+        particle_list_file = "particle_list.yml"
+    else:
+        raise NotImplementedError
+    particle_list_path = path.join(_EXPERT_SYSTEM_PATH, particle_list_file)
+    if not path.exists(particle_list_path):
         raise FileNotFoundError(
-            "\n  Failed to load particle_list.xml from search paths!"
+            "\n  Failed to load {particle_list_file}!"
             "\n  Please contact the developers: https://github.com/ComPWA"
         )
+    method(particle_list_path)
+    logging.info(
+        f"Loaded {len(particle.DATABASE)} particles from {particle_list_file}!"
+    )

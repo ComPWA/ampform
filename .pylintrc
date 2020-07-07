@@ -13,6 +13,7 @@ disable=
     C0330,  # https://github.com/psf/black/issues/48
     RST203, # unexpected indentation
     RST301, # related to google style docstring
+    logging-fstring-interpolation,
 
 [MASTER]
 ignore=conf.py
