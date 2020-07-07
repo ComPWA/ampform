@@ -541,6 +541,16 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             allowed_intermediate_particles = []
         if interaction_type_settings is None:
             interaction_type_settings = {}
+        allowed_formalism_types = [
+            "helicity",
+            "canonical-helicity",
+            "canonical",
+        ]
+        if formalism_type not in allowed_formalism_types:
+            raise NotImplementedError(
+                f"Formalism type {formalism_type} not implemented."
+                f" Use {allowed_formalism_types} instead."
+            )
         self.number_of_threads = number_of_threads
         self.propagation_mode = propagation_mode
         self.initial_state = initial_state
