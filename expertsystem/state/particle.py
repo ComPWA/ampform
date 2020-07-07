@@ -283,19 +283,20 @@ def is_boson(qn_dict):
     return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
 
 
-particle_list = dict()
+DATABASE = dict()
 
 
 def load_particle_list_from_xml(file_path: str) -> None:
-    """Add entries to the ``particle_list`` from definitions in an XML file.
+    """Add entries to the particle database from definitions in an XML file.
 
-    By default, the expert system loads the ``particle_list``
-    from the XML file ``particle_list.xml`` located in the ComPWA module.
-    Use `.load_particle_list_from_xml` to append to the ``particle_list``.
+    By default, the expert system loads the particle database from the XML file
+    :file:`particle_list.xml` located in the ComPWA module. Use
+    `.load_particle_list_from_xml` to append to the particle database.
 
     .. note::
         If a particle name in the loaded XML file already exists in the
-        ``particle_list``, the one in the ``particle_list`` will be overwritten.
+        particle database, the one in the particle database will be
+        overwritten.
     """
 
     def to_dict(input_ordered_dict: OrderedDict) -> dict:
@@ -308,12 +309,12 @@ def load_particle_list_from_xml(file_path: str) -> None:
         full_dict = full_dict.get("root", full_dict)
     for particle_definition in full_dict["ParticleList"]["Particle"]:
         particle_name = particle_definition[name_label]
-        particle_list[particle_name] = to_dict(particle_definition)
+        DATABASE[particle_name] = to_dict(particle_definition)
 
 
 def write_particle_list_to_xml(file_path: str) -> None:
-    """Write ``particle_list`` instance to XML file."""
-    entries = list(particle_list.values())
+    """Write particle database instance to XML file."""
+    entries = list(DATABASE.values())
     particle_dict = {"ParticleList": {"Particle": entries}}
     xmlstring = xmltodict.unparse(
         {"root": particle_dict}, pretty=True, indent="  "
@@ -323,11 +324,11 @@ def write_particle_list_to_xml(file_path: str) -> None:
 
 
 def load_particle_list_from_yaml(file_path: str) -> None:
-    """Use `.load_particle_list_from_yaml` to append to the ``particle_list``.
+    """Use `.load_particle_list_from_yaml` to append to the particle database.
 
     .. note::
         If a particle name in the YAML file already exists in the
-        ``particle_list`` instance, the one in ``particle_list`` will be
+        particle database instance, the one in particle database will be
         overwritten.
     """
     name_label = Labels.Name.name
@@ -335,48 +336,48 @@ def load_particle_list_from_yaml(file_path: str) -> None:
         full_dict = yaml.load(input_file, Loader=yaml.FullLoader)
         for particle_definition in full_dict["ParticleList"]:
             particle_name = particle_definition[name_label]
-            particle_list[particle_name] = particle_definition
+            DATABASE[particle_name] = particle_definition
 
 
 def write_particle_list_to_yaml(file_path: str) -> None:
-    """Write ``particle_list`` instance to a YAML file."""
-    entries = list(particle_list.values())
+    """Write particle database instance to a YAML file."""
+    entries = list(DATABASE.values())
     particle_dict = {"ParticleList": entries}
     with open(file_path, "w") as output_file:
         yaml.dump(particle_dict, output_file)
 
 
 def add_to_particle_list(particle):
-    """Add a particle dictionary object to the ``particle_list`` dictionary.
+    """Add a particle dictionary object to the particle database dictionary.
 
     The key will be extracted from the ``particle`` name (XML tag ``@Name``).
-    If the key already exists, the entry in ``particle_list`` will be
+    If the key already exists, the entry in particle database will be
     overwritten by this one.
     """
     if not isinstance(particle, dict):
-        logging.warning("Can only add dictionary entries to particle_list")
+        logging.warning("Can only add dictionary entries to particle database")
         return
     particle_name = particle[Labels.Name.name]
-    particle_list[particle_name] = particle
+    DATABASE[particle_name] = particle
 
 
 def get_particle_with_name(particle_name):
     """Get particle from the particle database by name.
 
     .. deprecated:: 0.2.0
-        ``particle_list`` has become a dictionary, so you can already access
+        particle database has become a dictionary, so you can already access
         its entries with a string index.
     """
-    return particle_list[particle_name]
+    return DATABASE[particle_name]
 
 
 def get_particle_copy_by_name(particle_name):
-    """Get a `~copy.deepcopy` of a particle from the ``particle_list``.
+    """Get a `~copy.deepcopy` of a particle from the particle database.
 
     This is useful when you want to manipulate that copy and add it as a new
     entry to the particle data base.
     """
-    return deepcopy(particle_list[particle_name])
+    return deepcopy(DATABASE[particle_name])
 
 
 def get_particle_property(particle_properties, qn_name, converter=None):
@@ -781,11 +782,11 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
 def initialize_allowed_particle_list(allowed_particle_list):
     mod_allowed_particle_list = []
     if len(allowed_particle_list) == 0:
-        mod_allowed_particle_list = list(particle_list.values())
+        mod_allowed_particle_list = list(DATABASE.values())
     else:
         for allowed_particle in allowed_particle_list:
             if isinstance(allowed_particle, str):
-                for name, value in particle_list.items():
+                for name, value in DATABASE.items():
                     if allowed_particle in name:
                         mod_allowed_particle_list.append(value)
             else:

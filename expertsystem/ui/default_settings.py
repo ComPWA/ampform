@@ -2,6 +2,11 @@
 
 import sys
 from copy import deepcopy
+from typing import (
+    Any,
+    Dict,
+    List,
+)
 
 from expertsystem.state.conservation_rules import (
     AdditiveQuantumNumberConservation,
@@ -27,15 +32,15 @@ from expertsystem.state.propagation import (
 )
 
 
-default_particle_list_search_paths = [
+SYSTEM_SEARCH_PATHS = [
     ".",
     "..",
 ]
-default_particle_list_search_paths += sys.path
+SYSTEM_SEARCH_PATHS += sys.path
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority
-default_conservation_law_priorities = {
+CONSERVATION_LAW_PRIORITIES = {
     "SpinConservation": 8,
     "HelicityConservation": 7,
     "MassConservation": 10,
@@ -57,8 +62,8 @@ default_conservation_law_priorities = {
 
 
 def create_default_interaction_settings(
-    formalism_type, use_mass_conservation=True
-):
+    formalism_type: str, use_mass_conservation: bool = True
+) -> Dict[InteractionTypes, InteractionNodeSettings]:
     """Create a container that holds the settings for the various interactions.
 
     E.g.: strong, em and weak interaction.
@@ -164,19 +169,21 @@ def create_default_interaction_settings(
 
     # reorder conservation laws according to priority
     weak_settings.conservation_laws = reorder_list_by_priority(
-        weak_settings.conservation_laws, default_conservation_law_priorities
+        weak_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
     )
     em_settings.conservation_laws = reorder_list_by_priority(
-        em_settings.conservation_laws, default_conservation_law_priorities
+        em_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
     )
     strong_settings.conservation_laws = reorder_list_by_priority(
-        strong_settings.conservation_laws, default_conservation_law_priorities
+        strong_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
     )
 
     return interaction_type_settings
 
 
-def reorder_list_by_priority(some_list, priority_mapping):
+def reorder_list_by_priority(
+    some_list: List[Any], priority_mapping: Dict[str, Any]
+) -> List[Any]:
     # first add priorities to the entries
     priority_list = [
         (x, priority_mapping[str(x)]) if str(x) in priority_mapping else (x, 1)

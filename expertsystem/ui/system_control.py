@@ -26,7 +26,6 @@ from expertsystem.state.particle import (
     get_interaction_property,
     get_particle_property,
     initialize_graph,
-    particle_list,
 )
 from expertsystem.state.propagation import (
     FullPropagator,
@@ -46,8 +45,8 @@ from expertsystem.topology.topology_builder import (
 )
 
 from .default_settings import (
+    SYSTEM_SEARCH_PATHS,
     create_default_interaction_settings,
-    default_particle_list_search_paths,
 )
 
 
@@ -822,8 +821,8 @@ def load_default_particle_list(
     method: Callable = particle.load_particle_list_from_xml,
 ) -> None:
     """Load the default particle list that comes with the expertsystem."""
-    if len(particle_list) == 0:
-        for search_path in default_particle_list_search_paths:
+    if len(particle.DATABASE) == 0:
+        for search_path in SYSTEM_SEARCH_PATHS:
             if search_path.startswith("/"):  # absolute path
                 file_path = search_path
             else:  # relative path
@@ -834,10 +833,11 @@ def load_default_particle_list(
             if path.exists(file_path):
                 method(file_path)
                 logging.info(
-                    "loaded %d particles from xml file!", len(particle_list)
+                    "loaded %d particles from xml file!",
+                    len(particle.DATABASE),
                 )
                 break
-    if len(particle_list) == 0:
+    if len(particle.DATABASE) == 0:
         raise FileNotFoundError(
             "\n  Failed to load particle_list.xml from search paths!"
             "\n  Please contact the developers: https://github.com/ComPWA"
