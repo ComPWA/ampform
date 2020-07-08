@@ -63,7 +63,7 @@ class TestCanonicalAmplitudeGeneratorYAML:
         assert gamma["PID"] == 22
         assert gamma["Mass"] == 0.0
         gamma_qns = gamma["QuantumNumbers"]
-        assert gamma_qns["Cparity"] == -1
+        assert gamma_qns["CParity"] == -1
         f0_980 = particle_list["f0(980)"]
         assert f0_980["Width"] == 0.07
         pi0_qns = particle_list["pi0"]["QuantumNumbers"]

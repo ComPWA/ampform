@@ -1271,8 +1271,8 @@ ParticleList:
       Spin: 1
       Charge: 0
       Parity: -1
-      Cparity: -1
-      Gparity: -1
+      CParity: -1
+      GParity: -1
   f0(1500):
     PID: 9030221
     Mass: { Value: 1.505, Error: 0.006 }
@@ -1281,8 +1281,8 @@ ParticleList:
       Spin: 0
       Charge: 0
       Parity: 1
-      Cparity: 1
-      Gparity: 1
+      CParity: 1
+      GParity: 1
   f0(980):
     PID: 9010221
     Mass: { Value: 0.994, Error: 0.001 }
@@ -1291,8 +1291,8 @@ ParticleList:
       Spin: 0
       Charge: 0
       Parity: 1
-      Cparity: 1
-      Gparity: 1
+      CParity: 1
+      GParity: 1
   f2(1270):
     PID: 225
     Mass: { Value: 1.2751, Error: 0.0012 }
@@ -1301,8 +1301,8 @@ ParticleList:
       Spin: 2
       Charge: 0
       Parity: 1
-      Cparity: 1
-      Gparity: 1
+      CParity: 1
+      GParity: 1
   f2(1950):
     PID: 9050225
     Mass: { Value: 1.944, Error: 0.012 }
@@ -1311,8 +1311,8 @@ ParticleList:
       Spin: 2
       Charge: 0
       Parity: 1
-      Cparity: 1
-      Gparity: 1
+      CParity: 1
+      GParity: 1
   gamma:
     PID: 22
     Mass: 0.0
@@ -1320,7 +1320,7 @@ ParticleList:
       Spin: 1
       Charge: 0
       Parity: -1
-      Cparity: -1
+      CParity: -1
   pi0:
     PID: 111
     Mass: { Value: 0.1349766, Error: 0.000006 }
@@ -1328,8 +1328,8 @@ ParticleList:
       Spin: 0
       Charge: 0
       Parity: -1
-      Cparity: 1
-      Gparity: -1
+      CParity: 1
+      GParity: -1
       IsoSpin: { Value: 1, Projection: 0 }
 
 Dynamics:

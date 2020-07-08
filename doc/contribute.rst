@@ -7,6 +7,21 @@ If you have installed the `expertsystem` in :ref:`install:Development mode`, it
 is easy to tweak the source code and try out new ideas immediately, because the
 source code is considered the 'installation'.
 
+.. note::
+
+  The easiest way to contribute, is by using :ref:`Conda <install:Conda
+  environment>` and :ref:`contribute:Visual Studio code`. In that case, the
+  complete developer install procedure becomes:
+
+  .. code-block:: shell
+
+    git clone git@github.com:ComPWA/tensorwaves.git
+    code tensorwaves
+    conda env create
+    pip install -e .[dev]
+
+  For more info, see :ref:`contribute:Visual Studio code`.
+
 When working on the source code of the `expertsystem`, it is highly recommended
 to install certain additional Python tools. Assuming you installed the
 `expertsystem` in :ref:`development mode <install:Development mode>`, these
@@ -67,10 +82,9 @@ command
 
   tox
 
-This command will run :code:`pytest`, check for :ref:`test coverage
-<contribute:Test coverage>`, build the documentation, and verify
-cross-references in the documentation and the API. It's especially recommended
-to *run tox before submitting a pull request!*
+This command will run :code:`pytest`, check for test coverage, build the
+documentation, and verify cross-references in the documentation and the API.
+It's especially recommended to *run tox before submitting a pull request!*
 
 More specialized :code:`tox` tests are defined in the `tox.ini
 <https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file, under

@@ -120,9 +120,9 @@ class StateQuantumNumberNames(Enum):
     Bottomness = auto()
     Charge = auto()
     Charm = auto()
-    Cparity = auto()
+    CParity = auto()
     ElectronLN = auto()
-    Gparity = auto()
+    GParity = auto()
     IsoSpin = auto()
     MuonLN = auto()
     Parity = auto()
@@ -174,8 +174,8 @@ QNNameClassMapping = {
     StateQuantumNumberNames.BaryonNumber: QuantumNumberClasses.Int,
     StateQuantumNumberNames.Spin: QuantumNumberClasses.Spin,
     StateQuantumNumberNames.Parity: QuantumNumberClasses.Int,
-    StateQuantumNumberNames.Cparity: QuantumNumberClasses.Int,
-    StateQuantumNumberNames.Gparity: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.CParity: QuantumNumberClasses.Int,
+    StateQuantumNumberNames.GParity: QuantumNumberClasses.Int,
     StateQuantumNumberNames.IsoSpin: QuantumNumberClasses.Spin,
     StateQuantumNumberNames.Strangeness: QuantumNumberClasses.Int,
     StateQuantumNumberNames.Charm: QuantumNumberClasses.Int,

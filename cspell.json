@@ -2,6 +2,7 @@
     "version": "0.1",
     "enableFiletypes": [
         "git-commit",
+        "jupyter",
         "xml"
     ],
     "flagWords": [
@@ -32,7 +33,9 @@
     "language": "en-US",
     "words": [
         "blatt",
+        "bottomness",
         "breit",
+        "charmness",
         "clebsch",
         "combi",
         "conda",
@@ -67,6 +70,7 @@
         "struct",
         "tensorwaves",
         "toctree",
+        "topness",
         "venv",
         "weisskopf",
         "xmltodict"
@@ -78,10 +82,8 @@
         "celltoolbar",
         "codacy",
         "codemirror",
-        "cparity",
         "flatte",
         "genindex",
-        "gparity",
         "kernelspec",
         "maxdepth",
         "mimetype",
@@ -91,6 +93,7 @@
         "nbformat",
         "nbody",
         "nbsphinx",
+        "noqa",
         "phsp",
         "pids",
         "pygments",
@@ -102,7 +105,6 @@
         "unparse",
         "untracked",
         "virtualenv",
-        "virtualenvwrapper",
-        "untracked"
+        "virtualenvwrapper"
     ]
 }

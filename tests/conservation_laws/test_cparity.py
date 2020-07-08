@@ -10,18 +10,18 @@ from expertsystem.state.particle import (
 
 
 class TestCParity:  # pylint: disable=no-self-use
-    def test_cparity_all_defined(self):
+    def test_c_parity_all_defined(self):
         rule = CParityConservation()
-        cparity_label = StateQuantumNumberNames.Cparity
+        c_parity_label = StateQuantumNumberNames.CParity
         in_part_qns = [
-            ([{cparity_label: 1}], True),
-            ([{cparity_label: -1}], False),
+            ([{c_parity_label: 1}], True),
+            ([{c_parity_label: -1}], False),
         ]
         out_part_qns = [
-            ([{cparity_label: 1}, {cparity_label: 1}], True),
-            ([{cparity_label: -1}, {cparity_label: -1}], True),
-            ([{cparity_label: -1}, {cparity_label: 1}], False),
-            ([{cparity_label: 1}, {cparity_label: -1}], False),
+            ([{c_parity_label: 1}, {c_parity_label: 1}], True),
+            ([{c_parity_label: -1}, {c_parity_label: -1}], True),
+            ([{c_parity_label: -1}, {c_parity_label: 1}], False),
+            ([{c_parity_label: 1}, {c_parity_label: -1}], False),
         ]
         for in_case in in_part_qns:
             for out_case in out_part_qns:
@@ -35,9 +35,9 @@ class TestCParity:  # pylint: disable=no-self-use
                         is not out_case[1]
                     )
 
-    def test_cparity_multiparticle_boson(self):
+    def test_c_parity_multiparticle_boson(self):
         rule = CParityConservation()
-        cparity_label = StateQuantumNumberNames.Cparity
+        c_parity_label = StateQuantumNumberNames.CParity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
         ang_mom_label = InteractionQuantumNumberNames.L
@@ -47,7 +47,7 @@ class TestCParity:  # pylint: disable=no-self-use
         for ang_mom_case in [([0, 2, 4], True), ([1, 3], False)]:
             for ang_mom in ang_mom_case[0]:
                 temp_case = (
-                    [{cparity_label: 1}],
+                    [{c_parity_label: 1}],
                     [
                         {spin_label: Spin(0, 0), pid_label: 100},
                         {spin_label: Spin(0, 0), pid_label: -100},
@@ -62,7 +62,7 @@ class TestCParity:  # pylint: disable=no-self-use
                 cases.append(temp_case)
                 cases.append(
                     (
-                        [{cparity_label: -1}],
+                        [{c_parity_label: -1}],
                         temp_case[1],
                         temp_case[2],
                         not temp_case[3],
@@ -71,7 +71,7 @@ class TestCParity:  # pylint: disable=no-self-use
 
         for ang_mom in [0, 1, 2, 3]:
             temp_case = (
-                [{cparity_label: None}],
+                [{c_parity_label: None}],
                 [
                     {spin_label: Spin(0, 0), pid_label: 100},
                     {spin_label: Spin(0, 0), pid_label: 100},
@@ -82,17 +82,17 @@ class TestCParity:  # pylint: disable=no-self-use
 
             cases.append(temp_case)
             cases.append(
-                ([{cparity_label: None}], temp_case[1], temp_case[2], True)
+                ([{c_parity_label: None}], temp_case[1], temp_case[2], True)
             )
 
         for case in cases:
             assert rule.check(case[0], case[1], case[2]) is case[3]
 
-    def test_cparity_multiparticle_fermion(
+    def test_c_parity_multiparticle_fermion(
         self,
     ):  # pylint: disable=too-many-locals
         rule = CParityConservation()
-        cparity_label = StateQuantumNumberNames.Cparity
+        c_parity_label = StateQuantumNumberNames.CParity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
         ang_mom_label = InteractionQuantumNumberNames.L
@@ -105,7 +105,7 @@ class TestCParity:  # pylint: disable=no-self-use
         for spin_case in [(even_sum_cases, True), (odd_sum_cases, False)]:
             for spin_ang_mom in spin_case[0]:
                 temp_case = (
-                    [{cparity_label: 1}],
+                    [{c_parity_label: 1}],
                     [
                         {spin_label: Spin(0.5, 0), pid_label: 100},
                         {spin_label: Spin(0.5, 0), pid_label: -100},
@@ -120,7 +120,7 @@ class TestCParity:  # pylint: disable=no-self-use
                 cases.append(temp_case)
                 cases.append(
                     (
-                        [{cparity_label: -1}],
+                        [{c_parity_label: -1}],
                         temp_case[1],
                         temp_case[2],
                         not temp_case[3],
@@ -129,7 +129,7 @@ class TestCParity:  # pylint: disable=no-self-use
 
         for ang_mom in [0, 1, 2, 3]:
             temp_case = (
-                [{cparity_label: None}],
+                [{c_parity_label: None}],
                 [
                     {spin_label: 0.0, pid_label: 100},
                     {spin_label: 0.0, pid_label: 100},
@@ -140,7 +140,7 @@ class TestCParity:  # pylint: disable=no-self-use
 
             cases.append(temp_case)
             cases.append(
-                ([{cparity_label: None}], temp_case[1], temp_case[2], True)
+                ([{c_parity_label: None}], temp_case[1], temp_case[2], True)
             )
 
         for case in cases:

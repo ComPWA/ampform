@@ -27,7 +27,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -116,7 +116,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -705,12 +705,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -762,7 +762,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -814,7 +814,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -865,7 +865,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -921,12 +921,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -981,7 +981,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1036,7 +1036,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1096,7 +1096,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1106,7 +1106,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1156,7 +1156,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1166,7 +1166,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1216,12 +1216,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1271,12 +1271,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1326,12 +1326,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1381,7 +1381,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1392,7 +1392,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1470,7 +1470,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1539,7 +1539,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1602,7 +1602,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1613,7 +1613,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1665,7 +1665,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1676,7 +1676,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1728,7 +1728,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1739,7 +1739,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -1791,7 +1791,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <DecayInfo>
@@ -2600,12 +2600,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -2676,7 +2676,7 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -2741,12 +2741,12 @@
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Cparity</Type>
+        <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
         <Class>Int</Class>
-        <Type>Gparity</Type>
+        <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
       <QuantumNumber>
