@@ -7,8 +7,12 @@
     ],
     "flagWords": [
         "colour",
+        "favour",
+        "flavour",
         "hte",
-        "optimise"
+        "optimise",
+        "paramater",
+        "parmater"
     ],
     "ignorePaths": [
         "*.rst_t",

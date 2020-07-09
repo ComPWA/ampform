@@ -17,6 +17,8 @@ parameters so that they resemble the data set as good as possible.
 
 __all__ = [
     "amplitude",
+    "data",
+    "io",
     "state",
     "topology",
     "ui",
@@ -26,6 +28,8 @@ __all__ = [
 import sys
 
 from . import amplitude
+from . import data
+from . import io
 from . import state
 from . import topology
 from . import ui
@@ -33,14 +37,10 @@ from . import ui
 
 def __check_python_version():
     def print_message_and_exit():
-        print(
-            "You are running python "
-            + str(sys.version_info[0])
-            + "."
-            + str(sys.version_info[1])
-            + "."
-            + str(sys.version_info[2])
-        )
+        major = sys.version_info[0]
+        minor = sys.version_info[1]
+        patch = sys.version_info[2]
+        print(f"You are running python {major}.{minor}.{patch}")
         print("The expertsystem module requires Python 3.6 or higher!")
         sys.exit()
 

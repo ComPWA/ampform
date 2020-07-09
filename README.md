@@ -27,7 +27,7 @@ for an introduction to the Particle Wave Analysis Expert System!
   - [x] Open-closed design
   - [x] Large set of predefined rules
     - [x] Spin/Angular momentum conservation
-    - [x] Quark and Lepton flavour conservation (incl. isospin)
+    - [x] Quark and Lepton flavor conservation (incl. isospin)
     - [x] Baryon number conservation
     - [x] EM-charge conservation
     - [x] Parity, C-Parity, G-Parity conservation

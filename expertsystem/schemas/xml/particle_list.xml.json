@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/ComPWA/expertsystem/blob/master/schemas/xml/particle_list.xml.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Validation schema for a YAML/JSON file directly converted from particle_list.xml",
+  "description": "Useful in combination with a GUI that can use this schema to validate wile reworking it",
+  "type": "object",
+  "required": ["ParticleList"],
+  "additionalProperties": false,
+  "properties": {
+    "ParticleList": {
+      "type": "object",
+      "required": ["Particle"],
+      "additionalProperties": false,
+      "properties": {
+        "Particle": {
+          "type": "array",
+          "items": { "$ref": "particle.json#definitions/Particle" }
+        }
+      }
+    }
+  }
+}

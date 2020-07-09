@@ -114,7 +114,7 @@ class GammaCheck(InteractionDeterminationFunctorInterface):
 class LeptonCheck(InteractionDeterminationFunctorInterface):
     """Conservation check lepton numbers."""
 
-    lepton_flavour_labels = [
+    lepton_flavor_labels = [
         StateQuantumNumberNames.ElectronLN,
         StateQuantumNumberNames.MuonLN,
         StateQuantumNumberNames.TauLN,
@@ -128,7 +128,7 @@ class LeptonCheck(InteractionDeterminationFunctorInterface):
             if sum(
                 [
                     get_particle_property(edge_props, x)
-                    for x in self.lepton_flavour_labels
+                    for x in self.lepton_flavor_labels
                     if get_particle_property(edge_props, x) is not None
                 ]
             ):

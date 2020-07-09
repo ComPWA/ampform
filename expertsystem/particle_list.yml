@@ -702,9 +702,9 @@ ParticleList:
       BaryonNumber: 1
       Strangeness: -2
 
-  EpEm (4300 MeV):
+  EpEm (4230 MeV):
     PID: 2299
-    Mass: 4.300
+    Mass: 4.230
     QuantumNumbers:
       Spin: 1
       Charge: 0

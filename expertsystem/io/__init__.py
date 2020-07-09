@@ -9,6 +9,7 @@ from pathlib import Path
 
 from expertsystem.data import ParticleCollection
 
+from . import _xml
 from . import _yaml
 
 
@@ -16,6 +17,8 @@ def load_particle_collection(filename: str) -> ParticleCollection:
     file_extension = _get_file_extension(filename)
     if file_extension in ["yaml", "yml"]:
         return _yaml.load_particle_collection(filename)
+    if file_extension == "xml":
+        return _xml.load_particle_collection(filename)
     raise NotImplementedError(
         f'No parser parser defined for file type "{file_extension}"'
     )
@@ -25,8 +28,10 @@ def write(instance: object, filename: str) -> None:
     file_extension = _get_file_extension(filename)
     if file_extension in ["yaml", "yml"]:
         return _yaml.write(instance, filename)
+    if file_extension == "xml":
+        return _xml.write(instance, filename)
     raise NotImplementedError(
-        f'No parser writer defined for file type "{file_extension}"'
+        f'No writer defined for file type "{file_extension}"'
     )
 
 

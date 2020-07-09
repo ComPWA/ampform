@@ -32,6 +32,7 @@
   "restructuredtext.confPath": "${workspaceFolder}/doc",
   "rewrap.wrappingColumn": 79,
   "yaml.schemas": {
+    "./schemas/xml/particle_list.xml.json": ["particle_list*xml.yml"],
     "./schemas/yaml-particle-list.json": ["particle_list.yml"],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml",
     "https://raw.githubusercontent.com/travis-ci/travis-yml/master/schema.json": ".travis.yml"

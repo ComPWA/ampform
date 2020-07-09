@@ -91,7 +91,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>EpEm</Name>
+      <Name>EpEm (4230 MeV)</Name>
       <Pid>2299</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -117,6 +117,11 @@
       <QuantumNumber>
         <Class>Int</Class>
         <Type>CParity</Type>
+        <Value>-1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Int</Class>
+        <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
       <QuantumNumber>
@@ -1988,7 +1993,7 @@
       </QuantumNumber>
     </Particle>
 
-    <!-- Heavy flavour mesons -->
+    <!-- Heavy flavor mesons -->
     <Particle>
       <Name>D+</Name>
       <Pid>411</Pid>
