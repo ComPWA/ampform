@@ -2,13 +2,13 @@
 
 from typing import (
     Any,
-    Callable,
     Dict,
     Generator,
     List,
-    Tuple,
     Union,
 )
+
+from expertsystem import io
 
 
 def to_dynamics(recipe: Dict[str, Any]) -> Dict[str, Any]:
@@ -124,58 +124,11 @@ def to_parameter_list(recipe: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def to_particle_dict(recipe: Dict[str, Any]) -> Dict[str, Any]:
-    # pylint: disable=too-many-locals
     particle_list_xml = recipe["ParticleList"]["Particle"]
-    particle_list_xml = sorted(particle_list_xml, key=lambda i: i["Name"])
-    particle_list_yml = dict()
-    for xml_particle in particle_list_xml:
-        name = str(xml_particle["Name"])
-        pid = int(xml_particle["Pid"])
-        parameters = xml_particle["Parameter"]
-        mass = _to_parameter(parameters)
-        quantum_numbers = list(xml_particle["QuantumNumber"])
-        decay_info = xml_particle.get("DecayInfo", None)
-
-        qn_key_map: Dict[str, Tuple[str, Callable]] = {
-            "Charge": ("Charge", _to_scalar),
-            "Spin": ("Spin", _to_scalar),
-            "IsoSpin": ("IsoSpin", _to_isospin),
-            "Parity": ("Parity", _to_scalar),
-            "CParity": ("CParity", _to_scalar),
-            "GParity": ("GParity", _to_scalar),
-            "Strangeness": ("Strangeness", _to_scalar),
-            "Charm": ("Charm", _to_scalar),
-            "Bottomness": ("Bottomness", _to_scalar),
-            "Topness": ("Topness", _to_scalar),
-            "ElectronLN": ("ElectronLN", _to_scalar),
-            "MuonLN": ("MuonLN", _to_scalar),
-            "TauLN": ("TauLN", _to_scalar),
-            "BaryonNumber": ("BaryonNumber", _to_scalar),
-        }
-        yaml_qn_dict = {"Spin": 0, "Charge": 0}
-        for quantum_number in quantum_numbers:
-            qn_type = quantum_number["Type"]
-            for xml_key, (yaml_key, converter) in qn_key_map.items():
-                if qn_type == xml_key:
-                    value = converter(  # pylint: disable=not-callable
-                        quantum_number
-                    )
-                    if isinstance(value, (float, int)) and value == 0:
-                        continue
-                    if isinstance(value, dict) and value["Value"] == 0:
-                        continue
-                    yaml_qn_dict[yaml_key] = value
-        particle_yml: Dict[str, Any] = dict()
-        particle_yml["PID"] = pid
-        particle_yml["Mass"] = mass
-        if decay_info:
-            parameters = decay_info.get("Parameter", list())
-            for parameter in parameters:
-                if parameter["Type"] == "Width":
-                    particle_yml["Width"] = _to_parameter(parameter)
-        particle_yml["QuantumNumbers"] = yaml_qn_dict
-        particle_list_yml[name] = particle_yml
-    return particle_list_yml
+    particle_collection = io.xml.dict_to_particle_collection(particle_list_xml)
+    particle_list_yaml = io.yaml.object_to_dict(particle_collection)
+    particle_list_yaml = particle_list_yaml["ParticleList"]
+    return particle_list_yaml
 
 
 def _extract_parameter_definitions_from_intensity(

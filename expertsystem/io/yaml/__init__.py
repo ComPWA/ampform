@@ -7,10 +7,16 @@ __all__ = [
 
 import yaml
 
-from expertsystem.data import ParticleCollection
+from expertsystem.data import (
+    Particle,
+    ParticleCollection,
+)
 
-from ._build import _build_particle_collection
-from ._dump import _from_particle_collection
+from . import _dump
+from ._build import (
+    build_particle,
+    build_particle_collection,
+)
 
 
 class _IncreasedIndent(yaml.Dumper):
@@ -28,12 +34,12 @@ class _IncreasedIndent(yaml.Dumper):
 def load_particle_collection(filename: str) -> ParticleCollection:
     with open(filename) as yaml_file:
         definition = yaml.load(yaml_file, Loader=yaml.SafeLoader)
-    return _build_particle_collection(definition)
+    return build_particle_collection(definition)
 
 
 def write(instance: object, filename: str) -> None:
     if isinstance(instance, ParticleCollection):
-        output_dict = _from_particle_collection(instance)
+        output_dict = _dump.from_particle_collection(instance)
     else:
         raise NotImplementedError(
             f"No YAML writer for class {instance.__class__.__name__}"
@@ -46,3 +52,19 @@ def write(instance: object, filename: str) -> None:
             Dumper=_IncreasedIndent,
             default_flow_style=False,
         )
+
+
+def object_to_dict(instance: object) -> dict:
+    if isinstance(instance, ParticleCollection):
+        return _dump.from_particle_collection(instance)
+    if isinstance(instance, Particle):
+        return _dump.from_particle(instance)
+    raise NotImplementedError
+
+
+def dict_to_particle_collection(definition: dict) -> ParticleCollection:
+    return build_particle_collection(definition)
+
+
+def dict_to_particle(definition: dict, name: str) -> Particle:
+    return build_particle(name, definition)

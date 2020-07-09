@@ -10,9 +10,9 @@ from expertsystem.data import (
     ParticleCollection,
 )
 from expertsystem.io import (
-    _xml,
     load_particle_collection,
     write,
+    xml,
 )
 from expertsystem.state import particle
 
@@ -89,12 +89,10 @@ class TestInternalParticleDict:
     @staticmethod
     def test_particle_validation():
         for item in particle.DATABASE.values():
-            _xml.validation.validate_particle(item)
+            xml.validation.validate_particle(item)
 
     @staticmethod
     def test_build_particle_from_internal_database():
         definition = particle.DATABASE["J/psi"]
-        j_psi = _xml._build._build_particle(  # pylint: disable=protected-access
-            definition
-        )
+        j_psi = xml.dict_to_particle(definition)
         assert j_psi == J_PSI

@@ -21,7 +21,9 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "Type": { "enum": ["relativisticBreitWigner", "flatte"] },
+            "Type": {
+              "enum": ["nonResonant", "relativisticBreitWigner", "flatte"]
+            },
             "FormFactor": { "$ref": "#/definitions/FormFactor" },
             "Parameter": { "$ref": "#/definitions/ParameterList" }
           }

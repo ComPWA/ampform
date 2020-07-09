@@ -22,10 +22,13 @@ from expertsystem.data import (
 from .validation import validate_particle
 
 
-def _build_particle_collection(definition: dict) -> ParticleCollection:
-    definition = definition.get("root", definition)
-    definition = definition.get("ParticleList", definition)
-    definition = definition.get("Particle", definition)
+def build_particle_collection(definition: dict) -> ParticleCollection:
+    if isinstance(definition, dict):
+        definition = definition.get("root", definition)
+    if isinstance(definition, dict):
+        definition = definition.get("ParticleList", definition)
+    if isinstance(definition, dict):
+        definition = definition.get("Particle", definition)
     if isinstance(definition, list):
         particle_list: Union[List[dict], ValuesView] = definition
     elif isinstance(definition, dict):
@@ -37,11 +40,11 @@ def _build_particle_collection(definition: dict) -> ParticleCollection:
         )
     collection = ParticleCollection()
     for particle_def in particle_list:
-        collection.add(_build_particle(particle_def))
+        collection.add(build_particle(particle_def))
     return collection
 
 
-def _build_particle(definition: dict) -> Particle:
+def build_particle(definition: dict) -> Particle:
     validate_particle(definition)
     qn_defs = _xml_qn_list_to_qn_object(definition["QuantumNumber"])
     return Particle(

@@ -1,7 +1,7 @@
 """Dump recipe objects to `dict` instances for an XML file.
 
-At the time of writing (`63c816b
-<https://github.com/ComPWA/expertsystem/tree/63c816bf13275ab5e6413d85ee144996ebfc0c41>`_),
+At the time of writing (`a104dd5
+<https://github.com/ComPWA/expertsystem/tree/a104dd5148b599f41dfdddf4935e2c5adc02baa6>`_),
 the `expertsystem` assumes nested `dict` structures of this 'XML format'. This
 module therefore serves as a bridge between `.ParticleCollection` and the
 `.state.particle` module.
@@ -26,14 +26,14 @@ from expertsystem.data import (
 from .validation import validate_particle
 
 
-def _from_particle_collection(particles: ParticleCollection) -> dict:
+def from_particle_collection(particles: ParticleCollection) -> dict:
     output = dict()
     for name, particle in particles.items():
-        output[name] = _from_particle(particle)
+        output[name] = from_particle(particle)
     return output
 
 
-def _from_particle(particle: Particle) -> dict:
+def from_particle(particle: Particle) -> dict:
     output_dict = {
         "Name": particle.name,
         "Pid": particle.pid,
