@@ -1,13 +1,17 @@
+# pyproject.toml
 [build-system]
 requires = [
-    "setuptools",
+    "setuptools>=42",
+    "setuptools_scm[toml]>=3.4",
     "wheel",
 ]
+
+[tool.setuptools_scm]
+write_to = "expertsystem/version.py"
 
 [tool.black]
 line-length = 79
 target-version = [
-    'py35',
     'py36',
     'py37',
     'py38',

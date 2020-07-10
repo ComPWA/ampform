@@ -1,4 +1,4 @@
-name: expertsystem
+name: es
 channels:
   - conda-forge
   - defaults

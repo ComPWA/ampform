@@ -18,6 +18,7 @@ source code is considered the 'installation'.
     git clone git@github.com:ComPWA/tensorwaves.git
     code tensorwaves
     conda env create
+    conda activate es
     pip install -e .[dev]
 
   For more info, see :ref:`contribute:Visual Studio code`.

@@ -15,8 +15,8 @@ direction. This led us to consider ADRs.
 
 ## Context and Problem Statement
 
-We want to record architectural decisions made in this project. Which format and
-structure should these records follow?
+We want to record architectural decisions made in this project. Which format
+and structure should these records follow?
 
 ## Considered Options
 

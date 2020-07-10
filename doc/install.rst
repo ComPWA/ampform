@@ -107,11 +107,11 @@ follows:
 
 .. code-block:: shell
 
-  conda activate expertsystem
+  conda activate es
 
 
-You need to have the :code:`expertsystem` environment activated whenever you
-want to run the `expertsystem`.
+You need to have the environment called :code:`es` activated whenever you want
+to run the `expertsystem`.
 
 Python venv
 ~~~~~~~~~~~
