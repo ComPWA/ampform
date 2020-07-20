@@ -1,23 +1,35 @@
 """JSON validation schema for a YAML recipe file."""
 
 import json
-from os.path import dirname, isfile, realpath
+from os.path import dirname, realpath
 
-from jsonschema import validate
+import jsonschema
+from jsonschema import RefResolver
 
 import expertsystem
 
-_PACKAGE_PATH = dirname(realpath(expertsystem.__file__))
-_SCHEMA_PATH_PARTICLES = f"{_PACKAGE_PATH}/schemas/yaml-particle-list.json"
 
-if not isfile(_SCHEMA_PATH_PARTICLES):
-    raise FileNotFoundError(
-        f"Could not find particle validation schema {_SCHEMA_PATH_PARTICLES}"
+_EXPERTSYSTEM_PATH = dirname(realpath(expertsystem.__file__))
+
+with open(f"{_EXPERTSYSTEM_PATH}/schemas/yaml/particle-list.json") as stream:
+    _SCHEMA_PARTICLES = json.load(stream)
+with open(f"{_EXPERTSYSTEM_PATH}/schemas/yaml/amplitude-model.json") as stream:
+    _SCHEMA_AMPLITUDE = json.load(stream)
+
+
+def particle_list(instance: dict) -> None:
+    jsonschema.validate(instance=instance, schema=_SCHEMA_PARTICLES)
+
+
+def amplitude_model(instance: dict) -> None:
+    resolver = RefResolver(
+        # The key part is here where we build a custom RefResolver
+        # and tell it where *this* schema lives in the filesystem
+        # Note that `file:` is for unix systems
+        f"file://{_EXPERTSYSTEM_PATH}/schemas/yaml/",
+        "amplitude-model.json",
     )
 
-with open(_SCHEMA_PATH_PARTICLES) as json_file:
-    _SCHEMA_PARTICLES = json.load(json_file)
-
-
-def validate_particle_list(instance: dict) -> None:
-    validate(instance=instance, schema=_SCHEMA_PARTICLES)
+    jsonschema.validate(
+        instance=instance, schema=_SCHEMA_AMPLITUDE, resolver=resolver,
+    )

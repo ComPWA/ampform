@@ -89,7 +89,7 @@ class TestInternalParticleDict:
     @staticmethod
     def test_particle_validation():
         for item in particle.DATABASE.values():
-            xml.validation.validate_particle(item)
+            xml.validation.particle(item)
 
     @staticmethod
     def test_build_particle_from_internal_database():

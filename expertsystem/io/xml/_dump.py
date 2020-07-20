@@ -23,7 +23,7 @@ from expertsystem.data import (
     Spin,
 )
 
-from .validation import validate_particle
+from . import validation
 
 
 def from_particle_collection(particles: ParticleCollection) -> dict:
@@ -51,7 +51,7 @@ def from_particle(particle: Particle) -> dict:
             ]
         }
         output_dict["DecayInfo"] = decay_info
-    validate_particle(output_dict)
+    validation.particle(output_dict)
     return output_dict
 
 

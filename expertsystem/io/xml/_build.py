@@ -19,7 +19,7 @@ from expertsystem.data import (
     Spin,
 )
 
-from .validation import validate_particle
+from . import validation
 
 
 def build_particle_collection(definition: dict) -> ParticleCollection:
@@ -45,7 +45,7 @@ def build_particle_collection(definition: dict) -> ParticleCollection:
 
 
 def build_particle(definition: dict) -> Particle:
-    validate_particle(definition)
+    validation.particle(definition)
     qn_defs = _xml_qn_list_to_qn_object(definition["QuantumNumber"])
     return Particle(
         name=str(definition["Name"]),

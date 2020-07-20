@@ -1,0 +1,387 @@
+{
+  "$id": "amplitude-model.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "Kinematics",
+    "Parameters",
+    "Dynamics",
+    "Intensity",
+    "ParticleList"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "Kinematics": {
+      "title": "Kinematical description of the particle reaction",
+      "type": "object",
+      "required": ["Type", "InitialState", "FinalState"],
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "enum": ["Helicity"],
+          "title": "Formalism with which the reaction is studied"
+        },
+        "InitialState": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["Particle", "ID"],
+            "additionalProperties": false,
+            "properties": {
+              "Particle": { "type": "string" },
+              "ID": { "$ref": "#/definitions/StateID" }
+            }
+          }
+        },
+        "FinalState": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["Particle", "ID"],
+            "additionalProperties": false,
+            "properties": {
+              "Particle": { "type": "string" },
+              "ID": { "$ref": "#/definitions/StateID" }
+            }
+          }
+        }
+      }
+    },
+    "Parameters": {
+      "title": "Parameter list",
+      "description": "An array of parameters used throughout the amplitude model",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["Name", "Value"],
+        "additionalProperties": false,
+        "properties": {
+          "Name": {
+            "type": "string",
+            "title": "Parameter name",
+            "description": "Has to be a unique string that is used to identify where the parameter is used in the rest of the model"
+          },
+          "Type": { "type": "string" },
+          "Value": {
+            "type": "number",
+            "title": "Starting value of the fit parameter"
+          },
+          "Fix": { "type": "boolean" },
+          "Min": {
+            "type": "number",
+            "title": "Lower boundary of the fit range"
+          },
+          "Max": {
+            "type": "number",
+            "title": "Upper boundary of the fit range"
+          }
+        }
+      }
+    },
+    "Dynamics": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "required": ["Type", "FormFactor"],
+          "additionalProperties": false,
+          "properties": {
+            "Type": {
+              "enum": ["NonDynamic", "Flatté", "RelativisticBreitWigner"]
+            },
+            "FormFactor": {
+              "type": "object",
+              "required": ["Type", "MesonRadius"],
+              "additionalProperties": false,
+              "properties": {
+                "Type": { "const": "BlattWeisskopf" },
+                "MesonRadius": {
+                  "anyOf": [
+                    { "type": "number" },
+                    {
+                      "type": "object",
+                      "required": ["Value"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "Value": { "type": "number" },
+                        "Min": { "type": "number" },
+                        "Max": { "type": "number" },
+                        "Fix": { "type": "boolean" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Intensity": { "$ref": "#/definitions/Intensity/_recursion" },
+    "ParticleList": { "$ref": "particle-list.json#/definitions/ParticleList" }
+  },
+  "definitions": {
+    "Intensity": {
+      "_types": {
+        "title": "Intensity node type in the function tree",
+        "enum": [
+          "StrengthIntensity",
+          "NormalizedIntensity",
+          "IncoherentIntensity",
+          "CoherentIntensity"
+        ]
+      },
+      "_recursion": {
+        "type": "object",
+        "properties": {
+          "Class": { "$ref": "#/definitions/Intensity/_types" }
+        },
+        "if": { "properties": { "Class": { "const": "StrengthIntensity" } } },
+        "then": { "$ref": "#/definitions/Intensity/Strength" },
+        "else": {
+          "if": {
+            "properties": { "Class": { "const": "NormalizedIntensity" } }
+          },
+          "then": { "$ref": "#/definitions/Intensity/Normalized" },
+          "else": {
+            "if": {
+              "properties": { "Class": { "const": "IncoherentIntensity" } }
+            },
+            "then": { "$ref": "#/definitions/Intensity/Incoherent" },
+            "else": {
+              "if": {
+                "properties": { "Class": { "const": "CoherentIntensity" } }
+              },
+              "then": { "$ref": "#/definitions/Intensity/Coherent" }
+            }
+          }
+        }
+      },
+      "Strength": {
+        "type": "object",
+        "required": ["Class", "Intensity", "Strength"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Intensity/_types" },
+          "Component": { "type": "string" },
+          "Strength": {
+            "type": "string",
+            "title": "Coefficient when working with multiple terms",
+            "description": "Should be the unique name of a parameter that is further specified in the Parameter section"
+          },
+          "Intensity": {
+            "$ref": "#/definitions/Intensity/_recursion",
+            "title": "The intensity with which to multiply the (optional) strength coefficient"
+          }
+        }
+      },
+      "Normalized": {
+        "type": "object",
+        "required": ["Class", "Intensity"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Intensity/_types" },
+          "Intensity": {
+            "$ref": "#/definitions/Intensity/_recursion",
+            "title": "The intensity with which to multiply the (optional) strength coefficient"
+          }
+        }
+      },
+      "Incoherent": {
+        "type": "object",
+        "required": ["Class", "Intensities"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Intensity/_types" },
+          "Intensities": {
+            "type": "array",
+            "title": "List of intensities that will be added up incoherently",
+            "items": { "$ref": "#/definitions/Intensity/_recursion" }
+          }
+        }
+      },
+      "Coherent": {
+        "type": "object",
+        "required": ["Class", "Amplitudes"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Intensity/_types" },
+          "Component": { "type": "string" },
+          "Amplitudes": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Amplitude/_recursion" }
+          }
+        }
+      }
+    },
+    "Amplitude": {
+      "_types": {
+        "title": "Amplitude node type in the function tree",
+        "enum": [
+          "CoefficientAmplitude",
+          "SequentialAmplitude",
+          "HelicityDecay"
+        ]
+      },
+      "_recursion": {
+        "type": "object",
+        "properties": {
+          "Class": { "$ref": "#/definitions/Amplitude/_types" }
+        },
+        "if": {
+          "properties": { "Class": { "const": "CoefficientAmplitude" } }
+        },
+        "then": { "$ref": "#/definitions/Amplitude/Coefficient" },
+        "else": {
+          "if": {
+            "properties": { "Class": { "const": "SequentialAmplitude" } }
+          },
+          "then": { "$ref": "#/definitions/Amplitude/Sequential" },
+          "else": {
+            "if": { "properties": { "Class": { "const": "HelicityDecay" } } },
+            "then": { "$ref": "#/definitions/Amplitude/HelicityDecay" }
+          }
+        }
+      },
+      "Coefficient": {
+        "type": "object",
+        "required": ["Class", "Parameters", "Amplitude"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Amplitude/_types" },
+          "Component": { "type": "string" },
+          "PreFactor": {
+            "type": "object",
+            "properties": {
+              "Real": { "type": "number" },
+              "Imaginary": { "type": "number" }
+            },
+            "anyOf": [{ "required": ["Real"] }, { "required": ["Imaginary"] }]
+          },
+          "Parameters": {
+            "type": "object",
+            "required": ["Magnitude", "Phase"],
+            "additionalProperties": false,
+            "properties": {
+              "Magnitude": { "type": "string" },
+              "Phase": { "type": "string" }
+            }
+          },
+          "Amplitude": { "$ref": "#/definitions/Amplitude/_recursion" }
+        }
+      },
+      "Sequential": {
+        "type": "object",
+        "required": ["Class", "Amplitudes"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Amplitude/_types" },
+          "Amplitudes": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Amplitude/_recursion" }
+          }
+        }
+      },
+      "HelicityDecay": {
+        "type": "object",
+        "required": ["Class", "DecayParticle", "DecayProducts"],
+        "additionalProperties": false,
+        "properties": {
+          "Class": { "$ref": "#/definitions/Amplitude/_types" },
+          "DecayParticle": {
+            "type": "object",
+            "required": ["Name", "Helicity"],
+            "additionalProperties": false,
+            "properties": {
+              "Name": { "type": "string" },
+              "Helicity": { "type": "number" }
+            }
+          },
+          "DecayProducts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["Name", "FinalState", "Helicity"],
+              "additionalProperties": false,
+              "properties": {
+                "Name": { "type": "string" },
+                "Helicity": { "type": "number" },
+                "FinalState": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/StateID" }
+                }
+              }
+            }
+          },
+          "RecoilSystem": {
+            "type": "object",
+            "required": ["RecoilFinalState"],
+            "additionalProperties": false,
+            "properties": {
+              "RecoilFinalState": {
+                "anyOf": [
+                  { "$ref": "#/definitions/StateID" },
+                  {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/StateID" }
+                  }
+                ]
+              },
+              "ParentRecoilFinalState": {
+                "anyOf": [
+                  { "$ref": "#/definitions/StateID" },
+                  {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/StateID" }
+                  }
+                ]
+              }
+            }
+          },
+          "Canonical": {
+            "type": "object",
+            "required": ["LS", "s2s3"],
+            "additionalProperties": false,
+            "properties": {
+              "LS": {
+                "type": "object",
+                "required": ["ClebschGordan"],
+                "additionalProperties": false,
+                "properties": {
+                  "ClebschGordan": { "$ref": "#/definitions/ClebschGordan" }
+                }
+              },
+              "s2s3": {
+                "type": "object",
+                "required": ["ClebschGordan"],
+                "additionalProperties": false,
+                "properties": {
+                  "ClebschGordan": { "$ref": "#/definitions/ClebschGordan" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ClebschGordan": {
+      "type": "object",
+      "required": ["J", "M", "j1", "m1", "j2", "m2"],
+      "additionalProperties": false,
+      "properties": {
+        "J": { "type": "number" },
+        "M": { "type": "number" },
+        "j1": { "type": "number" },
+        "m1": { "type": "number" },
+        "j2": { "type": "number" },
+        "m2": { "type": "number" }
+      }
+    },
+    "StateID": {
+      "title": "Unique identifier for the particle in the final or initial state",
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

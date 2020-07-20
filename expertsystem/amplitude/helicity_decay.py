@@ -12,6 +12,7 @@ import xmltodict
 
 import yaml
 
+from expertsystem import io
 from expertsystem.state import particle
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
@@ -283,17 +284,67 @@ def _get_name_hel_list(graph, edge_ids):
 class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
     """Parameter name generator for the helicity formalism."""
 
-    def __init__(self, use_parity_conservation=False):
-        self.partial_amp_coefficient_infos = set()
-        self.use_parity_conservation = use_parity_conservation
+    def __init__(self):
+        self.parity_partner_coefficient_mapping: Dict[str, str] = {}
 
-        # automatically determine parity conservation settings
-        if self.use_parity_conservation is None:
-            self.use_parity_conservation = True
-            logging.debug(
-                "Using parity conservation to connect fit "
-                "parameters together with prefactors."
-            )
+    def _generate_amplitude_coefficient_couple(self, graph, node_id):
+        (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
+            graph, node_id
+        )
+        par_name_suffix = self._generate_amplitude_coefficient_name(
+            graph, node_id
+        )
+
+        pp_par_name_suffix = (
+            generate_particles_string(in_hel_info, False)
+            + "_to_"
+            + generate_particles_string(out_hel_info, make_parity_partner=True)
+        )
+
+        priority_name_suffix = par_name_suffix
+        if out_hel_info[0][1] < 0 or (
+            out_hel_info[0][1] == 0 and out_hel_info[1][1] < 0
+        ):
+            priority_name_suffix = pp_par_name_suffix
+
+        return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
+
+    def register_amplitude_coefficient_name(self, graph):
+        for node_id in graph.nodes:
+            (
+                coefficient_suffix,
+                parity_partner_coefficient_suffix,
+                priority_partner_coefficient_suffix,
+            ) = self._generate_amplitude_coefficient_couple(graph, node_id)
+
+            if (
+                coefficient_suffix
+                not in self.parity_partner_coefficient_mapping
+            ):
+                if (
+                    parity_partner_coefficient_suffix
+                    in self.parity_partner_coefficient_mapping
+                ):
+                    if (
+                        parity_partner_coefficient_suffix
+                        == priority_partner_coefficient_suffix
+                    ):
+                        self.parity_partner_coefficient_mapping[
+                            coefficient_suffix
+                        ] = parity_partner_coefficient_suffix
+                    else:
+                        self.parity_partner_coefficient_mapping[
+                            parity_partner_coefficient_suffix
+                        ] = coefficient_suffix
+                        self.parity_partner_coefficient_mapping[
+                            coefficient_suffix
+                        ] = coefficient_suffix
+
+                else:
+                    # if neither this coefficient nor its partner are registered just add it
+                    self.parity_partner_coefficient_mapping[
+                        coefficient_suffix
+                    ] = coefficient_suffix
 
     def generate_amplitude_coefficient_infos(self, graph):
         """Generate coefficient info for a sequential amplitude graph.
@@ -303,27 +354,27 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         a coupled coefficient is introduced.
         """
         seq_par_suffix = ""
+        prefactor = get_prefactor(graph)
         use_prefactor = False
+        prefactor_label = InteractionQuantumNumberNames.ParityPrefactor
         # loop over decay nodes in time order
         for node_id in graph.nodes:
-            (
-                coefficient_suffix,
-                pp_coefficient_suffix,
-            ) = self._generate_amplitude_coefficient_names(graph, node_id)
+            raw_suffix = self._generate_amplitude_coefficient_name(
+                graph, node_id
+            )
 
-            if coefficient_suffix in self.partial_amp_coefficient_infos:
-                seq_par_suffix += coefficient_suffix + ";"
-            else:
-                if (
-                    self.use_parity_conservation
-                    and pp_coefficient_suffix
-                    in self.partial_amp_coefficient_infos
-                ):
-                    seq_par_suffix += pp_coefficient_suffix + ";"
-                    use_prefactor = True
-                else:
-                    seq_par_suffix += coefficient_suffix + ";"
-                    self.partial_amp_coefficient_infos.add(coefficient_suffix)
+            if raw_suffix not in self.parity_partner_coefficient_mapping:
+                raise KeyError(
+                    f"Coefficient name {raw_suffix} " "not found in mapping!"
+                )
+
+            coefficient_suffix = self.parity_partner_coefficient_mapping[
+                raw_suffix
+            ]
+            if coefficient_suffix != raw_suffix:
+                use_prefactor = True
+
+            seq_par_suffix += coefficient_suffix + ";"
 
         par_label = particle.Labels.Parameter.name
         amplitude_coefficient_infos = {
@@ -346,13 +397,9 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
         }
 
         # add potential prefactor
-        if self.use_parity_conservation and use_prefactor:
-            prefactor = get_prefactor(graph)
-            if prefactor != 1.0 and prefactor is not None:
-                prefactor_label = particle.Labels.PreFactor.name
-                amplitude_coefficient_infos[prefactor_label] = {
-                    "Real": prefactor
-                }
+        if use_prefactor and prefactor != 1.0 and prefactor is not None:
+            prefactor_label = particle.Labels.PreFactor.name
+            amplitude_coefficient_infos[prefactor_label] = {"Real": prefactor}
         return amplitude_coefficient_infos
 
     def generate_unique_amplitude_name(self, graph, node_id=None):
@@ -391,23 +438,16 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
 
         return (in_names_hel_list, out_names_hel_list)
 
-    def _generate_amplitude_coefficient_names(self, graph, node_id):
-        """Generate partial amplitude coefficient name suffixes."""
+    def _generate_amplitude_coefficient_name(self, graph, node_id):
+        """Generate partial amplitude coefficient name suffix."""
         (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
             graph, node_id
         )
-        par_name_suffix = (
+        return (
             generate_particles_string(in_hel_info, False)
             + "_to_"
             + generate_particles_string(out_hel_info)
         )
-
-        pp_par_name_suffix = (
-            generate_particles_string(in_hel_info, False)
-            + "_to_"
-            + generate_particles_string(out_hel_info, make_parity_partner=True)
-        )
-        return (par_name_suffix, pp_par_name_suffix)
 
 
 class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
@@ -416,7 +456,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
     def __init__(
         self,
         top_node_no_dynamics=True,
-        name_generator=HelicityAmplitudeNameGenerator(None),
+        name_generator=HelicityAmplitudeNameGenerator(),
     ):
         self.particle_list = {}
         self.helicity_amplitudes = {}
@@ -450,7 +490,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         logging.debug("There are %d graph groups", len(graph_groups))
 
         self.fix_parameters_unambiguously()
-
+        self.create_parameter_couplings(graph_groups)
         self.generate_amplitude_info(graph_groups)
 
     def fix_parameters_unambiguously(self):
@@ -460,6 +500,11 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         fit parameters per graph, except one, will all be fixed. It's fine if
         they are all already fixed.
         """
+
+    def create_parameter_couplings(self, graph_groups):
+        for graph_group in graph_groups:
+            for graph in graph_group:
+                self.name_generator.register_amplitude_coefficient_name(graph)
 
     def generate_amplitude_info(self, graph_groups):
         class_label = particle.Labels.Class.name
@@ -704,17 +749,19 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 if len(self.indents) == 1:
                     super().write_line_break()
 
-        with open(filename, "w") as output_file:
-            output_dict = {
-                "Kinematics": kinematics,
-                "Parameters": parameter_list,
-                "Intensity": intensity,
-                "ParticleList": particle_dict,
-                "Dynamics": dynamics,
-            }
+        output_dict = {
+            "Kinematics": kinematics,
+            "Parameters": parameter_list,
+            "Intensity": intensity,
+            "ParticleList": particle_dict,
+            "Dynamics": dynamics,
+        }
+        io.yaml.validation.amplitude_model(output_dict)
+
+        with open(filename, "w") as output_stream:
             yaml.dump(
                 output_dict,
-                output_file,
+                output_stream,
                 sort_keys=False,
                 Dumper=IncreasedIndent,
                 default_flow_style=False,

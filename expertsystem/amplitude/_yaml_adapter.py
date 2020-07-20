@@ -216,7 +216,14 @@ def _extract_intensity_component(definition: Dict[str, Any]) -> Dict[str, Any]:
     output_dict = dict()
     class_name = definition["Class"]
     if class_name == "StrengthIntensity":
-        output_dict = _extract_intensity_component(definition["Intensity"])
+        output_dict["Class"] = class_name
+        output_dict["Component"] = definition["Component"]
+        parameters_xml = _safe_wrap_in_list(definition["Parameter"])
+        parameter_names = [par["Name"] for par in parameters_xml]
+        output_dict["Strength"] = parameter_names[0]
+        output_dict["Intensity"] = _extract_intensity_component(
+            definition["Intensity"]
+        )
     elif class_name == "NormalizedIntensity":
         output_dict["Class"] = class_name
         output_dict["Intensity"] = _extract_intensity_component(
@@ -240,6 +247,8 @@ def _extract_intensity_component(definition: Dict[str, Any]) -> Dict[str, Any]:
     elif class_name == "CoefficientAmplitude":
         output_dict["Class"] = class_name
         output_dict["Component"] = definition["Component"]
+        if "PreFactor" in definition:
+            output_dict["PreFactor"] = definition["PreFactor"]
         parameters_xml = _safe_wrap_in_list(definition["Parameter"])
         parameter_names = [par["Name"] for par in parameters_xml]
         parameters_yml = dict()
@@ -273,9 +282,18 @@ def _extract_intensity_component(definition: Dict[str, Any]) -> Dict[str, Any]:
         output_dict["DecayProducts"] = decay_products
         if "RecoilSystem" in definition:
             recoil_system = definition["RecoilSystem"]
-            recoil_system["RecoilFinalState"] = int(
-                recoil_system["RecoilFinalState"]
-            )
+            recoil_final_states = recoil_system["RecoilFinalState"].split(" ")
+            recoil_system["RecoilFinalState"] = [
+                int(state_id) for state_id in recoil_final_states
+            ]
+            if "ParentRecoilFinalState" in recoil_system:
+                parent_recoil_final_states = recoil_system[
+                    "ParentRecoilFinalState"
+                ].split(" ")
+                recoil_system["ParentRecoilFinalState"] = [
+                    int(state_id) for state_id in parent_recoil_final_states
+                ]
+
             output_dict["RecoilSystem"] = recoil_system
         if "CanonicalSum" in definition:
             cano_sum_old = definition["CanonicalSum"]

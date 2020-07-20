@@ -37,7 +37,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     That is, using the properties of the decay.
     """
 
-    def _generate_amplitude_coefficient_names(self, graph, node_id):
+    def _generate_amplitude_coefficient_name(self, graph, node_id):
         (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
             graph, node_id
         )
@@ -46,17 +46,8 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             + "_to_"
             + generate_particles_string(out_hel_info, False)
         )
-
-        pp_par_name_suffix = (
-            generate_particles_string(in_hel_info, False)
-            + "_to_"
-            + generate_particles_string(
-                out_hel_info, use_helicity=False, make_parity_partner=True
-            )
-        )
-
         cg_suffix = generate_clebsch_gordan_string(graph, node_id)
-        return (par_name_suffix + cg_suffix, pp_par_name_suffix + cg_suffix)
+        return par_name_suffix + cg_suffix
 
     def generate_unique_amplitude_name(self, graph, node_id=None):
         name = ""
@@ -154,7 +145,7 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
     def __init__(
         self,
         top_node_no_dynamics=True,
-        name_generator=CanonicalAmplitudeNameGenerator(None),
+        name_generator=CanonicalAmplitudeNameGenerator(),
     ):
         super().__init__(top_node_no_dynamics, name_generator=name_generator)
 

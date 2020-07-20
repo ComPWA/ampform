@@ -37,7 +37,7 @@ def create_amplitude_generator():
 
 def write_load_yaml() -> dict:
     amplitude_generator = create_amplitude_generator()
-    output_filename = "JPsiToGammaPi0Pi0_cano.yml"
+    output_filename = "JPsiToGammaPi0Pi0_cano_recipe.yml"
     amplitude_generator.write_to_file(output_filename)
     with open(output_filename, "rb") as input_file:
         imported_dict = yaml.load(input_file, Loader=yaml.FullLoader)
@@ -77,7 +77,8 @@ class TestCanonicalAmplitudeGeneratorYAML:
             assert "Value" in parameter
 
     def test_clebsch_gordan(self):
-        normalized_intensity = self.imported_dict["Intensity"]
+        strength_intensity = self.imported_dict["Intensity"]
+        normalized_intensity = strength_intensity["Intensity"]
         incoherent_intensity = normalized_intensity["Intensity"]
         coherent_intensity = incoherent_intensity["Intensities"][0]
         coefficient_amplitude = coherent_intensity["Amplitudes"][0]

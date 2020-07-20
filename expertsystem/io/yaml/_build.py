@@ -13,11 +13,11 @@ from expertsystem.data import (
     Spin,
 )
 
-from .validation import validate_particle_list
+from . import validation
 
 
 def build_particle_collection(definition: dict) -> ParticleCollection:
-    validate_particle_list(definition)
+    validation.particle_list(definition)
     definition = definition["ParticleList"]
     particles = ParticleCollection()
     for name, particle_def in definition.items():

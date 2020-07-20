@@ -37,7 +37,7 @@ def create_amplitude_generator():
 
 def write_load_yaml() -> dict:
     amplitude_generator = create_amplitude_generator()
-    output_filename = "JPsiToGammaPi0Pi0.yml"
+    output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
     amplitude_generator.write_to_file(output_filename)
     with open(output_filename, "rb") as input_file:
         imported_dict = yaml.load(input_file, Loader=yaml.FullLoader)
@@ -126,6 +126,8 @@ class TestHelicityAmplitudeGeneratorYAML:
 
     def test_intensity_section(self):
         intensity = self.imported_dict["Intensity"]
+        assert intensity["Class"] == "StrengthIntensity"
+        intensity = intensity["Intensity"]
         assert intensity["Class"] == "NormalizedIntensity"
 
         intensity = intensity["Intensity"]

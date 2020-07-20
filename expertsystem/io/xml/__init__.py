@@ -15,6 +15,7 @@ from expertsystem.data import (
 )
 
 from . import _dump
+from . import validation
 from ._build import (
     build_particle,
     build_particle_collection,
@@ -34,6 +35,7 @@ def write(instance: object, filename: str) -> None:
         output_dict = _dump.from_particle_collection(instance)
         entries = list(output_dict.values())
         output_dict = {"ParticleList": {"Particle": entries}}
+        validation.particle_list(output_dict)
     else:
         raise NotImplementedError(
             f"No XML writer for class {instance.__class__.__name__}"

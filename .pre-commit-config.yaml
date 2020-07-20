@@ -39,6 +39,7 @@ repos:
     rev: 2.0.5
     hooks:
       - id: prettier
+        language_version: 12.18.2 # prettier does not specify node correcly
 
   - repo: local
     hooks:

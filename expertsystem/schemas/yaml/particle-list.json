@@ -1,29 +1,27 @@
 {
-  "$id": "https://github.com/ComPWA/expertsystem/blob/master/expertsystem/schemas/yaml-particle-list.json",
+  "$id": "particle-list.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["ParticleList"],
-  "properties": {
-    "ParticleList": {
+  "additionalProperties": false,
+  "properties": { "ParticleList": { "$ref": "#/definitions/ParticleList" } },
+  "definitions": {
+    "Particle": {
       "type": "object",
-      "patternProperties": {
-        "^.*$": {
-          "type": "object",
-          "required": ["PID", "Mass", "QuantumNumbers"],
-          "properties": {
-            "PID": { "type": "integer" },
-            "Mass": { "$ref": "#/definitions/MeasuredValue" },
-            "Width": { "$ref": "#/definitions/MeasuredValue" },
-            "QuantumNumbers": { "$ref": "#/definitions/QuantumNumbers" }
-          },
-          "additionalProperties": false
-        }
+      "required": ["PID", "Mass", "QuantumNumbers"],
+      "properties": {
+        "PID": { "type": "integer" },
+        "Mass": { "$ref": "#/definitions/MeasuredValue" },
+        "Width": { "$ref": "#/definitions/MeasuredValue" },
+        "QuantumNumbers": { "$ref": "#/definitions/QuantumNumbers" }
       },
       "additionalProperties": false
-    }
-  },
-  "additionalProperties": false,
-  "definitions": {
+    },
+    "ParticleList": {
+      "type": "object",
+      "patternProperties": { "^.*$": { "$ref": "#/definitions/Particle" } },
+      "additionalProperties": false
+    },
     "QuantumNumbers": {
       "type": "object",
       "required": ["Charge", "Spin"],

@@ -17,5 +17,6 @@
     "trentrand.git-commit-helper-vscode",
     "tyriar.sort-lines",
     "yzhang.markdown-all-in-one"
-  ]
+  ],
+  "unwantedRecommendations": ["dbaeumer.vscode-eslint"]
 }
