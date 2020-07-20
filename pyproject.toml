@@ -1,8 +1,8 @@
 # pyproject.toml
 [build-system]
 requires = [
-    "setuptools>=42",
-    "setuptools_scm[toml]>=3.4",
+    "setuptools>=30.3.0",
+    "setuptools_scm",
     "wheel",
 ]
 
