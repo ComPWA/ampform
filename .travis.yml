@@ -54,8 +54,7 @@ jobs:
       language: shell
 
     - name: "Deploy PyPI package"
-      install:
-        - pip3 install .
+      install: echo "Skipping install stage"
       script: echo "Skipping script stage"
       deploy:
         edge: true

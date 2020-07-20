@@ -15,8 +15,8 @@ source code is considered the 'installation'.
 
   .. code-block:: shell
 
-    git clone git@github.com:ComPWA/tensorwaves.git
-    code tensorwaves
+    git clone git@github.com:ComPWA/expertsystem.git
+    code expertsystem
     conda env create
     conda activate es
     pip install -e .[dev]

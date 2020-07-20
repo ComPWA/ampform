@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 
+
 # -- Copy example notebooks ---------------------------------------------------
 print("Copy example notebook files")
 # Remove old notebooks
@@ -59,6 +60,7 @@ source_suffix = [
     ".ipynb",
     ".md",
 ]
+
 # The master toctree document.
 master_doc = "index"
 
@@ -76,6 +78,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -128,11 +131,6 @@ autosectionlabel_prefix_document = True
 
 # Settings for linkcheck
 linkcheck_anchors = False
-linkcheck_ignore = [
-    "https://pypi.org/project/expertsystem",
-    "https://pypi.org/project/expertsystem",
-]
-
 
 # Settings for nbsphinx
 if "NBSPHINX_EXECUTE" in os.environ:
