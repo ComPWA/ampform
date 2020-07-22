@@ -15,7 +15,7 @@ source code is considered the 'installation'.
 
   .. code-block:: shell
 
-    git clone git@github.com:ComPWA/expertsystem.git
+    git clone https://github.com/ComPWA/expertsystem.git
     code expertsystem
     conda env create
     conda activate es
