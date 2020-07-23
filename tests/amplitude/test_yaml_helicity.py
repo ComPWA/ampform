@@ -21,14 +21,12 @@ def create_amplitude_generator():
     initial_state = [("J/psi", [-1, 1])]
     final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
 
-    tbd_manager = StateTransitionManager(initial_state, final_state, ["f"])
-    tbd_manager.set_allowed_interaction_types(
+    stm = StateTransitionManager(initial_state, final_state, ["f"])
+    stm.set_allowed_interaction_types(
         [InteractionTypes.Strong, InteractionTypes.EM]
     )
-    graph_interaction_settings_groups = tbd_manager.prepare_graphs()
-    solutions, _ = tbd_manager.find_solutions(
-        graph_interaction_settings_groups
-    )
+    graph_interaction_settings_groups = stm.prepare_graphs()
+    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
 
     amplitude_generator = HelicityAmplitudeGenerator()
     amplitude_generator.generate(solutions)

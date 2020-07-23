@@ -64,7 +64,7 @@ def test_general_reaction(test_input, expected):
     # define all of the different decay scenarios
     print("processing case:" + str(test_input))
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         test_input[0],
         test_input[1],
         formalism_type="canonical",
@@ -72,8 +72,8 @@ def test_general_reaction(test_input, expected):
         propagation_mode="full",
     )
 
-    graph_interaction_settings = tbd_manager.prepare_graphs()
-    (solutions, violated_rules) = tbd_manager.find_solutions(
+    graph_interaction_settings = stm.prepare_graphs()
+    (solutions, violated_rules) = stm.find_solutions(
         graph_interaction_settings
     )
 
@@ -106,7 +106,7 @@ def test_em_reactions(test_input, expected):
     # general checks
     print("processing case:" + str(test_input))
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         test_input[0],
         test_input[1],
         formalism_type="canonical",
@@ -114,10 +114,10 @@ def test_em_reactions(test_input, expected):
         propagation_mode="full",
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.EM])
+    stm.set_allowed_interaction_types([InteractionTypes.EM])
 
-    graph_interaction_settings = tbd_manager.prepare_graphs()
-    _, violated_rules = tbd_manager.find_solutions(graph_interaction_settings)
+    graph_interaction_settings = stm.prepare_graphs()
+    _, violated_rules = stm.find_solutions(graph_interaction_settings)
 
     assert set(violated_rules) == set(expected)
 
@@ -136,7 +136,7 @@ def test_strong_reactions(test_input, expected):
     # general checks
     print("processing case:" + str(test_input))
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         test_input[0],
         test_input[1],
         formalism_type="canonical",
@@ -144,9 +144,9 @@ def test_strong_reactions(test_input, expected):
         propagation_mode="full",
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
 
-    graph_interaction_settings = tbd_manager.prepare_graphs()
-    _, violated_rules = tbd_manager.find_solutions(graph_interaction_settings)
+    graph_interaction_settings = stm.prepare_graphs()
+    _, violated_rules = stm.find_solutions(graph_interaction_settings)
 
     assert set(violated_rules) == set(expected)

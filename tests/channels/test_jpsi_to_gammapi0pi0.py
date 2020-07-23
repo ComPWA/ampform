@@ -23,21 +23,19 @@ from expertsystem.ui._system_control import _create_edge_id_particle_mapping
 def test_script():
     logging.basicConfig(level=logging.INFO)
     # initialize the graph edges (initial and final state)
-    initial_state = [("J/psi", [-1, 1])]
-    final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
 
-    tbd_manager = StateTransitionManager(
-        initial_state, final_state, ["f0", "f2", "omega"]
+    stm = StateTransitionManager(
+        initial_state=[("J/psi", [-1, 1])],
+        final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
+        allowed_intermediate_particles=["f0", "f2", "omega"],
     )
-    tbd_manager.number_of_threads = 2
-    tbd_manager.set_allowed_interaction_types(
+    stm.number_of_threads = 2
+    stm.set_allowed_interaction_types(
         [InteractionTypes.Strong, InteractionTypes.EM]
     )
-    graph_interaction_settings_groups = tbd_manager.prepare_graphs()
+    graph_interaction_settings_groups = stm.prepare_graphs()
 
-    solutions, _ = tbd_manager.find_solutions(
-        graph_interaction_settings_groups
-    )
+    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
 
     print("found " + str(len(solutions)) + " solutions!")
     assert len(solutions) == 48

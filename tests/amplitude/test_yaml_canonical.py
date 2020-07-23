@@ -18,17 +18,15 @@ SCRIPT_PATH = dirname(realpath(__file__))
 
 
 def create_amplitude_generator():
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state=[("J/psi", [-1, 1])],
         final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
         allowed_intermediate_particles=["f0"],
         formalism_type="canonical-helicity",
     )
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.EM])
-    graph_interaction_settings_groups = tbd_manager.prepare_graphs()
-    solutions, _ = tbd_manager.find_solutions(
-        graph_interaction_settings_groups
-    )
+    stm.set_allowed_interaction_types([InteractionTypes.EM])
+    graph_interaction_settings_groups = stm.prepare_graphs()
+    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
 
     amplitude_generator = CanonicalAmplitudeGenerator()
     amplitude_generator.generate(solutions)

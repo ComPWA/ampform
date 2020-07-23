@@ -87,20 +87,20 @@ from expertsystem.ui._system_control import (
 def test_external_edge_initialization(
     initial_state, final_state, final_state_groupings, result_graph_count
 ):
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state, final_state, [], formalism_type="helicity"
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
     for group in final_state_groupings:
-        tbd_manager.add_final_state_grouping(group)
-    tbd_manager.number_of_threads = 1
+        stm.add_final_state_grouping(group)
+    stm.number_of_threads = 1
 
     topology_graphs = (
-        tbd_manager._build_topologies()  # pylint: disable=protected-access
+        stm._build_topologies()  # pylint: disable=protected-access
     )
 
-    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+    init_graphs = stm._create_seed_graphs(  # pylint: disable=protected-access
         topology_graphs
     )
     assert len(init_graphs) == result_graph_count
@@ -259,17 +259,17 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
     ],
 )
 def test_edge_swap(initial_state, final_state):
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state, final_state, [], formalism_type="helicity"
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.number_of_threads = 1
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.number_of_threads = 1
 
     topology_graphs = (
-        tbd_manager._build_topologies()  # pylint: disable=protected-access
+        stm._build_topologies()  # pylint: disable=protected-access
     )
-    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+    init_graphs = stm._create_seed_graphs(  # pylint: disable=protected-access
         topology_graphs
     )
 
@@ -305,17 +305,17 @@ def test_edge_swap(initial_state, final_state):
     ],
 )
 def test_match_external_edges(initial_state, final_state):
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state, final_state, [], formalism_type="helicity"
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.number_of_threads = 1
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.number_of_threads = 1
 
     topology_graphs = (
-        tbd_manager._build_topologies()  # pylint: disable=protected-access
+        stm._build_topologies()  # pylint: disable=protected-access
     )
-    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+    init_graphs = stm._create_seed_graphs(  # pylint: disable=protected-access
         topology_graphs
     )
 
@@ -375,20 +375,20 @@ def test_match_external_edges(initial_state, final_state):
 def test_external_edge_identical_particle_combinatorics(
     initial_state, final_state, final_state_groupings, result_graph_count
 ):
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state, final_state, [], formalism_type="helicity"
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
     for group in final_state_groupings:
-        tbd_manager.add_final_state_grouping(group)
-    tbd_manager.number_of_threads = 1
+        stm.add_final_state_grouping(group)
+    stm.number_of_threads = 1
 
     topology_graphs = (
-        tbd_manager._build_topologies()  # pylint: disable=protected-access
+        stm._build_topologies()  # pylint: disable=protected-access
     )
 
-    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+    init_graphs = stm._create_seed_graphs(  # pylint: disable=protected-access
         topology_graphs
     )
     match_external_edges(init_graphs)

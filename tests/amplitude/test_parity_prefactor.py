@@ -61,19 +61,17 @@ def test_parity_prefactor(
     related_component_names: Tuple[str, str],
     relative_parity_prefactor: float,
 ) -> None:
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         test_input.initial_state,
         test_input.final_state,
         allowed_intermediate_particles=test_input.intermediate_states,
     )
-    # tbd_manager.number_of_threads = 1
-    tbd_manager.add_final_state_grouping(test_input.final_state_grouping)
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.EM])
-    graph_interaction_settings_groups = tbd_manager.prepare_graphs()
+    # stm.number_of_threads = 1
+    stm.add_final_state_grouping(test_input.final_state_grouping)
+    stm.set_allowed_interaction_types([InteractionTypes.EM])
+    graph_interaction_settings_groups = stm.prepare_graphs()
 
-    (solutions, _) = tbd_manager.find_solutions(
-        graph_interaction_settings_groups
-    )
+    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
 
     for solution in solutions:
         in_edge = [

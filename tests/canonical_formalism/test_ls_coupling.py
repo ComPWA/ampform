@@ -117,7 +117,7 @@ def test_canonical_clebsch_gordan_ls_coupling(
         int_settings[InteractionTypes.Strong], ParityConservationHelicity()
     )
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state,
         final_state,
         [],
@@ -125,9 +125,9 @@ def test_canonical_clebsch_gordan_ls_coupling(
         formalism_type=formalism_type,
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.number_of_threads = 2
-    tbd_manager.filter_remove_qns = []
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.number_of_threads = 2
+    stm.filter_remove_qns = []
 
     l_label = InteractionQuantumNumberNames.L
     s_label = InteractionQuantumNumberNames.S
@@ -142,11 +142,11 @@ def test_canonical_clebsch_gordan_ls_coupling(
             ]
         }
     }
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
+    graph_node_setting_pairs = stm.prepare_graphs()
     for value in graph_node_setting_pairs.values():
         for edge in value:
             edge[0].node_props = node_props
 
-    solutions = tbd_manager.find_solutions(graph_node_setting_pairs)[0]
+    solutions = stm.find_solutions(graph_node_setting_pairs)[0]
 
     assert len(solutions) == solution_count

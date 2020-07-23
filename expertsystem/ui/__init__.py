@@ -17,6 +17,8 @@ from os import path
 
 from progress.bar import IncrementalBar
 
+from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
+from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.state import particle
 from expertsystem.state.propagation import (
     FullPropagator,
@@ -72,6 +74,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 f"Formalism type {formalism_type} not implemented."
                 f" Use {allowed_formalism_types} instead."
             )
+        self.__formalism_type = formalism_type
         self.number_of_threads = number_of_threads
         self.propagation_mode = propagation_mode
         self.initial_state = initial_state
@@ -119,6 +122,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
         load_default_particle_list()
+
+    @property
+    def formalism_type(self) -> str:
+        return self.__formalism_type
 
     def set_topology_builder(self, topology_builder):
         self.topology_builder = topology_builder
@@ -337,6 +344,21 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         )
 
         return propagator
+
+    def write_amplitude_model(self, solutions: list, output_file: str) -> None:
+        """Generate an amplitude model from the solutions.
+
+        The type of amplitude model (`.HelicityAmplitudeGenerator` or
+        `.CanonicalAmplitudeGenerator`) is determined from the
+        :code:`formalism_type` that was chosen when constructing the
+        `.StateTransitionManager`.
+        """
+        if self.formalism_type == "helicity":
+            amplitude_generator = HelicityAmplitudeGenerator()
+        elif self.formalism_type in ["canonical-helicity", "canonical"]:
+            amplitude_generator = CanonicalAmplitudeGenerator()
+        amplitude_generator.generate(solutions)
+        amplitude_generator.write_to_file(output_file)
 
 
 def load_default_particle_list() -> None:

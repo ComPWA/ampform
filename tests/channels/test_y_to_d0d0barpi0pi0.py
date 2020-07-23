@@ -43,7 +43,7 @@ def test_script_simple():
         create_spin_domain([0, 1, 2], True),
     )
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state,
         final_state,
         ["D*"],
@@ -51,13 +51,13 @@ def test_script_simple():
         formalism_type=formalism_type,
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    # tbd_manager.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
-    tbd_manager.number_of_threads = 2
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    # stm.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
+    stm.number_of_threads = 2
 
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
+    graph_node_setting_pairs = stm.prepare_graphs()
 
-    solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
+    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
 
     print("found " + str(len(solutions)) + " solutions!")
 
@@ -78,7 +78,7 @@ def test_script_simple():
         create_spin_domain([0, 1, 2], True),
     )
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state,
         final_state,
         ["D*"],
@@ -86,11 +86,11 @@ def test_script_simple():
         formalism_type=formalism_type,
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.number_of_threads = 2
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.number_of_threads = 2
 
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
+    graph_node_setting_pairs = stm.prepare_graphs()
+    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
     helicity_xml_generator = HelicityAmplitudeGenerator()
@@ -121,7 +121,7 @@ def test_script_full():
         create_spin_domain([0, 1, 2], True),
     )
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state,
         final_state,
         ["D*"],
@@ -129,13 +129,13 @@ def test_script_full():
         formalism_type=formalism_type,
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.add_final_state_grouping([["D0", "pi0"], ["D0bar", "pi0"]])
-    tbd_manager.number_of_threads = 2
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.add_final_state_grouping([["D0", "pi0"], ["D0bar", "pi0"]])
+    stm.number_of_threads = 2
 
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
+    graph_node_setting_pairs = stm.prepare_graphs()
 
-    solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
+    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
 
     print("found " + str(len(solutions)) + " solutions!")
 
@@ -156,7 +156,7 @@ def test_script_full():
         create_spin_domain([0, 1, 2], True),
     )
 
-    tbd_manager = StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state,
         final_state,
         ["D*"],
@@ -164,12 +164,12 @@ def test_script_full():
         formalism_type=formalism_type,
     )
 
-    tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
-    tbd_manager.add_final_state_grouping([["D0", "pi0"], ["D0bar", "pi0"]])
-    tbd_manager.number_of_threads = 2
+    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.add_final_state_grouping([["D0", "pi0"], ["D0bar", "pi0"]])
+    stm.number_of_threads = 2
 
-    graph_node_setting_pairs = tbd_manager.prepare_graphs()
-    solutions, _ = tbd_manager.find_solutions(graph_node_setting_pairs)
+    graph_node_setting_pairs = stm.prepare_graphs()
+    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
     print("found " + str(len(solutions)) + " solutions!")
 
     helicity_xml_generator = HelicityAmplitudeGenerator()
