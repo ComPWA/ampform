@@ -208,7 +208,7 @@ class AbstractQNConverter(ABC):
         pass
 
 
-class IntQNConverter(AbstractQNConverter):
+class _IntQNConverter(AbstractQNConverter):
     """Interface for converting `int` quantum numbers."""
 
     value_label = Labels.Value.name
@@ -226,7 +226,7 @@ class IntQNConverter(AbstractQNConverter):
         }
 
 
-class FloatQNConverter(AbstractQNConverter):
+class _FloatQNConverter(AbstractQNConverter):
     """Interface for converting `float` quantum numbers."""
 
     value_label = Labels.Value.name
@@ -244,7 +244,7 @@ class FloatQNConverter(AbstractQNConverter):
         }
 
 
-class SpinQNConverter(AbstractQNConverter):
+class _SpinQNConverter(AbstractQNConverter):
     """Interface for converting `.Spin` quantum numbers."""
 
     type_label = Labels.Type.name
@@ -278,9 +278,9 @@ class SpinQNConverter(AbstractQNConverter):
 
 
 QNClassConverterMapping = {
-    QuantumNumberClasses.Int: IntQNConverter(),
-    QuantumNumberClasses.Float: FloatQNConverter(),
-    QuantumNumberClasses.Spin: SpinQNConverter(),
+    QuantumNumberClasses.Int: _IntQNConverter(),
+    QuantumNumberClasses.Float: _FloatQNConverter(),
+    QuantumNumberClasses.Spin: _SpinQNConverter(),
 }
 
 
@@ -636,7 +636,7 @@ def check_if_spin_projections_set(state):
     if isinstance(state, str):
         particle = DATABASE[state]
         spin = get_particle_property(
-            particle, spin_label, SpinQNConverter(False)
+            particle, spin_label, _SpinQNConverter(False)
         )
         if not isinstance(spin, Spin):
             raise ValueError(

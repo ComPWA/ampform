@@ -12,14 +12,14 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     create_spin_domain,
 )
-from expertsystem.ui.default_settings import (
-    create_default_interaction_settings,
-)
-from expertsystem.ui.system_control import (
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
-    change_qn_domain,
 )
+from expertsystem.ui._default_settings import (
+    create_default_interaction_settings,
+)
+from expertsystem.ui._system_control import _change_qn_domain
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,12 +32,12 @@ def test_script_simple():
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
     int_settings = create_default_interaction_settings(formalism_type)
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.L,
         create_spin_domain([0, 1, 2, 3], True),
     )
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.S,
         create_spin_domain([0, 1, 2], True),
@@ -67,12 +67,12 @@ def test_script_simple():
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
     int_settings = create_default_interaction_settings(formalism_type)
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.L,
         create_spin_domain([0, 1, 2, 3], True),
     )
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.S,
         create_spin_domain([0, 1, 2], True),
@@ -110,12 +110,12 @@ def test_script_full():
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
     int_settings = create_default_interaction_settings(formalism_type)
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.L,
         create_spin_domain([0, 1, 2, 3], True),
     )
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.S,
         create_spin_domain([0, 1, 2], True),
@@ -145,12 +145,12 @@ def test_script_full():
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
     int_settings = create_default_interaction_settings(formalism_type)
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.L,
         create_spin_domain([0, 1, 2, 3], True),
     )
-    change_qn_domain(
+    _change_qn_domain(
         int_settings[InteractionTypes.Strong],
         InteractionQuantumNumberNames.S,
         create_spin_domain([0, 1, 2], True),

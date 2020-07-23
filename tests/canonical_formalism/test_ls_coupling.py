@@ -5,16 +5,16 @@ from expertsystem.state.conservation_rules import ParityConservationHelicity
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     Spin,
-    SpinQNConverter,
+    _SpinQNConverter,
 )
-from expertsystem.ui.default_settings import (
-    create_default_interaction_settings,
-)
-from expertsystem.ui.system_control import (
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
-    remove_conservation_law,
 )
+from expertsystem.ui._default_settings import (
+    create_default_interaction_settings,
+)
+from expertsystem.ui._system_control import _remove_conservation_law
 
 
 @pytest.mark.parametrize(
@@ -113,7 +113,7 @@ def test_canonical_clebsch_gordan_ls_coupling(
     formalism_type = "canonical-helicity"
     int_settings = create_default_interaction_settings(formalism_type)
 
-    remove_conservation_law(
+    _remove_conservation_law(
         int_settings[InteractionTypes.Strong], ParityConservationHelicity()
     )
 
@@ -133,7 +133,7 @@ def test_canonical_clebsch_gordan_ls_coupling(
     s_label = InteractionQuantumNumberNames.S
     qn_label = particle.Labels.QuantumNumber
 
-    spin_converter = SpinQNConverter()
+    spin_converter = _SpinQNConverter()
     node_props = {
         0: {
             qn_label.name: [

@@ -2,6 +2,7 @@ import pytest
 
 from expertsystem.state import particle
 from expertsystem.state.particle import (
+    CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
     create_spin_domain,
 )
@@ -10,11 +11,12 @@ from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
 )
-from expertsystem.ui.system_control import (
-    CompareGraphElementPropertiesFunctor,
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
-    create_edge_id_particle_mapping,
+)
+from expertsystem.ui._system_control import (
+    _create_edge_id_particle_mapping,
     filter_graphs,
     match_external_edges,
     perform_external_edge_identical_particle_combinatorics,
@@ -94,9 +96,13 @@ def test_external_edge_initialization(
         tbd_manager.add_final_state_grouping(group)
     tbd_manager.number_of_threads = 1
 
-    topology_graphs = tbd_manager.build_topologies()
+    topology_graphs = (
+        tbd_manager._build_topologies()  # pylint: disable=protected-access
+    )
 
-    init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
+    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+        topology_graphs
+    )
     assert len(init_graphs) == result_graph_count
 
 
@@ -260,11 +266,15 @@ def test_edge_swap(initial_state, final_state):
     tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
     tbd_manager.number_of_threads = 1
 
-    topology_graphs = tbd_manager.build_topologies()
-    init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
+    topology_graphs = (
+        tbd_manager._build_topologies()  # pylint: disable=protected-access
+    )
+    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+        topology_graphs
+    )
 
     for graph in init_graphs:
-        ref_mapping = create_edge_id_particle_mapping(
+        ref_mapping = _create_edge_id_particle_mapping(
             graph, get_final_state_edges
         )
         edge_keys = list(ref_mapping.keys())
@@ -302,23 +312,27 @@ def test_match_external_edges(initial_state, final_state):
     tbd_manager.set_allowed_interaction_types([InteractionTypes.Strong])
     tbd_manager.number_of_threads = 1
 
-    topology_graphs = tbd_manager.build_topologies()
-    init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
+    topology_graphs = (
+        tbd_manager._build_topologies()  # pylint: disable=protected-access
+    )
+    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+        topology_graphs
+    )
 
     match_external_edges(init_graphs)
 
-    ref_mapping_fs = create_edge_id_particle_mapping(
+    ref_mapping_fs = _create_edge_id_particle_mapping(
         init_graphs[0], get_final_state_edges
     )
-    ref_mapping_is = create_edge_id_particle_mapping(
+    ref_mapping_is = _create_edge_id_particle_mapping(
         init_graphs[0], get_initial_state_edges
     )
 
     for graph in init_graphs[1:]:
-        assert ref_mapping_fs == create_edge_id_particle_mapping(
+        assert ref_mapping_fs == _create_edge_id_particle_mapping(
             graph, get_final_state_edges
         )
-        assert ref_mapping_is == create_edge_id_particle_mapping(
+        assert ref_mapping_is == _create_edge_id_particle_mapping(
             graph, get_initial_state_edges
         )
 
@@ -370,9 +384,13 @@ def test_external_edge_identical_particle_combinatorics(
         tbd_manager.add_final_state_grouping(group)
     tbd_manager.number_of_threads = 1
 
-    topology_graphs = tbd_manager.build_topologies()
+    topology_graphs = (
+        tbd_manager._build_topologies()  # pylint: disable=protected-access
+    )
 
-    init_graphs = tbd_manager.create_seed_graphs(topology_graphs)
+    init_graphs = tbd_manager._create_seed_graphs(  # pylint: disable=protected-access
+        topology_graphs
+    )
     match_external_edges(init_graphs)
 
     comb_graphs = []
@@ -382,17 +400,17 @@ def test_external_edge_identical_particle_combinatorics(
         )
     assert len(comb_graphs) == result_graph_count
 
-    ref_mapping_fs = create_edge_id_particle_mapping(
+    ref_mapping_fs = _create_edge_id_particle_mapping(
         comb_graphs[0], get_final_state_edges
     )
-    ref_mapping_is = create_edge_id_particle_mapping(
+    ref_mapping_is = _create_edge_id_particle_mapping(
         comb_graphs[0], get_initial_state_edges
     )
 
     for group in comb_graphs[1:]:
-        assert ref_mapping_fs == create_edge_id_particle_mapping(
+        assert ref_mapping_fs == _create_edge_id_particle_mapping(
             group, get_final_state_edges
         )
-        assert ref_mapping_is == create_edge_id_particle_mapping(
+        assert ref_mapping_is == _create_edge_id_particle_mapping(
             group, get_initial_state_edges
         )

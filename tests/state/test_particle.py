@@ -1,7 +1,7 @@
 import pytest
 
 from expertsystem.state import particle
-from expertsystem.ui.system_control import load_default_particle_list
+from expertsystem.ui import load_default_particle_list
 
 
 load_default_particle_list()

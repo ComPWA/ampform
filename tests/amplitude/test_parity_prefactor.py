@@ -7,7 +7,7 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     get_interaction_property,
 )
-from expertsystem.ui.system_control import (
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
 )

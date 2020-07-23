@@ -12,11 +12,11 @@ from expertsystem.topology.graph import (
     get_initial_state_edges,
     get_intermediate_state_edges,
 )
-from expertsystem.ui.system_control import (
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
-    create_edge_id_particle_mapping,
 )
+from expertsystem.ui._system_control import _create_edge_id_particle_mapping
 
 
 @pytest.mark.slow
@@ -42,17 +42,17 @@ def test_script():
     print("found " + str(len(solutions)) + " solutions!")
     assert len(solutions) == 48
 
-    ref_mapping_fs = create_edge_id_particle_mapping(
+    ref_mapping_fs = _create_edge_id_particle_mapping(
         solutions[0], get_final_state_edges
     )
-    ref_mapping_is = create_edge_id_particle_mapping(
+    ref_mapping_is = _create_edge_id_particle_mapping(
         solutions[0], get_initial_state_edges
     )
     for solution in solutions[1:]:
-        assert ref_mapping_fs == create_edge_id_particle_mapping(
+        assert ref_mapping_fs == _create_edge_id_particle_mapping(
             solution, get_final_state_edges
         )
-        assert ref_mapping_is == create_edge_id_particle_mapping(
+        assert ref_mapping_is == _create_edge_id_particle_mapping(
             solution, get_initial_state_edges
         )
 

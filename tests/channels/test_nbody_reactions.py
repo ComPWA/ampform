@@ -2,7 +2,7 @@
 
 import pytest
 
-from expertsystem.ui.system_control import (
+from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
 )
