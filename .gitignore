@@ -6,6 +6,7 @@
 !.travis.yml
 !codecov.yml
 !environment.yml
+!examples/additional_particles.yml
 !expertsystem/particle_list.*
 
 # Build output

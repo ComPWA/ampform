@@ -11,28 +11,21 @@ import subprocess
 
 
 # -- Copy example notebooks ---------------------------------------------------
-print("Copy example notebook files")
-# Remove old notebooks
-PATH_TARGET = "usage"
-os.makedirs(PATH_TARGET, exist_ok=True)
-for root, _, files in os.walk(PATH_TARGET):
-    for notebook in files:
-        if notebook.endswith(".ipynb"):
-            full_path = os.path.join(root, notebook)
-            print("  removing notebook", full_path)
-            os.remove(full_path)
-# Copy notebooks from example directory
+print("Copy example notebook and data files")
 PATH_SOURCE = "../examples"
-for root, _, files in os.walk(PATH_SOURCE):
-    for notebook in files:
-        if ".ipynb_checkpoints" in root:
-            continue
-        if not notebook.endswith(".ipynb"):
-            continue
-        path_from = os.path.join(root, notebook)
-        path_to = os.path.join(PATH_TARGET, notebook)
-        print("  copy", path_from, "to", path_to)
-        shutil.copyfile(path_from, path_to, follow_symlinks=True)
+PATH_TARGET = "usage"
+FILES_TO_COPY = [
+    "additional_particles.yml",
+    "particles.ipynb",
+    "quickstart.ipynb",
+]
+shutil.rmtree(PATH_TARGET, ignore_errors=True)
+os.makedirs(PATH_TARGET, exist_ok=True)
+for file_to_copy in FILES_TO_COPY:
+    path_from = os.path.join(PATH_SOURCE, file_to_copy)
+    path_to = os.path.join(PATH_TARGET, file_to_copy)
+    print("  copy", path_from, "to", path_to)
+    shutil.copyfile(path_from, path_to, follow_symlinks=True)
 
 # -- Generate API skeleton ----------------------------------------------------
 shutil.rmtree("api", ignore_errors=True)
@@ -117,6 +110,10 @@ nitpick_ignore = [
 
 # Intersphinx settings
 intersphinx_mapping = {
+    "jsonschema": (
+        "https://python-jsonschema.readthedocs.io/en/latest/",
+        None,
+    ),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "pycompwa": ("https://compwa.github.io/", None),
     "python": ("https://docs.python.org/3", None),

@@ -1,0 +1,34 @@
+ParticleList:
+  Sigma(1385)+:
+    PID: 32241385
+    Mass: 1.383
+    Width: 0.036
+    QuantumNumbers:
+      Spin: 1.5
+      Charge: 1
+      Parity: 1
+      IsoSpin:
+        Value: 1
+        Projection: 1
+  Sigma(1660)+:
+    PID: 32241660
+    Mass: 1.66
+    Width: 0.1
+    QuantumNumbers:
+      Spin: 0.5
+      Charge: 1
+      Parity: 1
+      IsoSpin:
+        Projection: 1
+        Value: 1
+  Sigma(1750)+:
+    PID: 32241750
+    Mass: 1.75
+    Width: 0.09
+    QuantumNumbers:
+      Spin: 0.5
+      Charge: 1
+      Parity: -1
+      IsoSpin:
+        Projection: 1
+        Value: 1

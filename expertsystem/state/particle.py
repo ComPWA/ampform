@@ -11,13 +11,19 @@ from collections import OrderedDict
 from copy import deepcopy
 from enum import Enum, auto
 from itertools import permutations
+from typing import (
+    Dict,
+    Union,
+)
 
 from numpy import arange
 
 import xmltodict
 
-import yaml
-
+from expertsystem import io
+from expertsystem.io import (
+    _get_file_extension,
+)  # pylint: disable=protected-access
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
@@ -286,19 +292,35 @@ def is_boson(qn_dict):
 DATABASE = dict()
 
 
-def load_particle_list_from_xml(file_path: str) -> None:
-    """Add entries to the particle database from definitions in an XML file.
+def load_particles(filename: str) -> None:
+    """Add entries to the particle database from a custom config file.
 
     By default, the expert system loads the particle database from the XML file
-    :file:`particle_list.xml` located in the ComPWA module. Use
-    `.load_particle_list_from_xml` to append to the particle database.
+    :file:`particle_list.xml` that comes with the `expertsystem`. Use
+    this function to append or overwrite definitions in the particle database.
 
     .. note::
         If a particle name in the loaded XML file already exists in the
         particle database, the one in the particle database will be
         overwritten.
     """
+    file_extension = _get_file_extension(filename)
+    if file_extension == "xml":
+        _load_particles_from_xml(filename)
+    if file_extension in ["yaml", "yml"]:
+        _load_particles_from_yaml(filename)
 
+
+def write_particle_database(filename: str) -> None:
+    """Write particle database instance to human readable format."""
+    file_extension = _get_file_extension(filename)
+    if file_extension == "xml":
+        _write_particle_database_to_xml(filename)
+    if file_extension in ["yaml", "yml"]:
+        _write_particle_database_to_yaml(filename)
+
+
+def _load_particles_from_xml(file_path: str) -> None:
     def to_dict(input_ordered_dict: OrderedDict) -> dict:
         """Convert nested `OrderedDict` to a nested `dict`."""
         return json.loads(json.dumps(input_ordered_dict))
@@ -312,8 +334,7 @@ def load_particle_list_from_xml(file_path: str) -> None:
         DATABASE[particle_name] = to_dict(particle_definition)
 
 
-def write_particle_list_to_xml(file_path: str) -> None:
-    """Write particle database instance to XML file."""
+def _write_particle_database_to_xml(file_path: str) -> None:
     entries = list(DATABASE.values())
     particle_dict = {"ParticleList": {"Particle": entries}}
     xmlstring = xmltodict.unparse(
@@ -323,36 +344,23 @@ def write_particle_list_to_xml(file_path: str) -> None:
         output_file.write(xmlstring)
 
 
-def load_particle_list_from_yaml(file_path: str) -> None:
-    """Use `.load_particle_list_from_yaml` to append to the particle database.
-
-    .. note::
-        If a particle name in the YAML file already exists in the
-        particle database instance, the one in particle database will be
-        overwritten.
-    """
-    name_label = Labels.Name.name
-    with open(file_path, "rb") as input_file:
-        full_dict = yaml.load(input_file, Loader=yaml.FullLoader)
-        for particle_definition in full_dict["ParticleList"]:
-            particle_name = particle_definition[name_label]
-            DATABASE[particle_name] = particle_definition
+def _load_particles_from_yaml(filename: str) -> None:
+    particle_collection = io.load_particle_collection(filename)
+    particle_list_xml = io.xml.object_to_dict(particle_collection)
+    DATABASE.update(particle_list_xml)
 
 
-def write_particle_list_to_yaml(file_path: str) -> None:
-    """Write particle database instance to a YAML file."""
-    entries = list(DATABASE.values())
-    particle_dict = {"ParticleList": entries}
-    with open(file_path, "w") as output_file:
-        yaml.dump(particle_dict, output_file)
+def _write_particle_database_to_yaml(filename: str) -> None:
+    particle_collection = io.xml.dict_to_particle_collection(DATABASE)
+    io.write(particle_collection, filename)
 
 
-def add_to_particle_list(particle):
-    """Add a particle dictionary object to the particle database dictionary.
+def add_to_particle_database(particle):
+    """Add a particle dictionary object to the particle database `dict`.
 
-    The key will be extracted from the ``particle`` name (XML tag ``@Name``).
-    If the key already exists, the entry in particle database will be
-    overwritten by this one.
+    The key will be extracted from the ``particle`` name (XML tag ``Name``). If
+    the key already exists, the entry in particle database will be overwritten
+    by this one.
     """
     if not isinstance(particle, dict):
         logging.warning("Can only add dictionary entries to particle database")
@@ -361,23 +369,47 @@ def add_to_particle_list(particle):
     DATABASE[particle_name] = particle
 
 
-def get_particle_with_name(particle_name):
-    """Get particle from the particle database by name.
+def find_particle(
+    search_term: Union[str, int]
+) -> Union[dict, Dict[str, dict]]:
+    """Search for a particle in the database, by PID or name.
 
-    .. deprecated:: 0.2.0
-        particle database has become a dictionary, so you can already access
-        its entries with a string index.
+    Returns:
+        When searching by name (`str`), all matches will be returned in the
+        form of a `dict`, with the particle names as keys. For instance,
+        searching :code:`"f"` returns all particles that contain an :code:`"f"`
+        in their name. If there's only one search result, only the definition
+        of particle is returned.
     """
-    return DATABASE[particle_name]
+    if isinstance(search_term, str):
+        search_results = {
+            name: definition
+            for name, definition in DATABASE.items()
+            if search_term in name
+        }
+        if len(search_results) == 1:
+            return list(search_results.values())[0]  # return value only
+        return search_results
+    if isinstance(search_term, int):
+        for particle in DATABASE.values():
+            if int(particle["Pid"]) == search_term:
+                return particle
+        raise LookupError(f"Could not find particle with PID {search_term}")
+    raise NotImplementedError(f"Cannot search for type {type(search_term)}")
 
 
-def get_particle_copy_by_name(particle_name):
-    """Get a `~copy.deepcopy` of a particle from the particle database.
+def get_particle_copy(
+    search_term: Union[str, int]
+) -> Union[dict, Dict[str, dict]]:
+    """Get a `~copy.deepcopy` of a particle or particles from the database.
 
     This is useful when you want to manipulate that copy and add it as a new
-    entry to the particle data base.
+    entry to the particle database.
+
+    Args:
+        search_term: see `.find_particle`.
     """
-    return deepcopy(DATABASE[particle_name])
+    return deepcopy(find_particle(search_term))
 
 
 def get_particle_property(particle_properties, qn_name, converter=None):
@@ -602,7 +634,7 @@ def check_if_spin_projections_set(state):
     spin_label = StateQuantumNumberNames.Spin
     mass_label = ParticlePropertyNames.Mass
     if isinstance(state, str):
-        particle = get_particle_with_name(state)
+        particle = DATABASE[state]
         spin = get_particle_property(
             particle, spin_label, SpinQNConverter(False)
         )
@@ -698,7 +730,7 @@ def initialize_external_edge_lists(
 def initialize_edges(graph, edge_particle_dict):
     for edge, particle in edge_particle_dict.items():
         # lookup the particle in the list
-        found_particle = get_particle_with_name(particle[0])
+        found_particle = DATABASE[particle[0]]
         graph.edge_props[edge] = deepcopy(found_particle)
 
     # now add more quantum numbers given by user (spin_projection)
@@ -785,10 +817,12 @@ def initialize_allowed_particle_list(allowed_particle_list):
         mod_allowed_particle_list = list(DATABASE.values())
     else:
         for allowed_particle in allowed_particle_list:
-            if isinstance(allowed_particle, str):
-                for name, value in DATABASE.items():
-                    if allowed_particle in name:
-                        mod_allowed_particle_list.append(value)
+            if isinstance(allowed_particle, (int, str)):
+                search_results = find_particle(allowed_particle)
+                if "Pid" in search_results:  # one particle only
+                    mod_allowed_particle_list.append(search_results)
+                else:  # several particles found
+                    mod_allowed_particle_list += list(search_results.values())
             else:
                 mod_allowed_particle_list.append(allowed_particle)
     return mod_allowed_particle_list

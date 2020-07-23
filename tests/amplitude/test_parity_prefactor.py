@@ -13,7 +13,7 @@ from expertsystem.ui.system_control import (
 )
 
 
-class TestInput(NamedTuple):
+class Input(NamedTuple):
     """Helper tuple for tests."""
 
     initial_state: list
@@ -26,7 +26,7 @@ class TestInput(NamedTuple):
     "test_input, ingoing_state, related_component_names, relative_parity_prefactor",
     [
         (
-            TestInput(
+            Input(
                 [("J/psi", [1])],
                 [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
                 ["f0(980)"],
@@ -40,7 +40,7 @@ class TestInput(NamedTuple):
             1.0,
         ),
         (
-            TestInput(
+            Input(
                 [("J/psi", [1])],
                 [("pi0", [0]), ("pi+", [0]), ("pi-", [0])],
                 ["rho(770)"],
@@ -56,7 +56,7 @@ class TestInput(NamedTuple):
     ],
 )
 def test_parity_prefactor(
-    test_input: TestInput,
+    test_input: Input,
     ingoing_state: str,
     related_component_names: Tuple[str, str],
     relative_parity_prefactor: float,

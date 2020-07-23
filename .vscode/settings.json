@@ -39,7 +39,10 @@
       "particle_list*xml.y*ml"
     ],
     "./expertsystem/schemas/yaml/amplitude-model.json": ["*recipe.y*ml"],
-    "./expertsystem/schemas/yaml/particle-list.json": ["particle_list.yml"],
+    "./expertsystem/schemas/yaml/particle-list.json": [
+      "*particle_list.y*ml",
+      "*particles.y*ml"
+    ],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml",
     "https://raw.githubusercontent.com/travis-ci/travis-yml/master/schema.json": ".travis.yml"
   }
