@@ -3,16 +3,13 @@ from os.path import dirname, realpath
 import pytest
 
 import expertsystem
+from expertsystem import io
+from expertsystem import ui
 from expertsystem.data import (
     MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
-)
-from expertsystem.io import (
-    load_particle_collection,
-    write,
-    xml,
 )
 from expertsystem.state import particle
 
@@ -35,20 +32,20 @@ J_PSI = Particle(
 
 def test_not_implemented_errors():
     with pytest.raises(NotImplementedError):
-        load_particle_collection(f"{EXPERTSYSTEM_PATH}/../README.md")
+        io.load_particle_collection(f"{EXPERTSYSTEM_PATH}/../README.md")
     with pytest.raises(NotImplementedError):
         dummy = ParticleCollection()
-        write(dummy, f"{EXPERTSYSTEM_PATH}/particle_list.csv")
+        io.write(dummy, f"{EXPERTSYSTEM_PATH}/particle_list.csv")
     with pytest.raises(Exception):
         dummy = ParticleCollection()
-        write(dummy, "no_file_extension")
+        io.write(dummy, "no_file_extension")
     with pytest.raises(NotImplementedError):
-        write(666, "wont_work_anyway.xml")
+        io.write(666, "wont_work_anyway.xml")
 
 
 @pytest.mark.parametrize("input_file", [_XML_FILE, _YAML_FILE])
 def test_load_particle_collection(input_file):
-    particles = load_particle_collection(input_file)
+    particles = io.load_particle_collection(input_file)
     assert len(particles) == 69
     assert "J/psi" in particles
     j_psi = particles["J/psi"]
@@ -60,19 +57,19 @@ def test_load_particle_collection(input_file):
 
 @pytest.mark.parametrize("input_file", [_XML_FILE, _YAML_FILE])
 def test_write_particle_collection(input_file):
-    particles_imported = load_particle_collection(input_file)
+    particles_imported = io.load_particle_collection(input_file)
     file_extension = input_file.split(".")[-1]
     output_file = f"exported_particle_list.{file_extension}"
-    write(particles_imported, output_file)
-    particles_exported = load_particle_collection(output_file)
+    io.write(particles_imported, output_file)
+    particles_exported = io.load_particle_collection(output_file)
     assert particles_imported == particles_exported
 
 
 def test_yaml_to_xml():
-    yaml_particle_collection = load_particle_collection(_YAML_FILE)
+    yaml_particle_collection = io.load_particle_collection(_YAML_FILE)
     xml_file = "particle_list_test.xml"
-    write(yaml_particle_collection, xml_file)
-    xml_particle_collection = load_particle_collection(xml_file)
+    io.write(yaml_particle_collection, xml_file)
+    xml_particle_collection = io.load_particle_collection(xml_file)
     assert xml_particle_collection == yaml_particle_collection
     dummy_particle = Particle(name="0", pid=0, charge=0, spin=0, mass=0)
     yaml_particle_collection.add(dummy_particle)
@@ -80,19 +77,26 @@ def test_yaml_to_xml():
 
 
 def test_equivalence_xml_yaml_particle_list():
-    xml_particle_collection = load_particle_collection(_XML_FILE)
-    yml_particle_collection = load_particle_collection(_YAML_FILE)
+    xml_particle_collection = io.load_particle_collection(_XML_FILE)
+    yml_particle_collection = io.load_particle_collection(_YAML_FILE)
     assert xml_particle_collection == yml_particle_collection
 
 
 class TestInternalParticleDict:
+    ui.load_default_particle_list()
+
     @staticmethod
     def test_particle_validation():
         for item in particle.DATABASE.values():
-            xml.validation.particle(item)
+            io.xml.validation.particle(item)
 
     @staticmethod
     def test_build_particle_from_internal_database():
         definition = particle.DATABASE["J/psi"]
-        j_psi = xml.dict_to_particle(definition)
+        j_psi = io.xml.dict_to_particle(definition)
         assert j_psi == J_PSI
+
+    @staticmethod
+    def test_dump_via_particle_collection():
+        particles = io.xml.dict_to_particle_collection(particle.DATABASE)
+        io.write(particles, "DATABASE_via_ParticleCollection.xml")

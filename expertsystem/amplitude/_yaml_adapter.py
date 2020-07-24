@@ -66,7 +66,7 @@ def to_dynamics(recipe: Dict[str, Any]) -> Dict[str, Any]:
     for particle_xml in particle_list_xml:
         name = particle_xml["Name"]
         decay_info_xml = particle_xml.get("DecayInfo", None)
-        if decay_info_xml:
+        if decay_info_xml and "Type" in decay_info_xml:
             decay_type = determine_type(decay_info_xml)
             form_factor = determine_form_factor(
                 decay_info_xml, particle_xml, decay_type

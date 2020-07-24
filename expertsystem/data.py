@@ -96,7 +96,7 @@ class Particle(NamedTuple):
 
     name: str
     pid: int
-    charge: float
+    charge: int
     spin: float
     mass: MeasuredValue
     strangeness: int = 0

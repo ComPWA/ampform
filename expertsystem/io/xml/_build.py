@@ -52,7 +52,7 @@ def build_particle(definition: dict) -> Particle:
         pid=int(definition["Pid"]),
         mass=_xml_to_measured_value(definition["Parameter"]),
         width=_xml_to_width(definition),
-        charge=float(qn_defs["Charge"]),
+        charge=int(qn_defs["Charge"]),
         spin=float(qn_defs["Spin"]),
         strangeness=int(qn_defs.get("Strangeness", 0)),
         charmness=int(qn_defs.get("Charm", 0)),
@@ -101,7 +101,7 @@ def _xml_qn_list_to_qn_object(definitions: List[dict],) -> Dict[str, Any]:
 def _xml_to_quantum_number(definition: Dict[str, str]) -> Tuple[str, Any]:
     conversion_map: Dict[str, Callable] = {
         "Spin": _xml_to_float,
-        "Charge": _xml_to_float,
+        "Charge": _xml_to_int,
         "Strangeness": _xml_to_int,
         "Charm": _xml_to_int,
         "BaryonNumber": _xml_to_int,

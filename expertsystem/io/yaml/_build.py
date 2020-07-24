@@ -32,7 +32,7 @@ def build_particle(name: str, definition: dict) -> Particle:
         pid=int(definition["PID"]),
         mass=_yaml_to_measured_value(definition["Mass"]),
         width=_yaml_to_measured_value_optional(definition.get("Width", None)),
-        charge=float(qn_def["Charge"]),
+        charge=int(qn_def["Charge"]),
         spin=float(qn_def["Spin"]),
         strangeness=int(qn_def.get("Strangeness", 0)),
         charmness=int(qn_def.get("Charmness", 0)),

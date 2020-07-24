@@ -70,7 +70,9 @@ class TestHelicityAmplitudeGeneratorYAML:
         assert len(recipe) == 3
 
     def test_particle_section(self):
-        particle_list = self.imported_dict["ParticleList"]
+        particle_list = self.imported_dict.get(
+            "ParticleList", self.imported_dict
+        )
         gamma = particle_list["gamma"]
         assert gamma["PID"] == 22
         assert gamma["Mass"] == 0.0
@@ -105,22 +107,22 @@ class TestHelicityAmplitudeGeneratorYAML:
 
     def test_dynamics_section(self):
         dynamics = self.imported_dict["Dynamics"]
-        assert len(dynamics) == 5
+        assert len(dynamics) == 1
 
         j_psi = dynamics["J/psi"]
         assert j_psi["Type"] == "NonDynamic"
         assert j_psi["FormFactor"]["Type"] == "BlattWeisskopf"
         assert j_psi["FormFactor"]["MesonRadius"] == 1.0
 
-        f0_980 = dynamics["f0(980)"]
-        assert f0_980["Type"] == "RelativisticBreitWigner"
-        assert f0_980["FormFactor"]["Type"] == "BlattWeisskopf"
-        assert f0_980["FormFactor"]["MesonRadius"] == {
-            "Fix": True,
-            "Max": 2.0,
-            "Min": 0.0,
-            "Value": 1.0,
-        }
+        f0_980 = dynamics.get("f0(980)", None)
+        if f0_980:
+            assert f0_980["Type"] == "RelativisticBreitWigner"
+            assert f0_980["FormFactor"]["Type"] == "BlattWeisskopf"
+            assert f0_980["FormFactor"]["MesonRadius"] == {
+                "Max": 2.0,
+                "Min": 0.0,
+                "Value": 1.0,
+            }
 
     def test_intensity_section(self):
         intensity = self.imported_dict["Intensity"]
@@ -133,7 +135,7 @@ class TestHelicityAmplitudeGeneratorYAML:
         assert len(intensity["Intensities"]) == 4
 
     @pytest.mark.parametrize(
-        "section", ["ParticleList", "Dynamics", "Kinematics"],
+        "section", ["ParticleList", "Kinematics"],
     )
     def test_expected_recipe_shape(self, section):
         expected_section = equalize_dict(self.expected_dict[section])

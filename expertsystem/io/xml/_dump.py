@@ -58,8 +58,8 @@ def from_particle(particle: Particle) -> dict:
 def _from_measured_value(instance: MeasuredValue, name: str) -> dict:
     type_name = name.split("_")[0]
     output = {
-        "Name": name,
         "Type": type_name,
+        "Name": name,
         "Value": instance.value,
     }
     if instance.uncertainty is not None:
@@ -100,8 +100,11 @@ def _to_quantum_number_list(particle: Particle) -> List[Dict[str, Any]]:
 def _qn_to_dict(
     instance: Union[Parity, Spin, float, int], type_name: str
 ) -> Dict[str, Any]:
-    output: Dict[str, Any] = {"Type": type_name}
-    output["Class"] = "Int"
+    output: Dict[str, Any] = {
+        "Class": "Int",
+        "Type": type_name,
+    }
+
     if type_name == "Spin":
         output["Class"] = "Spin"
     if isinstance(instance, (float, int)):

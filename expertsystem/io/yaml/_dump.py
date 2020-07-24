@@ -42,7 +42,7 @@ def from_particle(particle: Particle) -> dict:
 def _to_quantum_number_dict(particle: Particle) -> dict:
     output_dict = {
         "Spin": _attempt_to_int(particle.spin),
-        "Charge": _attempt_to_int(particle.charge),
+        "Charge": int(particle.charge),
     }
     optional_qn: List[
         Tuple[str, Union[Optional[Parity], Spin, int], Union[Callable, int]]

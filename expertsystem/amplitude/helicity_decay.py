@@ -18,7 +18,6 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     StateQuantumNumberNames,
     get_interaction_property,
-    get_particle_property,
 )
 from expertsystem.topology.graph import (
     get_edges_ingoing_to_node,
@@ -570,43 +569,10 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         component_label = particle.Labels.Component.name
-        spin_label = StateQuantumNumberNames.Spin
-        decay_info_label = particle.Labels.DecayInfo.name
-        type_label = particle.Labels.Type.name
-        partial_decays = []
-        for node_id in graph.nodes:
-            # in case a scalar without dynamics decays into daughters with no
-            # net helicity, the partial amplitude can be dropped
-            # (it is just a constant)
-            in_edges = get_edges_ingoing_to_node(graph, node_id)
-            out_edges = get_edges_outgoing_to_node(graph, node_id)
-            # check mother particle is spin 0
-            in_spin = get_particle_property(
-                graph.edge_props[in_edges[0]], spin_label
-            )
-            out_spins = [
-                get_particle_property(graph.edge_props[x], spin_label)
-                for x in out_edges
-            ]
-            if (
-                in_spin is not None
-                and None not in out_spins
-                and in_spin.magnitude() == 0
-            ):
-                if (
-                    abs(out_spins[0].projection() - out_spins[1].projection())
-                    == 0.0
-                ):
-                    # check if dynamics is non-resonant (constant)
-                    if (
-                        graph.edge_props[in_edges[0]][decay_info_label][
-                            type_label
-                        ]
-                        == "NonResonant"
-                    ):
-                        continue
-
-            partial_decays.append(self.generate_partial_decay(graph, node_id))
+        partial_decays = [
+            self.generate_partial_decay(graph, node_id)
+            for node_id in graph.nodes
+        ]
 
         gen = self.name_generator
         amp_name = gen.generate_unique_amplitude_name(graph)

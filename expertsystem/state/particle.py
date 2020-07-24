@@ -18,12 +18,7 @@ from typing import (
 
 from numpy import arange
 
-import xmltodict
-
 from expertsystem import io
-from expertsystem.io import (
-    _get_file_extension,
-)  # pylint: disable=protected-access
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
@@ -222,7 +217,7 @@ class _IntQNConverter(AbstractQNConverter):
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Int.name,
-            self.value_label: str(qn_value),
+            self.value_label: qn_value,
         }
 
 
@@ -240,7 +235,7 @@ class _FloatQNConverter(AbstractQNConverter):
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Float.name,
-            self.value_label: str(qn_value),
+            self.value_label: qn_value,
         }
 
 
@@ -272,8 +267,8 @@ class _SpinQNConverter(AbstractQNConverter):
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Spin.name,
-            self.value_label: str(qn_value.magnitude()),
-            self.proj_label: str(qn_value.projection()),
+            self.value_label: qn_value.magnitude(),
+            self.proj_label: qn_value.projection(),
         }
 
 
@@ -304,53 +299,13 @@ def load_particles(filename: str) -> None:
         particle database, the one in the particle database will be
         overwritten.
     """
-    file_extension = _get_file_extension(filename)
-    if file_extension == "xml":
-        _load_particles_from_xml(filename)
-    if file_extension in ["yaml", "yml"]:
-        _load_particles_from_yaml(filename)
+    particle_collection = io.load_particle_collection(filename)
+    new_entries = io.xml.object_to_dict(particle_collection)
+    DATABASE.update(new_entries)
 
 
 def write_particle_database(filename: str) -> None:
     """Write particle database instance to human readable format."""
-    file_extension = _get_file_extension(filename)
-    if file_extension == "xml":
-        _write_particle_database_to_xml(filename)
-    if file_extension in ["yaml", "yml"]:
-        _write_particle_database_to_yaml(filename)
-
-
-def _load_particles_from_xml(file_path: str) -> None:
-    def to_dict(input_ordered_dict: OrderedDict) -> dict:
-        """Convert nested `OrderedDict` to a nested `dict`."""
-        return json.loads(json.dumps(input_ordered_dict))
-
-    name_label = Labels.Name.name
-    with open(file_path, "rb") as xmlfile:
-        full_dict = xmltodict.parse(xmlfile)
-        full_dict = full_dict.get("root", full_dict)
-    for particle_definition in full_dict["ParticleList"]["Particle"]:
-        particle_name = particle_definition[name_label]
-        DATABASE[particle_name] = to_dict(particle_definition)
-
-
-def _write_particle_database_to_xml(file_path: str) -> None:
-    entries = list(DATABASE.values())
-    particle_dict = {"ParticleList": {"Particle": entries}}
-    xmlstring = xmltodict.unparse(
-        {"root": particle_dict}, pretty=True, indent="  "
-    )
-    with open(file_path, "w") as output_file:
-        output_file.write(xmlstring)
-
-
-def _load_particles_from_yaml(filename: str) -> None:
-    particle_collection = io.load_particle_collection(filename)
-    particle_list_xml = io.xml.object_to_dict(particle_collection)
-    DATABASE.update(particle_list_xml)
-
-
-def _write_particle_database_to_yaml(filename: str) -> None:
     particle_collection = io.xml.dict_to_particle_collection(DATABASE)
     io.write(particle_collection, filename)
 

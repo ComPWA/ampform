@@ -25,7 +25,7 @@ class TestFind:
     def test_name_search():
         omega = particle.find_particle("omega")
         assert isinstance(omega, dict)
-        assert omega["Pid"] == "223"
+        assert omega["Pid"] == 223
 
     @staticmethod
     def test_name_slice_search():

@@ -1347,7 +1347,6 @@ Dynamics:
         Value: 1.0
         Min: 0.0
         Max: 2.0
-        Fix: true
 
   f2(1270):
     Type: RelativisticBreitWigner
@@ -1357,7 +1356,6 @@ Dynamics:
         Value: 1.0
         Min: 0.0
         Max: 2.0
-        Fix: true
 
   f0(1500):
     Type: RelativisticBreitWigner
@@ -1367,7 +1365,6 @@ Dynamics:
         Value: 1.0
         Min: 0.0
         Max: 2.0
-        Fix: true
 
   f2(1950):
     Type: RelativisticBreitWigner
@@ -1377,4 +1374,3 @@ Dynamics:
         Value: 1.0
         Min: 0.0
         Max: 2.0
-        Fix: true
