@@ -468,7 +468,6 @@
         <Type>Mass</Type>
         <Name>Mass_pi0</Name>
         <Value>0.1349766</Value>
-        <Error>0.000006</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -509,7 +508,6 @@
         <Type>Mass</Type>
         <Name>Mass_pi+</Name>
         <Value>0.13957018</Value>
-        <Error>0.00000035</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -545,7 +543,6 @@
         <Type>Mass</Type>
         <Name>Mass_pi-</Name>
         <Value>0.13957018</Value>
-        <Error>0.00000035</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -581,7 +578,6 @@
         <Type>Mass</Type>
         <Name>Mass_eta</Name>
         <Value>0.547862</Value>
-        <Error>0.000017</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -612,7 +608,6 @@
           <Type>Width</Type>
           <Name>Width_eta</Name>
           <Value>0.00000131</Value>
-          <Error>0.00000005</Error>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
@@ -630,7 +625,6 @@
         <Type>Mass</Type>
         <Name>Mass_rho(770)0</Name>
         <Value>0.77526</Value>
-        <Error>0.00025</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -689,7 +683,6 @@
         <Type>Mass</Type>
         <Name>Mass_rho(770)+</Name>
         <Value>0.77526</Value>
-        <Error>0.00025</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -743,7 +736,6 @@
         <Type>Mass</Type>
         <Name>Mass_rho(770)-</Name>
         <Value>0.77526</Value>
-        <Error>0.00025</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -797,7 +789,6 @@
         <Type>Mass</Type>
         <Name>Mass_omega(782)</Name>
         <Value>0.78265</Value>
-        <Error>0.00012</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -850,7 +841,6 @@
         <Type>Mass</Type>
         <Name>Mass_f0(980)</Name>
         <Value>0.994</Value>
-        <Error>0.001</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -903,7 +893,6 @@
         <Type>Mass</Type>
         <Name>Mass_f0(1500)</Name>
         <Value>1.505</Value>
-        <Error>0.006</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -956,7 +945,6 @@
         <Type>Mass</Type>
         <Name>Mass_f2(1270)</Name>
         <Value>1.2751</Value>
-        <Error>0.0012</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1009,7 +997,6 @@
         <Type>Mass</Type>
         <Name>Mass_f2(1950)</Name>
         <Value>1.944</Value>
-        <Error>0.012</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1062,7 +1049,6 @@
         <Type>Mass</Type>
         <Name>Mass_a0(980)0</Name>
         <Value>0.994</Value>
-        <Error>0.001</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1104,7 +1090,6 @@
           <Type>Coupling</Type>
           <Name>gKK_a0(980)</Name>
           <Value>3.121343843602647</Value>
-          <Error>0.001</Error>
           <ParticleA>K+</ParticleA>
           <ParticleB>K-</ParticleB>
         </Parameter>
@@ -1112,7 +1097,6 @@
           <Type>Coupling</Type>
           <Name>gEtaPi_a0(980)</Name>
           <Value>2.66</Value>
-          <Error>0.001</Error>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
@@ -1120,7 +1104,6 @@
           <Type>Coupling</Type>
           <Name>gKK_a0(980)</Name>
           <Value>3.121343843602647</Value>
-          <Error>0.001</Error>
           <ParticleA>K_S0</ParticleA>
           <ParticleB>K_S0</ParticleB>
         </Parameter>
@@ -1140,7 +1123,6 @@
         <Type>Mass</Type>
         <Name>Mass_a0(980)+</Name>
         <Value>0.994</Value>
-        <Error>0.001</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1177,7 +1159,6 @@
           <Type>Coupling</Type>
           <Name>gKK_a0(980)</Name>
           <Value>3.121343843602647</Value>
-          <Error>0.001</Error>
           <ParticleA>K_S0</ParticleA>
           <ParticleB>K+</ParticleB>
         </Parameter>
@@ -1185,7 +1166,6 @@
           <Type>Coupling</Type>
           <Name>gEtaPi_a0(980)</Name>
           <Value>2.66</Value>
-          <Error>0.001</Error>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
@@ -1205,7 +1185,6 @@
         <Type>Mass</Type>
         <Name>Mass_a0(980)-</Name>
         <Value>0.994</Value>
-        <Error>0.001</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1242,7 +1221,6 @@
           <Type>Coupling</Type>
           <Name>gKK_a0(980)</Name>
           <Value>3.121343843602647</Value>
-          <Error>0.001</Error>
           <ParticleA>K_S0</ParticleA>
           <ParticleB>K+</ParticleB>
         </Parameter>
@@ -1250,7 +1228,6 @@
           <Type>Coupling</Type>
           <Name>gEtaPi_a0(980)</Name>
           <Value>2.66</Value>
-          <Error>0.001</Error>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
@@ -1270,7 +1247,6 @@
         <Type>Mass</Type>
         <Name>Mass_a2(1320)0</Name>
         <Value>1.3184</Value>
-        <Error>0.0005</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1312,7 +1288,6 @@
           <Type>Width</Type>
           <Name>Width_a2(1320)0</Name>
           <Value>0.00107</Value>
-          <Error>0.00005</Error>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
@@ -1330,7 +1305,6 @@
         <Type>Mass</Type>
         <Name>Mass_a2(1320)+</Name>
         <Value>1.3184</Value>
-        <Error>0.0005</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1372,7 +1346,6 @@
           <Type>Width</Type>
           <Name>Width_a2(1320)+</Name>
           <Value>0.00107</Value>
-          <Error>0.00005</Error>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
@@ -1390,7 +1363,6 @@
         <Type>Mass</Type>
         <Name>Mass_a2(1320)-</Name>
         <Value>1.3184</Value>
-        <Error>0.0005</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1432,7 +1404,6 @@
           <Type>Width</Type>
           <Name>Width_a2(1320)-</Name>
           <Value>0.00107</Value>
-          <Error>0.00005</Error>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
@@ -1450,7 +1421,6 @@
         <Type>Mass</Type>
         <Name>Mass_phi(1020)</Name>
         <Value>1.019461</Value>
-        <Error>0.000019</Error>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1481,7 +1451,6 @@
           <Type>Width</Type>
           <Name>Width_phi(1020)</Name>
           <Value>0.004266</Value>
-          <Error>0.000031</Error>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>

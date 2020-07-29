@@ -71,26 +71,6 @@ class Spin:
         return self.__projection
 
 
-class MeasuredValue(NamedTuple):
-    """Value with (optional) uncertainty, as reported by a measurement."""
-
-    value: float
-    uncertainty: Optional[float] = None
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, MeasuredValue):
-            return self.value == other.value
-        return self.value == other
-
-    def __float__(self) -> float:
-        return self.value
-
-    def __repr__(self) -> str:
-        if self.uncertainty is None:
-            return str(self.value)
-        return f"{self.value} ± {self.uncertainty}"
-
-
 class Particle(NamedTuple):
     """Immutable data container for particle info."""
 
@@ -98,7 +78,7 @@ class Particle(NamedTuple):
     pid: int
     charge: int
     spin: float
-    mass: MeasuredValue
+    mass: float
     strangeness: int = 0
     charmness: int = 0
     bottomness: int = 0
@@ -107,7 +87,7 @@ class Particle(NamedTuple):
     electron_number: int = 0
     muon_number: int = 0
     tau_number: int = 0
-    width: Optional[MeasuredValue] = None
+    width: Optional[float] = None
     isospin: Optional[Spin] = None
     parity: Optional[Parity] = None
     c_parity: Optional[Parity] = None

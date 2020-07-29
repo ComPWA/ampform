@@ -12,7 +12,6 @@ from typing import (
 )
 
 from expertsystem.data import (
-    MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
@@ -50,7 +49,7 @@ def build_particle(definition: dict) -> Particle:
     return Particle(
         name=str(definition["Name"]),
         pid=int(definition["Pid"]),
-        mass=_xml_to_measured_value(definition["Parameter"]),
+        mass=float(definition["Parameter"]["Value"]),
         width=_xml_to_width(definition),
         charge=int(qn_defs["Charge"]),
         spin=float(qn_defs["Spin"]),
@@ -69,15 +68,7 @@ def build_particle(definition: dict) -> Particle:
     )
 
 
-def _xml_to_measured_value(definition: dict) -> MeasuredValue:
-    if "Error" not in definition:
-        return MeasuredValue(float(definition["Value"]))
-    return MeasuredValue(
-        float(definition["Value"]), float(definition["Error"])
-    )
-
-
-def _xml_to_width(definition: dict) -> Optional[MeasuredValue]:
+def _xml_to_width(definition: dict) -> Optional[float]:
     definition = definition.get("DecayInfo", {})
     definition = definition.get("Parameter", None)
     if isinstance(definition, list):
@@ -87,7 +78,7 @@ def _xml_to_width(definition: dict) -> Optional[MeasuredValue]:
                 break
     if definition is None or not isinstance(definition, dict):
         return None
-    return _xml_to_measured_value(definition)
+    return float(definition["Value"])
 
 
 def _xml_qn_list_to_qn_object(definitions: List[dict],) -> Dict[str, Any]:

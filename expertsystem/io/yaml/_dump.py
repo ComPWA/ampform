@@ -2,6 +2,7 @@
 
 from typing import (
     Callable,
+    Dict,
     List,
     Optional,
     Tuple,
@@ -9,7 +10,6 @@ from typing import (
 )
 
 from expertsystem.data import (
-    MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
@@ -29,17 +29,19 @@ def from_particle_collection(particles: ParticleCollection) -> dict:
 
 
 def from_particle(particle: Particle) -> dict:
-    output_dict = {
+    output_dict: Dict[str, Union[float, int, dict]] = {
         "PID": particle.pid,
-        "Mass": _from_measured_value(particle.mass),
+        "Mass": particle.mass,
     }
     if particle.width is not None:
-        output_dict["Width"] = _from_measured_value(particle.width)
+        output_dict["Width"] = particle.width
     output_dict["QuantumNumbers"] = _to_quantum_number_dict(particle)
     return output_dict
 
 
-def _to_quantum_number_dict(particle: Particle) -> dict:
+def _to_quantum_number_dict(
+    particle: Particle,
+) -> Dict[str, Union[float, int]]:
     output_dict = {
         "Spin": _attempt_to_int(particle.spin),
         "Charge": int(particle.charge),
@@ -69,16 +71,7 @@ def _to_quantum_number_dict(particle: Particle) -> dict:
     return output_dict
 
 
-def _from_measured_value(instance: MeasuredValue) -> Union[dict, float]:
-    if instance.uncertainty is None:
-        return _attempt_to_int(instance.value)
-    return {
-        "Value": instance.value,
-        "Error": instance.uncertainty,
-    }
-
-
-def _from_spin(instance: Spin) -> Union[dict, int]:
+def _from_spin(instance: Spin) -> Union[Dict[str, Union[float, int]], int]:
     if instance.magnitude == 0:
         return 0
     return {

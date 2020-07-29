@@ -175,17 +175,6 @@ def _downgrade_float(value: float) -> Union[float, int]:
     return value
 
 
-def _to_parameter(
-    definition: Dict[str, Any]
-) -> Union[float, Dict[str, float]]:
-    """Use for extracting Mass and Width keys."""
-    value = float(definition["Value"])
-    error = float(definition.get("Error", 0.0))
-    if error == 0.0:
-        return value
-    return {"Value": value, "Error": error}
-
-
 def _to_isospin(definition: Dict[str, Any]) -> Union[float, Dict[str, float]]:
     """Isospin is 'stable', so always needs a projection."""
     value = _to_scalar(definition, "Value")

@@ -16,7 +16,6 @@ from typing import (
 )
 
 from expertsystem.data import (
-    MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
@@ -37,34 +36,26 @@ def from_particle(particle: Particle) -> dict:
     output_dict = {
         "Name": particle.name,
         "Pid": particle.pid,
-        "Parameter": _from_measured_value(
-            particle.mass, name=f"Mass_{particle.name}"
-        ),
+        "Parameter": {
+            "Type": "Mass",
+            "Name": f"Mass_{particle.name}",
+            "Value": particle.mass,
+        },
     }
     output_dict["QuantumNumber"] = _to_quantum_number_list(particle)
     if particle.width is not None:
         decay_info = {
             "Parameter": [
-                _from_measured_value(
-                    particle.width, name=f"Width_{particle.name}"
-                )
+                {
+                    "Type": "Width",
+                    "Name": f"Width_{particle.name}",
+                    "Value": particle.width,
+                },
             ]
         }
         output_dict["DecayInfo"] = decay_info
     validation.particle(output_dict)
     return output_dict
-
-
-def _from_measured_value(instance: MeasuredValue, name: str) -> dict:
-    type_name = name.split("_")[0]
-    output = {
-        "Type": type_name,
-        "Name": name,
-        "Value": instance.value,
-    }
-    if instance.uncertainty is not None:
-        output["Error"] = instance.uncertainty
-    return output
 
 
 def _to_quantum_number_list(particle: Particle) -> List[Dict[str, Any]]:

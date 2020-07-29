@@ -6,7 +6,6 @@ import expertsystem
 from expertsystem import io
 from expertsystem import ui
 from expertsystem.data import (
-    MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
@@ -20,8 +19,8 @@ _YAML_FILE = f"{EXPERTSYSTEM_PATH}/particle_list.yml"
 J_PSI = Particle(
     name="J/psi",
     pid=443,
-    mass=MeasuredValue(3.0969),
-    width=MeasuredValue(9.29e-05),
+    mass=3.0969,
+    width=9.29e-05,
     spin=1,
     charge=0,
     parity=Parity(-1),
@@ -79,7 +78,11 @@ def test_yaml_to_xml():
 def test_equivalence_xml_yaml_particle_list():
     xml_particle_collection = io.load_particle_collection(_XML_FILE)
     yml_particle_collection = io.load_particle_collection(_YAML_FILE)
-    assert xml_particle_collection == yml_particle_collection
+    for xml_particle, yml_particle in zip(
+        sorted(xml_particle_collection.values()),
+        sorted(yml_particle_collection.values()),
+    ):
+        assert xml_particle == yml_particle
 
 
 class TestInternalParticleDict:

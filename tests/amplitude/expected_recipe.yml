@@ -1275,7 +1275,7 @@ ParticleList:
       GParity: -1
   f0(1500):
     PID: 9030221
-    Mass: { Value: 1.505, Error: 0.006 }
+    Mass: 1.505
     Width: 0.109
     QuantumNumbers:
       Spin: 0
@@ -1285,7 +1285,7 @@ ParticleList:
       GParity: 1
   f0(980):
     PID: 9010221
-    Mass: { Value: 0.994, Error: 0.001 }
+    Mass: 0.994
     Width: 0.070
     QuantumNumbers:
       Spin: 0
@@ -1295,7 +1295,7 @@ ParticleList:
       GParity: 1
   f2(1270):
     PID: 225
-    Mass: { Value: 1.2751, Error: 0.0012 }
+    Mass: 1.2751
     Width: 0.185
     QuantumNumbers:
       Spin: 2
@@ -1305,7 +1305,7 @@ ParticleList:
       GParity: 1
   f2(1950):
     PID: 9050225
-    Mass: { Value: 1.944, Error: 0.012 }
+    Mass: 1.944
     Width: 0.472
     QuantumNumbers:
       Spin: 2
@@ -1323,7 +1323,7 @@ ParticleList:
       CParity: -1
   pi0:
     PID: 111
-    Mass: { Value: 0.1349766, Error: 0.000006 }
+    Mass: 0.1349766
     QuantumNumbers:
       Spin: 0
       Charge: 0

@@ -6,7 +6,6 @@ from typing import (
 )
 
 from expertsystem.data import (
-    MeasuredValue,
     Parity,
     Particle,
     ParticleCollection,
@@ -27,11 +26,14 @@ def build_particle_collection(definition: dict) -> ParticleCollection:
 
 def build_particle(name: str, definition: dict) -> Particle:
     qn_def = definition["QuantumNumbers"]
+    width: Optional[float] = definition.get("Width", None)
+    if width is not None:
+        width = float(width)
     return Particle(
         name=name,
         pid=int(definition["PID"]),
-        mass=_yaml_to_measured_value(definition["Mass"]),
-        width=_yaml_to_measured_value_optional(definition.get("Width", None)),
+        mass=float(definition["Mass"]),
+        width=width,
         charge=int(qn_def["Charge"]),
         spin=float(qn_def["Spin"]),
         strangeness=int(qn_def.get("Strangeness", 0)),
@@ -47,26 +49,6 @@ def build_particle(name: str, definition: dict) -> Particle:
         c_parity=_yaml_to_parity(qn_def.get("CParity", None)),
         g_parity=_yaml_to_parity(qn_def.get("GParity", None)),
     )
-
-
-def _yaml_to_measured_value(
-    definition: Union[dict, float, int, str]
-) -> MeasuredValue:
-    if isinstance(definition, (float, int, str)):
-        return MeasuredValue(float(definition))
-    if "Error" not in definition:
-        return MeasuredValue(float(definition["Value"]))
-    return MeasuredValue(
-        float(definition["Value"]), float(definition["Error"])
-    )
-
-
-def _yaml_to_measured_value_optional(
-    definition: Optional[Union[dict, float, int, str]]
-) -> Optional[MeasuredValue]:
-    if definition is None:
-        return None
-    return _yaml_to_measured_value(definition)
 
 
 def _yaml_to_parity(
