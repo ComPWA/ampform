@@ -19,6 +19,7 @@ from typing import (
 from numpy import arange
 
 from expertsystem import io
+from expertsystem.data import Spin
 from expertsystem.topology.graph import (
     get_final_state_edges,
     get_initial_state_edges,
@@ -42,57 +43,6 @@ class Labels(Enum):
     QuantumNumber = auto()
     Type = auto()
     Value = auto()
-
-
-class Spin:
-    """Simple struct-like class defining spin as magnitude plus projection."""
-
-    def __init__(self, mag, proj):
-        self.__magnitude = float(mag)
-        self.__projection = float(proj)
-        # remove negative zero projections -0.0
-        if self.__projection == -0.0:
-            self.__projection += 0
-        if self.__magnitude < abs(self.__projection):
-            raise ValueError(
-                "The spin projection cannot be larger than the"
-                " magnitude " + self.__str__()
-            )
-
-    def magnitude(self):
-        return self.__magnitude
-
-    def projection(self):
-        return self.__projection
-
-    def __str__(self):
-        return (
-            "(mag: "
-            + str(self.__magnitude)
-            + ", proj: "
-            + str(self.__projection)
-            + ")"
-        )
-
-    def __repr__(self):
-        return (
-            "(mag: "
-            + str(self.__magnitude)
-            + ", proj: "
-            + str(self.__projection)
-            + ")"
-        )
-
-    def __eq__(self, other):
-        if isinstance(other, Spin):
-            return (
-                self.__magnitude == other.magnitude()
-                and self.__projection == other.projection()
-            )
-        return NotImplemented
-
-    def __hash__(self):
-        return hash(repr(self))
 
 
 def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
@@ -267,8 +217,8 @@ class _SpinQNConverter(AbstractQNConverter):
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Spin.name,
-            self.value_label: qn_value.magnitude(),
-            self.proj_label: qn_value.projection(),
+            self.value_label: qn_value.magnitude,
+            self.proj_label: qn_value.projection,
         }
 
 
@@ -281,7 +231,7 @@ QNClassConverterMapping = {
 
 def is_boson(qn_dict):
     spin_label = StateQuantumNumberNames.Spin
-    return abs(qn_dict[spin_label].magnitude() % 1) < 0.01
+    return abs(qn_dict[spin_label].magnitude % 1) < 0.01
 
 
 DATABASE = dict()
@@ -597,7 +547,7 @@ def check_if_spin_projections_set(state):
             raise ValueError(
                 "Spin not defined for particle: \n" + str(particle)
             )
-        mag = spin.magnitude()
+        mag = spin.magnitude
         spin_projections = arange(-mag, mag + 1, 1.0).tolist()
         mass = get_particle_property(particle, mass_label)
         if mass == 0.0:

@@ -1,7 +1,7 @@
+from expertsystem.data import Spin
 from expertsystem.state.conservation_rules import SpinConservation
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
-    Spin,
     StateQuantumNumberNames,
 )
 

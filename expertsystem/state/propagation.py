@@ -613,7 +613,7 @@ class CSPPropagator(AbstractPropagator):
                         StateQuantumNumberNames.Parity,
                     )
                     found_jps.add(
-                        str(spin.magnitude())
+                        str(spin.magnitude)
                         + ("-" if parity in (-1, -1.0) else "+")
                     )
                     # now do actual candidate finding

@@ -1,8 +1,8 @@
+from expertsystem.data import Spin
 from expertsystem.state.conservation_rules import GParityConservation
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     ParticlePropertyNames,
-    Spin,
     StateQuantumNumberNames,
 )
 
