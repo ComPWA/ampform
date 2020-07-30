@@ -373,7 +373,6 @@ def load_default_particle_list() -> None:
             f"\n  Failed to load {DEFAULT_PARTICLE_LIST_FILE}!"
             "\n  Please contact the developers: https://github.com/ComPWA"
         )
-    particle.DATABASE = dict()
     particle.load_particles(DEFAULT_PARTICLE_LIST_PATH)
     logging.info(
         f"Loaded {len(particle.DATABASE)} particles from {DEFAULT_PARTICLE_LIST_FILE}!"
