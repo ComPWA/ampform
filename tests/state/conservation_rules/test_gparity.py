@@ -41,7 +41,7 @@ class TestGParity:  # pylint: disable=no-self-use
         pid_label = ParticlePropertyNames.Pid
         isospin_label = StateQuantumNumberNames.IsoSpin
         ang_mom_label = InteractionQuantumNumberNames.L
-        cases = []
+        cases: list = []
 
         for ang_mom_case in [([0, 2, 4], True), ([1, 3], False)]:
             for ang_mom in ang_mom_case[0]:

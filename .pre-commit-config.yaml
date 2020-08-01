@@ -52,7 +52,7 @@ repos:
 
       - id: mypy
         name: mypy
-        entry: mypy --config-file=tox.ini
+        entry: mypy
         language: system
         types:
           - python

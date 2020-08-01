@@ -163,7 +163,7 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         "ls_pairs, result", [([(1, 0), (1, 1)], 2), ([(1, 0), (1, 0)], 1),]
     )
     def test_remove_duplicates(self, ls_pairs, result):
-        graphs = {"test": []}
+        graphs: dict = {"test": []}
         for ls_pair in ls_pairs:
             graphs["test"].append(
                 ([make_ls_test_graph(ls_pair[0], ls_pair[1])], [])

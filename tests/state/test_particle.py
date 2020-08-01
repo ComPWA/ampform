@@ -13,7 +13,7 @@ class TestFind:
         with pytest.raises(LookupError):
             particle.find_particle(666)
         with pytest.raises(NotImplementedError):
-            particle.find_particle(float())
+            particle.find_particle(float())  # type: ignore
 
     @staticmethod
     def test_pid_search():

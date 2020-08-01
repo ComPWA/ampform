@@ -2,6 +2,7 @@
 *.xml
 *.yaml
 *.yml
+!.pre-commit-config.yaml
 !.readthedocs.yml
 !.travis.yml
 !codecov.yml

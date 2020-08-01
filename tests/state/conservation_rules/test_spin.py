@@ -1,3 +1,5 @@
+from typing import Any
+
 from expertsystem.data import Spin
 from expertsystem.state.conservation_rules import SpinConservation
 from expertsystem.state.particle import (
@@ -12,7 +14,8 @@ class TestSpin:  # pylint: disable=no-self-use
         ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
         spin_rule = SpinConservation(spin_label)
-        cases = []
+        cases: Any = []
+        case: Any = None
 
         for case in [([0], True), ([1, 2, 3], False)]:
             for spin_mag in case[0]:
@@ -26,6 +29,7 @@ class TestSpin:  # pylint: disable=no-self-use
                     case[1],
                 )
                 cases.append(temp_case)
+
         for case in [([0, 1, 2], True)]:
             for spin_mag in case[0]:
                 temp_case = (
@@ -38,6 +42,7 @@ class TestSpin:  # pylint: disable=no-self-use
                     case[1],
                 )
                 cases.append(temp_case)
+
         for case in [([0, 1, 2], True), ([3], False)]:
             for spin_mag in case[0]:
                 temp_case = (
@@ -78,6 +83,7 @@ class TestSpin:  # pylint: disable=no-self-use
         intspin_label = InteractionQuantumNumberNames.S
         spin_rule = SpinConservation(spin_label, False)
         cases = []
+        case: Any = None
 
         for case in [([(0, 0, 1), (2, 1, 2), (2, 1, 1)], True)]:
             for spin_mag in case[0]:
@@ -113,7 +119,7 @@ class TestSpin:  # pylint: disable=no-self-use
             (2, 2, 2, True),
             (3, 2, 2, False),
         ]:
-            temp_case = (
+            temp_case: Any = (
                 [{spin_label: Spin(case[0], 0)}],
                 [
                     {spin_label: Spin(case[1], 0)},

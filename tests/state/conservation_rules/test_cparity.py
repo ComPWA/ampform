@@ -1,4 +1,5 @@
 from itertools import product
+from typing import Any
 
 from expertsystem.data import Spin
 from expertsystem.state.conservation_rules import CParityConservation
@@ -37,7 +38,7 @@ class TestCParity:  # pylint: disable=no-self-use
 
     def test_c_parity_multiparticle_boson(self):
         rule = CParityConservation()
-        c_parity_label = StateQuantumNumberNames.CParity
+        c_parity_label: Any = StateQuantumNumberNames.CParity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
         ang_mom_label = InteractionQuantumNumberNames.L
@@ -46,7 +47,7 @@ class TestCParity:  # pylint: disable=no-self-use
 
         for ang_mom_case in [([0, 2, 4], True), ([1, 3], False)]:
             for ang_mom in ang_mom_case[0]:
-                temp_case = (
+                temp_case: Any = (
                     [{c_parity_label: 1}],
                     [
                         {spin_label: Spin(0, 0), pid_label: 100},
@@ -92,7 +93,7 @@ class TestCParity:  # pylint: disable=no-self-use
         self,
     ):  # pylint: disable=too-many-locals
         rule = CParityConservation()
-        c_parity_label = StateQuantumNumberNames.CParity
+        c_parity_label: Any = StateQuantumNumberNames.CParity
         spin_label = StateQuantumNumberNames.Spin
         pid_label = ParticlePropertyNames.Pid
         ang_mom_label = InteractionQuantumNumberNames.L
@@ -104,7 +105,7 @@ class TestCParity:  # pylint: disable=no-self-use
         odd_sum_cases = [x for x in all_spin_cases if (x[0] + x[1]) % 2 != 0]
         for spin_case in [(even_sum_cases, True), (odd_sum_cases, False)]:
             for spin_ang_mom in spin_case[0]:
-                temp_case = (
+                temp_case: Any = (
                     [{c_parity_label: 1}],
                     [
                         {spin_label: Spin(0.5, 0), pid_label: 100},

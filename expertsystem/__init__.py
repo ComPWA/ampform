@@ -35,8 +35,8 @@ from . import topology
 from . import ui
 
 
-def __check_python_version():
-    def print_message_and_exit():
+def __check_python_version() -> None:
+    def print_message_and_exit() -> None:
         major = sys.version_info[0]
         minor = sys.version_info[1]
         patch = sys.version_info[2]

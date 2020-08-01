@@ -1,3 +1,5 @@
+from typing import Any
+
 from expertsystem.state.conservation_rules import MassConservation
 from expertsystem.state.particle import (
     ParticleDecayPropertyNames,
@@ -10,7 +12,8 @@ class TestMass:  # pylint: disable=no-self-use
         mass_label = ParticlePropertyNames.Mass
         width_label = ParticleDecayPropertyNames.Width
         mass_rule = MassConservation(5)
-        cases = []
+        cases: list = []
+        case: Any = None
 
         # we assume a two charged pion final state here
         # units are always in GeV
@@ -19,7 +22,7 @@ class TestMass:  # pylint: disable=no-self-use
             ([(0.270, 0.0), (0.250, 0.005), (0.200, 0.01)], False),
         ]:
             for in_mass_case in case[0]:
-                temp_case = (
+                temp_case: Any = (
                     [
                         {
                             mass_label: in_mass_case[0],
