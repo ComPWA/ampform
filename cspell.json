@@ -90,6 +90,7 @@
         "celltoolbar",
         "codacy",
         "codemirror",
+        "commitlint",
         "flatte",
         "genindex",
         "heli",
