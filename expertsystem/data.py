@@ -32,7 +32,7 @@ class Parity:
 
     def __repr__(self) -> str:
         return (
-            f'<{self.__class__.__name__} {"+1" if self.__value > 0 else "-1"}>'
+            f'{self.__class__.__name__}({"+1" if self.__value > 0 else "-1"})'
         )
 
     @property
@@ -68,7 +68,9 @@ class Spin(abc.Hashable):
         return self.__magnitude
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.__magnitude, self.__projection}>"
+        return (
+            f"{self.__class__.__name__}{self.__magnitude, self.__projection}"
+        )
 
     @property
     def magnitude(self) -> float:

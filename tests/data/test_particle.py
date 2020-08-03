@@ -3,8 +3,17 @@ import pytest
 from expertsystem.data import (
     Parity,
     Particle,
+    ParticleCollection,
     Spin,
 )
+
+
+@pytest.mark.parametrize(
+    "instance", [ParticleCollection(), Spin(2.5, -0.5), Parity(1)]
+)
+def test_repr(instance):
+    copy_from_repr = eval(repr(instance))  # pylint: disable=eval-used
+    assert copy_from_repr == instance
 
 
 def test_parity():

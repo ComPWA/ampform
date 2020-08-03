@@ -9,8 +9,14 @@ Responsible for building all possible topologies base on basic user input:
 import copy
 import itertools
 import logging
+from typing import (
+    List,
+    Sequence,
+    Tuple,
+)
 
 from .graph import (
+    InteractionNode,
     StateTransitionGraph,
     are_graphs_isomorphic,
 )
@@ -24,18 +30,20 @@ class SimpleStateTransitionTopologyBuilder:
     the final state lines.
     """
 
-    def __init__(self, interaction_node_set):
+    def __init__(
+        self, interaction_node_set: Sequence[InteractionNode]
+    ) -> None:
         if not isinstance(interaction_node_set, list):
             raise TypeError("interaction_node_set must be a list")
-        self.interaction_node_set = interaction_node_set
+        self.interaction_node_set = list(interaction_node_set)
 
-    def build_graphs(self, number_of_initial_edges, number_of_final_edges):
-        if not isinstance(number_of_initial_edges, int):
-            raise TypeError("number_of_initial_edges must be an integer")
+    def build_graphs(
+        self, number_of_initial_edges: int, number_of_final_edges: int
+    ) -> List[StateTransitionGraph]:
+        number_of_initial_edges = int(number_of_initial_edges)
+        number_of_final_edges = int(number_of_final_edges)
         if number_of_initial_edges < 1:
             raise ValueError("number_of_initial_edges has to be larger than 0")
-        if not isinstance(number_of_final_edges, int):
-            raise TypeError("number_of_final_edges must be an integer")
         if number_of_final_edges < 1:
             raise ValueError("number_of_final_edges has to be larger than 0")
 
@@ -82,8 +90,10 @@ class SimpleStateTransitionTopologyBuilder:
             result_graph_list.append(graph_tuple[0])
         return result_graph_list
 
-    def extend_graph(self, graph):
-        extended_graph_list = []
+    def extend_graph(
+        self, graph: Tuple[StateTransitionGraph, Sequence[int]]
+    ) -> List[Tuple[StateTransitionGraph, List[int]]]:
+        extended_graph_list: List[Tuple[StateTransitionGraph, List[int]]] = []
 
         current_open_end_edges = graph[1]
 
@@ -116,9 +126,13 @@ class SimpleStateTransitionTopologyBuilder:
         return extended_graph_list
 
 
-def attach_node_to_edges(graph, interaction_node, ingoing_edge_ids):
+def attach_node_to_edges(
+    graph: Tuple[StateTransitionGraph, Sequence[int]],
+    interaction_node: InteractionNode,
+    ingoing_edge_ids: Sequence[int],
+) -> Tuple[StateTransitionGraph, List[int]]:
     temp_graph = copy.deepcopy(graph[0])
-    new_open_end_lines = copy.deepcopy(graph[1])
+    new_open_end_lines = list(copy.deepcopy(graph[1]))
 
     # add node
     new_node_id = len(temp_graph.nodes)
