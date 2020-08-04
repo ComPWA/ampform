@@ -10,13 +10,11 @@ import yaml
 from expertsystem.data import (
     Particle,
     ParticleCollection,
+    Spin,
 )
 
+from . import _build
 from . import _dump
-from ._build import (
-    build_particle,
-    build_particle_collection,
-)
 
 
 class _IncreasedIndent(yaml.Dumper):
@@ -34,7 +32,7 @@ class _IncreasedIndent(yaml.Dumper):
 def load_particle_collection(filename: str) -> ParticleCollection:
     with open(filename) as yaml_file:
         definition = yaml.load(yaml_file, Loader=yaml.SafeLoader)
-    return build_particle_collection(definition)
+    return _build.build_particle_collection(definition)
 
 
 def write(instance: object, filename: str) -> None:
@@ -63,8 +61,12 @@ def object_to_dict(instance: object) -> dict:
 
 
 def dict_to_particle_collection(definition: dict) -> ParticleCollection:
-    return build_particle_collection(definition)
+    return _build.build_particle_collection(definition)
 
 
 def dict_to_particle(definition: dict, name: str) -> Particle:
-    return build_particle(name, definition)
+    return _build.build_particle(name, definition)
+
+
+def dict_to_spin(definition: dict) -> Spin:
+    return _build.build_spin(definition)

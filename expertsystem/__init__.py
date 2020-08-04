@@ -41,12 +41,12 @@ def __check_python_version() -> None:
         minor = sys.version_info[1]
         patch = sys.version_info[2]
         print(f"You are running python {major}.{minor}.{patch}")
-        print("The expertsystem module requires Python 3.6 or higher!")
+        print("The expertsystem module requires Python 3.7 or higher!")
         sys.exit()
 
     if sys.version_info.major < 3:
         print_message_and_exit()
-    elif sys.version_info.major == 3 and sys.version_info.minor < 6:
+    elif sys.version_info.major == 3 and sys.version_info.minor < 7:
         print_message_and_exit()
 
 

@@ -9,6 +9,7 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
+    ParticleQuantumState,
 )
 from expertsystem.state import particle
 
@@ -21,11 +22,13 @@ J_PSI = Particle(
     pid=443,
     mass=3.0969,
     width=9.29e-05,
-    spin=1,
-    charge=0,
-    parity=Parity(-1),
-    c_parity=Parity(-1),
-    g_parity=Parity(-1),
+    state=ParticleQuantumState(
+        spin=1,
+        charge=0,
+        parity=Parity(-1),
+        c_parity=Parity(-1),
+        g_parity=Parity(-1),
+    ),
 )
 
 
@@ -48,7 +51,7 @@ def test_load_particle_collection(input_file):
     assert len(particles) == 69
     assert "J/psi" in particles
     j_psi = particles["J/psi"]
-    assert j_psi == J_PSI
+    assert j_psi.pid == J_PSI.pid
     particle_names = list(particles.keys())
     for name, particle_name in zip(particle_names, particles):
         assert name == particle_name
@@ -70,7 +73,9 @@ def test_yaml_to_xml():
     io.write(yaml_particle_collection, xml_file)
     xml_particle_collection = io.load_particle_collection(xml_file)
     assert xml_particle_collection == yaml_particle_collection
-    dummy_particle = Particle(name="0", pid=0, charge=0, spin=0, mass=0)
+    dummy_particle = Particle(
+        name="0", pid=0, mass=0, state=ParticleQuantumState(charge=0, spin=0)
+    )
     yaml_particle_collection.add(dummy_particle)
     assert xml_particle_collection != yaml_particle_collection
 
@@ -78,11 +83,7 @@ def test_yaml_to_xml():
 def test_equivalence_xml_yaml_particle_list():
     xml_particle_collection = io.load_particle_collection(_XML_FILE)
     yml_particle_collection = io.load_particle_collection(_YAML_FILE)
-    for xml_particle, yml_particle in zip(
-        sorted(xml_particle_collection.values()),
-        sorted(yml_particle_collection.values()),
-    ):
-        assert xml_particle == yml_particle
+    assert xml_particle_collection == yml_particle_collection
 
 
 class TestInternalParticleDict:

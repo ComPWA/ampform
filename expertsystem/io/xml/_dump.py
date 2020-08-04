@@ -43,7 +43,7 @@ def from_particle(particle: Particle) -> dict:
         },
     }
     output_dict["QuantumNumber"] = _to_quantum_number_list(particle)
-    if particle.width is not None:
+    if particle.width != 0.0:
         decay_info = {
             "Parameter": [
                 {
@@ -62,20 +62,20 @@ def _to_quantum_number_list(particle: Particle) -> List[Dict[str, Any]]:
     conversion_map: Dict[
         str, Union[Optional[Parity], Optional[Spin], float, int]
     ] = {
-        "Spin": particle.spin,
-        "Charge": particle.charge,
-        "Parity": particle.parity,
-        "CParity": particle.c_parity,
-        "GParity": particle.g_parity,
-        "Strangeness": particle.strangeness,
-        "Charm": particle.charmness,
-        "Bottom": particle.bottomness,
-        "Top": particle.topness,
-        "BaryonNumber": particle.baryon_number,
-        "ElectronLN": particle.electron_number,
-        "MuonLN": particle.muon_number,
-        "TauLN": particle.tau_number,
-        "IsoSpin": particle.isospin,
+        "Spin": particle.state.spin,
+        "Charge": particle.state.charge,
+        "Parity": particle.state.parity,
+        "CParity": particle.state.c_parity,
+        "GParity": particle.state.g_parity,
+        "Strangeness": particle.state.strangeness,
+        "Charm": particle.state.charmness,
+        "Bottom": particle.state.bottomness,
+        "Top": particle.state.topness,
+        "BaryonNumber": particle.state.baryon_number,
+        "ElectronLN": particle.state.electron_lepton_number,
+        "MuonLN": particle.state.muon_lepton_number,
+        "TauLN": particle.state.tau_lepton_number,
+        "IsoSpin": particle.state.isospin,
     }
     output: List[Dict[str, Any]] = list()
     for type_name, instance in conversion_map.items():

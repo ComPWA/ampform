@@ -1,6 +1,22 @@
 """A collection of data containers."""
 
+__all__ = [  # fix order in API
+    "ParticleCollection",
+    "Particle",
+    "ComplexEnergyState",
+    "QuantumState",
+    "ParticleQuantumState",
+    "Parity",
+    "Spin",
+    "HasComplexEnergy",
+    "HasFloatSpin",
+    "HasQuantumNumbers",
+    "HasSpin",
+]
+
+
 from collections import abc
+from dataclasses import dataclass
 from typing import (
     Dict,
     ItemsView,
@@ -10,7 +26,6 @@ from typing import (
     Union,
     ValuesView,
 )
-from typing import NamedTuple
 
 
 class Parity:
@@ -41,7 +56,7 @@ class Parity:
 
 
 class Spin(abc.Hashable):
-    """Safe, immutable data container for (iso)spin."""
+    """Safe, immutable data container for spin **with projection**."""
 
     def __init__(self, magnitude: float, projection: float) -> None:
         magnitude = float(magnitude)
@@ -84,27 +99,119 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-class Particle(NamedTuple):
-    """Immutable data container for particle info."""
+@dataclass(frozen=True)
+class HasQuantumNumbers:  # pylint: disable=too-many-instance-attributes
+    """Set of quantum numbers **excluding spin**.
 
-    name: str
-    pid: int
-    charge: int
-    spin: float
-    mass: float
+    This is to make spin projection required in `.QuantumState` (`.HasSpin`)
+    and unavailable in `.Particle` (`.HasFloatSpin`).
+    """
+
+    charge: int = 0
+    isospin: Optional[Spin] = None
     strangeness: int = 0
     charmness: int = 0
     bottomness: int = 0
     topness: int = 0
     baryon_number: int = 0
-    electron_number: int = 0
-    muon_number: int = 0
-    tau_number: int = 0
-    width: Optional[float] = None
-    isospin: Optional[Spin] = None
+    electron_lepton_number: int = 0
+    muon_lepton_number: int = 0
+    tau_lepton_number: int = 0
     parity: Optional[Parity] = None
     c_parity: Optional[Parity] = None
     g_parity: Optional[Parity] = None
+
+
+@dataclass(frozen=True)
+class HasSpin:
+    """Required to disallow default arguments for `.QuantumState`."""
+
+    spin: Spin
+
+
+@dataclass(frozen=True)
+class HasFloatSpin:
+    """Required to disallow default arguments for `.ParticleQuantumState`."""
+
+    spin: float
+
+
+@dataclass(frozen=True)
+class QuantumState(HasQuantumNumbers, HasSpin):
+    """Contains all quantum numbers unambiguously defining a quantum state."""
+
+
+@dataclass(frozen=True)
+class ParticleQuantumState(HasQuantumNumbers, HasFloatSpin):
+    """Similar to `.QuantumState` but only carrying spin magnitude."""
+
+
+class HasComplexEnergy:
+    """Required to disallow default arguments for `.ComplexEnergyState`."""
+
+    def __init__(self, energy: complex):
+        self.__energy = complex(energy)
+
+    @property
+    def complex_energy(self) -> complex:
+        return self.__energy
+
+    @property
+    def mass(self) -> float:
+        return self.__energy.real
+
+    @property
+    def width(self) -> float:
+        return self.__energy.imag
+
+
+class ComplexEnergyState(HasComplexEnergy):
+    """Pole in the complex energy plane, with quantum numbers."""
+
+    def __init__(self, energy: complex, state: QuantumState):
+        super().__init__(energy)
+        self.state: QuantumState = state
+
+
+class Particle(HasComplexEnergy):
+    """Immutable container of data defining a physical particle.
+
+    Can **only** contain info that the `PDG <http://pdg.lbl.gov/>`_ would list.
+    """
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        name: str,
+        pid: int,
+        state: ParticleQuantumState,
+        mass: float,
+        width: float = 0.0,
+    ):
+        super().__init__(complex(mass, width))
+        self.__name: str = name
+        self.__pid: int = pid
+        self.state: ParticleQuantumState = state
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def pid(self) -> int:
+        return self.__pid
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Particle):
+            return (
+                self.name == other.name
+                and self.pid == other.pid
+                and self.complex_energy == other.complex_energy
+                and self.state == other.state
+            )
+        raise NotImplementedError
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}{self.name, self.pid, self.state, self.mass, self.width}"
 
 
 class ParticleCollection(abc.Mapping):

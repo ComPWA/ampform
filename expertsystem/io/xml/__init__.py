@@ -12,14 +12,12 @@ import xmltodict
 from expertsystem.data import (
     Particle,
     ParticleCollection,
+    Spin,
 )
 
+from . import _build
 from . import _dump
 from . import validation
-from ._build import (
-    build_particle,
-    build_particle_collection,
-)
 
 
 def load_particle_collection(filename: str) -> ParticleCollection:
@@ -27,7 +25,7 @@ def load_particle_collection(filename: str) -> ParticleCollection:
         definition = xmltodict.parse(stream)
     definition = definition.get("root", definition)
     json.loads(json.dumps(definition))  # remove OrderedDict
-    return build_particle_collection(definition)
+    return _build.build_particle_collection(definition)
 
 
 def write(instance: object, filename: str) -> None:
@@ -56,8 +54,12 @@ def object_to_dict(instance: object) -> dict:
 
 
 def dict_to_particle_collection(definition: dict) -> ParticleCollection:
-    return build_particle_collection(definition)
+    return _build.build_particle_collection(definition)
 
 
 def dict_to_particle(definition: dict) -> Particle:
-    return build_particle(definition)
+    return _build.build_particle(definition)
+
+
+def dict_to_spin(definition: dict) -> Spin:
+    return _build.build_spin(definition)

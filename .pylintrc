@@ -26,4 +26,4 @@ min-public-methods=1
 
 [SIMILARITIES]
 ignore-imports=yes # https://stackoverflow.com/a/30007053
-min-similarity-lines=7  # https://github.com/PyCQA/pylint/issues/214
+min-similarity-lines=8  # https://github.com/PyCQA/pylint/issues/214

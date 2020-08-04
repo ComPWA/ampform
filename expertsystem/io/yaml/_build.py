@@ -9,6 +9,7 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
+    ParticleQuantumState,
     Spin,
 )
 
@@ -26,45 +27,31 @@ def build_particle_collection(definition: dict) -> ParticleCollection:
 
 def build_particle(name: str, definition: dict) -> Particle:
     qn_def = definition["QuantumNumbers"]
-    width: Optional[float] = definition.get("Width", None)
-    if width is not None:
-        width = float(width)
     return Particle(
         name=name,
         pid=int(definition["PID"]),
         mass=float(definition["Mass"]),
-        width=width,
-        charge=int(qn_def["Charge"]),
-        spin=float(qn_def["Spin"]),
-        strangeness=int(qn_def.get("Strangeness", 0)),
-        charmness=int(qn_def.get("Charmness", 0)),
-        bottomness=int(qn_def.get("Bottomness", 0)),
-        topness=int(qn_def.get("Topness", 0)),
-        baryon_number=int(qn_def.get("BaryonNumber", 0)),
-        electron_number=int(qn_def.get("ElectronLN", 0)),
-        muon_number=int(qn_def.get("MuonLN", 0)),
-        tau_number=int(qn_def.get("TauLN", 0)),
-        isospin=_yaml_to_spin(qn_def.get("IsoSpin", None)),
-        parity=_yaml_to_parity(qn_def.get("Parity", None)),
-        c_parity=_yaml_to_parity(qn_def.get("CParity", None)),
-        g_parity=_yaml_to_parity(qn_def.get("GParity", None)),
+        width=float(definition.get("Width", 0.0)),
+        state=ParticleQuantumState(
+            charge=int(qn_def["Charge"]),
+            spin=float(qn_def["Spin"]),
+            strangeness=int(qn_def.get("Strangeness", 0)),
+            charmness=int(qn_def.get("Charmness", 0)),
+            bottomness=int(qn_def.get("Bottomness", 0)),
+            topness=int(qn_def.get("Topness", 0)),
+            baryon_number=int(qn_def.get("BaryonNumber", 0)),
+            electron_lepton_number=int(qn_def.get("ElectronLN", 0)),
+            muon_lepton_number=int(qn_def.get("MuonLN", 0)),
+            tau_lepton_number=int(qn_def.get("TauLN", 0)),
+            isospin=_yaml_to_isospin(qn_def.get("IsoSpin", None)),
+            parity=_yaml_to_parity(qn_def.get("Parity", None)),
+            c_parity=_yaml_to_parity(qn_def.get("CParity", None)),
+            g_parity=_yaml_to_parity(qn_def.get("GParity", None)),
+        ),
     )
 
 
-def _yaml_to_parity(
-    definition: Optional[Union[float, int, str]]
-) -> Optional[Parity]:
-    if definition is None:
-        return None
-    return Parity(definition)
-
-
-def _yaml_to_spin(
-    definition: Optional[Union[dict, float, int, str]]
-) -> Optional[Spin]:
-    if definition is None:
-        return None
-
+def build_spin(definition: Union[dict, float, int, str]) -> Spin:
     def check_missing_projection(magnitude: float) -> None:
         if magnitude != 0.0:
             raise ValueError(
@@ -82,6 +69,23 @@ def _yaml_to_spin(
         if "Projection" not in definition:
             check_missing_projection(magnitude)
         projection = definition.get("Projection", 0.0)
-    if magnitude == 0:
-        return None
     return Spin(magnitude, projection)
+
+
+def _yaml_to_parity(
+    definition: Optional[Union[float, int, str]]
+) -> Optional[Parity]:
+    if definition is None:
+        return None
+    return Parity(definition)
+
+
+def _yaml_to_isospin(
+    definition: Optional[Union[dict, float, int, str]]
+) -> Optional[Spin]:
+    if definition is None:
+        return None
+    spin = build_spin(definition)
+    if spin.magnitude == 0:
+        return None
+    return spin

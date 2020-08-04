@@ -28,16 +28,13 @@ jobs:
         - NBSPHINX_EXECUTE='' make html
 
     - name: "Style checks"
-      python: 3.6
+      python: 3.7
       install:
         - npm install -g cspell
         - pip3 install .[dev]
       script:
         - tox -e sty
         - cspell $(git ls-files)
-
-    - name: "Python 3.6 on Ubuntu 18.04"
-      python: 3.6
 
     - name: "Python 3.7 on Ubuntu 18.04 + CodeCov"
       python: 3.7

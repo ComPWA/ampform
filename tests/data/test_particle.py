@@ -4,12 +4,25 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
+    ParticleQuantumState,
     Spin,
 )
 
 
 @pytest.mark.parametrize(
-    "instance", [ParticleCollection(), Spin(2.5, -0.5), Parity(1)]
+    "instance",
+    [
+        ParticleCollection(),
+        Spin(2.5, -0.5),
+        Parity(1),
+        Particle(
+            name="J/psi",
+            pid=443,
+            mass=3.0969,
+            width=9.29e-05,
+            state=ParticleQuantumState(spin=1, charge=0),
+        ),
+    ],
 )
 def test_repr(instance):
     copy_from_repr = eval(repr(instance))  # pylint: disable=eval-used
@@ -35,6 +48,9 @@ def test_spin():
 
 
 def test_particle():
-    particle = Particle("J/psi", 443, charge=0, spin=1, mass=3.0969)
+    particle = Particle(
+        "J/psi", 443, mass=3.0969, state=ParticleQuantumState(charge=0, spin=1)
+    )
     assert particle.mass == 3.0969
-    assert particle.bottomness == 0
+    assert particle.width == 0.0
+    assert particle.state.bottomness == 0
