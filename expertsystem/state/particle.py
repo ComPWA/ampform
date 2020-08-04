@@ -13,14 +13,20 @@ from enum import Enum, auto
 from itertools import permutations
 from typing import (
     Dict,
+    List,
+    Tuple,
     Union,
 )
 
 from numpy import arange
 
 from expertsystem import io
-from expertsystem.data import Spin
+from expertsystem.data import (
+    ParticleCollection,
+    Spin,
+)
 from expertsystem.topology.graph import (
+    StateTransitionGraph,
     get_final_state_edges,
     get_initial_state_edges,
     get_intermediate_state_edges,
@@ -234,14 +240,14 @@ def is_boson(qn_dict):
     return abs(qn_dict[spin_label].magnitude % 1) < 0.01
 
 
-DATABASE = dict()
+DATABASE = ParticleCollection()
 
 
 def load_particles(filename: str) -> None:
     """Add entries to the particle database from a custom config file.
 
     By default, the expert system loads the particle database from the XML file
-    :file:`particle_list.xml` that comes with the `expertsystem`. Use
+    :file:`particle_list.yml` that comes with the `expertsystem`. Use
     this function to append or overwrite definitions in the particle database.
 
     .. note::
@@ -250,71 +256,7 @@ def load_particles(filename: str) -> None:
         overwritten.
     """
     particle_collection = io.load_particle_collection(filename)
-    new_entries = io.xml.object_to_dict(particle_collection)
-    DATABASE.update(new_entries)
-
-
-def write_particle_database(filename: str) -> None:
-    """Write particle database instance to human readable format."""
-    particle_collection = io.xml.dict_to_particle_collection(DATABASE)
-    io.write(particle_collection, filename)
-
-
-def add_to_particle_database(particle):
-    """Add a particle dictionary object to the particle database `dict`.
-
-    The key will be extracted from the ``particle`` name (XML tag ``Name``). If
-    the key already exists, the entry in particle database will be overwritten
-    by this one.
-    """
-    if not isinstance(particle, dict):
-        logging.warning("Can only add dictionary entries to particle database")
-        return
-    particle_name = particle[Labels.Name.name]
-    DATABASE[particle_name] = particle
-
-
-def find_particle(
-    search_term: Union[str, int]
-) -> Union[dict, Dict[str, dict]]:
-    """Search for a particle in the database, by PID or name.
-
-    Returns:
-        When searching by name (`str`), all matches will be returned in the
-        form of a `dict`, with the particle names as keys. For instance,
-        searching :code:`"f"` returns all particles that contain an :code:`"f"`
-        in their name. If there's only one search result, only the definition
-        of particle is returned.
-    """
-    if isinstance(search_term, str):
-        search_results = {
-            name: definition
-            for name, definition in DATABASE.items()
-            if search_term in name
-        }
-        if len(search_results) == 1:
-            return list(search_results.values())[0]  # return value only
-        return search_results
-    if isinstance(search_term, int):
-        for particle in DATABASE.values():
-            if int(particle["Pid"]) == search_term:
-                return particle
-        raise LookupError(f"Could not find particle with PID {search_term}")
-    raise NotImplementedError(f"Cannot search for type {type(search_term)}")
-
-
-def get_particle_copy(
-    search_term: Union[str, int]
-) -> Union[dict, Dict[str, dict]]:
-    """Get a `~copy.deepcopy` of a particle or particles from the database.
-
-    This is useful when you want to manipulate that copy and add it as a new
-    entry to the particle database.
-
-    Args:
-        search_term: see `.find_particle`.
-    """
-    return deepcopy(find_particle(search_term))
+    DATABASE.merge(particle_collection)
 
 
 def get_particle_property(particle_properties, qn_name, converter=None):
@@ -535,25 +477,19 @@ def initialize_graph(graph, initial_state, final_state, final_state_groupings):
     return new_graphs
 
 
-def check_if_spin_projections_set(state):
-    spin_label = StateQuantumNumberNames.Spin
-    mass_label = ParticlePropertyNames.Mass
+def check_if_spin_projections_set(
+    state: Union[str, Tuple[str, List[float]]]
+) -> Tuple[str, List[float]]:
     if isinstance(state, str):
+        particle_name = state
         particle = DATABASE[state]
-        spin = get_particle_property(
-            particle, spin_label, _SpinQNConverter(False)
-        )
-        if not isinstance(spin, Spin):
-            raise ValueError(
-                "Spin not defined for particle: \n" + str(particle)
-            )
-        mag = spin.magnitude
-        spin_projections = arange(-mag, mag + 1, 1.0).tolist()
-        mass = get_particle_property(particle, mass_label)
-        if mass == 0.0:
+        spin_projections = arange(
+            -particle.state.spin, particle.state.spin + 1, 1.0
+        ).tolist()
+        if particle.mass == 0.0:
             if 0.0 in spin_projections:
                 del spin_projections[spin_projections.index(0.0)]
-        state = (state, spin_projections)
+        state = (particle_name, spin_projections)
     return state
 
 
@@ -632,28 +568,35 @@ def initialize_external_edge_lists(
     return sorted(init_edge_lists)
 
 
-def initialize_edges(graph, edge_particle_dict):
-    for edge, particle in edge_particle_dict.items():
-        # lookup the particle in the list
-        found_particle = DATABASE[particle[0]]
-        graph.edge_props[edge] = deepcopy(found_particle)
+def initialize_edges(
+    graph: StateTransitionGraph,
+    edge_particle_dict: Dict[int, Tuple[str, List[float]]],
+) -> List[StateTransitionGraph]:
+    for edge_id, state_particle in edge_particle_dict.items():
+        particle_name = state_particle[0]
+        particle = DATABASE[particle_name]
+        particle_properties = io.xml.object_to_dict(particle)
+        graph.edge_props[edge_id] = particle_properties
 
     # now add more quantum numbers given by user (spin_projection)
-    new_graphs = [graph]
-    for edge, particle in edge_particle_dict.items():
+    new_graphs: List[StateTransitionGraph] = [graph]
+    for edge_id, state_particle in edge_particle_dict.items():
+        spin_projections = state_particle[1]
         temp_graphs = new_graphs
         new_graphs = []
         for temp_graph in temp_graphs:
             new_graphs.extend(
                 populate_edge_with_spin_projections(
-                    temp_graph, edge, particle[1]
+                    temp_graph, edge_id, spin_projections
                 )
             )
 
     return new_graphs
 
 
-def populate_edge_with_spin_projections(graph, edge_id, spin_projections):
+def populate_edge_with_spin_projections(
+    graph: StateTransitionGraph, edge_id: int, spin_projections: List[float]
+) -> List[StateTransitionGraph]:
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
     class_label = Labels.Class.name
@@ -719,11 +662,14 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
 def initialize_allowed_particle_list(allowed_particle_list):
     mod_allowed_particle_list = []
     if len(allowed_particle_list) == 0:
-        mod_allowed_particle_list = list(DATABASE.values())
+        mod_allowed_particle_list = list(
+            io.xml.object_to_dict(DATABASE).values()
+        )
     else:
         for allowed_particle in allowed_particle_list:
             if isinstance(allowed_particle, (int, str)):
-                search_results = find_particle(allowed_particle)
+                subset = DATABASE.find_subset(allowed_particle)
+                search_results = io.xml.object_to_dict(subset)
                 if "Pid" in search_results:  # one particle only
                     mod_allowed_particle_list.append(search_results)
                 else:  # several particles found

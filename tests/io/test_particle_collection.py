@@ -13,6 +13,7 @@ from expertsystem.data import (
 )
 from expertsystem.state import particle
 
+
 EXPERTSYSTEM_PATH = dirname(realpath(expertsystem.__file__))
 _XML_FILE = f"{EXPERTSYSTEM_PATH}/particle_list.xml"
 _YAML_FILE = f"{EXPERTSYSTEM_PATH}/particle_list.yml"
@@ -76,7 +77,7 @@ def test_yaml_to_xml():
     dummy_particle = Particle(
         name="0", pid=0, mass=0, state=ParticleQuantumState(charge=0, spin=0)
     )
-    yaml_particle_collection.add(dummy_particle)
+    yaml_particle_collection += dummy_particle
     assert xml_particle_collection != yaml_particle_collection
 
 
@@ -90,17 +91,38 @@ class TestInternalParticleDict:
     ui.load_default_particle_list()
 
     @staticmethod
-    def test_particle_validation():
-        for item in particle.DATABASE.values():
-            io.xml.validation.particle(item)
-
-    @staticmethod
     def test_build_particle_from_internal_database():
-        definition = particle.DATABASE["J/psi"]
-        j_psi = io.xml.dict_to_particle(definition)
+        j_psi = particle.DATABASE["J/psi"]
         assert j_psi == J_PSI
 
     @staticmethod
-    def test_dump_via_particle_collection():
-        particles = io.xml.dict_to_particle_collection(particle.DATABASE)
-        io.write(particles, "DATABASE_via_ParticleCollection.xml")
+    def test_find():
+        f2_1950 = particle.DATABASE.find(9050225)
+        assert f2_1950.name == "f2(1950)"
+        assert f2_1950.mass == 1.944
+        phi = particle.DATABASE.find("phi(1020)")
+        assert phi.pid == 333
+        assert phi.width == 0.004266
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "search_term", [666, 2112, "non-existing"]  # 2112: nbar == n
+    )
+    def test_find_fail(search_term):
+        with pytest.raises(LookupError):
+            particle.DATABASE.find(search_term)
+
+    @staticmethod
+    def test_find_subset():
+        search_result = particle.DATABASE.find_subset("f0")
+        f0_1500_from_subset = search_result["f0(1500)"]
+        assert len(search_result) == 2
+        assert f0_1500_from_subset.mass == 1.505
+        assert f0_1500_from_subset is particle.DATABASE["f0(1500)"]
+        assert f0_1500_from_subset is not particle.DATABASE["f0(980)"]
+
+        search_result = particle.DATABASE.find_subset(22)
+        gamma_from_subset = search_result["gamma"]
+        assert len(search_result) == 1
+        assert gamma_from_subset.pid == 22
+        assert gamma_from_subset is particle.DATABASE["gamma"]

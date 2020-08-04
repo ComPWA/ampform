@@ -217,8 +217,13 @@ class Particle(HasComplexEnergy):
 class ParticleCollection(abc.Mapping):
     """Safe, `dict`-like collection of `.Particle` instances."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self, particles: Optional[Dict[str, Particle]] = None
+    ) -> None:
         self.__particles: Dict[str, Particle] = dict()
+        if particles is not None:
+            if isinstance(particles, dict):
+                self.__particles.update(particles)
 
     def __getitem__(self, particle_name: str) -> Particle:
         return self.__particles[particle_name]
@@ -232,11 +237,69 @@ class ParticleCollection(abc.Mapping):
     def __len__(self) -> int:
         return len(self.__particles)
 
+    def __iadd__(
+        self, other: Union[Particle, "ParticleCollection"]
+    ) -> "ParticleCollection":
+        if isinstance(other, Particle):
+            self.add(other)
+        elif isinstance(other, ParticleCollection):
+            self.merge(other)
+        else:
+            raise NotImplementedError
+        return self
+
     def __repr__(self) -> str:
         return str(self.__particles)
 
     def add(self, particle: Particle) -> None:
         self.__particles[particle.name] = particle
+
+    def find(self, search_term: Union[int, str]) -> Particle:
+        """Search for a particle by either name (`str`) or PID (`int`)."""
+        if isinstance(search_term, str):
+            particle_name = search_term
+            return self.__particles[particle_name]
+        if isinstance(search_term, int):
+            pid = search_term
+            search_results = [
+                particle for particle in self.values() if particle.pid == pid
+            ]
+            if len(search_results) == 0:
+                raise LookupError(f"Could not find particle with PID {pid}")
+            if len(search_results) > 1:
+                error_message = f"Found multiple results for PID {pid}!:"
+                for particle in search_results:
+                    error_message += f"\n  - {particle.name}"
+                raise LookupError(error_message)
+            return search_results[0]
+        raise NotImplementedError(
+            f"Cannot search for a search term of type {type(search_term)}"
+        )
+
+    def find_subset(
+        self, search_term: Union[int, str]
+    ) -> "ParticleCollection":
+        """Perform a 'fuzzy' search for a particle by name or PID.
+
+        Like `~.ParticleCollection.find`, but returns several results in the
+        form of a new `.ParticleCollection`.
+        """
+        if isinstance(search_term, str):
+            search_results = {
+                particle.name: particle
+                for particle in self.values()
+                if search_term in particle.name
+            }
+            return ParticleCollection(search_results)
+        if isinstance(search_term, int):
+            pid = search_term
+            output = ParticleCollection()
+            particle = self.find(pid)
+            output.add(particle)
+            return output
+        raise NotImplementedError(
+            f"Cannot search for a search term of type {type(search_term)}"
+        )
 
     def items(self) -> ItemsView[str, Particle]:
         return self.__particles.items()
@@ -246,3 +309,7 @@ class ParticleCollection(abc.Mapping):
 
     def values(self) -> ValuesView[Particle]:
         return self.__particles.values()
+
+    def merge(self, other: "ParticleCollection") -> None:
+        for particle in other.values():
+            self.add(particle)

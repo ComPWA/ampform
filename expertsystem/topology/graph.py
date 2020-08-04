@@ -65,7 +65,7 @@ class StateTransitionGraph:
         self.nodes: List[int] = []
         self.edges: Dict[int, Edge] = {}
         self.node_props: Dict[int, dict] = {}
-        self.edge_props: Dict[int, Edge] = {}
+        self.edge_props: Dict[int, dict] = {}
         self.graph_element_properties_comparator: Optional[Callable] = None
 
     def set_graph_element_properties_comparator(
@@ -185,8 +185,8 @@ class StateTransitionGraph:
         popped_edge_id2 = self.edges.pop(edge_id2)
         self.edges[edge_id2] = popped_edge_id1
         self.edges[edge_id1] = popped_edge_id2
-        value1: Optional[Edge] = None
-        value2: Optional[Edge] = None
+        value1: Optional[dict] = None
+        value2: Optional[dict] = None
         if edge_id1 in self.edge_props:
             value1 = self.edge_props.pop(edge_id1)
         if edge_id2 in self.edge_props:
