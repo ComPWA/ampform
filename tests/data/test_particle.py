@@ -4,7 +4,7 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
-    ParticleQuantumState,
+    QuantumState,
     Spin,
 )
 
@@ -20,7 +20,7 @@ from expertsystem.data import (
             pid=443,
             mass=3.0969,
             width=9.29e-05,
-            state=ParticleQuantumState(spin=1, charge=0),
+            state=QuantumState[float](spin=1, charge=0),
         ),
     ],
 )
@@ -49,7 +49,7 @@ def test_spin():
 
 def test_particle():
     particle = Particle(
-        "J/psi", 443, mass=3.0969, state=ParticleQuantumState(charge=0, spin=1)
+        "J/psi", 443, mass=3.0969, state=QuantumState[float](charge=0, spin=1)
     )
     assert particle.mass == 3.0969
     assert particle.width == 0.0

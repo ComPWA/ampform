@@ -9,7 +9,7 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
-    ParticleQuantumState,
+    QuantumState,
 )
 from expertsystem.state import particle
 
@@ -23,7 +23,7 @@ J_PSI = Particle(
     pid=443,
     mass=3.0969,
     width=9.29e-05,
-    state=ParticleQuantumState(
+    state=QuantumState[float](
         spin=1,
         charge=0,
         parity=Parity(-1),
@@ -75,7 +75,7 @@ def test_yaml_to_xml():
     xml_particle_collection = io.load_particle_collection(xml_file)
     assert xml_particle_collection == yaml_particle_collection
     dummy_particle = Particle(
-        name="0", pid=0, mass=0, state=ParticleQuantumState(charge=0, spin=0)
+        name="0", pid=0, mass=0, state=QuantumState[float](charge=0, spin=0)
     )
     yaml_particle_collection += dummy_particle
     assert xml_particle_collection != yaml_particle_collection

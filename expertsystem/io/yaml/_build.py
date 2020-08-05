@@ -9,7 +9,7 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
-    ParticleQuantumState,
+    QuantumState,
     Spin,
 )
 
@@ -32,7 +32,7 @@ def build_particle(name: str, definition: dict) -> Particle:
         pid=int(definition["PID"]),
         mass=float(definition["Mass"]),
         width=float(definition.get("Width", 0.0)),
-        state=ParticleQuantumState(
+        state=QuantumState[float](
             charge=int(qn_def["Charge"]),
             spin=float(qn_def["Spin"]),
             strangeness=int(qn_def.get("Strangeness", 0)),
