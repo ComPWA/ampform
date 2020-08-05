@@ -9,62 +9,38 @@ on:
     branches: [master]
 
 jobs:
-  documentation:
-    name: Check documentation and links
-    runs-on: ubuntu-18.04
+  codecov:
+    name: Unit tests + coverage
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-18.04]
         python-version: [3.7]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@master
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[doc]
-          sudo apt-get -y install pandoc
-      - name: Check external links
-        working-directory: doc
-        run: |
-          make linkcheck
-      - name: Build documentation and run notebooks
-        working-directory: doc
-        env:
-          NBSPHINX_EXECUTE: YES
-        run: |
-          make html
-
-  style:
-    name: Style checks
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+          pip install .[test]
+      - name: Test with pytest-cov
+        run: pytest --cov=expertsystem --cov-report=xml
+      - uses: codecov/codecov-action@v1
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .[dev]
-          sudo npm install -g cspell
-      - name: Perform style checks
-        run: tox -e sty
-      - name: Check spelling
-        run: cspell $(git ls-files)
+          file: ./coverage.xml
+          flags: unittests
 
   pytest:
     name: Unit tests
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-10.15]
+        os:
+          - macos-10.15
+          - ubuntu-18.04
         python-version: [3.7, 3.8]
         exclude:
           - os: macos-10.15
@@ -84,25 +60,46 @@ jobs:
       - name: Test with pytest
         run: pytest
 
-  codecov:
-    name: Publish test coverage
+  documentation:
+    name: Check documentation and links
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python-version: [3.7]
     steps:
-      - uses: actions/checkout@master
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@master
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.7
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[test]
-      - name: Test with pytest-cov
-        run: pytest --cov=expertsystem --cov-report=xml
-      - uses: codecov/codecov-action@v1
+          pip install .[doc]
+          sudo apt-get -y install pandoc
+      - name: Check external links
+        working-directory: doc
+        run: |
+          make linkcheck
+      - name: Build documentation and run notebooks
+        working-directory: doc
+        env:
+          NBSPHINX_EXECUTE: YES
+        run: |
+          make html
+
+  style:
+    name: Style checks
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
         with:
-          file: ./coverage.xml
-          flags: unittests
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+          sudo npm install -g cspell
+      - name: Perform style checks
+        run: tox -e sty
+      - name: Check spelling
+        run: cspell $(git ls-files)

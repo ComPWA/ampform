@@ -240,11 +240,9 @@ def _extract_intensity_component(definition: Dict[str, Any]) -> Dict[str, Any]:
             output_dict["PreFactor"] = definition["PreFactor"]
         parameters_xml = _safe_wrap_in_list(definition["Parameter"])
         parameter_names = [par["Name"] for par in parameters_xml]
-        parameters_yml = dict()
         for name in parameter_names:
             type_name = name.split("_")[0]
-            parameters_yml[type_name] = name
-        output_dict["Parameters"] = parameters_yml
+            output_dict[type_name] = name
         amplitudes_xml = definition["Amplitude"]
         amplitudes_yml = _extract_intensity_component(amplitudes_xml)  # type: ignore
         output_dict["Amplitude"] = amplitudes_yml

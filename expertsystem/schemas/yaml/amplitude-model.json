@@ -246,7 +246,7 @@
       },
       "Coefficient": {
         "type": "object",
-        "required": ["Class", "Parameters", "Amplitude"],
+        "required": ["Class", "Magnitude", "Phase", "Amplitude"],
         "additionalProperties": false,
         "properties": {
           "Class": { "$ref": "#/definitions/Amplitude/_types" },
@@ -259,15 +259,8 @@
             },
             "anyOf": [{ "required": ["Real"] }, { "required": ["Imaginary"] }]
           },
-          "Parameters": {
-            "type": "object",
-            "required": ["Magnitude", "Phase"],
-            "additionalProperties": false,
-            "properties": {
-              "Magnitude": { "type": "string" },
-              "Phase": { "type": "string" }
-            }
-          },
+          "Magnitude": { "type": "string" },
+          "Phase": { "type": "string" },
           "Amplitude": { "$ref": "#/definitions/Amplitude/_recursion" }
         }
       },
