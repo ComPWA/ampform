@@ -1,0 +1,104 @@
+[":bulb: DX"]
+color = "D6EDC2"
+name = ":bulb: DX"
+description = "Improvements to the Developer Experience"
+
+[":bulb: Docs"]
+color = "C2EDC9"
+name = ":bulb: Docs"
+description = "Improvements or additions to documentation"
+
+[":bulb: Enhancement"]
+color = "c2e0c6"
+name = ":bulb: Enhancement"
+description = "New feature or improvement of existing code"
+
+[":bulb: Maintenance"]
+color = "E6F8E8"
+name = ":bulb: Maintenance"
+description = "Refactoring or redesign"
+
+[":clock1: Trivial"]
+color = "F4F8FF"
+name = ":clock1: Trivial"
+description = "Simple fix of a few minutes, especially useful for PRs"
+
+[":clock2: Easy"]
+color = "E5EEFF"
+name = ":clock2: Easy"
+description = "Can be done in less than a few hours"
+
+[":clock3: Medium"]
+color = "CCDEFF"
+name = ":clock3: Medium"
+description = "May take a day"
+
+[":clock4: Hard"]
+color = "99BEFF"
+name = ":clock4: Hard"
+description = "Project of several days"
+
+[":clock5: Project"]
+color = "3D5E99"
+name = ":clock5: Project"
+description = "Larger project that has to be addressed in several issues/PRs"
+
+[":dizzy: Good first issue"]
+color = "F4EAEF"
+name = ":dizzy: Good first issue"
+description = "Good for newcomers"
+
+[":exclamation: PR-series"]
+color = "E0C2D0"
+name = ":exclamation: PR-series"
+description = "Prequel or sequel to another issue or pull request"
+
+[":grey_question: Question"]
+color = "88506B"
+name = ":grey_question: Question"
+description = "Discuss this matter in the team"
+
+[":warning: Critical"]
+color = "B83C3C"
+name = ":warning: Critical"
+description = ""
+
+[":warning: High"]
+color = "EE7F7F"
+name = ":warning: High"
+description = ""
+
+[":warning: Low"]
+color = "FBE5E5"
+name = ":warning: Low"
+description = ""
+
+[":warning: Medium"]
+color = "F5B2B2"
+name = ":warning: Medium"
+description = ""
+
+[":white_circle: duplicate"]
+color = "cfd3d7"
+name = ":white_circle: duplicate"
+description = "This issue or pull request already exists"
+
+[":white_circle: invalid"]
+color = "6E7070"
+name = ":white_circle: invalid"
+description = "This doesn't seem right"
+
+[":white_circle: won't fix"]
+color = "ffffff"
+name = ":white_circle: won't fix"
+description = "This will not be worked on"
+
+[Bug]
+color = "e11d21"
+name = "Bug"
+description = "Something isn't working"
+
+[Epic]
+color = "3E4B9E"
+name = "Epic"
+#description = null  # To use: uncomment and replace null with value
