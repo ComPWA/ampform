@@ -130,6 +130,7 @@ linkcheck_anchors = False
 
 # Settings for nbsphinx
 if "NBSPHINX_EXECUTE" in os.environ:
+    print("\033[93;1mWill run Jupyter notebooks!\033[0m")
     nbsphinx_execute = "always"
 else:
     nbsphinx_execute = "never"

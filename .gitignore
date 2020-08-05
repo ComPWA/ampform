@@ -5,7 +5,6 @@
 !.github/*/*.yml
 !.pre-commit-config.yaml
 !.readthedocs.yml
-!.travis.yml
 !codecov.yml
 !environment.yml
 !examples/additional_particles.yml
