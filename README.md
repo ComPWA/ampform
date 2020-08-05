@@ -15,6 +15,9 @@ Visit
 [expertsystem.rtfd.io](https://pwa.readthedocs.io/projects/expertsystem/en/latest/)
 for an introduction to the Particle Wave Analysis Expert System!
 
+_For an overview of **upcoming releases and planned functionality**, see
+[here](https://github.com/ComPWA/expertsystem/milestones?direction=asc&sort=title&state=open)!_
+
 ## Available features
 
 - **Input**: Particle database

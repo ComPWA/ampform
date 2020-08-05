@@ -3,6 +3,15 @@
 How to contribute?
 ==================
 
+.. tip::
+
+  Bugs can be reported `here
+  <https://github.com/ComPWA/expertsystem/issues/new/choose>`__. Also, please
+  do have a look at the `'good first issues' page
+  <https://github.com/ComPWA/expertsystem/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%AB+Good+first+issue%22>`_:
+  they are nice challenges to get into the find your way around the source
+  code! ;)
+
 If you have installed the `expertsystem` in :ref:`install:Development mode`, it
 is easy to tweak the source code and try out new ideas immediately, because the
 source code is considered the 'installation'.
@@ -16,12 +25,17 @@ source code is considered the 'installation'.
   .. code-block:: shell
 
     git clone https://github.com/ComPWA/expertsystem.git
-    code expertsystem
+    cd expertsystem
     conda env create
     conda activate es
     pip install -e .[dev]
+    code .  # open folder in VSCode
 
   For more info, see :ref:`contribute:Visual Studio code`.
+
+
+Automated style checks
+----------------------
 
 When working on the source code of the `expertsystem`, it is highly recommended
 to install certain additional Python tools. Assuming you installed the
@@ -41,17 +55,17 @@ configuration files (e.g. `pyproject.toml
 <http://pylint.pycqa.org/en/latest/>`_, and `tox.ini
 <https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ for `flake8
 <https://flake8.pycqa.org/>`_ and `pydocstyle <http://www.pydocstyle.org/>`_).
-These config files **define our convention policies**. If you run into
-persistent linting errors this may mean we need to further specify our
-conventions. In that case, it's best to create an issue and propose a policy
-change that can then be formulated in the config files.
+These config files **define our convention policies**, such as :pep:`8`. If you
+run into persistent linting errors, this may mean we need to further specify
+our conventions. In that case, it's best to create an issue and propose a
+policy change that can then be formulated in the config files.
 
 
 Pre-commit
 ----------
 
 All **style checks** are enforced through a tool called `pre-commit
-<https://pre-commit.com/>`__. This tool needs to be activated, but only once
+<https://pre-commit.com/>`__. This tool needs to be activated, but only once,
 after you clone the repository:
 
 .. code-block:: shell
@@ -68,7 +82,7 @@ files in the repository with the command:
 
   pre-commit run -a
 
-This command is also run on Travis CI whenever you submit a pull request,
+This command is also run on GitHub actions whenever you submit a pull request,
 ensuring that all files in the repository follow the conventions set in the
 config files of these tools.
 
@@ -181,8 +195,38 @@ section, and enables you to quickly add or ignore words through the
 <https://www.npmjs.com/>`_.
 
 
-Git
----
+Git and GitHub
+--------------
+
+The `expertsystem` source code is maintained with Git and published through
+GitHub. We keep track of issues with the code, documentation, and developer
+set-up with GitHub issues (see overview `here
+<https://github.com/ComPWA/expertsystem/issues>`__). This is also the place
+where you can `report bugs
+<https://github.com/ComPWA/expertsystem/issues/new/choose>`_.
+
+
+Issue management
+^^^^^^^^^^^^^^^^
+
+We keep track of issue dependencies, time estimates, planning, pipeline
+statuses, et cetera with `ZenHub <https://app.zenhub.com>`_. You can use your
+GitHub account to log in there and automatically get access to the
+`expertsystem` issue board once you are part of the `ComPWA organization
+<https://github.com/ComPWA>`_.
+
+Publicly available are:
+
+* `Issue labels <https://github.com/ComPWA/expertsystem/labels>`_: help to
+  categorize issues by type (maintenance, enhancement, bug, etc.).
+
+* `Milestones
+  <https://github.com/ComPWA/expertsystem/milestones?direction=asc&sort=title&state=open>`__:
+  way to bundle issues for upcoming releases.
+
+
+Commit conventions
+^^^^^^^^^^^^^^^^^^
 
 * Please use
   `conventional commit messages <https://www.conventionalcommits.org/>`_: start
@@ -194,44 +238,56 @@ Git
   imagine the commit to give a command to the code framework. So for instance:
   :code:`feat: add coverage report tools` or :code:`fix: remove ...`.
 
-* In the master branch, each commit should compile and be tested. In your own
-  branches, it is recommended to commit frequently (WIP keyword), but squash
-  those commits upon submitting a merge request.
+* Keep pull requests small. If the issue you try to address is too big, discuss
+  in the team whether the issue can be converted into an `Epic
+  <https://blog.zenhub.com/working-with-epics-in-github>`_ and split up into
+  smaller tasks.
+
+* Before creating a pull request, run :code:`tox`. See also
+  :ref:`contribute:Testing`.
+
+* Also use a
+  `conventional commit message <https://www.conventionalcommits.org/>`_ style
+  for the PR title. This is because we follow a `linear commit history
+  <https://docs.github.com/en/github/administering-a-repository/requiring-a-linear-commit-history>`_
+  and the PR title will become the eventual commit message. Note that a
+  conventional commit message style is `enforced through GitHub Actions
+  <https://github.com/ComPWA/expertsystem/actions?query=workflow%3A%22PR+linting%22>`_,
+  as well as :ref:`PR labels <contribute:Issue management>`.
+
+* PRs can only be merged through 'squash and merge'. There, you will see a
+  summary based on the separate commits that constitute this PR. Leave the
+  relevant commits in as bullet points. See the `commit history
+  <https://github.com/ComPWA/expertsystem/commits/master>`_ for examples. This
+  comes in especially handy when `drafting a release <contribute:Milestones and
+  releases>`_!
 
 
-Python conventions
-------------------
+Milestones and releases
+^^^^^^^^^^^^^^^^^^^^^^^
 
-* Follow :pep:`8` conventions.
+An overview of the `expertsystem` package releases can be found `on PyPI
+history page <https://pypi.org/project/expertsystem/#history>`__. More
+descriptive release notes can be found on the `release page
+<https://github.com/ComPWA/expertsystem/releases>`__.
 
-* Any Python file that's part of a module should contain (in this order):
+New releases are automatically published to PyPI when a new tag is created (see
+`setuptools-scm <https://pypi.org/project/setuptools-scm>`_). When creating new
+release notes, try to follow the style of previous releases and summarize the
+changes since the last release. This can be easily seen from the linear commit
+history <contribute:Git commit conventions of the master branch (see
+:ref:`contribute:Commit conventions`, use :code:`git log`).
 
-  1. A docstring describing what the file contains and does, followed by two
-  empty lines.
 
-  2. A definition of `__all__
-     <https://docs.python.org/3/tutorial/modules.html#importing-from-a-package>`_,
-     so that you can see immediately what this Python file defines, **followed
-     by two empty lines**.
+Continuous Integration
+^^^^^^^^^^^^^^^^^^^^^^
 
-  3. Only after these come the :code:`import` statements, following the
-     :pep:`8` conventions for imports.
-
-* When calling or defining multiple arguments of a function and multiple
-  entries in a data container, split the entries over multiple lines and end
-  the last entry with a comma, like so:
-
-  .. code-block:: python
-
-    __all__ = [
-        'core',
-        'optimizer',
-        'physics',
-        'plot',
-    ]
-
-  This is to facilitate eventual `diff <https://git-scm.com/docs/git-diff>`_
-  comparisons in Git.
+All :ref:`style checks <contribute:Automated style checks>`, testing of the
+:ref:`documentation and links <contribute:Documentation>`, and :ref:`unit tests
+<contribute:Testing>` are performed upon each pull request through `GitHub
+Actions <https://docs.github.com/en/actions>`_ (see status overview `here
+<https://github.com/ComPWA/expertsystem/actions>`__). All checks performed for
+each PR have to pass before the PR can be merged.
 
 
 Visual Studio code

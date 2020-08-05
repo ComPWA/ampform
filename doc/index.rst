@@ -56,6 +56,10 @@ configure the system, but the user still has full control. The expert system
 then constructs several hypotheses for what happens during the transition from
 initial to final state.
 
+.. tip::
+  For an overview of **upcoming releases and planned functionality**, see `here
+  <https://github.com/ComPWA/expertsystem/milestones?direction=asc&sort=title&state=open>`__!
+
 Internal design
 ---------------
 
