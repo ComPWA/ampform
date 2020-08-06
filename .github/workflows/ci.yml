@@ -61,7 +61,7 @@ jobs:
         run: pytest
 
   documentation:
-    name: Check documentation and links
+    name: Build documentation and run notebooks
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -74,16 +74,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[doc]
           sudo apt-get -y install pandoc
-      - name: Check external links
-        working-directory: doc
-        run: |
-          make linkcheck
       - name: Build documentation and run notebooks
         working-directory: doc
         env:
           NBSPHINX_EXECUTE: YES
-        run: |
-          make html
+        run: make html
 
   style:
     name: Style checks

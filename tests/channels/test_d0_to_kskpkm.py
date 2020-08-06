@@ -17,7 +17,7 @@ def test_script():
     stm = StateTransitionManager(
         initial_state, final_state, ["a0", "phi", "a2(1320)-"]
     )
-    stm.number_of_threads = 2
+    stm.number_of_threads = 1
 
     graph_interaction_settings_groups = stm.prepare_graphs()
     solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
