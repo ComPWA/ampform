@@ -16,6 +16,7 @@ from typing import (
 )
 
 from expertsystem.data import (
+    ComplexEnergyState,
     Parity,
     Particle,
     ParticleCollection,
@@ -28,54 +29,59 @@ from . import validation
 def from_particle_collection(particles: ParticleCollection) -> dict:
     output = dict()
     for name, particle in particles.items():
-        output[name] = from_particle(particle)
+        output[name] = from_particle_state(particle)
     return output
 
 
-def from_particle(particle: Particle) -> dict:
-    output_dict = {
-        "Name": particle.name,
-        "Pid": particle.pid,
-        "Parameter": {
-            "Type": "Mass",
-            "Name": f"Mass_{particle.name}",
-            "Value": particle.mass,
-        },
-    }
-    output_dict["QuantumNumber"] = _to_quantum_number_list(particle)
-    if particle.width != 0.0:
-        decay_info = {
-            "Parameter": [
-                {
-                    "Type": "Width",
-                    "Name": f"Width_{particle.name}",
-                    "Value": particle.width,
-                },
-            ]
+def from_particle_state(instance: Union[ComplexEnergyState, Particle]) -> dict:
+    def create_parameter_dict(
+        value: float,
+        type_name: str,
+        state: Union[ComplexEnergyState, Particle],
+    ) -> dict:
+        value_dict = {
+            "Type": type_name,
+            "Value": value,
         }
-        output_dict["DecayInfo"] = decay_info
-    validation.particle(output_dict)
+        if isinstance(state, Particle):
+            value_dict["Name"] = f"Mass_{state.name}"
+        return {"Parameter": value_dict}
+
+    output_dict: Dict[str, Any] = dict()
+    if isinstance(instance, Particle):
+        output_dict["Name"] = instance.name
+        output_dict["Pid"] = instance.pid
+    output_dict.update(create_parameter_dict(instance.mass, "Mass", instance))
+    output_dict["QuantumNumber"] = _to_quantum_number_list(instance)
+    if instance.width != 0.0:
+        output_dict["DecayInfo"] = create_parameter_dict(
+            instance.width, "Width", instance
+        )
+    if isinstance(instance, Particle):
+        validation.particle(output_dict)
     return output_dict
 
 
-def _to_quantum_number_list(particle: Particle) -> List[Dict[str, Any]]:
+def _to_quantum_number_list(
+    state: Union[ComplexEnergyState, Particle]
+) -> List[Dict[str, Any]]:
     conversion_map: Dict[
         str, Union[Optional[Parity], Optional[Spin], float, int]
     ] = {
-        "Spin": particle.state.spin,
-        "Charge": particle.state.charge,
-        "Parity": particle.state.parity,
-        "CParity": particle.state.c_parity,
-        "GParity": particle.state.g_parity,
-        "Strangeness": particle.state.strangeness,
-        "Charm": particle.state.charmness,
-        "Bottom": particle.state.bottomness,
-        "Top": particle.state.topness,
-        "BaryonNumber": particle.state.baryon_number,
-        "ElectronLN": particle.state.electron_lepton_number,
-        "MuonLN": particle.state.muon_lepton_number,
-        "TauLN": particle.state.tau_lepton_number,
-        "IsoSpin": particle.state.isospin,
+        "Spin": state.state.spin,
+        "Charge": state.state.charge,
+        "Parity": state.state.parity,
+        "CParity": state.state.c_parity,
+        "GParity": state.state.g_parity,
+        "Strangeness": state.state.strangeness,
+        "Charm": state.state.charmness,
+        "Bottom": state.state.bottomness,
+        "Top": state.state.topness,
+        "BaryonNumber": state.state.baryon_number,
+        "ElectronLN": state.state.electron_lepton_number,
+        "MuonLN": state.state.muon_lepton_number,
+        "TauLN": state.state.tau_lepton_number,
+        "IsoSpin": state.state.isospin,
     }
     output: List[Dict[str, Any]] = list()
     for type_name, instance in conversion_map.items():
