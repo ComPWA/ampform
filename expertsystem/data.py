@@ -11,6 +11,7 @@ __all__ = [  # fix order in API
 ]
 
 
+import logging
 from collections import abc
 from dataclasses import dataclass
 from typing import (
@@ -252,6 +253,10 @@ class ParticleCollection(abc.Mapping):
         return str(self.__particles)
 
     def add(self, particle: Particle) -> None:
+        if particle.name in self.__particles:
+            logging.warning(
+                f"{self.__class__.__name__}: Overwriting particle {particle.name}"
+            )
         self.__particles[particle.name] = particle
 
     def find(self, search_term: Union[int, str]) -> Particle:
