@@ -43,6 +43,9 @@ class Parity:
     def __int__(self) -> int:
         return self.value
 
+    def __neg__(self) -> "Parity":
+        return Parity(-self.value)
+
     def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}({"+1" if self.__value > 0 else "-1"})'
@@ -79,6 +82,9 @@ class Spin(abc.Hashable):
 
     def __float__(self) -> float:
         return self.__magnitude
+
+    def __neg__(self) -> "Spin":
+        return Spin(self.magnitude, -self.projection)
 
     def __repr__(self) -> str:
         return (

@@ -35,6 +35,8 @@ def test_parity():
     parity = Parity(+1)
     assert parity == +1
     assert int(parity) == +1
+    flipped_parity = -parity
+    assert flipped_parity.value == -parity.value
 
 
 def test_spin():
@@ -45,6 +47,10 @@ def test_spin():
     assert float(isospin) == 1.5
     assert isospin.magnitude == 1.5
     assert isospin.projection == -0.5
+
+    flipped_spin = -isospin
+    assert flipped_spin.magnitude == isospin.magnitude
+    assert flipped_spin.projection == -isospin.projection
 
 
 def test_particle():
