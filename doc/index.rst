@@ -1,3 +1,6 @@
+Welcome to PWA Expert System!
+=============================
+
 .. image:: https://mybinder.org/badge_logo.svg
   :target: https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples%2Fquickstart.ipynb
 
@@ -36,11 +39,6 @@
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :alt: Code style: black
   :target: https://github.com/psf/black
-
-|
-
-Welcome to PWA Expert System!
-=============================
 
 The two purposes of the Partial Wave Analysis Expert System are to:
 
