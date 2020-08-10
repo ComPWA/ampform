@@ -34,5 +34,6 @@ htmlcov/
 # Virtual environments
 *venv/
 
-# Visual Studio Code
+# Settings
+.idea/
 **.code-workspace

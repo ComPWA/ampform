@@ -4,13 +4,13 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "75...100"
+  range: "80...100"
 
   status:
     project:
       default:
         # basic
-        target: 90% # can't go below this percentage
+        target: 85% # can't go below this percentage
         threshold: 1% # allow drops by this percentage
         base: auto
         # advanced
@@ -24,8 +24,8 @@ coverage:
     patch:
       default:
         # basic
-        target: 0
-        threshold: 0
+        target: 80%
+        threshold: 5%
         base: auto
         # advanced
         branches: null
