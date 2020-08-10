@@ -19,7 +19,7 @@ def test_create_particle(particle_name):
         template_particle,
         name="testparticle",
         pid=89,
-        charge=0.12,
+        charge=12,
         spin=3 / 2,
         muon_lepton_number=4,
         width=0.5,
@@ -27,7 +27,7 @@ def test_create_particle(particle_name):
 
     assert new_particle.name == "testparticle"
     assert new_particle.pid == 89
-    assert new_particle.state.charge == 0.12
+    assert new_particle.state.charge == 12
     assert new_particle.state.spin == 1.5
     assert new_particle.state.muon_lepton_number == 4
     assert new_particle.width == 0.5

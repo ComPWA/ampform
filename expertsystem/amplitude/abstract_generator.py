@@ -2,6 +2,8 @@
 
 from abc import ABC, abstractmethod
 
+from expertsystem.topology.graph import StateTransitionGraph
+
 
 class AbstractAmplitudeNameGenerator(ABC):
     """Abstract interface for a parameter name generator."""
@@ -15,7 +17,9 @@ class AbstractAmplitudeNameGenerator(ABC):
         pass
 
     @abstractmethod
-    def _generate_amplitude_coefficient_name(self, graph, node_id) -> str:
+    def _generate_amplitude_coefficient_name(
+        self, graph: StateTransitionGraph, node_id: int
+    ) -> str:
         pass
 
 
