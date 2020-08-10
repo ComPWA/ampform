@@ -17,6 +17,7 @@
     ],
     "ignorePaths": [
         "*.rst_t",
+        "*.svg",
         ".gitignore",
         ".pre-commit-config.yaml",
         ".pylintrc",
