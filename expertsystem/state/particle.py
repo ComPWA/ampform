@@ -14,6 +14,7 @@ from itertools import permutations
 from typing import (
     Dict,
     List,
+    Optional,
     Tuple,
     Union,
 )
@@ -22,7 +23,9 @@ from numpy import arange
 
 from expertsystem import io
 from expertsystem.data import (
+    Particle,
     ParticleCollection,
+    QuantumState,
     Spin,
 )
 from expertsystem.topology.graph import (
@@ -777,3 +780,107 @@ def merge_qn_props(qns_state, qns_particle):
         if not qn_found:
             qns.append(qn_entry)
     return qns
+
+
+def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
+    template_particle: Particle,
+    name: Optional[str] = None,
+    pid: Optional[int] = None,
+    mass: Optional[float] = None,
+    width: Optional[float] = None,
+    state: Optional[float] = None,
+    charge: Optional[float] = None,
+    spin: Optional[float] = None,
+    isospin: Optional[float] = None,
+    strangeness: Optional[float] = None,
+    charmness: Optional[float] = None,
+    bottomness: Optional[float] = None,
+    topness: Optional[float] = None,
+    baryon_number: Optional[float] = None,
+    electron_lepton_number: Optional[float] = None,
+    muon_lepton_number: Optional[float] = None,
+    tau_lepton_number: Optional[float] = None,
+    parity: Optional[float] = None,
+    c_parity: Optional[float] = None,
+    g_parity: Optional[float] = None,
+) -> Particle:
+    if state:
+        new_state = state
+    else:
+        new_state = QuantumState[float](
+            spin=spin if spin else template_particle.state.spin,
+            charge=charge if charge else template_particle.state.charge,
+            strangeness=strangeness
+            if strangeness
+            else template_particle.state.strangeness,
+            charmness=charmness
+            if charmness
+            else template_particle.state.charmness,
+            bottomness=bottomness
+            if bottomness
+            else template_particle.state.bottomness,
+            topness=topness if topness else template_particle.state.topness,
+            baryon_number=baryon_number
+            if baryon_number
+            else template_particle.state.baryon_number,
+            electron_lepton_number=electron_lepton_number
+            if electron_lepton_number
+            else template_particle.state.electron_lepton_number,
+            muon_lepton_number=muon_lepton_number
+            if muon_lepton_number
+            else template_particle.state.muon_lepton_number,
+            tau_lepton_number=tau_lepton_number
+            if tau_lepton_number
+            else template_particle.state.tau_lepton_number,
+            isospin=isospin if isospin else template_particle.state.isospin,
+            parity=parity if parity else template_particle.state.parity,
+            c_parity=c_parity
+            if c_parity
+            else template_particle.state.c_parity,
+            g_parity=g_parity
+            if g_parity
+            else template_particle.state.g_parity,
+        )
+    new_particle = Particle(
+        name=name if name else template_particle.name,
+        pid=pid if pid else template_particle.pid,
+        mass=mass if mass else template_particle.mass,
+        width=width if width else template_particle.width,
+        state=new_state,
+    )
+    return new_particle
+
+
+def create_antiparticle(
+    template_particle: Particle, new_name: str = None
+) -> Particle:
+    isospin = None
+    if template_particle.state.isospin:
+        isospin = -template_particle.state.isospin
+    parity = None
+    if template_particle.state.parity:
+        if template_particle.state.spin.is_integer():
+            parity = template_particle.state.parity
+        else:
+            parity = -template_particle.state.parity
+    new_particle = create_particle(
+        template_particle,
+        name=new_name if new_name else "anti-" + template_particle.name,
+        pid=-template_particle.pid,
+        mass=template_particle.mass,
+        width=template_particle.width,
+        charge=-template_particle.state.charge,
+        strangeness=-template_particle.state.strangeness,
+        charmness=-template_particle.state.charmness,
+        bottomness=-template_particle.state.bottomness,
+        topness=-template_particle.state.topness,
+        baryon_number=-template_particle.state.baryon_number,
+        electron_lepton_number=-template_particle.state.electron_lepton_number,
+        muon_lepton_number=-template_particle.state.muon_lepton_number,
+        tau_lepton_number=-template_particle.state.tau_lepton_number,
+        isospin=isospin,
+        parity=parity,
+        c_parity=template_particle.state.c_parity,
+        g_parity=template_particle.state.g_parity,
+    )
+    return new_particle
