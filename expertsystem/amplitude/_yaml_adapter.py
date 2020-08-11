@@ -162,30 +162,6 @@ def gen_dict_extract(
                     yield result
 
 
-def _to_scalar(
-    definition: Dict[str, str], key: str = "Value"
-) -> Union[float, int]:
-    value = _downgrade_float(float(definition[key]))
-    return value
-
-
-def _downgrade_float(value: float) -> Union[float, int]:
-    if value.is_integer():
-        return int(value)
-    return value
-
-
-def _to_isospin(definition: Dict[str, Any]) -> Union[float, Dict[str, float]]:
-    """Isospin is 'stable', so always needs a projection."""
-    value = _to_scalar(definition, "Value")
-    if value == 0:
-        return value
-    return {
-        "Value": value,
-        "Projection": _to_scalar(definition, "Projection"),
-    }
-
-
 def _to_state_list(
     definition: Dict[str, Any], key: str
 ) -> List[Dict[str, Union[str, int]]]:

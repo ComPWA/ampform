@@ -71,9 +71,8 @@ Intensity:
         Amplitudes:
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_0+gamma_-1;f2(1270)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par1
-              Phase: *par2
+            Magnitude: *par1
+            Phase: *par2
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -108,9 +107,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_0+gamma_-1;f2(1950)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par3
-              Phase: *par4
+            Magnitude: *par3
+            Phase: *par4
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -145,9 +143,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_-1+gamma_-1;f2(1270)_-1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par5
-              Phase: *par6
+            Magnitude: *par5
+            Phase: *par6
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -182,9 +179,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_-1+gamma_-1;f2(1950)_-1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par7
-              Phase: *par8
+            Magnitude: *par7
+            Phase: *par8
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -219,9 +215,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_-2+gamma_-1;f2(1270)_-2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par9
-              Phase: *par10
+            Magnitude: *par9
+            Phase: *par10
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -256,9 +251,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_-2+gamma_-1;f2(1950)_-2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par11
-              Phase: *par12
+            Magnitude: *par11
+            Phase: *par12
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -293,9 +287,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par13
-              Phase: *par14
+            Magnitude: *par13
+            Phase: *par14
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -330,9 +323,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par15
-              Phase: *par16
+            Magnitude: *par15
+            Phase: *par16
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -370,9 +362,8 @@ Intensity:
         Amplitudes:
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_2+gamma_1;f2(1270)_2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par9
-              Phase: *par10
+            Magnitude: *par9
+            Phase: *par10
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -407,9 +398,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_2+gamma_1;f2(1950)_2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par11
-              Phase: *par12
+            Magnitude: *par11
+            Phase: *par12
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -444,9 +434,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_1+gamma_1;f2(1270)_1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par5
-              Phase: *par6
+            Magnitude: *par5
+            Phase: *par6
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -481,9 +470,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_1+gamma_1;f2(1950)_1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par7
-              Phase: *par8
+            Magnitude: *par7
+            Phase: *par8
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -518,9 +506,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_0+gamma_1;f2(1270)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par1
-              Phase: *par2
+            Magnitude: *par1
+            Phase: *par2
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -555,9 +542,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_0+gamma_1;f2(1950)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par3
-              Phase: *par4
+            Magnitude: *par3
+            Phase: *par4
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -592,9 +578,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par13
-              Phase: *par14
+            Magnitude: *par13
+            Phase: *par14
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -629,9 +614,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par15
-              Phase: *par16
+            Magnitude: *par15
+            Phase: *par16
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -669,9 +653,8 @@ Intensity:
         Amplitudes:
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_0+gamma_-1;f2(1270)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par1
-              Phase: *par2
+            Magnitude: *par1
+            Phase: *par2
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -706,9 +689,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_0+gamma_-1;f2(1950)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par3
-              Phase: *par4
+            Magnitude: *par3
+            Phase: *par4
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -743,9 +725,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_-1+gamma_-1;f2(1270)_-1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par5
-              Phase: *par6
+            Magnitude: *par5
+            Phase: *par6
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -780,9 +761,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_-1+gamma_-1;f2(1950)_-1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par7
-              Phase: *par8
+            Magnitude: *par7
+            Phase: *par8
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -817,9 +797,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_-2+gamma_-1;f2(1270)_-2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par9
-              Phase: *par10
+            Magnitude: *par9
+            Phase: *par10
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -854,9 +833,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_-2+gamma_-1;f2(1950)_-2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par11
-              Phase: *par12
+            Magnitude: *par11
+            Phase: *par12
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -891,9 +869,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par13
-              Phase: *par14
+            Magnitude: *par13
+            Phase: *par14
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -928,9 +905,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par15
-              Phase: *par16
+            Magnitude: *par15
+            Phase: *par16
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -968,9 +944,8 @@ Intensity:
         Amplitudes:
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_2+gamma_1;f2(1270)_2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par9
-              Phase: *par10
+            Magnitude: *par9
+            Phase: *par10
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1005,9 +980,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_2+gamma_1;f2(1950)_2_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par11
-              Phase: *par12
+            Magnitude: *par11
+            Phase: *par12
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1042,9 +1016,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_1+gamma_1;f2(1270)_1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par5
-              Phase: *par6
+            Magnitude: *par5
+            Phase: *par6
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1079,9 +1052,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_1+gamma_1;f2(1950)_1_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par7
-              Phase: *par8
+            Magnitude: *par7
+            Phase: *par8
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1116,9 +1088,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1270)_0+gamma_1;f2(1270)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par1
-              Phase: *par2
+            Magnitude: *par1
+            Phase: *par2
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1153,9 +1124,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f2(1950)_0+gamma_1;f2(1950)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par3
-              Phase: *par4
+            Magnitude: *par3
+            Phase: *par4
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1190,9 +1160,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par13
-              Phase: *par14
+            Magnitude: *par13
+            Phase: *par14
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:
@@ -1227,9 +1196,8 @@ Intensity:
                     RecoilFinalState: 2
           - Class: CoefficientAmplitude
             Component: J/psi_1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;
-            Parameters:
-              Magnitude: *par15
-              Phase: *par16
+            Magnitude: *par15
+            Phase: *par16
             Amplitude:
               Class: SequentialAmplitude
               Amplitudes:

@@ -6,6 +6,7 @@ import pytest
 
 import yaml
 
+from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.ui import (
     InteractionTypes,
@@ -58,6 +59,9 @@ class TestHelicityAmplitudeGeneratorYAML:
     amplitude_generator = create_amplitude_generator()
     imported_dict = write_load_yaml()
     expected_dict = load_expected_recipe()
+
+    def test_recipe_validation(self):
+        io.yaml.validation.amplitude_model(self.expected_dict)
 
     def test_not_implemented_writer(self):
         with pytest.raises(NotImplementedError):
