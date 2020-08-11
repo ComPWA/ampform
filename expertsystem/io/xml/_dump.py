@@ -87,7 +87,7 @@ def _to_quantum_number_list(
     for type_name, instance in conversion_map.items():
         if instance is None:
             continue
-        if type_name not in ["Charge", "Spin"] and instance == 0:
+        if type_name not in ["Charge", "Spin", "IsoSpin"] and instance == 0:
             continue
         definition = _qn_to_dict(instance, type_name)
         output.append(definition)

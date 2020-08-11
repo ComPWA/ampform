@@ -5,7 +5,6 @@ from typing import (
     Callable,
     Dict,
     List,
-    Optional,
     Tuple,
     Union,
     ValuesView,
@@ -73,7 +72,7 @@ def build_particle(definition: dict) -> Particle:
 
 def build_spin(definition: dict) -> Spin:
     magnitude = definition["Value"]
-    projection = definition.get("Projection", None)
+    projection = definition.get("Projection", 0.0)
     return Spin(magnitude, projection)
 
 
@@ -111,7 +110,7 @@ def _xml_to_quantum_number(definition: Dict[str, str]) -> Tuple[str, Any]:
         "Parity": _xml_to_parity,
         "CParity": _xml_to_parity,
         "GParity": _xml_to_parity,
-        "IsoSpin": _xml_to_isospin,
+        "IsoSpin": build_spin,
     }
     type_name = definition["Type"]
     for key, converter in conversion_map.items():
@@ -134,10 +133,3 @@ def _xml_to_int(definition: dict) -> int:
 
 def _xml_to_parity(definition: dict) -> Parity:
     return Parity(_xml_to_int(definition))
-
-
-def _xml_to_isospin(definition: dict) -> Optional[Spin]:
-    spin = build_spin(definition)
-    if spin.magnitude == 0.0:
-        return None
-    return spin

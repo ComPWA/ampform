@@ -102,6 +102,11 @@
         <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
     </Particle>
 
 
@@ -599,6 +604,11 @@
         <Type>CParity</Type>
         <Value>1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
         <FormFactor>
@@ -815,6 +825,11 @@
         <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
         <FormFactor>
@@ -866,6 +881,11 @@
         <Class>Int</Class>
         <Type>GParity</Type>
         <Value>1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
@@ -919,6 +939,11 @@
         <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
         <FormFactor>
@@ -971,6 +996,11 @@
         <Type>GParity</Type>
         <Value>1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
         <FormFactor>
@@ -1022,6 +1052,11 @@
         <Class>Int</Class>
         <Type>GParity</Type>
         <Value>1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
@@ -1441,6 +1476,11 @@
         <Class>Int</Class>
         <Type>GParity</Type>
         <Value>-1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
@@ -2135,6 +2175,11 @@
         <Type>GParity</Type>
         <Value>-1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
         <FormFactor>
@@ -2181,6 +2226,11 @@
         <Class>Int</Class>
         <Type>CParity</Type>
         <Value>-1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
@@ -2233,6 +2283,11 @@
         <Class>Int</Class>
         <Type>GParity</Type>
         <Value>1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
       <DecayInfo>
         <Type>relativisticBreitWigner</Type>
@@ -2677,6 +2732,11 @@
         <Type>BaryonNumber</Type>
         <Value>1</Value>
       </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
+      </QuantumNumber>
     </Particle>
     <Particle>
       <Name>lambdabar</Name>
@@ -2710,6 +2770,11 @@
         <Class>Int</Class>
         <Type>BaryonNumber</Type>
         <Value>-1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.0</Value>
       </QuantumNumber>
     </Particle>
     <Particle>

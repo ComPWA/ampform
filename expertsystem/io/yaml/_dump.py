@@ -41,8 +41,8 @@ def from_particle(particle: Particle) -> dict:
 
 def _to_quantum_number_dict(
     particle: Particle,
-) -> Dict[str, Union[float, int]]:
-    output_dict = {
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    output_dict: Dict[str, Union[float, int, Dict[str, float]]] = {
         "Spin": _attempt_to_int(particle.state.spin),
         "Charge": int(particle.state.charge),
     }
@@ -60,7 +60,6 @@ def _to_quantum_number_dict(
         ("ElectronLN", particle.state.electron_lepton_number, int),
         ("MuonLN", particle.state.muon_lepton_number, int),
         ("TauLN", particle.state.tau_lepton_number, int),
-        ("IsoSpin", particle.state.isospin, _from_spin),
     ]
     for key, value, converter in optional_qn:
         if value in [0, None]:
@@ -68,18 +67,18 @@ def _to_quantum_number_dict(
         output_dict[key] = converter(  # type: ignore
             value
         )  # pylint: disable=not-callable
+    if particle.state.isospin is not None:
+        output_dict["IsoSpin"] = _from_spin(particle.state.isospin)
     return output_dict
 
 
 def _from_spin(instance: Spin) -> Union[Dict[str, Union[float, int]], int]:
     if instance.magnitude == 0:
         return 0
-    output = {
+    return {
         "Value": _attempt_to_int(instance.magnitude),
+        "Projection": _attempt_to_int(instance.projection),
     }
-    if instance.projection is not None:
-        output["Projection"] = _attempt_to_int(instance.projection)
-    return output
 
 
 def _attempt_to_int(value: Union[Spin, float]) -> Union[float, int]:

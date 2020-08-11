@@ -10,6 +10,7 @@ from expertsystem.data import (
     Particle,
     ParticleCollection,
     QuantumState,
+    Spin,
 )
 from expertsystem.state import particle
 
@@ -26,6 +27,7 @@ J_PSI = Particle(
     state=QuantumState[float](
         spin=1,
         charge=0,
+        isospin=Spin(0, 0),
         parity=Parity(-1),
         c_parity=Parity(-1),
         g_parity=Parity(-1),
@@ -65,7 +67,8 @@ def test_write_particle_collection(input_file):
     output_file = f"exported_particle_list.{file_extension}"
     io.write(particles_imported, output_file)
     particles_exported = io.load_particle_collection(output_file)
-    assert particles_imported == particles_exported
+    for name in particles_imported:
+        assert particles_imported[name] == particles_exported[name]
 
 
 def test_yaml_to_xml():
@@ -84,7 +87,8 @@ def test_yaml_to_xml():
 def test_equivalence_xml_yaml_particle_list():
     xml_particle_collection = io.load_particle_collection(_XML_FILE)
     yml_particle_collection = io.load_particle_collection(_YAML_FILE)
-    assert xml_particle_collection == yml_particle_collection
+    for name in xml_particle_collection:
+        assert xml_particle_collection[name] == yml_particle_collection[name]
 
 
 class TestInternalParticleDict:

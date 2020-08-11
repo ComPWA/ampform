@@ -85,7 +85,4 @@ def _yaml_to_isospin(
 ) -> Optional[Spin]:
     if definition is None:
         return None
-    spin = build_spin(definition)
-    if spin.magnitude == 0:
-        return None
-    return spin
+    return build_spin(definition)

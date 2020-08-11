@@ -1241,6 +1241,7 @@ ParticleList:
       Parity: -1
       CParity: -1
       GParity: -1
+      IsoSpin: 0
   f0(1500):
     PID: 9030221
     Mass: 1.505
@@ -1251,6 +1252,7 @@ ParticleList:
       Parity: 1
       CParity: 1
       GParity: 1
+      IsoSpin: 0
   f0(980):
     PID: 9010221
     Mass: 0.994
@@ -1261,6 +1263,7 @@ ParticleList:
       Parity: 1
       CParity: 1
       GParity: 1
+      IsoSpin: 0
   f2(1270):
     PID: 225
     Mass: 1.2751
@@ -1271,6 +1274,7 @@ ParticleList:
       Parity: 1
       CParity: 1
       GParity: 1
+      IsoSpin: 0
   f2(1950):
     PID: 9050225
     Mass: 1.944
@@ -1281,6 +1285,7 @@ ParticleList:
       Parity: 1
       CParity: 1
       GParity: 1
+      IsoSpin: 0
   gamma:
     PID: 22
     Mass: 0.0
