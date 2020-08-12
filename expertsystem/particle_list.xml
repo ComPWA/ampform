@@ -1574,42 +1574,12 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>K_S0</Name>
-      <Pid>310</Pid>
+      <Name>K0</Name>
+      <Pid>311</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_K_S0</Name>
-        <Value>0.497614</Value>
-      </Parameter>
-      <QuantumNumber>
-        <Class>Spin</Class>
-        <Type>Spin</Type>
-        <Value>0</Value>
-      </QuantumNumber>
-      <QuantumNumber>
-        <Class>Int</Class>
-        <Type>Charge</Type>
-        <Value>0</Value>
-      </QuantumNumber>
-      <QuantumNumber>
-        <Class>Int</Class>
-        <Type>Parity</Type>
-        <Value>-1</Value>
-      </QuantumNumber>
-      <QuantumNumber>
-        <Class>Spin</Class>
-        <Type>IsoSpin</Type>
-        <Value>0.5</Value>
-        <Projection>0.0</Projection>
-      </QuantumNumber>
-    </Particle>
-    <Particle>
-      <Name>K_L0</Name>
-      <Pid>130</Pid>
-      <Parameter>
-        <Type>Mass</Type>
-        <Name>Mass_K_L0</Name>
-        <Value>0.497614</Value>
+        <Name>Mass_K0</Name>
+        <Value>0.497611</Value>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -1631,6 +1601,46 @@
         <Type>IsoSpin</Type>
         <Value>0.5</Value>
         <Projection>-0.5</Projection>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Int</Class>
+        <Type>Strangeness</Type>
+        <Value>1</Value>
+      </QuantumNumber>
+    </Particle>
+    <Particle>
+      <Name>K0bar</Name>
+      <Pid>-311</Pid>
+      <Parameter>
+        <Type>Mass</Type>
+        <Name>Mass_K0bar</Name>
+        <Value>0.497611</Value>
+      </Parameter>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>Spin</Type>
+        <Value>0</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Int</Class>
+        <Type>Charge</Type>
+        <Value>0</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Int</Class>
+        <Type>Parity</Type>
+        <Value>-1</Value>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Spin</Class>
+        <Type>IsoSpin</Type>
+        <Value>0.5</Value>
+        <Projection>0.5</Projection>
+      </QuantumNumber>
+      <QuantumNumber>
+        <Class>Int</Class>
+        <Type>Strangeness</Type>
+        <Value>-1</Value>
       </QuantumNumber>
     </Particle>
 

@@ -1,5 +1,5 @@
 """ sample script for the testing purposes using the decay
-    D0 -> K_S0 K+ K-
+    D0 -> K0bar K+ K-
 """
 
 import logging
@@ -12,7 +12,7 @@ def test_script():
     logging.getLogger().setLevel(logging.INFO)
     # initialize the graph edges (initial and final state)
     initial_state = [("D0", [0])]
-    final_state = [("K_S0", [0]), ("K+", [0]), ("K-", [0])]
+    final_state = [("K0bar", [0]), ("K+", [0]), ("K-", [0])]
 
     stm = StateTransitionManager(
         initial_state, final_state, ["a0", "phi", "a2(1320)-"]

@@ -36,7 +36,7 @@ from expertsystem.ui import (
             (["e-", "p"], ["ve", "pi0"]),
             ["BaryonNumberConservation", "SpinConservation"],
         ),
-        ((["p", "p"], ["sigma+", "n", "K_S0", "pi+", "pi0"]), []),
+        ((["p", "p"], ["sigma+", "n", "K0bar", "pi+", "pi0"]), []),
         (
             (["p"], ["e+", "gamma"]),
             ["ElectronLNConservation", "BaryonNumberConservation"],
@@ -49,7 +49,7 @@ from expertsystem.ui import (
         ((["sigma0"], ["lambda", "gamma"]), []),
         ((["Xi-"], ["lambda", "pi-"]), []),
         ((["Xi0"], ["p", "pi-"]), []),
-        ((["pi-", "p"], ["lambda", "K_S0"]), []),
+        ((["pi-", "p"], ["lambda", "K0bar"]), []),
         ((["pi0"], ["gamma", "gamma"]), []),
         ((["pi0"], ["gamma", "gamma", "gamma"]), []),
         ((["sigma-"], ["n", "e-", "vebar"]), []),
@@ -57,7 +57,7 @@ from expertsystem.ui import (
         ((["rho(770)0"], ["gamma", "gamma"]), []),
         ((["J/psi"], ["pi0", "eta"]), []),
         ((["J/psi"], ["rho(770)0", "rho(770)0"]), []),
-        ((["K_S0"], ["pi+", "pi-", "pi0"]), []),
+        ((["K0bar"], ["pi+", "pi-", "pi0"]), []),
     ],
 )
 def test_general_reaction(test_input, expected):
