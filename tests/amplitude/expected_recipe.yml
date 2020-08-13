@@ -1244,8 +1244,8 @@ ParticleList:
       IsoSpin: 0
   f0(1500):
     PID: 9030221
-    Mass: 1.505
-    Width: 0.109
+    Mass: 1.506
+    Width: 0.112
     QuantumNumbers:
       Spin: 0
       Charge: 0
@@ -1255,8 +1255,8 @@ ParticleList:
       IsoSpin: 0
   f0(980):
     PID: 9010221
-    Mass: 0.994
-    Width: 0.070
+    Mass: 0.99
+    Width: 0.06
     QuantumNumbers:
       Spin: 0
       Charge: 0
@@ -1266,8 +1266,8 @@ ParticleList:
       IsoSpin: 0
   f2(1270):
     PID: 225
-    Mass: 1.2751
-    Width: 0.185
+    Mass: 1.2755
+    Width: 0.1867
     QuantumNumbers:
       Spin: 2
       Charge: 0
@@ -1277,8 +1277,8 @@ ParticleList:
       IsoSpin: 0
   f2(1950):
     PID: 9050225
-    Mass: 1.944
-    Width: 0.472
+    Mass: 1.936
+    Width: 0.464
     QuantumNumbers:
       Spin: 2
       Charge: 0
@@ -1296,7 +1296,8 @@ ParticleList:
       CParity: -1
   pi0:
     PID: 111
-    Mass: 0.1349766
+    Mass: 0.134977
+    Width: 7.73e-09
     QuantumNumbers:
       Spin: 0
       Charge: 0

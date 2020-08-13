@@ -87,7 +87,7 @@ class TestHelicityAmplitudeGeneratorYAML:
         assert gamma_qns["CParity"] == -1
 
         f0_980 = particle_list["f0(980)"]
-        assert f0_980["Width"] == 0.07
+        assert f0_980["Width"] == 0.06
 
         pi0_qns = particle_list["pi0"]["QuantumNumbers"]
         assert pi0_qns["IsoSpin"]["Value"] == 1

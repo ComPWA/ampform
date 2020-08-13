@@ -51,7 +51,7 @@ def test_not_implemented_errors():
 @pytest.mark.parametrize("input_file", [_XML_FILE, _YAML_FILE])
 def test_load_particle_collection(input_file):
     particles = io.load_particle_collection(input_file)
-    assert len(particles) == 69
+    assert len(particles) == 68
     assert "J/psi" in particles
     j_psi = particles["J/psi"]
     assert j_psi.pid == J_PSI.pid
@@ -103,15 +103,13 @@ class TestInternalParticleDict:
     def test_find():
         f2_1950 = particle.DATABASE.find(9050225)
         assert f2_1950.name == "f2(1950)"
-        assert f2_1950.mass == 1.944
+        assert f2_1950.mass == 1.936
         phi = particle.DATABASE.find("phi(1020)")
         assert phi.pid == 333
-        assert phi.width == 0.004266
+        assert phi.width == 0.004249
 
     @staticmethod
-    @pytest.mark.parametrize(
-        "search_term", [666, 2112, "non-existing"]  # 2112: nbar == n
-    )
+    @pytest.mark.parametrize("search_term", [666, "non-existing"])
     def test_find_fail(search_term):
         with pytest.raises(LookupError):
             particle.DATABASE.find(search_term)
@@ -121,12 +119,32 @@ class TestInternalParticleDict:
         search_result = particle.DATABASE.find_subset("f0")
         f0_1500_from_subset = search_result["f0(1500)"]
         assert len(search_result) == 2
-        assert f0_1500_from_subset.mass == 1.505
+        assert f0_1500_from_subset.mass == 1.506
         assert f0_1500_from_subset is particle.DATABASE["f0(1500)"]
         assert f0_1500_from_subset is not particle.DATABASE["f0(980)"]
+
+        # test iadd
+        particle.DATABASE += search_result
 
         search_result = particle.DATABASE.find_subset(22)
         gamma_from_subset = search_result["gamma"]
         assert len(search_result) == 1
         assert gamma_from_subset.pid == 22
         assert gamma_from_subset is particle.DATABASE["gamma"]
+
+    @staticmethod
+    def test_exceptions():
+        new_particle = particle.create_particle(
+            template_particle=particle.DATABASE["gamma"], name="gamma_new"
+        )
+        particle.DATABASE += new_particle
+        with pytest.raises(LookupError):
+            particle.DATABASE.find_subset(22)
+        with pytest.raises(NotImplementedError):
+            particle.DATABASE.find_subset(3.14)  # type: ignore
+        with pytest.raises(NotImplementedError):
+            particle.DATABASE.find(3.14)  # type: ignore
+        with pytest.raises(NotImplementedError):
+            particle.DATABASE += 3.14  # type: ignore
+        with pytest.raises(NotImplementedError):
+            assert new_particle == "gamma"

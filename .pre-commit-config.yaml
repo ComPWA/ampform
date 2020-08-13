@@ -21,6 +21,7 @@ repos:
         exclude: cspell.json
       - id: mixed-line-ending
       - id: name-tests-test
+        name: Tests should start with test_
         args: ["--django"]
       - id: trailing-whitespace
 

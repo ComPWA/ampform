@@ -16,20 +16,14 @@ load_default_particle_list()
 def test_create_particle(particle_name):
     template_particle = DATABASE[particle_name]
     new_particle = create_particle(
-        template_particle,
-        name="testparticle",
-        pid=89,
-        charge=12,
-        spin=3 / 2,
-        muon_lepton_number=4,
-        width=0.5,
+        template_particle, name="testparticle", pid=89, mass=1.5, width=0.5,
     )
 
     assert new_particle.name == "testparticle"
     assert new_particle.pid == 89
-    assert new_particle.state.charge == 12
-    assert new_particle.state.spin == 1.5
-    assert new_particle.state.muon_lepton_number == 4
+    assert new_particle.state.charge == template_particle.state.charge
+    assert new_particle.state.spin == template_particle.state.spin
+    assert new_particle.mass == 1.5
     assert new_particle.width == 0.5
     assert (
         new_particle.state.baryon_number
@@ -38,7 +32,6 @@ def test_create_particle(particle_name):
     assert (
         new_particle.state.strangeness == template_particle.state.strangeness
     )
-    assert new_particle.mass == template_particle.mass
 
 
 @pytest.mark.parametrize(
