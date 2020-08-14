@@ -162,7 +162,7 @@ For more thorough testing, navigate back to the you can run the unit tests:
 .. code-block:: shell
 
   pip install -e .[test]  # install dependencies for testing
-  pytest -m "not slow"
+  pytest tests/unit
 
 After that, it's worth having a look at the :doc:`contribute page
 <contribute>`!

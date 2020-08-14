@@ -9,7 +9,7 @@
 !environment.yml
 !examples/additional_particles.yml
 !expertsystem/particle_list.*
-!tests/amplitude/expected_recipe.yml
+!tests/**/expected_recipe.yml
 
 # Build output
 *.egg-info/
