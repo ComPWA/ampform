@@ -7,14 +7,20 @@ from expertsystem.state.particle import (
 )
 from expertsystem.ui import load_default_particle_list
 
-load_default_particle_list()
+
+@pytest.fixture(scope="module")
+def particle_database():
+    load_default_particle_list()
+    return DATABASE
 
 
 @pytest.mark.parametrize(
     "particle_name", ["p", "phi(1020)", "W-", "gamma"],
 )
-def test_create_particle(particle_name):
-    template_particle = DATABASE[particle_name]
+def test_create_particle(
+    particle_database, particle_name  # pylint: disable=W0621
+):
+    template_particle = particle_database[particle_name]
     new_particle = create_particle(
         template_particle, name="testparticle", pid=89, mass=1.5, width=0.5,
     )
@@ -38,10 +44,14 @@ def test_create_particle(particle_name):
     "particle_name, anti_particle_name",
     [("D+", "D-"), ("p", "pbar"), ("mu+", "mu-"), ("W+", "W-")],
 )
-def test_create_antiparticle(particle_name, anti_particle_name):
-    template_particle = DATABASE[particle_name]
+def test_create_antiparticle(
+    particle_database,  # pylint: disable=W0621
+    particle_name,
+    anti_particle_name,
+):
+    template_particle = particle_database[particle_name]
     anti_particle = create_antiparticle(template_particle)
-    comparison_particle = DATABASE[anti_particle_name]
+    comparison_particle = particle_database[anti_particle_name]
 
     assert anti_particle.pid == comparison_particle.pid
     assert anti_particle.mass == comparison_particle.mass

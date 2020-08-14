@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import json
 import logging
 from os.path import dirname, realpath
@@ -18,7 +19,8 @@ logging.basicConfig(level=logging.ERROR)
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
-def create_amplitude_generator():
+@pytest.fixture(scope="module")
+def amplitude_generator():
     initial_state = [("J/psi", [-1, 1])]
     final_state = [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])]
 
@@ -29,25 +31,26 @@ def create_amplitude_generator():
     graph_interaction_settings_groups = stm.prepare_graphs()
     solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
 
-    amplitude_generator = HelicityAmplitudeGenerator()
-    amplitude_generator.generate(solutions)
-    return amplitude_generator
+    hel_amp_gen = HelicityAmplitudeGenerator()
+    hel_amp_gen.generate(solutions)
+    return hel_amp_gen
 
 
-def write_load_yaml() -> dict:
-    amplitude_generator = create_amplitude_generator()
+@pytest.fixture(scope="module")
+def imported_dict(amplitude_generator: HelicityAmplitudeGenerator) -> dict:
     output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
     amplitude_generator.write_to_file(output_filename)
     with open(output_filename, "rb") as input_file:
-        imported_dict = yaml.load(input_file, Loader=yaml.FullLoader)
-    return imported_dict
+        loaded_dict = yaml.load(input_file, Loader=yaml.FullLoader)
+    return loaded_dict
 
 
-def load_expected_recipe() -> dict:
+@pytest.fixture(scope="module")
+def expected_dict() -> dict:
     expected_recipe_file = f"{SCRIPT_PATH}/expected_recipe.yml"
     with open(expected_recipe_file, "rb") as input_file:
-        expected_dict = yaml.load(input_file, Loader=yaml.FullLoader)
-    return expected_dict
+        expected_recipe_dict = yaml.load(input_file, Loader=yaml.FullLoader)
+    return expected_recipe_dict
 
 
 def equalize_dict(input_dict):
@@ -56,27 +59,25 @@ def equalize_dict(input_dict):
 
 
 class TestHelicityAmplitudeGeneratorYAML:
-    amplitude_generator = create_amplitude_generator()
-    imported_dict = write_load_yaml()
-    expected_dict = load_expected_recipe()
+    @staticmethod
+    def test_recipe_validation(expected_dict):
+        io.yaml.validation.amplitude_model(expected_dict)
 
-    def test_recipe_validation(self):
-        io.yaml.validation.amplitude_model(self.expected_dict)
-
-    def test_not_implemented_writer(self):
+    @staticmethod
+    def test_not_implemented_writer(amplitude_generator):
         with pytest.raises(NotImplementedError):
-            self.amplitude_generator.write_to_file("JPsiToGammaPi0Pi0.csv")
+            amplitude_generator.write_to_file("JPsiToGammaPi0Pi0.csv")
 
-    def test_create_recipe_dict(self):
+    @staticmethod
+    def test_create_recipe_dict(amplitude_generator):
         recipe = (
-            self.amplitude_generator._create_recipe_dict()  # pylint: disable=protected-access
+            amplitude_generator._create_recipe_dict()  # pylint: disable=protected-access
         )
         assert len(recipe) == 3
 
-    def test_particle_section(self):
-        particle_list = self.imported_dict.get(
-            "ParticleList", self.imported_dict
-        )
+    @staticmethod
+    def test_particle_section(imported_dict):
+        particle_list = imported_dict.get("ParticleList", imported_dict)
         gamma = particle_list["gamma"]
         assert gamma["PID"] == 22
         assert gamma["Mass"] == 0.0
@@ -93,8 +94,9 @@ class TestHelicityAmplitudeGeneratorYAML:
         assert pi0_qns["IsoSpin"]["Value"] == 1
         assert pi0_qns["IsoSpin"]["Projection"] == 0
 
-    def test_kinematics_section(self):
-        kinematics = self.imported_dict["Kinematics"]
+    @staticmethod
+    def test_kinematics_section(imported_dict):
+        kinematics = imported_dict["Kinematics"]
         initial_state = kinematics["InitialState"]
         final_state = kinematics["FinalState"]
         assert kinematics["Type"] == "Helicity"
@@ -102,15 +104,17 @@ class TestHelicityAmplitudeGeneratorYAML:
         assert initial_state[0]["Particle"] == "J/psi"
         assert len(final_state) == 3
 
-    def test_parameter_section(self):
-        parameter_list = self.imported_dict["Parameters"]
+    @staticmethod
+    def test_parameter_section(imported_dict):
+        parameter_list = imported_dict["Parameters"]
         assert len(parameter_list) == 17
         for parameter in parameter_list:
             assert "Name" in parameter
             assert "Value" in parameter
 
-    def test_dynamics_section(self):
-        dynamics = self.imported_dict["Dynamics"]
+    @staticmethod
+    def test_dynamics_section(imported_dict):
+        dynamics = imported_dict["Dynamics"]
         assert len(dynamics) == 1
 
         j_psi = dynamics["J/psi"]
@@ -128,8 +132,9 @@ class TestHelicityAmplitudeGeneratorYAML:
                 "Value": 1.0,
             }
 
-    def test_intensity_section(self):
-        intensity = self.imported_dict["Intensity"]
+    @staticmethod
+    def test_intensity_section(imported_dict):
+        intensity = imported_dict["Intensity"]
         assert intensity["Class"] == "StrengthIntensity"
         intensity = intensity["Intensity"]
         assert intensity["Class"] == "NormalizedIntensity"
@@ -141,9 +146,10 @@ class TestHelicityAmplitudeGeneratorYAML:
     @pytest.mark.parametrize(
         "section", ["ParticleList", "Kinematics"],
     )
-    def test_expected_recipe_shape(self, section):
-        expected_section = equalize_dict(self.expected_dict[section])
-        imported_section = equalize_dict(self.imported_dict[section])
+    @staticmethod
+    def test_expected_recipe_shape(imported_dict, expected_dict, section):
+        expected_section = equalize_dict(expected_dict[section])
+        imported_section = equalize_dict(imported_dict[section])
         if isinstance(expected_section, dict):
             assert expected_section.keys() == imported_section.keys()
             imported_items = list(imported_section.values())
