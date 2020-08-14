@@ -487,7 +487,7 @@ def check_if_spin_projections_set(
     if isinstance(state, str):
         particle_name = state
         particle = DATABASE[state]
-        spin_projections = arange(
+        spin_projections = arange(  # type: ignore
             -particle.state.spin, particle.state.spin + 1, 1.0
         ).tolist()
         if particle.mass == 0.0:
