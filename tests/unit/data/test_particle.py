@@ -1,5 +1,7 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
+from expertsystem import ui
 from expertsystem.data import (
     Parity,
     Particle,
@@ -7,7 +9,17 @@ from expertsystem.data import (
     QuantumState,
     Spin,
     compute_gellmann_nishijima,
+    create_antiparticle,
+    create_particle,
 )
+from expertsystem.state.particle import DATABASE
+
+
+@pytest.fixture(scope="module")
+def particle_database() -> ParticleCollection:
+    ui.load_default_particle_list()
+    return DATABASE
+
 
 J_PSI = Particle(
     name="J/psi(1S)",
@@ -61,6 +73,61 @@ def test_particle():
     assert J_PSI.mass == 3.0969
     assert J_PSI.width == 9.29e-05
     assert J_PSI.state.bottomness == 0
+
+
+@pytest.mark.parametrize(
+    "particle_name", ["p", "phi(1020)", "W-", "gamma"],
+)
+def test_create_particle(
+    particle_database, particle_name  # pylint: disable=W0621
+):
+    template_particle = particle_database[particle_name]
+    new_particle = create_particle(
+        template_particle, name="testparticle", pid=89, mass=1.5, width=0.5,
+    )
+
+    assert new_particle.name == "testparticle"
+    assert new_particle.pid == 89
+    assert new_particle.state.charge == template_particle.state.charge
+    assert new_particle.state.spin == template_particle.state.spin
+    assert new_particle.mass == 1.5
+    assert new_particle.width == 0.5
+    assert (
+        new_particle.state.baryon_number
+        == template_particle.state.baryon_number
+    )
+    assert (
+        new_particle.state.strangeness == template_particle.state.strangeness
+    )
+
+
+@pytest.mark.parametrize(
+    "particle_name, anti_particle_name",
+    [("D+", "D-"), ("mu+", "mu-"), ("W+", "W-")],
+)
+def test_create_antiparticle(
+    particle_database,  # pylint: disable=W0621
+    particle_name,
+    anti_particle_name,
+):
+    template_particle = particle_database[particle_name]
+    anti_particle = create_antiparticle(template_particle)
+    comparison_particle = particle_database[anti_particle_name]
+
+    assert anti_particle.pid == comparison_particle.pid
+    assert anti_particle.mass == comparison_particle.mass
+    assert anti_particle.width == comparison_particle.width
+    assert anti_particle.state == comparison_particle.state
+    assert anti_particle.name == "anti-" + particle_name
+
+
+def test_create_antiparticle_tilde(particle_database):
+    anti_particles = particle_database.find_subset("~")
+    assert len(anti_particles) == 9
+    for anti_particle in anti_particles.values():
+        particle_name = anti_particle.name.replace("~", "")
+        created_particle = create_antiparticle(anti_particle, particle_name)
+        assert created_particle == particle_database[particle_name]
 
 
 @pytest.mark.parametrize(

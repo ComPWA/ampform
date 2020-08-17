@@ -11,6 +11,7 @@ from expertsystem.data import (
     ParticleCollection,
     QuantumState,
     Spin,
+    create_particle,
 )
 from expertsystem.state import particle
 
@@ -134,7 +135,7 @@ class TestInternalParticleDict:
 
     @staticmethod
     def test_exceptions():
-        new_particle = particle.create_particle(
+        new_particle = create_particle(
             template_particle=particle.DATABASE["gamma"], name="gamma_new"
         )
         particle.DATABASE += new_particle
