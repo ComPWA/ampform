@@ -144,7 +144,7 @@ def test_intensity_section(imported_dict):
 
 
 @pytest.mark.parametrize(
-    "section", ["ParticleList", "Kinematics"],
+    "section", ["Dynamics", "Kinematics", "Parameters", "ParticleList"],
 )
 def test_expected_recipe_shape(imported_dict, expected_dict, section):
     expected_section = equalize_dict(expected_dict[section])
@@ -156,12 +156,6 @@ def test_expected_recipe_shape(imported_dict, expected_dict, section):
     else:
         expected_items = list(expected_section)
         imported_items = list(imported_section)
-    is_parameter_section = False
-    if section == "Parameters":
-        is_parameter_section = True
-        imported_items = imported_items[1:]
     assert len(imported_items) == len(expected_items)
     for imported, expected in zip(imported_items, expected_items):
-        if is_parameter_section:
-            imported["Name"] = imported["Name"].replace("_-1", "_1")
         assert imported == expected

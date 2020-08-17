@@ -16,16 +16,16 @@ Parameters:
     Type: Strength
     Value: 1
     Fix: true
-  - Name: &par2 Magnitude_J/psi_to_f0(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
+  - Name: &par2 Magnitude_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par3 Phase_J/psi_to_f0(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
+  - Name: &par3 Phase_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
-  - Name: &par4 Magnitude_J/psi_to_f0(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
+  - Name: &par4 Magnitude_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par5 Phase_J/psi_to_f0(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
+  - Name: &par5 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
 
@@ -39,10 +39,10 @@ Intensity:
       Class: IncoherentIntensity
       Intensities:
         - Class: CoherentIntensity
-          Component: coherent_J/psi_-1_to_gamma_-1+pi0_0+pi0_0
+          Component: coherent_J/psi(1S)_-1_to_gamma_-1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_-1_to_f(0)(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -79,7 +79,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_-1_to_f(0)(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -116,10 +116,10 @@ Intensity:
                       RecoilFinalState:
                         - 2
         - Class: CoherentIntensity
-          Component: coherent_J/psi_1_to_gamma_-1+pi0_0+pi0_0
+          Component: coherent_J/psi(1S)_1_to_gamma_-1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_1_to_f(0)(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -156,7 +156,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_1_to_f(0)(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -193,10 +193,10 @@ Intensity:
                       RecoilFinalState:
                         - 2
         - Class: CoherentIntensity
-          Component: coherent_J/psi_-1_to_gamma_1+pi0_0+pi0_0
+          Component: coherent_J/psi(1S)_-1_to_gamma_1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_-1_to_f(0)(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -233,7 +233,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_-1_to_f(0)(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -270,10 +270,10 @@ Intensity:
                       RecoilFinalState:
                         - 2
         - Class: CoherentIntensity
-          Component: coherent_J/psi_1_to_gamma_1+pi0_0+pi0_0
+          Component: coherent_J/psi(1S)_1_to_gamma_1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_1_to_f(0)(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -310,7 +310,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi(1S)_1_to_f(0)(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
