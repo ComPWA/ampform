@@ -1,4 +1,3 @@
-# cspell:ignore lambdabar, vebar, vmubar, vtau, vtaubar
 ParticleList:
   gamma:
     PID: 22
@@ -92,7 +91,7 @@ ParticleList:
       Parity: 1
       ElectronLN: 1
 
-  vebar:
+  ve~:
     PID: -12
     Mass: 0.0
     QuantumNumbers:
@@ -110,7 +109,7 @@ ParticleList:
       Parity: 1
       MuonLN: 1
 
-  vmubar:
+  vmu~:
     PID: -14
     Mass: 0.0
     QuantumNumbers:
@@ -128,7 +127,7 @@ ParticleList:
       Parity: 1
       TauLN: 1
 
-  vtaubar:
+  vtau~:
     PID: -16
     Mass: 0.0
     QuantumNumbers:
@@ -389,7 +388,7 @@ ParticleList:
       Strangeness: 1
       IsoSpin: { Value: 0.5, Projection: -0.5 }
 
-  K0bar:
+  K~0:
     PID: -311
     Mass: 0.497611
     QuantumNumbers:
@@ -432,7 +431,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: -0.5 }
       Charmness: 1
 
-  D0bar:
+  D~0:
     PID: -421
     Mass: 1.86483
     Width: 1.605E-12
@@ -454,7 +453,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: -0.5 }
       Charmness: 1
 
-  D*(2007)0bar:
+  D*(2007)~0:
     PID: -423
     Mass: 2.00685
     Width: 0.0021
@@ -543,7 +542,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: 0.5 }
       BaryonNumber: 1
 
-  pbar:
+  p~:
     PID: -2212
     Mass: 0.938272081
     QuantumNumbers:
@@ -563,7 +562,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: -0.5 }
       BaryonNumber: 1
 
-  nbar:
+  n~:
     PID: -2112
     Mass: 0.939565413
     QuantumNumbers:
@@ -651,7 +650,7 @@ ParticleList:
       BaryonNumber: 1
       Strangeness: -1
 
-  Lambdabar:
+  Lambda~:
     PID: -3122
     Mass: 1.115683
     Width: 2.501e-15

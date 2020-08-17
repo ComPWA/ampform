@@ -42,7 +42,7 @@ def test_create_particle(
 
 @pytest.mark.parametrize(
     "particle_name, anti_particle_name",
-    [("D+", "D-"), ("p", "pbar"), ("mu+", "mu-"), ("W+", "W-")],
+    [("D+", "D-"), ("mu+", "mu-"), ("W+", "W-")],
 )
 def test_create_antiparticle(
     particle_database,  # pylint: disable=W0621
@@ -58,3 +58,12 @@ def test_create_antiparticle(
     assert anti_particle.width == comparison_particle.width
     assert anti_particle.state == comparison_particle.state
     assert anti_particle.name == "anti-" + particle_name
+
+
+def test_create_antiparticle_tilde():
+    anti_particles = DATABASE.find_subset("~")
+    assert len(anti_particles) == 9
+    for anti_particle in anti_particles.values():
+        particle_name = anti_particle.name.replace("~", "")
+        created_particle = create_antiparticle(anti_particle, particle_name)
+        assert created_particle == DATABASE[particle_name]

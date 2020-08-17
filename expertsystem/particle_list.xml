@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- cspell:ignore antilambda, epem, jpsi, lambdabar, vebar, vmubar, vtau, vtaubar -->
 <root>
   <ParticleList>
     <Particle>
@@ -359,11 +358,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vebar</Name>
+      <Name>ve~</Name>
       <Pid>-12</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_vebar</Name>
+        <Name>Mass_ve~</Name>
         <Value>0.0</Value>
       </Parameter>
       <QuantumNumber>
@@ -417,11 +416,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vmubar</Name>
+      <Name>vmu~</Name>
       <Pid>-14</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_vmubar</Name>
+        <Name>Mass_vmu~</Name>
         <Value>0.0</Value>
       </Parameter>
       <QuantumNumber>
@@ -475,11 +474,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vtaubar</Name>
+      <Name>vtau~</Name>
       <Pid>-16</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_vtaubar</Name>
+        <Name>Mass_vtau~</Name>
         <Value>0.0</Value>
       </Parameter>
       <QuantumNumber>
@@ -1701,11 +1700,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>K0bar</Name>
+      <Name>K~0</Name>
       <Pid>-311</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_K0bar</Name>
+        <Name>Mass_K~0</Name>
         <Value>0.497611</Value>
       </Parameter>
       <QuantumNumber>
@@ -1897,11 +1896,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>D0bar</Name>
+      <Name>D~0</Name>
       <Pid>-421</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_D0bar</Name>
+        <Name>Mass_D~0</Name>
         <Value>1.86483</Value>
       </Parameter>
       <QuantumNumber>
@@ -1937,7 +1936,7 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_D0bar</Name>
+          <Name>Width_D~0</Name>
           <Value>1.605E-12</Value>
         </Parameter>
         <Parameter>
@@ -2003,11 +2002,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>D*(2007)0bar</Name>
+      <Name>D*(2007)~0</Name>
       <Pid>-423</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_D*(2007)0bar</Name>
+        <Name>Mass_D*(2007)~0</Name>
         <Value>2.00685</Value>
       </Parameter>
       <QuantumNumber>
@@ -2043,12 +2042,12 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_D*(2007)0bar</Name>
+          <Name>Width_D*(2007)~0</Name>
           <Value>0.0021</Value>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_D*(2007)0bar</Name>
+          <Name>Radius_D*(2007)~0</Name>
           <Value>2.5</Value>
           <Min>2.0</Min>
           <Max>3.0</Max>
@@ -2419,11 +2418,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>pbar</Name>
+      <Name>p~</Name>
       <Pid>-2212</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_pbar</Name>
+        <Name>Mass_p~</Name>
         <Value>0.938272081</Value>
       </Parameter>
       <QuantumNumber>
@@ -2489,11 +2488,11 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>nbar</Name>
+      <Name>n~</Name>
       <Pid>-2112</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_nbar</Name>
+        <Name>Mass_n~</Name>
         <Value>0.939565413</Value>
       </Parameter>
       <QuantumNumber>
@@ -2846,11 +2845,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>Lambdabar</Name>
+      <Name>Lambda~</Name>
       <Pid>-3122</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_Lambdabar</Name>
+        <Name>Mass_Lambda~</Name>
         <Value>1.115683</Value>
       </Parameter>
       <QuantumNumber>

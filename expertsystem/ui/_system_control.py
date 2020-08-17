@@ -1,6 +1,6 @@
 """Functions that steer operations of the `expertsystem`."""
 
-# cspell:ignore vebar, vmubar, vtau, vtaubar
+# cspell:ignore vtau
 
 import logging
 from abc import ABC, abstractmethod
@@ -116,14 +116,7 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
             ):
                 if [
                     x
-                    for x in [
-                        "ve",
-                        "vebar",
-                        "vmu",
-                        "vmubar",
-                        "vtau",
-                        "vtaubar",
-                    ]
+                    for x in ["ve", "ve~", "vmu", "vmu~", "vtau", "vtau~",]
                     if x == edge_props[self.name_label]
                 ]:
                     node_interaction_types = [InteractionTypes.Weak]
