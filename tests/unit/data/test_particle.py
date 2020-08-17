@@ -10,7 +10,7 @@ from expertsystem.data import (
 )
 
 J_PSI = Particle(
-    name="J/psi",
+    name="J/psi(1S)",
     pid=443,
     mass=3.0969,
     width=9.29e-05,

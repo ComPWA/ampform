@@ -22,9 +22,9 @@ SCRIPT_PATH = dirname(realpath(__file__))
 @pytest.fixture(scope="module")
 def amplitude_generator():
     stm = StateTransitionManager(
-        initial_state=[("J/psi", [-1, 1])],
+        initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f0"],
+        allowed_intermediate_particles=["f(0)"],
     )
     stm.set_allowed_interaction_types(
         [InteractionTypes.Strong, InteractionTypes.EM]
@@ -86,7 +86,7 @@ def test_particle_section(imported_dict):
     assert gamma_qns["Parity"] == -1
     assert gamma_qns["CParity"] == -1
 
-    f0_980 = particle_list["f0(980)"]
+    f0_980 = particle_list["f(0)(980)"]
     assert f0_980["Width"] == 0.06
 
     pi0_qns = particle_list["pi0"]["QuantumNumbers"]
@@ -100,7 +100,7 @@ def test_kinematics_section(imported_dict):
     final_state = kinematics["FinalState"]
     assert kinematics["Type"] == "Helicity"
     assert len(initial_state) == 1
-    assert initial_state[0]["Particle"] == "J/psi"
+    assert initial_state[0]["Particle"] == "J/psi(1S)"
     assert len(final_state) == 3
 
 
@@ -116,12 +116,12 @@ def test_dynamics_section(imported_dict):
     dynamics = imported_dict["Dynamics"]
     assert len(dynamics) == 1
 
-    j_psi = dynamics["J/psi"]
+    j_psi = dynamics["J/psi(1S)"]
     assert j_psi["Type"] == "NonDynamic"
     assert j_psi["FormFactor"]["Type"] == "BlattWeisskopf"
     assert j_psi["FormFactor"]["MesonRadius"] == 1.0
 
-    f0_980 = dynamics.get("f0(980)", None)
+    f0_980 = dynamics.get("f(0)(980)", None)
     if f0_980:
         assert f0_980["Type"] == "RelativisticBreitWigner"
         assert f0_980["FormFactor"]["Type"] == "BlattWeisskopf"

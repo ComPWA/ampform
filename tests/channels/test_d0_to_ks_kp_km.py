@@ -15,7 +15,7 @@ def test_script():
     final_state = [("K~0", [0]), ("K+", [0]), ("K-", [0])]
 
     stm = StateTransitionManager(
-        initial_state, final_state, ["a0", "phi", "a2(1320)-"]
+        initial_state, final_state, ["a(0)", "phi", "a(2)(1320)-"]
     )
     stm.number_of_threads = 1
 

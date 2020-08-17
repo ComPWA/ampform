@@ -20,7 +20,7 @@ _XML_FILE = f"{EXPERTSYSTEM_PATH}/particle_list.xml"
 _YAML_FILE = f"{EXPERTSYSTEM_PATH}/particle_list.yml"
 
 J_PSI = Particle(
-    name="J/psi",
+    name="J/psi(1S)",
     pid=443,
     mass=3.0969,
     width=9.29e-05,
@@ -52,8 +52,8 @@ def test_not_implemented_errors():
 def test_load_particle_collection(input_file):
     particles = io.load_particle_collection(input_file)
     assert len(particles) == 68
-    assert "J/psi" in particles
-    j_psi = particles["J/psi"]
+    assert "J/psi(1S)" in particles
+    j_psi = particles["J/psi(1S)"]
     assert j_psi.pid == J_PSI.pid
     particle_names = list(particles.keys())
     for name, particle_name in zip(particle_names, particles):
@@ -96,13 +96,13 @@ class TestInternalParticleDict:
 
     @staticmethod
     def test_build_particle_from_internal_database():
-        j_psi = particle.DATABASE["J/psi"]
+        j_psi = particle.DATABASE["J/psi(1S)"]
         assert j_psi == J_PSI
 
     @staticmethod
     def test_find():
         f2_1950 = particle.DATABASE.find(9050225)
-        assert f2_1950.name == "f2(1950)"
+        assert f2_1950.name == "f(2)(1950)"
         assert f2_1950.mass == 1.936
         phi = particle.DATABASE.find("phi(1020)")
         assert phi.pid == 333
@@ -116,12 +116,12 @@ class TestInternalParticleDict:
 
     @staticmethod
     def test_find_subset():
-        search_result = particle.DATABASE.find_subset("f0")
-        f0_1500_from_subset = search_result["f0(1500)"]
+        search_result = particle.DATABASE.find_subset("f(0)")
+        f0_1500_from_subset = search_result["f(0)(1500)"]
         assert len(search_result) == 2
         assert f0_1500_from_subset.mass == 1.506
-        assert f0_1500_from_subset is particle.DATABASE["f0(1500)"]
-        assert f0_1500_from_subset is not particle.DATABASE["f0(980)"]
+        assert f0_1500_from_subset is particle.DATABASE["f(0)(1500)"]
+        assert f0_1500_from_subset is not particle.DATABASE["f(0)(980)"]
 
         # test iadd
         particle.DATABASE += search_result

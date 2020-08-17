@@ -1,7 +1,5 @@
 """Functions that steer operations of the `expertsystem`."""
 
-# cspell:ignore vtau
-
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -116,7 +114,14 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
             ):
                 if [
                     x
-                    for x in ["ve", "ve~", "vmu", "vmu~", "vtau", "vtau~",]
+                    for x in [
+                        "nu(e)",
+                        "nu(e)~",
+                        "nu(mu)",
+                        "nu(mu)~",
+                        "nu(tau)",
+                        "nu(tau)~",
+                    ]
                     if x == edge_props[self.name_label]
                 ]:
                     node_interaction_types = [InteractionTypes.Weak]

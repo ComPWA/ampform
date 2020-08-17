@@ -329,7 +329,7 @@
 
     <!-- Neutrinos -->
     <Particle>
-      <Name>ve</Name>
+      <Name>nu(e)</Name>
       <Pid>12</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -358,7 +358,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>ve~</Name>
+      <Name>nu(e)~</Name>
       <Pid>-12</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -387,7 +387,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vmu</Name>
+      <Name>nu(mu)</Name>
       <Pid>14</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -416,7 +416,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vmu~</Name>
+      <Name>nu(mu)~</Name>
       <Pid>-14</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -445,7 +445,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vtau</Name>
+      <Name>nu(tau)</Name>
       <Pid>16</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -474,7 +474,7 @@
       </QuantumNumber>
     </Particle>
     <Particle>
-      <Name>vtau~</Name>
+      <Name>nu(tau)~</Name>
       <Pid>-16</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -917,11 +917,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>f0(980)</Name>
+      <Name>f(0)(980)</Name>
       <Pid>9010221</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_f0(980)</Name>
+        <Name>Mass_f(0)(980)</Name>
         <Value>0.99</Value>
       </Parameter>
       <QuantumNumber>
@@ -961,7 +961,7 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_f0(980)</Name>
+          <Name>Width_f(0)(980)</Name>
           <Value>0.06</Value>
         </Parameter>
         <Parameter>
@@ -974,11 +974,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>f0(1500)</Name>
+      <Name>f(0)(1500)</Name>
       <Pid>9030221</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_f0(1500)</Name>
+        <Name>Mass_f(0)(1500)</Name>
         <Value>1.506</Value>
       </Parameter>
       <QuantumNumber>
@@ -1018,7 +1018,7 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_f0(1500)</Name>
+          <Name>Width_f(0)(1500)</Name>
           <Value>0.112</Value>
         </Parameter>
         <Parameter>
@@ -1031,11 +1031,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>f2(1270)</Name>
+      <Name>f(2)(1270)</Name>
       <Pid>225</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_f2(1270)</Name>
+        <Name>Mass_f(2)(1270)</Name>
         <Value>1.2755</Value>
       </Parameter>
       <QuantumNumber>
@@ -1075,7 +1075,7 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_f2(1270)</Name>
+          <Name>Width_f(2)(1270)</Name>
           <Value>0.1867</Value>
         </Parameter>
         <Parameter>
@@ -1088,11 +1088,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>f2(1950)</Name>
+      <Name>f(2)(1950)</Name>
       <Pid>9050225</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_f2(1950)</Name>
+        <Name>Mass_f(2)(1950)</Name>
         <Value>1.936</Value>
       </Parameter>
       <QuantumNumber>
@@ -1132,7 +1132,7 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_f2(1950)</Name>
+          <Name>Width_f(2)(1950)</Name>
           <Value>0.464</Value>
         </Parameter>
         <Parameter>
@@ -1145,11 +1145,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a0(980)0</Name>
+      <Name>a(0)(980)0</Name>
       <Pid>9000111</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a0(980)0</Name>
+        <Name>Mass_a(0)(980)0</Name>
         <Value>0.98</Value>
       </Parameter>
       <QuantumNumber>
@@ -1186,7 +1186,7 @@
       <DecayInfo>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a0(980)0</Name>
+          <Name>Width_a(0)(980)0</Name>
           <Value>0.075</Value>
         </Parameter>
         <Type>flatte</Type>
@@ -1195,28 +1195,28 @@
         </FormFactor>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gKK_a0(980)</Name>
+          <Name>gKK_a(0)(980)</Name>
           <Value>3.121343843602647</Value>
           <ParticleA>K+</ParticleA>
           <ParticleB>K-</ParticleB>
         </Parameter>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gEtaPi_a0(980)</Name>
+          <Name>gEtaPi_a(0)(980)</Name>
           <Value>2.66</Value>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gKK_a0(980)</Name>
+          <Name>gKK_a(0)(980)</Name>
           <Value>3.121343843602647</Value>
           <ParticleA>K0</ParticleA>
           <ParticleB>K0</ParticleB>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a0(980)</Name>
+          <Name>Radius_a(0)(980)</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -1224,11 +1224,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a0(980)+</Name>
+      <Name>a(0)(980)+</Name>
       <Pid>9000211</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a0(980)+</Name>
+        <Name>Mass_a(0)(980)+</Name>
         <Value>0.98</Value>
       </Parameter>
       <QuantumNumber>
@@ -1260,7 +1260,7 @@
       <DecayInfo>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a0(980)+</Name>
+          <Name>Width_a(0)(980)+</Name>
           <Value>0.075</Value>
         </Parameter>
         <Type>flatte</Type>
@@ -1269,21 +1269,21 @@
         </FormFactor>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gKK_a0(980)</Name>
+          <Name>gKK_a(0)(980)</Name>
           <Value>3.121343843602647</Value>
           <ParticleA>K0</ParticleA>
           <ParticleB>K+</ParticleB>
         </Parameter>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gEtaPi_a0(980)</Name>
+          <Name>gEtaPi_a(0)(980)</Name>
           <Value>2.66</Value>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a0(980)</Name>
+          <Name>Radius_a(0)(980)</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -1291,11 +1291,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a0(980)-</Name>
+      <Name>a(0)(980)-</Name>
       <Pid>-9000211</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a0(980)-</Name>
+        <Name>Mass_a(0)(980)-</Name>
         <Value>0.98</Value>
       </Parameter>
       <QuantumNumber>
@@ -1327,7 +1327,7 @@
       <DecayInfo>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a0(980)-</Name>
+          <Name>Width_a(0)(980)-</Name>
           <Value>0.075</Value>
         </Parameter>
         <Type>flatte</Type>
@@ -1336,21 +1336,21 @@
         </FormFactor>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gKK_a0(980)</Name>
+          <Name>gKK_a(0)(980)</Name>
           <Value>3.121343843602647</Value>
           <ParticleA>K0</ParticleA>
           <ParticleB>K+</ParticleB>
         </Parameter>
         <Parameter>
           <Type>Coupling</Type>
-          <Name>gEtaPi_a0(980)</Name>
+          <Name>gEtaPi_a(0)(980)</Name>
           <Value>2.66</Value>
           <ParticleA>eta</ParticleA>
           <ParticleB>pi0</ParticleB>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a0(980)</Name>
+          <Name>Radius_a(0)(980)</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -1358,11 +1358,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a2(1320)0</Name>
+      <Name>a(2)(1320)0</Name>
       <Pid>115</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a2(1320)0</Name>
+        <Name>Mass_a(2)(1320)0</Name>
         <Value>1.3169</Value>
       </Parameter>
       <QuantumNumber>
@@ -1403,12 +1403,12 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a2(1320)0</Name>
+          <Name>Width_a(2)(1320)0</Name>
           <Value>0.107</Value>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a2(1320)-</Name>
+          <Name>Radius_a(2)(1320)-</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -1416,11 +1416,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a2(1320)+</Name>
+      <Name>a(2)(1320)+</Name>
       <Pid>215</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a2(1320)+</Name>
+        <Name>Mass_a(2)(1320)+</Name>
         <Value>1.3169</Value>
       </Parameter>
       <QuantumNumber>
@@ -1456,12 +1456,12 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a2(1320)+</Name>
+          <Name>Width_a(2)(1320)+</Name>
           <Value>0.107</Value>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a2(1320)-</Name>
+          <Name>Radius_a(2)(1320)-</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -1469,11 +1469,11 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>a2(1320)-</Name>
+      <Name>a(2)(1320)-</Name>
       <Pid>-215</Pid>
       <Parameter>
         <Type>Mass</Type>
-        <Name>Mass_a2(1320)-</Name>
+        <Name>Mass_a(2)(1320)-</Name>
         <Value>1.3169</Value>
       </Parameter>
       <QuantumNumber>
@@ -1509,12 +1509,12 @@
         </FormFactor>
         <Parameter>
           <Type>Width</Type>
-          <Name>Width_a2(1320)-</Name>
+          <Name>Width_a(2)(1320)-</Name>
           <Value>0.107</Value>
         </Parameter>
         <Parameter>
           <Type>MesonRadius</Type>
-          <Name>Radius_a2(1320)-</Name>
+          <Name>Radius_a(2)(1320)-</Name>
           <Value>1.5</Value>
           <Min>1.0</Min>
           <Max>2.0</Max>
@@ -2161,7 +2161,7 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>D1(2420)0</Name>
+      <Name>D(1)(2420)0</Name>
       <Pid>10423</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -2214,7 +2214,7 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>J/psi</Name>
+      <Name>J/psi(1S)</Name>
       <Pid>443</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -2271,7 +2271,7 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>Y</Name>
+      <Name>Y(4260)</Name>
       <Pid>11443</Pid>
       <Parameter>
         <Type>Mass</Type>
@@ -2323,7 +2323,7 @@
       </DecayInfo>
     </Particle>
     <Particle>
-      <Name>Chic1</Name>
+      <Name>chi(c1)(1P)</Name>
       <Pid>20443</Pid>
       <Parameter>
         <Type>Mass</Type>

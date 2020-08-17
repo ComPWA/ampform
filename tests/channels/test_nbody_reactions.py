@@ -16,12 +16,12 @@ from expertsystem.ui import (
         ((["Sigma-"], ["n", "pi-"]), []),
         ((["e+", "e-"], ["mu+", "mu-"]), []),
         (
-            (["mu-"], ["e-", "ve~"]),
+            (["mu-"], ["e-", "nu(e)~"]),
             ["MuonLNConservation", "SpinConservation"],
         ),
         # this is just an additional lepton number test
         (
-            (["mu-"], ["e-", "ve"]),
+            (["mu-"], ["e-", "nu(e)"]),
             [
                 "ElectronLNConservation",
                 "MuonLNConservation",
@@ -29,9 +29,9 @@ from expertsystem.ui import (
             ],
         ),
         ((["Delta(1232)+"], ["p", "pi0"]), []),
-        ((["ve~", "p"], ["n", "e+"]), []),
+        ((["nu(e)~", "p"], ["n", "e+"]), []),
         (
-            (["e-", "p"], ["ve", "pi0"]),
+            (["e-", "p"], ["nu(e)", "pi0"]),
             ["BaryonNumberConservation", "SpinConservation"],
         ),
         ((["p", "p"], ["Sigma+", "n", "K~0", "pi+", "pi0"]), []),
@@ -50,11 +50,11 @@ from expertsystem.ui import (
         ((["pi-", "p"], ["Lambda", "K~0"]), []),
         ((["pi0"], ["gamma", "gamma"]), []),
         ((["pi0"], ["gamma", "gamma", "gamma"]), []),
-        ((["Sigma-"], ["n", "e-", "ve~"]), []),
+        ((["Sigma-"], ["n", "e-", "nu(e)~"]), []),
         ((["rho(770)0"], ["pi0", "pi0"]), ["IdenticalParticleSymmetrization"]),
         ((["rho(770)0"], ["gamma", "gamma"]), []),
-        ((["J/psi"], ["pi0", "eta"]), []),
-        ((["J/psi"], ["rho(770)0", "rho(770)0"]), []),
+        ((["J/psi(1S)"], ["pi0", "eta"]), []),
+        ((["J/psi(1S)"], ["rho(770)0", "rho(770)0"]), []),
         ((["K~0"], ["pi+", "pi-", "pi0"]), []),
     ],
 )
@@ -86,9 +86,9 @@ def test_general_reaction(test_input, expected):
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        ((["f0(980)"], ["pi+", "pi-"]), []),
+        ((["f(0)(980)"], ["pi+", "pi-"]), []),
         (
-            (["J/psi"], ["pi0", "f0(980)"]),
+            (["J/psi(1S)"], ["pi0", "f(0)(980)"]),
             ["CParityConservation", "SpinConservation"],
         ),
         ((["pi0"], ["gamma", "gamma"]), []),
@@ -123,9 +123,9 @@ def test_em_reactions(test_input, expected):
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        ((["f0(980)"], ["pi+", "pi-"]), []),
+        ((["f(0)(980)"], ["pi+", "pi-"]), []),
         (
-            (["J/psi"], ["pi0", "f0(980)"]),
+            (["J/psi(1S)"], ["pi0", "f(0)(980)"]),
             ["IsoSpinConservation", "CParityConservation", "SpinConservation"],
         ),
     ],

@@ -1,7 +1,7 @@
 Kinematics:
   Type: Helicity
   InitialState:
-    - Particle: J/psi
+    - Particle: J/psi(1S)
       ID: 0
   FinalState:
     - Particle: gamma
@@ -16,16 +16,16 @@ Parameters:
     Type: Strength
     Value: 1
     Fix: true
-  - Name: &par2 Magnitude_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;
+  - Name: &par2 Magnitude_J/psi_to_f0(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par3 Phase_J/psi_to_f0(980)_0+gamma_1;f0(980)_to_pi0_0+pi0_0;
+  - Name: &par3 Phase_J/psi_to_f0(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
-  - Name: &par4 Magnitude_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;
+  - Name: &par4 Magnitude_J/psi_to_f0(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par5 Phase_J/psi_to_f0(1500)_0+gamma_1;f0(1500)_to_pi0_0+pi0_0;
+  - Name: &par5 Phase_J/psi_to_f0(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
 
@@ -42,7 +42,7 @@ Intensity:
           Component: coherent_J/psi_-1_to_gamma_-1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi_-1_to_f0(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -50,10 +50,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: -1.0
                     DecayProducts:
-                      - Name: f0(980)
+                      - Name: f(0)(980)
                         FinalState:
                           - 3
                           - 4
@@ -64,7 +64,7 @@ Intensity:
                         Helicity: -1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(980)
+                      Name: f(0)(980)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -79,7 +79,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi_-1_to_f0(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -87,10 +87,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: -1.0
                     DecayProducts:
-                      - Name: f0(1500)
+                      - Name: f(0)(1500)
                         FinalState:
                           - 3
                           - 4
@@ -101,7 +101,7 @@ Intensity:
                         Helicity: -1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(1500)
+                      Name: f(0)(1500)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -119,7 +119,7 @@ Intensity:
           Component: coherent_J/psi_1_to_gamma_-1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi_1_to_f0(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -127,10 +127,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: 1.0
                     DecayProducts:
-                      - Name: f0(980)
+                      - Name: f(0)(980)
                         FinalState:
                           - 3
                           - 4
@@ -141,7 +141,7 @@ Intensity:
                         Helicity: -1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(980)
+                      Name: f(0)(980)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -156,7 +156,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(1500)_0+gamma_-1;f0(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi_1_to_f0(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -164,10 +164,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: 1.0
                     DecayProducts:
-                      - Name: f0(1500)
+                      - Name: f(0)(1500)
                         FinalState:
                           - 3
                           - 4
@@ -178,7 +178,7 @@ Intensity:
                         Helicity: -1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(1500)
+                      Name: f(0)(1500)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -196,7 +196,7 @@ Intensity:
           Component: coherent_J/psi_-1_to_gamma_1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi_-1_to_f0(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -204,10 +204,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: -1.0
                     DecayProducts:
-                      - Name: f0(980)
+                      - Name: f(0)(980)
                         FinalState:
                           - 3
                           - 4
@@ -218,7 +218,7 @@ Intensity:
                         Helicity: 1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(980)
+                      Name: f(0)(980)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -233,7 +233,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_-1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi_-1_to_f0(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -241,10 +241,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: -1.0
                     DecayProducts:
-                      - Name: f0(1500)
+                      - Name: f(0)(1500)
                         FinalState:
                           - 3
                           - 4
@@ -255,7 +255,7 @@ Intensity:
                         Helicity: 1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(1500)
+                      Name: f(0)(1500)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -273,7 +273,7 @@ Intensity:
           Component: coherent_J/psi_1_to_gamma_1+pi0_0+pi0_0
           Amplitudes:
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;
+              Component: J/psi_1_to_f0(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
               Magnitude: *par2
               Phase: *par3
               Amplitude:
@@ -281,10 +281,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: 1.0
                     DecayProducts:
-                      - Name: f0(980)
+                      - Name: f(0)(980)
                         FinalState:
                           - 3
                           - 4
@@ -295,7 +295,7 @@ Intensity:
                         Helicity: 1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(980)
+                      Name: f(0)(980)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -310,7 +310,7 @@ Intensity:
                       RecoilFinalState:
                         - 2
             - Class: CoefficientAmplitude
-              Component: J/psi_1_to_f0(1500)_0+gamma_1;f0(1500)_0_to_pi0_0+pi0_0;
+              Component: J/psi_1_to_f0(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
               Magnitude: *par4
               Phase: *par5
               Amplitude:
@@ -318,10 +318,10 @@ Intensity:
                 Amplitudes:
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: J/psi
+                      Name: J/psi(1S)
                       Helicity: 1.0
                     DecayProducts:
-                      - Name: f0(1500)
+                      - Name: f(0)(1500)
                         FinalState:
                           - 3
                           - 4
@@ -332,7 +332,7 @@ Intensity:
                         Helicity: 1.0
                   - Class: HelicityDecay
                     DecayParticle:
-                      Name: f0(1500)
+                      Name: f(0)(1500)
                       Helicity: 0.0
                     DecayProducts:
                       - Name: pi0
@@ -348,7 +348,7 @@ Intensity:
                         - 2
 
 ParticleList:
-  J/psi:
+  J/psi(1S):
     PID: 443
     Mass: 3.0969
     QuantumNumbers:
@@ -379,7 +379,7 @@ ParticleList:
       IsoSpin:
         Value: 1
         Projection: 0
-  f0(980):
+  f(0)(980):
     PID: 9010221
     Mass: 0.99
     Width: 0.06
@@ -390,7 +390,7 @@ ParticleList:
       CParity: 1
       GParity: 1
       IsoSpin: 0
-  f0(1500):
+  f(0)(1500):
     PID: 9030221
     Mass: 1.506
     Width: 0.112
@@ -403,7 +403,7 @@ ParticleList:
       IsoSpin: 0
 
 Dynamics:
-  J/psi:
+  J/psi(1S):
     Type: NonDynamic
     FormFactor:
       Type: BlattWeisskopf

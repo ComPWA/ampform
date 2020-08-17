@@ -25,9 +25,9 @@ def test_script():
     # initialize the graph edges (initial and final state)
 
     stm = StateTransitionManager(
-        initial_state=[("J/psi", [-1, 1])],
+        initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
-        allowed_intermediate_particles=["f0", "f2", "omega"],
+        allowed_intermediate_particles=["f(0)", "f(2)", "omega"],
     )
     stm.number_of_threads = 2
     stm.set_allowed_interaction_types(

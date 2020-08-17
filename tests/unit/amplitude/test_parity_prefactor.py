@@ -27,29 +27,29 @@ class Input(NamedTuple):
     [
         (
             Input(
-                [("J/psi", [1])],
+                [("J/psi(1S)", [1])],
                 [("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
-                ["f0(980)"],
+                ["f(0)(980)"],
                 ["pi0", "pi0"],
             ),
-            "J/psi",
+            "J/psi(1S)",
             (
-                "J/psi_1_to_f0(980)_0+gamma_1;f0(980)_0_to_pi0_0+pi0_0;",
-                "J/psi_1_to_f0(980)_0+gamma_-1;f0(980)_0_to_pi0_0+pi0_0;",
+                "J/psi(1S)_1_to_f(0)(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;",
+                "J/psi(1S)_1_to_f(0)(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;",
             ),
             1.0,
         ),
         (
             Input(
-                [("J/psi", [1])],
+                [("J/psi(1S)", [1])],
                 [("pi0", [0]), ("pi+", [0]), ("pi-", [0])],
                 ["rho(770)"],
                 ["pi+", "pi-"],
             ),
-            "J/psi",
+            "J/psi(1S)",
             (
-                "J/psi_1_to_rho(770)0_1+pi0_0;rho(770)0_1_to_pi-_0+pi+_0;",
-                "J/psi_1_to_rho(770)0_-1+pi0_0;rho(770)0_-1_to_pi-_0+pi+_0;",
+                "J/psi(1S)_1_to_rho(770)0_1+pi0_0;rho(770)0_1_to_pi-_0+pi+_0;",
+                "J/psi(1S)_1_to_rho(770)0_-1+pi0_0;rho(770)0_-1_to_pi-_0+pi+_0;",
             ),
             -1.0,
         ),  # pylint: disable=too-many-locals

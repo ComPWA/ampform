@@ -82,7 +82,7 @@ ParticleList:
       Parity: +1
       TauLN: 1
 
-  ve:
+  nu(e):
     PID: 12
     Mass: 0.0
     QuantumNumbers:
@@ -91,7 +91,7 @@ ParticleList:
       Parity: 1
       ElectronLN: 1
 
-  ve~:
+  nu(e)~:
     PID: -12
     Mass: 0.0
     QuantumNumbers:
@@ -100,7 +100,7 @@ ParticleList:
       Parity: -1
       ElectronLN: -1
 
-  vmu:
+  nu(mu):
     PID: 14
     Mass: 0.0
     QuantumNumbers:
@@ -109,7 +109,7 @@ ParticleList:
       Parity: 1
       MuonLN: 1
 
-  vmu~:
+  nu(mu)~:
     PID: -14
     Mass: 0.0
     QuantumNumbers:
@@ -118,7 +118,7 @@ ParticleList:
       Parity: -1
       MuonLN: -1
 
-  vtau:
+  nu(tau):
     PID: 16
     Mass: 0.0
     QuantumNumbers:
@@ -127,7 +127,7 @@ ParticleList:
       Parity: 1
       TauLN: 1
 
-  vtau~:
+  nu(tau)~:
     PID: -16
     Mass: 0.0
     QuantumNumbers:
@@ -228,7 +228,7 @@ ParticleList:
       IsoSpin: { Value: 0 }
       GParity: -1
 
-  f0(980):
+  f(0)(980):
     PID: 9010221
     Mass: 0.99
     Width: 0.06
@@ -240,7 +240,7 @@ ParticleList:
       IsoSpin: 0
       GParity: 1
 
-  f0(1500):
+  f(0)(1500):
     PID: 9030221
     Mass: 1.506
     Width: 0.112
@@ -252,7 +252,7 @@ ParticleList:
       IsoSpin: 0
       GParity: 1
 
-  f2(1270):
+  f(2)(1270):
     PID: 225
     Mass: 1.2755
     Width: 0.1867
@@ -264,7 +264,7 @@ ParticleList:
       IsoSpin: 0
       GParity: 1
 
-  f2(1950):
+  f(2)(1950):
     PID: 9050225
     Mass: 1.936
     Width: 0.464
@@ -276,7 +276,7 @@ ParticleList:
       IsoSpin: 0
       GParity: 1
 
-  a0(980)0:
+  a(0)(980)0:
     PID: 9000111
     Mass: 0.98
     Width: 0.075
@@ -288,7 +288,7 @@ ParticleList:
       IsoSpin: { Value: 1, Projection: 0 }
       GParity: -1
 
-  a0(980)+:
+  a(0)(980)+:
     PID: 9000211
     Mass: 0.98
     Width: 0.075
@@ -299,7 +299,7 @@ ParticleList:
       IsoSpin: { Value: 1, Projection: +1 }
       GParity: -1
 
-  a0(980)-:
+  a(0)(980)-:
     PID: -9000211
     Mass: 0.98
     Width: 0.075
@@ -310,7 +310,7 @@ ParticleList:
       IsoSpin: { Value: 1, Projection: -1 }
       GParity: -1
 
-  a2(1320)0:
+  a(2)(1320)0:
     PID: 115
     Mass: 1.3169
     Width: 0.107
@@ -322,7 +322,7 @@ ParticleList:
       IsoSpin: { Value: 1, Projection: 0 }
       GParity: -1
 
-  a2(1320)+:
+  a(2)(1320)+:
     PID: 215
     Mass: 1.3169
     Width: 0.107
@@ -333,7 +333,7 @@ ParticleList:
       IsoSpin: { Value: 1, Projection: 1 }
       GParity: -1
 
-  a2(1320)-:
+  a(2)(1320)-:
     PID: -215
     Mass: 1.3169
     Width: 0.107
@@ -486,7 +486,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: 0.5 }
       Charmness: 1
 
-  D1(2420)0:
+  D(1)(2420)0:
     PID: 10423
     Mass: 2.4208
     Width: 0.0317
@@ -497,7 +497,7 @@ ParticleList:
       IsoSpin: { Value: 0.5, Projection: -0.5 }
       Charmness: 1
 
-  J/psi:
+  J/psi(1S):
     PID: 443
     Mass: 3.096900
     Width: 9.29E-05
@@ -509,7 +509,7 @@ ParticleList:
       GParity: -1
       IsoSpin: { Value: 0, Projection: 0 }
 
-  Y:
+  Y(4260):
     PID: 11443
     Mass: 4.300
     Width: 9.29E-05
@@ -520,7 +520,7 @@ ParticleList:
       CParity: -1
       IsoSpin: 0
 
-  Chic1:
+  chi(c1)(1P):
     PID: 20443
     Mass: 3.51067
     Width: 0.00084

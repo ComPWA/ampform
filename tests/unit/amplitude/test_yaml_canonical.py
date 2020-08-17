@@ -21,9 +21,9 @@ SCRIPT_PATH = dirname(realpath(__file__))
 @pytest.fixture(scope="module")
 def amplitude_generator():
     stm = StateTransitionManager(
-        initial_state=[("J/psi", [-1, 1])],
+        initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f0"],
+        allowed_intermediate_particles=["f(0)"],
         formalism_type="canonical-helicity",
     )
     stm.set_allowed_interaction_types([InteractionTypes.EM])
@@ -61,7 +61,7 @@ def test_particle_section(imported_dict):
     assert gamma["Mass"] == 0.0
     gamma_qns = gamma["QuantumNumbers"]
     assert gamma_qns["CParity"] == -1
-    f0_980 = particle_list["f0(980)"]
+    f0_980 = particle_list["f(0)(980)"]
     assert f0_980["Width"] == 0.06
     pi0_qns = particle_list["pi0"]["QuantumNumbers"]
     assert pi0_qns["IsoSpin"]["Value"] == 1
