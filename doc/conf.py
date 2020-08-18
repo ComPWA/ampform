@@ -58,8 +58,8 @@ source_suffix = [
 master_doc = "index"
 
 extensions = [
+    "myst_parser",
     "nbsphinx",
-    "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autosummary",
@@ -102,6 +102,10 @@ primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
     ("py:class", "StateTransitionGraph"),
+    ("py:class", "a set-like object providing a view on D's items"),
+    ("py:class", "a set-like object providing a view on D's keys"),
+    ("py:class", "_T"),
+    ("py:class", "an object providing a view on D's values"),
     ("py:class", "expertsystem.solvers.constraint.Constraint"),
     ("py:class", "expertsystem.state.propagation.GraphElementTypes"),
 ]
@@ -112,7 +116,7 @@ intersphinx_mapping = {
         "https://python-jsonschema.readthedocs.io/en/latest/",
         None,
     ),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
     "pycompwa": ("https://compwa.github.io/", None),
     "python": ("https://docs.python.org/3", None),
     "tensorwaves": (
