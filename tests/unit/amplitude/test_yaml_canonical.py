@@ -1,44 +1,21 @@
 # pylint: disable=redefined-outer-name
 import json
-import logging
 from os.path import dirname, realpath
 
 import pytest
 
 import yaml
 
-from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
-from expertsystem.ui import (
-    InteractionTypes,
-    StateTransitionManager,
-)
-
-logging.basicConfig(level=logging.ERROR)
 
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
 @pytest.fixture(scope="module")
-def amplitude_generator():
-    stm = StateTransitionManager(
-        initial_state=[("J/psi(1S)", [-1, 1])],
-        final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f(0)"],
-        formalism_type="canonical-helicity",
-    )
-    stm.set_allowed_interaction_types([InteractionTypes.EM])
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
-
-    can_amp_gen = CanonicalAmplitudeGenerator()
-    can_amp_gen.generate(solutions)
-    return can_amp_gen
-
-
-@pytest.fixture(scope="module")
-def imported_dict(amplitude_generator: CanonicalAmplitudeGenerator) -> dict:
+def imported_dict(jpsi_to_gamma_pi_pi_canonical_amplitude_generator):
     output_filename = "JPsiToGammaPi0Pi0_cano_recipe.yml"
-    amplitude_generator.write_to_file(output_filename)
+    jpsi_to_gamma_pi_pi_canonical_amplitude_generator.write_to_file(
+        output_filename
+    )
     with open(output_filename, "rb") as input_file:
         loaded_dict = yaml.load(input_file, Loader=yaml.FullLoader)
     return loaded_dict
@@ -49,9 +26,13 @@ def equalize_dict(input_dict):
     return output_dict
 
 
-def test_not_implemented_writer(amplitude_generator):
+def test_not_implemented_writer(
+    jpsi_to_gamma_pi_pi_canonical_amplitude_generator,
+):
     with pytest.raises(NotImplementedError):
-        amplitude_generator.write_to_file("JPsiToGammaPi0Pi0.csv")
+        jpsi_to_gamma_pi_pi_canonical_amplitude_generator.write_to_file(
+            "JPsiToGammaPi0Pi0.csv"
+        )
 
 
 def test_particle_section(imported_dict):
