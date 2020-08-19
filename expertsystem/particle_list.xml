@@ -513,7 +513,7 @@
       <Parameter>
         <Type>Mass</Type>
         <Name>Mass_pi0</Name>
-        <Value>0.134977</Value>
+        <Value>0.1349768</Value>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -560,7 +560,7 @@
       <Parameter>
         <Type>Mass</Type>
         <Name>Mass_pi+</Name>
-        <Value>0.13957061</Value>
+        <Value>0.13957039</Value>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>
@@ -602,7 +602,7 @@
       <Parameter>
         <Type>Mass</Type>
         <Name>Mass_pi-</Name>
-        <Value>0.13957061</Value>
+        <Value>0.13957039</Value>
       </Parameter>
       <QuantumNumber>
         <Class>Spin</Class>

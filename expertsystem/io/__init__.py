@@ -1,14 +1,10 @@
 """Serialization module for containers of `expertsystem.data`."""
 
-__all__ = [
-    "load_particle_collection",
-    "write",
-]
-
 from pathlib import Path
 
 from expertsystem.data import ParticleCollection
 
+from . import _pdg
 from . import xml
 from . import yaml
 
@@ -22,6 +18,15 @@ def load_particle_collection(filename: str) -> ParticleCollection:
     raise NotImplementedError(
         f'No parser parser defined for file type "{file_extension}"'
     )
+
+
+def load_pdg() -> ParticleCollection:
+    """Create a `.ParticleCollection` with all entries from the PDG.
+
+    PDG info is imported from the `scikit-hep/particle
+    <https://github.com/scikit-hep/particle/blob/master/README.rst>`_ package.
+    """
+    return _pdg.load_pdg()
 
 
 def write(instance: object, filename: str) -> None:

@@ -1,6 +1,9 @@
 import pytest
 
-from expertsystem.data import create_particle
+from expertsystem.data import (
+    ParticleCollection,
+    create_particle,
+)
 
 
 def test_find(particle_database):
@@ -37,17 +40,18 @@ def test_find_subset(particle_database):
 
 
 def test_exceptions(particle_database):
-    new_particle = create_particle(
-        template_particle=particle_database["gamma"], name="gamma_new"
-    )
-    particle_database += new_particle
+    gamma_1 = create_particle(particle_database["gamma"], name="gamma_1")
+    gamma_2 = create_particle(particle_database["gamma"], name="gamma_2")
+    dummy_database = ParticleCollection()
+    dummy_database += gamma_1
+    dummy_database += gamma_2
     with pytest.raises(LookupError):
-        particle_database.find_subset(22)
+        dummy_database.find_subset(22)
     with pytest.raises(NotImplementedError):
-        particle_database.find_subset(3.14)  # type: ignore
+        dummy_database.find_subset(3.14)  # type: ignore
     with pytest.raises(NotImplementedError):
-        particle_database.find(3.14)  # type: ignore
+        dummy_database.find(3.14)  # type: ignore
     with pytest.raises(NotImplementedError):
-        particle_database += 3.14  # type: ignore
+        dummy_database += 3.14  # type: ignore
     with pytest.raises(NotImplementedError):
-        assert new_particle == "gamma"
+        assert gamma_1 == "gamma"

@@ -2,12 +2,12 @@
 import pytest
 
 from expertsystem.data import (
+    GellmannNishijima,
     Parity,
     Particle,
     ParticleCollection,
     QuantumState,
     Spin,
-    compute_gellmann_nishijima,
     create_antiparticle,
     create_particle,
 )
@@ -122,49 +122,60 @@ def test_create_antiparticle_tilde(particle_database):
         assert created_particle == particle_database[particle_name]
 
 
-@pytest.mark.parametrize(
-    "state, expected",
-    [
-        (QuantumState(spin=0.0, charge=1, isospin=None), None),
-        (
+class TestGellmannNishijima:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "state",
+        [
             QuantumState(
                 spin=0.0, charge=1, isospin=Spin(1.0, 0.0), strangeness=2,
             ),
-            1,
-        ),
-        (
             QuantumState(
                 spin=1.0, charge=1, isospin=Spin(1.5, 0.5), charmness=1,
             ),
-            1,
-        ),
-        (
             QuantumState(
-                spin=0.5, charge=1, isospin=Spin(1.0, 1.0), baryon_number=1,
+                spin=0.5,
+                charge=1.5,  # type: ignore
+                isospin=Spin(1.0, 1.0),
+                baryon_number=1,
             ),
-            1.5,
-        ),
-    ],
-)
-def test_gellmann_nishijima(state, expected):
-    assert compute_gellmann_nishijima(state) == expected
-
-
-def test_gellmann_nishijima_exception():
-    with pytest.raises(ValueError):
-        print(
-            Particle(
-                name="Fails Gell-Mann–Nishijima formula",
-                pid=666,
-                mass=0.0,
-                state=QuantumState[float](
-                    spin=1,
-                    charge=0,
-                    parity=Parity(-1),
-                    c_parity=Parity(-1),
-                    g_parity=Parity(-1),
-                    isospin=Spin(0.0, 0.0),
-                    charmness=1,
-                ),
+        ],
+    )
+    def test_computations(state):
+        assert GellmannNishijima.compute_charge(state) == state.charge
+        assert (
+            GellmannNishijima.compute_isospin_projection(
+                charge=state.charge,
+                baryon_number=state.baryon_number,
+                strangeness=state.strangeness,
+                charmness=state.charmness,
+                bottomness=state.bottomness,
+                topness=state.topness,
             )
+            == state.isospin.projection
         )
+
+    @staticmethod
+    def test_isospin_none():
+        state = QuantumState(spin=0.0, charge=1, isospin=None)
+        assert GellmannNishijima.compute_charge(state) is None
+
+    @staticmethod
+    def test_exceptions():
+        with pytest.raises(ValueError):
+            print(
+                Particle(
+                    name="Fails Gell-Mann–Nishijima formula",
+                    pid=666,
+                    mass=0.0,
+                    state=QuantumState[float](
+                        spin=1,
+                        charge=0,
+                        parity=Parity(-1),
+                        c_parity=Parity(-1),
+                        g_parity=Parity(-1),
+                        isospin=Spin(0.0, 0.0),
+                        charmness=1,
+                    ),
+                )
+            )

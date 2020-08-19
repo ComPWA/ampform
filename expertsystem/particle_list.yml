@@ -138,7 +138,7 @@ ParticleList:
 
   pi0:
     PID: 111
-    Mass: 0.134977
+    Mass: 0.1349768
     Width: 7.73e-09
     QuantumNumbers:
       Spin: 0
@@ -150,7 +150,7 @@ ParticleList:
 
   pi+:
     PID: 211
-    Mass: 0.13957061
+    Mass: 0.13957039
     Width: 2.5284e-17
     QuantumNumbers:
       Spin: 0
@@ -161,7 +161,7 @@ ParticleList:
 
   pi-:
     PID: -211
-    Mass: 0.13957061
+    Mass: 0.13957039
     Width: 2.5284e-17
     QuantumNumbers:
       Spin: 0

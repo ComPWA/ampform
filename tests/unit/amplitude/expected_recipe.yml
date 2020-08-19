@@ -368,7 +368,7 @@ ParticleList:
       CParity: -1
   pi0:
     PID: 111
-    Mass: 0.134977
+    Mass: 0.1349768
     Width: 7.73e-09
     QuantumNumbers:
       Spin: 0
