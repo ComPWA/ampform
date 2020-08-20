@@ -4,9 +4,9 @@ from collections import OrderedDict
 from typing import (
     Callable,
     Dict,
+    Iterable,
     List,
     Optional,
-    Sequence,
 )
 
 
@@ -69,16 +69,17 @@ class StateTransitionGraph:
         self.graph_element_properties_comparator: Optional[Callable] = None
 
     def set_graph_element_properties_comparator(
-        self, comparator: Callable
+        self, comparator: Optional[Callable]
     ) -> None:
         self.graph_element_properties_comparator = comparator
 
     def __repr__(self) -> str:
         return (
-            f"\nnodes: {self.nodes}"
-            f"\nedges: {self.edges}"
-            f"\nnode props: {self.node_props}"
-            f"\nnode props: {self.edge_props}"
+            f"{self.__class__.__name__}()"
+            f"\n    nodes: {self.nodes}"
+            f"\n    edges: {self.edges}"
+            f"\n    node props: {self.node_props}"
+            f"\n    node props: {self.edge_props}"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -118,7 +119,7 @@ class StateTransitionGraph:
             self.edges[edge_id] = Edge()
 
     def attach_edges_to_node_ingoing(
-        self, ingoing_edge_ids: Sequence[int], node_id: int
+        self, ingoing_edge_ids: Iterable[int], node_id: int
     ) -> None:
         """Attach existing edges to nodes.
 
@@ -147,7 +148,7 @@ class StateTransitionGraph:
             self.edges[edge_id].ending_node_id = node_id
 
     def attach_edges_to_node_outgoing(
-        self, outgoing_edge_ids: Sequence[int], node_id: int
+        self, outgoing_edge_ids: Iterable[int], node_id: int
     ) -> None:
         # first check if the ingoing edges are all available
         for edge_id in outgoing_edge_ids:
@@ -164,7 +165,7 @@ class StateTransitionGraph:
             self.edges[edge_id].originating_node_id = node_id
 
     def get_originating_node_list(
-        self, edge_ids: Sequence[int]
+        self, edge_ids: Iterable[int]
     ) -> List[Optional[int]]:
         """Get list of node ids from which the supplied edges originate from.
 

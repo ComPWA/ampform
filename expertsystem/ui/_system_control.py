@@ -8,8 +8,20 @@ from itertools import (
     permutations,
     product,
 )
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
 
+from expertsystem.data import Spin
 from expertsystem.state import particle
+from expertsystem.state.conservation_rules import AbstractRule
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
@@ -30,7 +42,23 @@ from expertsystem.topology.graph import (
 )
 
 
-def _change_qn_domain(interaction_settings, qn_name, new_domain):
+Strength = float
+
+GraphSettings = Tuple[StateTransitionGraph, Dict[int, InteractionNodeSettings]]
+GraphSettingsGroups = Dict[Strength, List[GraphSettings]]
+NodeSettings = Dict[int, List[InteractionNodeSettings]]
+
+ViolatedLaws = Dict[int, List[AbstractRule]]
+SolutionMapping = Dict[
+    Strength, List[Tuple[List[StateTransitionGraph], ViolatedLaws]],
+]
+
+
+def _change_qn_domain(
+    interaction_settings: InteractionNodeSettings,
+    qn_name: InteractionQuantumNumberNames,
+    new_domain: List[Spin],
+) -> None:
     if not isinstance(interaction_settings, InteractionNodeSettings):
         raise TypeError(
             "interaction_settings has to be of type InteractionNodeSettings"
@@ -38,7 +66,9 @@ def _change_qn_domain(interaction_settings, qn_name, new_domain):
     interaction_settings.qn_domains.update({qn_name: new_domain})
 
 
-def _remove_conservation_law(interaction_settings, cons_law):
+def _remove_conservation_law(
+    interaction_settings: InteractionNodeSettings, cons_law: AbstractRule
+) -> None:
     if not isinstance(interaction_settings, InteractionNodeSettings):
         raise TypeError(
             "interaction_settings has to be of type InteractionNodeSettings"
@@ -50,8 +80,9 @@ def _remove_conservation_law(interaction_settings, cons_law):
 
 
 def filter_interaction_types(
-    valid_determined_interaction_types, allowed_interaction_types
-):
+    valid_determined_interaction_types: List[InteractionTypes],
+    allowed_interaction_types: List[InteractionTypes],
+) -> List[InteractionTypes]:
     int_type_intersection = list(
         set(allowed_interaction_types)
         & set(valid_determined_interaction_types)
@@ -72,7 +103,12 @@ class _InteractionDeterminationFunctorInterface(ABC):
     """Interface for interaction determination."""
 
     @abstractmethod
-    def check(self, in_edge_props, out_edge_props, node_props):
+    def check(
+        self,
+        in_edge_props: List[dict],
+        out_edge_props: List[dict],
+        node_props: dict,
+    ) -> List[InteractionTypes]:
         pass
 
 
@@ -81,13 +117,17 @@ class GammaCheck(_InteractionDeterminationFunctorInterface):
 
     name_label = particle.Labels.Name.name
 
-    def check(self, in_edge_props, out_edge_props, node_props):
+    def check(
+        self,
+        in_edge_props: List[dict],
+        out_edge_props: List[dict],
+        node_props: dict,
+    ) -> List[InteractionTypes]:
         int_types = list(InteractionTypes)
         for edge_props in in_edge_props + out_edge_props:
             if "gamma" in edge_props[self.name_label]:
                 int_types = [InteractionTypes.EM, InteractionTypes.Weak]
                 break
-
         return int_types
 
 
@@ -102,7 +142,12 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
     name_label = particle.Labels.Name.name
     qns_label = particle.Labels.QuantumNumber.name
 
-    def check(self, in_edge_props, out_edge_props, node_props):
+    def check(
+        self,
+        in_edge_props: List[dict],
+        out_edge_props: List[dict],
+        node_props: dict,
+    ) -> List[InteractionTypes]:
         node_interaction_types = list(InteractionTypes)
         for edge_props in in_edge_props + out_edge_props:
             if sum(
@@ -135,8 +180,10 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
 
 
 def remove_duplicate_solutions(
-    results, remove_qns_list=None, ignore_qns_list=None
-):
+    results: SolutionMapping,
+    remove_qns_list: Optional[Any] = None,
+    ignore_qns_list: Optional[Any] = None,
+) -> SolutionMapping:
     if remove_qns_list is None:
         remove_qns_list = []
     if ignore_qns_list is None:
@@ -144,8 +191,8 @@ def remove_duplicate_solutions(
     logging.info("removing duplicate solutions...")
     logging.info(f"removing these qns from graphs: {remove_qns_list}")
     logging.info(f"ignoring qns in graph comparison: {ignore_qns_list}")
-    filtered_results = {}
-    solutions = []
+    filtered_results: SolutionMapping = {}
+    solutions: List[StateTransitionGraph] = list()
     remove_counter = 0
     for strength, group_results in results.items():
         for (sol_graphs, rule_violations) in group_results:
@@ -170,9 +217,16 @@ def remove_duplicate_solutions(
     return filtered_results
 
 
-def _remove_qns_from_graph(
-    graph, qn_list
-):  # pylint: disable=too-many-branches
+def _remove_qns_from_graph(  # pylint: disable=too-many-branches
+    graph: StateTransitionGraph,
+    qn_list: List[
+        Union[
+            InteractionQuantumNumberNames,
+            StateQuantumNumberNames,
+            ParticlePropertyNames,
+        ]
+    ],
+) -> StateTransitionGraph:
     qns_label = particle.Labels.QuantumNumber.name
     type_label = particle.Labels.Type.name
 
@@ -209,7 +263,7 @@ def _remove_qns_from_graph(
     for part_prop in part_props:
         for props in graph_copy.edge_props.values():
             if qns_label in props:
-                for qn_entry in graph_copy.edge_props[qns_label]:
+                for qn_entry in graph_copy.edge_props[qns_label]:  # type: ignore
                     if (
                         ParticlePropertyNames[qn_entry[type_label]]
                         is part_prop
@@ -219,7 +273,13 @@ def _remove_qns_from_graph(
     return graph_copy
 
 
-def _check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
+def _check_equal_ignoring_qns(
+    ref_graph: StateTransitionGraph,
+    solutions: List[StateTransitionGraph],
+    ignored_qn_list: List[
+        Union[StateQuantumNumberNames, InteractionQuantumNumberNames]
+    ],
+) -> Optional[StateTransitionGraph]:
     """Define equal operator for the graphs ignoring certain quantum numbers."""
     if not isinstance(ref_graph, StateTransitionGraph):
         raise TypeError(
@@ -239,7 +299,9 @@ def _check_equal_ignoring_qns(ref_graph, solutions, ignored_qn_list):
     return found_graph
 
 
-def filter_graphs(graphs, filters):
+def filter_graphs(
+    graphs: List[StateTransitionGraph], filters: List[Callable]
+) -> List[StateTransitionGraph]:
     r"""Implement filtering of a list of `.StateTransitionGraph` 's.
 
     This function can be used to select a subset of
@@ -275,8 +337,10 @@ def filter_graphs(graphs, filters):
 
 
 def require_interaction_property(
-    ingoing_particle_name, interaction_qn, allowed_values
-):
+    ingoing_particle_name: str,
+    interaction_qn: InteractionQuantumNumberNames,
+    allowed_values: List,
+) -> Callable[[StateTransitionGraph], bool]:
     """Filter function.
 
     Closure, which can be used as a filter function in :func:`.filter_graphs`.
@@ -293,14 +357,14 @@ def require_interaction_property(
             quantum number may take
 
     Return:
-        bool:
+        Callable[Any, bool]:
             - *True* if the graph has nodes with an ingoing particle of the
               given name, and the graph fullfills the quantum number
               requirement
             - *False* otherwise
     """
 
-    def check(graph):
+    def check(graph: StateTransitionGraph) -> bool:
         node_ids = _find_node_ids_with_ingoing_particle_name(
             graph, ingoing_particle_name
         )
@@ -317,7 +381,9 @@ def require_interaction_property(
     return check
 
 
-def _find_node_ids_with_ingoing_particle_name(graph, ingoing_particle_name):
+def _find_node_ids_with_ingoing_particle_name(
+    graph: StateTransitionGraph, ingoing_particle_name: str
+) -> List[int]:
     name_label = particle.Labels.Name.name
     found_node_ids = []
     for node_id in graph.nodes:
@@ -332,10 +398,12 @@ def _find_node_ids_with_ingoing_particle_name(graph, ingoing_particle_name):
     return found_node_ids
 
 
-def analyse_solution_failure(violated_laws_per_node_and_graph):
+def analyse_solution_failure(
+    violated_laws_per_node_and_graph: List[ViolatedLaws],
+) -> List[str]:
     # try to find rules that are just always violated
-    violated_laws = []
-    scoresheet = {}
+    violated_laws: List[str] = []
+    scoresheet: Dict[str, int] = {}
 
     for violated_laws_per_node in violated_laws_per_node_and_graph:
         temp_violated_laws = set()
@@ -359,8 +427,10 @@ def analyse_solution_failure(violated_laws_per_node_and_graph):
     return violated_laws
 
 
-def create_interaction_setting_groups(graph_node_setting_pairs):
-    graph_settings_groups = {}
+def create_interaction_setting_groups(
+    graph_node_setting_pairs: List[Tuple[StateTransitionGraph, NodeSettings]]
+) -> GraphSettingsGroups:
+    graph_settings_groups: GraphSettingsGroups = {}
     for (instance, node_settings) in graph_node_setting_pairs:
         setting_combinations = _create_setting_combinations(node_settings)
         for setting in setting_combinations:
@@ -371,21 +441,25 @@ def create_interaction_setting_groups(graph_node_setting_pairs):
     return graph_settings_groups
 
 
-def _create_setting_combinations(node_settings):
+def _create_setting_combinations(
+    node_settings: NodeSettings,
+) -> List[Dict[int, InteractionNodeSettings]]:
     return [
         dict(zip(node_settings.keys(), x))
-        for x in product(*node_settings.values())
+        for x in product(*node_settings.values())  # type: ignore
     ]
 
 
-def _calculate_strength(node_interaction_settings):
+def _calculate_strength(
+    node_interaction_settings: Dict[int, InteractionNodeSettings]
+) -> float:
     strength = 1.0
     for int_setting in node_interaction_settings.values():
         strength *= int_setting.interaction_strength
     return strength
 
 
-def match_external_edges(graphs):
+def match_external_edges(graphs: List[StateTransitionGraph]) -> None:
     if not isinstance(graphs, list):
         raise TypeError("graphs argument is not of type list!")
     if not graphs:
@@ -396,8 +470,10 @@ def match_external_edges(graphs):
 
 
 def _match_external_edge_ids(  # pylint: disable=too-many-locals
-    graphs, ref_graph_id, external_edge_getter_function
-):
+    graphs: List[StateTransitionGraph],
+    ref_graph_id: int,
+    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+) -> None:
     ref_graph = graphs[ref_graph_id]
     # create external edge to particle mapping
     ref_edge_id_particle_mapping = _create_edge_id_particle_mapping(
@@ -430,12 +506,12 @@ def _match_external_edge_ids(  # pylint: disable=too-many-locals
             graph.swap_edges(edge_id1, edge_id2)
 
 
-def _calculate_swappings(id_mapping):
+def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
     """Calculate edge id swappings.
 
     Its important to use an ordered dict as the swappings do not commute!
     """
-    swappings = OrderedDict()
+    swappings: OrderedDict = OrderedDict()
     for key, value in id_mapping.items():
         # go through existing swappings and use them
         newkey = key
@@ -443,10 +519,15 @@ def _calculate_swappings(id_mapping):
             newkey = swappings[newkey]
         if value != newkey:
             swappings[value] = newkey
+    if len(swappings) > 0:
+        print(swappings)
     return swappings
 
 
-def _create_edge_id_particle_mapping(graph, external_edge_getter_function):
+def _create_edge_id_particle_mapping(
+    graph: StateTransitionGraph,
+    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+) -> Dict[int, str]:
     name_label = particle.Labels.Name.name
     return {
         i: graph.edge_props[i][name_label]
@@ -454,7 +535,9 @@ def _create_edge_id_particle_mapping(graph, external_edge_getter_function):
     }
 
 
-def perform_external_edge_identical_particle_combinatorics(graph):
+def perform_external_edge_identical_particle_combinatorics(
+    graph: StateTransitionGraph,
+) -> List[StateTransitionGraph]:
     """Create combinatorics clones of the `.StateTransitionGraph`.
 
     In case of identical particles in the initial or final state. Only
@@ -477,14 +560,15 @@ def perform_external_edge_identical_particle_combinatorics(graph):
 
 
 def _external_edge_identical_particle_combinatorics(
-    graph, external_edge_getter_function
-):
+    graph: StateTransitionGraph,
+    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+) -> List[StateTransitionGraph]:
     # pylint: disable=too-many-locals
     new_graphs = [graph]
     edge_particle_mapping = _create_edge_id_particle_mapping(
         graph, external_edge_getter_function
     )
-    identical_particle_groups = {}
+    identical_particle_groups: Dict[str, Set[int]] = {}
     for key, value in edge_particle_mapping.items():
         if value not in identical_particle_groups:
             identical_particle_groups[value] = set()

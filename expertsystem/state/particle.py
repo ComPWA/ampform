@@ -35,6 +35,10 @@ from expertsystem.topology.graph import (
 )
 
 
+StateWithSpins = Tuple[str, List[float]]
+StateDefinition = Union[str, StateWithSpins]
+
+
 class Labels(Enum):
     """Labels that are useful in the particle module."""
 
@@ -477,9 +481,7 @@ def initialize_graph(graph, initial_state, final_state, final_state_groupings):
     return new_graphs
 
 
-def check_if_spin_projections_set(
-    state: Union[str, Tuple[str, List[float]]]
-) -> Tuple[str, List[float]]:
+def check_if_spin_projections_set(state: StateDefinition,) -> StateWithSpins:
     if isinstance(state, str):
         particle_name = state
         particle = DATABASE[state]
@@ -569,8 +571,7 @@ def initialize_external_edge_lists(
 
 
 def initialize_edges(
-    graph: StateTransitionGraph,
-    edge_particle_dict: Dict[int, Tuple[str, List[float]]],
+    graph: StateTransitionGraph, edge_particle_dict: Dict[int, StateWithSpins],
 ) -> List[StateTransitionGraph]:
     for edge_id, state_particle in edge_particle_dict.items():
         particle_name = state_particle[0]

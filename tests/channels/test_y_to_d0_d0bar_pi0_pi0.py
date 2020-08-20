@@ -3,6 +3,7 @@
 """
 
 import logging
+from typing import List
 
 import pytest
 
@@ -14,6 +15,7 @@ from expertsystem.state.particle import (
 )
 from expertsystem.ui import (
     InteractionTypes,
+    StateDefinition,
     StateTransitionManager,
 )
 from expertsystem.ui._default_settings import (
@@ -26,8 +28,11 @@ logging.basicConfig(level=logging.INFO)
 
 def test_script_simple():
     # initialize the graph edges (initial and final state)
-    initial_state = [("Y(4260)", [-1, 1])]
-    final_state = [("D*(2007)0", [-1, 0, 1]), ("D*(2007)~0", [-1, 0, 1])]
+    initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
+    final_state: List[StateDefinition] = [
+        ("D*(2007)0", [-1, 0, 1]),
+        ("D*(2007)~0", [-1, 0, 1]),
+    ]
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
@@ -104,8 +109,8 @@ def test_script_simple():
 @pytest.mark.slow
 def test_script_full():
     # initialize the graph edges (initial and final state)
-    initial_state = [("Y(4260)", [-1, 1])]
-    final_state = ["D0", "D~0", "pi0", "pi0"]
+    initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
+    final_state: List[StateDefinition] = ["D0", "D~0", "pi0", "pi0"]
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"

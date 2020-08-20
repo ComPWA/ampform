@@ -163,22 +163,23 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         "ls_pairs, result", [([(1, 0), (1, 1)], 2), ([(1, 0), (1, 0)], 1),]
     )
     def test_remove_duplicates(self, ls_pairs, result):
-        graphs: dict = {"test": []}
+        strength = 60.0
+        graphs: dict = {strength: []}
         for ls_pair in ls_pairs:
-            graphs["test"].append(
+            graphs[strength].append(
                 ([make_ls_test_graph(ls_pair[0], ls_pair[1])], [])
             )
 
         results = remove_duplicate_solutions(graphs)
-        num_solutions = [len(result[0]) for result in results["test"]]
+        num_solutions = [len(result[0]) for result in results[strength]]
         assert sum(num_solutions) == result
 
         for ls_pair in ls_pairs:
-            graphs["test"].append(
+            graphs[strength].append(
                 ([make_ls_test_graph_scrambled(ls_pair[0], ls_pair[1])], [])
             )
         results = remove_duplicate_solutions(graphs)
-        num_solutions = [len(result[0]) for result in results["test"]]
+        num_solutions = [len(result[0]) for result in results[strength]]
         assert sum(num_solutions) == result
 
     @pytest.mark.parametrize(

@@ -14,17 +14,38 @@ import logging
 from copy import deepcopy
 from multiprocessing import Pool
 from os import path
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from progress.bar import IncrementalBar
 
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.state import particle
+from expertsystem.state.particle import (
+    CompareGraphElementPropertiesFunctor,
+    DATABASE,
+    InteractionQuantumNumberNames,
+    StateDefinition,
+    initialize_graph,
+    load_particles,
+)
 from expertsystem.state.propagation import (
     FullPropagator,
+    InteractionNodeSettings,
     InteractionTypes,
 )
-from expertsystem.topology import graph
+from expertsystem.topology.graph import (
+    InteractionNode,
+    StateTransitionGraph,
+    get_edges_outgoing_to_node,
+    get_final_state_edges,
+    get_initial_state_edges,
+)
 from expertsystem.topology.topology_builder import (
     SimpleStateTransitionTopologyBuilder,
 )
@@ -36,7 +57,11 @@ from ._default_settings import (
 )
 from ._system_control import (
     GammaCheck,
+    GraphSettingsGroups,
     LeptonCheck,
+    NodeSettings,
+    SolutionMapping,
+    ViolatedLaws,
     analyse_solution_failure,
     create_interaction_setting_groups,
     filter_interaction_types,
@@ -51,15 +76,17 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        initial_state,
-        final_state,
-        allowed_intermediate_particles=None,
-        interaction_type_settings=None,
-        formalism_type="helicity",
-        topology_building="isobar",
-        number_of_threads=4,
-        propagation_mode="fast",
-    ):
+        initial_state: List[StateDefinition],
+        final_state: List[StateDefinition],
+        allowed_intermediate_particles: Optional[List[str]] = None,
+        interaction_type_settings: Dict[
+            InteractionTypes, InteractionNodeSettings
+        ] = None,
+        formalism_type: str = "helicity",
+        topology_building: str = "isobar",
+        number_of_threads: int = 4,
+        propagation_mode: str = "fast",
+    ) -> None:
         if allowed_intermediate_particles is None:
             allowed_intermediate_particles = []
         if interaction_type_settings is None:
@@ -74,9 +101,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 f"Formalism type {formalism_type} not implemented."
                 f" Use {allowed_formalism_types} instead."
             )
-        self.__formalism_type = formalism_type
-        self.number_of_threads = number_of_threads
-        self.propagation_mode = propagation_mode
+        self.__formalism_type = str(formalism_type)
+        self.number_of_threads = int(number_of_threads)
+        self.propagation_mode = str(propagation_mode)
         self.initial_state = initial_state
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
@@ -86,30 +113,30 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
         self.allowed_intermediate_particles = allowed_intermediate_particles
-        self.final_state_groupings = []
-        self.allowed_interaction_types = [
+        self.final_state_groupings: List[List[str]] = list()
+        self.allowed_interaction_types: List[InteractionTypes] = [
             InteractionTypes.Strong,
             InteractionTypes.EM,
             InteractionTypes.Weak,
         ]
-        self.filter_remove_qns = []
-        self.filter_ignore_qns = []
+        self.filter_remove_qns: List[InteractionQuantumNumberNames] = []
+        self.filter_ignore_qns: List[InteractionQuantumNumberNames] = []
         if formalism_type == "helicity":
             self.filter_remove_qns = [
-                particle.InteractionQuantumNumberNames.S,
-                particle.InteractionQuantumNumberNames.L,
+                InteractionQuantumNumberNames.S,
+                InteractionQuantumNumberNames.L,
             ]
         if "helicity" in formalism_type:
             self.filter_ignore_qns = [
-                particle.InteractionQuantumNumberNames.ParityPrefactor
+                InteractionQuantumNumberNames.ParityPrefactor
             ]
         int_nodes = []
         if topology_building == "isobar":
             if len(initial_state) == 1:
-                int_nodes.append(graph.InteractionNode("TwoBodyDecay", 1, 2))
+                int_nodes.append(InteractionNode("TwoBodyDecay", 1, 2))
         else:
             int_nodes.append(
-                graph.InteractionNode(
+                InteractionNode(
                     "NBodyScattering", len(initial_state), len(final_state)
                 )
             )
@@ -127,20 +154,26 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def formalism_type(self) -> str:
         return self.__formalism_type
 
-    def set_topology_builder(self, topology_builder):
+    def set_topology_builder(
+        self, topology_builder: SimpleStateTransitionTopologyBuilder
+    ) -> None:
         self.topology_builder = topology_builder
 
-    def add_final_state_grouping(self, fs_group):
+    def add_final_state_grouping(
+        self, fs_group: List[Union[str, List[str]]]
+    ) -> None:
         if not isinstance(fs_group, list):
             raise ValueError(
                 "The final state grouping has to be of type list."
             )
         if len(fs_group) > 0:
             if not isinstance(fs_group[0], list):
-                fs_group = [fs_group]
-            self.final_state_groupings.append(fs_group)
+                fs_group = [fs_group]  # type: ignore
+            self.final_state_groupings.append(fs_group)  # type: ignore
 
-    def set_allowed_interaction_types(self, allowed_interaction_types):
+    def set_allowed_interaction_types(
+        self, allowed_interaction_types: List[InteractionTypes]
+    ) -> None:
         # verify order
         for allowed_types in allowed_interaction_types:
             if not isinstance(allowed_types, InteractionTypes):
@@ -155,7 +188,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
         self.allowed_interaction_types = allowed_interaction_types
 
-    def prepare_graphs(self):
+    def prepare_graphs(self,) -> GraphSettingsGroups:
         topology_graphs = self._build_topologies()
         init_graphs = self._create_seed_graphs(topology_graphs)
         graph_node_setting_pairs = self._determine_node_settings(init_graphs)
@@ -165,47 +198,46 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         )
         return graph_settings_groups
 
-    def _build_topologies(self):
+    def _build_topologies(self) -> List[StateTransitionGraph]:
         all_graphs = self.topology_builder.build_graphs(
             len(self.initial_state), len(self.final_state)
         )
         logging.info(f"number of topology graphs: {len(all_graphs)}")
         return all_graphs
 
-    def _create_seed_graphs(self, topology_graphs):
+    def _create_seed_graphs(
+        self, topology_graphs: List[StateTransitionGraph]
+    ) -> List[StateTransitionGraph]:
         # initialize the graph edges (initial and final state)
-        init_graphs = []
+        init_graphs: List[StateTransitionGraph] = []
         for topology_graph in topology_graphs:
             topology_graph.set_graph_element_properties_comparator(
-                particle.CompareGraphElementPropertiesFunctor()
+                CompareGraphElementPropertiesFunctor()
             )
             init_graphs.extend(
-                particle.initialize_graph(
+                initialize_graph(
                     topology_graph,
                     self.initial_state,
                     self.final_state,
                     self.final_state_groupings,
                 )
             )
-
         logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs
 
-    def _determine_node_settings(self, graphs):
+    def _determine_node_settings(
+        self, graphs: List[StateTransitionGraph]
+    ) -> List[Tuple[StateTransitionGraph, NodeSettings]]:
         # pylint: disable=too-many-locals
         graph_node_setting_pairs = []
         for instance in graphs:
-            final_state_edges = graph.get_final_state_edges(instance)
-            initial_state_edges = graph.get_initial_state_edges(instance)
-            node_settings = {}
+            final_state_edges = get_final_state_edges(instance)
+            initial_state_edges = get_initial_state_edges(instance)
+            node_settings: NodeSettings = {}
             for node_id in instance.nodes:
-                node_int_types = []
-                out_edge_ids = graph.get_edges_outgoing_to_node(
-                    instance, node_id
-                )
-                in_edge_ids = graph.get_edges_outgoing_to_node(
-                    instance, node_id
-                )
+                node_int_types: List[InteractionTypes] = []
+                out_edge_ids = get_edges_outgoing_to_node(instance, node_id)
+                in_edge_ids = get_edges_outgoing_to_node(instance, node_id)
                 in_edge_props = [
                     instance.edge_props[edge_id]
                     for edge_id in [
@@ -247,10 +279,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         return graph_node_setting_pairs
 
     def find_solutions(
-        self, graph_setting_groups
-    ):  # pylint: disable=too-many-locals
+        self, graph_setting_groups: GraphSettingsGroups,
+    ) -> Tuple[
+        List[StateTransitionGraph], List[str]
+    ]:  # pylint: disable=too-many-locals
         """Check for solutions for a specific set of interaction settings."""
-        results = {}
+        results: SolutionMapping = {}
         logging.info(
             "Number of interaction settings groups being processed: %d",
             len(graph_setting_groups),
@@ -265,7 +299,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             logging.info(f"{graph_setting_group} entries in this group")
             logging.info(f"running with {self.number_of_threads} threads...")
 
-            temp_results = []
+            temp_results: List[
+                Tuple[List[StateTransitionGraph], ViolatedLaws]
+            ] = []
             progress_bar = IncrementalBar(
                 "Propagating quantum numbers...", max=len(graph_setting_group)
             )
@@ -300,11 +336,11 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             results, self.filter_remove_qns, self.filter_ignore_qns
         )
 
-        node_non_satisfied_rules = []
-        solutions = []
-        for result in results.values():
-            for (tempsolutions, non_satisfied_laws) in result:
-                solutions.extend(tempsolutions)
+        node_non_satisfied_rules: List[ViolatedLaws] = []
+        solutions: List[StateTransitionGraph] = []
+        for item in results.values():
+            for (temp_solutions, non_satisfied_laws) in item:
+                solutions.extend(temp_solutions)
                 node_non_satisfied_rules.append(non_satisfied_laws)
         logging.info(f"total number of found solutions: {len(solutions)}")
         violated_laws = []
@@ -324,7 +360,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         return (final_solutions, violated_laws)
 
-    def _propagate_quantum_numbers(self, state_graph_node_settings_pair):
+    def _propagate_quantum_numbers(
+        self,
+        state_graph_node_settings_pair: Tuple[
+            StateTransitionGraph, Dict[int, InteractionNodeSettings]
+        ],
+    ) -> Tuple[
+        List[StateTransitionGraph], ViolatedLaws,
+    ]:
         propagator = self._initialize_qn_propagator(
             state_graph_node_settings_pair[0],
             state_graph_node_settings_pair[1],
@@ -332,7 +375,11 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         solutions = propagator.find_solutions()
         return (solutions, propagator.get_non_satisfied_conservation_laws())
 
-    def _initialize_qn_propagator(self, state_graph, node_settings):
+    def _initialize_qn_propagator(
+        self,
+        state_graph: StateTransitionGraph,
+        node_settings: Dict[int, InteractionNodeSettings],
+    ) -> FullPropagator:
         propagator = FullPropagator(state_graph, self.propagation_mode)
         for node_id, interaction_settings in node_settings.items():
             propagator.assign_settings_to_node(node_id, interaction_settings)
@@ -342,7 +389,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         propagator.set_allowed_intermediate_particles(
             self.allowed_intermediate_particles
         )
-
         return propagator
 
     def write_amplitude_model(self, solutions: list, output_file: str) -> None:
@@ -373,7 +419,7 @@ def load_default_particle_list() -> None:
             f"\n  Failed to load {DEFAULT_PARTICLE_LIST_FILE}!"
             "\n  Please contact the developers: https://github.com/ComPWA"
         )
-    particle.load_particles(DEFAULT_PARTICLE_LIST_PATH)
+    load_particles(DEFAULT_PARTICLE_LIST_PATH)
     logging.info(
-        f"Loaded {len(particle.DATABASE)} particles from {DEFAULT_PARTICLE_LIST_FILE}!"
+        f"Loaded {len(DATABASE)} particles from {DEFAULT_PARTICLE_LIST_FILE}!"
     )
