@@ -5,6 +5,7 @@ from pathlib import Path
 from expertsystem.data import ParticleCollection
 
 from . import _pdg
+from . import dot
 from . import xml
 from . import yaml
 
@@ -35,6 +36,8 @@ def write(instance: object, filename: str) -> None:
         return yaml.write(instance, filename)
     if file_extension == "xml":
         return xml.write(instance, filename)
+    if file_extension == "gv":
+        return dot.write(instance, filename)
     raise NotImplementedError(
         f'No writer defined for file type "{file_extension}"'
     )

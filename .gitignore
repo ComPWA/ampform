@@ -1,4 +1,5 @@
 # Output files
+*.gv
 *.xml
 *.yaml
 *.yml

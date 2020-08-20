@@ -18,6 +18,7 @@ FILES_TO_COPY = [
     "additional_particles.yml",
     "particles.ipynb",
     "quickstart.ipynb",
+    "visualization.ipynb",
 ]
 shutil.rmtree(PATH_TARGET, ignore_errors=True)
 os.makedirs(PATH_TARGET, exist_ok=True)
@@ -112,6 +113,7 @@ nitpick_ignore = [
 
 # Intersphinx settings
 intersphinx_mapping = {
+    "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
     "jsonschema": (
         "https://python-jsonschema.readthedocs.io/en/latest/",
         None,

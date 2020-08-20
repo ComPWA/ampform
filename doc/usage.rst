@@ -10,3 +10,4 @@ start <usage/quickstart>`. For other usage examples, see the notebooks below:
 
    usage/quickstart
    usage/particles
+   usage/visualization

@@ -173,6 +173,7 @@ addition, recommend to install a few extensions:
 
 .. code-block:: shell
 
+  jupyter labextension install jupyterlab-execute-time
   jupyter labextension install @ijmbarr/jupyterlab_spellchecker
   jupyter labextension install @aquirdturtle/collapsible_headings
   jupyter labextension install @ryantam626/jupyterlab_code_formatter

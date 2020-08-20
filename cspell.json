@@ -69,6 +69,7 @@
         "numpy",
         "pycompwa",
         "pydocstyle",
+        "pydot",
         "pylint",
         "pytest",
         "quickstart",
