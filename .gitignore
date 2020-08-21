@@ -20,6 +20,7 @@ dist/
 version.py
 
 # Python temporary files
+*.egg-info/
 *.pyc
 .coverage
 .coverage.*
@@ -30,7 +31,7 @@ version.py
 .tox/
 __pycache__/
 htmlcov/
-*.egg-info/
+prof/
 
 # Virtual environments
 *venv/

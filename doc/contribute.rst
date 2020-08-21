@@ -121,6 +121,12 @@ Gutters
 extension (for this you need to run :code:`pytest` with the flag
 :code:`--cov-report=xml`).
 
+.. note::
+
+  To get an idea of performance per component, run :command:`pytest
+  --profile-svg` and check the stats and the :file:`prof/combined.svg` output
+  file.
+
 
 Documentation
 -------------
