@@ -519,8 +519,6 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
             newkey = swappings[newkey]
         if value != newkey:
             swappings[value] = newkey
-    if len(swappings) > 0:
-        print(swappings)
     return swappings
 
 
