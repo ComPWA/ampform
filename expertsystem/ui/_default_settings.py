@@ -133,7 +133,7 @@ def create_default_interaction_settings(
         StateQuantumNumberNames.GParity: [-1, 1, None],
         StateQuantumNumberNames.Spin: create_spin_domain([0, 0.5, 1, 1.5, 2]),
         StateQuantumNumberNames.IsoSpin: create_spin_domain([0, 0.5, 1, 1.5]),
-        StateQuantumNumberNames.Charm: [-1, 0, 1],
+        StateQuantumNumberNames.Charmness: [-1, 0, 1],
         StateQuantumNumberNames.Strangeness: [-1, 0, 1],
     }
     weak_settings.qn_domains.update(formalism_qn_domains)
@@ -144,7 +144,9 @@ def create_default_interaction_settings(
     em_settings = deepcopy(weak_settings)
     em_settings.conservation_laws.extend(
         [
-            AdditiveQuantumNumberConservation(StateQuantumNumberNames.Charm),
+            AdditiveQuantumNumberConservation(
+                StateQuantumNumberNames.Charmness
+            ),
             AdditiveQuantumNumberConservation(
                 StateQuantumNumberNames.Strangeness
             ),

@@ -4,16 +4,9 @@ This module contains the functions that you need for the most common use cases
 of the `expertsystem`.
 """
 
-__all__ = [
-    "StateTransitionManager",
-    "load_default_particle_list",
-    "InteractionTypes",
-]
-
 import logging
 from copy import deepcopy
 from multiprocessing import Pool
-from os import path
 from typing import (
     Dict,
     List,
@@ -24,6 +17,7 @@ from typing import (
 
 from progress.bar import IncrementalBar
 
+from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.state.particle import (
@@ -32,7 +26,6 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     StateDefinition,
     initialize_graph,
-    load_particles,
 )
 from expertsystem.state.propagation import (
     FullPropagator,
@@ -51,7 +44,6 @@ from expertsystem.topology.topology_builder import (
 )
 
 from ._default_settings import (
-    DEFAULT_PARTICLE_LIST_FILE,
     DEFAULT_PARTICLE_LIST_PATH,
     create_default_interaction_settings,
 )
@@ -86,6 +78,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         topology_building: str = "isobar",
         number_of_threads: int = 4,
         propagation_mode: str = "fast",
+        reload_pdg: bool = False,
     ) -> None:
         if allowed_intermediate_particles is None:
             allowed_intermediate_particles = []
@@ -148,7 +141,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
         self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
-        load_default_particle_list()
+        if reload_pdg or len(DATABASE) == 0:
+            load_default_particles()
 
     @property
     def formalism_type(self) -> str:
@@ -407,19 +401,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         amplitude_generator.write_to_file(output_file)
 
 
-def load_default_particle_list() -> None:
+def load_default_particles() -> None:
     """Load the default particle list that comes with the expertsystem.
 
     .. warning::
         This resets all particle definitions and the removes particles that
         don't exist in the particle list that ships with the `expertsystem`!
     """
-    if not path.exists(DEFAULT_PARTICLE_LIST_PATH):
-        raise FileNotFoundError(
-            f"\n  Failed to load {DEFAULT_PARTICLE_LIST_FILE}!"
-            "\n  Please contact the developers: https://github.com/ComPWA"
-        )
-    load_particles(DEFAULT_PARTICLE_LIST_PATH)
-    logging.info(
-        f"Loaded {len(DATABASE)} particles from {DEFAULT_PARTICLE_LIST_FILE}!"
-    )
+    pdg = io.load_pdg()
+    DATABASE.merge(pdg)
+    DATABASE.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
+    logging.info(f"Loaded {len(pdg)} particles from the PDG!")

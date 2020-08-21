@@ -12,7 +12,7 @@ def test_find(particle_database):
     assert f2_1950.mass == 1.936
     phi = particle_database.find("phi(1020)")
     assert phi.pid == 333
-    assert phi.width == 0.004249
+    assert pytest.approx(phi.width) == 0.004249
 
 
 @pytest.mark.parametrize("search_term", [666, "non-existing"])
@@ -24,7 +24,7 @@ def test_find_fail(particle_database, search_term):
 def test_find_subset(particle_database):
     search_result = particle_database.find_subset("f(0)")
     f0_1500_from_subset = search_result["f(0)(1500)"]
-    assert len(search_result) == 2
+    assert len(search_result) == 5
     assert f0_1500_from_subset.mass == 1.506
     assert f0_1500_from_subset is particle_database["f(0)(1500)"]
     assert f0_1500_from_subset is not particle_database["f(0)(980)"]

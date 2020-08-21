@@ -819,7 +819,7 @@ class GellMannNishijimaRule(AbstractRule):
             StateQuantumNumberNames.IsoSpin, [DefinedForAllEdges()]
         )
         self.add_required_qn(StateQuantumNumberNames.Strangeness)
-        self.add_required_qn(StateQuantumNumberNames.Charm)
+        self.add_required_qn(StateQuantumNumberNames.Charmness)
         self.add_required_qn(StateQuantumNumberNames.Bottomness)
         self.add_required_qn(StateQuantumNumberNames.Topness)
         self.add_required_qn(StateQuantumNumberNames.BaryonNumber)
@@ -866,7 +866,7 @@ class GellMannNishijimaRule(AbstractRule):
         """Calculate the hypercharge :math:`Y=S+C+B+T+B`."""
         qn_labels = [
             StateQuantumNumberNames.Strangeness,
-            StateQuantumNumberNames.Charm,
+            StateQuantumNumberNames.Charmness,
             StateQuantumNumberNames.Bottomness,
             StateQuantumNumberNames.Topness,
             StateQuantumNumberNames.BaryonNumber,

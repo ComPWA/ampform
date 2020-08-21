@@ -3,27 +3,22 @@
 """
 
 import logging
-from typing import List
 
-from expertsystem.ui import (
-    StateDefinition,
-    StateTransitionManager,
-)
+from expertsystem.ui import StateTransitionManager
+
+logging.basicConfig(level=logging.ERROR)
+logging.getLogger().setLevel(logging.ERROR)
 
 
 def test_script():
-    logging.basicConfig(level=logging.INFO)
-    logging.getLogger().setLevel(logging.INFO)
-    # initialize the graph edges (initial and final state)
-    initial_state: List[StateDefinition] = [("D0", [0])]
-    final_state: List[StateDefinition] = [
-        ("K~0", [0]),
-        ("K+", [0]),
-        ("K-", [0]),
-    ]
-
     stm = StateTransitionManager(
-        initial_state, final_state, ["a(0)", "phi", "a(2)(1320)-"]
+        initial_state=[("D0", [0])],
+        final_state=[("K~0", [0]), ("K+", [0]), ("K-", [0])],
+        allowed_intermediate_particles=[
+            "a(0)(980)",
+            "a(2)(1320)-",
+            "phi(1020)",
+        ],
     )
     stm.number_of_threads = 1
 

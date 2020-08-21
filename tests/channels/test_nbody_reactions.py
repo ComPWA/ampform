@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
 from expertsystem.ui import (
@@ -8,7 +9,7 @@ from expertsystem.ui import (
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "test_input,expected",
+    "test_input, expected",
     [
         ((["p", "p~"], ["pi+", "pi0"]), ["ChargeConservation"]),
         ((["eta"], ["gamma", "gamma"]), []),
@@ -63,8 +64,8 @@ def test_general_reaction(test_input, expected):
     print("processing case:" + str(test_input))
 
     stm = StateTransitionManager(
-        test_input[0],
-        test_input[1],
+        initial_state=test_input[0],
+        final_state=test_input[1],
         formalism_type="canonical",
         topology_building="nbody",
         propagation_mode="full",
@@ -84,7 +85,7 @@ def test_general_reaction(test_input, expected):
 
 
 @pytest.mark.parametrize(
-    "test_input,expected",
+    "test_input, expected",
     [
         ((["f(0)(980)"], ["pi+", "pi-"]), []),
         (
@@ -105,8 +106,8 @@ def test_em_reactions(test_input, expected):
     print("processing case:" + str(test_input))
 
     stm = StateTransitionManager(
-        test_input[0],
-        test_input[1],
+        initial_state=test_input[0],
+        final_state=test_input[1],
         formalism_type="canonical",
         topology_building="nbody",
         propagation_mode="full",
@@ -135,8 +136,8 @@ def test_strong_reactions(test_input, expected):
     print("processing case:" + str(test_input))
 
     stm = StateTransitionManager(
-        test_input[0],
-        test_input[1],
+        initial_state=test_input[0],
+        final_state=test_input[1],
         formalism_type="canonical",
         topology_building="nbody",
         propagation_mode="full",

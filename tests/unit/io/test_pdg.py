@@ -34,6 +34,7 @@ def test_maybe_qq():
 
 def test_pdg_size(pdg):
     assert len(pdg) == 532
+    assert len(pdg.find_subset("~")) == 166
 
 
 def test_missing_in_pdg(pdg, particle_database):

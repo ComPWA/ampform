@@ -77,8 +77,10 @@
             "GParity",
             "IsoSpin",
             "BaryonNumber",
-            "Charm",
             "Strangeness",
+            "Charmness",
+            "Bottomness",
+            "Topness",
             "ElectronLN",
             "MuonLN",
             "TauLN"

@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.ERROR)
 
 @pytest.fixture(scope="package")
 def particle_database() -> ParticleCollection:
-    ui.load_default_particle_list()
+    ui.load_default_particles()
     return DATABASE
 
 
@@ -28,7 +28,7 @@ def jpsi_to_gamma_pi_pi_canonical_solutions():
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f(0)"],
+        allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
         formalism_type="canonical-helicity",
     )
     stm.set_allowed_interaction_types([InteractionTypes.EM])
@@ -42,7 +42,7 @@ def jpsi_to_gamma_pi_pi_helicity_solutions():
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f(0)"],
+        allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
     )
     stm.set_allowed_interaction_types(
         [InteractionTypes.Strong, InteractionTypes.EM]

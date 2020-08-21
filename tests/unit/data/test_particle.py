@@ -115,11 +115,19 @@ def test_create_antiparticle(
 
 def test_create_antiparticle_tilde(particle_database):
     anti_particles = particle_database.find_subset("~")
-    assert len(anti_particles) == 9
+    assert len(anti_particles) == 166
     for anti_particle in anti_particles.values():
         particle_name = anti_particle.name.replace("~", "")
+        if "+" in particle_name:
+            particle_name = particle_name.replace("+", "-")
+        elif "-" in particle_name:
+            particle_name = particle_name.replace("-", "+")
         created_particle = create_antiparticle(anti_particle, particle_name)
-        assert created_particle == particle_database[particle_name]
+
+        assert created_particle.state == particle_database[particle_name].state
+        assert created_particle.complex_energy == pytest.approx(
+            particle_database[particle_name].complex_energy
+        )
 
 
 class TestGellmannNishijima:
