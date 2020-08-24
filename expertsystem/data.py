@@ -66,10 +66,19 @@ class Spin(abc.Hashable):
     def __init__(self, magnitude: float, projection: float) -> None:
         magnitude = float(magnitude)
         projection = float(projection)
+        if magnitude % 0.5 != 0.0:
+            raise ValueError(
+                f"Spin magnitude {magnitude} has to be a multitude of 0.5"
+            )
         if abs(projection) > magnitude:
             raise ValueError(
                 "Spin projection cannot be larger than its magnitude:\n"
                 f"  {projection} > {magnitude}"
+            )
+        if not (projection - magnitude).is_integer():
+            raise ValueError(
+                f"{self.__class__.__name__}{magnitude, projection}: "
+                "(projection - magnitude) should be integer! "
             )
         if projection == -0.0:
             projection = 0.0

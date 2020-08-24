@@ -108,8 +108,8 @@ class TestCParity:  # pylint: disable=no-self-use
                 temp_case: Any = (
                     [{c_parity_label: 1}],
                     [
-                        {spin_label: Spin(0.5, 0), pid_label: 100},
-                        {spin_label: Spin(0.5, 0), pid_label: -100},
+                        {spin_label: Spin(0.5, 0.5), pid_label: 100},
+                        {spin_label: Spin(0.5, 0.5), pid_label: -100},
                     ],
                     {
                         ang_mom_label: Spin(spin_ang_mom[1], 0),

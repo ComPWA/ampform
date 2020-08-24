@@ -651,7 +651,8 @@ class SpinConservation(AbstractRule):
             if self.use_projection:
                 total_spins.add(part_list[0])
             else:
-                total_spins.add(Spin(part_list[0].magnitude, 0))
+                spin_magnitude = part_list[0].magnitude
+                total_spins.add(Spin(spin_magnitude, spin_magnitude))
         else:
             # first couple all spins together
             spins_daughters_coupled = set()
@@ -682,7 +683,8 @@ class SpinConservation(AbstractRule):
                     total_spins = spins_daughters_coupled
                 else:
                     total_spins = [
-                        Spin(x.magnitude, 0.0) for x in spins_daughters_coupled
+                        Spin(x.magnitude, x.magnitude)
+                        for x in spins_daughters_coupled
                     ]
         return total_spins
 
@@ -707,7 +709,7 @@ class SpinConservation(AbstractRule):
                 if not is_clebsch_gordan_coefficient_zero(spin1, spin2, x)
             ]
         return [
-            Spin(x, 0)
+            Spin(x, x)
             for x in arange(abs(j_1 - j_2), j_1 + j_2 + 1, 1).tolist()
         ]
 

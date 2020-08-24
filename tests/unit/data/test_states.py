@@ -55,3 +55,11 @@ def test_complex_energy_equality():
         complex(1.2, 0.1),
         state=QuantumState(spin=Spin(1, 1), charge=0, isospin=Spin(1, 0)),
     )
+
+
+@pytest.mark.parametrize(
+    "magnitude, projection", [(0.3, 0.3), (1.0, 0.5), (0.5, 0.0)]
+)
+def test_spin_exceptions(magnitude, projection):
+    with pytest.raises(ValueError):
+        print(Spin(magnitude, projection))
