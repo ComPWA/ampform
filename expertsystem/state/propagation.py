@@ -34,13 +34,6 @@ from expertsystem.state.particle import (
     initialize_allowed_particle_list,
     initialize_graphs_with_particles,
 )
-from expertsystem.topology.graph import (
-    get_edges_ingoing_to_node,
-    get_edges_outgoing_to_node,
-    get_final_state_edges,
-    get_initial_state_edges,
-    get_intermediate_state_edges,
-)
 
 
 class GraphElementTypes(Enum):
@@ -252,8 +245,8 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
         return [self.graph]
 
     def create_variable_containers(self, node_id, cons_law):
-        in_edges = get_edges_ingoing_to_node(self.graph, node_id)
-        out_edges = get_edges_outgoing_to_node(self.graph, node_id)
+        in_edges = self.graph.get_edges_ingoing_to_node(node_id)
+        out_edges = self.graph.get_edges_outgoing_to_node(node_id)
 
         qn_names = cons_law.get_required_qn_names()
         qn_list = self.prepare_qns(
@@ -442,7 +435,7 @@ class CSPPropagator(AbstractPropagator):
                         ParticleDecayPropertyNames,
                     ),
                 )
-                in_edges = get_edges_ingoing_to_node(self.graph, node_id)
+                in_edges = self.graph.get_edges_ingoing_to_node(node_id)
 
                 in_edge_vars = self.create_edge_variables(
                     in_edges, part_qn_dict
@@ -451,7 +444,7 @@ class CSPPropagator(AbstractPropagator):
                 variable_mapping["ingoing-fixed"] = in_edge_vars[1]
                 var_list = list(variable_mapping["ingoing"])
 
-                out_edges = get_edges_outgoing_to_node(self.graph, node_id)
+                out_edges = self.graph.get_edges_outgoing_to_node(node_id)
                 out_edge_vars = self.create_edge_variables(
                     out_edges, part_qn_dict
                 )
@@ -571,8 +564,8 @@ class CSPPropagator(AbstractPropagator):
             solution graphs ([:class:`.StateTransitionGraph`])
         """
         solution_graphs = []
-        initial_edges = get_initial_state_edges(self.graph)
-        final_edges = get_final_state_edges(self.graph)
+        initial_edges = self.graph.get_initial_state_edges()
+        final_edges = self.graph.get_final_state_edges()
 
         full_allowed_particle_list = initialize_allowed_particle_list(
             self.allowed_intermediate_particles
@@ -602,7 +595,7 @@ class CSPPropagator(AbstractPropagator):
 
             solution_valid = True
             if self.allowed_intermediate_particles:
-                for int_edge_id in get_intermediate_state_edges(graph_copy):
+                for int_edge_id in graph_copy.get_intermediate_state_edges():
                     # for documentation in case of failure
                     spin = get_particle_property(
                         graph_copy.edge_props[int_edge_id],

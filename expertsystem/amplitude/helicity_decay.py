@@ -19,12 +19,6 @@ from expertsystem.state.particle import (
     StateQuantumNumberNames,
     get_interaction_property,
 )
-from expertsystem.topology.graph import (
-    get_edges_ingoing_to_node,
-    get_edges_outgoing_to_node,
-    get_final_state_edges,
-    get_initial_state_edges,
-)
 
 from . import _yaml_adapter
 from .abstract_generator import (
@@ -49,8 +43,8 @@ def group_graphs_same_initial_and_final(graphs):
     """
     graph_groups = dict()
     for graph in graphs:
-        ise = get_final_state_edges(graph)
-        fse = get_initial_state_edges(graph)
+        ise = graph.get_final_state_edges()
+        fse = graph.get_initial_state_edges()
         graph_group = (
             tuple(sorted([json.dumps(graph.edge_props[x]) for x in ise])),
             tuple(sorted([json.dumps(graph.edge_props[x]) for x in fse])),
@@ -66,8 +60,8 @@ def group_graphs_same_initial_and_final(graphs):
 def get_graph_group_unique_label(graph_group):
     label = ""
     if graph_group:
-        ise = get_initial_state_edges(graph_group[0])
-        fse = get_final_state_edges(graph_group[0])
+        ise = graph_group[0].get_initial_state_edges()
+        fse = graph_group[0].get_final_state_edges()
         is_names = _get_name_hel_list(graph_group[0], ise)
         fs_names = _get_name_hel_list(graph_group[0], fse)
         label += (
@@ -109,7 +103,7 @@ def determine_attached_final_state(graph, edge_id):
         ([int])
     """
     final_state_edge_ids = []
-    all_final_state_edges = get_final_state_edges(graph)
+    all_final_state_edges = graph.get_final_state_edges()
     current_edges = [edge_id]
     while current_edges:
         temp_current_edges = current_edges
@@ -119,9 +113,7 @@ def determine_attached_final_state(graph, edge_id):
                 final_state_edge_ids.append(current_edge)
             else:
                 node_id = graph.edges[current_edge].ending_node_id
-                current_edges.extend(
-                    get_edges_outgoing_to_node(graph, node_id)
-                )
+                current_edges.extend(graph.get_edges_outgoing_to_node(node_id))
     return final_state_edge_ids
 
 
@@ -138,7 +130,7 @@ def get_recoil_edge(graph, edge_id):
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    outgoing_edges = get_edges_outgoing_to_node(graph, node_id)
+    outgoing_edges = graph.get_edges_outgoing_to_node(node_id)
     outgoing_edges.remove(edge_id)
     if len(outgoing_edges) != 1:
         raise ValueError(
@@ -162,7 +154,7 @@ def get_parent_recoil_edge(graph, edge_id):
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    ingoing_edges = get_edges_ingoing_to_node(graph, node_id)
+    ingoing_edges = graph.get_edges_ingoing_to_node(node_id)
     if len(ingoing_edges) != 1:
         raise ValueError(
             "The node with id "
@@ -199,7 +191,7 @@ def generate_kinematics(graphs):
         "InitialState": {"Particle": []},
         "FinalState": {"Particle": []},
     }
-    is_edge_ids = get_initial_state_edges(graphs[0])
+    is_edge_ids = graphs[0].get_initial_state_edges()
     counter = 0
     for edge_id in is_edge_ids:
         tempdict["InitialState"]["Particle"].append(
@@ -210,7 +202,7 @@ def generate_kinematics(graphs):
             }
         )
         counter += 1
-    fs_edge_ids = get_final_state_edges(graphs[0])
+    fs_edge_ids = graphs[0].get_final_state_edges()
     counter = 0
     for edge_id in fs_edge_ids:
         tempdict["FinalState"]["Particle"].append(
@@ -429,8 +421,8 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
 
     @staticmethod
     def _retrieve_helicity_info(graph, node_id):
-        in_edges = get_edges_ingoing_to_node(graph, node_id)
-        out_edges = get_edges_outgoing_to_node(graph, node_id)
+        in_edges = graph.get_edges_ingoing_to_node(node_id)
+        out_edges = graph.get_edges_outgoing_to_node(node_id)
 
         in_names_hel_list = _get_name_hel_list(graph, in_edges)
         out_names_hel_list = _get_name_hel_list(graph, out_edges)
@@ -474,7 +466,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         decay_info_label = particle.Labels.DecayInfo.name
         for graph in graphs:
             if self.top_node_no_dynamics:
-                init_edges = get_initial_state_edges(graph)
+                init_edges = graph.get_initial_state_edges()
                 if len(init_edges) > 1:
                     raise ValueError(
                         "Only a single initial state particle allowed"
@@ -610,7 +602,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         decay_products = []
-        for out_edge_id in get_edges_outgoing_to_node(graph, node_id):
+        for out_edge_id in graph.get_edges_outgoing_to_node(node_id):
             decay_products.append(
                 {
                     name_label: graph.edge_props[out_edge_id][name_label],
@@ -623,7 +615,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
                 }
             )
 
-        in_edge_ids = get_edges_ingoing_to_node(graph, node_id)
+        in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
         if len(in_edge_ids) != 1:
             raise ValueError("This node does not represent a two body decay!")
         dec_part = graph.edge_props[in_edge_ids[0]]

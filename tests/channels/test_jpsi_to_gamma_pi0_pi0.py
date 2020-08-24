@@ -6,11 +6,6 @@ import logging
 
 import pytest
 
-from expertsystem.topology.graph import (
-    get_final_state_edges,
-    get_initial_state_edges,
-    get_intermediate_state_edges,
-)
 from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
@@ -47,23 +42,23 @@ def test_script():
     assert len(solutions) == 48
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        solutions[0], get_final_state_edges
+        solutions[0], "get_final_state_edges"
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        solutions[0], get_initial_state_edges
+        solutions[0], "get_initial_state_edges"
     )
     for solution in solutions[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            solution, get_final_state_edges
+            solution, "get_final_state_edges"
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            solution, get_initial_state_edges
+            solution, "get_initial_state_edges"
         )
 
     print("intermediate states:")
     intermediate_states = set()
     for solution in solutions:
-        int_edge_id = get_intermediate_state_edges(solution)[0]
+        int_edge_id = solution.get_intermediate_state_edges()[0]
         intermediate_states.add(solution.edge_props[int_edge_id]["Name"])
     print(intermediate_states)
 

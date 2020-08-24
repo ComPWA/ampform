@@ -32,16 +32,11 @@ from expertsystem.state.propagation import (
     InteractionNodeSettings,
     InteractionTypes,
 )
-from expertsystem.topology.graph import (
+from expertsystem.topology import (
     InteractionNode,
     StateTransitionGraph,
-    get_edges_outgoing_to_node,
-    get_final_state_edges,
-    get_initial_state_edges,
 )
-from expertsystem.topology.topology_builder import (
-    SimpleStateTransitionTopologyBuilder,
-)
+from expertsystem.topology import SimpleStateTransitionTopologyBuilder
 
 from ._default_settings import (
     DEFAULT_PARTICLE_LIST_PATH,
@@ -208,14 +203,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             topology_graph.set_graph_element_properties_comparator(
                 CompareGraphElementPropertiesFunctor()
             )
-            init_graphs.extend(
-                initialize_graph(
-                    topology_graph,
-                    self.initial_state,
-                    self.final_state,
-                    self.final_state_groupings,
-                )
+            initialized_graphs = initialize_graph(
+                empty_topology=topology_graph,
+                initial_state=self.initial_state,
+                final_state=self.final_state,
+                final_state_groupings=self.final_state_groupings,
             )
+            init_graphs.extend(initialized_graphs)
+
         logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs
 
@@ -225,13 +220,13 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         # pylint: disable=too-many-locals
         graph_node_setting_pairs = []
         for instance in graphs:
-            final_state_edges = get_final_state_edges(instance)
-            initial_state_edges = get_initial_state_edges(instance)
+            final_state_edges = instance.get_final_state_edges()
+            initial_state_edges = instance.get_initial_state_edges()
             node_settings: NodeSettings = {}
             for node_id in instance.nodes:
                 node_int_types: List[InteractionTypes] = []
-                out_edge_ids = get_edges_outgoing_to_node(instance, node_id)
-                in_edge_ids = get_edges_outgoing_to_node(instance, node_id)
+                out_edge_ids = instance.get_edges_outgoing_to_node(node_id)
+                in_edge_ids = instance.get_edges_outgoing_to_node(node_id)
                 in_edge_props = [
                     instance.edge_props[edge_id]
                     for edge_id in [

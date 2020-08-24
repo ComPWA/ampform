@@ -8,11 +8,7 @@ from typing import (
     Optional,
 )
 
-from expertsystem.topology.graph import (
-    StateTransitionGraph,
-    get_final_state_edges,
-    get_initial_state_edges,
-)
+from expertsystem.topology import StateTransitionGraph
 
 
 def convert_to_dot(instance: object) -> str:
@@ -59,8 +55,8 @@ def __graph_to_dot(graph: StateTransitionGraph) -> str:
 
     dot_source = _DOT_HEAD
 
-    top = get_initial_state_edges(graph)
-    outs = get_final_state_edges(graph)
+    top = graph.get_initial_state_edges()
+    outs = graph.get_final_state_edges()
     for i in top:
         dot_source += _DOT_DEFAULT_NODE.format(
             node_name(i), graph.edge_props[i]["Name"]

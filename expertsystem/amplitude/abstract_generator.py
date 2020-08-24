@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from expertsystem.topology.graph import StateTransitionGraph
+from expertsystem.topology import StateTransitionGraph
 
 
 class AbstractAmplitudeNameGenerator(ABC):

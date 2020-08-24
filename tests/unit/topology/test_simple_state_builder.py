@@ -1,7 +1,5 @@
-from expertsystem.topology.graph import InteractionNode
-from expertsystem.topology.topology_builder import (
-    SimpleStateTransitionTopologyBuilder,
-)
+from expertsystem.topology import InteractionNode
+from expertsystem.topology import SimpleStateTransitionTopologyBuilder
 
 
 class TestSimpleStateBuilder:  # pylint: disable=no-self-use

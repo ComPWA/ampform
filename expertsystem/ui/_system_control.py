@@ -34,12 +34,7 @@ from expertsystem.state.propagation import (
     InteractionNodeSettings,
     InteractionTypes,
 )
-from expertsystem.topology.graph import (
-    StateTransitionGraph,
-    get_edges_ingoing_to_node,
-    get_final_state_edges,
-    get_initial_state_edges,
-)
+from expertsystem.topology import StateTransitionGraph
 
 
 Strength = float
@@ -387,7 +382,7 @@ def _find_node_ids_with_ingoing_particle_name(
     name_label = particle.Labels.Name.name
     found_node_ids = []
     for node_id in graph.nodes:
-        edge_ids = get_edges_ingoing_to_node(graph, node_id)
+        edge_ids = graph.get_edges_ingoing_to_node(node_id)
         for edge_id in edge_ids:
             edge_props = graph.edge_props[edge_id]
             if name_label in edge_props:
@@ -465,14 +460,14 @@ def match_external_edges(graphs: List[StateTransitionGraph]) -> None:
     if not graphs:
         return
     ref_graph_id = 0
-    _match_external_edge_ids(graphs, ref_graph_id, get_final_state_edges)
-    _match_external_edge_ids(graphs, ref_graph_id, get_initial_state_edges)
+    _match_external_edge_ids(graphs, ref_graph_id, "get_final_state_edges")
+    _match_external_edge_ids(graphs, ref_graph_id, "get_initial_state_edges")
 
 
 def _match_external_edge_ids(  # pylint: disable=too-many-locals
     graphs: List[StateTransitionGraph],
     ref_graph_id: int,
-    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+    external_edge_getter_function: str,
 ) -> None:
     ref_graph = graphs[ref_graph_id]
     # create external edge to particle mapping
@@ -523,13 +518,12 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
 
 
 def _create_edge_id_particle_mapping(
-    graph: StateTransitionGraph,
-    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+    graph: StateTransitionGraph, external_edge_getter_function: str,
 ) -> Dict[int, str]:
     name_label = particle.Labels.Name.name
     return {
         i: graph.edge_props[i][name_label]
-        for i in external_edge_getter_function(graph)
+        for i in getattr(graph, external_edge_getter_function)()
     }
 
 
@@ -545,21 +539,20 @@ def perform_external_edge_identical_particle_combinatorics(
     if not isinstance(graph, StateTransitionGraph):
         raise TypeError("graph argument is not of type StateTransitionGraph!")
     temp_new_graphs = _external_edge_identical_particle_combinatorics(
-        graph, get_final_state_edges
+        graph, "get_final_state_edges"
     )
     new_graphs = []
     for new_graph in temp_new_graphs:
         new_graphs.extend(
             _external_edge_identical_particle_combinatorics(
-                new_graph, get_initial_state_edges
+                new_graph, "get_initial_state_edges"
             )
         )
     return new_graphs
 
 
 def _external_edge_identical_particle_combinatorics(
-    graph: StateTransitionGraph,
-    external_edge_getter_function: Callable[[StateTransitionGraph], List[int]],
+    graph: StateTransitionGraph, external_edge_getter_function: str,
 ) -> List[StateTransitionGraph]:
     # pylint: disable=too-many-locals
     new_graphs = [graph]

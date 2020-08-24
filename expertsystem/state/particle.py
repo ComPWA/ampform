@@ -25,14 +25,7 @@ from expertsystem.data import (
     ParticleCollection,
     Spin,
 )
-from expertsystem.topology.graph import (
-    StateTransitionGraph,
-    get_final_state_edges,
-    get_initial_state_edges,
-    get_intermediate_state_edges,
-    get_originating_final_state_edges,
-    get_originating_initial_state_edges,
-)
+from expertsystem.topology import StateTransitionGraph
 
 
 StateWithSpins = Tuple[str, List[float]]
@@ -436,8 +429,13 @@ class CompareGraphElementPropertiesFunctor:
         return True
 
 
-def initialize_graph(graph, initial_state, final_state, final_state_groupings):
-    is_edges = get_initial_state_edges(graph)
+def initialize_graph(
+    empty_topology: StateTransitionGraph,
+    initial_state,
+    final_state,
+    final_state_groupings,
+) -> List[StateTransitionGraph]:
+    is_edges = empty_topology.get_initial_state_edges()
     if len(initial_state) != len(is_edges):
         raise ValueError(
             "The graph initial state and the supplied initial"
@@ -447,7 +445,7 @@ def initialize_graph(graph, initial_state, final_state, final_state_groupings):
             + str(len(initial_state))
             + ")"
         )
-    fs_edges = get_final_state_edges(graph)
+    fs_edges = empty_topology.get_final_state_edges()
     if len(final_state) != len(fs_edges):
         raise ValueError(
             "The graph final state and the supplied final"
@@ -463,24 +461,27 @@ def initialize_graph(graph, initial_state, final_state, final_state_groupings):
     final_state = [check_if_spin_projections_set(x) for x in final_state]
 
     attached_is_edges = [
-        get_originating_initial_state_edges(graph, i) for i in graph.nodes
+        empty_topology.get_originating_initial_state_edges(i)
+        for i in empty_topology.nodes
     ]
     is_edge_particle_pairs = calculate_combinatorics(
         is_edges, initial_state, attached_is_edges
     )
     attached_fs_edges = [
-        get_originating_final_state_edges(graph, i) for i in graph.nodes
+        empty_topology.get_originating_final_state_edges(i)
+        for i in empty_topology.nodes
     ]
     fs_edge_particle_pairs = calculate_combinatorics(
         fs_edges, final_state, attached_fs_edges, final_state_groupings
     )
 
-    new_graphs = []
-    for is_pair in is_edge_particle_pairs:
+    new_graphs: List[StateTransitionGraph] = list()
+    for initial_state_pair in is_edge_particle_pairs:
         for fs_pair in fs_edge_particle_pairs:
-            merged_dicts = is_pair.copy()
+            merged_dicts = initial_state_pair.copy()
             merged_dicts.update(fs_pair)
-            new_graphs.extend(initialize_edges(graph, merged_dicts))
+            initialized_graph = initialize_edges(empty_topology, merged_dicts)
+            new_graphs.extend(initialized_graph)
 
     return new_graphs
 
@@ -641,7 +642,7 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
 
     for graph in graphs:
         logging.debug("initializing graph...")
-        intermediate_edges = get_intermediate_state_edges(graph)
+        intermediate_edges = graph.get_intermediate_state_edges()
         current_new_graphs = [graph]
         for int_edge_id in intermediate_edges:
             particle_edges = get_particle_candidates_for_state(

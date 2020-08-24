@@ -6,11 +6,7 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     create_spin_domain,
 )
-from expertsystem.topology.graph import (
-    StateTransitionGraph,
-    get_final_state_edges,
-    get_initial_state_edges,
-)
+from expertsystem.topology import StateTransitionGraph
 from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
@@ -276,7 +272,7 @@ def test_edge_swap(initial_state, final_state):
 
     for graph in init_graphs:
         ref_mapping = _create_edge_id_particle_mapping(
-            graph, get_final_state_edges
+            graph, "get_final_state_edges"
         )
         edge_keys = list(ref_mapping.keys())
         edge1 = edge_keys[0]
@@ -323,18 +319,18 @@ def test_match_external_edges(initial_state, final_state):
     match_external_edges(init_graphs)
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        init_graphs[0], get_final_state_edges
+        init_graphs[0], "get_final_state_edges"
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        init_graphs[0], get_initial_state_edges
+        init_graphs[0], "get_initial_state_edges"
     )
 
     for graph in init_graphs[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            graph, get_final_state_edges
+            graph, "get_final_state_edges"
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            graph, get_initial_state_edges
+            graph, "get_initial_state_edges"
         )
 
 
@@ -402,16 +398,16 @@ def test_external_edge_identical_particle_combinatorics(
     assert len(comb_graphs) == result_graph_count
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        comb_graphs[0], get_final_state_edges
+        comb_graphs[0], "get_final_state_edges"
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        comb_graphs[0], get_initial_state_edges
+        comb_graphs[0], "get_initial_state_edges"
     )
 
     for group in comb_graphs[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            group, get_final_state_edges
+            group, "get_final_state_edges"
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            group, get_initial_state_edges
+            group, "get_initial_state_edges"
         )

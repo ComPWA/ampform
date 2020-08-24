@@ -8,10 +8,6 @@ from expertsystem.state.particle import (
     get_interaction_property,
     get_particle_property,
 )
-from expertsystem.topology.graph import (
-    get_edges_ingoing_to_node,
-    get_edges_outgoing_to_node,
-)
 
 from .helicity_decay import (
     HelicityAmplitudeGenerator,
@@ -82,7 +78,7 @@ def _clebsch_gordan_decorator(decay_generate_function):
             node_props, InteractionQuantumNumberNames.S
         )
 
-        in_edge_ids = get_edges_ingoing_to_node(graph, node_id)
+        in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
 
         parent_spin = get_particle_property(
             graph.edge_props[in_edge_ids[0]], spin_type
@@ -90,7 +86,7 @@ def _clebsch_gordan_decorator(decay_generate_function):
 
         daughter_spins = []
 
-        for out_edge_id in get_edges_outgoing_to_node(graph, node_id):
+        for out_edge_id in graph.get_edges_outgoing_to_node(node_id):
             daughter_spins.append(
                 get_particle_property(graph.edge_props[out_edge_id], spin_type)
             )
