@@ -18,6 +18,7 @@
     "ignorePaths": [
         "*.rst_t",
         "*.svg",
+        "*particle*.*ml",
         ".gitignore",
         ".pre-commit-config.yaml",
         ".pylintrc",
@@ -30,7 +31,6 @@
         "doc/_templates/*",
         "doc/conf.py",
         "expertsystem/solvers/constraint/*",
-        "*particle_list.*ml",
         "pyproject.toml",
         "setup.cfg",
         "setup.py",

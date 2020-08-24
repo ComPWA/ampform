@@ -37,7 +37,7 @@ from expertsystem.state.propagation import (
 
 
 EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
-DEFAULT_PARTICLE_LIST_FILE = "particle_list.yml"
+DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
 DEFAULT_PARTICLE_LIST_PATH = join(
     EXPERT_SYSTEM_PATH, DEFAULT_PARTICLE_LIST_FILE
 )

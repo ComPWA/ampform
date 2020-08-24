@@ -1,0 +1,11 @@
+ParticleList:
+  Y(4260):
+    PID: 11443
+    Mass: 4.300
+    Width: 9.29E-05
+    QuantumNumbers:
+      Spin: 1
+      Charge: 0
+      Parity: -1
+      CParity: -1
+      IsoSpin: 0

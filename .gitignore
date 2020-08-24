@@ -9,7 +9,7 @@
 !codecov.yml
 !environment.yml
 !examples/additional_particles.yml
-!expertsystem/particle_list.*
+!expertsystem/additional_particle_definitions.yml
 !tests/**/expected_recipe.yml
 
 # Build output

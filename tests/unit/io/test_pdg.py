@@ -43,8 +43,6 @@ def test_missing_in_pdg(pdg, particle_database):
     in_common = particle_list_names & pdg_names
     missing_in_pdg = particle_list_names ^ in_common
     assert missing_in_pdg == {
-        "EpEm (4230 MeV)",
-        "N(1650)-",
         "Y(4260)",
     }
 
