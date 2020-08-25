@@ -12,8 +12,10 @@ from copy import deepcopy
 from enum import Enum, auto
 from itertools import permutations
 from typing import (
+    Any,
     Dict,
     List,
+    Optional,
     Tuple,
     Union,
 )
@@ -48,7 +50,9 @@ class Labels(Enum):
     Value = auto()
 
 
-def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
+def create_spin_domain(
+    list_of_magnitudes: List[float], set_projection_zero: bool = False
+) -> List[Spin]:
     domain_list = []
     for mag in list_of_magnitudes:
         if set_projection_zero:
@@ -58,7 +62,7 @@ def create_spin_domain(list_of_magnitudes, set_projection_zero=False):
                 else Spin(mag, mag)
             )
         else:
-            for proj in arange(-mag, mag + 1, 1.0):
+            for proj in arange(-mag, mag + 1, 1.0):  # type: ignore
                 domain_list.append(Spin(mag, proj))
     return domain_list
 
@@ -111,7 +115,7 @@ class InteractionQuantumNumberNames(Enum):
     ParityPrefactor = auto()
 
 
-QNDefaultValues = {
+QNDefaultValues: Dict[StateQuantumNumberNames, Any] = {
     StateQuantumNumberNames.Charge: 0,
     StateQuantumNumberNames.IsoSpin: Spin(0.0, 0.0),
     StateQuantumNumberNames.Strangeness: 0,
@@ -152,11 +156,15 @@ class AbstractQNConverter(ABC):
     """Abstract interface for a quantum number converter."""
 
     @abstractmethod
-    def parse_from_dict(self, data_dict):
+    def parse_from_dict(self, data_dict: Dict[str, Any]) -> Any:
         pass
 
     @abstractmethod
-    def convert_to_dict(self, qn_type, qn_value):
+    def convert_to_dict(
+        self,
+        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_value: Any,
+    ) -> Dict[str, Any]:
         pass
 
 
@@ -167,10 +175,14 @@ class _IntQNConverter(AbstractQNConverter):
     type_label = Labels.Type.name
     class_label = Labels.Class.name
 
-    def parse_from_dict(self, data_dict):
+    def parse_from_dict(self, data_dict: Dict[str, Any]) -> int:
         return int(data_dict[self.value_label])
 
-    def convert_to_dict(self, qn_type, qn_value):
+    def convert_to_dict(
+        self,
+        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_value: int,
+    ) -> Dict[str, Any]:
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Int.name,
@@ -185,10 +197,14 @@ class _FloatQNConverter(AbstractQNConverter):
     type_label = Labels.Type.name
     class_label = Labels.Class.name
 
-    def parse_from_dict(self, data_dict):
+    def parse_from_dict(self, data_dict: Dict[str, Any]) -> float:
         return float(data_dict[self.value_label])
 
-    def convert_to_dict(self, qn_type, qn_value):
+    def convert_to_dict(
+        self,
+        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_value: float,
+    ) -> Dict[str, Any]:
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Float.name,
@@ -204,10 +220,10 @@ class _SpinQNConverter(AbstractQNConverter):
     value_label = Labels.Value.name
     proj_label = Labels.Projection.name
 
-    def __init__(self, parse_projection=True):
-        self.parse_projection = parse_projection
+    def __init__(self, parse_projection: bool = True) -> None:
+        self.parse_projection = bool(parse_projection)
 
-    def parse_from_dict(self, data_dict):
+    def parse_from_dict(self, data_dict: Dict[str, Any]) -> Spin:
         mag = data_dict[self.value_label]
         proj = 0.0
         if self.parse_projection:
@@ -220,7 +236,11 @@ class _SpinQNConverter(AbstractQNConverter):
                 proj = data_dict[self.proj_label]
         return Spin(mag, proj)
 
-    def convert_to_dict(self, qn_type, qn_value):
+    def convert_to_dict(
+        self,
+        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_value: Spin,
+    ) -> Dict[str, Any]:
         return {
             self.type_label: qn_type.name,
             self.class_label: QuantumNumberClasses.Spin.name,
@@ -236,7 +256,7 @@ QNClassConverterMapping = {
 }
 
 
-def is_boson(qn_dict):
+def is_boson(qn_dict: Dict[StateQuantumNumberNames, Any]) -> bool:
     spin_label = StateQuantumNumberNames.Spin
     return abs(qn_dict[spin_label].magnitude % 1) < 0.01
 
@@ -260,7 +280,15 @@ def load_particles(filename: str) -> None:
     DATABASE.merge(particle_collection)
 
 
-def get_particle_property(particle_properties, qn_name, converter=None):
+def get_particle_property(
+    particle_properties: Dict[str, Any],
+    qn_name: Union[
+        ParticleDecayPropertyNames,  # width
+        ParticlePropertyNames,  # mass
+        StateQuantumNumberNames,  # quantum numbers
+    ],
+    converter: Optional[AbstractQNConverter] = None,
+) -> Optional[Dict[str, Any]]:
     # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
@@ -308,11 +336,16 @@ def get_particle_property(particle_properties, qn_name, converter=None):
             converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
         property_value = converter.parse_from_dict(found_prop)
     else:
-        property_value = QNDefaultValues.get(qn_name, property_value)
+        if isinstance(qn_name, StateQuantumNumberNames):
+            property_value = QNDefaultValues.get(qn_name, property_value)
     return property_value
 
 
-def get_interaction_property(interaction_properties, qn_name, converter=None):
+def get_interaction_property(
+    interaction_properties: Dict[str, Any],
+    qn_name: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+    converter: Optional[AbstractQNConverter] = None,
+) -> Optional[Dict[str, Any]]:
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
 
@@ -330,7 +363,10 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
             converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
         property_value = converter.parse_from_dict(found_prop)
     else:
-        if qn_name in QNDefaultValues:
+        if (
+            isinstance(qn_name, StateQuantumNumberNames)
+            and qn_name in QNDefaultValues
+        ):
             property_value = QNDefaultValues[qn_name]
         else:
             logging.warning(
@@ -347,10 +383,15 @@ def get_interaction_property(interaction_properties, qn_name, converter=None):
 class CompareGraphElementPropertiesFunctor:
     """Functor for comparing graph elements."""
 
-    def __init__(self, ignored_qn_list=None):
+    def __init__(
+        self,
+        ignored_qn_list: Optional[
+            List[Union[StateQuantumNumberNames, InteractionQuantumNumberNames]]
+        ] = None,
+    ) -> None:
         if ignored_qn_list is None:
             ignored_qn_list = []
-        self.ignored_qn_list = [
+        self.ignored_qn_list: List[str] = [
             x.name
             for x in ignored_qn_list
             if isinstance(
@@ -358,7 +399,9 @@ class CompareGraphElementPropertiesFunctor:
             )
         ]
 
-    def compare_qn_numbers(self, qns1, qns2):
+    def compare_qn_numbers(
+        self, qns1: List[Dict[str, Any]], qns2: List[Dict[str, Any]]
+    ) -> bool:
         new_qns1 = {}
         new_qns2 = {}
         type_label = Labels.Type.name
@@ -380,7 +423,11 @@ class CompareGraphElementPropertiesFunctor:
             json.dumps(new_qns2, sort_keys=True), object_pairs_hook=OrderedDict
         )
 
-    def __call__(self, props1, props2):
+    def __call__(
+        self,
+        props1: Dict[int, Dict[str, List[Dict[str, Any]]]],  # QuantumNumber
+        props2: Dict[int, Dict[str, List[Dict[str, Any]]]],  # QuantumNumber
+    ) -> bool:
         # for more speed first compare the names (if they exist)
 
         name_label = Labels.Name.name
@@ -399,8 +446,8 @@ class CompareGraphElementPropertiesFunctor:
         # then compare the qn lists (if they exist)
         qns_label = Labels.QuantumNumber.name
         for ele_id, props in props1.items():
-            qns1 = []
-            qns2 = []
+            qns1: List[Dict[str, Any]] = []
+            qns2: List[Dict[str, Any]] = []
             if qns_label in props:
                 qns1 = props[qns_label]
             if ele_id in props2 and qns_label in props2[ele_id]:
@@ -431,47 +478,41 @@ class CompareGraphElementPropertiesFunctor:
 
 def initialize_graph(
     empty_topology: StateTransitionGraph,
-    initial_state,
-    final_state,
-    final_state_groupings,
+    initial_state: List[StateDefinition],
+    final_state: List[StateDefinition],
+    final_state_groupings: List[List[str]],
 ) -> List[StateTransitionGraph]:
     is_edges = empty_topology.get_initial_state_edges()
     if len(initial_state) != len(is_edges):
         raise ValueError(
             "The graph initial state and the supplied initial"
-            "state are of different size! ("
-            + str(len(is_edges))
-            + " != "
-            + str(len(initial_state))
-            + ")"
+            "state are of different size! "
+            f"({len(is_edges)} !=  {len(initial_state)})"
         )
     fs_edges = empty_topology.get_final_state_edges()
     if len(final_state) != len(fs_edges):
         raise ValueError(
-            "The graph final state and the supplied final"
-            "state are of different size! ("
-            + str(len(fs_edges))
-            + " != "
-            + str(len(final_state))
-            + ")"
+            "The graph initial state and the supplied initial"
+            "state are of different size! "
+            f"({len(fs_edges)} !=  {len(final_state)})"
         )
 
     # check if all initial and final state particles have spin projections set
-    initial_state = [check_if_spin_projections_set(x) for x in initial_state]
-    final_state = [check_if_spin_projections_set(x) for x in final_state]
+    initial_state = [__safe_set_spin_projections(x) for x in initial_state]
+    final_state = [__safe_set_spin_projections(x) for x in final_state]
 
     attached_is_edges = [
         empty_topology.get_originating_initial_state_edges(i)
         for i in empty_topology.nodes
     ]
-    is_edge_particle_pairs = calculate_combinatorics(
+    is_edge_particle_pairs = __calculate_combinatorics(
         is_edges, initial_state, attached_is_edges
     )
     attached_fs_edges = [
         empty_topology.get_originating_final_state_edges(i)
         for i in empty_topology.nodes
     ]
-    fs_edge_particle_pairs = calculate_combinatorics(
+    fs_edge_particle_pairs = __calculate_combinatorics(
         fs_edges, final_state, attached_fs_edges, final_state_groupings
     )
 
@@ -480,13 +521,12 @@ def initialize_graph(
         for fs_pair in fs_edge_particle_pairs:
             merged_dicts = initial_state_pair.copy()
             merged_dicts.update(fs_pair)
-            initialized_graph = initialize_edges(empty_topology, merged_dicts)
-            new_graphs.extend(initialized_graph)
+            new_graphs.extend(__initialize_edges(empty_topology, merged_dicts))
 
     return new_graphs
 
 
-def check_if_spin_projections_set(state: StateDefinition,) -> StateWithSpins:
+def __safe_set_spin_projections(state: StateDefinition) -> StateWithSpins:
     if isinstance(state, str):
         particle_name = state
         particle = DATABASE[state]
@@ -500,12 +540,14 @@ def check_if_spin_projections_set(state: StateDefinition,) -> StateWithSpins:
     return state
 
 
-def calculate_combinatorics(
-    edges,
-    state_particles,
-    attached_external_edges_per_node,
-    allowed_particle_groupings=None,
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
+def __calculate_combinatorics(
+    edges: List[int],
+    state_particles: List[StateDefinition],
+    attached_external_edges_per_node: List[List[int]],
+    allowed_particle_groupings: Optional[List[List[str]]] = None,
+) -> List[
+    Dict[int, StateDefinition]
+]:  # pylint: disable=too-many-branches,too-many-locals
     combinatorics_list = [
         dict(zip(edges, particles))
         for particles in permutations(state_particles)
@@ -513,12 +555,12 @@ def calculate_combinatorics(
 
     # now initialize the attached external edge list with the particles
     comb_attached_ext_edges = [
-        initialize_external_edge_lists(attached_external_edges_per_node, x)
+        __initialize_external_edge_lists(attached_external_edges_per_node, x)
         for x in combinatorics_list
     ]
 
     # remove combinations with wrong particle groupings
-    if allowed_particle_groupings:
+    if allowed_particle_groupings:  # pylint: disable=too-many-nested-blocks
         sorted_allowed_particle_groupings = [
             sorted(sorted(group) for group in grouping)
             for grouping in allowed_particle_groupings
@@ -564,9 +606,10 @@ def calculate_combinatorics(
     return combinatorics_list
 
 
-def initialize_external_edge_lists(
-    attached_external_edges_per_node, edge_particle_mapping
-):
+def __initialize_external_edge_lists(
+    attached_external_edges_per_node: List[List[int]],
+    edge_particle_mapping: Dict[int, StateDefinition],
+) -> List[List[StateDefinition]]:
     init_edge_lists = []
     for edge_list in attached_external_edges_per_node:
         init_edge_lists.append(
@@ -575,8 +618,9 @@ def initialize_external_edge_lists(
     return sorted(init_edge_lists)
 
 
-def initialize_edges(
-    graph: StateTransitionGraph, edge_particle_dict: Dict[int, StateWithSpins],
+def __initialize_edges(
+    graph: StateTransitionGraph,
+    edge_particle_dict: Dict[int, StateDefinition],
 ) -> List[StateTransitionGraph]:
     for edge_id, state_particle in edge_particle_dict.items():
         particle_name = state_particle[0]
@@ -587,12 +631,14 @@ def initialize_edges(
     # now add more quantum numbers given by user (spin_projection)
     new_graphs: List[StateTransitionGraph] = [graph]
     for edge_id, state_particle in edge_particle_dict.items():
+        if isinstance(state_particle, str):
+            continue
         spin_projections = state_particle[1]
         temp_graphs = new_graphs
         new_graphs = []
         for temp_graph in temp_graphs:
             new_graphs.extend(
-                populate_edge_with_spin_projections(
+                __populate_edge_with_spin_projections(
                     temp_graph, edge_id, spin_projections
                 )
             )
@@ -600,7 +646,7 @@ def initialize_edges(
     return new_graphs
 
 
-def populate_edge_with_spin_projections(
+def __populate_edge_with_spin_projections(
     graph: StateTransitionGraph, edge_id: int, spin_projections: List[float]
 ) -> List[StateTransitionGraph]:
     qns_label = Labels.QuantumNumber.name
@@ -632,7 +678,10 @@ def populate_edge_with_spin_projections(
     return new_graphs
 
 
-def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
+def initialize_graphs_with_particles(
+    graphs: List[StateTransitionGraph],
+    allowed_particle_list: Optional[List[str]] = None,
+) -> List[StateTransitionGraph]:
     if allowed_particle_list is None:
         allowed_particle_list = []
     initialized_graphs = []
@@ -665,7 +714,9 @@ def initialize_graphs_with_particles(graphs, allowed_particle_list=None):
     return initialized_graphs
 
 
-def initialize_allowed_particle_list(allowed_particle_list):
+def initialize_allowed_particle_list(
+    allowed_particle_list: List[str],
+) -> List[Dict[str, Any]]:
     mod_allowed_particle_list = []
     if len(allowed_particle_list) == 0:
         mod_allowed_particle_list = list(
@@ -685,21 +736,26 @@ def initialize_allowed_particle_list(allowed_particle_list):
     return mod_allowed_particle_list
 
 
-def get_particle_candidates_for_state(state, allowed_particle_list):
-    particle_edges = []
+def get_particle_candidates_for_state(
+    state: Dict[str, List[Dict[str, Any]]],
+    allowed_particle_list: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    particle_edges: List[Dict[str, Any]] = []
     qns_label = Labels.QuantumNumber.name
 
     for allowed_state in allowed_particle_list:
-        if check_qns_equal(state[qns_label], allowed_state[qns_label]):
+        if __check_qns_equal(state[qns_label], allowed_state[qns_label]):
             temp_particle = deepcopy(allowed_state)
-            temp_particle[qns_label] = merge_qn_props(
+            temp_particle[qns_label] = __merge_qn_props(
                 state[qns_label], allowed_state[qns_label]
             )
             particle_edges.append(temp_particle)
     return particle_edges
 
 
-def check_qns_equal(qns_state, qns_particle):
+def __check_qns_equal(
+    qns_state: List[Dict[str, Any]], qns_particle: List[Dict[str, Any]]
+) -> bool:
     equal = True
     class_label = Labels.Class.name
     type_label = Labels.Type.name
@@ -716,14 +772,14 @@ def check_qns_equal(qns_state, qns_particle):
                 is QuantumNumberClasses[par_qn_entry[class_label]]
             ):
                 qn_found = True
-                if compare_qns(qn_entry, par_qn_entry):
+                if __compare_qns(qn_entry, par_qn_entry):
                     qn_value_match = True
                 break
         if not qn_found:
             # check if there is a default value
             qn_name = StateQuantumNumberNames[qn_entry[type_label]]
             if qn_name in QNDefaultValues:
-                if compare_qns(qn_entry, QNDefaultValues[qn_name]):
+                if __compare_qns(qn_entry, QNDefaultValues[qn_name]):
                     qn_found = True
                     qn_value_match = True
 
@@ -733,12 +789,12 @@ def check_qns_equal(qns_state, qns_particle):
     return equal
 
 
-def compare_qns(qn_dict, qn_dict2):
+def __compare_qns(qn_dict: Dict[str, Any], qn_dict2: Dict[str, Any]) -> bool:
     qn_class = QuantumNumberClasses[qn_dict[Labels.Class.name]]
     value_label = Labels.Value.name
 
-    val1 = None
-    val2 = qn_dict2
+    val1: Any = None
+    val2: Any = qn_dict2
     if qn_class is QuantumNumberClasses.Int:
         val1 = int(qn_dict[value_label])
         if isinstance(qn_dict2, dict):
@@ -764,7 +820,9 @@ def compare_qns(qn_dict, qn_dict2):
     return val1 == val2
 
 
-def merge_qn_props(qns_state, qns_particle):
+def __merge_qn_props(
+    qns_state: List[Dict[str, Any]], qns_particle: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     class_label = Labels.Class.name
     type_label = Labels.Type.name
     qns = deepcopy(qns_particle)
