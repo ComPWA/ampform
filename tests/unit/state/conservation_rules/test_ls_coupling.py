@@ -146,6 +146,6 @@ def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-argum
         for edge in value:
             edge[0].node_props = node_props
 
-    solutions = stm.find_solutions(graph_node_setting_pairs)[0]
+    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
 
     assert len(solutions) == solution_count

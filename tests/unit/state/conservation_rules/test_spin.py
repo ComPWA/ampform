@@ -1,7 +1,10 @@
 from typing import Any
 
 from expertsystem.data import Spin
-from expertsystem.state.conservation_rules import SpinConservation
+from expertsystem.state.conservation_rules import (
+    IsoSpinConservation,
+    SpinConservation,
+)
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     StateQuantumNumberNames,
@@ -75,13 +78,13 @@ class TestSpin:  # pylint: disable=no-self-use
             cases.append(temp_case)
 
         for case in cases:
-            assert spin_rule.check(case[0], case[1], case[2]) is case[3]
+            assert spin_rule(case[0], case[1], case[2]) is case[3]
 
     def test_spin_ignore_z_component(self):
         spin_label = StateQuantumNumberNames.Spin
         ang_mom_label = InteractionQuantumNumberNames.L
         intspin_label = InteractionQuantumNumberNames.S
-        spin_rule = SpinConservation(spin_label, False)
+        spin_rule = SpinConservation(False)
         cases = []
         case: Any = None
 
@@ -102,11 +105,11 @@ class TestSpin:  # pylint: disable=no-self-use
                 cases.append(temp_case)
 
         for case in cases:
-            assert spin_rule.check(case[0], case[1], case[2]) is case[3]
+            assert spin_rule(case[0], case[1], case[2]) is case[3]
 
     def test_isospin_clebsch_gordan_zeros(self):
         spin_label = StateQuantumNumberNames.IsoSpin
-        spin_rule = SpinConservation(spin_label)
+        spin_rule = IsoSpinConservation()
         cases = []
 
         for case in [
@@ -131,4 +134,4 @@ class TestSpin:  # pylint: disable=no-self-use
             cases.append(temp_case)
 
         for case in cases:
-            assert spin_rule.check(case[0], case[1], case[2]) is case[3]
+            assert spin_rule(case[0], case[1], case[2]) is case[3]

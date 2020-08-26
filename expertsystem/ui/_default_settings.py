@@ -13,17 +13,24 @@ from typing import (
 )
 
 from expertsystem.state.conservation_rules import (
-    AdditiveQuantumNumberConservation,
+    BaryonNumberConservation,
     CParityConservation,
+    ChargeConservation,
+    CharmConservation,
     ClebschGordanCheckHelicityToCanonical,
+    ElectronLNConservation,
     GParityConservation,
     GellMannNishijimaRule,
     HelicityConservation,
     IdenticalParticleSymmetrization,
+    IsoSpinConservation,
     MassConservation,
+    MuonLNConservation,
     ParityConservation,
     ParityConservationHelicity,
     SpinConservation,
+    StrangenessConservation,
+    TauLNConservation,
 )
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
@@ -77,7 +84,7 @@ def create_default_interaction_settings(
     formalism_qn_domains = {}
     if "helicity" in formalism_type:
         formalism_conservation_laws = [
-            SpinConservation(StateQuantumNumberNames.Spin, False),
+            SpinConservation(False),
             HelicityConservation(),
         ]
         formalism_qn_domains = {
@@ -89,9 +96,7 @@ def create_default_interaction_settings(
             ),
         }
     elif formalism_type == "canonical":
-        formalism_conservation_laws = [
-            SpinConservation(StateQuantumNumberNames.Spin)
-        ]
+        formalism_conservation_laws = [SpinConservation()]
         formalism_qn_domains = {
             InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2]),
             InteractionQuantumNumberNames.S: create_spin_domain(
@@ -103,22 +108,18 @@ def create_default_interaction_settings(
             ClebschGordanCheckHelicityToCanonical()
         )
     if use_mass_conservation:
-        formalism_conservation_laws.append(MassConservation())
+        formalism_conservation_laws.append(MassConservation(5))
 
     weak_settings = InteractionNodeSettings()
     weak_settings.conservation_laws = formalism_conservation_laws
     weak_settings.conservation_laws.extend(
         [
             GellMannNishijimaRule(),
-            AdditiveQuantumNumberConservation(StateQuantumNumberNames.Charge),
-            AdditiveQuantumNumberConservation(
-                StateQuantumNumberNames.ElectronLN
-            ),
-            AdditiveQuantumNumberConservation(StateQuantumNumberNames.MuonLN),
-            AdditiveQuantumNumberConservation(StateQuantumNumberNames.TauLN),
-            AdditiveQuantumNumberConservation(
-                StateQuantumNumberNames.BaryonNumber
-            ),
+            ChargeConservation(),
+            ElectronLNConservation(),
+            MuonLNConservation(),
+            TauLNConservation(),
+            BaryonNumberConservation(),
             IdenticalParticleSymmetrization(),
         ]
     )
@@ -144,12 +145,8 @@ def create_default_interaction_settings(
     em_settings = deepcopy(weak_settings)
     em_settings.conservation_laws.extend(
         [
-            AdditiveQuantumNumberConservation(
-                StateQuantumNumberNames.Charmness
-            ),
-            AdditiveQuantumNumberConservation(
-                StateQuantumNumberNames.Strangeness
-            ),
+            CharmConservation(),
+            StrangenessConservation(),
             ParityConservation(),
             CParityConservation(),
         ]
@@ -165,10 +162,7 @@ def create_default_interaction_settings(
 
     strong_settings = deepcopy(em_settings)
     strong_settings.conservation_laws.extend(
-        [
-            SpinConservation(StateQuantumNumberNames.IsoSpin),
-            GParityConservation(),
-        ]
+        [IsoSpinConservation(), GParityConservation(),]
     )
     strong_settings.interaction_strength = 60
     interaction_type_settings[InteractionTypes.Strong] = strong_settings

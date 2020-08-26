@@ -36,4 +36,4 @@ class TestMass:  # pylint: disable=no-self-use
                 cases.append(temp_case)
 
         for case in cases:
-            assert mass_rule.check(case[0], case[1], case[2]) is case[3]
+            assert mass_rule(case[0], case[1], case[2]) is case[3]

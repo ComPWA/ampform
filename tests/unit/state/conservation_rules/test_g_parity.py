@@ -25,12 +25,12 @@ class TestGParity:  # pylint: disable=no-self-use
             for out_case in out_part_qns:
                 if in_case[1]:
                     assert (
-                        g_parity_rule.check(in_case[0], out_case[0], [])
+                        g_parity_rule(in_case[0], out_case[0], [])
                         is out_case[1]
                     )
                 else:
                     assert (
-                        g_parity_rule.check(in_case[0], out_case[0], [])
+                        g_parity_rule(in_case[0], out_case[0], [])
                         is not out_case[1]
                     )
 
@@ -104,4 +104,4 @@ class TestGParity:  # pylint: disable=no-self-use
             )
 
         for case in cases:
-            assert rule.check(case[0], case[1], case[2]) is case[3]
+            assert rule(case[0], case[1], case[2]) is case[3]

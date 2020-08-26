@@ -20,7 +20,7 @@ from expertsystem.solvers.constraint import (
     Unassigned,
 )
 from expertsystem.state import particle
-from expertsystem.state.conservation_rules import AbstractRule
+from expertsystem.state.conservation_rules import Rule
 from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     ParticleDecayPropertyNames,
@@ -228,7 +228,7 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
                     var_containers[0], var_containers[1], var_containers[2]
                 ):
                     # and run the rule check
-                    if not cons_law.check(
+                    if not cons_law(
                         var_containers[0], var_containers[1], var_containers[2]
                     ):
                         self.node_non_satisfied_laws[node_id].append(cons_law)
@@ -661,8 +661,8 @@ class ConservationLawConstraintWrapper(Constraint):
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, rule, variable_mapping, name_delimiter):
-        if not isinstance(rule, AbstractRule):
-            raise TypeError("rule has to be of type AbstractRule!")
+        if not isinstance(rule, Rule):
+            raise TypeError("rule has to be of type Rule!")
         self.rule = rule
         self.in_variable_set = variable_mapping["ingoing"]
         self.fixed_in_variables = variable_mapping["ingoing-fixed"]
@@ -764,9 +764,7 @@ class ConservationLawConstraintWrapper(Constraint):
         ):
             self.conditions_never_met = True
             return True
-        passed = self.rule.check(
-            self.part_in, self.part_out, self.interaction_qns
-        )
+        passed = self.rule(self.part_in, self.part_out, self.interaction_qns)
 
         # before returning gather statistics about the rule
         if passed:

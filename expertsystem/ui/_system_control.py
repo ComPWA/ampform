@@ -21,7 +21,7 @@ from typing import (
 
 from expertsystem.data import Spin
 from expertsystem.state import particle
-from expertsystem.state.conservation_rules import AbstractRule
+from expertsystem.state.conservation_rules import Rule
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
@@ -43,7 +43,7 @@ GraphSettings = Tuple[StateTransitionGraph, Dict[int, InteractionNodeSettings]]
 GraphSettingsGroups = Dict[Strength, List[GraphSettings]]
 NodeSettings = Dict[int, List[InteractionNodeSettings]]
 
-ViolatedLaws = Dict[int, List[AbstractRule]]
+ViolatedLaws = Dict[int, List[Rule]]
 SolutionMapping = Dict[
     Strength, List[Tuple[List[StateTransitionGraph], ViolatedLaws]],
 ]
@@ -62,14 +62,14 @@ def _change_qn_domain(
 
 
 def _remove_conservation_law(
-    interaction_settings: InteractionNodeSettings, cons_law: AbstractRule
+    interaction_settings: InteractionNodeSettings, cons_law: Rule
 ) -> None:
     if not isinstance(interaction_settings, InteractionNodeSettings):
         raise TypeError(
             "interaction_settings has to be of type InteractionNodeSettings"
         )
     for i, law in enumerate(interaction_settings.conservation_laws):
-        if law.__class__.__name__ == cons_law.__class__.__name__:
+        if str(law) == str(cons_law):
             del interaction_settings.conservation_laws[i]
             break
 

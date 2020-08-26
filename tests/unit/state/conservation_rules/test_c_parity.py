@@ -27,14 +27,9 @@ class TestCParity:  # pylint: disable=no-self-use
         for in_case in in_part_qns:
             for out_case in out_part_qns:
                 if in_case[1]:
-                    assert (
-                        rule.check(in_case[0], out_case[0], []) is out_case[1]
-                    )
+                    assert rule(in_case[0], out_case[0], []) is out_case[1]
                 else:
-                    assert (
-                        rule.check(in_case[0], out_case[0], [])
-                        is not out_case[1]
-                    )
+                    assert rule(in_case[0], out_case[0], []) is not out_case[1]
 
     def test_c_parity_multiparticle_boson(self):
         rule = CParityConservation()
@@ -87,7 +82,7 @@ class TestCParity:  # pylint: disable=no-self-use
             )
 
         for case in cases:
-            assert rule.check(case[0], case[1], case[2]) is case[3]
+            assert rule(case[0], case[1], case[2]) is case[3]
 
     def test_c_parity_multiparticle_fermion(
         self,
@@ -145,4 +140,4 @@ class TestCParity:  # pylint: disable=no-self-use
             )
 
         for case in cases:
-            assert rule.check(case[0], case[1], case[2]) is case[3]
+            assert rule(case[0], case[1], case[2]) is case[3]
