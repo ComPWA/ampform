@@ -20,11 +20,12 @@ from progress.bar import IncrementalBar
 from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
+from expertsystem.data import ParticleCollection
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
-    DATABASE,
     InteractionQuantumNumberNames,
     StateDefinition,
+    filter_particles,
     initialize_graph,
 )
 from expertsystem.state.propagation import (
@@ -65,6 +66,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self,
         initial_state: List[StateDefinition],
         final_state: List[StateDefinition],
+        particles: ParticleCollection = ParticleCollection(),
         allowed_intermediate_particles: Optional[List[str]] = None,
         interaction_type_settings: Dict[
             InteractionTypes, InteractionNodeSettings
@@ -75,8 +77,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         propagation_mode: str = "fast",
         reload_pdg: bool = False,
     ) -> None:
-        if allowed_intermediate_particles is None:
-            allowed_intermediate_particles = []
         if interaction_type_settings is None:
             interaction_type_settings = {}
         allowed_formalism_types = [
@@ -90,6 +90,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 f" Use {allowed_formalism_types} instead."
             )
         self.__formalism_type = str(formalism_type)
+        self.__particles = particles
         self.number_of_threads = int(number_of_threads)
         self.propagation_mode = str(propagation_mode)
         self.initial_state = initial_state
@@ -100,7 +101,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 formalism_type
             )
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
-        self.allowed_intermediate_particles = allowed_intermediate_particles
         self.final_state_groupings: List[List[str]] = list()
         self.allowed_interaction_types: List[InteractionTypes] = [
             InteractionTypes.Strong,
@@ -136,8 +136,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
         self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
-        if reload_pdg or len(DATABASE) == 0:
-            load_default_particles()
+        if reload_pdg or len(self.__particles) == 0:
+            self.__particles = load_default_particles()
+
+        if allowed_intermediate_particles is None:
+            allowed_intermediate_particles = []
+        self.__allowed_intermediate_particles = filter_particles(
+            self.__particles, allowed_intermediate_particles
+        )
 
     @property
     def formalism_type(self) -> str:
@@ -205,6 +211,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
             initialized_graphs = initialize_graph(
                 empty_topology=topology_graph,
+                particles=self.__particles,
                 initial_state=self.initial_state,
                 final_state=self.final_state,
                 final_state_groupings=self.final_state_groupings,
@@ -369,15 +376,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         state_graph: StateTransitionGraph,
         node_settings: Dict[int, InteractionNodeSettings],
     ) -> FullPropagator:
-        propagator = FullPropagator(state_graph, self.propagation_mode)
+        propagator = FullPropagator(
+            state_graph,
+            self.__allowed_intermediate_particles,
+            self.propagation_mode,
+        )
         for node_id, interaction_settings in node_settings.items():
             propagator.assign_settings_to_node(node_id, interaction_settings)
-        # specify set of particles which are allowed to be intermediate
-        # particles. If list is empty, then all particles in the default
-        # particle list are used
-        propagator.set_allowed_intermediate_particles(
-            self.allowed_intermediate_particles
-        )
+
         return propagator
 
     def write_amplitude_model(self, solutions: list, output_file: str) -> None:
@@ -396,14 +402,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         amplitude_generator.write_to_file(output_file)
 
 
-def load_default_particles() -> None:
+def load_default_particles() -> ParticleCollection:
     """Load the default particle list that comes with the expertsystem.
 
     .. warning::
         This resets all particle definitions and the removes particles that
         don't exist in the particle list that ships with the `expertsystem`!
     """
-    pdg = io.load_pdg()
-    DATABASE.merge(pdg)
-    DATABASE.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
-    logging.info(f"Loaded {len(pdg)} particles from the PDG!")
+    particles = io.load_pdg()
+    particles.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
+    logging.info(f"Loaded {len(particles)} particles!")
+    return particles

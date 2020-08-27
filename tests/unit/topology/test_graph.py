@@ -32,6 +32,7 @@ def test_initialize_graph(  # pylint: disable=unused-argument
         dummy_topology,
         initial_state=[("J/psi(1S)", [-1, +1])],
         final_state=["gamma", "pi0", "pi0"],
+        particles=particle_database,
     )
     assert len(graphs) == 8
     return graphs

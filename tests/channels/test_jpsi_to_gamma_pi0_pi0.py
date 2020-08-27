@@ -38,11 +38,12 @@ logging.getLogger().setLevel(logging.ERROR)
 )
 @pytest.mark.slow
 def test_number_of_solutions(
-    allowed_intermediate_particles, number_of_solutions
+    particle_database, allowed_intermediate_particles, number_of_solutions
 ):
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
+        particles=particle_database,
         allowed_intermediate_particles=allowed_intermediate_particles,
         number_of_threads=1,
     )
@@ -54,10 +55,11 @@ def test_number_of_solutions(
     assert len(solutions) == number_of_solutions
 
 
-def test_id_to_particle_mappings():
+def test_id_to_particle_mappings(particle_database):
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
+        particles=particle_database,
         allowed_intermediate_particles=["f(0)(980)"],
         number_of_threads=1,
     )

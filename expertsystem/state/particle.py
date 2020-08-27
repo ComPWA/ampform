@@ -261,25 +261,6 @@ def is_boson(qn_dict: Dict[StateQuantumNumberNames, Any]) -> bool:
     return abs(qn_dict[spin_label].magnitude % 1) < 0.01
 
 
-DATABASE = ParticleCollection()
-
-
-def load_particles(filename: str) -> None:
-    """Add entries to the particle database from a custom config file.
-
-    By default, the expert system loads the particle database from the `PDG
-    <https://pdg.lbl.gov/>`_. Use this function to append or overwrite
-    definitions in the particle database.
-
-    .. note::
-        If a particle name in the imported file already exists in the
-        particle database, the one in the particle database will be
-        overwritten.
-    """
-    particle_collection = io.load_particle_collection(filename)
-    DATABASE.merge(particle_collection)
-
-
 def get_particle_property(
     particle_properties: Dict[str, Any],
     qn_name: Union[
@@ -478,6 +459,7 @@ class CompareGraphElementPropertiesFunctor:
 
 def initialize_graph(
     empty_topology: StateTransitionGraph,
+    particles: ParticleCollection,
     initial_state: List[StateDefinition],
     final_state: List[StateDefinition],
     final_state_groupings: Optional[List[List[str]]] = None,
@@ -498,8 +480,12 @@ def initialize_graph(
         )
 
     # check if all initial and final state particles have spin projections set
-    initial_state = [__safe_set_spin_projections(x) for x in initial_state]
-    final_state = [__safe_set_spin_projections(x) for x in final_state]
+    initial_state = [
+        __safe_set_spin_projections(x, particles) for x in initial_state
+    ]
+    final_state = [
+        __safe_set_spin_projections(x, particles) for x in final_state
+    ]
 
     attached_is_edges = [
         empty_topology.get_originating_initial_state_edges(i)
@@ -521,15 +507,19 @@ def initialize_graph(
         for fs_pair in fs_edge_particle_pairs:
             merged_dicts = initial_state_pair.copy()
             merged_dicts.update(fs_pair)
-            new_graphs.extend(__initialize_edges(empty_topology, merged_dicts))
+            new_graphs.extend(
+                __initialize_edges(empty_topology, merged_dicts, particles)
+            )
 
     return new_graphs
 
 
-def __safe_set_spin_projections(state: StateDefinition) -> StateWithSpins:
+def __safe_set_spin_projections(
+    state: StateDefinition, particle_db: ParticleCollection
+) -> StateWithSpins:
     if isinstance(state, str):
         particle_name = state
-        particle = DATABASE[state]
+        particle = particle_db[state]
         spin_projections = arange(  # type: ignore
             -particle.state.spin, particle.state.spin + 1, 1.0
         ).tolist()
@@ -621,10 +611,11 @@ def __initialize_external_edge_lists(
 def __initialize_edges(
     graph: StateTransitionGraph,
     edge_particle_dict: Dict[int, StateDefinition],
+    particle_db: ParticleCollection,
 ) -> List[StateTransitionGraph]:
     for edge_id, state_particle in edge_particle_dict.items():
         particle_name = state_particle[0]
-        particle = DATABASE[particle_name]
+        particle = particle_db[particle_name]
         particle_properties = io.xml.object_to_dict(particle)
         graph.edge_props[edge_id] = particle_properties
 
@@ -680,14 +671,9 @@ def __populate_edge_with_spin_projections(
 
 def initialize_graphs_with_particles(
     graphs: List[StateTransitionGraph],
-    allowed_particle_list: Optional[List[str]] = None,
+    allowed_particle_list: List[Dict[str, Any]],
 ) -> List[StateTransitionGraph]:
-    if allowed_particle_list is None:
-        allowed_particle_list = []
     initialized_graphs = []
-    mod_allowed_particle_list = initialize_allowed_particle_list(
-        allowed_particle_list
-    )
 
     for graph in graphs:
         logging.debug("initializing graph...")
@@ -695,7 +681,7 @@ def initialize_graphs_with_particles(
         current_new_graphs = [graph]
         for int_edge_id in intermediate_edges:
             particle_edges = get_particle_candidates_for_state(
-                graph.edge_props[int_edge_id], mod_allowed_particle_list
+                graph.edge_props[int_edge_id], allowed_particle_list
             )
             if len(particle_edges) == 0:
                 logging.debug("Did not find any particle candidates for")
@@ -714,18 +700,23 @@ def initialize_graphs_with_particles(
     return initialized_graphs
 
 
-def initialize_allowed_particle_list(
-    allowed_particle_list: List[str],
+def filter_particles(
+    particle_db: ParticleCollection, allowed_particle_names: List[str],
 ) -> List[Dict[str, Any]]:
+    """Filters `.ParticleCollection` based on the allowed particle names.
+
+    Note this function currently also converts back to dict structures, which
+    are still used internally by the propagation code.
+    """
     mod_allowed_particle_list = []
-    if len(allowed_particle_list) == 0:
+    if len(allowed_particle_names) == 0:
         mod_allowed_particle_list = list(
-            io.xml.object_to_dict(DATABASE).values()
+            io.xml.object_to_dict(particle_db).values()
         )
     else:
-        for allowed_particle in allowed_particle_list:
+        for allowed_particle in allowed_particle_names:
             if isinstance(allowed_particle, (int, str)):
-                subset = DATABASE.find_subset(allowed_particle)
+                subset = particle_db.find_subset(allowed_particle)
                 search_results = io.xml.object_to_dict(subset)
                 if "Pid" in search_results:  # one particle only
                     mod_allowed_particle_list.append(search_results)

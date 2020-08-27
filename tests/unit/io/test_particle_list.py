@@ -9,7 +9,7 @@ XML_FILE = "particle_list.xml"
 YAML_FILE = "particle_list.yml"
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="module")
 def particle_selection(particle_database):
     selection = ParticleCollection()
     selection += particle_database.find_subset("pi")

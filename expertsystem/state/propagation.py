@@ -31,7 +31,6 @@ from expertsystem.state.particle import (
     get_interaction_property,
     get_particle_candidates_for_state,
     get_particle_property,
-    initialize_allowed_particle_list,
     initialize_graphs_with_particles,
 )
 
@@ -85,7 +84,6 @@ class AbstractPropagator(ABC):
         self.node_settings = {}
         self.node_non_satisfied_laws = defaultdict(list)
         self.node_postponed_conservation_laws = defaultdict(list)
-        self.allowed_intermediate_particles = []
         self.graph = graph
 
     @abstractmethod
@@ -102,17 +100,14 @@ class AbstractPropagator(ABC):
     def assign_settings_to_node(self, node_id, interaction_settings):
         self.node_settings[node_id] = interaction_settings
 
-    def set_allowed_intermediate_particles(
-        self, allowed_intermediate_particles
-    ):
-        self.allowed_intermediate_particles = allowed_intermediate_particles
-
 
 class FullPropagator:
     """Hander that combines all propagator rules."""
 
-    def __init__(self, graph, propagation_mode="fast"):
-        self.propagator = CSPPropagator(graph)
+    def __init__(
+        self, graph, allowed_intermediate_particles, propagation_mode="fast"
+    ):
+        self.propagator = CSPPropagator(graph, allowed_intermediate_particles)
         self.propagation_mode = propagation_mode
         logging.debug("using CSP propagator")
 
@@ -131,13 +126,6 @@ class FullPropagator:
             self.propagator.assign_settings_to_node(
                 node_id, interaction_settings
             )
-
-    def set_allowed_intermediate_particles(
-        self, allowed_intermediate_particles
-    ):
-        self.propagator.allowed_intermediate_particles = (
-            allowed_intermediate_particles
-        )
 
     def get_non_satisfied_conservation_laws(self):
         return self.node_non_satisfied_laws
@@ -380,12 +368,13 @@ class CSPPropagator(AbstractPropagator):
     :class:`.ConservationLawConstraintWrapper`.
     """
 
-    def __init__(self, graph):
+    def __init__(self, graph, allowed_intermediate_particles):
         self.variable_set = set()
         self.constraints = []
         solver = BacktrackingSolver(True)
         self.problem = Problem(solver)
         self.particle_variable_delimiter = "-*-"
+        self.allowed_intermediate_particles = allowed_intermediate_particles
         super().__init__(graph)
 
     def find_solutions(self):
@@ -567,10 +556,6 @@ class CSPPropagator(AbstractPropagator):
         initial_edges = self.graph.get_initial_state_edges()
         final_edges = self.graph.get_final_state_edges()
 
-        full_allowed_particle_list = initialize_allowed_particle_list(
-            self.allowed_intermediate_particles
-        )
-
         # logging.info("attempting to filter " + str(len(solutions)) +
         #             " solutions for allowed intermediate particles and"
         #             " create a copy graph")
@@ -612,7 +597,7 @@ class CSPPropagator(AbstractPropagator):
                     # now do actual candidate finding
                     candidates = get_particle_candidates_for_state(
                         graph_copy.edge_props[int_edge_id],
-                        full_allowed_particle_list,
+                        self.allowed_intermediate_particles,
                     )
                     if not candidates:
                         solution_valid = False

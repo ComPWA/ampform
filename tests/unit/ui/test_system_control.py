@@ -81,10 +81,17 @@ from expertsystem.ui._system_control import (
     ],
 )
 def test_external_edge_initialization(
-    initial_state, final_state, final_state_groupings, result_graph_count
+    particle_database,
+    initial_state,
+    final_state,
+    final_state_groupings,
+    result_graph_count,
 ):
     stm = StateTransitionManager(
-        initial_state, final_state, [], formalism_type="helicity"
+        initial_state,
+        final_state,
+        particle_database,
+        formalism_type="helicity",
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
@@ -255,9 +262,12 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         ),
     ],
 )
-def test_edge_swap(initial_state, final_state):
+def test_edge_swap(particle_database, initial_state, final_state):
     stm = StateTransitionManager(
-        initial_state, final_state, [], formalism_type="helicity"
+        initial_state,
+        final_state,
+        particle_database,
+        formalism_type="helicity",
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
@@ -301,9 +311,12 @@ def test_edge_swap(initial_state, final_state):
         ),
     ],
 )
-def test_match_external_edges(initial_state, final_state):
+def test_match_external_edges(particle_database, initial_state, final_state):
     stm = StateTransitionManager(
-        initial_state, final_state, [], formalism_type="helicity"
+        initial_state,
+        final_state,
+        particle_database,
+        formalism_type="helicity",
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
@@ -370,10 +383,17 @@ def test_match_external_edges(initial_state, final_state):
     ],
 )
 def test_external_edge_identical_particle_combinatorics(
-    initial_state, final_state, final_state_groupings, result_graph_count
+    particle_database,
+    initial_state,
+    final_state,
+    final_state_groupings,
+    result_graph_count,
 ):
     stm = StateTransitionManager(
-        initial_state, final_state, [], formalism_type="helicity"
+        initial_state,
+        final_state,
+        particle_database,
+        formalism_type="helicity",
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])

@@ -26,7 +26,7 @@ from expertsystem.ui._system_control import _change_qn_domain
 logging.basicConfig(level=logging.INFO)
 
 
-def test_script_simple():
+def test_script_simple(particle_database):
     # initialize the graph edges (initial and final state)
     initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
     final_state: List[StateDefinition] = [
@@ -51,7 +51,8 @@ def test_script_simple():
     stm = StateTransitionManager(
         initial_state,
         final_state,
-        ["D*"],
+        particle_database,
+        allowed_intermediate_particles=["D*"],
         interaction_type_settings=int_settings,
         formalism_type=formalism_type,
     )
@@ -86,6 +87,7 @@ def test_script_simple():
     stm = StateTransitionManager(
         initial_state,
         final_state,
+        particle_database,
         ["D*"],
         interaction_type_settings=int_settings,
         formalism_type=formalism_type,
@@ -107,7 +109,7 @@ def test_script_simple():
 
 
 @pytest.mark.slow
-def test_script_full():
+def test_script_full(particle_database):
     # initialize the graph edges (initial and final state)
     initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
     final_state: List[StateDefinition] = ["D0", "D~0", "pi0", "pi0"]
@@ -129,6 +131,7 @@ def test_script_full():
     stm = StateTransitionManager(
         initial_state,
         final_state,
+        particle_database,
         ["D*"],
         interaction_type_settings=int_settings,
         formalism_type=formalism_type,
@@ -164,6 +167,7 @@ def test_script_full():
     stm = StateTransitionManager(
         initial_state,
         final_state,
+        particle_database,
         ["D*"],
         interaction_type_settings=int_settings,
         formalism_type=formalism_type,
@@ -183,8 +187,3 @@ def test_script_full():
     assert len(helicity_xml_generator.get_fit_parameters()) == len(
         canonical_xml_generator.get_fit_parameters()
     )
-
-
-if __name__ == "__main__":
-    test_script_simple()
-    test_script_full()
