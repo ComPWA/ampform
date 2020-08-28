@@ -4,6 +4,7 @@
 *.xml
 *.yaml
 *.yml
+!.github/*.yml
 !.github/*/*.yml
 !.pre-commit-config.yaml
 !.readthedocs.yml

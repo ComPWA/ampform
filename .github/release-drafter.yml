@@ -1,0 +1,17 @@
+name-template: PWA Expert System $NEXT_PATCH_VERSION
+tag-template: $NEXT_PATCH_VERSION
+categories:
+  - title: 💡 New features
+    label: 💡 Enhancement
+  - title: 🔨 Interface changes
+    label: 🔨 Maintenance
+  - title: 📝 Documentation
+    label: 📝 Docs
+  - title: 🖱️ Internals
+    label: 🖱️ DX
+  - title: 🐛 Bug fixes
+    label: Bug
+template: |
+  # Release $NEXT_PATCH_VERSION
+
+  $CHANGES
