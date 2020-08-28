@@ -20,4 +20,6 @@ template: |
 
   $CHANGES
 
-  _Contributors since $PREVIOUS_TAG: $CONTRIBUTORS_
+  ## Contributors since [$PREVIOUS_TAG](https://github.com/ComPWA/expertsystem/releases/tag/$PREVIOUS_TAG)
+
+  $CONTRIBUTORS
