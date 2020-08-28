@@ -9,6 +9,9 @@ Welcome to PWA Expert System!
       .. image:: https://mybinder.org/badge_logo.svg
         :alt: Try out Jupyter notebooks
         :target: https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples
+      .. image:: https://img.shields.io/badge/License-GPLv3+-blue.svg
+        :alt: GPLv3+ license
+        :target: https://www.gnu.org/licenses/gpl-3.0-standalone.html
 
   * - .. image:: https://badge.fury.io/py/expertsystem.svg
         :alt: PyPI package

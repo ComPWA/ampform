@@ -312,12 +312,12 @@ history page <https://pypi.org/project/expertsystem/#history>`__. More
 descriptive release notes can be found on the `release page
 <https://github.com/ComPWA/expertsystem/releases>`__.
 
-New releases are automatically published to PyPI when a new tag is created (see
-`setuptools-scm <https://pypi.org/project/setuptools-scm>`_). When creating new
-release notes, try to follow the style of previous releases and summarize the
-changes since the last release. This can be easily seen from the linear commit
-history <contribute:Git commit conventions of the master branch (see
-:ref:`contribute:Commit conventions`, use :code:`git log`).
+Release notes are automatically generated from the PRs that were merged into
+the master branch since the previous tag (see `latest draft
+<https://github.com/ComPWA/expertsystem/releases>`_). The changelog there is
+generated from the PR titles and categorized by issue label. New releases are
+automatically published to PyPI when a new tag with such release notes is
+created (see `setuptools-scm <https://pypi.org/project/setuptools-scm>`_).
 
 
 Continuous Integration
