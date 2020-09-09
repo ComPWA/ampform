@@ -4,7 +4,10 @@ from expertsystem.state import particle
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
+    _create_edge_id_particle_mapping,
     create_spin_domain,
+    match_external_edges,
+    perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.topology import StateTransitionGraph
 from expertsystem.ui import (
@@ -12,10 +15,7 @@ from expertsystem.ui import (
     StateTransitionManager,
 )
 from expertsystem.ui._system_control import (
-    _create_edge_id_particle_mapping,
     filter_graphs,
-    match_external_edges,
-    perform_external_edge_identical_particle_combinatorics,
     remove_duplicate_solutions,
     require_interaction_property,
 )

@@ -50,7 +50,7 @@ def test_particle_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 9
+    assert len(parameter_list) == 5
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter

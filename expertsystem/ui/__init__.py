@@ -27,6 +27,7 @@ from expertsystem.state.particle import (
     StateDefinition,
     filter_particles,
     initialize_graph,
+    match_external_edges,
 )
 from expertsystem.state.propagation import (
     FullPropagator,
@@ -53,8 +54,6 @@ from ._system_control import (
     analyse_solution_failure,
     create_interaction_setting_groups,
     filter_interaction_types,
-    match_external_edges,
-    perform_external_edge_identical_particle_combinatorics,
     remove_duplicate_solutions,
 )
 
@@ -344,17 +343,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             violated_laws = analyse_solution_failure(node_non_satisfied_rules)
             logging.info(f"violated rules: {violated_laws}")
 
-        # finally perform combinatorics of identical external edges
-        # (initial or final state edges) and prepare graphs for
-        # amplitude generation
         match_external_edges(solutions)
-        final_solutions = []
-        for sol in solutions:
-            final_solutions.extend(
-                perform_external_edge_identical_particle_combinatorics(sol)
-            )
-
-        return (final_solutions, violated_laws)
+        return (solutions, violated_laws)
 
     def _propagate_quantum_numbers(
         self,

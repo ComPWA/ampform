@@ -18,6 +18,7 @@ from expertsystem.state.particle import (
     InteractionQuantumNumberNames,
     StateQuantumNumberNames,
     get_interaction_property,
+    perform_external_edge_identical_particle_combinatorics,
 )
 
 from . import _yaml_adapter
@@ -269,7 +270,12 @@ def _get_name_hel_list(graph, edge_ids):
         if temp_hel % 1 == 0:
             temp_hel = int(temp_hel)
         name_hel_list.append((graph.edge_props[i][name_label], temp_hel))
-    return name_hel_list
+
+    # in order to ensure correct naming of amplitude coefficients the list has
+    # to be sorted by name. The same coefficient names have to be created for
+    # two graphs that only differ from a kinematic standpoint
+    # (swapped external edges)
+    return sorted(name_hel_list, key=lambda entry: entry[0])
 
 
 class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
@@ -497,7 +503,9 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             for graph in graph_group:
                 self.name_generator.register_amplitude_coefficient_name(graph)
 
-    def generate_amplitude_info(self, graph_groups):
+    def generate_amplitude_info(
+        self, graph_groups
+    ):  # pylint: disable=too-many-locals
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         component_label = particle.Labels.Component.name
@@ -510,9 +518,13 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             seq_partial_decays = []
 
             for graph in graph_group:
-                seq_partial_decays.append(
-                    self.generate_sequential_decay(graph)
+                sequential_graphs = perform_external_edge_identical_particle_combinatorics(
+                    graph
                 )
+                for seq_graph in sequential_graphs:
+                    seq_partial_decays.append(
+                        self.generate_sequential_decay(seq_graph)
+                    )
 
             # in each coherent amplitude we create a product of partial decays
             coherent_amp_name = "coherent_" + get_graph_group_unique_label(

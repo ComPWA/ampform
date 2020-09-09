@@ -48,8 +48,8 @@ class Input(NamedTuple):
             ),
             "J/psi(1S)",
             (
-                "J/psi(1S)_1_to_rho(770)0_1+pi0_0;rho(770)0_1_to_pi-_0+pi+_0;",
-                "J/psi(1S)_1_to_rho(770)0_-1+pi0_0;rho(770)0_-1_to_pi-_0+pi+_0;",
+                "J/psi(1S)_1_to_pi0_0+rho(770)0_1;rho(770)0_1_to_pi+_0+pi-_0;",
+                "J/psi(1S)_1_to_pi0_0+rho(770)0_-1;rho(770)0_-1_to_pi+_0+pi-_0;",
             ),
             -1.0,
         ),  # pylint: disable=too-many-locals

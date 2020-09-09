@@ -12,7 +12,6 @@ from expertsystem.state.particle import (
 from .helicity_decay import (
     HelicityAmplitudeGenerator,
     HelicityAmplitudeNameGenerator,
-    generate_particles_string,
 )
 
 
@@ -32,18 +31,6 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
     That is, using the properties of the decay.
     """
-
-    def _generate_amplitude_coefficient_name(self, graph, node_id):
-        (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
-            graph, node_id
-        )
-        par_name_suffix = (
-            generate_particles_string(in_hel_info, False)
-            + "_to_"
-            + generate_particles_string(out_hel_info, False)
-        )
-        cg_suffix = generate_clebsch_gordan_string(graph, node_id)
-        return par_name_suffix + cg_suffix
 
     def generate_unique_amplitude_name(self, graph, node_id=None):
         name = ""
