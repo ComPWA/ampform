@@ -10,7 +10,6 @@ import json
 import xmltodict
 
 from expertsystem.data import (
-    ComplexEnergyState,
     Particle,
     ParticleCollection,
     Spin,
@@ -49,7 +48,7 @@ def write(instance: object, filename: str) -> None:
 def object_to_dict(instance: object) -> dict:
     if isinstance(instance, ParticleCollection):
         return _dump.from_particle_collection(instance)
-    if isinstance(instance, (ComplexEnergyState, Particle)):
+    if isinstance(instance, (Particle)):
         return _dump.from_particle_state(instance)
     raise NotImplementedError
 

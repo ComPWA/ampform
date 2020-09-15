@@ -49,5 +49,5 @@ def test_exceptions(particle_database):
         particle_database.find(3.14)  # type: ignore
     with pytest.raises(NotImplementedError):
         particle_database += 3.14  # type: ignore
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(AssertionError):
         assert gamma_1 == "gamma"

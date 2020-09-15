@@ -16,7 +16,6 @@ from typing import (
 )
 
 from expertsystem.data import (
-    ComplexEnergyState,
     Parity,
     Particle,
     ParticleCollection,
@@ -31,11 +30,9 @@ def from_particle_collection(particles: ParticleCollection) -> dict:
     return output
 
 
-def from_particle_state(instance: Union[ComplexEnergyState, Particle]) -> dict:
+def from_particle_state(instance: Particle) -> dict:
     def create_parameter_dict(
-        value: float,
-        type_name: str,
-        state: Union[ComplexEnergyState, Particle],
+        value: float, type_name: str, state: Particle,
     ) -> dict:
         value_dict = {
             "Type": type_name,
@@ -59,26 +56,24 @@ def from_particle_state(instance: Union[ComplexEnergyState, Particle]) -> dict:
     return output_dict
 
 
-def _to_quantum_number_list(
-    state: Union[ComplexEnergyState, Particle]
-) -> List[Dict[str, Any]]:
+def _to_quantum_number_list(state: Particle) -> List[Dict[str, Any]]:
     conversion_map: Dict[
         str, Union[Optional[Parity], Optional[Spin], float, int]
     ] = {
-        "Spin": state.state.spin,
-        "Charge": state.state.charge,
-        "Parity": state.state.parity,
-        "CParity": state.state.c_parity,
-        "GParity": state.state.g_parity,
-        "Strangeness": state.state.strangeness,
-        "Charmness": state.state.charmness,
-        "Bottomness": state.state.bottomness,
-        "Topness": state.state.topness,
-        "BaryonNumber": state.state.baryon_number,
-        "ElectronLN": state.state.electron_lepton_number,
-        "MuonLN": state.state.muon_lepton_number,
-        "TauLN": state.state.tau_lepton_number,
-        "IsoSpin": state.state.isospin,
+        "Spin": state.spin,
+        "Charge": state.charge,
+        "Parity": state.parity,
+        "CParity": state.c_parity,
+        "GParity": state.g_parity,
+        "Strangeness": state.strangeness,
+        "Charmness": state.charmness,
+        "Bottomness": state.bottomness,
+        "Topness": state.topness,
+        "BaryonNumber": state.baryon_number,
+        "ElectronLN": state.electron_lepton_number,
+        "MuonLN": state.muon_lepton_number,
+        "TauLN": state.tau_lepton_number,
+        "IsoSpin": state.isospin,
     }
     output: List[Dict[str, Any]] = list()
     for type_name, instance in conversion_map.items():

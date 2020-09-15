@@ -522,7 +522,7 @@ def __safe_set_spin_projections(
         particle_name = state
         particle = particle_db[state]
         spin_projections = arange(  # type: ignore
-            -particle.state.spin, particle.state.spin + 1, 1.0
+            -particle.spin, particle.spin + 1, 1.0
         ).tolist()
         if particle.mass == 0.0:
             if 0.0 in spin_projections:

@@ -6,7 +6,6 @@ from expertsystem.data import (
     Parity,
     Particle,
     ParticleCollection,
-    QuantumState,
     Spin,
     create_antiparticle,
     create_particle,
@@ -18,14 +17,12 @@ J_PSI = Particle(
     pid=443,
     mass=3.0969,
     width=9.29e-05,
-    state=QuantumState[float](
-        spin=1,
-        charge=0,
-        parity=Parity(-1),
-        c_parity=Parity(-1),
-        g_parity=Parity(-1),
-        isospin=Spin(0.0, 0.0),
-    ),
+    spin=1,
+    charge=0,
+    parity=Parity(-1),
+    c_parity=Parity(-1),
+    g_parity=Parity(-1),
+    isospin=Spin(0.0, 0.0),
 )
 
 
@@ -64,7 +61,7 @@ def test_spin():
 def test_particle():
     assert J_PSI.mass == 3.0969
     assert J_PSI.width == 9.29e-05
-    assert J_PSI.state.bottomness == 0
+    assert J_PSI.bottomness == 0
 
 
 @pytest.mark.parametrize(
@@ -80,17 +77,12 @@ def test_create_particle(
 
     assert new_particle.name == "testparticle"
     assert new_particle.pid == 89
-    assert new_particle.state.charge == template_particle.state.charge
-    assert new_particle.state.spin == template_particle.state.spin
+    assert new_particle.charge == template_particle.charge
+    assert new_particle.spin == template_particle.spin
     assert new_particle.mass == 1.5
     assert new_particle.width == 0.5
-    assert (
-        new_particle.state.baryon_number
-        == template_particle.state.baryon_number
-    )
-    assert (
-        new_particle.state.strangeness == template_particle.state.strangeness
-    )
+    assert new_particle.baryon_number == template_particle.baryon_number
+    assert new_particle.strangeness == template_particle.strangeness
 
 
 @pytest.mark.parametrize(
@@ -103,14 +95,12 @@ def test_create_antiparticle(
     anti_particle_name,
 ):
     template_particle = particle_database[particle_name]
-    anti_particle = create_antiparticle(template_particle)
+    anti_particle = create_antiparticle(
+        template_particle, new_name=anti_particle_name
+    )
     comparison_particle = particle_database[anti_particle_name]
 
-    assert anti_particle.pid == comparison_particle.pid
-    assert anti_particle.mass == comparison_particle.mass
-    assert anti_particle.width == comparison_particle.width
-    assert anti_particle.state == comparison_particle.state
-    assert anti_particle.name == "anti-" + particle_name
+    assert anti_particle == comparison_particle
 
 
 def test_create_antiparticle_tilde(particle_database):
@@ -124,10 +114,7 @@ def test_create_antiparticle_tilde(particle_database):
             particle_name = particle_name.replace("-", "+")
         created_particle = create_antiparticle(anti_particle, particle_name)
 
-        assert created_particle.state == particle_database[particle_name].state
-        assert created_particle.complex_energy == pytest.approx(
-            particle_database[particle_name].complex_energy
-        )
+        assert created_particle == particle_database[particle_name]
 
 
 class TestGellmannNishijima:
@@ -135,14 +122,29 @@ class TestGellmannNishijima:
     @pytest.mark.parametrize(
         "state",
         [
-            QuantumState(
-                spin=0.0, charge=1, isospin=Spin(1.0, 0.0), strangeness=2,
+            Particle(
+                "p1",
+                1,
+                spin=0.0,
+                mass=1,
+                charge=1,
+                isospin=Spin(1.0, 0.0),
+                strangeness=2,
             ),
-            QuantumState(
-                spin=1.0, charge=1, isospin=Spin(1.5, 0.5), charmness=1,
+            Particle(
+                "p1",
+                1,
+                spin=1.0,
+                mass=1,
+                charge=1,
+                isospin=Spin(1.5, 0.5),
+                charmness=1,
             ),
-            QuantumState(
+            Particle(
+                "p1",
+                1,
                 spin=0.5,
+                mass=1,
                 charge=1.5,  # type: ignore
                 isospin=Spin(1.0, 1.0),
                 baryon_number=1,
@@ -165,7 +167,7 @@ class TestGellmannNishijima:
 
     @staticmethod
     def test_isospin_none():
-        state = QuantumState(spin=0.0, charge=1, isospin=None)
+        state = Particle("p1", 1, mass=1, spin=0.0, charge=1, isospin=None)
         assert GellmannNishijima.compute_charge(state) is None
 
     @staticmethod
@@ -176,14 +178,12 @@ class TestGellmannNishijima:
                     name="Fails Gell-Mann–Nishijima formula",
                     pid=666,
                     mass=0.0,
-                    state=QuantumState[float](
-                        spin=1,
-                        charge=0,
-                        parity=Parity(-1),
-                        c_parity=Parity(-1),
-                        g_parity=Parity(-1),
-                        isospin=Spin(0.0, 0.0),
-                        charmness=1,
-                    ),
+                    spin=1,
+                    charge=0,
+                    parity=Parity(-1),
+                    c_parity=Parity(-1),
+                    g_parity=Parity(-1),
+                    isospin=Spin(0.0, 0.0),
+                    charmness=1,
                 )
             )

@@ -3,11 +3,8 @@
 __all__ = [  # fix order in API
     "ParticleCollection",
     "Particle",
-    "ComplexEnergyState",
-    "QuantumState",
     "Parity",
     "Spin",
-    "ComplexEnergy",
     "create_antiparticle",
     "create_particle",
     "GellmannNishijima",
@@ -19,12 +16,10 @@ from collections import abc
 from dataclasses import dataclass
 from typing import (
     Dict,
-    Generic,
     ItemsView,
     Iterator,
     KeysView,
     Optional,
-    TypeVar,
     Union,
     ValuesView,
 )
@@ -116,20 +111,21 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-_T = TypeVar("_T", float, Spin)
-
-
 @dataclass(frozen=True)
-class QuantumState(
-    Generic[_T]
-):  # pylint: disable=too-many-instance-attributes
-    """Set of quantum numbers with a **generic type spin**.
+class Particle:  # pylint: disable=too-many-instance-attributes
+    """Immutable container of data defining a physical particle.
 
-    This is to make spin projection required in `.QuantumState` and unavailable
-    in `.Particle`.
+    A Particle is defined by the minimum set of the quantum numbers that every
+    possible instances of that particle have in common (the "static" quantum
+    numbers of the particle). A "non-static" quantum number is the spin
+    projection. Hence Particles do NOT contain spin projection information.
     """
 
-    spin: _T
+    name: str
+    pid: int
+    spin: float
+    mass: float
+    width: float = 0.0
     charge: int = 0
     isospin: Optional[Spin] = None
     strangeness: int = 0
@@ -144,103 +140,27 @@ class QuantumState(
     c_parity: Optional[Parity] = None
     g_parity: Optional[Parity] = None
 
-
-class ComplexEnergy:
-    """Defines a complex valued energy.
-
-    Resembles a position (pole) in the complex energy plane.
-    """
-
-    def __init__(self, energy: complex):
-        self.__energy = complex(energy)
-
     @property
-    def complex_energy(self) -> complex:
-        return self.__energy
+    def energy(self) -> complex:
+        return complex(self.mass, self.width)
 
-    @property
-    def mass(self) -> float:
-        return self.__energy.real
-
-    @property
-    def width(self) -> float:
-        return self.__energy.imag
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, ComplexEnergy):
-            return self.complex_energy == other.complex_energy
-        raise NotImplementedError
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}{self.complex_energy}"
-
-
-class ComplexEnergyState(ComplexEnergy):
-    """Pole in the complex energy plane, with quantum numbers."""
-
-    def __init__(self, energy: complex, state: QuantumState[Spin]):
-        super().__init__(energy)
-        self.state: QuantumState[Spin] = state
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}{self.complex_energy, self.state}"
-
-
-class Particle(ComplexEnergy):
-    """Immutable container of data defining a physical particle.
-
-    Can **only** contain info that the `PDG <http://pdg.lbl.gov/>`_ would list.
-    """
-
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        name: str,
-        pid: int,
-        state: QuantumState[float],
-        mass: float,
-        width: float = 0.0,
-    ):
+    def __post_init__(self) -> None:
         if (
-            state.isospin is not None
-            and GellmannNishijima.compute_charge(state) != state.charge
+            self.isospin is not None
+            and GellmannNishijima.compute_charge(self) != self.charge
         ):
             raise ValueError(
-                f"Cannot construct particle {name} because its quantum numbers"
+                f"Cannot construct particle {self.name} because its quantum numbers"
                 " don't agree with the Gell-Mann–Nishijima formula:\n"
-                f"  Q[{state.charge}] != "
-                f"Iz[{state.isospin.projection}] + 1/2 "
-                f"(B[{state.baryon_number}] + "
-                f" S[{state.strangeness}] + "
-                f" C[{state.charmness}] +"
-                f" B'[{state.bottomness}] +"
-                f" T[{state.strangeness}]"
+                f"  Q[{self.charge}] != "
+                f"Iz[{self.isospin.projection}] + 1/2 "
+                f"(B[{self.baryon_number}] + "
+                f" S[{self.strangeness}] + "
+                f" C[{self.charmness}] +"
+                f" B'[{self.bottomness}] +"
+                f" T[{self.strangeness}]"
                 ")"
             )
-        super().__init__(complex(mass, width))
-        self.__name: str = name
-        self.__pid: int = pid
-        self.state: QuantumState[float] = state
-
-    @property
-    def name(self) -> str:
-        return self.__name
-
-    @property
-    def pid(self) -> int:
-        return self.__pid
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, Particle):
-            return (
-                self.name == other.name
-                and self.pid == other.pid
-                and super().__eq__(other)
-                and self.state == other.state
-            )
-        raise NotImplementedError
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}{self.name, self.pid, self.state, self.mass, self.width}"
 
 
 class GellmannNishijima:
@@ -254,16 +174,16 @@ class GellmannNishijima:
 
     where
     :math:`Q` is charge (computed),
-    :math:`I_3` is `.Spin.projection`,
-    :math:`B` is `~.QuantumState.baryon_number`,
-    :math:`S` is `~.QuantumState.strangeness`,
-    :math:`C` is `~.QuantumState.charmness`,
-    :math:`B'` is `~.QuantumState.bottomness`, and
-    :math:`T` is `~.QuantumState.topness`.
+    :math:`I_3` is `.Spin.projection` of `~.Particle.isospin`,
+    :math:`B` is `~.Particle.baryon_number`,
+    :math:`S` is `~.Particle.strangeness`,
+    :math:`C` is `~.Particle.charmness`,
+    :math:`B'` is `~.Particle.bottomness`, and
+    :math:`T` is `~.Particle.topness`.
     """
 
     @staticmethod
-    def compute_charge(state: QuantumState) -> Optional[float]:
+    def compute_charge(state: Particle) -> Optional[float]:
         """Compute charge using the Gell-Mann–Nishijima formula.
 
         If isospin is not `None`, returns the value :math:`Q`: computed with
@@ -271,6 +191,10 @@ class GellmannNishijima:
         """
         if state.isospin is None:
             return None
+        if state.isospin.projection is None:
+            raise ValueError(
+                "Isospin projection must be defined if a magnitude is defined!"
+            )
         computed_charge = state.isospin.projection + 0.5 * (
             state.baryon_number
             + state.strangeness
@@ -424,90 +348,74 @@ def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
     parity: Optional[int] = None,
     c_parity: Optional[int] = None,
     g_parity: Optional[int] = None,
-    state: Optional[QuantumState[float]] = None,
 ) -> Particle:
-    if state is not None:
-        new_state = state
-    else:
-        new_state = QuantumState[float](
-            spin=spin if spin else template_particle.state.spin,
-            charge=charge if charge else template_particle.state.charge,
-            strangeness=strangeness
-            if strangeness
-            else template_particle.state.strangeness,
-            charmness=charmness
-            if charmness
-            else template_particle.state.charmness,
-            bottomness=bottomness
-            if bottomness
-            else template_particle.state.bottomness,
-            topness=topness if topness else template_particle.state.topness,
-            baryon_number=baryon_number
-            if baryon_number
-            else template_particle.state.baryon_number,
-            electron_lepton_number=electron_lepton_number
-            if electron_lepton_number
-            else template_particle.state.electron_lepton_number,
-            muon_lepton_number=muon_lepton_number
-            if muon_lepton_number
-            else template_particle.state.muon_lepton_number,
-            tau_lepton_number=tau_lepton_number
-            if tau_lepton_number
-            else template_particle.state.tau_lepton_number,
-            isospin=template_particle.state.isospin
-            if isospin is None
-            else template_particle.state.isospin,
-            parity=template_particle.state.parity
-            if parity is None
-            else Parity(parity),
-            c_parity=template_particle.state.c_parity
-            if c_parity is None
-            else Parity(c_parity),
-            g_parity=template_particle.state.g_parity
-            if g_parity is None
-            else Parity(g_parity),
-        )
-    new_particle = Particle(
+    return Particle(
         name=name if name else template_particle.name,
         pid=pid if pid else template_particle.pid,
         mass=mass if mass else template_particle.mass,
         width=width if width else template_particle.width,
-        state=new_state,
+        spin=spin if spin else template_particle.spin,
+        charge=charge if charge else template_particle.charge,
+        strangeness=strangeness
+        if strangeness
+        else template_particle.strangeness,
+        charmness=charmness if charmness else template_particle.charmness,
+        bottomness=bottomness if bottomness else template_particle.bottomness,
+        topness=topness if topness else template_particle.topness,
+        baryon_number=baryon_number
+        if baryon_number
+        else template_particle.baryon_number,
+        electron_lepton_number=electron_lepton_number
+        if electron_lepton_number
+        else template_particle.electron_lepton_number,
+        muon_lepton_number=muon_lepton_number
+        if muon_lepton_number
+        else template_particle.muon_lepton_number,
+        tau_lepton_number=tau_lepton_number
+        if tau_lepton_number
+        else template_particle.tau_lepton_number,
+        isospin=template_particle.isospin
+        if isospin is None
+        else template_particle.isospin,
+        parity=template_particle.parity if parity is None else Parity(parity),
+        c_parity=template_particle.c_parity
+        if c_parity is None
+        else Parity(c_parity),
+        g_parity=template_particle.g_parity
+        if g_parity is None
+        else Parity(g_parity),
     )
-    return new_particle
 
 
 def create_antiparticle(
     template_particle: Particle, new_name: str = None
 ) -> Particle:
     isospin: Optional[Spin] = None
-    if template_particle.state.isospin:
-        isospin = -template_particle.state.isospin
+    if template_particle.isospin:
+        isospin = -template_particle.isospin
     parity: Optional[Parity] = None
-    if template_particle.state.parity is not None:
-        if template_particle.state.spin.is_integer():
-            parity = template_particle.state.parity
+    if template_particle.parity is not None:
+        if template_particle.spin.is_integer():
+            parity = template_particle.parity
         else:
-            parity = -template_particle.state.parity
+            parity = -template_particle.parity
     return Particle(
         name=new_name if new_name else "anti-" + template_particle.name,
         pid=-template_particle.pid,
         mass=template_particle.mass,
         width=template_particle.width,
-        state=QuantumState[float](
-            charge=-template_particle.state.charge,
-            spin=template_particle.state.spin,
-            isospin=isospin,
-            strangeness=-template_particle.state.strangeness,
-            charmness=-template_particle.state.charmness,
-            bottomness=-template_particle.state.bottomness,
-            topness=-template_particle.state.topness,
-            baryon_number=-template_particle.state.baryon_number,
-            electron_lepton_number=-template_particle.state.electron_lepton_number,
-            muon_lepton_number=-template_particle.state.muon_lepton_number,
-            tau_lepton_number=-template_particle.state.tau_lepton_number,
-            parity=parity,
-            c_parity=template_particle.state.c_parity,
-            g_parity=template_particle.state.g_parity,
-        ),
+        charge=-template_particle.charge,
+        spin=template_particle.spin,
+        isospin=isospin,
+        strangeness=-template_particle.strangeness,
+        charmness=-template_particle.charmness,
+        bottomness=-template_particle.bottomness,
+        topness=-template_particle.topness,
+        baryon_number=-template_particle.baryon_number,
+        electron_lepton_number=-template_particle.electron_lepton_number,
+        muon_lepton_number=-template_particle.muon_lepton_number,
+        tau_lepton_number=-template_particle.tau_lepton_number,
+        parity=parity,
+        c_parity=template_particle.c_parity,
+        g_parity=template_particle.g_parity,
     )

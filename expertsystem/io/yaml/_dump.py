@@ -43,23 +43,23 @@ def _to_quantum_number_dict(
     particle: Particle,
 ) -> Dict[str, Union[float, int, Dict[str, float]]]:
     output_dict: Dict[str, Union[float, int, Dict[str, float]]] = {
-        "Spin": _attempt_to_int(particle.state.spin),
-        "Charge": int(particle.state.charge),
+        "Spin": _attempt_to_int(particle.spin),
+        "Charge": int(particle.charge),
     }
     optional_qn: List[
         Tuple[str, Union[Optional[Parity], Spin, int], Union[Callable, int]]
     ] = [
-        ("Parity", particle.state.parity, int),
-        ("CParity", particle.state.c_parity, int),
-        ("GParity", particle.state.g_parity, int),
-        ("Strangeness", particle.state.strangeness, int),
-        ("Charmness", particle.state.charmness, int),
-        ("Bottomness", particle.state.bottomness, int),
-        ("Topness", particle.state.topness, int),
-        ("BaryonNumber", particle.state.baryon_number, int),
-        ("ElectronLN", particle.state.electron_lepton_number, int),
-        ("MuonLN", particle.state.muon_lepton_number, int),
-        ("TauLN", particle.state.tau_lepton_number, int),
+        ("Parity", particle.parity, int),
+        ("CParity", particle.c_parity, int),
+        ("GParity", particle.g_parity, int),
+        ("Strangeness", particle.strangeness, int),
+        ("Charmness", particle.charmness, int),
+        ("Bottomness", particle.bottomness, int),
+        ("Topness", particle.topness, int),
+        ("BaryonNumber", particle.baryon_number, int),
+        ("ElectronLN", particle.electron_lepton_number, int),
+        ("MuonLN", particle.muon_lepton_number, int),
+        ("TauLN", particle.tau_lepton_number, int),
     ]
     for key, value, converter in optional_qn:
         if value in [0, None]:
@@ -67,8 +67,8 @@ def _to_quantum_number_dict(
         output_dict[key] = converter(  # type: ignore
             value
         )  # pylint: disable=not-callable
-    if particle.state.isospin is not None:
-        output_dict["IsoSpin"] = _from_spin(particle.state.isospin)
+    if particle.isospin is not None:
+        output_dict["IsoSpin"] = _from_spin(particle.isospin)
     return output_dict
 
 
