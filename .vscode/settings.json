@@ -22,8 +22,9 @@
     "*.inc": "restructuredtext"
   },
   "git.rebaseWhenSync": true,
+  "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "black",
-  "python.languageServer": "Jedi",
+  "python.languageServer": "Pylance",
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,
   "python.linting.pydocstyleEnabled": true,

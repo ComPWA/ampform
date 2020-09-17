@@ -72,7 +72,7 @@ class Spin(abc.Hashable):
             )
         if not (projection - magnitude).is_integer():
             raise ValueError(
-                f"{self.__class__.__name__}{magnitude, projection}: "
+                f"{self.__class__.__name__}{(magnitude, projection)}: "
                 "(projection - magnitude) should be integer! "
             )
         if projection == -0.0:
@@ -96,7 +96,7 @@ class Spin(abc.Hashable):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}{self.__magnitude, self.__projection}"
+            f"{self.__class__.__name__}{(self.__magnitude, self.__projection)}"
         )
 
     @property

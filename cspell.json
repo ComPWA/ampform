@@ -32,6 +32,7 @@
         "doc/conf.py",
         "expertsystem/solvers/constraint/*",
         "pyproject.toml",
+        "pyrightconfig.json",
         "setup.cfg",
         "setup.py",
         "tox.ini"
@@ -56,6 +57,7 @@
         "gordan",
         "graphviz",
         "helicity",
+        "htmlcov",
         "imap",
         "ipynb",
         "ipython",
@@ -118,6 +120,7 @@
         "pygments",
         "pypi",
         "pyproject",
+        "pyright",
         "rightarrow",
         "rtfd",
         "stm's",

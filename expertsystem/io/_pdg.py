@@ -151,7 +151,7 @@ def __compute_isospin_projection(pdg_particle: PdgDatabase) -> float:
             projection -= quark_content.count("U") + quark_content.count("d")
             projection *= 0.5
     if not (pdg_particle.I - projection).is_integer():
-        raise ValueError(f"Cannot have isospin {pdg_particle.I, projection}")
+        raise ValueError(f"Cannot have isospin {(pdg_particle.I, projection)}")
     return projection
 
 

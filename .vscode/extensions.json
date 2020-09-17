@@ -10,6 +10,7 @@
     "joaompinto.vscode-graphviz",
     "lextudio.restructuredtext",
     "ms-python.python",
+    "ms-python.vscode-pylance",
     "ms-vsliveshare.vsliveshare",
     "redhat.vscode-yaml",
     "ryanluker.vscode-coverage-gutters",
