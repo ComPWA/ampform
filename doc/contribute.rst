@@ -60,6 +60,23 @@ run into persistent linting errors, this may mean we need to further specify
 our conventions. In that case, it's best to create an issue and propose a
 policy change that can then be formulated in the config files.
 
+.. tip::
+
+  If you have Node.js (:code:`npm`) on your system, you can run a few
+  additional checks. Install these packages as follows (possibly with
+  administrator rights):
+
+  .. code-block:: bash
+
+    npm install -g cspell markdownlint-cli pyright
+
+  Normally, these packages are only run in the :ref:`CI <contribute:Continuous
+  Integration>`, but if you have them installed, they are also run when you run
+  :ref:`tox <contribute:Testing>` (local CI).
+
+  Note that :code:`pyright` requires Node.js v12.x (see install instructions
+  `here <https://nodejs.org/en/download/package-manager>`__).
+
 
 Pre-commit
 ----------
@@ -103,7 +120,12 @@ It's especially recommended to *run tox before submitting a pull request!*
 
 More specialized :code:`tox` tests are defined in the `tox.ini
 <https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file, under
-each :code:`testenv`.
+each :code:`testenv`. You can list all environments, along with a description
+of what they do, by running:
+
+.. code-block:: shell
+
+  tox -av
 
 Try to keep test coverage high. You can compute current coverage by running
 
@@ -346,7 +368,9 @@ will ensure that you have the right developer settings for this repository. In
 addition, VSCode will automatically recommend you to install a number of
 extensions that we use when working on this code base (they are `defined
 <https://code.visualstudio.com/updates/v1_6#_workspace-extension-recommendations>`__
-:file:`.vscode/extensions.json` file).
+in the `.vscode/extensions.json
+<https://github.com/ComPWA/expertsystem/blob/master/.vscode/extensions.json>`_
+file).
 
 You can still specify your own settings in `either the user or encompassing
 workspace settings <https://code.visualstudio.com/docs/getstarted/settings>`_,

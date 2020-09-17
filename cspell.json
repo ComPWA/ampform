@@ -105,6 +105,7 @@
         "kernelspec",
         "linkcheck",
         "macos",
+        "markdownlint",
         "maxdepth",
         "mimetype",
         "modindex",
