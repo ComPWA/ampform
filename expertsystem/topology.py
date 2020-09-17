@@ -40,28 +40,6 @@ class Edge:
         raise NotImplementedError
 
 
-class InteractionNode:  # pylint: disable=too-few-public-methods
-    """Struct-like definition of an interaction node."""
-
-    def __init__(
-        self,
-        type_name: str,
-        number_of_ingoing_edges: int,
-        number_of_outgoing_edges: int,
-    ) -> None:
-        if not isinstance(number_of_ingoing_edges, int):
-            raise TypeError("NumberOfIngoingEdges must be an integer")
-        if not isinstance(number_of_outgoing_edges, int):
-            raise TypeError("NumberOfOutgoingEdges must be an integer")
-        if number_of_ingoing_edges < 1:
-            raise ValueError("NumberOfIngoingEdges has to be larger than 0")
-        if number_of_outgoing_edges < 1:
-            raise ValueError("NumberOfOutgoingEdges has to be larger than 0")
-        self.type_name = str(type_name)
-        self.number_of_ingoing_edges = int(number_of_ingoing_edges)
-        self.number_of_outgoing_edges = int(number_of_outgoing_edges)
-
-
 class StateTransitionGraph:
     """Graph class that contains edges and nodes.
 
@@ -187,10 +165,9 @@ class StateTransitionGraph:
         Returns:
             [int]: a list of node ids
         """
-        node_list: List[Optional[int]] = []
-        for edge_id in edge_ids:
-            node_list.append(self.edges[edge_id].originating_node_id)
-        return node_list
+        return [
+            self.edges[edge_id].originating_node_id for edge_id in edge_ids
+        ]
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
         popped_edge_id1 = self.edges.pop(edge_id1)
@@ -236,42 +213,46 @@ class StateTransitionGraph:
         # check if the mapping is still valid and can be extended
 
     def get_initial_state_edges(self) -> List[int]:
-        is_list: List[int] = []
-        for edge_id, edge in self.edges.items():
-            if edge.originating_node_id is None:
-                is_list.append(edge_id)
-        return sorted(is_list)
+        return sorted(
+            [
+                edge_id
+                for edge_id, edge in self.edges.items()
+                if edge.originating_node_id is None
+            ]
+        )
 
     def get_final_state_edges(self) -> List[int]:
-        fs_list: List[int] = []
-        for edge_id, edge in self.edges.items():
-            if edge.ending_node_id is None:
-                fs_list.append(edge_id)
-        return sorted(fs_list)
+        return sorted(
+            [
+                edge_id
+                for edge_id, edge in self.edges.items()
+                if edge.ending_node_id is None
+            ]
+        )
 
     def get_intermediate_state_edges(self) -> List[int]:
-        is_list: List[int] = []
-        for edge_id, edge in self.edges.items():
-            if (
-                edge.ending_node_id is not None
+        return sorted(
+            [
+                edge_id
+                for edge_id, edge in self.edges.items()
+                if edge.ending_node_id is not None
                 and edge.originating_node_id is not None
-            ):
-                is_list.append(edge_id)
-        return sorted(is_list)
+            ]
+        )
 
     def get_edges_ingoing_to_node(self, node_id: Optional[int]) -> List[int]:
-        edge_list: List[int] = []
-        for edge_id, edge in self.edges.items():
-            if edge.ending_node_id == node_id:
-                edge_list.append(edge_id)
-        return edge_list
+        return [
+            edge_id
+            for edge_id, edge in self.edges.items()
+            if edge.ending_node_id == node_id
+        ]
 
     def get_edges_outgoing_to_node(self, node_id: Optional[int]) -> List[int]:
-        edge_list: List[int] = []
-        for edge_id, edge in self.edges.items():
-            if edge.originating_node_id == node_id:
-                edge_list.append(edge_id)
-        return edge_list
+        return [
+            edge_id
+            for edge_id, edge in self.edges.items()
+            if edge.originating_node_id == node_id
+        ]
 
     def get_originating_final_state_edges(
         self, node_id: Optional[int]
@@ -308,6 +289,28 @@ class StateTransitionGraph:
                     )
             temp_edge_list = new_temp_edge_list
         return edge_list
+
+
+class InteractionNode:  # pylint: disable=too-few-public-methods
+    """Struct-like definition of an interaction node."""
+
+    def __init__(
+        self,
+        type_name: str,
+        number_of_ingoing_edges: int,
+        number_of_outgoing_edges: int,
+    ) -> None:
+        if not isinstance(number_of_ingoing_edges, int):
+            raise TypeError("NumberOfIngoingEdges must be an integer")
+        if not isinstance(number_of_outgoing_edges, int):
+            raise TypeError("NumberOfOutgoingEdges must be an integer")
+        if number_of_ingoing_edges < 1:
+            raise ValueError("NumberOfIngoingEdges has to be larger than 0")
+        if number_of_outgoing_edges < 1:
+            raise ValueError("NumberOfOutgoingEdges has to be larger than 0")
+        self.type_name = str(type_name)
+        self.number_of_ingoing_edges = int(number_of_ingoing_edges)
+        self.number_of_outgoing_edges = int(number_of_outgoing_edges)
 
 
 class SimpleStateTransitionTopologyBuilder:

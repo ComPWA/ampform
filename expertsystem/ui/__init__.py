@@ -100,7 +100,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 formalism_type
             )
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
-        self.final_state_groupings: List[List[str]] = list()
+        self.final_state_groupings: List[List[List[str]]] = list()
         self.allowed_interaction_types: List[InteractionTypes] = [
             InteractionTypes.Strong,
             InteractionTypes.EM,
