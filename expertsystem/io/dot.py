@@ -10,7 +10,7 @@ from typing import (
     Optional,
 )
 
-from expertsystem.topology import StateTransitionGraph
+from expertsystem.topology import StateTransitionGraph, Topology
 
 
 def convert_to_dot(instance: object) -> str:
@@ -19,7 +19,7 @@ def convert_to_dot(instance: object) -> str:
     Only works for objects that can be represented as a graph, particularly a
     `.StateTransitionGraph` or a `list` of `.StateTransitionGraph` instances.
     """
-    if isinstance(instance, StateTransitionGraph):
+    if isinstance(instance, (StateTransitionGraph, Topology)):
         return __graph_to_dot(instance)
     if isinstance(instance, list):
         return __graph_list_to_dot(instance)
@@ -111,7 +111,7 @@ def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
 
 
 def __edge_label(graph: StateTransitionGraph, edge_id: int) -> str:
-    if edge_id in graph.edge_props:
+    if isinstance(graph, StateTransitionGraph) and edge_id in graph.edge_props:
         properties = graph.edge_props[edge_id]
         label = properties.get("Name", edge_id)
         quantum_numbers = properties.get("QuantumNumber", None)

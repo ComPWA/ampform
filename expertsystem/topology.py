@@ -32,6 +32,11 @@ class Edge:
     ending_node_id: Optional[int] = None
     originating_node_id: Optional[int] = None
 
+    def get_connected_nodes(self) -> Set[int]:
+        connected_nodes = {self.ending_node_id, self.originating_node_id}
+        connected_nodes.discard(None)
+        return connected_nodes  # type: ignore
+
 
 class Topology:
     """Directed Feynman-like graph for a state transition.
@@ -52,6 +57,7 @@ class Topology:
             self.__nodes = set(nodes)
         if edges is not None:
             self.__edges = edges
+        self.verify()
 
     @property
     def nodes(self) -> Set[int]:
@@ -62,11 +68,7 @@ class Topology:
         return self.__edges
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}()"
-            f"\n    nodes: {self.nodes}"
-            f"\n    edges: {self.__edges}"
-        )
+        return f"{self.__class__.__name__}{(self.nodes, self.edges)}"
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Topology):
@@ -136,28 +138,39 @@ class Topology:
         for edge_id in outgoing_edge_ids:
             self.__edges[edge_id].originating_node_id = node_id
 
-    def get_originating_node_list(
-        self, edge_ids: Iterable[int]
-    ) -> List[Optional[int]]:
-        """Get list of node ids from which the supplied edges originate from.
+    def verify(self) -> None:
+        """Verify if there are no dangling edges or nodes."""
+        for edge_id, edge in self.edges.items():
+            connected_nodes = edge.get_connected_nodes()
+            if not connected_nodes:
+                raise ValueError(
+                    f"Edge nr. {edge_id} is not connected to any node ({edge})"
+                )
+            if not connected_nodes <= self.nodes:
+                raise ValueError(
+                    f"{edge} (ID: {edge_id}) has non-existing node IDs.\n"
+                    f"Available node IDs: {self.nodes}"
+                )
+        self.__check_isolated_nodes()
 
-        Args:
-            edge_ids ([int]): list of edge ids for which the origin node is
-                searched for
+    def __check_isolated_nodes(self) -> None:
+        if len(self.nodes) < 2:
+            return
+        for node_id in self.nodes:
+            surrounding_nodes = self.__get_surrounding_nodes(node_id)
+            if not surrounding_nodes:
+                raise ValueError(
+                    f"Node {node_id} is unconnected to any other node"
+                )
 
-        Returns:
-            [int]: a list of node ids
-        """
-        return [
-            self.edges[edge_id].originating_node_id for edge_id in edge_ids
-        ]
-
-    def verify(self) -> bool:  # pylint: disable=no-self-use
-        """Verify if the graph is connected.
-
-        So that no dangling parts which are not connected.
-        """
-        return True
+    def __get_surrounding_nodes(self, node_id: int) -> Set[int]:
+        surrounding_nodes = set()
+        for edge in self.edges.values():
+            connected_nodes = edge.get_connected_nodes()
+            if node_id in connected_nodes:
+                surrounding_nodes |= connected_nodes
+        surrounding_nodes.discard(node_id)
+        return surrounding_nodes
 
     def is_isomorphic(self, other: "Topology") -> bool:
         """Check if two graphs are isomorphic.
@@ -178,6 +191,22 @@ class Topology:
         #    CurrentEdges = []
 
         # check if the mapping is still valid and can be extended
+
+    def get_originating_node_list(
+        self, edge_ids: Iterable[int]
+    ) -> List[Optional[int]]:
+        """Get list of node ids from which the supplied edges originate from.
+
+        Args:
+            edge_ids ([int]): list of edge ids for which the origin node is
+                searched for
+
+        Returns:
+            [int]: a list of node ids
+        """
+        return [
+            self.edges[edge_id].originating_node_id for edge_id in edge_ids
+        ]
 
     def get_initial_state_edges(self) -> List[int]:
         return sorted(
@@ -214,7 +243,9 @@ class Topology:
             if edge.ending_node_id == node_id
         ]
 
-    def get_edges_outgoing_to_node(self, node_id: Optional[int]) -> List[int]:
+    def get_edges_outgoing_from_node(
+        self, node_id: Optional[int]
+    ) -> List[int]:
         return [
             edge_id
             for edge_id, edge in self.edges.items()
@@ -226,7 +257,7 @@ class Topology:
     ) -> List[int]:
         fs_edges = self.get_final_state_edges()
         edge_list = []
-        temp_edge_list = self.get_edges_outgoing_to_node(node_id)
+        temp_edge_list = self.get_edges_outgoing_from_node(node_id)
         while temp_edge_list:
             new_temp_edge_list = []
             for edge_id in temp_edge_list:
@@ -235,7 +266,7 @@ class Topology:
                 else:
                     new_node_id = self.edges[edge_id].ending_node_id
                     new_temp_edge_list.extend(
-                        self.get_edges_outgoing_to_node(new_node_id)
+                        self.get_edges_outgoing_from_node(new_node_id)
                     )
             temp_edge_list = new_temp_edge_list
         return edge_list
@@ -399,8 +430,8 @@ class SimpleStateTransitionTopologyBuilder:
                     len(active_graph[1]) == number_of_final_edges
                     and len(active_graph[0].nodes) > 0
                 ):
-                    if active_graph[0].verify():
-                        graph_tuple_list.append(active_graph)
+                    active_graph[0].verify()
+                    graph_tuple_list.append(active_graph)
                     continue
 
                 extendable_graph_list.extend(self.extend_graph(active_graph))

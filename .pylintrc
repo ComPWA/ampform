@@ -15,6 +15,7 @@ disable=
     RST301, # related to google style docstring
     logging-fstring-interpolation,
     not-callable,
+    unused-import,  # https://www.flake8rules.com/rules/F401
 
 [MASTER]
 ignore=conf.py

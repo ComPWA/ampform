@@ -114,7 +114,9 @@ def determine_attached_final_state(graph, edge_id):
                 final_state_edge_ids.append(current_edge)
             else:
                 node_id = graph.edges[current_edge].ending_node_id
-                current_edges.extend(graph.get_edges_outgoing_to_node(node_id))
+                current_edges.extend(
+                    graph.get_edges_outgoing_from_node(node_id)
+                )
     return final_state_edge_ids
 
 
@@ -131,7 +133,7 @@ def get_recoil_edge(graph, edge_id):
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    outgoing_edges = graph.get_edges_outgoing_to_node(node_id)
+    outgoing_edges = graph.get_edges_outgoing_from_node(node_id)
     outgoing_edges.remove(edge_id)
     if len(outgoing_edges) != 1:
         raise ValueError(
@@ -428,7 +430,7 @@ class HelicityAmplitudeNameGenerator(AbstractAmplitudeNameGenerator):
     @staticmethod
     def _retrieve_helicity_info(graph, node_id):
         in_edges = graph.get_edges_ingoing_to_node(node_id)
-        out_edges = graph.get_edges_outgoing_to_node(node_id)
+        out_edges = graph.get_edges_outgoing_from_node(node_id)
 
         in_names_hel_list = _get_name_hel_list(graph, in_edges)
         out_names_hel_list = _get_name_hel_list(graph, out_edges)
@@ -614,7 +616,7 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
         class_label = particle.Labels.Class.name
         name_label = particle.Labels.Name.name
         decay_products = []
-        for out_edge_id in graph.get_edges_outgoing_to_node(node_id):
+        for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
             decay_products.append(
                 {
                     name_label: graph.edge_props[out_edge_id][name_label],

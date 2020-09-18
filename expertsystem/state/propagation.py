@@ -234,7 +234,7 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
 
     def create_variable_containers(self, node_id, cons_law):
         in_edges = self.graph.get_edges_ingoing_to_node(node_id)
-        out_edges = self.graph.get_edges_outgoing_to_node(node_id)
+        out_edges = self.graph.get_edges_outgoing_from_node(node_id)
 
         qn_names = cons_law.get_required_qn_names()
         qn_list = self.prepare_qns(
@@ -433,7 +433,7 @@ class CSPPropagator(AbstractPropagator):
                 variable_mapping["ingoing-fixed"] = in_edge_vars[1]
                 var_list = list(variable_mapping["ingoing"])
 
-                out_edges = self.graph.get_edges_outgoing_to_node(node_id)
+                out_edges = self.graph.get_edges_outgoing_from_node(node_id)
                 out_edge_vars = self.create_edge_variables(
                     out_edges, part_qn_dict
                 )

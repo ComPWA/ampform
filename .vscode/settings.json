@@ -22,6 +22,9 @@
     "*.inc": "restructuredtext"
   },
   "git.rebaseWhenSync": true,
+  "githubPullRequests.telemetry.enabled": false,
+  "gitlens.advanced.telemetry.enabled": false,
+  "python.analysis.autoImportCompletions": false,
   "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "black",
   "python.languageServer": "Pylance",
@@ -36,6 +39,8 @@
   "restructuredtext.builtDocumentationPath": "${workspaceFolder}/doc/_build/html",
   "restructuredtext.confPath": "${workspaceFolder}/doc",
   "rewrap.wrappingColumn": 79,
+  "telemetry.enableCrashReporter": false,
+  "telemetry.enableTelemetry": false,
   "yaml.schemas": {
     "./expertsystem/schemas/xml/particle-list.json": ["*particle*xml.y*ml"],
     "./expertsystem/schemas/yaml/amplitude-model.json": ["*recipe.y*ml"],

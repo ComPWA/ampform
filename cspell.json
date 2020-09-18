@@ -119,6 +119,7 @@
         "pids",
         "prefactor",
         "pygments",
+        "pylance",
         "pypi",
         "pyproject",
         "pyright",

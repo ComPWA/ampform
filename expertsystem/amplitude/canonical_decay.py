@@ -73,7 +73,7 @@ def _clebsch_gordan_decorator(decay_generate_function):
 
         daughter_spins = []
 
-        for out_edge_id in graph.get_edges_outgoing_to_node(node_id):
+        for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
             daughter_spins.append(
                 get_particle_property(graph.edge_props[out_edge_id], spin_type)
             )

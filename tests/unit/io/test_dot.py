@@ -3,6 +3,7 @@ import pydot
 import pytest
 
 from expertsystem import io
+from expertsystem.topology import Edge, Topology
 
 
 def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions):
@@ -18,6 +19,20 @@ class TestWrite:
             io.write(
                 instance="nope, can't write a str", filename="dummy_file.gv",
             )
+
+    @staticmethod
+    def test_write_topology():
+        output_file = "two_body_decay_topology.gv"
+        topology = Topology(
+            nodes={0},
+            edges={0: Edge(0, None), 1: Edge(None, 0), 2: Edge(None, 0)},
+        )
+        io.write(
+            instance=topology, filename=output_file,
+        )
+        with open(output_file, "r") as stream:
+            dot_data = stream.read()
+        assert pydot.graph_from_dot_data(dot_data) is not None
 
     @staticmethod
     def test_write_single_graph(jpsi_to_gamma_pi_pi_helicity_solutions):

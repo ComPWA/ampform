@@ -233,8 +233,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             node_settings: NodeSettings = {}
             for node_id in instance.nodes:
                 node_int_types: List[InteractionTypes] = []
-                out_edge_ids = instance.get_edges_outgoing_to_node(node_id)
-                in_edge_ids = instance.get_edges_outgoing_to_node(node_id)
+                out_edge_ids = instance.get_edges_outgoing_from_node(node_id)
+                in_edge_ids = instance.get_edges_outgoing_from_node(node_id)
                 in_edge_props = [
                     instance.edge_props[edge_id]
                     for edge_id in [
