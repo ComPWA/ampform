@@ -14,6 +14,7 @@ disable=
     RST203, # unexpected indentation
     RST301, # related to google style docstring
     logging-fstring-interpolation,
+    not-callable,
 
 [MASTER]
 ignore=conf.py

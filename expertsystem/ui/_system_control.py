@@ -277,15 +277,15 @@ def _check_equal_ignoring_qns(
         )
     found_graph = None
     old_comparator = ref_graph.graph_element_properties_comparator
-    ref_graph.set_graph_element_properties_comparator(
-        CompareGraphElementPropertiesFunctor(ignored_qn_list)
+    ref_graph.graph_element_properties_comparator = CompareGraphElementPropertiesFunctor(
+        ignored_qn_list
     )
     for graph in solutions:
         if isinstance(graph, StateTransitionGraph):
             if ref_graph == graph:
                 found_graph = graph
                 break
-    ref_graph.set_graph_element_properties_comparator(old_comparator)
+    ref_graph.graph_element_properties_comparator = old_comparator
     return found_graph
 
 

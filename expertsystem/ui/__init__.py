@@ -37,6 +37,7 @@ from expertsystem.state.propagation import (
 from expertsystem.topology import (
     InteractionNode,
     StateTransitionGraph,
+    Topology,
 )
 from expertsystem.topology import SimpleStateTransitionTopologyBuilder
 
@@ -182,7 +183,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
         self.allowed_interaction_types = allowed_interaction_types
 
-    def prepare_graphs(self,) -> GraphSettingsGroups:
+    def prepare_graphs(self) -> GraphSettingsGroups:
         topology_graphs = self._build_topologies()
         init_graphs = self._create_seed_graphs(topology_graphs)
         graph_node_setting_pairs = self._determine_node_settings(init_graphs)
@@ -192,7 +193,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         )
         return graph_settings_groups
 
-    def _build_topologies(self) -> List[StateTransitionGraph]:
+    def _build_topologies(self) -> List[Topology]:
         all_graphs = self.topology_builder.build_graphs(
             len(self.initial_state), len(self.final_state)
         )
@@ -200,22 +201,23 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         return all_graphs
 
     def _create_seed_graphs(
-        self, topology_graphs: List[StateTransitionGraph]
-    ) -> List[StateTransitionGraph]:
+        self, topology_graphs: List[Topology]
+    ) -> List[StateTransitionGraph[dict]]:
         # initialize the graph edges (initial and final state)
-        init_graphs: List[StateTransitionGraph] = []
+        init_graphs: List[StateTransitionGraph[dict]] = []
         for topology_graph in topology_graphs:
-            topology_graph.set_graph_element_properties_comparator(
-                CompareGraphElementPropertiesFunctor()
-            )
             initialized_graphs = initialize_graph(
-                empty_topology=topology_graph,
+                topology=topology_graph,
                 particles=self.__particles,
                 initial_state=self.initial_state,
                 final_state=self.final_state,
                 final_state_groupings=self.final_state_groupings,
             )
             init_graphs.extend(initialized_graphs)
+        for graph in init_graphs:
+            graph.graph_element_properties_comparator = (
+                CompareGraphElementPropertiesFunctor()
+            )
 
         logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs

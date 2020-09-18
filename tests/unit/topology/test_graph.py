@@ -7,7 +7,7 @@ from expertsystem import ui
 from expertsystem.state.particle import initialize_graph
 from expertsystem.topology import (
     InteractionNode,
-    StateTransitionGraph,
+    Topology,
 )
 
 
@@ -41,8 +41,18 @@ class TestInteractionNode:
             )
 
 
-def create_dummy_topology() -> StateTransitionGraph:
-    topology = StateTransitionGraph()
+def create_dummy_topology() -> Topology:
+    r"""Create a dummy `Topology`.
+
+    Has the following shape:
+
+    .. code-block::
+
+        e0 -- (N0) -- e1 -- (N1) -- e3
+                \             \
+                 e2            e4
+    """
+    topology = Topology()
     topology.add_node(0)
     topology.add_node(1)
     topology.add_edges([0, 1, 2, 3, 4])

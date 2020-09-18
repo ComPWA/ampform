@@ -29,7 +29,7 @@ from expertsystem.data import (
     ParticleCollection,
     Spin,
 )
-from expertsystem.topology import StateTransitionGraph
+from expertsystem.topology import StateTransitionGraph, Topology
 
 
 StateWithSpins = Tuple[str, Sequence[float]]
@@ -460,46 +460,42 @@ class CompareGraphElementPropertiesFunctor:
 
 
 def initialize_graph(  # pylint: disable=too-many-locals
-    empty_topology: StateTransitionGraph,
+    topology: Topology,
     particles: ParticleCollection,
     initial_state: Sequence[StateDefinition],
     final_state: Sequence[StateDefinition],
     final_state_groupings: Optional[List[List[List[str]]]] = None,
-) -> List[StateTransitionGraph]:
-    is_edges = empty_topology.get_initial_state_edges()
-    if len(initial_state) != len(is_edges):
-        raise ValueError(
-            "The graph initial state and the supplied initial"
-            "state are of different size! "
-            f"({len(is_edges)} !=  {len(initial_state)})"
-        )
-    fs_edges = empty_topology.get_final_state_edges()
-    if len(final_state) != len(fs_edges):
-        raise ValueError(
-            "The graph initial state and the supplied initial"
-            "state are of different size! "
-            f"({len(fs_edges)} !=  {len(final_state)})"
-        )
+) -> List[StateTransitionGraph[dict]]:
+    def assert_number_of_states(
+        state_definitions: Sequence, edge_ids: Sequence[int]
+    ) -> None:
+        if len(state_definitions) != len(edge_ids):
+            raise ValueError(
+                "Number of state definitions is not same as number of edge IDs:"
+                f"(len({state_definitions}) != len({edge_ids})"
+            )
 
-    # check if all initial and final state particles have spin projections set
-    initial_state_with_projections = [
-        __safe_set_spin_projections(x, particles) for x in initial_state
-    ]
-    final_state_with_projections = [
-        __safe_set_spin_projections(x, particles) for x in final_state
-    ]
+    is_edges = topology.get_initial_state_edges()
+    fs_edges = topology.get_final_state_edges()
+    assert_number_of_states(initial_state, is_edges)
+    assert_number_of_states(final_state, fs_edges)
+
+    initial_state_with_projections = __safe_set_spin_projections(
+        initial_state, particles
+    )
+    final_state_with_projections = __safe_set_spin_projections(
+        final_state, particles
+    )
 
     attached_is_edges = [
-        empty_topology.get_originating_initial_state_edges(i)
-        for i in empty_topology.nodes
+        topology.get_originating_initial_state_edges(i) for i in topology.nodes
     ]
     is_edge_particle_pairs = __calculate_combinatorics(
         is_edges, initial_state_with_projections, attached_is_edges
     )
 
     attached_fs_edges = [
-        empty_topology.get_originating_final_state_edges(i)
-        for i in empty_topology.nodes
+        topology.get_originating_final_state_edges(i) for i in topology.nodes
     ]
     fs_edge_particle_pairs = __calculate_combinatorics(
         fs_edges,
@@ -508,32 +504,40 @@ def initialize_graph(  # pylint: disable=too-many-locals
         final_state_groupings,
     )
 
-    new_graphs: List[StateTransitionGraph] = list()
+    new_graphs: List[StateTransitionGraph[dict]] = list()
     for initial_state_pair in is_edge_particle_pairs:
         for fs_pair in fs_edge_particle_pairs:
             merged_dicts = initial_state_pair.copy()
             merged_dicts.update(fs_pair)
             new_graphs.extend(
-                __initialize_edges(empty_topology, merged_dicts, particles)
+                __initialize_edges(topology, merged_dicts, particles)
             )
 
     return new_graphs
 
 
 def __safe_set_spin_projections(
-    state: StateDefinition, particle_db: ParticleCollection
-) -> StateWithSpins:
-    if isinstance(state, str):
-        particle_name = state
-        particle = particle_db[state]
-        spin_projections = arange(  # type: ignore
-            -particle.spin, particle.spin + 1, 1.0
-        ).tolist()
-        if particle.mass == 0.0:
-            if 0.0 in spin_projections:
-                del spin_projections[spin_projections.index(0.0)]
-        state = (particle_name, spin_projections)
-    return state
+    list_of_states: Sequence[StateDefinition], particle_db: ParticleCollection,
+) -> Sequence[StateWithSpins]:
+    def safe_set_spin_projections(
+        state: StateDefinition, particle_db: ParticleCollection
+    ) -> StateWithSpins:
+        if isinstance(state, str):
+            particle_name = state
+            particle = particle_db[state]
+            spin_projections = arange(  # type: ignore
+                -particle.spin, particle.spin + 1, 1.0
+            ).tolist()
+            if particle.mass == 0.0:
+                if 0.0 in spin_projections:
+                    del spin_projections[spin_projections.index(0.0)]
+            state = (particle_name, spin_projections)
+        return state
+
+    return [
+        safe_set_spin_projections(state, particle_db)
+        for state in list_of_states
+    ]
 
 
 def __calculate_combinatorics(
@@ -615,10 +619,13 @@ def __initialize_external_edge_lists(
 
 
 def __initialize_edges(
-    graph: StateTransitionGraph,
+    topology: Topology,
     edge_particle_dict: Dict[int, StateWithSpins],
     particle_db: ParticleCollection,
-) -> List[StateTransitionGraph]:
+) -> List[StateTransitionGraph[dict]]:
+    graph: StateTransitionGraph[dict] = StateTransitionGraph.from_topology(
+        topology
+    )
     for edge_id, state_particle in edge_particle_dict.items():
         particle_name = state_particle[0]
         particle = particle_db[particle_name]
@@ -626,7 +633,7 @@ def __initialize_edges(
         graph.edge_props[edge_id] = particle_properties
 
     # now add more quantum numbers given by user (spin_projection)
-    new_graphs: List[StateTransitionGraph] = [graph]
+    new_graphs: List[StateTransitionGraph[dict]] = [graph]
     for edge_id, state_particle in edge_particle_dict.items():
         if isinstance(state_particle, str):
             continue
@@ -644,10 +651,10 @@ def __initialize_edges(
 
 
 def __populate_edge_with_spin_projections(
-    graph: StateTransitionGraph,
+    graph: StateTransitionGraph[dict],
     edge_id: int,
     spin_projections: Sequence[float],
-) -> List[StateTransitionGraph]:
+) -> List[StateTransitionGraph[dict]]:
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
     class_label = Labels.Class.name
@@ -678,9 +685,9 @@ def __populate_edge_with_spin_projections(
 
 
 def initialize_graphs_with_particles(
-    graphs: List[StateTransitionGraph],
+    graphs: List[StateTransitionGraph[dict]],
     allowed_particle_list: List[Dict[str, Any]],
-) -> List[StateTransitionGraph]:
+) -> List[StateTransitionGraph[dict]]:
     initialized_graphs = []
 
     for graph in graphs:
