@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 """Collection of data structures and functions for particle information.
 
 This module defines a particle as a collection of quantum numbers and things
@@ -13,7 +15,9 @@ from enum import Enum, auto
 from itertools import permutations
 from typing import (
     Any,
+    Callable,
     Dict,
+    Generator,
     List,
     Optional,
     Sequence,
@@ -26,6 +30,7 @@ from numpy import arange
 
 from expertsystem import io
 from expertsystem.data import (
+    Particle,
     ParticleCollection,
     Spin,
 )
@@ -34,6 +39,7 @@ from expertsystem.topology import StateTransitionGraph, Topology
 
 StateWithSpins = Tuple[str, Sequence[float]]
 StateDefinition = Union[str, StateWithSpins]
+ParticleWithSpin = Tuple[Particle, float]
 
 
 class Labels(Enum):
@@ -258,6 +264,198 @@ QNClassConverterMapping = {
 }
 
 
+class KinematicRepresentation:
+    def __init__(
+        self,
+        final_state: Optional[Union[Sequence[List[Any]], List[Any]]] = None,
+        initial_state: Optional[Union[Sequence[List[Any]], List[Any]]] = None,
+    ) -> None:
+        self.__initial_state: Optional[List[List[Any]]] = None
+        self.__final_state: Optional[List[List[Any]]] = None
+        if initial_state is not None:
+            self.__initial_state = self.__import(initial_state)
+        if final_state is not None:
+            self.__final_state = self.__import(final_state)
+
+    @property
+    def initial_state(self) -> Optional[List[List[Any]]]:
+        return self.__initial_state
+
+    @property
+    def final_state(self) -> Optional[List[List[Any]]]:
+        return self.__final_state
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, KinematicRepresentation):
+            return (
+                self.initial_state == other.initial_state
+                and self.final_state == other.final_state
+            )
+        raise ValueError(
+            f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}"
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"initial_state={self.initial_state}, "
+            f"final_state={self.final_state})"
+        )
+
+    def __contains__(self, other: object) -> bool:
+        """Check if a `KinematicRepresentation` is contained within another.
+
+        You can also compare with a `list` of `list` instances, such as:
+
+        .. code-block::
+
+            [["gamma", "pi0"], ["gamma", "pi0", "pi0"]]
+
+        This list will be compared **only** with the
+        `~KinematicRepresentation.final_state`!
+        """
+
+        def is_sublist(
+            sub_representation: Optional[List[List[Any]]],
+            main_representation: Optional[List[List[Any]]],
+        ) -> bool:
+            if main_representation is None:
+                if sub_representation is None:
+                    return True
+                return False
+            if sub_representation is None:
+                return True
+            for group in sub_representation:
+                if group not in main_representation:
+                    return False
+            return True
+
+        if isinstance(other, KinematicRepresentation):
+            return is_sublist(
+                other.initial_state, self.initial_state
+            ) and is_sublist(other.final_state, self.final_state)
+        if isinstance(other, list):
+            for item in other:
+                if not isinstance(item, list):
+                    raise ValueError(
+                        "Comparison representation needs to be a list of lists"
+                    )
+            return is_sublist(other, self.final_state)
+        raise ValueError(
+            f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}"
+        )
+
+    def __import(
+        self, nested_list: Union[Sequence[Sequence[Any]], Sequence[Any]]
+    ) -> List[List[Any]]:
+        return self.__sort(self.__prepare(nested_list))
+
+    def __prepare(
+        self, nested_list: Union[Sequence[Sequence[Any]], Sequence[Any]]
+    ) -> List[List[Any]]:
+        if len(nested_list) == 0 or not isinstance(nested_list[0], list):
+            nested_list = [nested_list]
+        return [
+            [self.__extract_particle_name(item) for item in sub_list]
+            for sub_list in nested_list
+        ]
+
+    @staticmethod
+    def __sort(nested_list: List[List[Any]]) -> List[List[Any]]:
+        return sorted([sorted(sub_list) for sub_list in nested_list])
+
+    @staticmethod
+    def __extract_particle_name(item: object) -> str:
+        if isinstance(item, str):
+            return item
+        if isinstance(item, (tuple, list)) and isinstance(item[0], str):
+            return item[0]
+        if isinstance(item, Particle):
+            return item.name
+        if isinstance(item, dict) and "Name" in item:
+            return str(item["Name"])
+        raise ValueError(
+            f"Cannot extract particle name from {item.__class__.__name__}"
+        )
+
+
+def get_kinematic_representation(
+    graph: StateTransitionGraph[StateWithSpins],
+) -> KinematicRepresentation:
+    r"""Group final or initial states by node, sorted by length of the group.
+
+    The resulting sorted groups can be used to check whether two
+    `.StateTransitionGraph` instances are kinematically identical. For
+    instance, the following two graphs:
+
+    .. code-block::
+
+        J/psi -- 0 -- pi0
+                  \
+                   1 -- gamma
+                    \
+                     2 -- gamma
+                      \
+                       pi0
+
+        J/psi -- 0 -- pi0
+                  \
+                   1 -- gamma
+                    \
+                     2 -- pi0
+                      \
+                       gamma
+
+    both result in:
+
+    .. code-block::
+
+        kinematic_representation.final_state == \
+            [["gamma", "gamma"], ["gamma", "gamma", "pi0"], \
+             ["gamma", "gamma", "pi0", "pi0"]]
+        kinematic_representation.initial_state == \
+            [["J/psi"], ["J/psi"]]
+
+    and are therefore kinematically identical. The nested lists are sorted (by
+    `list` length and element content) for comparisons.
+
+    Note: more precisely, the states represented here by a `str` only also have
+    a list of allowed spin projections, for instance, :code:`("J/psi", [-1,
+    +1])`. Note that a `tuple` is also sortable.
+    """
+
+    def get_state_groupings(
+        edge_per_node_getter: Callable[[int], List[int]]
+    ) -> List[List[int]]:
+        return [edge_per_node_getter(i) for i in graph.nodes]
+
+    def fill_groupings(grouping_with_ids: List[List[Any]]) -> List[List[Any]]:
+        return [
+            [graph.edge_props[edge_id] for edge_id in group]
+            for group in grouping_with_ids
+        ]
+
+    initial_state_edge_groups = fill_groupings(
+        get_state_groupings(graph.get_originating_initial_state_edges)
+    )
+    final_state_edge_groups = fill_groupings(
+        get_state_groupings(graph.get_originating_final_state_edges)
+    )
+    return KinematicRepresentation(
+        initial_state=initial_state_edge_groups,
+        final_state=final_state_edge_groups,
+    )
+
+
+def particle_with_spin_projection_to_dict(instance: ParticleWithSpin) -> dict:
+    particle, spin_projection = instance
+    output = io.xml.object_to_dict(particle)
+    for item in output["QuantumNumber"]:
+        if item["Type"] == "Spin":
+            item["Projection"] = spin_projection
+    return output
+
+
 def is_boson(qn_dict: Dict[StateQuantumNumberNames, Any]) -> bool:
     spin_label = StateQuantumNumberNames.Spin
     return abs(qn_dict[spin_label].magnitude % 1) < 0.01
@@ -464,8 +662,49 @@ def initialize_graph(  # pylint: disable=too-many-locals
     particles: ParticleCollection,
     initial_state: Sequence[StateDefinition],
     final_state: Sequence[StateDefinition],
-    final_state_groupings: Optional[List[List[List[str]]]] = None,
-) -> List[StateTransitionGraph[dict]]:
+    final_state_groupings: Optional[
+        Union[List[List[List[str]]], List[List[str]], List[str]]
+    ] = None,
+) -> List[StateTransitionGraph[ParticleWithSpin]]:
+    def embed_in_list(some_list: List[Any]) -> List[List[Any]]:
+        if not isinstance(some_list[0], list):
+            return [some_list]
+        return some_list
+
+    allowed_kinematic_groupings = None
+    if final_state_groupings is not None:
+        final_state_groupings = embed_in_list(final_state_groupings)
+        final_state_groupings = embed_in_list(final_state_groupings)
+        allowed_kinematic_groupings = [
+            KinematicRepresentation(final_state=grouping)
+            for grouping in final_state_groupings
+        ]
+
+    kinematic_permutation_graphs = _generate_kinematic_permutations(
+        topology=topology,
+        particles=particles,
+        initial_state=initial_state,
+        final_state=final_state,
+        allowed_kinematic_groupings=allowed_kinematic_groupings,
+    )
+    output_graphs = list()
+    for kinematic_permutation in kinematic_permutation_graphs:
+        spin_permutations = _generate_spin_permutations(
+            kinematic_permutation, particles
+        )
+        output_graphs.extend(spin_permutations)
+    return output_graphs
+
+
+def _generate_kinematic_permutations(
+    topology: Topology,
+    particles: ParticleCollection,
+    initial_state: Sequence[StateDefinition],
+    final_state: Sequence[StateDefinition],
+    allowed_kinematic_groupings: Optional[
+        List[KinematicRepresentation]
+    ] = None,
+) -> List[StateTransitionGraph[StateWithSpins]]:
     def assert_number_of_states(
         state_definitions: Sequence, edge_ids: Sequence[int]
     ) -> None:
@@ -475,48 +714,47 @@ def initialize_graph(  # pylint: disable=too-many-locals
                 f"(len({state_definitions}) != len({edge_ids})"
             )
 
-    is_edges = topology.get_initial_state_edges()
-    fs_edges = topology.get_final_state_edges()
-    assert_number_of_states(initial_state, is_edges)
-    assert_number_of_states(final_state, fs_edges)
+    assert_number_of_states(initial_state, topology.get_initial_state_edges())
+    assert_number_of_states(final_state, topology.get_final_state_edges())
 
-    initial_state_with_projections = __safe_set_spin_projections(
+    def is_allowed_grouping(
+        kinematic_representation: KinematicRepresentation,
+    ) -> bool:
+        if allowed_kinematic_groupings is None:
+            return True
+        for allowed_kinematic_grouping in allowed_kinematic_groupings:
+            if allowed_kinematic_grouping in kinematic_representation:
+                return True
+        return False
+
+    initial_state_with_projections = _safe_set_spin_projections(
         initial_state, particles
     )
-    final_state_with_projections = __safe_set_spin_projections(
+    final_state_with_projections = _safe_set_spin_projections(
         final_state, particles
     )
 
-    attached_is_edges = [
-        topology.get_originating_initial_state_edges(i) for i in topology.nodes
-    ]
-    is_edge_particle_pairs = __calculate_combinatorics(
-        is_edges, initial_state_with_projections, attached_is_edges
-    )
+    graphs: List[StateTransitionGraph[StateWithSpins]] = list()
+    kinematic_representations: List[KinematicRepresentation] = list()
+    for permutation in _generate_outer_edge_permutations(
+        topology, initial_state_with_projections, final_state_with_projections,
+    ):
+        graph: StateTransitionGraph[
+            StateWithSpins
+        ] = StateTransitionGraph.from_topology(topology)
+        graph.edge_props.update(permutation)
+        kinematic_representation = get_kinematic_representation(graph)
+        if kinematic_representation in kinematic_representations:
+            continue
+        if not is_allowed_grouping(kinematic_representation):
+            continue
+        kinematic_representations.append(kinematic_representation)
+        graphs.append(graph)
 
-    attached_fs_edges = [
-        topology.get_originating_final_state_edges(i) for i in topology.nodes
-    ]
-    fs_edge_particle_pairs = __calculate_combinatorics(
-        fs_edges,
-        final_state_with_projections,
-        attached_fs_edges,
-        final_state_groupings,
-    )
-
-    new_graphs: List[StateTransitionGraph[dict]] = list()
-    for initial_state_pair in is_edge_particle_pairs:
-        for fs_pair in fs_edge_particle_pairs:
-            merged_dicts = initial_state_pair.copy()
-            merged_dicts.update(fs_pair)
-            new_graphs.extend(
-                __initialize_edges(topology, merged_dicts, particles)
-            )
-
-    return new_graphs
+    return graphs
 
 
-def __safe_set_spin_projections(
+def _safe_set_spin_projections(
     list_of_states: Sequence[StateDefinition], particle_db: ParticleCollection,
 ) -> Sequence[StateWithSpins]:
     def safe_set_spin_projections(
@@ -540,148 +778,61 @@ def __safe_set_spin_projections(
     ]
 
 
-def __calculate_combinatorics(
-    edges: List[int],
-    state_particles: Sequence[StateWithSpins],
-    attached_external_edges_per_node: List[List[int]],
-    allowed_particle_groupings: Optional[List[List[List[str]]]] = None,
-) -> List[
-    Dict[int, StateWithSpins]
-]:  # pylint: disable=too-many-branches,too-many-locals
-    combinatorics_list = [
-        dict(zip(edges, particles))
-        for particles in permutations(state_particles)
-    ]
-
-    # now initialize the attached external edge list with the particles
-    comb_attached_ext_edges = [
-        __initialize_external_edge_lists(attached_external_edges_per_node, x)
-        for x in combinatorics_list
-    ]
-
-    # remove combinations with wrong particle groupings
-    if allowed_particle_groupings:  # pylint: disable=too-many-nested-blocks
-        sorted_allowed_particle_groupings = [
-            sorted(sorted(group) for group in grouping)
-            for grouping in allowed_particle_groupings
-        ]
-        combinations_to_remove = set()
-        index_counter = 0
-        for attached_ext_edge_comb in comb_attached_ext_edges:
-            found_valid_grouping = False
-            for particle_grouping in sorted_allowed_particle_groupings:
-                # check if this grouping is available in this graph
-                valid_grouping = True
-                for grouping in particle_grouping:
-                    found = False
-                    for ext_edge_group in attached_ext_edge_comb:
-                        if (
-                            sorted([group[0] for group in ext_edge_group])
-                            == grouping
-                        ):
-                            found = True
-                            break
-                    if not found:
-                        valid_grouping = False
-                        break
-                if valid_grouping:
-                    found_valid_grouping = True
-            if not found_valid_grouping:
-                combinations_to_remove.add(index_counter)
-            index_counter += 1
-        for i in sorted(combinations_to_remove, reverse=True):
-            del comb_attached_ext_edges[i]
-            del combinatorics_list[i]
-
-    # remove equal combinations
-    combinations_to_remove = set()
-    for i, _ in enumerate(comb_attached_ext_edges):
-        for j in range(i + 1, len(comb_attached_ext_edges)):
-            if comb_attached_ext_edges[i] == comb_attached_ext_edges[j]:
-                combinations_to_remove.add(i)
-                break
-
-    for comb_index in sorted(combinations_to_remove, reverse=True):
-        del combinatorics_list[comb_index]
-    return combinatorics_list
-
-
-def __initialize_external_edge_lists(
-    attached_external_edges_per_node: List[List[int]],
-    edge_particle_mapping: Dict[int, StateWithSpins],
-) -> List[List[StateWithSpins]]:
-    init_edge_lists = []
-    for edge_list in attached_external_edges_per_node:
-        init_edge_lists.append(
-            sorted([edge_particle_mapping[i] for i in edge_list])
-        )
-    return sorted(init_edge_lists)
-
-
-def __initialize_edges(
+def _generate_outer_edge_permutations(
     topology: Topology,
-    edge_particle_dict: Dict[int, StateWithSpins],
-    particle_db: ParticleCollection,
-) -> List[StateTransitionGraph[dict]]:
-    graph: StateTransitionGraph[dict] = StateTransitionGraph.from_topology(
-        topology
-    )
-    for edge_id, state_particle in edge_particle_dict.items():
-        particle_name = state_particle[0]
-        particle = particle_db[particle_name]
-        particle_properties = io.xml.object_to_dict(particle)
-        graph.edge_props[edge_id] = particle_properties
-
-    # now add more quantum numbers given by user (spin_projection)
-    new_graphs: List[StateTransitionGraph[dict]] = [graph]
-    for edge_id, state_particle in edge_particle_dict.items():
-        if isinstance(state_particle, str):
-            continue
-        spin_projections = state_particle[1]
-        temp_graphs = new_graphs
-        new_graphs = []
-        for temp_graph in temp_graphs:
-            new_graphs.extend(
-                __populate_edge_with_spin_projections(
-                    temp_graph, edge_id, spin_projections
+    initial_state: Sequence[StateWithSpins],
+    final_state: Sequence[StateWithSpins],
+) -> Generator[Dict[int, StateWithSpins], None, None]:
+    initial_state_ids = topology.get_initial_state_edges()
+    final_state_ids = topology.get_final_state_edges()
+    for initial_state_permutation in permutations(initial_state):
+        for final_state_permutation in permutations(final_state):
+            yield dict(
+                zip(
+                    initial_state_ids + final_state_ids,
+                    initial_state_permutation + final_state_permutation,
                 )
             )
 
-    return new_graphs
 
+def _generate_spin_permutations(
+    graph: StateTransitionGraph[StateWithSpins],
+    particle_db: ParticleCollection,
+) -> List[StateTransitionGraph[ParticleWithSpin]]:
+    def populate_edge_with_spin_projections(
+        uninitialized_graph: StateTransitionGraph[ParticleWithSpin],
+        edge_id: int,
+        state: StateWithSpins,
+    ) -> List[StateTransitionGraph[ParticleWithSpin]]:
+        particle_name, spin_projections = state
+        particle = particle_db[particle_name]
+        output_graph = []
+        for projection in spin_projections:
+            graph_copy = deepcopy(uninitialized_graph)
+            graph_copy.edge_props[edge_id] = (particle, projection)
+            output_graph.append(graph_copy)
+        return output_graph
 
-def __populate_edge_with_spin_projections(
-    graph: StateTransitionGraph[dict],
-    edge_id: int,
-    spin_projections: Sequence[float],
-) -> List[StateTransitionGraph[dict]]:
-    qns_label = Labels.QuantumNumber.name
-    type_label = Labels.Type.name
-    class_label = Labels.Class.name
-    type_value = StateQuantumNumberNames.Spin
-    class_value = QNNameClassMapping[type_value]
+    edge_particle_dict = {
+        edge_id: graph.edge_props[edge_id]
+        for edge_id in graph.get_initial_state_edges()
+        + graph.get_final_state_edges()
+    }
 
-    new_graphs = []
-
-    qn_list = graph.edge_props[edge_id][qns_label]
-    index_list = [
-        qn_list.index(x)
-        for x in qn_list
-        if (type_label in x and class_label in x)
-        and (
-            x[type_label] == type_value.name
-            and x[class_label] == class_value.name
-        )
+    # now add more quantum numbers given by user (spin_projection)
+    uninitialized_graph = StateTransitionGraph.from_topology(graph)
+    output_graphs: List[StateTransitionGraph[ParticleWithSpin]] = [
+        uninitialized_graph
     ]
-    if index_list:
-        for spin_proj in spin_projections:
-            graph_copy = deepcopy(graph)
-            graph_copy.edge_props[edge_id][qns_label][index_list[0]][
-                Labels.Projection.name
-            ] = spin_proj
-            new_graphs.append(graph_copy)
+    for edge_id, state in edge_particle_dict.items():
+        temp_graphs = output_graphs
+        output_graphs = []
+        for temp_graph in temp_graphs:
+            output_graphs.extend(
+                populate_edge_with_spin_projections(temp_graph, edge_id, state)
+            )
 
-    return new_graphs
+    return output_graphs
 
 
 def initialize_graphs_with_particles(

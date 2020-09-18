@@ -24,10 +24,12 @@ from expertsystem.data import ParticleCollection
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
+    ParticleWithSpin,
     StateDefinition,
     filter_particles,
     initialize_graph,
     match_external_edges,
+    particle_with_spin_projection_to_dict,
 )
 from expertsystem.state.propagation import (
     FullPropagator,
@@ -101,7 +103,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 formalism_type
             )
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
-        self.final_state_groupings: List[List[List[str]]] = list()
+        self.final_state_groupings: Optional[List[List[List[str]]]] = None
         self.allowed_interaction_types: List[InteractionTypes] = [
             InteractionTypes.Strong,
             InteractionTypes.EM,
@@ -162,6 +164,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 "The final state grouping has to be of type list."
             )
         if len(fs_group) > 0:
+            if self.final_state_groupings is None:
+                self.final_state_groupings = list()
             if not isinstance(fs_group[0], list):
                 fs_group = [fs_group]  # type: ignore
             self.final_state_groupings.append(fs_group)  # type: ignore
@@ -186,6 +190,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def prepare_graphs(self) -> GraphSettingsGroups:
         topology_graphs = self._build_topologies()
         init_graphs = self._create_seed_graphs(topology_graphs)
+        init_graphs = self._convert_edges_to_dict(init_graphs)  # type: ignore
         graph_node_setting_pairs = self._determine_node_settings(init_graphs)
         # create groups of settings ordered by "probability"
         graph_settings_groups = create_interaction_setting_groups(
@@ -202,9 +207,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
     def _create_seed_graphs(
         self, topology_graphs: List[Topology]
-    ) -> List[StateTransitionGraph[dict]]:
+    ) -> List[StateTransitionGraph[ParticleWithSpin]]:
         # initialize the graph edges (initial and final state)
-        init_graphs: List[StateTransitionGraph[dict]] = []
+        init_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
         for topology_graph in topology_graphs:
             initialized_graphs = initialize_graph(
                 topology=topology_graph,
@@ -214,6 +219,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 final_state_groupings=self.final_state_groupings,
             )
             init_graphs.extend(initialized_graphs)
+        init_graphs = self._convert_edges_to_dict(init_graphs)  # type: ignore
         for graph in init_graphs:
             graph.graph_element_properties_comparator = (
                 CompareGraphElementPropertiesFunctor()
@@ -221,6 +227,20 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs
+
+    @staticmethod
+    def _convert_edges_to_dict(
+        graphs: List[StateTransitionGraph[ParticleWithSpin]],
+    ) -> List[StateTransitionGraph[dict]]:
+        for graph in graphs:
+            for edge_id, edge_property in graph.edge_props.items():
+                if not isinstance(edge_property, dict):
+                    graph.edge_props[
+                        edge_id
+                    ] = particle_with_spin_projection_to_dict(  # type: ignore
+                        edge_property
+                    )
+        return graphs  # type: ignore
 
     def _determine_node_settings(
         self, graphs: List[StateTransitionGraph]
