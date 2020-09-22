@@ -77,7 +77,9 @@ def test_generate_outer_edge_permutations(
     )
     list_of_permutations = list(
         _generate_outer_edge_permutations(
-            three_body_decay, initial_state_with_spins, final_state_with_spins,
+            three_body_decay,
+            initial_state_with_spins,
+            final_state_with_spins,
         )
     )
     n_permutations_final_state = factorial(len(final_state))
@@ -90,7 +92,8 @@ class TestKinematicRepresentation:
     @staticmethod
     def test_constructor():
         representation = KinematicRepresentation(
-            initial_state=["J/psi"], final_state=["gamma", "pi0"],  # type: ignore
+            initial_state=["J/psi"],
+            final_state=["gamma", "pi0"],  # type: ignore
         )
         assert representation.initial_state == [["J/psi"]]
         assert representation.final_state == [["gamma", "pi0"]]

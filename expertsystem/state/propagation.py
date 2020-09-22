@@ -323,7 +323,8 @@ def _check_requirements(rule, in_edge_props, out_edge_props, node_props):
         list(rule.__class__.__call__.__annotations__.values())
     )
     for arg_type, props in zip(
-        rule_annotations, (in_edge_props, out_edge_props, node_props),
+        rule_annotations,
+        (in_edge_props, out_edge_props, node_props),
     ):
         if arg_counter == 3:
             if not _check_arg_requirements(arg_type, props):

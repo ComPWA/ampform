@@ -86,7 +86,7 @@ def _xml_to_width(definition: dict) -> float:
     return float(definition["Value"])
 
 
-def _xml_qn_list_to_qn_object(definitions: List[dict],) -> Dict[str, Any]:
+def _xml_qn_list_to_qn_object(definitions: List[dict]) -> Dict[str, Any]:
     output = dict()
     for definition in definitions:
         type_name, quantum_number = _xml_to_quantum_number(definition)

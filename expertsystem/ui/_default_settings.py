@@ -182,7 +182,7 @@ def create_default_interaction_settings(
 
     strong_settings = deepcopy(em_settings)
     strong_settings.conservation_laws.extend(
-        [IsoSpinConservation(), GParityConservation(),]
+        [IsoSpinConservation(), GParityConservation()]
     )
     strong_settings.interaction_strength = 60
     interaction_type_settings[InteractionTypes.Strong] = strong_settings

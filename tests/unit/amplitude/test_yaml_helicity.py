@@ -12,7 +12,9 @@ SCRIPT_PATH = dirname(realpath(__file__))
 
 
 @pytest.fixture(scope="module")
-def imported_dict(jpsi_to_gamma_pi_pi_helicity_amplitude_generator,):
+def imported_dict(
+    jpsi_to_gamma_pi_pi_helicity_amplitude_generator,
+):
     output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
     jpsi_to_gamma_pi_pi_helicity_amplitude_generator.write_to_file(
         output_filename
@@ -124,7 +126,8 @@ def test_intensity_section(imported_dict):
 
 
 @pytest.mark.parametrize(
-    "section", ["Dynamics", "Kinematics", "Parameters", "ParticleList"],
+    "section",
+    ["Dynamics", "Kinematics", "Parameters", "ParticleList"],
 )
 def test_expected_recipe_shape(imported_dict, expected_dict, section):
     expected_section = equalize_dict(expected_dict[section])

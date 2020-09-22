@@ -5,7 +5,7 @@ from expertsystem.state.conservation_rules import ChargeConservation
 
 @pytest.mark.parametrize(
     "graph_input, expected_value",
-    [(([0], [-1, 1,],), True,), (([0], [1, 1,],), False,)],
+    [(([0], [-1, 1]), True), (([0], [1, 1]), False)],
 )
 def test_charge_conservation(graph_input, expected_value):
     rule = ChargeConservation()

@@ -520,8 +520,10 @@ class HelicityAmplitudeGenerator(AbstractAmplitudeGenerator):
             seq_partial_decays = []
 
             for graph in graph_group:
-                sequential_graphs = perform_external_edge_identical_particle_combinatorics(
-                    graph
+                sequential_graphs = (
+                    perform_external_edge_identical_particle_combinatorics(
+                        graph
+                    )
                 )
                 for seq_graph in sequential_graphs:
                     seq_partial_decays.append(

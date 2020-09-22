@@ -32,7 +32,7 @@ def from_particle_collection(particles: ParticleCollection) -> dict:
 
 def from_particle_state(instance: Particle) -> dict:
     def create_parameter_dict(
-        value: float, type_name: str, state: Particle,
+        value: float, type_name: str, state: Particle
     ) -> dict:
         value_dict = {
             "Type": type_name,

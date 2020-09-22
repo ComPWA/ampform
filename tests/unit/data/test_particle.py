@@ -27,7 +27,8 @@ J_PSI = Particle(
 
 
 @pytest.mark.parametrize(
-    "instance", [ParticleCollection(), Spin(2.5, -0.5), Parity(1), J_PSI],
+    "instance",
+    [ParticleCollection(), Spin(2.5, -0.5), Parity(1), J_PSI],
 )
 def test_repr(instance):
     copy_from_repr = eval(repr(instance))  # pylint: disable=eval-used
@@ -65,14 +66,19 @@ def test_particle():
 
 
 @pytest.mark.parametrize(
-    "particle_name", ["p", "phi(1020)", "W-", "gamma"],
+    "particle_name",
+    ["p", "phi(1020)", "W-", "gamma"],
 )
 def test_create_particle(
     particle_database, particle_name  # pylint: disable=W0621
 ):
     template_particle = particle_database[particle_name]
     new_particle = create_particle(
-        template_particle, name="testparticle", pid=89, mass=1.5, width=0.5,
+        template_particle,
+        name="testparticle",
+        pid=89,
+        mass=1.5,
+        width=0.5,
     )
 
     assert new_particle.name == "testparticle"

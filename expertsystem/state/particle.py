@@ -732,7 +732,9 @@ def _generate_kinematic_permutations(
     graphs: List[StateTransitionGraph[StateWithSpins]] = list()
     kinematic_representations: List[KinematicRepresentation] = list()
     for permutation in _generate_outer_edge_permutations(
-        topology, initial_state_with_projections, final_state_with_projections,
+        topology,
+        initial_state_with_projections,
+        final_state_with_projections,
     ):
         graph: StateTransitionGraph[
             StateWithSpins
@@ -750,7 +752,8 @@ def _generate_kinematic_permutations(
 
 
 def _safe_set_spin_projections(
-    list_of_states: Sequence[StateDefinition], particle_db: ParticleCollection,
+    list_of_states: Sequence[StateDefinition],
+    particle_db: ParticleCollection,
 ) -> Sequence[StateWithSpins]:
     def safe_set_spin_projections(
         state: StateDefinition, particle_db: ParticleCollection
@@ -862,7 +865,8 @@ def initialize_graphs_with_particles(
 
 
 def filter_particles(
-    particle_db: ParticleCollection, allowed_particle_names: List[str],
+    particle_db: ParticleCollection,
+    allowed_particle_names: List[str],
 ) -> List[Dict[str, Any]]:
     """Filters `.ParticleCollection` based on the allowed particle names.
 
@@ -1067,7 +1071,8 @@ def perform_external_edge_identical_particle_combinatorics(
 
 
 def _external_edge_identical_particle_combinatorics(
-    graph: StateTransitionGraph, external_edge_getter_function: str,
+    graph: StateTransitionGraph,
+    external_edge_getter_function: str,
 ) -> List[StateTransitionGraph]:
     # pylint: disable=too-many-locals
     new_graphs = [graph]
@@ -1124,7 +1129,8 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
 
 
 def _create_edge_id_particle_mapping(
-    graph: StateTransitionGraph, external_edge_getter_function: str,
+    graph: StateTransitionGraph,
+    external_edge_getter_function: str,
 ) -> Dict[int, str]:
     name_label = Labels.Name.name
     return {

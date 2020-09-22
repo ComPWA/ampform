@@ -17,7 +17,8 @@ class TestWrite:
     def test_exception():
         with pytest.raises(NotImplementedError):
             io.write(
-                instance="nope, can't write a str", filename="dummy_file.gv",
+                instance="nope, can't write a str",
+                filename="dummy_file.gv",
             )
 
     @staticmethod
@@ -28,7 +29,8 @@ class TestWrite:
             edges={0: Edge(0, None), 1: Edge(None, 0), 2: Edge(None, 0)},
         )
         io.write(
-            instance=topology, filename=output_file,
+            instance=topology,
+            filename=output_file,
         )
         with open(output_file, "r") as stream:
             dot_data = stream.read()

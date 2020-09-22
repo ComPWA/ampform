@@ -136,10 +136,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 use_mass_conservation = False
 
         if not self.interaction_type_settings:
-            self.interaction_type_settings = create_default_interaction_settings(
-                formalism_type,
-                nbody_topology=use_nbody_topology,
-                use_mass_conservation=use_mass_conservation,
+            self.interaction_type_settings = (
+                create_default_interaction_settings(
+                    formalism_type,
+                    nbody_topology=use_nbody_topology,
+                    use_mass_conservation=use_mass_conservation,
+                )
             )
         self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
@@ -301,7 +303,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         return graph_node_setting_pairs
 
     def find_solutions(
-        self, graph_setting_groups: GraphSettingsGroups,
+        self,
+        graph_setting_groups: GraphSettingsGroups,
     ) -> Tuple[
         List[StateTransitionGraph], List[str]
     ]:  # pylint: disable=too-many-locals
@@ -378,9 +381,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         state_graph_node_settings_pair: Tuple[
             StateTransitionGraph, Dict[int, InteractionNodeSettings]
         ],
-    ) -> Tuple[
-        List[StateTransitionGraph], ViolatedLaws,
-    ]:
+    ) -> Tuple[List[StateTransitionGraph], ViolatedLaws,]:
         propagator = self._initialize_qn_propagator(
             state_graph_node_settings_pair[0],
             state_graph_node_settings_pair[1],

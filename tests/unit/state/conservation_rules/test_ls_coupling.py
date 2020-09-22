@@ -107,7 +107,7 @@ from expertsystem.ui._system_control import _remove_conservation_law
     ],
 )
 def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-arguments
-    initial_state, final_state, ang_mom, spin, solution_count,
+    initial_state, final_state, ang_mom, spin, solution_count
 ):
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"

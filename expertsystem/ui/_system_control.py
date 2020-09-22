@@ -40,7 +40,8 @@ NodeSettings = Dict[int, List[InteractionNodeSettings]]
 
 ViolatedLaws = Dict[int, List[Rule]]
 SolutionMapping = Dict[
-    Strength, List[Tuple[List[StateTransitionGraph], ViolatedLaws]],
+    Strength,
+    List[Tuple[List[StateTransitionGraph], ViolatedLaws]],
 ]
 
 
@@ -277,8 +278,8 @@ def _check_equal_ignoring_qns(
         )
     found_graph = None
     old_comparator = ref_graph.graph_element_properties_comparator
-    ref_graph.graph_element_properties_comparator = CompareGraphElementPropertiesFunctor(
-        ignored_qn_list
+    ref_graph.graph_element_properties_comparator = (
+        CompareGraphElementPropertiesFunctor(ignored_qn_list)
     )
     for graph in solutions:
         if isinstance(graph, StateTransitionGraph):

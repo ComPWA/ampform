@@ -40,7 +40,7 @@ def test_immutability():
 def test_complex_energy_equality():
     with pytest.raises(AssertionError):
         assert Particle(
-            "MyParticle", pid=123, mass=1.5, width=0.1, spin=1,
+            "MyParticle", pid=123, mass=1.5, width=0.1, spin=1
         ) == Particle("MyParticle", pid=123, mass=1.5, width=0.2, spin=1)
 
     assert Particle(
@@ -63,7 +63,8 @@ def test_complex_energy_equality():
 
 
 @pytest.mark.parametrize(
-    "magnitude, projection", [(0.3, 0.3), (1.0, 0.5), (0.5, 0.0), (-0.5, 0.5)],
+    "magnitude, projection",
+    [(0.3, 0.3), (1.0, 0.5), (0.5, 0.0), (-0.5, 0.5)],
 )
 def test_spin_exceptions(magnitude, projection):
     with pytest.raises(ValueError):

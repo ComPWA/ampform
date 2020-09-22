@@ -155,7 +155,7 @@ class ParityConservation(Rule):
     ) -> bool:
         r"""Implement :math:`P_{in} = P_{out} \cdot (-1)^L`."""
         if len(ingoing_edge_qns) == 1 and len(outgoing_edge_qns) == 2:
-            parity_in = reduce(lambda x, y: x * y.value, ingoing_edge_qns, 1,)
+            parity_in = reduce(lambda x, y: x * y.value, ingoing_edge_qns, 1)
             parity_out = reduce(lambda x, y: x * y.value, outgoing_edge_qns, 1)
             return parity_in == (parity_out * (-1) ** l_mag)
         return True
@@ -344,7 +344,8 @@ class GParityConservation(Rule):
             couple_state: Tuple[GParityEdgeInput, GParityEdgeInput],
         ) -> bool:
             couple_state_g_parity = check_multistate_g_parity(
-                single_state.isospin, (couple_state[0], couple_state[1]),
+                single_state.isospin,
+                (couple_state[0], couple_state[1]),
             )
             single_state_g_parity = (
                 ingoing_edge_qns[0].g_parity.value
@@ -506,7 +507,8 @@ def _check_magnitude(
 
 
 def __calculate_total_spins(
-    spins: List[Spin], interaction_qns: Optional[SpinNodeInput] = None,
+    spins: List[Spin],
+    interaction_qns: Optional[SpinNodeInput] = None,
 ) -> Set[Spin]:
     total_spins = set()
     if len(spins) == 1:

@@ -31,5 +31,7 @@ def amplitude_model(instance: dict) -> None:
     )
 
     jsonschema.validate(
-        instance=instance, schema=_SCHEMA_AMPLITUDE, resolver=resolver,
+        instance=instance,
+        schema=_SCHEMA_AMPLITUDE,
+        resolver=resolver,
     )

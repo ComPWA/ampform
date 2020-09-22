@@ -59,7 +59,10 @@ from expertsystem.state.conservation_rules import (
             g_parity_in[1] is g_parity_out[1],
         )
         for g_parity_in, g_parity_out in product(
-            [(1, True), (-1, False),],
+            [
+                (1, True),
+                (-1, False),
+            ],
             [
                 ((1, 1), True),
                 ((-1, -1), True),

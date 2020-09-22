@@ -96,7 +96,10 @@ def test_general_reaction(test_input, expected):
             ["CParityConservation", "SpinConservation"],
         ),
         ((["pi0"], ["gamma", "gamma"]), []),
-        ((["pi0"], ["gamma", "gamma", "gamma"]), ["CParityConservation"],),
+        (
+            (["pi0"], ["gamma", "gamma", "gamma"]),
+            ["CParityConservation"],
+        ),
         ((["pi0"], ["e+", "e-", "gamma"]), []),
         ((["pi0"], ["e+", "e-"]), []),
     ],
