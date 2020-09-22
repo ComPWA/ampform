@@ -1,12 +1,14 @@
-Welcome to PWA Expert System!
-=============================
+.. title:: Welcome
+
+Welcome to the PWA Expert System!
+=================================
 
 .. list-table::
 
   * - .. image:: https://readthedocs.org/projects/expertsystem/badge/?version=latest
         :alt: Documentation build status
         :target: https://expertsystem.readthedocs.io
-      .. image:: https://mybinder.org/badge_logo.svg
+      .. image:: https://static.mybinder.org/badge_logo.svg
         :alt: Try out Jupyter notebooks
         :target: https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples
       .. image:: https://img.shields.io/badge/License-GPLv3+-blue.svg
@@ -105,49 +107,45 @@ Workflow of the Expert System
 
 1. Preparation
 
-   1.1. Build all possible topologies. A **topology** is represented by a
-   :ref:`graph <index:1. State Transition Graphs>`, in which the edges and
-   nodes are empty (no particle information).
+  1.1. Build all possible topologies. A **topology** is represented by a
+  :ref:`graph <index:1. State Transition Graphs>`, in which the edges and nodes
+  are empty (no particle information).
 
-   1.2. Fill the topology graphs with the user provided information. Typically
-   these are the graph's ingoing edges (initial state) and outgoing edges
-   (final state).
+  1.2. Fill the topology graphs with the user provided information. Typically
+  these are the graph's ingoing edges (initial state) and outgoing edges (final
+  state).
 
 2. Solving
 
-   2.1. *Propagate* quantum number information through the complete graph while
-   respecting the specified conservation laws. Information like mass is not
-   used in this first solving step.
+  2.1. *Propagate* quantum number information through the complete graph while
+  respecting the specified conservation laws. Information like mass is not used
+  in this first solving step.
 
-   2.2. *Clone* graphs while inserting concrete matching particles for the
-   intermediate edges (mainly adds the mass variable).
+  2.2. *Clone* graphs while inserting concrete matching particles for the
+  intermediate edges (mainly adds the mass variable).
 
-   2.3. *Validate* the complete graphs, so run all conservation law check that
-   were postponed from the first step.
+  2.3. *Validate* the complete graphs, so run all conservation law check that
+  were postponed from the first step.
 
 3. Generate an amplitude model, e.g. helicity or canonical amplitude.
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Table of Contents
-
-   install
-   usage
-   contribute
-
+Table of Contents
+-----------------
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
+  :maxdepth: 2
 
-   api
-   adr
+  install
+  usage
+  contribute
 
 
-expertsystem API
-================
+.. toctree::
+  :maxdepth: 1
+  :hidden:
 
-* :ref:`General Index <genindex>`
-* :ref:`Python Modules Index <modindex>`
-* :ref:`Search <search>`
+  api
+  adr
+
+* :ref:`Python API <modindex>`

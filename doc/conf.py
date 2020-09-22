@@ -72,6 +72,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "sphinx_togglebutton",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -88,11 +89,26 @@ autodoc_default_options = {
     "show-inheritance": True,
     "special-members": "__call__, __eq__",
 }
-html_copy_source = False  # do not copy rst files
+html_copy_source = True  # needed for download notebook button
 html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
-html_theme = "sphinx_rtd_theme"
+html_sourcelink_suffix = ""
+html_theme = "sphinx_book_theme"
+html_theme_options = {
+    "repository_url": "https://github.com/ComPWA/expertsystem",
+    "repository_branch": "master",
+    "path_to_docs": "doc",
+    "use_edit_page_button": True,
+    "use_issues_button": True,
+    "use_repository_button": True,
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples",
+        "notebook_interface": "jupyterlab",
+    },
+    "expand_sections": ["usage"],
+}
+html_title = "PWA Expert System"
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
