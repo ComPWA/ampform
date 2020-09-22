@@ -67,8 +67,11 @@ def test_general_reaction(test_input, expected):
         initial_state=test_input[0],
         final_state=test_input[1],
         formalism_type="canonical",
-        topology_building="nbody",
+        topology_building="nbody"
+        if len(test_input[0]) > 1 or len(test_input[1]) > 2
+        else "isobar",
         propagation_mode="full",
+        number_of_threads=1,
     )
 
     graph_interaction_settings = stm.prepare_graphs()
@@ -93,10 +96,7 @@ def test_general_reaction(test_input, expected):
             ["CParityConservation", "SpinConservation"],
         ),
         ((["pi0"], ["gamma", "gamma"]), []),
-        (
-            (["pi0"], ["gamma", "gamma", "gamma"]),
-            ["CParityConservation", "SpinConservation"],
-        ),
+        ((["pi0"], ["gamma", "gamma", "gamma"]), ["CParityConservation"],),
         ((["pi0"], ["e+", "e-", "gamma"]), []),
         ((["pi0"], ["e+", "e-"]), []),
     ],
@@ -109,7 +109,9 @@ def test_em_reactions(test_input, expected):
         initial_state=test_input[0],
         final_state=test_input[1],
         formalism_type="canonical",
-        topology_building="nbody",
+        topology_building="nbody"
+        if len(test_input[0]) > 1 or len(test_input[1]) > 2
+        else "isobar",
         propagation_mode="full",
     )
 
@@ -139,7 +141,9 @@ def test_strong_reactions(test_input, expected):
         initial_state=test_input[0],
         final_state=test_input[1],
         formalism_type="canonical",
-        topology_building="nbody",
+        topology_building="nbody"
+        if len(test_input[0]) > 1 or len(test_input[1]) > 2
+        else "isobar",
         propagation_mode="full",
     )
 

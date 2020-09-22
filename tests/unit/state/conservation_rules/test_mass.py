@@ -1,39 +1,50 @@
-from typing import Any
+import pytest
 
-from expertsystem.state.conservation_rules import MassConservation
-from expertsystem.state.particle import (
-    ParticleDecayPropertyNames,
-    ParticlePropertyNames,
+from expertsystem.data import EdgeQuantumNumbers
+from expertsystem.state.conservation_rules import (
+    MassConservation,
+    MassEdgeInput,
 )
 
 
-class TestMass:  # pylint: disable=no-self-use
-    def test_mass_two_body_decay_stable_outgoing(self):
-        mass_label = ParticlePropertyNames.Mass
-        width_label = ParticleDecayPropertyNames.Width
-        mass_rule = MassConservation(5)
-        cases: list = []
-        case: Any = None
+# Currently need to cast to the proper Edge/NodeQuantumNumber type, see
+# https://github.com/ComPWA/expertsystem/issues/255
 
+
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
         # we assume a two charged pion final state here
         # units are always in GeV
-        for case in [
-            ([(0.280, 0.0), (0.260, 0.010), (0.300, 0.05)], True),
-            ([(0.270, 0.0), (0.250, 0.005), (0.200, 0.01)], False),
-        ]:
-            for in_mass_case in case[0]:
-                temp_case: Any = (
-                    [
-                        {
-                            mass_label: in_mass_case[0],
-                            width_label: in_mass_case[1],
-                        }
-                    ],
-                    [{mass_label: 0.139}, {mass_label: 0.139}],
-                    {},
-                    case[1],
-                )
-                cases.append(temp_case)
+        (
+            (
+                [
+                    MassEdgeInput(
+                        mass=EdgeQuantumNumbers.mass(energy[0]),
+                        width=EdgeQuantumNumbers.width(energy[1]),
+                    )
+                ],
+                [
+                    MassEdgeInput(EdgeQuantumNumbers.mass(0.139)),
+                    MassEdgeInput(EdgeQuantumNumbers.mass(0.139)),
+                ],
+            ),
+            expected,
+        )
+        for energy, expected in zip(
+            [
+                (0.280, 0.0),
+                (0.260, 0.010),
+                (0.300, 0.05),
+                (0.270, 0.0),
+                (0.250, 0.005),
+                (0.200, 0.01),
+            ],
+            [True] * 3 + [False] * 3,
+        )
+    ],
+)
+def test_mass_two_body_decay_stable_outgoing(rule_input, expected):
+    mass_rule = MassConservation(5)
 
-        for case in cases:
-            assert mass_rule(case[0], case[1], case[2]) is case[3]
+    assert mass_rule(*rule_input) is expected

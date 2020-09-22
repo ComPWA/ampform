@@ -1,107 +1,116 @@
-from expertsystem.data import Spin
-from expertsystem.state.conservation_rules import GParityConservation
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    ParticlePropertyNames,
-    StateQuantumNumberNames,
+from itertools import product
+
+import pytest
+
+from expertsystem.data import (
+    EdgeQuantumNumbers,
+    NodeQuantumNumbers,
+    Parity,
+)
+from expertsystem.state.conservation_rules import (
+    GParityConservation,
+    GParityEdgeInput,
+    GParityNodeInput,
 )
 
 
-class TestGParity:  # pylint: disable=no-self-use
-    def test_g_parity_all_defined(self):
-        g_parity_rule = GParityConservation()
-        g_parity_label = StateQuantumNumberNames.GParity
-        in_part_qns = [
-            ([{g_parity_label: 1}], True),
-            ([{g_parity_label: -1}], False),
-        ]
-        out_part_qns = [
-            ([{g_parity_label: 1}, {g_parity_label: 1}], True),
-            ([{g_parity_label: -1}, {g_parity_label: -1}], True),
-            ([{g_parity_label: -1}, {g_parity_label: 1}], False),
-            ([{g_parity_label: 1}, {g_parity_label: -1}], False),
-        ]
-        for in_case in in_part_qns:
-            for out_case in out_part_qns:
-                if in_case[1]:
-                    assert (
-                        g_parity_rule(in_case[0], out_case[0], [])
-                        is out_case[1]
-                    )
-                else:
-                    assert (
-                        g_parity_rule(in_case[0], out_case[0], [])
-                        is not out_case[1]
-                    )
+# Currently need to cast to the proper Edge/NodeQuantumNumber type, see
+# https://github.com/ComPWA/expertsystem/issues/255
 
-    def test_g_parity_multiparticle_boson(self):
-        rule = GParityConservation()
-        g_parity_label = StateQuantumNumberNames.GParity
-        spin_label = StateQuantumNumberNames.Spin
-        pid_label = ParticlePropertyNames.Pid
-        isospin_label = StateQuantumNumberNames.IsoSpin
-        ang_mom_label = InteractionQuantumNumberNames.L
-        cases: list = []
 
-        for ang_mom_case in [([0, 2, 4], True), ([1, 3], False)]:
-            for ang_mom in ang_mom_case[0]:
-                temp_case = (
-                    [{g_parity_label: 1, isospin_label: Spin(0, 0)}],
-                    [
-                        {spin_label: Spin(0, 0), pid_label: 100},
-                        {spin_label: Spin(0, 0), pid_label: -100},
-                    ],
-                    {ang_mom_label: Spin(ang_mom, 0)},
-                    ang_mom_case[1],
-                )
-
-                cases.append(temp_case)
-                cases.append(
-                    (
-                        [{g_parity_label: -1, isospin_label: Spin(0, 0)}],
-                        temp_case[1],
-                        temp_case[2],
-                        not temp_case[3],
-                    )
-                )
-
-        for ang_mom_case in [([0, 2, 4], False), ([1, 3], True)]:
-            for ang_mom in ang_mom_case[0]:
-                temp_case = (
-                    [{g_parity_label: 1, isospin_label: Spin(1, 0)}],
-                    [
-                        {spin_label: Spin(0, 0), pid_label: 100},
-                        {spin_label: Spin(0, 0), pid_label: -100},
-                    ],
-                    {ang_mom_label: Spin(ang_mom, 0)},
-                    ang_mom_case[1],
-                )
-
-                cases.append(temp_case)
-                cases.append(
-                    (
-                        [{g_parity_label: -1, isospin_label: Spin(1, 0)}],
-                        temp_case[1],
-                        temp_case[2],
-                        not temp_case[3],
-                    )
-                )
-
-        for ang_mom in [0, 1, 2, 3]:
-            temp_case = (
-                [{g_parity_label: 1}],
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
+        (
+            (
                 [
-                    {spin_label: Spin(0, 0), pid_label: 100},
-                    {spin_label: Spin(0, 0), pid_label: 100},
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(0),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(123),
+                        g_parity=EdgeQuantumNumbers.g_parity(
+                            Parity(g_parity_in[0])
+                        ),
+                    )
                 ],
-                {ang_mom_label: Spin(ang_mom, 0)},
-                True,
-            )
+                [
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(0),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(0),
+                        g_parity=EdgeQuantumNumbers.g_parity(
+                            Parity(g_parity_out[0][0])
+                        ),
+                    ),
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(0),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(0),
+                        g_parity=EdgeQuantumNumbers.g_parity(
+                            Parity(g_parity_out[0][1])
+                        ),
+                    ),
+                ],
+                GParityNodeInput(
+                    l_mag=NodeQuantumNumbers.l_magnitude(0),
+                    s_mag=NodeQuantumNumbers.s_magnitude(0),
+                ),
+            ),
+            g_parity_in[1] is g_parity_out[1],
+        )
+        for g_parity_in, g_parity_out in product(
+            [(1, True), (-1, False),],
+            [
+                ((1, 1), True),
+                ((-1, -1), True),
+                ((-1, 1), False),
+                ((1, -1), False),
+            ],
+        )
+    ],
+)
+def test_g_parity_all_defined(rule_input, expected):
+    g_parity_rule = GParityConservation()
 
-            cases.append(temp_case)
-            cases.append(
-                ([{g_parity_label: None}], temp_case[1], temp_case[2], True)
-            )
+    assert g_parity_rule(*rule_input) is expected
 
-        for case in cases:
-            assert rule(case[0], case[1], case[2]) is case[3]
+
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
+        (
+            (
+                [
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(isospin),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(123),
+                        g_parity=EdgeQuantumNumbers.g_parity(Parity(g_parity)),
+                    )
+                ],
+                [
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(0),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(100),
+                    ),
+                    GParityEdgeInput(
+                        isospin=EdgeQuantumNumbers.isospin_magnitude(0),
+                        spin_mag=EdgeQuantumNumbers.spin_magnitude(0),
+                        pid=EdgeQuantumNumbers.pid(-100),
+                    ),
+                ],
+                GParityNodeInput(
+                    l_mag=NodeQuantumNumbers.l_magnitude(l_mag),
+                    s_mag=NodeQuantumNumbers.s_magnitude(0),
+                ),
+            ),
+            (-1) ** (l_mag + isospin) == g_parity,
+        )
+        for g_parity, isospin, l_mag in product([-1, 1], [0, 1], range(0, 5))
+    ],
+)
+def test_g_parity_multiparticle_boson(rule_input, expected):
+    g_parity_rule = GParityConservation()
+
+    assert g_parity_rule(*rule_input) is expected

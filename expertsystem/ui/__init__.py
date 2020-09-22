@@ -98,10 +98,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.initial_state = initial_state
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
-        if not self.interaction_type_settings:
-            self.interaction_type_settings = create_default_interaction_settings(
-                formalism_type
-            )
+
         self.interaction_determinators = [LeptonCheck(), GammaCheck()]
         self.final_state_groupings: Optional[List[List[List[str]]]] = None
         self.allowed_interaction_types: List[InteractionTypes] = [
@@ -121,6 +118,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 InteractionQuantumNumberNames.ParityPrefactor
             ]
         int_nodes = []
+        use_mass_conservation = True
+        use_nbody_topology = False
         if topology_building == "isobar":
             if len(initial_state) == 1:
                 int_nodes.append(InteractionNode("TwoBodyDecay", 1, 2))
@@ -130,12 +129,18 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     "NBodyScattering", len(initial_state), len(final_state)
                 )
             )
+            use_nbody_topology = True
             # turn of mass conservation, in case more than one initial state
             # particle is present
             if len(initial_state) > 1:
-                self.interaction_type_settings = create_default_interaction_settings(
-                    formalism_type, False
-                )
+                use_mass_conservation = False
+
+        if not self.interaction_type_settings:
+            self.interaction_type_settings = create_default_interaction_settings(
+                formalism_type,
+                nbody_topology=use_nbody_topology,
+                use_mass_conservation=use_mass_conservation,
+            )
         self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
         if reload_pdg or len(self.__particles) == 0:

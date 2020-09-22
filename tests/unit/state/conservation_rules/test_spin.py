@@ -1,137 +1,196 @@
-from typing import Any
+from typing import List, Tuple
 
-from expertsystem.data import Spin
+import pytest
+
+from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Spin
 from expertsystem.state.conservation_rules import (
     IsoSpinConservation,
+    IsoSpinEdgeInput,
     SpinConservation,
-)
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    StateQuantumNumberNames,
+    SpinEdgeInput,
+    SpinNodeInput,
 )
 
 
-class TestSpin:  # pylint: disable=no-self-use
-    def test_spin_all_defined(self):
-        spin_label = StateQuantumNumberNames.Spin
-        ang_mom_label = InteractionQuantumNumberNames.L
-        intspin_label = InteractionQuantumNumberNames.S
-        spin_rule = SpinConservation(spin_label)
-        cases: Any = []
-        case: Any = None
+_SpinRuleInputType = Tuple[
+    List[SpinEdgeInput], List[SpinEdgeInput], SpinNodeInput
+]
 
-        for case in [([0], True), ([1, 2, 3], False)]:
-            for spin_mag in case[0]:
-                temp_case = (
-                    [{spin_label: Spin(0, 0)}],
-                    [{spin_label: Spin(0, 0)}, {spin_label: Spin(0, 0)}],
-                    {
-                        ang_mom_label: Spin(spin_mag, 0),
-                        intspin_label: Spin(0, 0),
-                    },
-                    case[1],
-                )
-                cases.append(temp_case)
 
-        for case in [([0, 1, 2], True)]:
-            for spin_mag in case[0]:
-                temp_case = (
-                    [{spin_label: Spin(spin_mag, 0)}],
-                    [{spin_label: Spin(0, 0)}, {spin_label: Spin(0, 0)}],
-                    {
-                        ang_mom_label: Spin(spin_mag, 0),
-                        intspin_label: Spin(0, 0),
-                    },
-                    case[1],
-                )
-                cases.append(temp_case)
-
-        for case in [([0, 1, 2], True), ([3], False)]:
-            for spin_mag in case[0]:
-                temp_case = (
-                    [{spin_label: Spin(spin_mag, 0)}],
-                    [{spin_label: Spin(1, -1)}, {spin_label: Spin(1, 1)}],
-                    {
-                        ang_mom_label: Spin(0, 0),
-                        intspin_label: Spin(spin_mag, 0),
-                    },
-                    case[1],
-                )
-                cases.append(temp_case)
-
-        for case in [
-            (
-                Spin(1, -1),
-                Spin(0, 0),
-                Spin(1, -1),
-                Spin(0, 0),
-                Spin(1, -1),
-                True,
+def __create_two_body_decay_spin_data(
+    in_spin: Spin = Spin(0, 0),
+    out_spin1: Spin = Spin(0, 0),
+    out_spin2: Spin = Spin(0, 0),
+    angular_momentum: Spin = Spin(0, 0),
+    coupled_spin: Spin = Spin(0, 0),
+) -> _SpinRuleInputType:
+    return (
+        [
+            SpinEdgeInput(
+                EdgeQuantumNumbers.spin_magnitude(in_spin.magnitude),
+                EdgeQuantumNumbers.spin_projection(in_spin.projection),
             )
-        ]:
-            temp_case = (
-                [{spin_label: case[0]}],
-                [{spin_label: case[1]}, {spin_label: case[2]}],
-                {ang_mom_label: case[3], intspin_label: case[4]},
-                case[5],
-            )
-            cases.append(temp_case)
+        ],
+        [
+            SpinEdgeInput(
+                EdgeQuantumNumbers.spin_magnitude(out_spin1.magnitude),
+                EdgeQuantumNumbers.spin_projection(out_spin1.projection),
+            ),
+            SpinEdgeInput(
+                EdgeQuantumNumbers.spin_magnitude(out_spin2.magnitude),
+                EdgeQuantumNumbers.spin_projection(out_spin2.projection),
+            ),
+        ],
+        SpinNodeInput(
+            NodeQuantumNumbers.l_magnitude(angular_momentum.magnitude),
+            NodeQuantumNumbers.l_projection(angular_momentum.projection),
+            NodeQuantumNumbers.s_magnitude(coupled_spin.magnitude),
+            NodeQuantumNumbers.s_projection(coupled_spin.projection),
+        ),
+    )
 
-        for case in cases:
-            assert spin_rule(case[0], case[1], case[2]) is case[3]
 
-    def test_spin_ignore_z_component(self):
-        spin_label = StateQuantumNumberNames.Spin
-        ang_mom_label = InteractionQuantumNumberNames.L
-        intspin_label = InteractionQuantumNumberNames.S
-        spin_rule = SpinConservation(False)
-        cases = []
-        case: Any = None
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
+        (
+            __create_two_body_decay_spin_data(
+                angular_momentum=Spin(ang_mom_mag, 0)
+            ),
+            expected,
+        )
+        for ang_mom_mag, expected in [
+            (0, True),
+            (1, False),
+            (2, False),
+            (3, False),
+        ]
+    ]
+    + [
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(spin_mag, 0), angular_momentum=Spin(spin_mag, 0)
+            ),
+            expected,
+        )
+        for spin_mag, expected in zip([0, 1, 2], [True] * 3)
+    ]
+    + [
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(spin_mag, 0),
+                out_spin1=Spin(1, -1),
+                out_spin2=Spin(1, 1),
+                angular_momentum=Spin(1, 0),
+                coupled_spin=Spin(spin_mag, 0),
+            ),
+            expected,
+        )
+        for spin_mag, expected in [
+            (0, False),
+            (1, False),
+            (2, False),
+            (3, False),
+        ]
+    ]
+    + [
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(1, -1),
+                out_spin2=Spin(1, -1),
+                coupled_spin=Spin(1, -1),
+            ),
+            True,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(1, 0),
+                out_spin1=Spin(1, 1),
+                out_spin2=Spin(1, -1),
+                angular_momentum=Spin(1, 0),
+                coupled_spin=Spin(2, 0),
+            ),
+            True,
+        ),
+    ],
+)
+def test_spin_all_defined(
+    rule_input: _SpinRuleInputType, expected: bool
+) -> None:
+    spin_rule = SpinConservation(use_projection=True)
 
-        for case in [([(0, 0, 1), (2, 1, 2), (2, 1, 1)], True)]:
-            for spin_mag in case[0]:
-                temp_case = (
-                    [{spin_label: Spin(1, 1)}],
-                    [
-                        {spin_label: Spin(spin_mag[0], 0)},
-                        {spin_label: Spin(1, -1)},
-                    ],
-                    {
-                        ang_mom_label: Spin(spin_mag[1], 0),
-                        intspin_label: Spin(spin_mag[2], -1),
-                    },
-                    case[1],
-                )
-                cases.append(temp_case)
+    assert spin_rule(*rule_input) is expected
 
-        for case in cases:
-            assert spin_rule(case[0], case[1], case[2]) is case[3]
 
-    def test_isospin_clebsch_gordan_zeros(self):
-        spin_label = StateQuantumNumberNames.IsoSpin
-        spin_rule = IsoSpinConservation()
-        cases = []
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(1, 1),
+                out_spin1=Spin(spin2_mag, 0),
+                out_spin2=Spin(1, -1),
+                angular_momentum=Spin(ang_mom_mag, 0),
+                coupled_spin=Spin(coupled_spin_mag, -1),
+            ),
+            True,
+        )
+        for spin2_mag, ang_mom_mag, coupled_spin_mag in zip(
+            (0, 0, 1), (2, 1, 2), (1, 1, 2)
+        )
+    ]
+    + [
+        (
+            __create_two_body_decay_spin_data(
+                in_spin=Spin(1, 1),
+                out_spin1=Spin(spin2_mag, 0),
+                out_spin2=Spin(1, -1),
+                angular_momentum=Spin(ang_mom_mag, 0),
+                coupled_spin=Spin(coupled_spin_mag, 0),
+            ),
+            False,
+        )
+        for spin2_mag, ang_mom_mag, coupled_spin_mag in zip(
+            (1, 0, 1), (0, 1, 2), (0, 2, 0)
+        )
+    ],
+)
+def test_spin_ignore_z_component(
+    rule_input: _SpinRuleInputType, expected: bool
+) -> None:
+    spin_rule = SpinConservation(False)
 
-        for case in [
-            (1, 1, 1, False),
-            (2, 1, 1, True),
-            (2, 1, 2, False),
-            (3, 1, 2, True),
-            (0, 2, 2, True),
-            (1, 2, 2, False),
-            (2, 2, 2, True),
-            (3, 2, 2, False),
-        ]:
-            temp_case: Any = (
-                [{spin_label: Spin(case[0], 0)}],
-                [
-                    {spin_label: Spin(case[1], 0)},
-                    {spin_label: Spin(case[2], 0)},
-                ],
-                {},
-                case[3],
-            )
-            cases.append(temp_case)
+    assert spin_rule(*rule_input) is expected
 
-        for case in cases:
-            assert spin_rule(case[0], case[1], case[2]) is case[3]
+
+@pytest.mark.parametrize(
+    "coupled_isospin_mag, isospin_mag1, isospin_mag2, expected",
+    [
+        (1, 1, 1, False),
+        (2, 1, 1, True),
+        (2, 1, 2, False),
+        (3, 1, 2, True),
+        (0, 2, 2, True),
+        (1, 2, 2, False),
+        (2, 2, 2, True),
+        (3, 2, 2, False),
+    ],
+)
+def test_isospin_clebsch_gordan_zeros(
+    coupled_isospin_mag: int,
+    isospin_mag1: int,
+    isospin_mag2: int,
+    expected: bool,
+) -> None:
+    isospin_rule = IsoSpinConservation()
+
+    assert (
+        isospin_rule(
+            [IsoSpinEdgeInput(coupled_isospin_mag, 0)],  # type: ignore
+            [
+                IsoSpinEdgeInput(isospin_mag1, 0),  # type: ignore
+                IsoSpinEdgeInput(isospin_mag2, 0),  # type: ignore
+            ],
+        )
+        is expected
+    )

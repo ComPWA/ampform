@@ -22,9 +22,9 @@ ignore=conf.py
 
 [DESIGN]
 # Minimum number of public methods for a class (see R0903). Default is 2.
-# We decrease this to 1, since some interface classes just have a single
-# (public) method
-min-public-methods=1
+# We decrease this to 0, since some rules are "empty" but get decorated.
+# Note that some interface classes also just have a single method
+min-public-methods=0
 
 [SIMILARITIES]
 ignore-imports=yes # https://stackoverflow.com/a/30007053

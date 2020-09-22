@@ -72,8 +72,26 @@ CONSERVATION_LAW_PRIORITIES = {
 }
 
 
+def _get_spin_magnitudes(is_nbody: bool) -> List[float]:
+    if is_nbody:
+        return [
+            0,
+        ]
+    return [0, 0.5, 1, 1.5, 2]
+
+
+def _get_ang_mom_magnitudes(is_nbody: bool) -> List[float]:
+    if is_nbody:
+        return [
+            0,
+        ]
+    return [0, 1, 2]
+
+
 def create_default_interaction_settings(
-    formalism_type: str, use_mass_conservation: bool = True
+    formalism_type: str,
+    nbody_topology: bool = False,
+    use_mass_conservation: bool = True,
 ) -> Dict[InteractionTypes, InteractionNodeSettings]:
     """Create a container that holds the settings for the various interactions.
 
@@ -89,18 +107,20 @@ def create_default_interaction_settings(
         ]
         formalism_qn_domains = {
             InteractionQuantumNumberNames.L: create_spin_domain(
-                [0, 1, 2], True
+                _get_ang_mom_magnitudes(nbody_topology), True
             ),
             InteractionQuantumNumberNames.S: create_spin_domain(
-                [0, 0.5, 1, 1.5, 2], True
+                _get_spin_magnitudes(nbody_topology), True
             ),
         }
     elif formalism_type == "canonical":
-        formalism_conservation_laws = [SpinConservation()]
+        formalism_conservation_laws = [SpinConservation(not nbody_topology)]
         formalism_qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain([0, 1, 2]),
+            InteractionQuantumNumberNames.L: create_spin_domain(
+                _get_ang_mom_magnitudes(nbody_topology)
+            ),
             InteractionQuantumNumberNames.S: create_spin_domain(
-                [0, 0.5, 1, 2]
+                _get_spin_magnitudes(nbody_topology)
             ),
         }
     if formalism_type == "canonical-helicity":

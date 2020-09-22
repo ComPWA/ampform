@@ -118,6 +118,7 @@ intersphinx_mapping = {
         "https://python-jsonschema.readthedocs.io/en/latest/",
         None,
     ),
+    "mypy": ("https://mypy.readthedocs.io/en/stable", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pycompwa": ("https://compwa.github.io/", None),
     "python": ("https://docs.python.org/3", None),

@@ -1,24 +1,11 @@
 import pytest
 
 from expertsystem.state.conservation_rules import ChargeConservation
-from expertsystem.state.particle import StateQuantumNumberNames
 
 
 @pytest.mark.parametrize(
     "graph_input, expected_value",
-    [
-        (
-            (
-                [{StateQuantumNumberNames.Charge: 0},],
-                [
-                    {StateQuantumNumberNames.Charge: -1},
-                    {StateQuantumNumberNames.Charge: 1},
-                ],
-                {},
-            ),
-            True,
-        ),
-    ],
+    [(([0], [-1, 1,],), True,), (([0], [1, 1,],), False,)],
 )
 def test_charge_conservation(graph_input, expected_value):
     rule = ChargeConservation()
