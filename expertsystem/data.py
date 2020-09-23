@@ -2,10 +2,12 @@
 
 import logging
 from collections import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import (
+    Callable,
     Dict,
     ItemsView,
+    Iterable,
     Iterator,
     KeysView,
     NewType,
@@ -207,6 +209,23 @@ class Particle:  # pylint: disable=too-many-instance-attributes
                 ")"
             )
 
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+    def __repr__(self) -> str:
+        output_string = f"{self.__class__.__name__}("
+        for field in fields(self):
+            value = getattr(self, field.name)
+            if value is None:
+                continue
+            if field.name not in ["mass", "spin", "isospin"] and value == 0:
+                continue
+            if isinstance(value, str):
+                value = f'"{value}"'
+            output_string += f"\n    {field.name}={value},"
+        output_string += "\n)"
+        return output_string
+
 
 class GellmannNishijima:
     r"""Collection of conversion methods using Gell-Mann–Nishijima.
@@ -271,13 +290,13 @@ class GellmannNishijima:
 class ParticleCollection(abc.Mapping):
     """Safe, `dict`-like collection of `.Particle` instances."""
 
-    def __init__(
-        self, particles: Optional[Dict[str, Particle]] = None
-    ) -> None:
+    def __init__(self, particles: Optional[Iterable[Particle]] = None) -> None:
         self.__particles: Dict[str, Particle] = dict()
         if particles is not None:
-            if isinstance(particles, dict):
-                self.__particles.update(particles)
+            if isinstance(particles, (list, set, tuple)):
+                self.__particles.update(
+                    {particle.name: particle for particle in particles}
+                )
 
     def __getitem__(self, particle_name: str) -> Particle:
         return self.__particles[particle_name]
@@ -303,7 +322,7 @@ class ParticleCollection(abc.Mapping):
         return self
 
     def __repr__(self) -> str:
-        return str(self.__particles)
+        return f"{self.__class__.__name__}({set(self.__particles.values())})"
 
     def add(self, particle: Particle) -> None:
         if particle.name in self.__particles:
@@ -334,29 +353,28 @@ class ParticleCollection(abc.Mapping):
             f"Cannot search for a search term of type {type(search_term)}"
         )
 
-    def find_subset(
-        self, search_term: Union[int, str]
+    def filter(  # noqa: A003
+        self, function: Callable[[Particle], bool]
     ) -> "ParticleCollection":
-        """Perform a 'fuzzy' search for a particle by name or PID.
+        """Search by `Particle` properties using a :code:`lambda` function.
 
-        Like `~.ParticleCollection.find`, but returns several results in the
-        form of a new `.ParticleCollection`.
+        For example:
+
+        .. doctest::
+
+            >>> from expertsystem import io
+            >>> pdg = io.load_pdg()
+            >>> results = pdg.filter(
+            ...     lambda p: p.mass > 1.8
+            ...     and p.mass < 2.0
+            ...     and p.spin == 2
+            ...     and p.strangeness == 1
+            ... )
+            >>> sorted(list(results))
+            ['K(2)(1820)+', 'K(2)(1820)0']
         """
-        if isinstance(search_term, str):
-            search_results = {
-                particle.name: particle
-                for particle in self.values()
-                if search_term in particle.name
-            }
-            return ParticleCollection(search_results)
-        if isinstance(search_term, int):
-            pid = search_term
-            output = ParticleCollection()
-            particle = self.find(pid)
-            output.add(particle)
-            return output
-        raise NotImplementedError(
-            f"Cannot search for a search term of type {type(search_term)}"
+        return ParticleCollection(
+            {particle for particle in self.values() if function(particle)}
         )
 
     def items(self) -> ItemsView[str, Particle]:

@@ -870,8 +870,9 @@ def filter_particles(
 ) -> List[Dict[str, Any]]:
     """Filters `.ParticleCollection` based on the allowed particle names.
 
-    Note this function currently also converts back to dict structures, which
-    are still used internally by the propagation code.
+    .. note::
+        This function currently also converts back to `dict` structures, which
+        are still used internally by the propagation code.
     """
     mod_allowed_particle_list = []
     if len(allowed_particle_names) == 0:
@@ -880,13 +881,17 @@ def filter_particles(
         )
     else:
         for allowed_particle in allowed_particle_names:
-            if isinstance(allowed_particle, (int, str)):
-                subset = particle_db.find_subset(allowed_particle)
-                search_results = io.xml.object_to_dict(subset)
-                if "Pid" in search_results:  # one particle only
-                    mod_allowed_particle_list.append(search_results)
-                else:  # several particles found
-                    mod_allowed_particle_list += list(search_results.values())
+            if isinstance(allowed_particle, int):
+                particle = particle_db.find(allowed_particle)
+                particle_dict = io.xml.object_to_dict(particle)
+                mod_allowed_particle_list.append(particle_dict)
+            elif isinstance(allowed_particle, str):
+                subset = particle_db.filter(
+                    lambda p: allowed_particle  # pylint: disable=cell-var-from-loop
+                    in p.name
+                )
+                particle_dicts = io.xml.object_to_dict(subset)
+                mod_allowed_particle_list += list(particle_dicts.values())
             else:
                 mod_allowed_particle_list.append(allowed_particle)
     return mod_allowed_particle_list

@@ -28,11 +28,22 @@ J_PSI = Particle(
 
 @pytest.mark.parametrize(
     "instance",
-    [ParticleCollection(), Spin(2.5, -0.5), Parity(1), J_PSI],
+    [Spin(2.5, -0.5), Parity(1)],
 )
 def test_repr(instance):
     copy_from_repr = eval(repr(instance))  # pylint: disable=eval-used
     assert copy_from_repr == instance
+
+
+def test_repr_particle_collection(particle_database):
+    copy_from_repr = eval(repr(particle_database))  # pylint: disable=eval-used
+    assert copy_from_repr == particle_database
+
+
+def test_repr_particle(particle_database):
+    for particle in particle_database:
+        copy_from_repr = eval(repr(particle))  # pylint: disable=eval-used
+        assert copy_from_repr == particle
 
 
 def test_parity():
@@ -96,7 +107,7 @@ def test_create_particle(
     [("D+", "D-"), ("mu+", "mu-"), ("W+", "W-")],
 )
 def test_create_antiparticle(
-    particle_database,  # pylint: disable=W0621
+    particle_database: ParticleCollection,
     particle_name,
     anti_particle_name,
 ):
@@ -109,8 +120,8 @@ def test_create_antiparticle(
     assert anti_particle == comparison_particle
 
 
-def test_create_antiparticle_tilde(particle_database):
-    anti_particles = particle_database.find_subset("~")
+def test_create_antiparticle_tilde(particle_database: ParticleCollection):
+    anti_particles = particle_database.filter(lambda p: "~" in p.name)
     assert len(anti_particles) == 166
     for anti_particle in anti_particles.values():
         particle_name = anti_particle.name.replace("~", "")

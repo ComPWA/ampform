@@ -79,6 +79,11 @@ jobs:
         env:
           NBSPHINX_EXECUTE: YES
         run: make html
+      - name: Test doctests in docstrings
+        working-directory: doc
+        env:
+          NBSPHINX_EXECUTE: YES
+        run: make doctest
 
   style:
     name: Style checks

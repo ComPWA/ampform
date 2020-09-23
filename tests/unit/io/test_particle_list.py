@@ -12,10 +12,10 @@ YAML_FILE = "particle_list.yml"
 @pytest.fixture(scope="module")
 def particle_selection(particle_database):
     selection = ParticleCollection()
-    selection += particle_database.find_subset("pi")
-    selection += particle_database.find_subset("K")
-    selection += particle_database.find_subset("D")
-    selection += particle_database.find_subset("J/psi")
+    selection += particle_database.filter(lambda p: "pi" in p.name)
+    selection += particle_database.filter(lambda p: "K" in p.name)
+    selection += particle_database.filter(lambda p: "D" in p.name)
+    selection += particle_database.filter(lambda p: "J/psi" in p.name)
     return selection
 
 
