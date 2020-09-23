@@ -150,6 +150,22 @@ extension (for this you need to run :code:`pytest` with the flag
   --profile-svg` and check the stats and the :file:`prof/combined.svg` output
   file.
 
+.. admonition:: Organizing unit tests
+
+  When **unit** tests are well-organized, you avoid writing duplicate tests. In
+  addition, it allows you to check for coverage of specific parts of the code.
+
+  Therefore, when writing new tests, try to follow the module and class
+  structure of the package. For example, put unit tests that test the functions
+  and methods defined in the `expertsystem.data` module into a test file called
+  :file:`test_data.py` that is directly placed under the `tests
+  <https://github.com/ComPWA/expertsystem/tree/master/tests>`_ folder.
+  Similarly, bundle for `.ParticleCollection` under a
+  :code:`TestParticleCollection` class.
+
+  If possible, also try to follow alphabetical order (that is, the order of the
+  :code:`import` statements).
+
 
 Documentation
 -------------

@@ -226,6 +226,13 @@ class Particle:  # pylint: disable=too-many-instance-attributes
         output_string += "\n)"
         return output_string
 
+    def is_lepton(self) -> bool:
+        return (
+            self.electron_lepton_number != 0
+            or self.muon_lepton_number != 0
+            or self.tau_lepton_number != 0
+        )
+
 
 class GellmannNishijima:
     r"""Collection of conversion methods using Gell-Mann–Nishijima.
@@ -255,10 +262,6 @@ class GellmannNishijima:
         """
         if state.isospin is None:
             return None
-        if state.isospin.projection is None:
-            raise ValueError(
-                "Isospin projection must be defined if a magnitude is defined!"
-            )
         computed_charge = state.isospin.projection + 0.5 * (
             state.baryon_number
             + state.strangeness
@@ -293,10 +296,18 @@ class ParticleCollection(abc.Mapping):
     def __init__(self, particles: Optional[Iterable[Particle]] = None) -> None:
         self.__particles: Dict[str, Particle] = dict()
         if particles is not None:
-            if isinstance(particles, (list, set, tuple)):
-                self.__particles.update(
-                    {particle.name: particle for particle in particles}
+            if not isinstance(particles, (list, set, tuple)):
+                raise ValueError(
+                    f"Cannot construct a {self.__class__.__name__} "
+                    f"from a {particles.__class__.__name__}"
                 )
+            self.__particles.update(
+                {
+                    particle.name: particle
+                    for particle in particles
+                    if isinstance(particle, Particle)
+                }
+            )
 
     def __getitem__(self, particle_name: str) -> Particle:
         return self.__particles[particle_name]

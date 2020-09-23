@@ -50,6 +50,50 @@ class TestEdge:
         assert edge.get_connected_nodes() == {4}
 
 
+class TestInteractionNode:
+    @staticmethod
+    def test_constructor_exceptions():
+        dummy_type_name = "type_name"
+        with pytest.raises(TypeError):
+            assert InteractionNode(
+                dummy_type_name,
+                number_of_ingoing_edges="has to be int",  # type: ignore
+                number_of_outgoing_edges=2,
+            )
+        with pytest.raises(TypeError):
+            assert InteractionNode(
+                dummy_type_name,
+                number_of_outgoing_edges="has to be int",  # type: ignore
+                number_of_ingoing_edges=2,
+            )
+        with pytest.raises(ValueError):
+            assert InteractionNode(
+                dummy_type_name,
+                number_of_outgoing_edges=0,
+                number_of_ingoing_edges=1,
+            )
+        with pytest.raises(ValueError):
+            assert InteractionNode(
+                dummy_type_name,
+                number_of_outgoing_edges=1,
+                number_of_ingoing_edges=0,
+            )
+
+
+class TestSimpleStateTransitionTopologyBuilder:
+    @staticmethod
+    def test_two_body_states():
+        four_body_decay_node = InteractionNode("TwoBodyDecay", 1, 2)
+
+        simple_builder = SimpleStateTransitionTopologyBuilder(
+            [four_body_decay_node]
+        )
+
+        all_graphs = simple_builder.build_graphs(1, 3)
+
+        assert len(all_graphs) == 1
+
+
 class TestTopology:
     @pytest.mark.parametrize(
         "nodes, edges",
@@ -165,47 +209,3 @@ class TestTopology:
         assert topology == two_to_three_decay
         topology.swap_edges(4, 6)
         assert topology != two_to_three_decay
-
-
-class TestInteractionNode:
-    @staticmethod
-    def test_constructor_exceptions():
-        dummy_type_name = "type_name"
-        with pytest.raises(TypeError):
-            assert InteractionNode(
-                dummy_type_name,
-                number_of_ingoing_edges="has to be int",  # type: ignore
-                number_of_outgoing_edges=2,
-            )
-        with pytest.raises(TypeError):
-            assert InteractionNode(
-                dummy_type_name,
-                number_of_outgoing_edges="has to be int",  # type: ignore
-                number_of_ingoing_edges=2,
-            )
-        with pytest.raises(ValueError):
-            assert InteractionNode(
-                dummy_type_name,
-                number_of_outgoing_edges=0,
-                number_of_ingoing_edges=1,
-            )
-        with pytest.raises(ValueError):
-            assert InteractionNode(
-                dummy_type_name,
-                number_of_outgoing_edges=1,
-                number_of_ingoing_edges=0,
-            )
-
-
-class TestSimpleStateTransitionTopologyBuilder:
-    @staticmethod
-    def test_two_body_states():
-        four_body_decay_node = InteractionNode("TwoBodyDecay", 1, 2)
-
-        simple_builder = SimpleStateTransitionTopologyBuilder(
-            [four_body_decay_node]
-        )
-
-        all_graphs = simple_builder.build_graphs(1, 3)
-
-        assert len(all_graphs) == 1
