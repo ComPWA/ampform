@@ -202,10 +202,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         seed_graphs = self._create_seed_graphs(topology_graphs)
         graph_node_setting_pairs = self._determine_node_settings(seed_graphs)
         # create groups of settings ordered by "probability"
-        self._convert_edges_to_dict(graph_node_setting_pairs)
         graph_settings_groups = create_interaction_setting_groups(
             graph_node_setting_pairs
         )
+        self._convert_edges_to_dict(graph_node_setting_pairs)
         return graph_settings_groups
 
     def _build_topologies(self) -> List[Topology]:
@@ -263,6 +263,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 convert_edges_in_graph(instance)  # type: ignore
             elif isinstance(instance[0], tuple):
                 convert_edges_in_graph([g for g, _ in instance])  # type: ignore
+        elif isinstance(instance, dict):
+            graph_settings_groups = instance
+            for graphs in graph_settings_groups.values():
+                convert_edges_in_graph([g for g, _ in graphs])
 
     def _determine_node_settings(
         self, graphs: List[StateTransitionGraph[ParticleWithSpin]]
