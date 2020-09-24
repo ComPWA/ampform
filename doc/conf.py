@@ -73,6 +73,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "sphinx_thebe",
     "sphinx_togglebutton",
 ]
 exclude_patterns = [
@@ -106,6 +107,8 @@ html_theme_options = {
     "launch_buttons": {
         "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples",
         "notebook_interface": "jupyterlab",
+        "thebe": True,
+        "thebelab": True,
     },
     "expand_sections": ["usage"],
 }
@@ -165,3 +168,9 @@ nbsphinx_execute_arguments = [
 
 # Settings for myst-parser
 myst_update_mathjax = False
+
+# Settings for Thebe cell output
+thebe_config = {
+    "repository_url": html_theme_options["repository_url"],
+    "repository_branch": html_theme_options["repository_branch"],
+}

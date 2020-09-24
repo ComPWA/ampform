@@ -138,6 +138,7 @@ Table of Contents
 
   install
   usage
+  interactive
   contribute
 
 

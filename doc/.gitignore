@@ -1,4 +1,4 @@
 *.doctree
 *build/
 api/
-*.ipynb
+usage/*.ipynb
