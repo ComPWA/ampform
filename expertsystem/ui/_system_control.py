@@ -15,15 +15,15 @@ from typing import (
 )
 
 from expertsystem.data import Spin
-from expertsystem.state import particle
 from expertsystem.state.conservation_rules import Rule
 from expertsystem.state.particle import (
     CompareGraphElementPropertiesFunctor,
     InteractionQuantumNumberNames,
+    Labels,
     ParticlePropertyNames,
+    ParticleWithSpin,
     StateQuantumNumberNames,
     get_interaction_property,
-    get_particle_property,
 )
 from expertsystem.state.propagation import (
     InteractionNodeSettings,
@@ -96,8 +96,8 @@ class _InteractionDeterminationFunctorInterface(ABC):
     @abstractmethod
     def check(
         self,
-        in_edge_props: List[dict],
-        out_edge_props: List[dict],
+        in_edge_props: List[ParticleWithSpin],
+        out_edge_props: List[ParticleWithSpin],
         node_props: dict,
     ) -> List[InteractionTypes]:
         pass
@@ -106,17 +106,15 @@ class _InteractionDeterminationFunctorInterface(ABC):
 class GammaCheck(_InteractionDeterminationFunctorInterface):
     """Conservation check for photons."""
 
-    name_label = particle.Labels.Name.name
-
     def check(
         self,
-        in_edge_props: List[dict],
-        out_edge_props: List[dict],
+        in_edge_props: List[ParticleWithSpin],
+        out_edge_props: List[ParticleWithSpin],
         node_props: dict,
     ) -> List[InteractionTypes]:
         int_types = list(InteractionTypes)
-        for edge_props in in_edge_props + out_edge_props:
-            if "gamma" in edge_props[self.name_label]:
+        for particle, _ in in_edge_props + out_edge_props:
+            if "gamma" in particle.name:
                 int_types = [InteractionTypes.EM, InteractionTypes.Weak]
                 break
         return int_types
@@ -125,48 +123,24 @@ class GammaCheck(_InteractionDeterminationFunctorInterface):
 class LeptonCheck(_InteractionDeterminationFunctorInterface):
     """Conservation check lepton numbers."""
 
-    lepton_flavor_labels = [
-        StateQuantumNumberNames.ElectronLN,
-        StateQuantumNumberNames.MuonLN,
-        StateQuantumNumberNames.TauLN,
-    ]
-    name_label = particle.Labels.Name.name
-    qns_label = particle.Labels.QuantumNumber.name
+    qns_label = Labels.QuantumNumber.name
 
     def check(
         self,
-        in_edge_props: List[dict],
-        out_edge_props: List[dict],
+        in_edge_props: List[ParticleWithSpin],
+        out_edge_props: List[ParticleWithSpin],
         node_props: dict,
     ) -> List[InteractionTypes]:
         node_interaction_types = list(InteractionTypes)
-        for edge_props in in_edge_props + out_edge_props:
-            if sum(
-                [
-                    get_particle_property(edge_props, x)
-                    for x in self.lepton_flavor_labels
-                    if get_particle_property(edge_props, x) is not None
-                ]
-            ):
-                if [
-                    x
-                    for x in [
-                        "nu(e)",
-                        "nu(e)~",
-                        "nu(mu)",
-                        "nu(mu)~",
-                        "nu(tau)",
-                        "nu(tau)~",
-                    ]
-                    if x == edge_props[self.name_label]
-                ]:
+        for particle, _ in in_edge_props + out_edge_props:
+            if particle.is_lepton():
+                if particle.name.startswith("nu("):
                     node_interaction_types = [InteractionTypes.Weak]
                     break
-                if edge_props[self.qns_label] != 0:
-                    node_interaction_types = [
-                        InteractionTypes.EM,
-                        InteractionTypes.Weak,
-                    ]
+                node_interaction_types = [
+                    InteractionTypes.EM,
+                    InteractionTypes.Weak,
+                ]
         return node_interaction_types
 
 
@@ -218,8 +192,8 @@ def _remove_qns_from_graph(  # pylint: disable=too-many-branches
         ]
     ],
 ) -> StateTransitionGraph:
-    qns_label = particle.Labels.QuantumNumber.name
-    type_label = particle.Labels.Type.name
+    qns_label = Labels.QuantumNumber.name
+    type_label = Labels.Type.name
 
     int_qns = [
         x for x in qn_list if isinstance(x, InteractionQuantumNumberNames)
@@ -375,7 +349,7 @@ def require_interaction_property(
 def _find_node_ids_with_ingoing_particle_name(
     graph: StateTransitionGraph, ingoing_particle_name: str
 ) -> List[int]:
-    name_label = particle.Labels.Name.name
+    name_label = Labels.Name.name
     found_node_ids = []
     for node_id in graph.nodes:
         edge_ids = graph.get_edges_ingoing_to_node(node_id)

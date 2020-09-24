@@ -1015,7 +1015,7 @@ def match_external_edges(graphs: List[StateTransitionGraph]) -> None:
 
 
 def _match_external_edge_ids(  # pylint: disable=too-many-locals
-    graphs: List[StateTransitionGraph],
+    graphs: List[StateTransitionGraph[dict]],
     ref_graph_id: int,
     external_edge_getter_function: str,
 ) -> None:
@@ -1134,7 +1134,7 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
 
 
 def _create_edge_id_particle_mapping(
-    graph: StateTransitionGraph,
+    graph: StateTransitionGraph[dict],
     external_edge_getter_function: str,
 ) -> Dict[int, str]:
     name_label = Labels.Name.name

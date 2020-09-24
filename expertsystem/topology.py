@@ -320,11 +320,9 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}()"
-            f"\n    nodes: {self.nodes}"
-            f"\n    edges: {self.edges}"
+            f"{self.__class__.__name__}(nodes={self.nodes}, edges={self.edges})"
             f"\n    node props: {self.node_props}"
-            f"\n    node props: {self.edge_props}"
+            f"\n    edge props: {self.edge_props}"
         )
 
     def __eq__(self, other: object) -> bool:
