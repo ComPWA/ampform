@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name, no-self-use
+import typing
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
 
@@ -75,6 +76,27 @@ class TestParity:
         parity = Parity(+1)
         assert parity == +1
         assert int(parity) == +1
+
+    @typing.no_type_check  # https://github.com/python/mypy/issues/4610
+    @staticmethod
+    def test_comparison():
+        neg = Parity(-1)
+        pos = Parity(+1)
+        assert pos > 0
+        assert neg < 0
+        assert neg < pos
+        assert neg <= pos
+        assert pos > neg
+        assert pos >= neg
+        assert pos >= 0
+        assert neg <= 0
+        assert 0 < pos  # pylint: disable=misplaced-comparison-constant
+
+    @staticmethod
+    def test_hash():
+        neg = Parity(-1)
+        pos = Parity(+1)
+        assert {pos, neg, deepcopy(pos)} == {neg, pos}
 
     @staticmethod
     def test_neg():
@@ -254,6 +276,15 @@ class TestSpin:
         assert float(isospin) == 1.5
         assert isospin.magnitude == 1.5
         assert isospin.projection == -0.5
+
+    @staticmethod
+    def test_hash():
+        spin1 = Spin(0.0, 0.0)
+        spin2 = Spin(1.5, -0.5)
+        assert {spin2, spin1, deepcopy(spin1), deepcopy(spin2)} == {
+            spin1,
+            spin2,
+        }
 
     @staticmethod
     def test_neg():
