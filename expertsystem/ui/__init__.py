@@ -22,6 +22,10 @@ from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.data import ParticleCollection, ParticleWithSpin
 from expertsystem.nested_dicts import InteractionQuantumNumberNames
+from expertsystem.state.combinatorics import (
+    StateDefinition,
+    initialize_graph,
+)
 from expertsystem.state.propagation import (
     FullPropagator,
     InteractionNodeSettings,
@@ -29,9 +33,7 @@ from expertsystem.state.propagation import (
 )
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
-    StateDefinition,
     filter_particles,
-    initialize_graph,
     match_external_edges,
 )
 from expertsystem.topology import (

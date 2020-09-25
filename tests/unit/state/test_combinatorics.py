@@ -6,7 +6,7 @@ from math import factorial
 import pytest
 
 from expertsystem import io
-from expertsystem.state.properties import (
+from expertsystem.state.combinatorics import (
     KinematicRepresentation,
     _generate_kinematic_permutations,
     _generate_outer_edge_permutations,
