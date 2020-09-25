@@ -323,7 +323,22 @@ class ParticleCollection(abc.Mapping):
             )
 
     def __getitem__(self, particle_name: str) -> Particle:
-        return self.__particles[particle_name]
+        try:
+            return self.__particles[particle_name]
+        except KeyError:
+            error_message = (
+                f'No particle with name "{particle_name} in the database"'
+            )
+            candidate_names = {
+                name for name in self.__particles if particle_name in name
+            }
+            if candidate_names:
+                raise LookupError(
+                    error_message,
+                    "Did you mean one of these?",
+                    candidate_names,
+                )
+            raise LookupError(error_message)
 
     def __contains__(self, particle_name: object) -> bool:
         return particle_name in self.__particles
@@ -359,7 +374,7 @@ class ParticleCollection(abc.Mapping):
         """Search for a particle by either name (`str`) or PID (`int`)."""
         if isinstance(search_term, str):
             particle_name = search_term
-            return self.__particles[particle_name]
+            return self.__getitem__(particle_name)
         if isinstance(search_term, int):
             pid = search_term
             search_results = [

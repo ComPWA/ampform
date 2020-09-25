@@ -264,6 +264,17 @@ class TestParticleCollection:
         assert name in particle_database
 
     @staticmethod
+    def test_key_error(particle_database: ParticleCollection):
+        try:
+            search_term = "omega"
+            assert particle_database[search_term]
+        except LookupError as error:
+            candidates = {
+                name for name in particle_database if search_term in name
+            }
+            assert error.args[-1] == candidates
+
+    @staticmethod
     def test_keys(particle_database):
         assert set(particle_database.keys()) == set(particle_database)
 

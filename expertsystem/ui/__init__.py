@@ -11,6 +11,8 @@ from typing import (
     Dict,
     List,
     Optional,
+    Sequence,
+    Set,
     Tuple,
     Union,
 )
@@ -20,7 +22,11 @@ from progress.bar import IncrementalBar
 from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.data import ParticleCollection, ParticleWithSpin
+from expertsystem.data import (
+    Particle,
+    ParticleCollection,
+    ParticleWithSpin,
+)
 from expertsystem.nested_dicts import InteractionQuantumNumberNames
 from expertsystem.state.combinatorics import (
     StateDefinition,
@@ -67,8 +73,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        initial_state: List[StateDefinition],
-        final_state: List[StateDefinition],
+        initial_state: Sequence[StateDefinition],
+        final_state: Sequence[StateDefinition],
         particles: ParticleCollection = ParticleCollection(),
         allowed_intermediate_particles: Optional[List[str]] = None,
         interaction_type_settings: Dict[
@@ -461,3 +467,26 @@ def _particle_with_spin_projection_to_dict(
         if item["Type"] == "Spin":
             item["Projection"] = spin_projection
     return output
+
+
+def get_intermediate_state_names(
+    solutions: List[StateTransitionGraph],
+) -> Set[str]:
+    """Extract the names of the intermediate states in the solutions."""
+    intermediate_states = set()
+    for graph in solutions:
+        for edge_id in graph.get_intermediate_state_edges():
+            edge_property = graph.edge_props[edge_id]
+            if isinstance(edge_property, dict):
+                intermediate_states.add(edge_property["Name"])
+            elif isinstance(edge_property, tuple) and isinstance(
+                edge_property[0], Particle
+            ):
+                particle, _ = edge_property
+                intermediate_states.add(particle.name)
+            else:
+                raise ValueError(
+                    "Cannot extract name from edge property of type "
+                    f"{edge_property.__class__.__name__}"
+                )
+    return intermediate_states
