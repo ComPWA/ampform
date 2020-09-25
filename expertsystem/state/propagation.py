@@ -16,22 +16,25 @@ from copy import deepcopy
 from dataclasses import fields
 from enum import Enum, auto
 
-from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Parity
+from expertsystem.data import Parity
+from expertsystem.nested_dicts import (
+    InteractionQuantumNumberNames,
+    Labels,
+    ParticleDecayPropertyNames,
+    ParticlePropertyNames,
+    QNClassConverterMapping,
+    QNNameClassMapping,
+    StateQuantumNumberNames,
+    edge_qn_to_enum,
+)
 from expertsystem.solvers.constraint import (
     BacktrackingSolver,
     Constraint,
     Problem,
     Unassigned,
 )
-from expertsystem.state import particle
 from expertsystem.state.conservation_rules import Rule
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    ParticleDecayPropertyNames,
-    ParticlePropertyNames,
-    QNClassConverterMapping,
-    QNNameClassMapping,
-    StateQuantumNumberNames,
+from expertsystem.state.properties import (
     get_interaction_property,
     get_particle_candidates_for_state,
     get_particle_property,
@@ -242,41 +245,13 @@ def _is_optional(class_field):
     return False
 
 
-_qn_mapping = {
-    EdgeQuantumNumbers.pid.__name__: ParticlePropertyNames.Pid,
-    EdgeQuantumNumbers.mass.__name__: ParticlePropertyNames.Mass,
-    EdgeQuantumNumbers.width.__name__: ParticleDecayPropertyNames.Width,
-    EdgeQuantumNumbers.spin_magnitude.__name__: StateQuantumNumberNames.Spin,
-    EdgeQuantumNumbers.spin_projection.__name__: StateQuantumNumberNames.Spin,
-    EdgeQuantumNumbers.charge.__name__: StateQuantumNumberNames.Charge,
-    EdgeQuantumNumbers.isospin_magnitude.__name__: StateQuantumNumberNames.IsoSpin,
-    EdgeQuantumNumbers.isospin_projection.__name__: StateQuantumNumberNames.IsoSpin,
-    EdgeQuantumNumbers.strangeness.__name__: StateQuantumNumberNames.Strangeness,
-    EdgeQuantumNumbers.charmness.__name__: StateQuantumNumberNames.Charmness,
-    EdgeQuantumNumbers.bottomness.__name__: StateQuantumNumberNames.Bottomness,
-    EdgeQuantumNumbers.topness.__name__: StateQuantumNumberNames.Topness,
-    EdgeQuantumNumbers.baryon_number.__name__: StateQuantumNumberNames.BaryonNumber,
-    EdgeQuantumNumbers.electron_lepton_number.__name__: StateQuantumNumberNames.ElectronLN,
-    EdgeQuantumNumbers.muon_lepton_number.__name__: StateQuantumNumberNames.MuonLN,
-    EdgeQuantumNumbers.tau_lepton_number.__name__: StateQuantumNumberNames.TauLN,
-    EdgeQuantumNumbers.parity.__name__: StateQuantumNumberNames.Parity,
-    EdgeQuantumNumbers.c_parity.__name__: StateQuantumNumberNames.CParity,
-    EdgeQuantumNumbers.g_parity.__name__: StateQuantumNumberNames.GParity,
-    NodeQuantumNumbers.l_magnitude.__name__: InteractionQuantumNumberNames.L,
-    NodeQuantumNumbers.l_projection.__name__: InteractionQuantumNumberNames.L,
-    NodeQuantumNumbers.s_magnitude.__name__: InteractionQuantumNumberNames.S,
-    NodeQuantumNumbers.s_projection.__name__: InteractionQuantumNumberNames.S,
-    NodeQuantumNumbers.parity_prefactor.__name__: InteractionQuantumNumberNames.ParityPrefactor,
-}
-
-
 def _init_class(class_type, props):
     return class_type(
         **{
             class_field.name: _extract_value(props, class_field.type)
             for class_field in fields(class_type)
             if not _is_optional(class_field.type)
-            or _qn_mapping[class_field.type.__args__[0].__name__] in props
+            or edge_qn_to_enum[class_field.type.__args__[0].__name__] in props
         }
     )
 
@@ -286,7 +261,7 @@ def _extract_value(props, obj_type):
         obj_type = obj_type.__args__[0]
 
     qn_name = obj_type.__name__
-    value = props[_qn_mapping[qn_name]]
+    value = props[edge_qn_to_enum[qn_name]]
     if "projection" in qn_name:
         value = value.projection
     elif "magnitude" in qn_name:
@@ -304,13 +279,13 @@ def _check_arg_requirements(class_type, props):
     if "__dataclass_fields__" in class_type.__dict__:
         return all(
             [
-                bool(_qn_mapping[class_field.type.__name__] in props)
+                bool(edge_qn_to_enum[class_field.type.__name__] in props)
                 for class_field in fields(class_type)
                 if not _is_optional(class_field.type)
             ]
         )
 
-    return _qn_mapping[class_type.__name__] in props
+    return edge_qn_to_enum[class_type.__name__] in props
 
 
 def _check_requirements(rule, in_edge_props, out_edge_props, node_props):
@@ -425,14 +400,14 @@ def _get_required_qn_names(rule):
         if "__dataclass_fields__" in class_type.__dict__:
             for class_field in fields(class_type):
                 qn_set.add(
-                    _qn_mapping[
+                    edge_qn_to_enum[
                         class_field.type.__args__[0].__name__
                         if _is_optional(class_field.type)
                         else class_field.type.__name__
                     ]
                 )
         else:
-            qn_set.add(_qn_mapping[class_type.__name__])
+            qn_set.add(edge_qn_to_enum[class_type.__name__])
 
     return list(qn_set)
 
@@ -508,9 +483,9 @@ class ParticleStateTransitionGraphValidator(AbstractPropagator):
     def __create_node_variables(self, node_id, qn_list):
         """Create variables for the quantum numbers of the specified node."""
         variables = {}
-        type_label = particle.Labels.Type.name
+        type_label = Labels.Type.name
         if node_id in self.graph.node_props:
-            qns_label = particle.Labels.QuantumNumber.name
+            qns_label = Labels.QuantumNumber.name
             for qn_name in qn_list:
                 converter = QNClassConverterMapping[
                     QNNameClassMapping[qn_name]
@@ -866,7 +841,7 @@ class CSPPropagator(AbstractPropagator):
 def add_qn_to_graph_element(graph, var_info, value):
     if value is None:
         return
-    qns_label = particle.Labels.QuantumNumber.name
+    qns_label = Labels.QuantumNumber.name
 
     element_id = var_info.element_id
     qn_name = var_info.qn_name

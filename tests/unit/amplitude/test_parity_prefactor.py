@@ -3,10 +3,8 @@ from typing import NamedTuple, Tuple
 import pytest
 
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.state.particle import (
-    InteractionQuantumNumberNames,
-    get_interaction_property,
-)
+from expertsystem.nested_dicts import InteractionQuantumNumberNames
+from expertsystem.state.properties import get_interaction_property
 from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,

@@ -14,20 +14,21 @@ from typing import (
     Union,
 )
 
-from expertsystem.data import Spin
-from expertsystem.state.conservation_rules import Rule
-from expertsystem.state.particle import (
-    CompareGraphElementPropertiesFunctor,
+from expertsystem.data import ParticleWithSpin, Spin
+from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
     Labels,
     ParticlePropertyNames,
-    ParticleWithSpin,
     StateQuantumNumberNames,
-    get_interaction_property,
 )
+from expertsystem.state.conservation_rules import Rule
 from expertsystem.state.propagation import (
     InteractionNodeSettings,
     InteractionTypes,
+)
+from expertsystem.state.properties import (
+    CompareGraphElementPropertiesFunctor,
+    get_interaction_property,
 )
 from expertsystem.topology import StateTransitionGraph
 

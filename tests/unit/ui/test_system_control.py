@@ -4,10 +4,12 @@ from typing import List
 
 import pytest
 
-from expertsystem.state import particle
-from expertsystem.state.particle import (
-    CompareGraphElementPropertiesFunctor,
+from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
+    Labels,
+)
+from expertsystem.state.properties import (
+    CompareGraphElementPropertiesFunctor,
     _create_edge_id_particle_mapping,
     create_spin_domain,
     match_external_edges,
@@ -243,8 +245,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         self, input_values, filter_parameters, result
     ):
         graphs = []
-        name_label = particle.Labels.Name.name
-        value_label = particle.Labels.Value.name
+        name_label = Labels.Name.name
+        value_label = Labels.Value.name
         for value in input_values:
             tempgraph = make_ls_test_graph(value[1][0], value[1][1])
             tempgraph.add_edges([0])

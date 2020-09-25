@@ -5,6 +5,8 @@ At the time of writing (`a104dd5
 the `expertsystem` assumes nested `dict` structures of this 'XML format'. This
 module therefore serves as a bridge between `.ParticleCollection` and the
 `.state.particle` module.
+
+See also `expertsystem.nested_dict`.
 """
 
 from typing import (

@@ -12,6 +12,7 @@ from typing import (
     KeysView,
     NewType,
     Optional,
+    Tuple,
     Union,
     ValuesView,
 )
@@ -232,6 +233,9 @@ class Particle:  # pylint: disable=too-many-instance-attributes
             or self.muon_lepton_number != 0
             or self.tau_lepton_number != 0
         )
+
+
+ParticleWithSpin = Tuple[Particle, float]
 
 
 class GellmannNishijima:

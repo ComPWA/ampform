@@ -20,21 +20,19 @@ from progress.bar import IncrementalBar
 from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.data import ParticleCollection
-from expertsystem.state.particle import (
-    CompareGraphElementPropertiesFunctor,
-    InteractionQuantumNumberNames,
-    ParticleWithSpin,
-    StateDefinition,
-    filter_particles,
-    initialize_graph,
-    match_external_edges,
-    particle_with_spin_projection_to_dict,
-)
+from expertsystem.data import ParticleCollection, ParticleWithSpin
+from expertsystem.nested_dicts import InteractionQuantumNumberNames
 from expertsystem.state.propagation import (
     FullPropagator,
     InteractionNodeSettings,
     InteractionTypes,
+)
+from expertsystem.state.properties import (
+    CompareGraphElementPropertiesFunctor,
+    StateDefinition,
+    filter_particles,
+    initialize_graph,
+    match_external_edges,
 )
 from expertsystem.topology import (
     InteractionNode,
@@ -254,7 +252,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     if not isinstance(edge_property, dict):
                         graph.edge_props[
                             edge_id
-                        ] = particle_with_spin_projection_to_dict(  # type: ignore
+                        ] = _particle_with_spin_projection_to_dict(  # type: ignore
                             edge_property
                         )
 
@@ -450,3 +448,14 @@ def load_default_particles() -> ParticleCollection:
     particles.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
+
+
+def _particle_with_spin_projection_to_dict(
+    instance: ParticleWithSpin,
+) -> dict:
+    particle, spin_projection = instance
+    output = io.xml.object_to_dict(particle)
+    for item in output["QuantumNumber"]:
+        if item["Type"] == "Spin":
+            item["Projection"] = spin_projection
+    return output

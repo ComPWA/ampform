@@ -2,10 +2,10 @@
 
 __all__ = [
     "conservation_rules",
-    "particle",
     "propagation",
+    "properties",
 ]
 
 from . import conservation_rules
-from . import particle
 from . import propagation
+from . import properties
