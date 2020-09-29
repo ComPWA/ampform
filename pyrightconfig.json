@@ -1,7 +1,6 @@
 {
   "include": ["doc/conf.py", "expertsystem", "setup.py", "tests"],
   "exclude": [".git", ".tox"],
-  "ignore": ["expertsystem/solvers/constraint/compat.py"],
   "reportGeneralTypeIssues": false,
   "reportUnboundVariable": false,
   "stubPath": ""

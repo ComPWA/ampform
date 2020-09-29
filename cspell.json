@@ -30,7 +30,6 @@
         "cspell.json",
         "doc/_templates/*",
         "doc/conf.py",
-        "expertsystem/solvers/constraint/*",
         "pyproject.toml",
         "pyrightconfig.json",
         "setup.cfg",

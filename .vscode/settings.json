@@ -42,7 +42,6 @@
   "search.exclude": {
     "**/tests/**/__init__.py": true,
     "doc/tox.ini": true,
-    "expertsystem/solvers/constraint/tox.ini": true,
     "tests/tox.ini": true
   },
   "telemetry.enableCrashReporter": false,

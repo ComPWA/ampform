@@ -9,6 +9,8 @@ import os
 import shutil
 import subprocess
 
+import sphobjinv as soi
+
 
 # -- Copy example notebooks ---------------------------------------------------
 print("Copy example notebook and data files")
@@ -36,10 +38,36 @@ subprocess.call(
     "--no-toc "
     "--templatedir _templates "
     "--separate "
-    "-o api/ ../expertsystem/ "
-    "../expertsystem/solvers/constraint; ",
+    "-o api/ ../expertsystem/; ",
     shell=True,
 )
+
+# -- Convert sphinx object inventory -----------------------------------------
+inv = soi.Inventory()
+inv.project = "constraint"
+
+constraint_object_names = [
+    "Constraint",
+    "Domain",
+    "Problem",
+    "Solver",
+    "Variable",
+]
+for object_name in constraint_object_names:
+    inv.objects.append(
+        soi.DataObjStr(
+            name=f"{inv.project}.{object_name}",
+            domain="py",
+            role="class",
+            priority="1",
+            uri=f"{inv.project}.{object_name}-class.html",
+            dispname="-",
+        )
+    )
+
+text = inv.data_file(contract=True)
+ztext = soi.compress(text)
+soi.writebytes("constraint.inv", ztext)
 
 
 # -- Project information -----------------------------------------------------
@@ -89,7 +117,12 @@ autodoc_default_options = {
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
-    "special-members": "__call__, __eq__",
+    "special-members": ", ".join(
+        [
+            "__call__",
+            "__eq__",
+        ]
+    ),
 }
 html_copy_source = True  # needed for download notebook button
 html_show_copyright = False
@@ -127,12 +160,14 @@ nitpick_ignore = [
     ("py:class", "a set-like object providing a view on D's keys"),
     ("py:class", "_T"),
     ("py:class", "an object providing a view on D's values"),
-    ("py:class", "expertsystem.solvers.constraint.Constraint"),
-    ("py:class", "expertsystem.state.propagation.GraphElementTypes"),
 ]
 
 # Intersphinx settings
 intersphinx_mapping = {
+    "constraint": (
+        "https://labix.org/doc/constraint/public/",
+        "constraint.inv",
+    ),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
     "jsonschema": (
         "https://python-jsonschema.readthedocs.io/en/latest/",
