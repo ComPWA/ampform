@@ -65,7 +65,7 @@ def get_particle_property(
         StateQuantumNumberNames,  # quantum numbers
     ],
     converter: Optional[AbstractQNConverter] = None,
-) -> Optional[Dict[str, Any]]:
+) -> Optional[Union[Spin, float]]:
     # pylint: disable=too-many-branches,too-many-locals,too-many-nested-blocks
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
@@ -122,7 +122,7 @@ def get_interaction_property(
     interaction_properties: Dict[str, Any],
     qn_name: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
     converter: Optional[AbstractQNConverter] = None,
-) -> Optional[Dict[str, Any]]:
+) -> Optional[Union[Spin, float]]:
     qns_label = Labels.QuantumNumber.name
     type_label = Labels.Type.name
 
