@@ -23,16 +23,16 @@ def test_script():
     stm.number_of_threads = 1
 
     graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
+    result = stm.find_solutions(graph_interaction_settings_groups)
 
-    print("found " + str(len(solutions)) + " solutions!")
-    assert len(solutions) == 5
+    print("found " + str(len(result.solutions)) + " solutions!")
+    assert len(result.solutions) == 5
 
     # print intermediate state particle names
-    for solution in solutions:
+    for solution in result.solutions:
         print(solution.edge_props[1]["Name"])
 
-    stm.write_amplitude_model(solutions, "D0ToKs0KpKm.xml")
+    stm.write_amplitude_model(result.solutions, "D0ToKs0KpKm.xml")
 
 
 if __name__ == "__main__":

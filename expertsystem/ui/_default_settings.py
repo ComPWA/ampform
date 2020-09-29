@@ -6,11 +6,7 @@ from os.path import (
     join,
     realpath,
 )
-from typing import (
-    Any,
-    Dict,
-    List,
-)
+from typing import Dict, List, Tuple
 
 from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
@@ -37,8 +33,9 @@ from expertsystem.state.conservation_rules import (
     TauLNConservation,
 )
 from expertsystem.state.propagation import (
-    InteractionNodeSettings,
+    EdgeSettings,
     InteractionTypes,
+    NodeSettings,
 )
 from expertsystem.state.properties import create_spin_domain
 
@@ -52,23 +49,23 @@ DEFAULT_PARTICLE_LIST_PATH = join(
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority
 CONSERVATION_LAW_PRIORITIES = {
-    "SpinConservation": 8,
-    "HelicityConservation": 7,
-    "MassConservation": 10,
-    "GellMannNishijimaRule": 50,
-    "ChargeConservation": 100,
-    "ElectronLNConservation": 45,
-    "MuonLNConservation": 44,
-    "TauLNConservation": 43,
-    "BaryonNumberConservation": 90,
-    "IdenticalParticleSymmetrization": 2,
-    "CharmConservation": 70,
-    "StrangenessConservation": 69,
-    "ParityConservation": 6,
-    "CParityConservation": 5,
-    "ParityConservationHelicity": 4,
-    "IsoSpinConservation": 60,
-    "GParityConservation": 3,
+    SpinConservation: 8,
+    HelicityConservation: 7,
+    MassConservation: 10,
+    GellMannNishijimaRule: 50,
+    ChargeConservation: 100,
+    ElectronLNConservation: 45,
+    MuonLNConservation: 44,
+    TauLNConservation: 43,
+    BaryonNumberConservation: 90,
+    IdenticalParticleSymmetrization: 2,
+    CharmConservation: 70,
+    StrangenessConservation: 69,
+    ParityConservation: 6,
+    CParityConservation: 5,
+    ParityConservationHelicity: 4,
+    IsoSpinConservation: 60,
+    GParityConservation: 3,
 }
 
 
@@ -92,20 +89,23 @@ def create_default_interaction_settings(
     formalism_type: str,
     nbody_topology: bool = False,
     use_mass_conservation: bool = True,
-) -> Dict[InteractionTypes, InteractionNodeSettings]:
+) -> Dict[InteractionTypes, Tuple[EdgeSettings, NodeSettings]]:
     """Create a container that holds the settings for the various interactions.
 
     E.g.: strong, em and weak interaction.
     """
     interaction_type_settings = {}
-    formalism_conservation_laws = []
-    formalism_qn_domains = {}
+    formalism_edge_settings = EdgeSettings()
+    formalism_node_settings = NodeSettings(
+        rule_priorities=CONSERVATION_LAW_PRIORITIES
+    )
+
     if "helicity" in formalism_type:
-        formalism_conservation_laws = [
+        formalism_node_settings.conservation_rules = {
             SpinConservation(False),
             HelicityConservation(),
-        ]
-        formalism_qn_domains = {
+        }
+        formalism_node_settings.qn_domains = {
             InteractionQuantumNumberNames.L: create_spin_domain(
                 _get_ang_mom_magnitudes(nbody_topology), True
             ),
@@ -114,8 +114,10 @@ def create_default_interaction_settings(
             ),
         }
     elif formalism_type == "canonical":
-        formalism_conservation_laws = [SpinConservation(not nbody_topology)]
-        formalism_qn_domains = {
+        formalism_node_settings.conservation_rules = {
+            SpinConservation(not nbody_topology),
+        }
+        formalism_node_settings.qn_domains = {
             InteractionQuantumNumberNames.L: create_spin_domain(
                 _get_ang_mom_magnitudes(nbody_topology)
             ),
@@ -124,92 +126,87 @@ def create_default_interaction_settings(
             ),
         }
     if formalism_type == "canonical-helicity":
-        formalism_conservation_laws.append(
+        formalism_node_settings.conservation_rules.add(
             ClebschGordanCheckHelicityToCanonical()
         )
     if use_mass_conservation:
-        formalism_conservation_laws.append(MassConservation(5))
+        formalism_node_settings.conservation_rules.add(MassConservation(5))
 
-    weak_settings = InteractionNodeSettings()
-    weak_settings.conservation_laws = formalism_conservation_laws
-    weak_settings.conservation_laws.extend(
+    weak_node_settings = deepcopy(formalism_node_settings)
+    weak_node_settings.conservation_rules.update(
         [
-            GellMannNishijimaRule(),
             ChargeConservation(),
             ElectronLNConservation(),
             MuonLNConservation(),
             TauLNConservation(),
             BaryonNumberConservation(),
             IdenticalParticleSymmetrization(),
+            GellMannNishijimaRule(),  # should be changed to a pure edge rule
         ]
     )
-    weak_settings.qn_domains = {
-        StateQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
-        StateQuantumNumberNames.BaryonNumber: [-1, 0, 1],
-        StateQuantumNumberNames.ElectronLN: [-1, 0, 1],
-        StateQuantumNumberNames.MuonLN: [-1, 0, 1],
-        StateQuantumNumberNames.TauLN: [-1, 0, 1],
-        StateQuantumNumberNames.Parity: [-1, 1],
-        StateQuantumNumberNames.CParity: [-1, 1, None],
-        StateQuantumNumberNames.GParity: [-1, 1, None],
-        StateQuantumNumberNames.Spin: create_spin_domain([0, 0.5, 1, 1.5, 2]),
-        StateQuantumNumberNames.IsoSpin: create_spin_domain([0, 0.5, 1, 1.5]),
-        StateQuantumNumberNames.Charmness: [-1, 0, 1],
-        StateQuantumNumberNames.Strangeness: [-1, 0, 1],
-    }
-    weak_settings.qn_domains.update(formalism_qn_domains)
-    weak_settings.interaction_strength = 10 ** (-4)
+    weak_node_settings.interaction_strength = 10 ** (-4)
 
-    interaction_type_settings[InteractionTypes.Weak] = weak_settings
+    weak_edge_settings = deepcopy(formalism_edge_settings)
+    weak_edge_settings.qn_domains.update(
+        {
+            StateQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
+            StateQuantumNumberNames.BaryonNumber: [-1, 0, 1],
+            StateQuantumNumberNames.ElectronLN: [-1, 0, 1],
+            StateQuantumNumberNames.MuonLN: [-1, 0, 1],
+            StateQuantumNumberNames.TauLN: [-1, 0, 1],
+            StateQuantumNumberNames.Parity: [-1, 1],
+            StateQuantumNumberNames.CParity: [-1, 1, None],
+            StateQuantumNumberNames.GParity: [-1, 1, None],
+            StateQuantumNumberNames.Spin: create_spin_domain(
+                [0, 0.5, 1, 1.5, 2]
+            ),
+            StateQuantumNumberNames.IsoSpin: create_spin_domain(
+                [0, 0.5, 1, 1.5]
+            ),
+            StateQuantumNumberNames.Charmness: [-1, 0, 1],
+            StateQuantumNumberNames.Strangeness: [-1, 0, 1],
+        },
+    )
 
-    em_settings = deepcopy(weak_settings)
-    em_settings.conservation_laws.extend(
-        [
+    interaction_type_settings[InteractionTypes.Weak] = (
+        weak_edge_settings,
+        weak_node_settings,
+    )
+
+    em_node_settings = deepcopy(weak_node_settings)
+    em_node_settings.conservation_rules.update(
+        {
             CharmConservation(),
             StrangenessConservation(),
             ParityConservation(),
             CParityConservation(),
-        ]
+        }
     )
     if "helicity" in formalism_type:
-        em_settings.conservation_laws.append(ParityConservationHelicity())
-        em_settings.qn_domains.update(
+        em_node_settings.conservation_rules.add(ParityConservationHelicity())
+        em_node_settings.qn_domains.update(
             {InteractionQuantumNumberNames.ParityPrefactor: [-1, 1]}
         )
-    em_settings.interaction_strength = 1
+    em_node_settings.interaction_strength = 1
 
-    interaction_type_settings[InteractionTypes.EM] = em_settings
+    em_edge_settings = deepcopy(weak_edge_settings)
 
-    strong_settings = deepcopy(em_settings)
-    strong_settings.conservation_laws.extend(
-        [IsoSpinConservation(), GParityConservation()]
+    interaction_type_settings[InteractionTypes.EM] = (
+        em_edge_settings,
+        em_node_settings,
     )
-    strong_settings.interaction_strength = 60
-    interaction_type_settings[InteractionTypes.Strong] = strong_settings
 
-    # reorder conservation laws according to priority
-    weak_settings.conservation_laws = _reorder_list_by_priority(
-        weak_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
+    strong_node_settings = deepcopy(em_node_settings)
+    strong_node_settings.conservation_rules.update(
+        {IsoSpinConservation(), GParityConservation()}
     )
-    em_settings.conservation_laws = _reorder_list_by_priority(
-        em_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
-    )
-    strong_settings.conservation_laws = _reorder_list_by_priority(
-        strong_settings.conservation_laws, CONSERVATION_LAW_PRIORITIES
+    strong_node_settings.interaction_strength = 60
+
+    strong_edge_settings = deepcopy(em_edge_settings)
+
+    interaction_type_settings[InteractionTypes.Strong] = (
+        strong_edge_settings,
+        strong_node_settings,
     )
 
     return interaction_type_settings
-
-
-def _reorder_list_by_priority(
-    some_list: List[Any], priority_mapping: Dict[str, Any]
-) -> List[Any]:
-    # first add priorities to the entries
-    priority_list = [
-        (x, priority_mapping[str(x)]) if str(x) in priority_mapping else (x, 1)
-        for x in some_list
-    ]
-    # then sort according to priority
-    sorted_list = sorted(priority_list, key=lambda x: x[1], reverse=True)
-    # and strip away the priorities again
-    return [x[0] for x in sorted_list]

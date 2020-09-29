@@ -9,7 +9,6 @@ from enum import Enum, auto
 from typing import (
     Any,
     Dict,
-    Union,
 )
 
 from expertsystem.data import (
@@ -93,7 +92,7 @@ class AbstractQNConverter(ABC):
     @abstractmethod
     def convert_to_dict(
         self,
-        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_type: Enum,
         qn_value: Any,
     ) -> Dict[str, Any]:
         pass
@@ -111,7 +110,7 @@ class _IntQNConverter(AbstractQNConverter):
 
     def convert_to_dict(
         self,
-        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_type: Enum,
         qn_value: int,
     ) -> Dict[str, Any]:
         return {
@@ -133,7 +132,7 @@ class _FloatQNConverter(AbstractQNConverter):
 
     def convert_to_dict(
         self,
-        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_type: Enum,
         qn_value: float,
     ) -> Dict[str, Any]:
         return {
@@ -169,7 +168,7 @@ class _SpinQNConverter(AbstractQNConverter):
 
     def convert_to_dict(
         self,
-        qn_type: Union[InteractionQuantumNumberNames, StateQuantumNumberNames],
+        qn_type: Enum,
         qn_value: Spin,
     ) -> Dict[str, Any]:
         return {

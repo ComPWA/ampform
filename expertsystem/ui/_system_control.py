@@ -3,13 +3,13 @@
 import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from itertools import product
 from typing import (
     Any,
     Callable,
     Dict,
     List,
     Optional,
+    Set,
     Tuple,
     Union,
 )
@@ -23,8 +23,10 @@ from expertsystem.nested_dicts import (
 )
 from expertsystem.state.conservation_rules import Rule
 from expertsystem.state.propagation import (
-    InteractionNodeSettings,
+    EdgeSettings,
+    GraphSettings,
     InteractionTypes,
+    NodeSettings,
 )
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
@@ -35,40 +37,53 @@ from expertsystem.topology import StateTransitionGraph
 
 Strength = float
 
-GraphSettings = Tuple[StateTransitionGraph, Dict[int, InteractionNodeSettings]]
-GraphSettingsGroups = Dict[Strength, List[GraphSettings]]
-NodeSettings = Dict[int, List[InteractionNodeSettings]]
-
-ViolatedLaws = Dict[int, List[Rule]]
-SolutionMapping = Dict[
-    Strength,
-    List[Tuple[List[StateTransitionGraph], ViolatedLaws]],
+GraphSettingsGroups = Dict[
+    Strength, List[Tuple[StateTransitionGraph, GraphSettings]]
 ]
 
 
 def _change_qn_domain(
-    interaction_settings: InteractionNodeSettings,
+    settings: Tuple[EdgeSettings, NodeSettings],
     qn_name: InteractionQuantumNumberNames,
     new_domain: List[Spin],
 ) -> None:
-    if not isinstance(interaction_settings, InteractionNodeSettings):
+    if (
+        not isinstance(settings, tuple)
+        or not isinstance(settings[0], EdgeSettings)
+        or not isinstance(settings[1], NodeSettings)
+    ):
         raise TypeError(
-            "interaction_settings has to be of type InteractionNodeSettings"
+            "graph_settings has to be of type Tuple[NodeSettings, EdgeSettings]"
         )
-    interaction_settings.qn_domains.update({qn_name: new_domain})
+
+    def change_domain(qn_domains: dict) -> None:
+        if qn_name in qn_domains:
+            qn_domains.update({qn_name: new_domain})
+
+    change_domain(settings[0].qn_domains)
+    change_domain(settings[1].qn_domains)
 
 
 def _remove_conservation_law(
-    interaction_settings: InteractionNodeSettings, cons_law: Rule
+    settings: Tuple[EdgeSettings, NodeSettings], cons_law: Rule
 ) -> None:
-    if not isinstance(interaction_settings, InteractionNodeSettings):
+    if (
+        not isinstance(settings, tuple)
+        or not isinstance(settings[0], EdgeSettings)
+        or not isinstance(settings[1], NodeSettings)
+    ):
         raise TypeError(
-            "interaction_settings has to be of type InteractionNodeSettings"
+            "graph_settings has to be of type Tuple[NodeSettings, EdgeSettings]"
         )
-    for i, law in enumerate(interaction_settings.conservation_laws):
-        if str(law) == str(cons_law):
-            del interaction_settings.conservation_laws[i]
-            break
+
+    def remove_rule(rule_set: Set[Rule]) -> None:
+        for rule in rule_set:
+            if str(rule) == str(cons_law):
+                rule_set.remove(rule)
+                break
+
+    remove_rule(settings[0].conservation_rules)
+    remove_rule(settings[1].conservation_rules)
 
 
 def filter_interaction_types(
@@ -146,10 +161,10 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
 
 
 def remove_duplicate_solutions(
-    results: SolutionMapping,
+    solutions: List[StateTransitionGraph[dict]],
     remove_qns_list: Optional[Any] = None,
     ignore_qns_list: Optional[Any] = None,
-) -> SolutionMapping:
+) -> List[StateTransitionGraph[dict]]:
     if remove_qns_list is None:
         remove_qns_list = []
     if ignore_qns_list is None:
@@ -157,30 +172,23 @@ def remove_duplicate_solutions(
     logging.info("removing duplicate solutions...")
     logging.info(f"removing these qns from graphs: {remove_qns_list}")
     logging.info(f"ignoring qns in graph comparison: {ignore_qns_list}")
-    filtered_results: SolutionMapping = {}
-    solutions: List[StateTransitionGraph] = list()
-    remove_counter = 0
-    for strength, group_results in results.items():
-        for (sol_graphs, rule_violations) in group_results:
-            temp_graphs = []
-            for sol_graph in sol_graphs:
-                sol_graph = _remove_qns_from_graph(sol_graph, remove_qns_list)
-                found_graph = _check_equal_ignoring_qns(
-                    sol_graph, solutions, ignore_qns_list
-                )
-                if found_graph is None:
-                    solutions.append(sol_graph)
-                    temp_graphs.append(sol_graph)
-                else:
-                    # check if found solution also has the prefactors
-                    # if not overwrite them
-                    remove_counter += 1
 
-            if strength not in filtered_results:
-                filtered_results[strength] = []
-            filtered_results[strength].append((temp_graphs, rule_violations))
+    filtered_solutions: List[StateTransitionGraph] = list()
+    remove_counter = 0
+    for sol_graph in solutions:
+        sol_graph = _remove_qns_from_graph(sol_graph, remove_qns_list)
+        found_graph = _check_equal_ignoring_qns(
+            sol_graph, filtered_solutions, ignore_qns_list
+        )
+        if found_graph is None:
+            filtered_solutions.append(sol_graph)
+        else:
+            # check if found solution also has the prefactors
+            # if not overwrite them
+            remove_counter += 1
+
     logging.info(f"removed {remove_counter} solutions")
-    return filtered_results
+    return filtered_solutions
 
 
 def _remove_qns_from_graph(  # pylint: disable=too-many-branches
@@ -364,60 +372,20 @@ def _find_node_ids_with_ingoing_particle_name(
     return found_node_ids
 
 
-def analyse_solution_failure(
-    violated_laws_per_node_and_graph: List[ViolatedLaws],
-) -> List[str]:
-    # try to find rules that are just always violated
-    violated_laws: List[str] = []
-    scoresheet: Dict[str, int] = {}
-
-    for violated_laws_per_node in violated_laws_per_node_and_graph:
-        temp_violated_laws = set()
-        for laws in violated_laws_per_node.values():
-            for law in laws:
-                temp_violated_laws.add(str(law))
-        for law_name in temp_violated_laws:
-            if law_name not in scoresheet:
-                scoresheet[law_name] = 0
-            scoresheet[law_name] += 1
-
-    for rule_name, violation_count in scoresheet.items():
-        if violation_count == len(violated_laws_per_node_and_graph):
-            violated_laws.append(rule_name)
-
-    logging.debug(
-        "no solutions could be found, because the following rules are violated:\n%r",
-        violated_laws,
-    )
-
-    return violated_laws
-
-
-def create_interaction_setting_groups(
-    graph_node_setting_pairs: List[Tuple[StateTransitionGraph, NodeSettings]]
+def group_by_strength(
+    graph_node_setting_pairs: List[Tuple[StateTransitionGraph, GraphSettings]]
 ) -> GraphSettingsGroups:
     graph_settings_groups: GraphSettingsGroups = {}
-    for (instance, node_settings) in graph_node_setting_pairs:
-        setting_combinations = _create_setting_combinations(node_settings)
-        for setting in setting_combinations:
-            strength = _calculate_strength(setting)
-            if strength not in graph_settings_groups:
-                graph_settings_groups[strength] = []
-            graph_settings_groups[strength].append((instance, setting))
+    for (instance, graph_settings) in graph_node_setting_pairs:
+        strength = _calculate_strength(graph_settings.node_settings)
+        if strength not in graph_settings_groups:
+            graph_settings_groups[strength] = []
+        graph_settings_groups[strength].append((instance, graph_settings))
     return graph_settings_groups
 
 
-def _create_setting_combinations(
-    node_settings: NodeSettings,
-) -> List[Dict[int, InteractionNodeSettings]]:
-    return [
-        dict(zip(node_settings.keys(), x))
-        for x in product(*node_settings.values())  # type: ignore
-    ]
-
-
 def _calculate_strength(
-    node_interaction_settings: Dict[int, InteractionNodeSettings]
+    node_interaction_settings: Dict[int, NodeSettings]
 ) -> float:
     strength = 1.0
     for int_setting in node_interaction_settings.values():

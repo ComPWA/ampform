@@ -67,6 +67,14 @@ class Rule:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}"
 
+    def __hash__(self) -> int:
+        return hash(self.__class__.__name__)
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, Rule):
+            return self.__class__.__name__ == str(o)
+        return False
+
     def __call__(
         self,
         ingoing_edge_qns: List[Any],
@@ -698,16 +706,17 @@ class ClebschGordanCheckHelicityToCanonical(Rule):
             coupled_spin = Spin(
                 interaction_qns.s_magnitude, interaction_qns.s_projection
             )
-            if coupled_spin.magnitude < abs(helicity_diff) or ingoing_spins[
-                0
-            ].spin_magnitude < abs(helicity_diff):
+            parent_spin = ingoing_spins[0].spin_magnitude
+            try:
+                coupled_spin = Spin(coupled_spin.magnitude, helicity_diff)
+                in_spin = Spin(parent_spin, helicity_diff)
+            except ValueError:
                 return False
-            coupled_spin = Spin(coupled_spin.magnitude, helicity_diff)
             if _is_clebsch_gordan_coefficient_zero(
                 out_spin1, out_spin2, coupled_spin
             ):
                 return False
-            in_spin = Spin(ingoing_spins[0].spin_magnitude, helicity_diff)
+
             return not _is_clebsch_gordan_coefficient_zero(
                 ang_mom, coupled_spin, in_spin
             )

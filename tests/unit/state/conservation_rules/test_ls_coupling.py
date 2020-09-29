@@ -142,10 +142,10 @@ def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-argum
         }
     }
     graph_node_setting_pairs = stm.prepare_graphs()
-    for value in graph_node_setting_pairs.values():
-        for edge in value:
-            edge[0].node_props = node_props
+    for graph_node_settings in graph_node_setting_pairs.values():
+        for graph, _ in graph_node_settings:
+            graph.node_props = node_props
 
-    solutions, _ = stm.find_solutions(graph_node_setting_pairs)
+    result = stm.find_solutions(graph_node_setting_pairs)
 
-    assert len(solutions) == solution_count
+    assert len(result.solutions) == solution_count

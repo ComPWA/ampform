@@ -51,8 +51,8 @@ def test_number_of_solutions(
         [InteractionTypes.Strong, InteractionTypes.EM]
     )
     graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
-    assert len(solutions) == number_of_solutions
+    result = stm.find_solutions(graph_interaction_settings_groups)
+    assert len(result.solutions) == number_of_solutions
 
 
 def test_id_to_particle_mappings(particle_database):
@@ -65,15 +65,15 @@ def test_id_to_particle_mappings(particle_database):
     )
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
-    assert len(solutions) == 4
+    result = stm.find_solutions(graph_interaction_settings_groups)
+    assert len(result.solutions) == 4
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        solutions[0], "get_final_state_edges"
+        result.solutions[0], "get_final_state_edges"
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        solutions[0], "get_initial_state_edges"
+        result.solutions[0], "get_initial_state_edges"
     )
-    for solution in solutions[1:]:
+    for solution in result.solutions[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
             solution, "get_final_state_edges"
         )

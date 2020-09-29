@@ -69,9 +69,9 @@ def test_parity_prefactor(
     stm.set_allowed_interaction_types([InteractionTypes.EM])
     graph_interaction_settings_groups = stm.prepare_graphs()
 
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
+    result = stm.find_solutions(graph_interaction_settings_groups)
 
-    for solution in solutions:
+    for solution in result.solutions:
         in_edge = [
             k
             for k, v in solution.edge_props.items()
@@ -90,7 +90,7 @@ def test_parity_prefactor(
         assert relative_parity_prefactor == prefactor
 
     amp_gen = HelicityAmplitudeGenerator()
-    amp_gen.generate(solutions)
+    amp_gen.generate(result.solutions)
     amp_dict = amp_gen.helicity_amplitudes
 
     prefactor1 = extract_prefactor(amp_dict, related_component_names[0])

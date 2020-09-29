@@ -6,6 +6,7 @@ of the `expertsystem`.
 
 import logging
 from copy import deepcopy
+from enum import Enum, auto
 from multiprocessing import Pool
 from typing import (
     Dict,
@@ -33,9 +34,12 @@ from expertsystem.state.combinatorics import (
     initialize_graph,
 )
 from expertsystem.state.propagation import (
-    FullPropagator,
-    InteractionNodeSettings,
+    CSPSolver,
+    EdgeSettings,
+    GraphSettings,
     InteractionTypes,
+    NodeSettings,
+    Result,
 )
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
@@ -57,15 +61,20 @@ from ._system_control import (
     GammaCheck,
     GraphSettingsGroups,
     LeptonCheck,
-    NodeSettings,
-    SolutionMapping,
-    ViolatedLaws,
     _InteractionDeterminationFunctorInterface,
-    analyse_solution_failure,
-    create_interaction_setting_groups,
     filter_interaction_types,
+    group_by_strength,
     remove_duplicate_solutions,
 )
+
+
+class SolvingMode(Enum):
+    """Types of modes for solving."""
+
+    Fast = auto()
+    """find "likeliest" solutions only"""
+    Full = auto()
+    """find all possible solutions"""
 
 
 class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
@@ -78,12 +87,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         particles: ParticleCollection = ParticleCollection(),
         allowed_intermediate_particles: Optional[List[str]] = None,
         interaction_type_settings: Dict[
-            InteractionTypes, InteractionNodeSettings
+            InteractionTypes, Tuple[EdgeSettings, NodeSettings]
         ] = None,
         formalism_type: str = "helicity",
         topology_building: str = "isobar",
         number_of_threads: int = 4,
-        propagation_mode: str = "fast",
+        propagation_mode: SolvingMode = SolvingMode.Fast,
         reload_pdg: bool = False,
     ) -> None:
         if interaction_type_settings is None:
@@ -206,12 +215,17 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def prepare_graphs(self) -> GraphSettingsGroups:
         topology_graphs = self._build_topologies()
         seed_graphs = self._create_seed_graphs(topology_graphs)
-        graph_node_setting_pairs = self._determine_node_settings(seed_graphs)
+        graph_setting_pairs = []
+        for seed_graph in seed_graphs:
+            graph_setting_pairs.extend(
+                [
+                    (seed_graph, x)
+                    for x in self._determine_graph_settings(seed_graph)
+                ]
+            )
         # create groups of settings ordered by "probability"
-        graph_settings_groups = create_interaction_setting_groups(
-            graph_node_setting_pairs
-        )
-        self._convert_edges_to_dict(graph_node_setting_pairs)
+        graph_settings_groups = group_by_strength(graph_setting_pairs)
+        self._convert_edges_to_dict(graph_setting_pairs)
         return graph_settings_groups
 
     def _build_topologies(self) -> List[Topology]:
@@ -247,7 +261,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def _convert_edges_to_dict(
         instance: Union[
             List[StateTransitionGraph[ParticleWithSpin]],
-            List[Tuple[StateTransitionGraph, NodeSettings]],
+            List[Tuple[StateTransitionGraph, GraphSettings]],
             GraphSettingsGroups,
         ],
     ) -> None:
@@ -274,67 +288,73 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             for graphs in graph_settings_groups.values():
                 convert_edges_in_graph([g for g, _ in graphs])
 
-    def _determine_node_settings(
-        self, graphs: List[StateTransitionGraph[ParticleWithSpin]]
-    ) -> List[Tuple[StateTransitionGraph, NodeSettings]]:
+    def _determine_graph_settings(
+        self, graph: StateTransitionGraph[ParticleWithSpin]
+    ) -> List[GraphSettings]:
         # pylint: disable=too-many-locals
-        graph_node_setting_pairs = []
-        for instance in graphs:
-            final_state_edges = instance.get_final_state_edges()
-            initial_state_edges = instance.get_initial_state_edges()
-            node_settings: NodeSettings = {}
-            for node_id in instance.nodes:
-                node_int_types: List[InteractionTypes] = []
-                out_edge_ids = instance.get_edges_outgoing_from_node(node_id)
-                in_edge_ids = instance.get_edges_outgoing_from_node(node_id)
-                in_edge_props = [
-                    instance.edge_props[edge_id]
-                    for edge_id in [
-                        x for x in in_edge_ids if x in initial_state_edges
-                    ]
+        final_state_edges = graph.get_final_state_edges()
+        initial_state_edges = graph.get_initial_state_edges()
+        graph_settings: List[GraphSettings] = [GraphSettings({}, {})]
+
+        for node_id in graph.nodes:
+            interaction_types: List[InteractionTypes] = []
+            out_edge_ids = graph.get_edges_outgoing_from_node(node_id)
+            in_edge_ids = graph.get_edges_outgoing_from_node(node_id)
+            in_edge_props = [
+                graph.edge_props[edge_id]
+                for edge_id in [
+                    x for x in in_edge_ids if x in initial_state_edges
                 ]
-                out_edge_props = [
-                    instance.edge_props[edge_id]
-                    for edge_id in [
-                        x for x in out_edge_ids if x in final_state_edges
-                    ]
+            ]
+            out_edge_props = [
+                graph.edge_props[edge_id]
+                for edge_id in [
+                    x for x in out_edge_ids if x in final_state_edges
                 ]
-                node_props = {}
-                if node_id in instance.node_props:
-                    node_props = instance.node_props[node_id]
-                for int_det in self.interaction_determinators:
-                    determined_interactions = int_det.check(
-                        in_edge_props, out_edge_props, node_props
+            ]
+            node_props = {}
+            if node_id in graph.node_props:
+                node_props = graph.node_props[node_id]
+            for int_det in self.interaction_determinators:
+                determined_interactions = int_det.check(
+                    in_edge_props, out_edge_props, node_props
+                )
+                if interaction_types:
+                    interaction_types = list(
+                        set(determined_interactions) & set(interaction_types)
                     )
-                    if node_int_types:
-                        node_int_types = list(
-                            set(determined_interactions) & set(node_int_types)
-                        )
-                    else:
-                        node_int_types = determined_interactions
-                node_int_types = filter_interaction_types(
-                    node_int_types, self.allowed_interaction_types
-                )
-                logging.debug(
-                    "using %s interaction order for node: %s",
-                    str(node_int_types),
-                    str(node_id),
-                )
-                node_settings[node_id] = [
-                    deepcopy(self.interaction_type_settings[x])
-                    for x in node_int_types
-                ]
-            graph_node_setting_pairs.append((instance, node_settings))
-        return graph_node_setting_pairs
+                else:
+                    interaction_types = determined_interactions
+            interaction_types = filter_interaction_types(
+                interaction_types, self.allowed_interaction_types
+            )
+            logging.debug(
+                "using %s interaction order for node: %s",
+                str(interaction_types),
+                str(node_id),
+            )
+
+            temp_graph_settings: List[GraphSettings] = graph_settings
+            graph_settings = []
+            for temp_setting in temp_graph_settings:
+                for int_type in interaction_types:
+                    updated_setting = deepcopy(temp_setting)
+                    updated_setting.edge_settings[node_id] = deepcopy(
+                        self.interaction_type_settings[int_type][0]
+                    )
+                    updated_setting.node_settings[node_id] = deepcopy(
+                        self.interaction_type_settings[int_type][1]
+                    )
+                    graph_settings.append(updated_setting)
+
+        return graph_settings
 
     def find_solutions(
         self,
         graph_setting_groups: GraphSettingsGroups,
-    ) -> Tuple[
-        List[StateTransitionGraph], List[str]
-    ]:  # pylint: disable=too-many-locals
+    ) -> Result:  # pylint: disable=too-many-locals
         """Check for solutions for a specific set of interaction settings."""
-        results: SolutionMapping = {}
+        results: Dict[float, Result] = {}
         logging.info(
             "Number of interaction settings groups being processed: %d",
             len(graph_setting_groups),
@@ -349,9 +369,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             logging.info(f"{graph_setting_group} entries in this group")
             logging.info(f"running with {self.number_of_threads} threads...")
 
-            temp_results: List[
-                Tuple[List[StateTransitionGraph], ViolatedLaws]
-            ] = []
+            temp_results: List[Result] = []
             progress_bar = IncrementalBar(
                 "Propagating quantum numbers...", max=len(graph_setting_group)
             )
@@ -359,75 +377,61 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             if self.number_of_threads > 1:
                 with Pool(self.number_of_threads) as pool:
                     for result in pool.imap_unordered(
-                        self._propagate_quantum_numbers, graph_setting_group, 1
+                        self._solve, graph_setting_group, 1
                     ):
                         temp_results.append(result)
                         progress_bar.next()
             else:
                 for graph_setting_pair in graph_setting_group:
-                    temp_results.append(
-                        self._propagate_quantum_numbers(graph_setting_pair)
-                    )
+                    temp_results.append(self._solve(graph_setting_pair))
                     progress_bar.next()
             progress_bar.finish()
             logging.info("Finished!")
-            if strength not in results:
-                results[strength] = []
-            results[strength].extend(temp_results)
+            for temp_result in temp_results:
+                if strength not in results:
+                    results[strength] = temp_result
+                else:
+                    results[strength].extend(temp_result, True)
+            if (
+                results[strength].solutions
+                and self.propagation_mode == SolvingMode.Fast
+            ):
+                break
 
-        for key, value in results.items():
+        for key, result in results.items():
             logging.info(
                 f"number of solutions for strength ({key}) "
-                f"after qn propagation: {sum([len(x[0]) for x in value])}",
+                f"after qn propagation: {len(result.solutions)}",
             )
 
+        # merge strengths
+        final_result = Result([])
+        for temp_result in results.values():
+            final_result.extend(temp_result)
         # remove duplicate solutions, which only differ in the interaction qn S
-        results = remove_duplicate_solutions(
-            results, self.filter_remove_qns, self.filter_ignore_qns
+        final_solutions = remove_duplicate_solutions(
+            final_result.solutions,
+            self.filter_remove_qns,
+            self.filter_ignore_qns,
         )
 
-        node_non_satisfied_rules: List[ViolatedLaws] = []
-        solutions: List[StateTransitionGraph] = []
-        for item in results.values():
-            for (temp_solutions, non_satisfied_laws) in item:
-                solutions.extend(temp_solutions)
-                node_non_satisfied_rules.append(non_satisfied_laws)
-        logging.info(f"total number of found solutions: {len(solutions)}")
-        violated_laws = []
-        if len(solutions) == 0:
-            violated_laws = analyse_solution_failure(node_non_satisfied_rules)
-            logging.info(f"violated rules: {violated_laws}")
+        if final_solutions:
+            match_external_edges(final_solutions)
+        return Result(
+            final_solutions,
+            final_result.not_executed_rules,
+            final_result.violated_rules,
+        )
 
-        match_external_edges(solutions)
-        return (solutions, violated_laws)
-
-    def _propagate_quantum_numbers(
+    def _solve(
         self,
         state_graph_node_settings_pair: Tuple[
-            StateTransitionGraph, Dict[int, InteractionNodeSettings]
+            StateTransitionGraph, GraphSettings
         ],
-    ) -> Tuple[List[StateTransitionGraph], ViolatedLaws,]:
-        propagator = self._initialize_qn_propagator(
-            state_graph_node_settings_pair[0],
-            state_graph_node_settings_pair[1],
-        )
-        solutions = propagator.find_solutions()
-        return (solutions, propagator.get_non_satisfied_conservation_laws())
+    ) -> Result:
+        solver = CSPSolver(self.__allowed_intermediate_particles)
 
-    def _initialize_qn_propagator(
-        self,
-        state_graph: StateTransitionGraph,
-        node_settings: Dict[int, InteractionNodeSettings],
-    ) -> FullPropagator:
-        propagator = FullPropagator(
-            state_graph,
-            self.__allowed_intermediate_particles,
-            self.propagation_mode,
-        )
-        for node_id, interaction_settings in node_settings.items():
-            propagator.assign_settings_to_node(node_id, interaction_settings)
-
-        return propagator
+        return solver.find_solutions(*state_graph_node_settings_pair)
 
     def write_amplitude_model(self, solutions: list, output_file: str) -> None:
         """Generate an amplitude model from the solutions.

@@ -24,8 +24,8 @@ def jpsi_to_gamma_pi_pi_canonical_solutions():
     )
     stm.set_allowed_interaction_types([InteractionTypes.EM])
     graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
-    return solutions
+    result = stm.find_solutions(graph_interaction_settings_groups)
+    return result.solutions
 
 
 @pytest.fixture(scope="module")
@@ -39,8 +39,8 @@ def jpsi_to_gamma_pi_pi_helicity_solutions():
         [InteractionTypes.Strong, InteractionTypes.EM]
     )
     graph_interaction_settings_groups = stm.prepare_graphs()
-    solutions, _ = stm.find_solutions(graph_interaction_settings_groups)
-    return solutions
+    result = stm.find_solutions(graph_interaction_settings_groups)
+    return result.solutions
 
 
 @pytest.fixture(scope="module")
