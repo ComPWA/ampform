@@ -1,4 +1,5 @@
-.. cSpell:ignore aquirdturtle, docnb, htmlcov, ijmbarr, labextension, pylintrc, ryantam, serverextension, testenv
+.. cSpell:ignore aquirdturtle docnb htmlcov ijmbarr labextension pylintrc
+.. cSpell:ignore ryantam serverextension testenv
 
 How to contribute?
 ==================

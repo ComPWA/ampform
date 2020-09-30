@@ -47,10 +47,10 @@ Welcome to the PWA Expert System!
 
 The two purposes of the Partial Wave Analysis Expert System are to:
 
-1. validate a particle reaction, based on given information. E.g.: Can a :math:`\pi^0`
-   decay into 1, 2, 3 :math:`\gamma` particles?
+1. validate a particle reaction, based on given information. E.g.: Can a
+   :math:`\pi^0` decay into 1, 2, 3 :math:`\gamma` particles?
 2. create partial wave analysis amplitude models, based on basic information of
-   a reaction, for instance, an amplitude model for :math:`J/\psi →
+   a reaction, for instance, an amplitude model for :math:`J/\psi \rightarrow
    \gamma\pi^0\pi^0` in the helicity or canonical formalism.
 
 The user only has to provide a basic information of the particle reaction, such
@@ -84,7 +84,7 @@ transition from one state to another.
   transition of this specific step. Most importantly, a node contains a
   collection of conservation rules that have to be satisfied. An interaction
   node has :math:`M` ingoing lines and :math:`N` outgoing lines, where
-  :math:`M,N \in \mathbb{Z}`, :math:`M > 0, 𝑁 > 0`.
+  :math:`M,N \in \mathbb{Z}`, :math:`M > 0, N > 0`.
 
 2. Conservation Rules
 ~~~~~~~~~~~~~~~~~~~~~
