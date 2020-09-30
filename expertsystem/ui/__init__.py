@@ -29,17 +29,17 @@ from expertsystem.data import (
     ParticleWithSpin,
 )
 from expertsystem.nested_dicts import InteractionQuantumNumberNames
-from expertsystem.state.combinatorics import (
-    StateDefinition,
-    initialize_graph,
-)
-from expertsystem.state.propagation import (
+from expertsystem.solving import (
     CSPSolver,
     EdgeSettings,
     GraphSettings,
     InteractionTypes,
     NodeSettings,
     Result,
+)
+from expertsystem.state.combinatorics import (
+    StateDefinition,
+    initialize_graph,
 )
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
@@ -92,7 +92,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         formalism_type: str = "helicity",
         topology_building: str = "isobar",
         number_of_threads: int = 4,
-        propagation_mode: SolvingMode = SolvingMode.Fast,
+        solving_mode: SolvingMode = SolvingMode.Fast,
         reload_pdg: bool = False,
     ) -> None:
         if interaction_type_settings is None:
@@ -110,7 +110,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.__formalism_type = str(formalism_type)
         self.__particles = particles
         self.number_of_threads = int(number_of_threads)
-        self.propagation_mode = str(propagation_mode)
+        self.solving_mode = str(solving_mode)
         self.initial_state = initial_state
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
@@ -394,14 +394,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     results[strength].extend(temp_result, True)
             if (
                 results[strength].solutions
-                and self.propagation_mode == SolvingMode.Fast
+                and self.solving_mode == SolvingMode.Fast
             ):
                 break
 
         for key, result in results.items():
             logging.info(
                 f"number of solutions for strength ({key}) "
-                f"after qn propagation: {len(result.solutions)}",
+                f"after qn solving: {len(result.solutions)}",
             )
 
         # merge strengths

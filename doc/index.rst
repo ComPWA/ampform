@@ -98,7 +98,7 @@ whether edges pass or not.
 3. Solvers
 ~~~~~~~~~~
 
-The propagation of the correct state properties through the graph is done by
+The determination of the correct state properties in the graph is done by
 solvers. New properties are set for intermediate edges and interaction nodes
 and their validity is checked with the conservation rules.
 

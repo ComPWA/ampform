@@ -118,7 +118,7 @@ class EdgeQuantumNumbers:  # pylint: disable=too-many-instance-attributes
     """Definition of quantum numbers for edges.
 
     This class defines the types that are used in the
-    `~.state.conservation_rules`, for instance in
+    `~.solving.conservation_rules`, for instance in
     `.additive_quantum_number_rule`. You can also create `dataclasses` with data
     members that are typed as the data members of `EdgeQuantumNumbers` (see for
     example `.HelicityParityEdgeInput`) and use them in conservation rules that

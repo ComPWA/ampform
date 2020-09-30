@@ -292,7 +292,7 @@ def filter_particles(
 
     .. note::
         This function currently also converts back to `dict` structures, which
-        are still used internally by the propagation code.
+        are still used internally by the solver code.
     """
     mod_allowed_particle_list = []
     if len(allowed_particle_names) == 0:

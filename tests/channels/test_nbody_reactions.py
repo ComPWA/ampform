@@ -3,7 +3,7 @@ from typing import Dict, Set, Tuple
 
 import pytest
 
-from expertsystem.state.propagation import Rule
+from expertsystem.solving import Rule
 from expertsystem.ui import (
     InteractionTypes,
     SolvingMode,
@@ -101,7 +101,7 @@ def test_general_reaction(test_input, expected):
         topology_building="nbody"
         if len(test_input[0]) > 1 or len(test_input[1]) > 2
         else "isobar",
-        propagation_mode=SolvingMode.Full,
+        solving_mode=SolvingMode.Full,
         number_of_threads=1,
     )
 
@@ -142,7 +142,7 @@ def test_em_reactions(test_input, expected):
         topology_building="nbody"
         if len(test_input[0]) > 1 or len(test_input[1]) > 2
         else "isobar",
-        propagation_mode=SolvingMode.Full,
+        solving_mode=SolvingMode.Full,
         number_of_threads=1,
     )
 
@@ -173,7 +173,7 @@ def test_strong_reactions(test_input, expected):
         topology_building="nbody"
         if len(test_input[0]) > 1 or len(test_input[1]) > 2
         else "isobar",
-        propagation_mode=SolvingMode.Full,
+        solving_mode=SolvingMode.Full,
         number_of_threads=1,
     )
 

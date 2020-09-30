@@ -12,7 +12,12 @@ from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
     StateQuantumNumberNames,
 )
-from expertsystem.state.conservation_rules import (
+from expertsystem.solving import (
+    EdgeSettings,
+    InteractionTypes,
+    NodeSettings,
+)
+from expertsystem.solving.conservation_rules import (
     BaryonNumberConservation,
     CParityConservation,
     ChargeConservation,
@@ -31,11 +36,6 @@ from expertsystem.state.conservation_rules import (
     SpinConservation,
     StrangenessConservation,
     TauLNConservation,
-)
-from expertsystem.state.propagation import (
-    EdgeSettings,
-    InteractionTypes,
-    NodeSettings,
 )
 from expertsystem.state.properties import create_spin_domain
 

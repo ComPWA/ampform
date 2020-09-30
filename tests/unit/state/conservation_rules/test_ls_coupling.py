@@ -6,7 +6,7 @@ from expertsystem.nested_dicts import (
     Labels,
     _SpinQNConverter,
 )
-from expertsystem.state.conservation_rules import ParityConservationHelicity
+from expertsystem.solving.conservation_rules import ParityConservationHelicity
 from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,

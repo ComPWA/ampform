@@ -36,7 +36,7 @@ from expertsystem.nested_dicts import (
     StateQuantumNumberNames,
     edge_qn_to_enum,
 )
-from expertsystem.state.conservation_rules import Rule
+from expertsystem.solving.conservation_rules import Rule
 from expertsystem.state.properties import (
     get_interaction_property,
     get_particle_candidates_for_state,

@@ -1,7 +1,7 @@
 """Collection of quantum number conservation rules for particle reactions.
 
 This module is part of the core of the `expertsystem`. It is the place where
-the 'expert' defines the rules that govern `.propagation` of quantum numbers.
+the 'expert' defines the rules that verify quantum numbers of the reaction.
 The module therefore is strongly typed (both for the reader of the code and for
 type checking with :doc:`mypy <mypy:index>`). An example is
 `.HelicityParityEdgeInput`, which has been defined to provide type checks on

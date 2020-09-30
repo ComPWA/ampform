@@ -21,13 +21,13 @@ from expertsystem.nested_dicts import (
     ParticlePropertyNames,
     StateQuantumNumberNames,
 )
-from expertsystem.state.conservation_rules import Rule
-from expertsystem.state.propagation import (
+from expertsystem.solving import (
     EdgeSettings,
     GraphSettings,
     InteractionTypes,
     NodeSettings,
 )
+from expertsystem.solving.conservation_rules import Rule
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
     get_interaction_property,

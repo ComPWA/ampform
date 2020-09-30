@@ -7,7 +7,7 @@ from expertsystem.data import (
     NodeQuantumNumbers,
     Parity,
 )
-from expertsystem.state.conservation_rules import (
+from expertsystem.solving.conservation_rules import (
     GParityConservation,
     GParityEdgeInput,
     GParityNodeInput,

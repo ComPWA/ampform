@@ -1,7 +1,7 @@
 import pytest
 
 from expertsystem.data import EdgeQuantumNumbers
-from expertsystem.state.conservation_rules import (
+from expertsystem.solving.conservation_rules import (
     MassConservation,
     MassEdgeInput,
 )
