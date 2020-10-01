@@ -6,16 +6,16 @@ This module will be phased out through `#254
 
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import (
-    Any,
-    Dict,
-)
+from typing import Any, Dict, List
 
+import expertsystem.io as io
 from expertsystem.data import (
     EdgeQuantumNumbers,
     NodeQuantumNumbers,
+    ParticleWithSpin,
     Spin,
 )
+from expertsystem.topology import StateTransitionGraph
 
 
 class Labels(Enum):
@@ -248,3 +248,35 @@ edge_qn_to_enum = {
     NodeQuantumNumbers.s_projection.__name__: InteractionQuantumNumberNames.S,
     NodeQuantumNumbers.parity_prefactor.__name__: InteractionQuantumNumberNames.ParityPrefactor,
 }
+
+
+def _convert_edges_to_dict(
+    instance: List[StateTransitionGraph[ParticleWithSpin]],
+) -> None:
+    # https://github.com/ComPWA/expertsystem/issues/254
+    def convert_edges_in_graph(
+        graphs: List[StateTransitionGraph[ParticleWithSpin]],
+    ) -> None:
+        for graph in graphs:
+            for edge_id, edge_property in graph.edge_props.items():
+                if not isinstance(edge_property, dict):
+                    graph.edge_props[
+                        edge_id
+                    ] = _particle_with_spin_projection_to_dict(  # type: ignore
+                        edge_property
+                    )
+
+    if isinstance(instance, list) and len(instance) > 0:
+        if isinstance(instance[0], StateTransitionGraph):
+            convert_edges_in_graph(instance)
+
+
+def _particle_with_spin_projection_to_dict(
+    instance: ParticleWithSpin,
+) -> dict:
+    particle, spin_projection = instance
+    output = io.xml.object_to_dict(particle)
+    for item in output["QuantumNumber"]:
+        if item["Type"] == "Spin":
+            item["Projection"] = spin_projection
+    return output

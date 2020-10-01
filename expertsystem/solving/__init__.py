@@ -25,7 +25,7 @@ from constraint import (
     Variable,
 )
 
-from expertsystem.data import Parity, Spin
+from expertsystem.data import Parity, ParticleWithSpin, Spin
 from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
     Labels,
@@ -34,6 +34,7 @@ from expertsystem.nested_dicts import (
     QNClassConverterMapping,
     QNNameClassMapping,
     StateQuantumNumberNames,
+    _convert_edges_to_dict,
     edge_qn_to_enum,
 )
 from expertsystem.solving.conservation_rules import Rule
@@ -159,7 +160,9 @@ class Solver(ABC):
 
     @abstractmethod
     def find_solutions(
-        self, graph: StateTransitionGraph[dict], graph_settings: GraphSettings
+        self,
+        graph: StateTransitionGraph[ParticleWithSpin],
+        graph_settings: GraphSettings,
     ) -> Result:
         """Find solutions for the given input.
 
@@ -577,9 +580,13 @@ class CSPSolver(Solver):
         self.__allowed_intermediate_particles = allowed_intermediate_particles
 
     def find_solutions(
-        self, graph: StateTransitionGraph[dict], graph_settings: GraphSettings
+        self,
+        graph: StateTransitionGraph[ParticleWithSpin],
+        graph_settings: GraphSettings,
     ) -> Result:
-        csp_result = self.__run_csp(graph, graph_settings)
+        _convert_edges_to_dict([graph])
+        dict_graph: StateTransitionGraph[dict] = graph  # type: ignore
+        csp_result = self.__run_csp(dict_graph, graph_settings)
 
         # insert particle instances
         if self.__constraints:
@@ -587,7 +594,7 @@ class CSPSolver(Solver):
                 csp_result.solutions, self.__allowed_intermediate_particles
             )
         else:
-            full_particle_graphs = [graph]
+            full_particle_graphs = [dict_graph]
 
         if full_particle_graphs and csp_result.not_executed_rules:
             # rerun solver on these graphs using not executed rules

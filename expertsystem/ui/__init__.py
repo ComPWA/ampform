@@ -225,7 +225,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
         # create groups of settings ordered by "probability"
         graph_settings_groups = group_by_strength(graph_setting_pairs)
-        self._convert_edges_to_dict(graph_setting_pairs)
         return graph_settings_groups
 
     def _build_topologies(self) -> List[Topology]:
@@ -256,37 +255,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         logging.info(f"initialized {len(init_graphs)} graphs!")
         return init_graphs
-
-    @staticmethod
-    def _convert_edges_to_dict(
-        instance: Union[
-            List[StateTransitionGraph[ParticleWithSpin]],
-            List[Tuple[StateTransitionGraph, GraphSettings]],
-            GraphSettingsGroups,
-        ],
-    ) -> None:
-        # https://github.com/ComPWA/expertsystem/issues/254
-        def convert_edges_in_graph(
-            graphs: List[StateTransitionGraph[ParticleWithSpin]],
-        ) -> None:
-            for graph in graphs:
-                for edge_id, edge_property in graph.edge_props.items():
-                    if not isinstance(edge_property, dict):
-                        graph.edge_props[
-                            edge_id
-                        ] = _particle_with_spin_projection_to_dict(  # type: ignore
-                            edge_property
-                        )
-
-        if isinstance(instance, list) and len(instance) > 0:
-            if isinstance(instance[0], StateTransitionGraph):
-                convert_edges_in_graph(instance)  # type: ignore
-            elif isinstance(instance[0], tuple):
-                convert_edges_in_graph([g for g, _ in instance])  # type: ignore
-        elif isinstance(instance, dict):
-            graph_settings_groups = instance
-            for graphs in graph_settings_groups.values():
-                convert_edges_in_graph([g for g, _ in graphs])
 
     def _determine_graph_settings(
         self, graph: StateTransitionGraph[ParticleWithSpin]
@@ -426,7 +394,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def _solve(
         self,
         state_graph_node_settings_pair: Tuple[
-            StateTransitionGraph, GraphSettings
+            StateTransitionGraph[ParticleWithSpin], GraphSettings
         ],
     ) -> Result:
         solver = CSPSolver(self.__allowed_intermediate_particles)
@@ -460,17 +428,6 @@ def load_default_particles() -> ParticleCollection:
     particles.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
-
-
-def _particle_with_spin_projection_to_dict(
-    instance: ParticleWithSpin,
-) -> dict:
-    particle, spin_projection = instance
-    output = io.xml.object_to_dict(particle)
-    for item in output["QuantumNumber"]:
-        if item["Type"] == "Spin":
-            item["Projection"] = spin_projection
-    return output
 
 
 def get_intermediate_state_names(

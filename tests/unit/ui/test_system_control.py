@@ -7,6 +7,7 @@ import pytest
 from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
     Labels,
+    _convert_edges_to_dict,
 )
 from expertsystem.state.properties import (
     CompareGraphElementPropertiesFunctor,
@@ -275,7 +276,7 @@ def test_edge_swap(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    stm._convert_edges_to_dict(init_graphs)
+    _convert_edges_to_dict(init_graphs)
     init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
 
     for graph in init_graphs_dict:
@@ -322,7 +323,7 @@ def test_match_external_edges(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    stm._convert_edges_to_dict(init_graphs)
+    _convert_edges_to_dict(init_graphs)
     init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
 
     match_external_edges(init_graphs)
@@ -400,7 +401,7 @@ def test_external_edge_identical_particle_combinatorics(
     topology_graphs = stm._build_topologies()
 
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    stm._convert_edges_to_dict(init_graphs)
+    _convert_edges_to_dict(init_graphs)
     init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
 
     match_external_edges(init_graphs)
