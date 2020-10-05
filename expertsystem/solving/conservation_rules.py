@@ -47,21 +47,24 @@ class Rule:
     instances. The `__call__` method contains actual rule logic and has to be
     overwritten.
 
-    For additive quantum numbers, the decorator `additive_quantum_number_rule`
-    can simplify the constrution of the appropriate `Rule`.
-
-    Besides the rule logic itself, a `Rule` also has the responsibility of
-    stating its run conditions. These run conditions **MUST** be stated by the
-    type annotations of the `.__call__` function.
+    .. warning::
+        Besides the rule logic itself, a `Rule` also has the responsibility of
+        stating its run conditions. These run conditions **must** be stated by
+        the type annotations of its `.__call__` method. The type annotations
+        therefore are not just there for *static* type checking: they also
+        carry more information about the rule that is extracted *dynamically*
+        by the `.solving` module.
 
     Generally, the conditions can be separated into two categories:
 
     * variable conditions
     * toplogical conditions
 
-    Note: currently, only variable conditions are being used. Topological
-    conditions could be created in the form of `~typing.Tuple` instead of
-    `~typing.List`.
+    Currently, only variable conditions are being used. Topological conditions
+    could be created in the form of `~typing.Tuple` instead of `~typing.List`.
+
+    For additive quantum numbers, the decorator `additive_quantum_number_rule`
+    can simplify the constrution of the appropriate `Rule`.
     """
 
     def __repr__(self) -> str:
