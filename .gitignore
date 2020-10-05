@@ -6,6 +6,7 @@
 *.yml
 !.github/*.yml
 !.github/*/*.yml
+!.gitpod.yml
 !.pre-commit-config.yaml
 !.readthedocs.yml
 !codecov.yml

@@ -14,6 +14,9 @@ Welcome to the PWA Expert System!
       .. image:: https://img.shields.io/badge/License-GPLv3+-blue.svg
         :alt: GPLv3+ license
         :target: https://www.gnu.org/licenses/gpl-3.0-standalone.html
+      .. image:: https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod
+        :alt: GitPod
+        :target: https://gitpod.io/#https://github.com/ComPWA/expertsystem
 
   * - .. image:: https://badge.fury.io/py/expertsystem.svg
         :alt: PyPI package
