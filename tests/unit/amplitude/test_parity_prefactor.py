@@ -51,7 +51,7 @@ class Input(NamedTuple):
                 "J/psi(1S)_1_to_pi0_0+rho(770)0_-1;rho(770)0_-1_to_pi+_0+pi-_0;",
             ),
             -1.0,
-        ),  # pylint: disable=too-many-locals
+        ),
     ],
 )
 def test_parity_prefactor(
@@ -103,34 +103,22 @@ def test_parity_prefactor(
     assert prefactor1 == relative_parity_prefactor * prefactor2
 
 
-def extract_prefactor(amplitude_dict, coefficient_amplitude_name):
-    dict_element_stack = [amplitude_dict]
-
-    while dict_element_stack:
-        element = dict_element_stack.pop()
-
-        if (
-            "Component" in element
-            and element["Component"] == coefficient_amplitude_name
-        ):
-            # we found what we are looking for, extract the prefactor
-            if "PreFactor" in element:
-                return element["PreFactor"]["Real"]
+def extract_prefactor(node, coefficient_amplitude_name):
+    if hasattr(node, "component"):
+        if node.component == coefficient_amplitude_name:
+            if hasattr(node, "prefactor") and node.prefactor is not None:
+                return node.prefactor
             return 1.0
-
-        if "Intensity" in element:
-            sub_intensity = element["Intensity"]
-            if isinstance(sub_intensity, dict):
-                dict_element_stack.append(sub_intensity)
-            elif isinstance(sub_intensity, list):
-                for sub_intensity_dict in sub_intensity:
-                    dict_element_stack.append(sub_intensity_dict)
-        elif "Amplitude" in element:
-            sub_amplitude = element["Amplitude"]
-            if isinstance(sub_amplitude, dict):
-                dict_element_stack.append(sub_amplitude)
-            elif isinstance(sub_amplitude, list):
-                for sub_amplitude_dict in sub_amplitude:
-                    dict_element_stack.append(sub_amplitude_dict)
-
+    if hasattr(node, "intensity"):
+        return extract_prefactor(node.intensity, coefficient_amplitude_name)
+    if hasattr(node, "intensities"):
+        for amp in node.intensities:
+            prefactor = extract_prefactor(amp, coefficient_amplitude_name)
+            if prefactor is not None:
+                return prefactor
+    if hasattr(node, "amplitudes"):
+        for amp in node.amplitudes:
+            prefactor = extract_prefactor(amp, coefficient_amplitude_name)
+            if prefactor is not None:
+                return prefactor
     return None

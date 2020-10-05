@@ -5,7 +5,7 @@
   "description": "Useful in combination with a GUI that can use this schema to validate wile reworking it",
   "type": "object",
   "required": ["ParticleList"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "ParticleList": {
       "type": "object",

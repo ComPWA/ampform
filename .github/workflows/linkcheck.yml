@@ -12,8 +12,9 @@ on:
       - ready_for_review
 
 jobs:
-  style:
+  check_links:
     name: Check external links
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2

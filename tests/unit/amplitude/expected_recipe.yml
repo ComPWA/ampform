@@ -28,6 +28,10 @@ Parameters:
   - Name: &par5 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
+  - Name: MesonRadius_J/psi(1S)
+    Type: MesonRadius
+    Value: 1.0
+    Fix: true
 
 Intensity:
   Class: StrengthIntensity
@@ -351,6 +355,7 @@ ParticleList:
   J/psi(1S):
     PID: 443
     Mass: 3.0969
+    Width: 9.29e-05
     QuantumNumbers:
       Spin: 1
       Charge: 0

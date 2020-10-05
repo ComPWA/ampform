@@ -1,4 +1,4 @@
-# cspell:ignore markdownlint, unittests
+# cspell:ignore unittests
 
 name: CI
 
@@ -16,6 +16,7 @@ on:
 jobs:
   codecov:
     name: Unit tests + coverage
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -40,6 +41,7 @@ jobs:
 
   pytest:
     name: Unit tests
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -67,6 +69,7 @@ jobs:
 
   documentation:
     name: Build documentation and run notebooks
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -90,6 +93,7 @@ jobs:
 
   style:
     name: Style checks
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2

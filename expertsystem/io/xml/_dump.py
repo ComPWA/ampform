@@ -17,6 +17,23 @@ from typing import (
     Union,
 )
 
+from expertsystem.amplitude.model import (
+    AmplitudeModel,
+    CanonicalDecay,
+    CoefficientAmplitude,
+    CoherentIntensity,
+    Dynamics,
+    FitParameter,
+    HelicityDecay,
+    IncoherentIntensity,
+    Kinematics,
+    KinematicsType,
+    Node,
+    NonDynamic,
+    NormalizedIntensity,
+    SequentialAmplitude,
+    StrengthIntensity,
+)
 from expertsystem.data import (
     Parity,
     Particle,
@@ -25,14 +42,35 @@ from expertsystem.data import (
 )
 
 
+def from_amplitude_model(model: AmplitudeModel) -> dict:
+    particle_list: List[dict] = list()
+    for particle in model.particles.values():
+        particle_dict = from_particle(particle)
+        dynamics = model.dynamics.get(particle.name, None)
+        if dynamics is not None:
+            dynamics_dict = _dynamics_to_dict(dynamics)
+            new_decay_info = {
+                "DecayInfo": {
+                    **dynamics_dict,
+                    **particle_dict.get("DecayInfo", {}),
+                }
+            }
+            particle_dict.update(new_decay_info)
+        particle_list.append(particle_dict)
+    return {
+        "ParticleList": {"Particle": particle_list},
+        **_kinematics_to_dict(model.kinematics),
+        "Intensity": _intensity_to_dict(model.intensity),
+    }
+
+
 def from_particle_collection(particles: ParticleCollection) -> dict:
-    output = dict()
-    for name, particle in particles.items():
-        output[name] = from_particle_state(particle)
-    return output
+    return {
+        name: from_particle(particle) for name, particle in particles.items()
+    }
 
 
-def from_particle_state(instance: Particle) -> dict:
+def from_particle(instance: Particle) -> dict:
     def create_parameter_dict(
         value: float, type_name: str, state: Particle
     ) -> dict:
@@ -108,3 +146,162 @@ def _qn_to_dict(
         if instance.magnitude != 0:
             output["Projection"] = instance.projection
     return output
+
+
+def _parameter_to_dict(parameter: FitParameter) -> dict:
+    name_prefix = parameter.name.split("_")[0]
+    name_prefix = name_prefix.lower()
+    parameter_type = ""
+    if name_prefix == "magnitude":
+        parameter_type = "Magnitude"
+    elif name_prefix == "phase":
+        parameter_type = "Phase"
+    elif name_prefix == "strength":
+        parameter_type = "Strength"
+    else:
+        NotImplementedError(f"Cannot determine Type of {parameter}")
+    return {
+        "Class": "Double",
+        "Type": parameter_type,
+        "Name": parameter.name,
+        "Value": parameter.value,
+        "Fix": parameter.is_fixed,
+    }
+
+
+def _kinematics_to_dict(kin: Kinematics) -> dict:
+    if kin.kinematics_type == KinematicsType.Helicity:
+        kinematics_type = "HelicityKinematics"
+    else:
+        raise NotImplementedError("No conversion for", kin.kinematics_type)
+    return {
+        kinematics_type: {
+            "InitialState": {
+                "Particle": [
+                    {"Name": p.name, "Id": i, "PositionIndex": n}
+                    for n, (i, p) in enumerate(kin.initial_state.items())
+                ]
+            },
+            "FinalState": {
+                "Particle": [
+                    {"Name": p.name, "Id": i, "PositionIndex": n}
+                    for n, (i, p) in enumerate(kin.final_state.items())
+                ],
+            },
+        }
+    }
+
+
+def _dynamics_to_dict(dynamics: Dynamics) -> dict:
+    if isinstance(dynamics, NonDynamic):
+        return {"Type": "nonResonant"}
+    raise NotImplementedError("No conversion for", dynamics)
+
+
+def _intensity_to_dict(  # pylint: disable=too-many-return-statements
+    node: Node,
+) -> dict:
+    if isinstance(node, StrengthIntensity):
+        return {
+            "Class": "StrengthIntensity",
+            "Component": node.component,
+            "Parameter": _parameter_to_dict(node.strength),
+            "Intensity": _intensity_to_dict(node.intensity),
+        }
+    if isinstance(node, NormalizedIntensity):
+        return {
+            "Class": "NormalizedIntensity",
+            "Intensity": _intensity_to_dict(node.intensity),
+        }
+    if isinstance(node, IncoherentIntensity):
+        return {
+            "Class": "IncoherentIntensity",
+            "Intensity": [
+                _intensity_to_dict(intensity) for intensity in node.intensities
+            ],
+        }
+    if isinstance(node, CoherentIntensity):
+        return {
+            "Class": "CoherentIntensity",
+            "Component": node.component,
+            "Amplitude": [
+                _intensity_to_dict(intensity) for intensity in node.amplitudes
+            ],
+        }
+    if isinstance(node, CoefficientAmplitude):
+        parameters = [
+            _parameter_to_dict(node.magnitude),
+            _parameter_to_dict(node.phase),
+        ]
+        output_dict = {
+            "Class": "CoefficientAmplitude",
+            "Component": node.component,
+            "Parameter": parameters,
+            "Amplitude": _intensity_to_dict(node.amplitude),
+        }
+        if node.prefactor is not None:
+            output_dict["PreFactor"] = {"Real": node.prefactor}
+        return output_dict
+    if isinstance(node, SequentialAmplitude):
+        return {
+            "Class": "SequentialAmplitude",
+            "Amplitude": [
+                _intensity_to_dict(intensity) for intensity in node.amplitudes
+            ],
+        }
+    if isinstance(node, (HelicityDecay, CanonicalDecay)):
+        output_dict = {
+            "Class": "HelicityDecay",
+            "DecayParticle": {
+                "Name": node.decaying_particle.particle.name,
+                "Helicity": node.decaying_particle.helicity,
+            },
+            "DecayProducts": {
+                "Particle": [
+                    {
+                        "Name": decay_product.particle.name,
+                        "FinalState": " ".join(
+                            [str(i) for i in decay_product.final_state_ids]
+                        ),
+                        "Helicity": decay_product.helicity,
+                    }
+                    for decay_product in node.decay_products
+                ]
+            },
+        }
+        if node.recoil_system is not None:
+            recoil_system = {
+                "RecoilFinalState": node.recoil_system.recoil_final_state
+            }
+            if node.recoil_system.parent_recoil_final_state is not None:
+                recoil_system[
+                    "ParentRecoilFinalState"
+                ] = node.recoil_system.parent_recoil_final_state
+            output_dict["RecoilSystem"] = recoil_system
+        if isinstance(node, CanonicalDecay):
+            output_dict["CanonicalSum"] = {
+                "L": int(node.l_s.j_1),
+                "S": int(node.l_s.j_2),
+                "ClebschGordan": [
+                    {
+                        "Type": "LS",
+                        "@j1": node.l_s.j_1,
+                        "@m1": node.l_s.m_1,
+                        "@j2": node.l_s.j_2,
+                        "@m2": node.l_s.m_2,
+                        "J": node.l_s.J,
+                        "M": node.l_s.M,
+                    },
+                    {
+                        "Type": "s2s3",
+                        "@j1": node.s2s3.j_1,
+                        "@m1": node.s2s3.m_1,
+                        "@j2": node.s2s3.j_2,
+                        "@m2": node.s2s3.m_2,
+                        "J": node.s2s3.J,
+                        "M": node.s2s3.M,
+                    },
+                ],
+            }
+        return output_dict
+    raise NotImplementedError("No conversion defined for", node)

@@ -5,6 +5,7 @@ import pytest
 
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.ui import (
     InteractionTypes,
     StateTransitionManager,
@@ -46,7 +47,7 @@ def jpsi_to_gamma_pi_pi_helicity_solutions():
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions,
-) -> dict:
+) -> AmplitudeModel:
     amplitude_generator = CanonicalAmplitudeGenerator()
     return amplitude_generator.generate(
         jpsi_to_gamma_pi_pi_canonical_solutions
@@ -56,6 +57,6 @@ def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions,
-) -> dict:
+) -> AmplitudeModel:
     amplitude_generator = HelicityAmplitudeGenerator()
     return amplitude_generator.generate(jpsi_to_gamma_pi_pi_helicity_solutions)

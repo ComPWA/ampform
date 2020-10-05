@@ -155,6 +155,7 @@ default_role = "py:obj"
 primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
+    ("py:class", "NoneType"),
     ("py:class", "StateTransitionGraph"),
     ("py:class", "a set-like object providing a view on D's items"),
     ("py:class", "a set-like object providing a view on D's keys"),

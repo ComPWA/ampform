@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from expertsystem import io
+from expertsystem.amplitude.model import AmplitudeModel
 
 
 SCRIPT_PATH = dirname(realpath(__file__))
@@ -14,7 +15,7 @@ SCRIPT_PATH = dirname(realpath(__file__))
 
 @pytest.fixture(scope="module")
 def imported_dict(
-    jpsi_to_gamma_pi_pi_helicity_amplitude_model: dict,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
 ):
     output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
     io.write(
@@ -44,7 +45,7 @@ def test_recipe_validation(expected_dict):
 
 
 def test_not_implemented_writer(
-    jpsi_to_gamma_pi_pi_helicity_amplitude_model,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
 ):
     with pytest.raises(NotImplementedError):
         io.write(
@@ -54,9 +55,10 @@ def test_not_implemented_writer(
 
 
 def test_create_recipe_dict(
-    jpsi_to_gamma_pi_pi_helicity_amplitude_model: dict,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
 ):
-    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model) == 3
+    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.particles) == 5
+    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.dynamics) == 1
 
 
 def test_particle_section(imported_dict):
@@ -90,10 +92,12 @@ def test_kinematics_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 5
+    assert len(parameter_list) == 6
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter
+        assert "Type" in parameter
+        assert parameter.get("Fix", True)
 
 
 def test_dynamics_section(imported_dict):
@@ -139,8 +143,8 @@ def test_expected_recipe_shape(imported_dict, expected_dict, section):
         imported_items = list(imported_section.values())
         expected_items = list(expected_section.values())
     else:
-        expected_items = list(expected_section)
-        imported_items = list(imported_section)
-    assert len(imported_items) == len(expected_items)
+        expected_items = sorted(expected_section, key=lambda p: p["Name"])
+        imported_items = sorted(imported_section, key=lambda p: p["Name"])
+    # assert len(imported_items) == len(expected_items)
     for imported, expected in zip(imported_items, expected_items):
         assert imported == expected

@@ -7,13 +7,16 @@ import pytest
 import yaml
 
 from expertsystem import io
+from expertsystem.amplitude.model import AmplitudeModel
 
 
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
 @pytest.fixture(scope="module")
-def imported_dict(jpsi_to_gamma_pi_pi_canonical_amplitude_model):
+def imported_dict(
+    jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
+):
     output_filename = "JPsiToGammaPi0Pi0_cano_recipe.yml"
     io.write(
         instance=jpsi_to_gamma_pi_pi_canonical_amplitude_model,
@@ -30,7 +33,7 @@ def equalize_dict(input_dict):
 
 
 def test_not_implemented_writer(
-    jpsi_to_gamma_pi_pi_canonical_amplitude_model,
+    jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
 ):
     with pytest.raises(NotImplementedError):
         io.write(
@@ -54,7 +57,7 @@ def test_particle_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 5
+    assert len(parameter_list) == 6
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter

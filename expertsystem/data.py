@@ -8,15 +8,12 @@ from typing import (
     Any,
     Callable,
     Dict,
-    ItemsView,
     Iterable,
     Iterator,
-    KeysView,
     NewType,
     Optional,
     Tuple,
     Union,
-    ValuesView,
 )
 
 
@@ -323,26 +320,25 @@ class ParticleCollection(abc.Mapping):
                 }
             )
 
-    def __getitem__(self, particle_name: str) -> Particle:
-        try:
-            return self.__particles[particle_name]
-        except KeyError:
-            error_message = (
-                f'No particle with name "{particle_name} in the database"'
-            )
-            candidate_names = {
-                name for name in self.__particles if particle_name in name
-            }
-            if candidate_names:
-                raise LookupError(
-                    error_message,
-                    "Did you mean one of these?",
-                    candidate_names,
-                )
-            raise LookupError(error_message)
-
     def __contains__(self, particle_name: object) -> bool:
         return particle_name in self.__particles
+
+    def __getitem__(self, particle_name: str) -> Particle:
+        if particle_name in self.__particles:
+            return self.__particles[particle_name]
+        error_message = (
+            f'No particle with name "{particle_name} in the database"'
+        )
+        candidate_names = {
+            name for name in self.__particles if particle_name in name
+        }
+        if candidate_names:
+            raise KeyError(
+                error_message,
+                "Did you mean one of these?",
+                candidate_names,
+            )
+        raise KeyError(error_message)
 
     def __iter__(self) -> Iterator[str]:
         return self.__particles.__iter__()
@@ -416,15 +412,6 @@ class ParticleCollection(abc.Mapping):
         return ParticleCollection(
             {particle for particle in self.values() if function(particle)}
         )
-
-    def items(self) -> ItemsView[str, Particle]:
-        return self.__particles.items()
-
-    def keys(self) -> KeysView[str]:
-        return self.__particles.keys()
-
-    def values(self) -> ValuesView[Particle]:
-        return self.__particles.values()
 
     def merge(self, other: "ParticleCollection") -> None:
         for particle in other.values():

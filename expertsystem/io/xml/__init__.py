@@ -9,6 +9,7 @@ import json
 
 import xmltodict
 
+from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import (
     Particle,
     ParticleCollection,
@@ -34,14 +35,9 @@ def write(instance: object, filename: str) -> None:
         entries = list(output_dict.values())
         output_dict = {"ParticleList": {"Particle": entries}}
         validation.particle_list(output_dict)
-    elif isinstance(instance, dict):  # amplitude model
-        section_names = set(instance)
-        required_sections = {"ParticleList", "HelicityKinematics", "Intensity"}
-        common_names = section_names & required_sections
-        missing_names = section_names ^ common_names
-        if missing_names:
-            raise ValueError("Missing amplitude sections:", missing_names)
-        output_dict = instance
+    elif isinstance(instance, AmplitudeModel):
+        output_dict = _dump.from_amplitude_model(instance)
+        validation.particle_list(output_dict)
     else:
         raise NotImplementedError(
             f"No XML writer for class {instance.__class__.__name__}"
@@ -57,7 +53,7 @@ def object_to_dict(instance: object) -> dict:
     if isinstance(instance, ParticleCollection):
         return _dump.from_particle_collection(instance)
     if isinstance(instance, (Particle)):
-        return _dump.from_particle_state(instance)
+        return _dump.from_particle(instance)
     raise NotImplementedError
 
 

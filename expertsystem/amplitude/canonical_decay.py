@@ -1,7 +1,6 @@
 """Implementation of the canonical formalism for amplitude model generation."""
 
-from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from expertsystem.data import Spin
 from expertsystem.nested_dicts import (
@@ -14,15 +13,15 @@ from expertsystem.state.properties import (
 )
 from expertsystem.topology import StateTransitionGraph
 
-from .abstract_generator import AbstractAmplitudeNameGenerator
 from .helicity_decay import (
     HelicityAmplitudeGenerator,
     HelicityAmplitudeNameGenerator,
 )
+from .model import CanonicalDecay, ClebschGordan, DecayNode, HelicityDecay
 
 
 def generate_clebsch_gordan_string(
-    graph: StateTransitionGraph, node_id: int
+    graph: StateTransitionGraph[dict], node_id: int
 ) -> str:
     node_props = graph.node_props[node_id]
     ang_orb_mom = __validate_spin_type(
@@ -41,7 +40,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     """
 
     def generate_unique_amplitude_name(
-        self, graph: StateTransitionGraph, node_id: Optional[int] = None
+        self, graph: StateTransitionGraph[dict], node_id: Optional[int] = None
     ) -> str:
         name = ""
         if isinstance(node_id, int):
@@ -58,8 +57,10 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
 
 def _clebsch_gordan_decorator(
-    decay_generate_function: Callable[[Any, StateTransitionGraph, int], dict]
-) -> Callable[[Any, StateTransitionGraph, int], dict]:
+    decay_generate_function: Callable[
+        [Any, StateTransitionGraph[dict], int], DecayNode
+    ]
+) -> Callable[[Any, StateTransitionGraph[dict], int], DecayNode]:
     """Decorate a function with Clebsch-Gordan functionality.
 
     Decorator method which adds two clebsch gordan coefficients based on the
@@ -67,17 +68,26 @@ def _clebsch_gordan_decorator(
     """
 
     def wrapper(  # pylint: disable=too-many-locals
-        self: Any, graph: StateTransitionGraph, node_id: int
-    ) -> dict:
-
+        self: Any, graph: StateTransitionGraph[dict], node_id: int
+    ) -> DecayNode:
         spin_type = StateQuantumNumberNames.Spin
-        partial_decay_dict = decay_generate_function(self, graph, node_id)
+        amplitude = decay_generate_function(self, graph, node_id)
+        if isinstance(amplitude, HelicityDecay):
+            helicity_decay = amplitude
+        else:
+            raise TypeError(
+                f"Can only decorate with return value {HelicityDecay.__name__}"
+            )
+
         node_props = graph.node_props[node_id]
         ang_mom = __validate_spin_type(
             get_interaction_property(
                 node_props, InteractionQuantumNumberNames.L
             )
         )
+        if ang_mom.projection != 0.0:
+            raise ValueError(f"Projection of L is non-zero!: {ang_mom}")
+
         spin = __validate_spin_type(
             get_interaction_property(
                 node_props, InteractionQuantumNumberNames.S
@@ -85,7 +95,7 @@ def _clebsch_gordan_decorator(
         )
         if not isinstance(spin, Spin):
             raise ValueError(
-                f"{ang_mom.__class__.__name__} is not of type {Spin.__name__}"
+                f"{spin.__class__.__name__} is not of type {Spin.__name__}"
             )
 
         in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
@@ -106,35 +116,31 @@ def _clebsch_gordan_decorator(
         decay_particle_lambda = (
             daughter_spins[0].projection - daughter_spins[1].projection
         )
-        cg_ls: Dict[str, Any] = OrderedDict()
-        cg_ls["Type"] = "LS"
-        cg_ls["@j1"] = ang_mom.magnitude
-        if ang_mom.projection != 0.0:
-            raise ValueError(
-                "Projection of L is non-zero!: " + str(ang_mom.projection)
-            )
-        cg_ls["@m1"] = ang_mom.projection
-        cg_ls["@j2"] = spin.magnitude
-        cg_ls["@m2"] = decay_particle_lambda
-        cg_ls["J"] = parent_spin.magnitude
-        cg_ls["M"] = decay_particle_lambda
-        cg_ss: Dict[str, Any] = OrderedDict()
-        cg_ss["Type"] = "s2s3"
-        cg_ss["@j1"] = daughter_spins[0].magnitude
-        cg_ss["@m1"] = daughter_spins[0].projection
-        cg_ss["@j2"] = daughter_spins[1].magnitude
-        cg_ss["@m2"] = -daughter_spins[1].projection
-        cg_ss["J"] = spin.magnitude
-        cg_ss["M"] = decay_particle_lambda
-        cg_dict = {
-            "CanonicalSum": {
-                "L": int(ang_mom.magnitude),
-                "S": spin.magnitude,
-                "ClebschGordan": [cg_ls, cg_ss],
-            }
-        }
-        partial_decay_dict.update(cg_dict)
-        return partial_decay_dict
+
+        cg_ls = ClebschGordan(
+            j_1=ang_mom.magnitude,
+            m_1=ang_mom.projection,
+            j_2=spin.magnitude,
+            m_2=decay_particle_lambda,
+            J=parent_spin.magnitude,
+            M=decay_particle_lambda,
+        )
+        cg_ss = ClebschGordan(
+            j_1=daughter_spins[0].magnitude,
+            m_1=daughter_spins[0].projection,
+            j_2=daughter_spins[1].magnitude,
+            m_2=-daughter_spins[1].projection,
+            J=spin.magnitude,
+            M=decay_particle_lambda,
+        )
+
+        return CanonicalDecay(
+            decaying_particle=helicity_decay.decaying_particle,
+            decay_products=helicity_decay.decay_products,
+            recoil_system=helicity_decay.recoil_system,
+            l_s=cg_ls,
+            s2s3=cg_ss,
+        )
 
     return wrapper
 
@@ -153,18 +159,15 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
     Here, :math:`CG` stands for Clebsch-Gordan factor.
     """
 
-    def __init__(
-        self,
-        top_node_no_dynamics: bool = True,
-        name_generator: AbstractAmplitudeNameGenerator = CanonicalAmplitudeNameGenerator(),
-    ) -> None:
-        super().__init__(top_node_no_dynamics, name_generator=name_generator)
+    def __init__(self, top_node_no_dynamics: bool = True) -> None:
+        super().__init__(top_node_no_dynamics)
+        self.name_generator = CanonicalAmplitudeNameGenerator()
 
     @_clebsch_gordan_decorator
-    def generate_partial_decay(  # type: ignore
-        self, graph: StateTransitionGraph, node_id: Optional[int] = None
-    ) -> dict:
-        return super().generate_partial_decay(graph, node_id)
+    def _generate_partial_decay(  # type: ignore
+        self, graph: StateTransitionGraph[dict], node_id: Optional[int] = None
+    ) -> DecayNode:
+        return super()._generate_partial_decay(graph, node_id)
 
 
 def __validate_spin_type(

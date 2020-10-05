@@ -101,8 +101,8 @@ def test_script_simple(particle_database):
     helicity_xml_generator = HelicityAmplitudeGenerator()
     helicity_xml_generator.generate(result.solutions)
 
-    assert len(helicity_xml_generator.get_fit_parameters()) == len(
-        canonical_xml_generator.get_fit_parameters()
+    assert len(helicity_xml_generator.fit_parameters) == len(
+        canonical_xml_generator.fit_parameters
     )
 
 
@@ -182,6 +182,6 @@ def test_script_full(particle_database):
     helicity_xml_generator = HelicityAmplitudeGenerator()
     helicity_xml_generator.generate(result.solutions)
 
-    assert len(helicity_xml_generator.get_fit_parameters()) == len(
-        canonical_xml_generator.get_fit_parameters()
+    assert len(helicity_xml_generator.fit_parameters) == len(
+        canonical_xml_generator.fit_parameters
     )

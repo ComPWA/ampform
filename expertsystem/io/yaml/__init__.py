@@ -7,6 +7,7 @@ __all__ = [
 
 import yaml
 
+from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import (
     Particle,
     ParticleCollection,
@@ -38,7 +39,7 @@ def load_particle_collection(filename: str) -> ParticleCollection:
 def write(instance: object, filename: str) -> None:
     if isinstance(instance, ParticleCollection):
         output_dict = _dump.from_particle_collection(instance)
-    elif isinstance(instance, dict):
+    elif isinstance(instance, AmplitudeModel):
         output_dict = _dump.from_amplitude_model(instance)
     else:
         raise NotImplementedError(

@@ -23,6 +23,7 @@ from progress.bar import IncrementalBar
 from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
+from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import (
     Particle,
     ParticleCollection,
@@ -401,8 +402,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         return solver.find_solutions(*state_graph_node_settings_pair)
 
-    def write_amplitude_model(self, solutions: list, output_file: str) -> None:
-        """Generate an amplitude model from the solutions.
+    def generate_amplitude_model(self, result: Result) -> AmplitudeModel:
+        """Generate an amplitude model from a generated `.Result`.
 
         The type of amplitude model (`.HelicityAmplitudeGenerator` or
         `.CanonicalAmplitudeGenerator`) is determined from the
@@ -413,8 +414,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             amplitude_generator = HelicityAmplitudeGenerator()
         elif self.formalism_type in ["canonical-helicity", "canonical"]:
             amplitude_generator = CanonicalAmplitudeGenerator()
-        amplitude_model = amplitude_generator.generate(solutions)
-        io.write(instance=amplitude_model, filename=output_file)
+        return amplitude_generator.generate(result.solutions)
 
 
 def load_default_particles() -> ParticleCollection:
