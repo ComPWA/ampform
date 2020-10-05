@@ -5,6 +5,7 @@ This module will be phased out through `#254
 """
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, List
 
@@ -248,6 +249,34 @@ edge_qn_to_enum = {
     NodeQuantumNumbers.s_projection.__name__: InteractionQuantumNumberNames.S,
     NodeQuantumNumbers.parity_prefactor.__name__: InteractionQuantumNumberNames.ParityPrefactor,
 }
+
+
+def get_spin_projection(edge_props: dict) -> float:
+    qns_label = Labels.QuantumNumber.name
+    type_label = Labels.Type.name
+    spin_label = StateQuantumNumberNames.Spin.name
+    proj_label = Labels.Projection.name
+    for quantum_number in edge_props[qns_label]:
+        if quantum_number[type_label] == spin_label:
+            return float(quantum_number[proj_label])
+    raise ValueError(
+        "Could not find spin projection quantum number in", edge_props
+    )
+
+
+def remove_spin_projection(edge_props: dict) -> dict:
+    qns_label = Labels.QuantumNumber.name
+    type_label = Labels.Type.name
+    spin_label = StateQuantumNumberNames.Spin.name
+    proj_label = Labels.Projection.name
+
+    new_edge_props = deepcopy(edge_props)
+
+    for qn_entry in new_edge_props[qns_label]:
+        if StateQuantumNumberNames[qn_entry[type_label]] is spin_label:
+            del qn_entry[proj_label]
+            break
+    return new_edge_props
 
 
 def _convert_edges_to_dict(

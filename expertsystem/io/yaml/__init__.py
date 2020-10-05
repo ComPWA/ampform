@@ -38,6 +38,8 @@ def load_particle_collection(filename: str) -> ParticleCollection:
 def write(instance: object, filename: str) -> None:
     if isinstance(instance, ParticleCollection):
         output_dict = _dump.from_particle_collection(instance)
+    elif isinstance(instance, dict):
+        output_dict = _dump.from_amplitude_model(instance)
     else:
         raise NotImplementedError(
             f"No YAML writer for class {instance.__class__.__name__}"

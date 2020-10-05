@@ -8,16 +8,18 @@ import yaml
 
 from expertsystem import io
 
+
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
 @pytest.fixture(scope="module")
 def imported_dict(
-    jpsi_to_gamma_pi_pi_helicity_amplitude_generator,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: dict,
 ):
     output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
-    jpsi_to_gamma_pi_pi_helicity_amplitude_generator.write_to_file(
-        output_filename
+    io.write(
+        instance=jpsi_to_gamma_pi_pi_helicity_amplitude_model,
+        filename=output_filename,
     )
     with open(output_filename, "rb") as input_file:
         loaded_dict = yaml.load(input_file, Loader=yaml.FullLoader)
@@ -42,19 +44,19 @@ def test_recipe_validation(expected_dict):
 
 
 def test_not_implemented_writer(
-    jpsi_to_gamma_pi_pi_helicity_amplitude_generator,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model,
 ):
     with pytest.raises(NotImplementedError):
-        jpsi_to_gamma_pi_pi_helicity_amplitude_generator.write_to_file(
-            "JPsiToGammaPi0Pi0.csv"
+        io.write(
+            instance=jpsi_to_gamma_pi_pi_helicity_amplitude_model,
+            filename="JPsiToGammaPi0Pi0.csv",
         )
 
 
-def test_create_recipe_dict(jpsi_to_gamma_pi_pi_helicity_amplitude_generator):
-    recipe = (
-        jpsi_to_gamma_pi_pi_helicity_amplitude_generator._create_recipe_dict()  # pylint: disable=protected-access
-    )
-    assert len(recipe) == 3
+def test_create_recipe_dict(
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: dict,
+):
+    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model) == 3
 
 
 def test_particle_section(imported_dict):

@@ -2,6 +2,7 @@ from typing import NamedTuple, Tuple
 
 import pytest
 
+from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.nested_dicts import InteractionQuantumNumberNames
 from expertsystem.state.properties import get_interaction_property
@@ -64,7 +65,7 @@ def test_parity_prefactor(
         test_input.final_state,
         allowed_intermediate_particles=test_input.intermediate_states,
     )
-    # stm.number_of_threads = 1
+    stm.number_of_threads = 1
     stm.add_final_state_grouping(test_input.final_state_grouping)
     stm.set_allowed_interaction_types([InteractionTypes.EM])
     graph_interaction_settings_groups = stm.prepare_graphs()
@@ -90,11 +91,14 @@ def test_parity_prefactor(
         assert relative_parity_prefactor == prefactor
 
     amp_gen = HelicityAmplitudeGenerator()
-    amp_gen.generate(result.solutions)
-    amp_dict = amp_gen.helicity_amplitudes
+    amplitude_model = amp_gen.generate(result.solutions)
+    io.write(
+        instance=amplitude_model,
+        filename=f'amplitude_model_prefactor_{"-".join(test_input.intermediate_states)}.xml',
+    )
 
-    prefactor1 = extract_prefactor(amp_dict, related_component_names[0])
-    prefactor2 = extract_prefactor(amp_dict, related_component_names[1])
+    prefactor1 = extract_prefactor(amplitude_model, related_component_names[0])
+    prefactor2 = extract_prefactor(amplitude_model, related_component_names[1])
 
     assert prefactor1 == relative_parity_prefactor * prefactor2
 

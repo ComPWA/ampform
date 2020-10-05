@@ -16,6 +16,7 @@ from expertsystem.data import (
     Spin,
 )
 
+from . import _xml_to_yaml
 from . import validation
 
 
@@ -36,6 +37,23 @@ def from_particle(particle: Particle) -> dict:
     if particle.width != 0.0:
         output_dict["Width"] = particle.width
     output_dict["QuantumNumbers"] = _to_quantum_number_dict(particle)
+    return output_dict
+
+
+def from_amplitude_model(model: dict) -> dict:
+    particle_dict = _xml_to_yaml.to_particle_dict(model)
+    parameter_list = _xml_to_yaml.to_parameter_list(model)
+    kinematics = _xml_to_yaml.to_kinematics_dict(model)
+    dynamics = _xml_to_yaml.to_dynamics(model)
+    intensity = _xml_to_yaml.to_intensity(model)
+    output_dict = {
+        "Kinematics": kinematics,
+        "Parameters": parameter_list,
+        "Intensity": intensity,
+        "ParticleList": particle_dict,
+        "Dynamics": dynamics,
+    }
+    validation.amplitude_model(output_dict)
     return output_dict
 
 

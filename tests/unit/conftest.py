@@ -44,18 +44,18 @@ def jpsi_to_gamma_pi_pi_helicity_solutions():
 
 
 @pytest.fixture(scope="module")
-def jpsi_to_gamma_pi_pi_canonical_amplitude_generator(
+def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions,
-):
+) -> dict:
     amplitude_generator = CanonicalAmplitudeGenerator()
-    amplitude_generator.generate(jpsi_to_gamma_pi_pi_canonical_solutions)
-    return amplitude_generator
+    return amplitude_generator.generate(
+        jpsi_to_gamma_pi_pi_canonical_solutions
+    )
 
 
 @pytest.fixture(scope="module")
-def jpsi_to_gamma_pi_pi_helicity_amplitude_generator(
+def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions,
-):
+) -> dict:
     amplitude_generator = HelicityAmplitudeGenerator()
-    amplitude_generator.generate(jpsi_to_gamma_pi_pi_helicity_solutions)
-    return amplitude_generator
+    return amplitude_generator.generate(jpsi_to_gamma_pi_pi_helicity_solutions)

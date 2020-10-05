@@ -34,6 +34,14 @@ def write(instance: object, filename: str) -> None:
         entries = list(output_dict.values())
         output_dict = {"ParticleList": {"Particle": entries}}
         validation.particle_list(output_dict)
+    elif isinstance(instance, dict):  # amplitude model
+        section_names = set(instance)
+        required_sections = {"ParticleList", "HelicityKinematics", "Intensity"}
+        common_names = section_names & required_sections
+        missing_names = section_names ^ common_names
+        if missing_names:
+            raise ValueError("Missing amplitude sections:", missing_names)
+        output_dict = instance
     else:
         raise NotImplementedError(
             f"No XML writer for class {instance.__class__.__name__}"

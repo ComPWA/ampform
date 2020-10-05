@@ -413,8 +413,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             amplitude_generator = HelicityAmplitudeGenerator()
         elif self.formalism_type in ["canonical-helicity", "canonical"]:
             amplitude_generator = CanonicalAmplitudeGenerator()
-        amplitude_generator.generate(solutions)
-        amplitude_generator.write_to_file(output_file)
+        amplitude_model = amplitude_generator.generate(solutions)
+        io.write(instance=amplitude_model, filename=output_file)
 
 
 def load_default_particles() -> ParticleCollection:

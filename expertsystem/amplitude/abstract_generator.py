@@ -11,25 +11,25 @@ class AbstractAmplitudeNameGenerator(ABC):
 
     @abstractmethod
     def generate_unique_amplitude_name(
-        self, graph: StateTransitionGraph, node_id: Optional[int] = None
+        self, graph: StateTransitionGraph[dict], node_id: Optional[int] = None
     ) -> str:
         pass
 
     @abstractmethod
     def generate_amplitude_coefficient_infos(
-        self, graph: StateTransitionGraph
+        self, graph: StateTransitionGraph[dict]
     ) -> dict:
         pass
 
     @abstractmethod
     def register_amplitude_coefficient_name(
-        self, graph: StateTransitionGraph
+        self, graph: StateTransitionGraph[dict]
     ) -> None:
         pass
 
     @abstractmethod
     def _generate_amplitude_coefficient_name(
-        self, graph: StateTransitionGraph, node_id: int
+        self, graph: StateTransitionGraph[dict], node_id: int
     ) -> str:
         pass
 
@@ -38,9 +38,5 @@ class AbstractAmplitudeGenerator(ABC):
     """Abstract interface for an amplitude model generator."""
 
     @abstractmethod
-    def generate(self, graphs: List[StateTransitionGraph]) -> None:
-        pass
-
-    @abstractmethod
-    def write_to_file(self, filename: str) -> None:
+    def generate(self, graphs: List[StateTransitionGraph]) -> dict:
         pass

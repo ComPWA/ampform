@@ -6,15 +6,18 @@ import pytest
 
 import yaml
 
+from expertsystem import io
+
 
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
 @pytest.fixture(scope="module")
-def imported_dict(jpsi_to_gamma_pi_pi_canonical_amplitude_generator):
+def imported_dict(jpsi_to_gamma_pi_pi_canonical_amplitude_model):
     output_filename = "JPsiToGammaPi0Pi0_cano_recipe.yml"
-    jpsi_to_gamma_pi_pi_canonical_amplitude_generator.write_to_file(
-        output_filename
+    io.write(
+        instance=jpsi_to_gamma_pi_pi_canonical_amplitude_model,
+        filename=output_filename,
     )
     with open(output_filename, "rb") as input_file:
         loaded_dict = yaml.load(input_file, Loader=yaml.FullLoader)
@@ -27,11 +30,12 @@ def equalize_dict(input_dict):
 
 
 def test_not_implemented_writer(
-    jpsi_to_gamma_pi_pi_canonical_amplitude_generator,
+    jpsi_to_gamma_pi_pi_canonical_amplitude_model,
 ):
     with pytest.raises(NotImplementedError):
-        jpsi_to_gamma_pi_pi_canonical_amplitude_generator.write_to_file(
-            "JPsiToGammaPi0Pi0.csv"
+        io.write(
+            instance=jpsi_to_gamma_pi_pi_canonical_amplitude_model,
+            filename="JPsiToGammaPi0Pi0.csv",
         )
 
 
