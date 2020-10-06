@@ -34,6 +34,7 @@ def load_pdg() -> ParticleCollection:
         and item.J is not None  # remove new physics and nuclei
         and abs(item.pdgid) < 1e9  # p and n as nucleus
         and item.name not in __skip_particles
+        and not (item.mass is None and not item.name.startswith("nu"))
     )
     particle_collection = ParticleCollection()
     for pdg_particle in all_pdg_particles:

@@ -38,7 +38,7 @@ def test_not_implemented_errors(particle_selection):
 @pytest.mark.parametrize("filename", [XML_FILE, YAML_FILE])
 def test_write_read_particle_collection(particle_selection, filename):
     write_test_files(particle_selection)
-    assert len(particle_selection) == 202
+    assert len(particle_selection) == 182
     imported_collection = io.load_particle_collection(filename)
     assert len(particle_selection) == len(imported_collection)
     for name in particle_selection:
