@@ -40,11 +40,11 @@ from . import validation
 
 def from_amplitude_model(model: AmplitudeModel) -> dict:
     output_dict = {
-        "Kinematics": _kinematics_to_dict(model.kinematics),
-        "Parameters": _parameters_to_dict(model.parameters),
-        "Intensity": _intensity_to_dict(model.intensity),
+        "Kinematics": __kinematics_to_dict(model.kinematics),
+        "Parameters": __parameters_to_dict(model.parameters),
+        "Intensity": __intensity_to_dict(model.intensity),
         **from_particle_collection(model.particles),
-        "Dynamics": _dynamics_section_to_dict(model.dynamics),
+        "Dynamics": __dynamics_section_to_dict(model.dynamics),
     }
     validation.amplitude_model(output_dict)
     return output_dict
@@ -66,15 +66,15 @@ def from_particle(particle: Particle) -> dict:
     }
     if particle.width != 0.0:
         output_dict["Width"] = particle.width
-    output_dict["QuantumNumbers"] = _to_quantum_number_dict(particle)
+    output_dict["QuantumNumbers"] = __to_quantum_number_dict(particle)
     return output_dict
 
 
-def _to_quantum_number_dict(
+def __to_quantum_number_dict(
     particle: Particle,
 ) -> Dict[str, Union[float, int, Dict[str, float]]]:
     output_dict: Dict[str, Union[float, int, Dict[str, float]]] = {
-        "Spin": _attempt_to_int(particle.spin),
+        "Spin": __attempt_to_int(particle.spin),
         "Charge": int(particle.charge),
     }
     optional_qn: List[
@@ -99,20 +99,20 @@ def _to_quantum_number_dict(
             value
         )  # pylint: disable=not-callable
     if particle.isospin is not None:
-        output_dict["IsoSpin"] = _from_spin(particle.isospin)
+        output_dict["IsoSpin"] = __from_spin(particle.isospin)
     return output_dict
 
 
-def _from_spin(instance: Spin) -> Union[Dict[str, Union[float, int]], int]:
+def __from_spin(instance: Spin) -> Union[Dict[str, Union[float, int]], int]:
     if instance.magnitude == 0:
         return 0
     return {
-        "Value": _attempt_to_int(instance.magnitude),
-        "Projection": _attempt_to_int(instance.projection),
+        "Value": __attempt_to_int(instance.magnitude),
+        "Projection": __attempt_to_int(instance.projection),
     }
 
 
-def _attempt_to_int(value: Union[Spin, float, int]) -> Union[float, int]:
+def __attempt_to_int(value: Union[Spin, float, int]) -> Union[float, int]:
     if isinstance(value, Spin):
         value = float(value)
     if value.is_integer():
@@ -120,11 +120,11 @@ def _attempt_to_int(value: Union[Spin, float, int]) -> Union[float, int]:
     return value
 
 
-def _parameters_to_dict(parameters: FitParameters) -> List[dict]:
-    return [_parameter_to_dict(par) for par in parameters.values()]
+def __parameters_to_dict(parameters: FitParameters) -> List[dict]:
+    return [__parameter_to_dict(par) for par in parameters.values()]
 
 
-def _parameter_to_dict(parameter: FitParameter) -> dict:
+def __parameter_to_dict(parameter: FitParameter) -> dict:
     parameter_type = ""
     if "_" in parameter.name:
         name_prefix = parameter.name.split("_")[0]
@@ -148,7 +148,7 @@ def _parameter_to_dict(parameter: FitParameter) -> dict:
     return output_dict
 
 
-def _kinematics_to_dict(kin: Kinematics) -> dict:
+def __kinematics_to_dict(kin: Kinematics) -> dict:
     if kin.kinematics_type == KinematicsType.Helicity:
         kinematics_type = "Helicity"
     else:
@@ -164,14 +164,14 @@ def _kinematics_to_dict(kin: Kinematics) -> dict:
     }
 
 
-def _dynamics_section_to_dict(particle_dynamics: ParticleDynamics) -> dict:
+def __dynamics_section_to_dict(particle_dynamics: ParticleDynamics) -> dict:
     output_dict = dict()
     for particle_name, dynamics in particle_dynamics.items():
-        output_dict[particle_name] = _dynamics_to_dict(dynamics)
+        output_dict[particle_name] = __dynamics_to_dict(dynamics)
     return output_dict
 
 
-def _dynamics_to_dict(dynamics: Dynamics) -> dict:
+def __dynamics_to_dict(dynamics: Dynamics) -> dict:
     if isinstance(dynamics, NonDynamic):
         if isinstance(dynamics.form_factor, BlattWeisskopf):
             form_factor = {
@@ -189,7 +189,7 @@ def _dynamics_to_dict(dynamics: Dynamics) -> dict:
     raise NotImplementedError("No conversion for", dynamics)
 
 
-def _intensity_to_dict(  # pylint: disable=too-many-return-statements
+def __intensity_to_dict(  # pylint: disable=too-many-return-statements
     node: Node,
 ) -> dict:
     if isinstance(node, StrengthIntensity):
@@ -197,18 +197,19 @@ def _intensity_to_dict(  # pylint: disable=too-many-return-statements
             "Class": "StrengthIntensity",
             "Component": node.component,
             "Strength": node.strength.name,
-            "Intensity": _intensity_to_dict(node.intensity),
+            "Intensity": __intensity_to_dict(node.intensity),
         }
     if isinstance(node, NormalizedIntensity):
         return {
             "Class": "NormalizedIntensity",
-            "Intensity": _intensity_to_dict(node.intensity),
+            "Intensity": __intensity_to_dict(node.intensity),
         }
     if isinstance(node, IncoherentIntensity):
         return {
             "Class": "IncoherentIntensity",
             "Intensities": [
-                _intensity_to_dict(intensity) for intensity in node.intensities
+                __intensity_to_dict(intensity)
+                for intensity in node.intensities
             ],
         }
     if isinstance(node, CoherentIntensity):
@@ -216,7 +217,7 @@ def _intensity_to_dict(  # pylint: disable=too-many-return-statements
             "Class": "CoherentIntensity",
             "Component": node.component,
             "Amplitudes": [
-                _intensity_to_dict(intensity) for intensity in node.amplitudes
+                __intensity_to_dict(intensity) for intensity in node.amplitudes
             ],
         }
     if isinstance(node, CoefficientAmplitude):
@@ -228,13 +229,13 @@ def _intensity_to_dict(  # pylint: disable=too-many-return-statements
             output_dict["PreFactor"] = node.prefactor
         output_dict["Magnitude"] = node.magnitude.name
         output_dict["Phase"] = node.phase.name
-        output_dict["Amplitude"] = _intensity_to_dict(node.amplitude)
+        output_dict["Amplitude"] = __intensity_to_dict(node.amplitude)
         return output_dict
     if isinstance(node, SequentialAmplitude):
         return {
             "Class": "SequentialAmplitude",
             "Amplitudes": [
-                _intensity_to_dict(intensity) for intensity in node.amplitudes
+                __intensity_to_dict(intensity) for intensity in node.amplitudes
             ],
         }
     if isinstance(node, (HelicityDecay, CanonicalDecay)):

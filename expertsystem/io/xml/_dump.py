@@ -48,7 +48,7 @@ def from_amplitude_model(model: AmplitudeModel) -> dict:
         particle_dict = from_particle(particle)
         dynamics = model.dynamics.get(particle.name, None)
         if dynamics is not None:
-            dynamics_dict = _dynamics_to_dict(dynamics)
+            dynamics_dict = __dynamics_to_dict(dynamics)
             new_decay_info = {
                 "DecayInfo": {
                     **dynamics_dict,
@@ -59,8 +59,8 @@ def from_amplitude_model(model: AmplitudeModel) -> dict:
         particle_list.append(particle_dict)
     return {
         "ParticleList": {"Particle": particle_list},
-        **_kinematics_to_dict(model.kinematics),
-        "Intensity": _intensity_to_dict(model.intensity),
+        **__kinematics_to_dict(model.kinematics),
+        "Intensity": __intensity_to_dict(model.intensity),
     }
 
 
@@ -87,7 +87,7 @@ def from_particle(instance: Particle) -> dict:
         output_dict["Name"] = instance.name
         output_dict["Pid"] = instance.pid
     output_dict.update(create_parameter_dict(instance.mass, "Mass", instance))
-    output_dict["QuantumNumber"] = _to_quantum_number_list(instance)
+    output_dict["QuantumNumber"] = __to_quantum_number_list(instance)
     if instance.width != 0.0:
         output_dict["DecayInfo"] = create_parameter_dict(
             instance.width, "Width", instance
@@ -96,7 +96,7 @@ def from_particle(instance: Particle) -> dict:
     return output_dict
 
 
-def _to_quantum_number_list(state: Particle) -> List[Dict[str, Any]]:
+def __to_quantum_number_list(state: Particle) -> List[Dict[str, Any]]:
     conversion_map: Dict[
         str, Union[Optional[Parity], Optional[Spin], float, int]
     ] = {
@@ -121,12 +121,12 @@ def _to_quantum_number_list(state: Particle) -> List[Dict[str, Any]]:
             continue
         if type_name not in ["Charge", "Spin", "IsoSpin"] and instance == 0:
             continue
-        definition = _qn_to_dict(instance, type_name)
+        definition = __qn_to_dict(instance, type_name)
         output.append(definition)
     return output
 
 
-def _qn_to_dict(
+def __qn_to_dict(
     instance: Union[Parity, Spin, float, int], type_name: str
 ) -> Dict[str, Any]:
     output: Dict[str, Any] = {
@@ -148,7 +148,7 @@ def _qn_to_dict(
     return output
 
 
-def _parameter_to_dict(parameter: FitParameter) -> dict:
+def __parameter_to_dict(parameter: FitParameter) -> dict:
     name_prefix = parameter.name.split("_")[0]
     name_prefix = name_prefix.lower()
     parameter_type = ""
@@ -169,7 +169,7 @@ def _parameter_to_dict(parameter: FitParameter) -> dict:
     }
 
 
-def _kinematics_to_dict(kin: Kinematics) -> dict:
+def __kinematics_to_dict(kin: Kinematics) -> dict:
     if kin.kinematics_type == KinematicsType.Helicity:
         kinematics_type = "HelicityKinematics"
     else:
@@ -192,32 +192,33 @@ def _kinematics_to_dict(kin: Kinematics) -> dict:
     }
 
 
-def _dynamics_to_dict(dynamics: Dynamics) -> dict:
+def __dynamics_to_dict(dynamics: Dynamics) -> dict:
     if isinstance(dynamics, NonDynamic):
         return {"Type": "nonResonant"}
     raise NotImplementedError("No conversion for", dynamics)
 
 
-def _intensity_to_dict(  # pylint: disable=too-many-return-statements
+def __intensity_to_dict(  # pylint: disable=too-many-return-statements
     node: Node,
 ) -> dict:
     if isinstance(node, StrengthIntensity):
         return {
             "Class": "StrengthIntensity",
             "Component": node.component,
-            "Parameter": _parameter_to_dict(node.strength),
-            "Intensity": _intensity_to_dict(node.intensity),
+            "Parameter": __parameter_to_dict(node.strength),
+            "Intensity": __intensity_to_dict(node.intensity),
         }
     if isinstance(node, NormalizedIntensity):
         return {
             "Class": "NormalizedIntensity",
-            "Intensity": _intensity_to_dict(node.intensity),
+            "Intensity": __intensity_to_dict(node.intensity),
         }
     if isinstance(node, IncoherentIntensity):
         return {
             "Class": "IncoherentIntensity",
             "Intensity": [
-                _intensity_to_dict(intensity) for intensity in node.intensities
+                __intensity_to_dict(intensity)
+                for intensity in node.intensities
             ],
         }
     if isinstance(node, CoherentIntensity):
@@ -225,19 +226,19 @@ def _intensity_to_dict(  # pylint: disable=too-many-return-statements
             "Class": "CoherentIntensity",
             "Component": node.component,
             "Amplitude": [
-                _intensity_to_dict(intensity) for intensity in node.amplitudes
+                __intensity_to_dict(intensity) for intensity in node.amplitudes
             ],
         }
     if isinstance(node, CoefficientAmplitude):
         parameters = [
-            _parameter_to_dict(node.magnitude),
-            _parameter_to_dict(node.phase),
+            __parameter_to_dict(node.magnitude),
+            __parameter_to_dict(node.phase),
         ]
         output_dict = {
             "Class": "CoefficientAmplitude",
             "Component": node.component,
             "Parameter": parameters,
-            "Amplitude": _intensity_to_dict(node.amplitude),
+            "Amplitude": __intensity_to_dict(node.amplitude),
         }
         if node.prefactor is not None:
             output_dict["PreFactor"] = {"Real": node.prefactor}
@@ -246,7 +247,7 @@ def _intensity_to_dict(  # pylint: disable=too-many-return-statements
         return {
             "Class": "SequentialAmplitude",
             "Amplitude": [
-                _intensity_to_dict(intensity) for intensity in node.amplitudes
+                __intensity_to_dict(intensity) for intensity in node.amplitudes
             ],
         }
     if isinstance(node, (HelicityDecay, CanonicalDecay)):

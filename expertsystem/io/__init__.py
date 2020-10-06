@@ -2,12 +2,24 @@
 
 from pathlib import Path
 
+from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import ParticleCollection
 
 from . import _pdg
 from . import dot
 from . import xml
 from . import yaml
+
+
+def load_amplitude_model(filename: str) -> AmplitudeModel:
+    file_extension = _get_file_extension(filename)
+    if file_extension in ["yaml", "yml"]:
+        return yaml.load_amplitude_model(filename)
+    if file_extension == "xml":
+        return xml.load_amplitude_model(filename)
+    raise NotImplementedError(
+        f'No parser parser defined for file type "{file_extension}"'
+    )
 
 
 def load_particle_collection(filename: str) -> ParticleCollection:

@@ -30,6 +30,12 @@ class _IncreasedIndent(yaml.Dumper):
             super().write_line_break()
 
 
+def load_amplitude_model(filename: str) -> AmplitudeModel:
+    with open(filename) as yaml_file:
+        definition = yaml.load(yaml_file, Loader=yaml.SafeLoader)
+    return _build.build_amplitude_model(definition)
+
+
 def load_particle_collection(filename: str) -> ParticleCollection:
     with open(filename) as yaml_file:
         definition = yaml.load(yaml_file, Loader=yaml.SafeLoader)

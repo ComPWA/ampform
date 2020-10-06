@@ -21,6 +21,14 @@ from . import _dump
 from . import validation
 
 
+def load_amplitude_model(filename: str) -> AmplitudeModel:
+    with open(filename, "rb") as stream:
+        definition = xmltodict.parse(stream)
+    definition = definition.get("root", definition)
+    json.loads(json.dumps(definition))  # remove OrderedDict
+    return _build.build_amplitude_model(definition)
+
+
 def load_particle_collection(filename: str) -> ParticleCollection:
     with open(filename, "rb") as stream:
         definition = xmltodict.parse(stream)

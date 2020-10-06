@@ -200,6 +200,15 @@ class Kinematics:
         self.__final_state: Dict[int, Particle] = dict()
         self.__kinematics_type: KinematicsType = kinematics_type
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Kinematics):
+            return (
+                self.initial_state == other.initial_state
+                and self.final_state == other.final_state
+                and self.kinematics_type == other.kinematics_type
+            )
+        raise NotImplementedError
+
     @property
     def initial_state(self) -> Dict[int, Particle]:
         return self.__initial_state
@@ -234,6 +243,22 @@ class Kinematics:
         if particle is None:
             raise KeyError(f"Kinematics does not contain state ID {state_id}")
         return particle
+
+    def add_initial_state(self, state_id: int, particle_name: str) -> None:
+        _assert_arg_type(particle_name, str)
+        _assert_arg_type(state_id, int)
+        if state_id in self.__initial_state:
+            raise ValueError(f"Initial state ID {state_id} already exists")
+        particle = self.__particles[particle_name]
+        self.__initial_state[state_id] = particle
+
+    def add_final_state(self, state_id: int, particle_name: str) -> None:
+        _assert_arg_type(particle_name, str)
+        _assert_arg_type(state_id, int)
+        if state_id in self.__final_state:
+            raise ValueError(f"Initial state ID {state_id} already exists")
+        particle = self.__particles[particle_name]
+        self.__final_state[state_id] = particle
 
 
 class Node(ABC):
