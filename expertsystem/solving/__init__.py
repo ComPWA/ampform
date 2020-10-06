@@ -13,9 +13,21 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field, fields, replace
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from constraint import (
     BacktrackingSolver,
@@ -25,24 +37,27 @@ from constraint import (
     Variable,
 )
 
-from expertsystem.data import Parity, ParticleWithSpin, Spin
+from expertsystem.data import (
+    EdgeQuantumNumber,
+    EdgeQuantumNumbers,
+    NodeQuantumNumber,
+    NodeQuantumNumbers,
+    Parity,
+    Particle,
+    ParticleCollection,
+    ParticleWithSpin,
+    Spin,
+)
 from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
-    Labels,
-    ParticleDecayPropertyNames,
-    ParticlePropertyNames,
-    QNClassConverterMapping,
-    QNNameClassMapping,
     StateQuantumNumberNames,
     _convert_edges_to_dict,
     edge_qn_to_enum,
 )
 from expertsystem.solving.conservation_rules import Rule
 from expertsystem.state.properties import (
-    get_interaction_property,
-    get_particle_candidates_for_state,
     get_particle_property,
-    initialize_graphs_with_particles,
+    get_particle_property_from_dict,
 )
 from expertsystem.topology import StateTransitionGraph, Topology
 
@@ -103,10 +118,13 @@ def create_interaction_node_settings(
     return {node_id: interaction_settings for node_id in graph.nodes}
 
 
-class Result:
+_T = TypeVar("_T", dict, ParticleWithSpin)
+
+
+class Result(Generic[_T]):
     def __init__(
         self,
-        solutions: List[StateTransitionGraph[dict]],
+        solutions: List[StateTransitionGraph[_T]],
         not_executed_rules: Optional[Dict[int, Set[Rule]]] = None,
         violated_rules: Optional[Dict[int, Set[Tuple[Rule]]]] = None,
     ) -> None:
@@ -114,7 +132,7 @@ class Result:
             raise ValueError(
                 "Invalid Result! Found solutions, but also violated rules."
             )
-        self.__solutions = solutions
+        self.__solutions: List[StateTransitionGraph[_T]] = solutions
         self.__not_executed_rules: Dict[int, Set[Rule]] = defaultdict(set)
         if not_executed_rules is not None:
             self.__not_executed_rules = not_executed_rules
@@ -126,7 +144,7 @@ class Result:
             self.__violated_rules = violated_rules
 
     @property
-    def solutions(self) -> List[StateTransitionGraph[dict]]:
+    def solutions(self) -> List[StateTransitionGraph[_T]]:
         return self.__solutions
 
     @property
@@ -155,6 +173,16 @@ class Result:
                     self.__violated_rules[key].update(rules2)
 
 
+@dataclass(frozen=True)
+class QuantumNumberSolution:
+    node_quantum_numbers: Dict[
+        int, Dict[Type[NodeQuantumNumber], Union[int, float]]
+    ] = field(default_factory=lambda: defaultdict(dict))
+    edge_quantum_numbers: Dict[
+        int, Dict[Type[EdgeQuantumNumber], Union[int, float]]
+    ] = field(default_factory=lambda: defaultdict(dict))
+
+
 class Solver(ABC):
     """Interface of a Solver."""
 
@@ -163,7 +191,7 @@ class Solver(ABC):
         self,
         graph: StateTransitionGraph[ParticleWithSpin],
         graph_settings: GraphSettings,
-    ) -> Result:
+    ) -> Result[ParticleWithSpin]:
         """Find solutions for the given input.
 
         It is expected that this function determines and returns all of the
@@ -192,26 +220,39 @@ def _is_optional(class_field: Any) -> bool:
     return False
 
 
-def _init_class(class_type: Type, props: Dict[Enum, Any]) -> object:
+def _init_class(
+    class_type: Type, props: Dict[Enum, Any], key_mapping: Optional[dict]
+) -> object:
     return class_type(
         **{
-            class_field.name: _extract_value(props, class_field.type)
+            class_field.name: _extract_value(
+                props, class_field.type, key_mapping
+            )
             for class_field in fields(class_type)
             if not _is_optional(class_field.type)
-            or edge_qn_to_enum[class_field.type.__args__[0].__name__] in props
+            or (
+                key_mapping
+                and key_mapping[class_field.type.__args__[0]] in props
+            )
+            or class_field.type.__args__[0] in props
         }
     )
 
 
-def _extract_value(props: Dict[Enum, Any], obj_type: Any) -> Any:
+def _extract_value(
+    props: Dict[Enum, Any], obj_type: Any, key_mapping: Optional[dict]
+) -> Any:
     if _is_optional(obj_type):
         obj_type = obj_type.__args__[0]
 
     qn_name = obj_type.__name__
-    value = props[edge_qn_to_enum[qn_name]]
-    if "projection" in qn_name:
+    if key_mapping:
+        value = props[key_mapping[obj_type]]
+    else:
+        value = props[obj_type]
+    if "projection" in qn_name and isinstance(value, Spin):
         value = value.projection
-    elif "magnitude" in qn_name:
+    elif "magnitude" in qn_name and isinstance(value, Spin):
         value = value.magnitude
 
     if (
@@ -223,18 +264,25 @@ def _extract_value(props: Dict[Enum, Any], obj_type: Any) -> Any:
 
 
 def _check_arg_requirements(
-    class_type: Type[Any], props: Dict[Enum, Any]
+    class_type: Type[Any], props: Dict[Enum, Any], key_mapping: Optional[dict]
 ) -> bool:
     if "__dataclass_fields__" in class_type.__dict__:
         return all(
             [
-                bool(edge_qn_to_enum[class_field.type.__name__] in props)
+                bool(
+                    key_mapping[class_field.type] in props
+                    if key_mapping
+                    else class_field.type in props
+                )
                 for class_field in fields(class_type)
                 if not _is_optional(class_field.type)
             ]
         )
 
-    return edge_qn_to_enum[class_type.__name__] in props
+    if key_mapping:
+        return key_mapping[class_type] in props
+
+    return class_type in props
 
 
 def _check_requirements(
@@ -242,6 +290,7 @@ def _check_requirements(
     in_edge_props: List[Dict[Enum, Any]],
     out_edge_props: List[Dict[Enum, Any]],
     node_props: dict,
+    key_mapping: Optional[dict] = None,
 ) -> bool:
     if not hasattr(rule.__class__.__call__, "__annotations__"):
         raise TypeError(
@@ -256,12 +305,14 @@ def _check_requirements(
         (in_edge_props, out_edge_props, node_props),
     ):
         if arg_counter == 3:
-            if not _check_arg_requirements(arg_type, props):  # type: ignore
+            if not _check_arg_requirements(arg_type, props, key_mapping):  # type: ignore
                 return False
         else:
             if not all(
                 [
-                    _check_arg_requirements(arg_type.__args__[0], x)
+                    _check_arg_requirements(
+                        arg_type.__args__[0], x, key_mapping
+                    )
                     for x in props
                 ]
             ):
@@ -272,7 +323,9 @@ def _check_requirements(
 
 
 def _create_rule_edge_arg(
-    input_type: Type[Any], edge_props: List[Dict[Enum, Any]]
+    input_type: Type[Any],
+    edge_props: List[Dict[Enum, Any]],
+    key_mapping: Optional[dict],
 ) -> List[Any]:
     # pylint: disable=unidiomatic-typecheck
     if not isinstance(edge_props, (list, tuple)):
@@ -283,12 +336,14 @@ def _create_rule_edge_arg(
 
     if "__dataclass_fields__" in in_list_type.__dict__:
         # its a composite type -> create new class type here
-        return [_init_class(in_list_type, x) for x in edge_props]
-    return [_extract_value(x, in_list_type) for x in edge_props]
+        return [_init_class(in_list_type, x, key_mapping) for x in edge_props]
+    return [_extract_value(x, in_list_type, key_mapping) for x in edge_props]
 
 
 def _create_rule_node_arg(
-    input_type: Type[Any], node_props: Dict[Enum, Any]
+    input_type: Type[Any],
+    node_props: Dict[Enum, Any],
+    key_mapping: Optional[dict],
 ) -> Any:
     # pylint: disable=unidiomatic-typecheck
     if isinstance(node_props, (list, tuple)):
@@ -298,8 +353,8 @@ def _create_rule_node_arg(
 
     if "__dataclass_fields__" in input_type.__dict__:
         # its a composite type -> create new class type here
-        return _init_class(input_type, node_props)
-    return _extract_value(node_props, input_type)
+        return _init_class(input_type, node_props, key_mapping)
+    return _extract_value(node_props, input_type, key_mapping)
 
 
 def _create_rule_args(
@@ -307,6 +362,7 @@ def _create_rule_args(
     in_edge_props: List[Dict[Enum, Any]],
     out_edge_props: List[Dict[Enum, Any]],
     node_props: Dict[Enum, Any],
+    key_mapping: Optional[dict] = None,
 ) -> list:
     if not hasattr(rule.__class__.__call__, "__annotations__"):
         raise TypeError(
@@ -321,12 +377,18 @@ def _create_rule_args(
     for arg_type in rule_annotations:
         if arg_counter == 2:
             args.append(
-                _create_rule_node_arg(arg_type, ordered_props[arg_counter])  # type: ignore
+                _create_rule_node_arg(
+                    arg_type,
+                    ordered_props[arg_counter],  # type: ignore
+                    key_mapping,
+                )
             )
         else:
             args.append(
                 _create_rule_edge_arg(
-                    arg_type.__args__, ordered_props[arg_counter]  # type: ignore
+                    arg_type.__args__,
+                    ordered_props[arg_counter],  # type: ignore
+                    key_mapping,
                 )
             )
         arg_counter += 1
@@ -344,7 +406,7 @@ def _remove_return_annotation(
     return rule_annotations[:-1]
 
 
-def _get_required_qn_names(rule: Rule) -> List[Enum]:
+def _get_required_qns(rule: Rule) -> Set[type]:
     if not hasattr(rule.__class__.__call__, "__annotations__"):
         raise TypeError(
             f"missing type annotations for __call__ of rule {rule.__class__.__name__}"
@@ -365,16 +427,14 @@ def _get_required_qn_names(rule: Rule) -> List[Enum]:
         if "__dataclass_fields__" in class_type.__dict__:
             for class_field in fields(class_type):
                 qn_set.add(
-                    edge_qn_to_enum[
-                        class_field.type.__args__[0].__name__
-                        if _is_optional(class_field.type)
-                        else class_field.type.__name__
-                    ]
+                    class_field.type.__args__[0]
+                    if _is_optional(class_field.type)
+                    else class_field.type
                 )
         else:
-            qn_set.add(edge_qn_to_enum[class_type.__name__])
+            qn_set.add(class_type)
 
-    return list(qn_set)
+    return qn_set
 
 
 class _VariableInfo:
@@ -439,42 +499,105 @@ def _encode_variable_name(variable_info: _VariableInfo, delimiter: str) -> str:
     return var_name
 
 
+def _merge_solutions_with_graph(
+    solutions: List[QuantumNumberSolution],
+    graph: StateTransitionGraph[ParticleWithSpin],
+    allowed_particles: ParticleCollection,
+) -> List[StateTransitionGraph[ParticleWithSpin]]:
+    initialized_graphs = []
+
+    logging.debug("merging solutions with graph...")
+    intermediate_edges = graph.get_intermediate_state_edges()
+    for solution in solutions:
+        temp_graph = deepcopy(graph)
+        for node_id in temp_graph.nodes:
+            if node_id in solution.node_quantum_numbers:
+                temp_graph.node_props[node_id] = solution.node_quantum_numbers[
+                    node_id
+                ]
+
+        current_new_graphs = [temp_graph]
+        for int_edge_id in intermediate_edges:
+            particle_edges = __get_particle_candidates_for_state(
+                solution.edge_quantum_numbers[int_edge_id],
+                allowed_particles,
+            )
+            if len(particle_edges) == 0:
+                logging.debug("Did not find any particle candidates for")
+                logging.debug("edge id: %d", int_edge_id)
+                logging.debug("edge properties:")
+                logging.debug(solution.edge_quantum_numbers[int_edge_id])
+            new_graphs_temp = []
+            for current_new_graph in current_new_graphs:
+                for particle_edge in particle_edges:
+                    temp_graph = deepcopy(current_new_graph)
+                    temp_graph.edge_props[int_edge_id] = particle_edge
+                    new_graphs_temp.append(temp_graph)
+            current_new_graphs = new_graphs_temp
+
+        initialized_graphs.extend(current_new_graphs)
+
+    return initialized_graphs
+
+
+def __get_particle_candidates_for_state(
+    state: Dict[Type[EdgeQuantumNumber], Union[int, float]],
+    allowed_particles: ParticleCollection,
+) -> List[ParticleWithSpin]:
+    particle_edges: List[ParticleWithSpin] = []
+
+    for allowed_particle in allowed_particles.values():
+        if __check_qns_equal(state, allowed_particle):
+            # temp_particle = deepcopy(allowed_particle)
+            particle_edges.append(
+                (allowed_particle, state[EdgeQuantumNumbers.spin_projection])
+            )
+
+    return particle_edges
+
+
+def __check_qns_equal(
+    state: Dict[Type[EdgeQuantumNumber], Union[int, float]], particle: Particle
+) -> bool:
+    # This function assumes the attribute names of Particle and the quantum
+    # numbers defined by new type match
+    changes_dict: Dict[str, Union[int, float, Parity, Spin]] = {
+        getattr(edge_qn, "__name__"): value
+        for edge_qn, value in state.items()
+        if "magnitude" not in getattr(edge_qn, "__name__")
+        and "projection" not in getattr(edge_qn, "__name__")
+    }
+
+    if EdgeQuantumNumbers.isospin_magnitude in state:
+        changes_dict["isospin"] = Spin(
+            state[EdgeQuantumNumbers.isospin_magnitude],
+            state[EdgeQuantumNumbers.isospin_projection],
+        )
+    if EdgeQuantumNumbers.spin_magnitude in state:
+        changes_dict["spin"] = state[EdgeQuantumNumbers.spin_magnitude]
+    return replace(particle, **changes_dict) == particle
+
+
 def validate_fully_initialized_graph(
-    graph: StateTransitionGraph, rules_per_node: Dict[int, Set[Rule]]
+    graph: StateTransitionGraph[ParticleWithSpin],
+    rules_per_node: Dict[int, Set[Rule]],
 ) -> Result:
     logging.debug("validating graph...")
 
     def _create_node_variables(
-        node_id: int, qn_list: list
-    ) -> Dict[InteractionQuantumNumberNames, Union[Spin, float]]:
+        node_id: int, qn_list: Set[Type[NodeQuantumNumber]]
+    ) -> Dict[Type[NodeQuantumNumber], Union[int, float]]:
         """Create variables for the quantum numbers of the specified node."""
         variables = {}
-        type_label = Labels.Type.name
         if node_id in graph.node_props:
-            qns_label = Labels.QuantumNumber.name
-            for qn_name in qn_list:
-                converter = QNClassConverterMapping[
-                    QNNameClassMapping[qn_name]
-                ]
-                found_prop = None
-                for node_qn in graph.node_props[node_id][qns_label]:
-                    if node_qn[type_label] == qn_name.name:
-                        found_prop = node_qn
-                        break
-                if found_prop is not None:
-                    value = converter.parse_from_dict(found_prop)
-                    variables[qn_name] = value
+            for qn_type in qn_list:
+                if qn_type in graph.node_props[node_id]:
+                    variables[qn_type] = graph.node_props[node_id][qn_type]
         return variables
 
     def _create_edge_variables(
         edge_ids: Sequence[int],
-        qn_list: List[
-            Union[
-                ParticleDecayPropertyNames,
-                ParticlePropertyNames,
-                StateQuantumNumberNames,
-            ]
-        ],
+        qn_list: Set[Type[EdgeQuantumNumber]],
     ) -> List[dict]:
         """Create variables for the quantum numbers of the specified edges.
 
@@ -487,17 +610,22 @@ def validate_fully_initialized_graph(
             if edge_id in graph.edge_props:
                 edge_vars = {}
                 edge_props = graph.edge_props[edge_id]
-                for qn_name in qn_list:
-                    value = get_particle_property(edge_props, qn_name)
+                for qn_type in qn_list:
+                    value = get_particle_property(edge_props, qn_type)
                     if value is not None:
-                        edge_vars[qn_name] = value
+                        edge_vars[qn_type] = value
                 variables.append(edge_vars)
         return variables
 
     def _prepare_qns(
-        qn_names: Sequence[Enum], type_to_filter: Union[Type, Tuple[Type, ...]]
-    ) -> List[Enum]:
-        return [x for x in qn_names if isinstance(x, type_to_filter)]
+        quantum_number_types: Set[
+            Union[Type[EdgeQuantumNumber], Type[NodeQuantumNumber]]
+        ],
+        type_to_filter: List[
+            Union[Type[EdgeQuantumNumber], Type[NodeQuantumNumber]]
+        ],
+    ) -> List[Union[Type[EdgeQuantumNumber], Type[NodeQuantumNumber]]]:
+        return [x for x in quantum_number_types if x in type_to_filter]
 
     def _create_variable_containers(
         node_id: int, cons_law: Rule
@@ -505,21 +633,17 @@ def validate_fully_initialized_graph(
         in_edges = graph.get_edges_ingoing_to_node(node_id)
         out_edges = graph.get_edges_outgoing_from_node(node_id)
 
-        qn_names = _get_required_qn_names(cons_law)
-        qn_list = _prepare_qns(
-            qn_names,
-            (
-                StateQuantumNumberNames,
-                ParticlePropertyNames,
-                ParticleDecayPropertyNames,
-            ),
+        qns = _get_required_qns(cons_law)
+        edge_qns = _prepare_qns(
+            qns,
+            getattr(EdgeQuantumNumber, "__args__"),
         )
-        in_edges_vars = _create_edge_variables(in_edges, qn_list)  # type: ignore
-        out_edges_vars = _create_edge_variables(out_edges, qn_list)  # type: ignore
+        in_edges_vars = _create_edge_variables(in_edges, edge_qns)  # type: ignore
+        out_edges_vars = _create_edge_variables(out_edges, edge_qns)  # type: ignore
 
         node_vars = _create_node_variables(
             node_id,
-            _prepare_qns(qn_names, InteractionQuantumNumberNames),
+            _prepare_qns(qns, getattr(NodeQuantumNumber, "__args__")),  # type: ignore
         )
 
         return (in_edges_vars, out_edges_vars, node_vars)
@@ -566,7 +690,7 @@ class CSPSolver(Solver):
     constraints and a special wrapper class serves as an adapter.
     """
 
-    def __init__(self, allowed_intermediate_particles: List[dict]):
+    def __init__(self, allowed_intermediate_particles: ParticleCollection):
         self.__graph = StateTransitionGraph[dict]()
         self.__variable_set: Set[str] = set()
         self.__constraints: Dict[
@@ -583,45 +707,11 @@ class CSPSolver(Solver):
         self,
         graph: StateTransitionGraph[ParticleWithSpin],
         graph_settings: GraphSettings,
-    ) -> Result:
-        _convert_edges_to_dict([graph])
-        dict_graph: StateTransitionGraph[dict] = graph  # type: ignore
-        csp_result = self.__run_csp(dict_graph, graph_settings)
-
-        # insert particle instances
-        if self.__constraints:
-            full_particle_graphs = initialize_graphs_with_particles(
-                csp_result.solutions, self.__allowed_intermediate_particles
-            )
-        else:
-            full_particle_graphs = [dict_graph]
-
-        if full_particle_graphs and csp_result.not_executed_rules:
-            # rerun solver on these graphs using not executed rules
-            # and combine results
-            result = Result([])
-            for full_particle_graph in full_particle_graphs:
-                result.extend(
-                    validate_fully_initialized_graph(
-                        full_particle_graph, csp_result.not_executed_rules
-                    )
-                )
-            return result
-
-        return Result(
-            full_particle_graphs,
-            csp_result.not_executed_rules,
-            csp_result.violated_rules,
-        )
-
-    def __run_csp(
-        self, graph: StateTransitionGraph[dict], graph_settings: GraphSettings
-    ) -> Result:
-        self.__graph = graph
+    ) -> Result[ParticleWithSpin]:
+        dict_graph = _convert_edges_to_dict([graph])[0]
+        self.__graph = dict_graph
         self.__initialize_constraints(graph_settings)
         solutions = self.__problem.getSolutions()
-
-        solutions = self.__apply_solutions_to_graph(solutions)
 
         not_executed_rules: Dict[int, Set[Rule]] = {
             node_id: set(x.rule for x in constraints)
@@ -641,7 +731,30 @@ class CSPSolver(Solver):
                 ):
                     not_satisfied_rules[node_id].add((constraint.rule,))
 
-        return Result(solutions, not_executed_rules, not_satisfied_rules)
+        # insert particle instances
+        solutions = self.__convert_solution_keys(solutions)
+        if self.__constraints:
+            full_particle_graphs = _merge_solutions_with_graph(
+                solutions, graph, self.__allowed_intermediate_particles
+            )
+        else:
+            full_particle_graphs = [graph]
+
+        if full_particle_graphs and not_executed_rules:
+            # rerun solver on these graphs using not executed rules
+            # and combine results
+            result = Result[ParticleWithSpin]([])
+            for full_particle_graph in full_particle_graphs:
+                result.extend(
+                    validate_fully_initialized_graph(
+                        full_particle_graph, not_executed_rules
+                    )
+                )
+            return result
+
+        return Result(
+            full_particle_graphs, not_executed_rules, not_satisfied_rules
+        )
 
     def __clear(self) -> None:
         self.__variable_set = set()
@@ -687,7 +800,8 @@ class CSPSolver(Solver):
             ):
                 variable_mapping: Dict[str, Any] = {}
                 # from cons law and graph determine needed var lists
-                qn_names = _get_required_qn_names(cons_law)
+                qn_types = _get_required_qns(cons_law)
+                qn_names = list([edge_qn_to_enum[x] for x in qn_types])
 
                 in_edges = self.__graph.get_edges_ingoing_to_node(node_id)
                 in_edge_vars = self.__create_edge_variables(
@@ -707,7 +821,9 @@ class CSPSolver(Solver):
 
                 # now create variables for node/interaction qns
                 int_node_vars = self.__create_node_variables(
-                    node_id, qn_names, graph_settings.node_settings
+                    node_id,
+                    qn_types,
+                    graph_settings.node_settings,
                 )
                 variable_mapping["interaction"] = int_node_vars[0]
                 variable_mapping["interaction-fixed"] = int_node_vars[1]
@@ -727,12 +843,9 @@ class CSPSolver(Solver):
     def __create_node_variables(
         self,
         node_id: int,
-        qn_names: Sequence[Enum],
+        qn_list: Set[Type[NodeQuantumNumber]],
         node_settings: Dict[int, NodeSettings],
-    ) -> Tuple[
-        Set[str],
-        Set[Tuple[InteractionQuantumNumberNames, Union[Spin, float]]],
-    ]:
+    ) -> Tuple[Set[str], Dict[Type[NodeQuantumNumber], Union[int, float]],]:
         """Create variables for the quantum numbers of the specified node.
 
         If a quantum number is already defined for a node, then a fixed
@@ -742,24 +855,20 @@ class CSPSolver(Solver):
         """
         variables: Tuple[
             Set[str],
-            Set[Tuple[InteractionQuantumNumberNames, Union[Spin, float]]],
+            Dict[Type[NodeQuantumNumber], Union[int, float]],
         ] = (
             set(),
-            set(),
+            dict(),
         )
 
         if node_id in self.__graph.node_props:
             node_props = self.__graph.node_props[node_id]
-            for interaction_qn in [
-                x
-                for x in qn_names
-                if isinstance(x, InteractionQuantumNumberNames)
-            ]:
-                value = get_interaction_property(node_props, interaction_qn)
-                if value is not None:
-                    variables[1].add((interaction_qn, value))
+            for qn_type in qn_list:
+                if qn_type in node_props and node_props[qn_type] is not None:
+                    variables[1].update({qn_type: node_props[qn_type]})
         else:
-            for qn_name in qn_names:
+            for qn_type in qn_list:
+                qn_name = edge_qn_to_enum[qn_type]
                 var_info = _VariableInfo(
                     _GraphElementTypes.node, node_id, qn_name
                 )
@@ -795,7 +904,7 @@ class CSPSolver(Solver):
                     for x in qn_names
                     if not isinstance(x, InteractionQuantumNumberNames)
                 ]:
-                    value = get_particle_property(edge_props, qn_name)  # type: ignore
+                    value = get_particle_property_from_dict(edge_props, qn_name)  # type: ignore
                     if value is not None:
                         variables[1][edge_id].append((qn_name, value))
             else:
@@ -820,55 +929,47 @@ class CSPSolver(Solver):
             self.__problem.addVariable(key, domain)
         return key
 
-    def __apply_solutions_to_graph(
-        self, solutions: List[Dict[str, Any]]
-    ) -> List[StateTransitionGraph[dict]]:
-        # pylint: disable=too-many-locals
-        """Apply the CSP solutions to the graph instance.
-
-        In other words attach the solution quantum numbers as properties to the
-        edges. Also the solutions are filtered using the allowed intermediate
-        particle list, to avoid large memory consumption.
-
-        Args:
-            solutions: list of solutions of the csp solver
-
-        Returns:
-            solution graphs ([:class:`.StateTransitionGraph`])
-        """
-
-        def add_qn_to_graph_element(
-            graph: StateTransitionGraph[dict],
-            var_info: _VariableInfo,
-            value: Any,
-        ) -> None:
-            if value is None:
-                return
-            qns_label = Labels.QuantumNumber.name
-
-            element_id = var_info.element_id
-            qn_name = var_info.qn_name
-            graph_prop_dict = graph.edge_props
-            if var_info.graph_element_type is _GraphElementTypes.node:
-                graph_prop_dict = graph.node_props
-
-            converter = QNClassConverterMapping[QNNameClassMapping[qn_name]]
-
-            if element_id not in graph_prop_dict:
-                graph_prop_dict[element_id] = {qns_label: []}
-
-            graph_prop_dict[element_id][qns_label].append(
-                converter.convert_to_dict(qn_name, value)
-            )
-
-        solution_graphs = []
+    def __convert_solution_keys(
+        self, solutions: List[Dict[str, Union[int, float]]]
+    ) -> List[QuantumNumberSolution]:
+        """Convert keys of CSP solutions from string to quantum number types."""
         initial_edges = self.__graph.get_initial_state_edges()
         final_edges = self.__graph.get_final_state_edges()
 
-        found_jps = set()
+        def get_qn(
+            quantum_number_enum: Enum,
+            value: Any,
+        ) -> Dict[Any, Any]:
+            for qn_type, qn_enum in edge_qn_to_enum.items():
+                if qn_enum == quantum_number_enum:
+                    if quantum_number_enum is StateQuantumNumberNames.Spin:
+                        return {
+                            EdgeQuantumNumbers.spin_magnitude: value.magnitude,
+                            EdgeQuantumNumbers.spin_projection: value.projection,
+                        }
+                    if quantum_number_enum is StateQuantumNumberNames.IsoSpin:
+                        return {
+                            EdgeQuantumNumbers.isospin_magnitude: value.magnitude,
+                            EdgeQuantumNumbers.isospin_projection: value.projection,
+                        }
+                    if quantum_number_enum is InteractionQuantumNumberNames.S:
+                        return {
+                            NodeQuantumNumbers.s_magnitude: value.magnitude,
+                            NodeQuantumNumbers.s_projection: value.projection,
+                        }
+                    if quantum_number_enum is InteractionQuantumNumberNames.L:
+                        return {
+                            NodeQuantumNumbers.l_magnitude: value.magnitude,
+                            NodeQuantumNumbers.l_projection: value.projection,
+                        }
+                    return {qn_type: value}
+            raise ValueError(
+                f"Enum {quantum_number_enum} not found in mapping"
+            )
 
+        converted_solutions = list()
         for solution in solutions:
-            graph_copy = deepcopy(self.__graph)
+            qn_solution = QuantumNumberSolution()
             for var_name, value in solution.items():
                 var_info = _decode_variable_name(
                     var_name, self.__particle_variable_delimiter
@@ -879,43 +980,16 @@ class CSPSolver(Solver):
                     if ele_id in initial_edges or ele_id in final_edges:
                         # skip if its an initial or final state edge
                         continue
+                    qn_solution.edge_quantum_numbers[ele_id].update(
+                        get_qn(var_info.qn_name, value)
+                    )
+                else:
+                    qn_solution.node_quantum_numbers[ele_id].update(
+                        get_qn(var_info.qn_name, value)
+                    )
+            converted_solutions.append(qn_solution)
 
-                add_qn_to_graph_element(graph_copy, var_info, value)
-
-            solution_valid = True
-            if self.__allowed_intermediate_particles:
-                for int_edge_id in graph_copy.get_intermediate_state_edges():
-                    # for documentation in case of failure
-                    spin = get_particle_property(
-                        graph_copy.edge_props[int_edge_id],
-                        StateQuantumNumberNames.Spin,
-                    )
-                    parity = get_particle_property(
-                        graph_copy.edge_props[int_edge_id],
-                        StateQuantumNumberNames.Parity,
-                    )
-                    found_jps.add(
-                        str(spin.magnitude)  # type: ignore
-                        + ("-" if parity in (-1, -1.0) else "+")
-                    )
-                    # now do actual candidate finding
-                    candidates = get_particle_candidates_for_state(
-                        graph_copy.edge_props[int_edge_id],
-                        self.__allowed_intermediate_particles,
-                    )
-                    if not candidates:
-                        solution_valid = False
-                        break
-            if solution_valid:
-                solution_graphs.append(graph_copy)
-
-        if solutions and not solution_graphs:
-            logging.warning(
-                "No intermediate state particles match the found %d solutions!",
-                len(solutions),
-            )
-            logging.warning("solution inter. state J^P: %s", str(found_jps))
-        return solution_graphs
+        return converted_solutions
 
 
 class _ConservationRuleConstraintWrapper(Constraint):
@@ -938,7 +1012,7 @@ class _ConservationRuleConstraintWrapper(Constraint):
         self.out_variable_set = variable_mapping["outgoing"]
         self.fixed_out_variables = variable_mapping["outgoing-fixed"]
         self.interaction_variable_set = variable_mapping["interaction"]
-        self.fixed_interaction_variable_set = variable_mapping[
+        self.fixed_interaction_variable_dict = variable_mapping[
             "interaction-fixed"
         ]
         self.name_delimiter = name_delimiter
@@ -971,8 +1045,12 @@ class _ConservationRuleConstraintWrapper(Constraint):
             var_info = _decode_variable_name(var_name, self.name_delimiter)
             self.interaction_qns[var_info.qn_name] = {}
             self.variable_name_decoding_map[var_name] = (0, var_info.qn_name)
-        for qn_name, value in self.fixed_interaction_variable_set:
-            self.interaction_qns[qn_name] = value
+        self.interaction_qns.update(
+            {
+                edge_qn_to_enum[k]: v
+                for k, v in self.fixed_interaction_variable_dict.items()
+            }
+        )
 
     def initialize_particle_list(
         self,
@@ -1055,14 +1133,22 @@ class _ConservationRuleConstraintWrapper(Constraint):
 
         self.update_variable_lists(params)
         if not _check_requirements(
-            self.rule, self.part_in, self.part_out, self.interaction_qns
+            self.rule,
+            self.part_in,
+            self.part_out,
+            self.interaction_qns,
+            edge_qn_to_enum,
         ):
             self.conditions_never_met = True
             return True
 
         passed = self.rule(
             *_create_rule_args(
-                self.rule, self.part_in, self.part_out, self.interaction_qns
+                self.rule,
+                self.part_in,
+                self.part_out,
+                self.interaction_qns,
+                edge_qn_to_enum,
             )
         )
 

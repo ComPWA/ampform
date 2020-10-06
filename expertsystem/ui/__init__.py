@@ -29,7 +29,11 @@ from expertsystem.data import (
     ParticleCollection,
     ParticleWithSpin,
 )
-from expertsystem.nested_dicts import InteractionQuantumNumberNames
+from expertsystem.nested_dicts import (
+    InteractionQuantumNumberNames,
+    _convert_edges_to_dict,
+    _convert_nodes_to_dict,
+)
 from expertsystem.solving import (
     CSPSolver,
     EdgeSettings,
@@ -321,7 +325,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def find_solutions(
         self,
         graph_setting_groups: GraphSettingsGroups,
-    ) -> Result:  # pylint: disable=too-many-locals
+    ) -> Result[dict]:  # pylint: disable=too-many-locals
         """Check for solutions for a specific set of interaction settings."""
         results: Dict[float, Result] = {}
         logging.info(
@@ -374,12 +378,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
 
         # merge strengths
-        final_result = Result([])
+        final_result = Result[ParticleWithSpin]([])
         for temp_result in results.values():
             final_result.extend(temp_result)
         # remove duplicate solutions, which only differ in the interaction qn S
+        final_solutions = _convert_edges_to_dict(final_result.solutions)
+        _convert_nodes_to_dict(final_solutions)
         final_solutions = remove_duplicate_solutions(
-            final_result.solutions,
+            final_solutions,
             self.filter_remove_qns,
             self.filter_ignore_qns,
         )
@@ -397,12 +403,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         state_graph_node_settings_pair: Tuple[
             StateTransitionGraph[ParticleWithSpin], GraphSettings
         ],
-    ) -> Result:
+    ) -> Result[ParticleWithSpin]:
         solver = CSPSolver(self.__allowed_intermediate_particles)
 
         return solver.find_solutions(*state_graph_node_settings_pair)
 
-    def generate_amplitude_model(self, result: Result) -> AmplitudeModel:
+    def generate_amplitude_model(self, result: Result[dict]) -> AmplitudeModel:
         """Generate an amplitude model from a generated `.Result`.
 
         The type of amplitude model (`.HelicityAmplitudeGenerator` or

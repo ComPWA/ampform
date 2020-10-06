@@ -1,7 +1,4 @@
 # pylint: disable=protected-access
-
-from typing import List
-
 import pytest
 
 from expertsystem.nested_dicts import (
@@ -276,8 +273,7 @@ def test_edge_swap(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    _convert_edges_to_dict(init_graphs)
-    init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
+    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
     for graph in init_graphs_dict:
         ref_mapping = _create_edge_id_particle_mapping(
@@ -323,10 +319,9 @@ def test_match_external_edges(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    _convert_edges_to_dict(init_graphs)
-    init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
+    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
-    match_external_edges(init_graphs)
+    match_external_edges(init_graphs_dict)
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
         init_graphs_dict[0], "get_final_state_edges"
@@ -401,10 +396,9 @@ def test_external_edge_identical_particle_combinatorics(
     topology_graphs = stm._build_topologies()
 
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    _convert_edges_to_dict(init_graphs)
-    init_graphs_dict: List[StateTransitionGraph[dict]] = init_graphs  # type: ignore
+    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
-    match_external_edges(init_graphs)
+    match_external_edges(init_graphs_dict)
 
     comb_graphs = []
     for group in init_graphs_dict:

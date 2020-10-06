@@ -1,11 +1,6 @@
 import pytest
 
-from expertsystem.data import Spin
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-    Labels,
-    _SpinQNConverter,
-)
+from expertsystem.data import NodeQuantumNumbers, Spin
 from expertsystem.solving.conservation_rules import ParityConservationHelicity
 from expertsystem.ui import (
     InteractionTypes,
@@ -107,7 +102,11 @@ from expertsystem.ui._system_control import _remove_conservation_law
     ],
 )
 def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-arguments
-    initial_state, final_state, ang_mom, spin, solution_count
+    initial_state: list,
+    final_state: list,
+    ang_mom: Spin,
+    spin: Spin,
+    solution_count: int,
 ):
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
@@ -128,17 +127,12 @@ def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-argum
     stm.number_of_threads = 2
     stm.filter_remove_qns = []
 
-    l_label = InteractionQuantumNumberNames.L
-    s_label = InteractionQuantumNumberNames.S
-    qn_label = Labels.QuantumNumber
-
-    spin_converter = _SpinQNConverter()
     node_props = {
         0: {
-            qn_label.name: [
-                spin_converter.convert_to_dict(l_label, ang_mom),
-                spin_converter.convert_to_dict(s_label, spin),
-            ]
+            NodeQuantumNumbers.l_magnitude: ang_mom.magnitude,
+            NodeQuantumNumbers.l_projection: ang_mom.projection,
+            NodeQuantumNumbers.s_magnitude: spin.magnitude,
+            NodeQuantumNumbers.s_projection: spin.projection,
         }
     }
     graph_node_setting_pairs = stm.prepare_graphs()

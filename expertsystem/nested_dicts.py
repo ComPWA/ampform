@@ -224,30 +224,30 @@ QNNameClassMapping = {
 }
 
 edge_qn_to_enum = {
-    EdgeQuantumNumbers.pid.__name__: ParticlePropertyNames.Pid,
-    EdgeQuantumNumbers.mass.__name__: ParticlePropertyNames.Mass,
-    EdgeQuantumNumbers.width.__name__: ParticleDecayPropertyNames.Width,
-    EdgeQuantumNumbers.spin_magnitude.__name__: StateQuantumNumberNames.Spin,
-    EdgeQuantumNumbers.spin_projection.__name__: StateQuantumNumberNames.Spin,
-    EdgeQuantumNumbers.charge.__name__: StateQuantumNumberNames.Charge,
-    EdgeQuantumNumbers.isospin_magnitude.__name__: StateQuantumNumberNames.IsoSpin,
-    EdgeQuantumNumbers.isospin_projection.__name__: StateQuantumNumberNames.IsoSpin,
-    EdgeQuantumNumbers.strangeness.__name__: StateQuantumNumberNames.Strangeness,
-    EdgeQuantumNumbers.charmness.__name__: StateQuantumNumberNames.Charmness,
-    EdgeQuantumNumbers.bottomness.__name__: StateQuantumNumberNames.Bottomness,
-    EdgeQuantumNumbers.topness.__name__: StateQuantumNumberNames.Topness,
-    EdgeQuantumNumbers.baryon_number.__name__: StateQuantumNumberNames.BaryonNumber,
-    EdgeQuantumNumbers.electron_lepton_number.__name__: StateQuantumNumberNames.ElectronLN,
-    EdgeQuantumNumbers.muon_lepton_number.__name__: StateQuantumNumberNames.MuonLN,
-    EdgeQuantumNumbers.tau_lepton_number.__name__: StateQuantumNumberNames.TauLN,
-    EdgeQuantumNumbers.parity.__name__: StateQuantumNumberNames.Parity,
-    EdgeQuantumNumbers.c_parity.__name__: StateQuantumNumberNames.CParity,
-    EdgeQuantumNumbers.g_parity.__name__: StateQuantumNumberNames.GParity,
-    NodeQuantumNumbers.l_magnitude.__name__: InteractionQuantumNumberNames.L,
-    NodeQuantumNumbers.l_projection.__name__: InteractionQuantumNumberNames.L,
-    NodeQuantumNumbers.s_magnitude.__name__: InteractionQuantumNumberNames.S,
-    NodeQuantumNumbers.s_projection.__name__: InteractionQuantumNumberNames.S,
-    NodeQuantumNumbers.parity_prefactor.__name__: InteractionQuantumNumberNames.ParityPrefactor,
+    EdgeQuantumNumbers.pid: ParticlePropertyNames.Pid,
+    EdgeQuantumNumbers.mass: ParticlePropertyNames.Mass,
+    EdgeQuantumNumbers.width: ParticleDecayPropertyNames.Width,
+    EdgeQuantumNumbers.spin_magnitude: StateQuantumNumberNames.Spin,
+    EdgeQuantumNumbers.spin_projection: StateQuantumNumberNames.Spin,
+    EdgeQuantumNumbers.charge: StateQuantumNumberNames.Charge,
+    EdgeQuantumNumbers.isospin_magnitude: StateQuantumNumberNames.IsoSpin,
+    EdgeQuantumNumbers.isospin_projection: StateQuantumNumberNames.IsoSpin,
+    EdgeQuantumNumbers.strangeness: StateQuantumNumberNames.Strangeness,
+    EdgeQuantumNumbers.charmness: StateQuantumNumberNames.Charmness,
+    EdgeQuantumNumbers.bottomness: StateQuantumNumberNames.Bottomness,
+    EdgeQuantumNumbers.topness: StateQuantumNumberNames.Topness,
+    EdgeQuantumNumbers.baryon_number: StateQuantumNumberNames.BaryonNumber,
+    EdgeQuantumNumbers.electron_lepton_number: StateQuantumNumberNames.ElectronLN,
+    EdgeQuantumNumbers.muon_lepton_number: StateQuantumNumberNames.MuonLN,
+    EdgeQuantumNumbers.tau_lepton_number: StateQuantumNumberNames.TauLN,
+    EdgeQuantumNumbers.parity: StateQuantumNumberNames.Parity,
+    EdgeQuantumNumbers.c_parity: StateQuantumNumberNames.CParity,
+    EdgeQuantumNumbers.g_parity: StateQuantumNumberNames.GParity,
+    NodeQuantumNumbers.l_magnitude: InteractionQuantumNumberNames.L,
+    NodeQuantumNumbers.l_projection: InteractionQuantumNumberNames.L,
+    NodeQuantumNumbers.s_magnitude: InteractionQuantumNumberNames.S,
+    NodeQuantumNumbers.s_projection: InteractionQuantumNumberNames.S,
+    NodeQuantumNumbers.parity_prefactor: InteractionQuantumNumberNames.ParityPrefactor,
 }
 
 
@@ -281,23 +281,35 @@ def remove_spin_projection(edge_props: dict) -> dict:
 
 def _convert_edges_to_dict(
     instance: List[StateTransitionGraph[ParticleWithSpin]],
-) -> None:
+) -> List[StateTransitionGraph[dict]]:
     # https://github.com/ComPWA/expertsystem/issues/254
     def convert_edges_in_graph(
-        graphs: List[StateTransitionGraph[ParticleWithSpin]],
-    ) -> None:
-        for graph in graphs:
-            for edge_id, edge_property in graph.edge_props.items():
-                if not isinstance(edge_property, dict):
-                    graph.edge_props[
-                        edge_id
-                    ] = _particle_with_spin_projection_to_dict(  # type: ignore
-                        edge_property
-                    )
+        graph: StateTransitionGraph[ParticleWithSpin],
+    ) -> StateTransitionGraph[dict]:
+
+        new_graph = StateTransitionGraph[dict](
+            nodes=graph.nodes, edges=graph.edges
+        )
+        new_graph.node_props = graph.node_props
+        for edge_id, edge_property in graph.edge_props.items():
+            if not isinstance(edge_property, dict):
+
+                new_graph.edge_props[
+                    edge_id
+                ] = _particle_with_spin_projection_to_dict(  # type: ignore
+                    edge_property
+                )
+        return new_graph
 
     if isinstance(instance, list) and len(instance) > 0:
         if isinstance(instance[0], StateTransitionGraph):
-            convert_edges_in_graph(instance)
+            return [convert_edges_in_graph(x) for x in instance]
+
+        raise TypeError(
+            "Expected List[StateTransitionGraph[ParticleWithSpin]]"
+        )
+
+    return []
 
 
 def _particle_with_spin_projection_to_dict(
@@ -309,3 +321,85 @@ def _particle_with_spin_projection_to_dict(
         if item["Type"] == "Spin":
             item["Projection"] = spin_projection
     return output
+
+
+def _convert_nodes_to_dict(
+    instance: List[StateTransitionGraph[dict]],
+) -> None:
+    # https://github.com/ComPWA/expertsystem/issues/254
+    def convert_node_props(
+        graph_node_props: dict,
+    ) -> dict:
+        new_graph_node_props = {}
+        for node_id, node_props in graph_node_props.items():
+            new_node_props = []
+            if NodeQuantumNumbers.s_magnitude in node_props:
+                converted_node_dict = {
+                    Labels.Type.name: edge_qn_to_enum[
+                        NodeQuantumNumbers.s_magnitude
+                    ].name,
+                    Labels.Class.name: QNNameClassMapping[
+                        edge_qn_to_enum[NodeQuantumNumbers.s_magnitude]
+                    ].name,
+                    Labels.Value.name: node_props[
+                        NodeQuantumNumbers.s_magnitude
+                    ],
+                }
+
+                if NodeQuantumNumbers.s_projection in node_props:
+                    converted_node_dict.update(
+                        {
+                            Labels.Projection.name: node_props[
+                                NodeQuantumNumbers.s_projection
+                            ]
+                        }
+                    )
+                new_node_props.append(converted_node_dict)
+
+            if NodeQuantumNumbers.l_magnitude in node_props:
+                converted_node_dict = {
+                    Labels.Type.name: edge_qn_to_enum[
+                        NodeQuantumNumbers.l_magnitude
+                    ].name,
+                    Labels.Class.name: QNNameClassMapping[
+                        edge_qn_to_enum[NodeQuantumNumbers.l_magnitude]
+                    ].name,
+                    Labels.Value.name: node_props[
+                        NodeQuantumNumbers.l_magnitude
+                    ],
+                }
+
+                if NodeQuantumNumbers.l_projection in node_props:
+                    converted_node_dict.update(
+                        {
+                            Labels.Projection.name: node_props[
+                                NodeQuantumNumbers.l_projection
+                            ]
+                        }
+                    )
+                new_node_props.append(converted_node_dict)
+
+            if NodeQuantumNumbers.parity_prefactor in node_props:
+                new_node_props.append(
+                    {
+                        Labels.Type.name: edge_qn_to_enum[
+                            NodeQuantumNumbers.parity_prefactor
+                        ].name,
+                        Labels.Class.name: QNNameClassMapping[
+                            edge_qn_to_enum[
+                                NodeQuantumNumbers.parity_prefactor
+                            ]
+                        ],
+                        Labels.Value.name: node_props[
+                            NodeQuantumNumbers.parity_prefactor
+                        ],
+                    }
+                )
+
+            new_graph_node_props[node_id] = {
+                Labels.QuantumNumber.name: new_node_props
+            }
+        return new_graph_node_props
+
+    for graph in instance:
+        graph.node_props = convert_node_props(graph.node_props)

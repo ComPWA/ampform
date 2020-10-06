@@ -9,7 +9,7 @@ from expertsystem.nested_dicts import (
 )
 from expertsystem.state.properties import (
     get_interaction_property,
-    get_particle_property,
+    get_particle_property_from_dict,
 )
 from expertsystem.topology import StateTransitionGraph
 
@@ -101,13 +101,15 @@ def _clebsch_gordan_decorator(
         in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
 
         parent_spin = __validate_spin_type(
-            get_particle_property(graph.edge_props[in_edge_ids[0]], spin_type)
+            get_particle_property_from_dict(
+                graph.edge_props[in_edge_ids[0]], spin_type
+            )
         )
 
         daughter_spins: List[Spin] = []
 
         for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
-            daughter_spin = get_particle_property(
+            daughter_spin = get_particle_property_from_dict(
                 graph.edge_props[out_edge_id], spin_type
             )
             if daughter_spin is not None and isinstance(daughter_spin, Spin):

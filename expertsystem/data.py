@@ -149,6 +149,30 @@ for edge_qn_name, edge_qn_type in EdgeQuantumNumbers.__dict__.items():
         edge_qn_type.__module__ = "expertsystem.data"
 
 
+# for static typing
+EdgeQuantumNumber = Union[
+    EdgeQuantumNumbers.pid,
+    EdgeQuantumNumbers.mass,
+    EdgeQuantumNumbers.width,
+    EdgeQuantumNumbers.spin_magnitude,
+    EdgeQuantumNumbers.spin_projection,
+    EdgeQuantumNumbers.charge,
+    EdgeQuantumNumbers.isospin_magnitude,
+    EdgeQuantumNumbers.isospin_projection,
+    EdgeQuantumNumbers.strangeness,
+    EdgeQuantumNumbers.charmness,
+    EdgeQuantumNumbers.bottomness,
+    EdgeQuantumNumbers.topness,
+    EdgeQuantumNumbers.baryon_number,
+    EdgeQuantumNumbers.electron_lepton_number,
+    EdgeQuantumNumbers.muon_lepton_number,
+    EdgeQuantumNumbers.tau_lepton_number,
+    EdgeQuantumNumbers.parity,
+    EdgeQuantumNumbers.c_parity,
+    EdgeQuantumNumbers.g_parity,
+]
+
+
 @dataclass(frozen=True, init=False)
 class NodeQuantumNumbers:
     """Definition of quantum numbers for interaction nodes."""
@@ -164,6 +188,16 @@ for node_qn_name, node_qn_type in NodeQuantumNumbers.__dict__.items():
     if not node_qn_name.startswith("__"):
         node_qn_type.__qualname__ = f"NodeQuantumNumbers.{node_qn_name}"
         node_qn_type.__module__ = "expertsystem.data"
+
+
+# for static typing
+NodeQuantumNumber = Union[
+    NodeQuantumNumbers.l_magnitude,
+    NodeQuantumNumbers.l_projection,
+    NodeQuantumNumbers.s_magnitude,
+    NodeQuantumNumbers.s_projection,
+    NodeQuantumNumbers.parity_prefactor,
+]
 
 
 @dataclass(frozen=True)

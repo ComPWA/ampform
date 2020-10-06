@@ -20,9 +20,11 @@ from typing import (
 
 from numpy import arange
 
-from expertsystem import io
 from expertsystem.data import (
+    EdgeQuantumNumbers,
+    Parity,
     ParticleCollection,
+    ParticleWithSpin,
     Spin,
 )
 from expertsystem.nested_dicts import (
@@ -58,6 +60,36 @@ def create_spin_domain(
 
 
 def get_particle_property(
+    edge_property: ParticleWithSpin, qn_type: type
+) -> Optional[Union[float, int]]:
+    """Convert a data member of `.Particle` into one of `.EdgeQuantumNumbers`.
+
+    The `.solving` model requires a list of 'flat' values, such as `int` and
+    `float`. It cannot handle `~.data.Spin` (which contains `~.Spin.magnitude` and
+    `~.Spin.projection`). The `.solving` module also works with spin
+    projection, which a general `.Particle` instance does not carry.
+    """
+    particle, spin_projection = edge_property
+    value = None
+    if hasattr(particle, qn_type.__name__):
+        value = getattr(particle, qn_type.__name__)
+    else:
+        if qn_type is EdgeQuantumNumbers.spin_magnitude:
+            value = particle.spin
+        elif qn_type is EdgeQuantumNumbers.spin_projection:
+            value = spin_projection
+        if particle.isospin is not None:
+            if qn_type is EdgeQuantumNumbers.isospin_magnitude:
+                value = particle.isospin.magnitude
+            elif qn_type is EdgeQuantumNumbers.isospin_projection:
+                value = particle.isospin.projection
+
+    if isinstance(value, Parity):
+        return int(value)
+    return value
+
+
+def get_particle_property_from_dict(
     particle_properties: Dict[str, Any],
     qn_name: Union[
         ParticleDecayPropertyNames,  # width
@@ -253,121 +285,25 @@ class CompareGraphElementPropertiesFunctor:
         return True
 
 
-def initialize_graphs_with_particles(
-    graphs: List[StateTransitionGraph[dict]],
-    allowed_particle_list: List[Dict[str, Any]],
-) -> List[StateTransitionGraph[dict]]:
-    initialized_graphs = []
-
-    for graph in graphs:
-        logging.debug("initializing graph...")
-        intermediate_edges = graph.get_intermediate_state_edges()
-        current_new_graphs = [graph]
-        for int_edge_id in intermediate_edges:
-            particle_edges = get_particle_candidates_for_state(
-                graph.edge_props[int_edge_id], allowed_particle_list
-            )
-            if len(particle_edges) == 0:
-                logging.debug("Did not find any particle candidates for")
-                logging.debug("edge id: %d", int_edge_id)
-                logging.debug("edge properties:")
-                logging.debug(graph.edge_props[int_edge_id])
-            new_graphs_temp = []
-            for current_new_graph in current_new_graphs:
-                for particle_edge in particle_edges:
-                    temp_graph = deepcopy(current_new_graph)
-                    temp_graph.edge_props[int_edge_id] = particle_edge
-                    new_graphs_temp.append(temp_graph)
-            current_new_graphs = new_graphs_temp
-
-        initialized_graphs.extend(current_new_graphs)
-    return initialized_graphs
-
-
 def filter_particles(
     particle_db: ParticleCollection,
     allowed_particle_names: List[str],
-) -> List[Dict[str, Any]]:
-    """Filters `.ParticleCollection` based on the allowed particle names.
-
-    .. note::
-        This function currently also converts back to `dict` structures, which
-        are still used internally by the solver code.
-    """
-    mod_allowed_particle_list = []
+) -> ParticleCollection:
+    """Filters `.ParticleCollection` based on the allowed particle names."""
+    allowed_particles = ParticleCollection()
     if len(allowed_particle_names) == 0:
-        mod_allowed_particle_list = list(
-            io.xml.object_to_dict(particle_db).values()
+        return particle_db
+
+    for particle_name in allowed_particle_names:
+        # if isinstance(particle_label, int):
+        #     allowed_particles.add(particle_db.find(particle_label))
+        # elif isinstance(particle_label, str):
+        subset = particle_db.filter(
+            lambda p: particle_name  # pylint: disable=cell-var-from-loop
+            in p.name
         )
-    else:
-        for allowed_particle in allowed_particle_names:
-            if isinstance(allowed_particle, int):
-                particle = particle_db.find(allowed_particle)
-                particle_dict = io.xml.object_to_dict(particle)
-                mod_allowed_particle_list.append(particle_dict)
-            elif isinstance(allowed_particle, str):
-                subset = particle_db.filter(
-                    lambda p: allowed_particle  # pylint: disable=cell-var-from-loop
-                    in p.name
-                )
-                particle_dicts = io.xml.object_to_dict(subset)
-                mod_allowed_particle_list += list(particle_dicts.values())
-            else:
-                mod_allowed_particle_list.append(allowed_particle)
-    return mod_allowed_particle_list
-
-
-def get_particle_candidates_for_state(
-    state: Dict[str, List[Dict[str, Any]]],
-    allowed_particle_list: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
-    particle_edges: List[Dict[str, Any]] = []
-    qns_label = Labels.QuantumNumber.name
-
-    for allowed_state in allowed_particle_list:
-        if __check_qns_equal(state[qns_label], allowed_state[qns_label]):
-            temp_particle = deepcopy(allowed_state)
-            temp_particle[qns_label] = __merge_qn_props(
-                state[qns_label], allowed_state[qns_label]
-            )
-            particle_edges.append(temp_particle)
-    return particle_edges
-
-
-def __check_qns_equal(
-    qns_state: List[Dict[str, Any]], qns_particle: List[Dict[str, Any]]
-) -> bool:
-    equal = True
-    class_label = Labels.Class.name
-    type_label = Labels.Type.name
-    for qn_entry in qns_state:
-        qn_found = False
-        qn_value_match = False
-        for par_qn_entry in qns_particle:
-            # first check if the type and class of these
-            # qn entries are the same
-            if (
-                StateQuantumNumberNames[qn_entry[type_label]]
-                is StateQuantumNumberNames[par_qn_entry[type_label]]
-                and QuantumNumberClasses[qn_entry[class_label]]
-                is QuantumNumberClasses[par_qn_entry[class_label]]
-            ):
-                qn_found = True
-                if __compare_qns(qn_entry, par_qn_entry):
-                    qn_value_match = True
-                break
-        if not qn_found:
-            # check if there is a default value
-            qn_name = StateQuantumNumberNames[qn_entry[type_label]]
-            if qn_name in QNDefaultValues:
-                if __compare_qns(qn_entry, QNDefaultValues[qn_name]):
-                    qn_found = True
-                    qn_value_match = True
-
-        if not qn_found or not qn_value_match:
-            equal = False
-            break
-    return equal
+        allowed_particles.merge(subset)
+    return allowed_particles
 
 
 def __compare_qns(qn_dict: Dict[str, Any], qn_dict2: Dict[str, Any]) -> bool:
