@@ -343,31 +343,29 @@ class GellmannNishijima:
         )
 
 
-class ParticleCollection(abc.Mapping):
-    """Safe, `dict`-like collection of `.Particle` instances."""
+class ParticleCollection(abc.MutableSet):
+    """Searchable collection of immutable `.Particle` instances."""
 
     def __init__(self, particles: Optional[Iterable[Particle]] = None) -> None:
         self.__particles: Dict[str, Particle] = dict()
+        self.__pid_to_name: Dict[int, str] = dict()
         if particles is not None:
-            if not isinstance(particles, (list, set, tuple)):
-                raise ValueError(
-                    f"Cannot construct a {self.__class__.__name__} "
-                    f"from a {particles.__class__.__name__}"
-                )
-            self.__particles.update(
-                {
-                    particle.name: particle
-                    for particle in particles
-                    if isinstance(particle, Particle)
-                }
-            )
+            self.update(particles)
 
-    def __contains__(self, particle_name: object) -> bool:
-        return particle_name in self.__particles
+    def __contains__(self, instance: object) -> bool:
+        if isinstance(instance, str):
+            return instance in self.__particles
+        if isinstance(instance, Particle):
+            return instance in self.__particles.values()
+        if isinstance(instance, int):
+            return instance in self.__pid_to_name
+        raise NotImplementedError(
+            f"Cannot search for type {instance.__class__.__name__}"
+        )
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, ParticleCollection):
-            return set(self.values()) == set(other.values())
+        if isinstance(other, abc.Iterable):
+            return set(self) == set(other)
         raise NotImplementedError(
             f"Cannot compare {self.__class__.__name__} with  {self.__class__.__name__}"
         )
@@ -389,8 +387,8 @@ class ParticleCollection(abc.Mapping):
             )
         raise KeyError(error_message)
 
-    def __iter__(self) -> Iterator[str]:
-        return self.__particles.__iter__()
+    def __iter__(self) -> Iterator[Particle]:
+        return self.__particles.values().__iter__()
 
     def __len__(self) -> int:
         return len(self.__particles)
@@ -401,20 +399,45 @@ class ParticleCollection(abc.Mapping):
         if isinstance(other, Particle):
             self.add(other)
         elif isinstance(other, ParticleCollection):
-            self.merge(other)
+            self.update(other)
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"Cannot add {other.__class__.__name__}")
         return self
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({set(self.__particles.values())})"
 
-    def add(self, particle: Particle) -> None:
-        if particle.name in self.__particles:
-            logging.warning(
-                f"{self.__class__.__name__}: Overwriting particle {particle.name}"
+    def add(self, value: Particle) -> None:
+        if value in self.__particles.values():
+            equivalent_particles = {p for p in self if p == value}
+            equivalent_particle = next(iter(equivalent_particles))
+            raise KeyError(
+                "While trying to add particle:",
+                value,
+                "An equivalent definition already exists:",
+                equivalent_particle,
             )
-        self.__particles[particle.name] = particle
+        if value.name in self.__particles:
+            logging.warning(f'Overwriting particle with name "{value.name}"')
+        if value.pid in self.__pid_to_name:
+            logging.warning(
+                f'Particle with PID "{value.pid} already exists: {self.find(value.pid).name}"'
+            )
+        self.__particles[value.name] = value
+        self.__pid_to_name[value.pid] = value.name
+
+    def discard(self, value: Union[Particle, str]) -> None:
+        particle_name = ""
+        if isinstance(value, Particle):
+            particle_name = value.name
+        elif isinstance(value, str):
+            particle_name = value
+        else:
+            raise NotImplementedError(
+                f"Cannot discard something of type {value.__class__.__name__}"
+            )
+        del self.__pid_to_name[self[particle_name].pid]
+        del self.__particles[particle_name]
 
     def find(self, search_term: Union[int, str]) -> Particle:
         """Search for a particle by either name (`str`) or PID (`int`)."""
@@ -422,18 +445,10 @@ class ParticleCollection(abc.Mapping):
             particle_name = search_term
             return self.__getitem__(particle_name)
         if isinstance(search_term, int):
-            pid = search_term
-            search_results = [
-                particle for particle in self.values() if particle.pid == pid
-            ]
-            if len(search_results) == 0:
-                raise LookupError(f"Could not find particle with PID {pid}")
-            if len(search_results) > 1:
-                error_message = f"Found multiple results for PID {pid}!:"
-                for particle in search_results:
-                    error_message += f"\n  - {particle.name}"
-                raise LookupError(error_message)
-            return search_results[0]
+            if search_term not in self.__pid_to_name:
+                raise KeyError(f"No particle with PID {search_term}")
+            particle_name = self.__pid_to_name[search_term]
+            return self.__getitem__(particle_name)
         raise NotImplementedError(
             f"Cannot search for a search term of type {type(search_term)}"
         )
@@ -455,15 +470,20 @@ class ParticleCollection(abc.Mapping):
             ...     and p.spin == 2
             ...     and p.strangeness == 1
             ... )
-            >>> sorted(list(results))
+            >>> sorted([p.name for p in results])
             ['K(2)(1820)+', 'K(2)(1820)0']
         """
         return ParticleCollection(
-            {particle for particle in self.values() if function(particle)}
+            {particle for particle in self if function(particle)}
         )
 
-    def merge(self, other: "ParticleCollection") -> None:
-        for particle in other.values():
+    def update(self, other: Iterable[Particle]) -> None:
+        if not isinstance(other, abc.Iterable):
+            raise TypeError(
+                f"Cannot update {self.__class__.__name__} from "
+                f"non-iterable class {self.__class__.__name__}"
+            )
+        for particle in other:
             self.add(particle)
 
 
@@ -491,7 +511,7 @@ def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
     return Particle(
         name=name if name else template_particle.name,
         pid=pid if pid else template_particle.pid,
-        mass=mass if mass else template_particle.mass,
+        mass=mass if mass is not None else template_particle.mass,
         width=width if width else template_particle.width,
         spin=spin if spin else template_particle.spin,
         charge=charge if charge else template_particle.charge,

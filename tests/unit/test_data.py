@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name, no-self-use
+import logging
 import typing
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
@@ -50,7 +51,7 @@ class TestGellmannNishijima:
             ),
         ],
     )
-    def test_computations(state):
+    def test_computations(state: Particle):
         assert GellmannNishijima.compute_charge(state) == state.charge
         assert (
             GellmannNishijima.compute_isospin_projection(
@@ -61,7 +62,7 @@ class TestGellmannNishijima:
                 bottomness=state.bottomness,
                 topness=state.topness,
             )
-            == state.isospin.projection
+            == state.isospin.projection  # type: ignore
         )
 
     @staticmethod
@@ -119,7 +120,7 @@ class TestParity:
 class TestParticle:
     @staticmethod
     def test_repr(particle_database: ParticleCollection):
-        for particle in particle_database.values():
+        for particle in particle_database:
             from_repr = eval(repr(particle))  # pylint: disable=eval-used
             assert from_repr == particle
 
@@ -200,12 +201,18 @@ class TestParticle:
 
 class TestParticleCollection:
     @staticmethod
-    def test_init(particle_database):
-        new_pdg = ParticleCollection(list(particle_database.values()))
+    def test_init(particle_database: ParticleCollection):
+        new_pdg = ParticleCollection(particle_database)
         assert new_pdg is not particle_database
         assert new_pdg == particle_database
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             ParticleCollection(1)  # type: ignore
+
+    @staticmethod
+    def test_equality(particle_database: ParticleCollection):
+        assert list(particle_database) == particle_database
+        with pytest.raises(NotImplementedError):
+            assert particle_database == 0
 
     @staticmethod
     def test_find(particle_database: ParticleCollection):
@@ -232,9 +239,6 @@ class TestParticleCollection:
         assert f0_1500_from_subset is particle_database["f(0)(1500)"]
         assert f0_1500_from_subset is not particle_database["f(0)(980)"]
 
-        # test iadd
-        particle_database += search_result
-
         search_result = particle_database.filter(lambda p: p.pid == 22)
         gamma_from_subset = search_result["gamma"]
         assert len(search_result) == 1
@@ -246,29 +250,87 @@ class TestParticleCollection:
             and p.spin == 2
             and p.strangeness == 1
         )
-        assert set(filtered_result) == {"K(2)(1820)0", "K(2)(1820)+"}
+        assert {p.name for p in filtered_result} == {
+            "K(2)(1820)0",
+            "K(2)(1820)+",
+        }
 
     @staticmethod
-    def test_repr(particle_database):
+    def test_repr(particle_database: ParticleCollection):
         from_repr = eval(repr(particle_database))  # pylint: disable=eval-used
         assert from_repr == particle_database
 
     @staticmethod
-    def test_exceptions(particle_database):
-        gamma_1 = create_particle(particle_database["gamma"], name="gamma_1")
-        gamma_2 = create_particle(particle_database["gamma"], name="gamma_2")
-        particle_database += gamma_1
-        particle_database += gamma_2
+    def test_exceptions(particle_database: ParticleCollection):
+        gamma = particle_database["gamma"]
+        with pytest.raises(KeyError):
+            particle_database += create_particle(gamma, name="gamma_new")
         with pytest.raises(NotImplementedError):
             particle_database.find(3.14)  # type: ignore
         with pytest.raises(NotImplementedError):
             particle_database += 3.14  # type: ignore
+        with pytest.raises(NotImplementedError):
+            assert 3.14 in particle_database
         with pytest.raises(AssertionError):
-            assert gamma_1 == "gamma"
+            assert gamma == "gamma"
 
     @pytest.mark.parametrize("name", ["gamma", "pi0", "K+"])
-    def test_contains(self, name, particle_database):
+    def test_contains(self, name: str, particle_database: ParticleCollection):
         assert name in particle_database
+        particle = particle_database[name]
+        assert particle in particle_database
+        assert particle.pid in particle_database
+
+    def test_add(self, particle_database: ParticleCollection):
+        subset_copy = particle_database.filter(
+            lambda p: p.name.startswith("omega")
+        )
+        subset_copy += particle_database.filter(
+            lambda p: p.name.startswith("pi")
+        )
+        n_subset = len(subset_copy)
+
+        new_particle = create_particle(
+            particle_database.find(443),
+            pid=666,
+            name="EpEm",
+            mass=1.0,
+            width=0.0,
+        )
+        subset_copy.add(new_particle)
+        assert len(subset_copy) == n_subset + 1
+        assert subset_copy["EpEm"] is new_particle
+
+    def test_add_warnings(self, particle_database: ParticleCollection, caplog):
+        pions = particle_database.filter(lambda p: p.name.startswith("pi"))
+        pi_plus = pions["pi+"]
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            pions.add(create_particle(pi_plus, name="new pi+", mass=0.0))
+        assert f"{pi_plus.pid}" in caplog.text
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            pions.add(create_particle(pi_plus, width=1.0))
+        assert "pi+" in caplog.text
+
+    def test_discard(self, particle_database: ParticleCollection):
+        pions = particle_database.filter(lambda p: p.name.startswith("pi"))
+        n_pions = len(pions)
+        pim = pions["pi-"]
+        pip = pions["pi+"]
+
+        pions.discard(pions["pi+"])
+        assert len(pions) == n_pions - 1
+        assert "pi+" not in pions
+        assert pip.name == "pi+"  # still exists
+
+        pions.remove("pi-")
+        assert len(pions) == n_pions - 2
+        assert pim not in pions
+        assert pim.name == "pi-"  # still exists
+
+        with pytest.raises(NotImplementedError):
+            pions.discard(111)  # type: ignore
 
     @staticmethod
     def test_key_error(particle_database: ParticleCollection):
@@ -277,13 +339,11 @@ class TestParticleCollection:
             assert particle_database[search_term]
         except LookupError as error:
             candidates = {
-                name for name in particle_database if search_term in name
+                particle.name
+                for particle in particle_database
+                if search_term in particle.name
             }
             assert error.args[-1] == candidates
-
-    @staticmethod
-    def test_keys(particle_database):
-        assert set(particle_database.keys()) == set(particle_database)
 
 
 class TestSpin:
@@ -346,7 +406,7 @@ def test_create_antiparticle(
 def test_create_antiparticle_tilde(particle_database: ParticleCollection):
     anti_particles = particle_database.filter(lambda p: "~" in p.name)
     assert len(anti_particles) == 165
-    for anti_particle in anti_particles.values():
+    for anti_particle in anti_particles:
         particle_name = anti_particle.name.replace("~", "")
         if "+" in particle_name:
             particle_name = particle_name.replace("+", "-")
@@ -361,7 +421,9 @@ def test_create_antiparticle_tilde(particle_database: ParticleCollection):
     "particle_name",
     ["p", "phi(1020)", "W-", "gamma"],
 )
-def test_create_particle(particle_database, particle_name):
+def test_create_particle(
+    particle_database: ParticleCollection, particle_name: str
+):
     template_particle = particle_database[particle_name]
     new_particle = create_particle(
         template_particle,

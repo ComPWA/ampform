@@ -51,9 +51,7 @@ def from_amplitude_model(model: AmplitudeModel) -> dict:
 
 
 def from_particle_collection(particles: ParticleCollection) -> dict:
-    output = {
-        name: from_particle(particle) for name, particle in particles.items()
-    }
+    output = {p.name: from_particle(p) for p in particles}
     output = {"ParticleList": output}
     validation.particle_list(output)
     return output

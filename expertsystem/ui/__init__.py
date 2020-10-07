@@ -428,7 +428,7 @@ def load_default_particles() -> ParticleCollection:
         don't exist in the particle list that ships with the `expertsystem`!
     """
     particles = io.load_pdg()
-    particles.merge(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
+    particles.update(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
 

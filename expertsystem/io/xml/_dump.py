@@ -44,7 +44,7 @@ from expertsystem.data import (
 
 def from_amplitude_model(model: AmplitudeModel) -> dict:
     particle_list: List[dict] = list()
-    for particle in model.particles.values():
+    for particle in model.particles:
         particle_dict = from_particle(particle)
         dynamics = model.dynamics.get(particle.name, None)
         if dynamics is not None:
@@ -65,9 +65,7 @@ def from_amplitude_model(model: AmplitudeModel) -> dict:
 
 
 def from_particle_collection(particles: ParticleCollection) -> dict:
-    return {
-        name: from_particle(particle) for name, particle in particles.items()
-    }
+    return {p.name: from_particle(p) for p in particles}
 
 
 def from_particle(instance: Particle) -> dict:

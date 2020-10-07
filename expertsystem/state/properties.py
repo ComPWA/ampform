@@ -134,7 +134,7 @@ def filter_particles(
             lambda p: particle_name  # pylint: disable=cell-var-from-loop
             in p.name
         )
-        allowed_particles.merge(subset)
+        allowed_particles.update(subset)
     return allowed_particles
 
 

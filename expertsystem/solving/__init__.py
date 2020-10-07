@@ -552,7 +552,7 @@ def __get_particle_candidates_for_state(
 ) -> List[ParticleWithSpin]:
     particle_edges: List[ParticleWithSpin] = []
 
-    for allowed_particle in allowed_particles.values():
+    for allowed_particle in allowed_particles:
         if __check_qns_equal(state, allowed_particle):
             # temp_particle = deepcopy(allowed_particle)
             particle_edges.append(
