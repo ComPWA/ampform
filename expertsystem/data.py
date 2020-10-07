@@ -65,9 +65,14 @@ class Spin(abc.Hashable):
                 f"Spin magnitude {magnitude} has to be a multitude of 0.5"
             )
         if abs(projection) > magnitude:
+            if magnitude < 0.0:
+                raise ValueError(
+                    "Spin magnitude has to be positive:\n" f" {magnitude}"
+                )
             raise ValueError(
-                "Spin projection cannot be larger than its magnitude:\n"
-                f"  {projection} > {magnitude}"
+                "Absolute value of spin projection cannot be larger than its "
+                "magnitude:\n"
+                f" abs({projection}) > {magnitude}"
             )
         if not (projection - magnitude).is_integer():
             raise ValueError(

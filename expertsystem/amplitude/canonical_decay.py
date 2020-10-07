@@ -1,15 +1,15 @@
 """Implementation of the canonical formalism for amplitude model generation."""
 
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
-from expertsystem.data import Spin
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-    StateQuantumNumberNames,
+from expertsystem.data import (
+    NodeQuantumNumber,
+    NodeQuantumNumbers,
+    ParticleWithSpin,
+    Spin,
 )
 from expertsystem.state.properties import (
     get_interaction_property,
-    get_particle_property_from_dict,
 )
 from expertsystem.topology import StateTransitionGraph
 
@@ -21,15 +21,11 @@ from .model import CanonicalDecay, ClebschGordan, DecayNode, HelicityDecay
 
 
 def generate_clebsch_gordan_string(
-    graph: StateTransitionGraph[dict], node_id: int
+    graph: StateTransitionGraph[ParticleWithSpin], node_id: int
 ) -> str:
     node_props = graph.node_props[node_id]
-    ang_orb_mom = __validate_spin_type(
-        get_interaction_property(node_props, InteractionQuantumNumberNames.L)
-    )
-    spin = __validate_spin_type(
-        get_interaction_property(node_props, InteractionQuantumNumberNames.S)
-    )
+    ang_orb_mom = __get_angular_momentum(node_props)
+    spin = __get_coupled_spin(node_props)
     return f"_L_{ang_orb_mom.magnitude}_S_{spin.magnitude}"
 
 
@@ -40,7 +36,9 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     """
 
     def generate_unique_amplitude_name(
-        self, graph: StateTransitionGraph[dict], node_id: Optional[int] = None
+        self,
+        graph: StateTransitionGraph[ParticleWithSpin],
+        node_id: Optional[int] = None,
     ) -> str:
         name = ""
         if isinstance(node_id, int):
@@ -58,9 +56,9 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
 def _clebsch_gordan_decorator(
     decay_generate_function: Callable[
-        [Any, StateTransitionGraph[dict], int], DecayNode
+        [Any, StateTransitionGraph[ParticleWithSpin], int], DecayNode
     ]
-) -> Callable[[Any, StateTransitionGraph[dict], int], DecayNode]:
+) -> Callable[[Any, StateTransitionGraph[ParticleWithSpin], int], DecayNode]:
     """Decorate a function with Clebsch-Gordan functionality.
 
     Decorator method which adds two clebsch gordan coefficients based on the
@@ -68,9 +66,8 @@ def _clebsch_gordan_decorator(
     """
 
     def wrapper(  # pylint: disable=too-many-locals
-        self: Any, graph: StateTransitionGraph[dict], node_id: int
+        self: Any, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> DecayNode:
-        spin_type = StateQuantumNumberNames.Spin
         amplitude = decay_generate_function(self, graph, node_id)
         if isinstance(amplitude, HelicityDecay):
             helicity_decay = amplitude
@@ -80,19 +77,11 @@ def _clebsch_gordan_decorator(
             )
 
         node_props = graph.node_props[node_id]
-        ang_mom = __validate_spin_type(
-            get_interaction_property(
-                node_props, InteractionQuantumNumberNames.L
-            )
-        )
+        ang_mom = __get_angular_momentum(node_props)
         if ang_mom.projection != 0.0:
             raise ValueError(f"Projection of L is non-zero!: {ang_mom}")
 
-        spin = __validate_spin_type(
-            get_interaction_property(
-                node_props, InteractionQuantumNumberNames.S
-            )
-        )
+        spin = __get_coupled_spin(node_props)
         if not isinstance(spin, Spin):
             raise ValueError(
                 f"{spin.__class__.__name__} is not of type {Spin.__name__}"
@@ -100,17 +89,17 @@ def _clebsch_gordan_decorator(
 
         in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
 
-        parent_spin = __validate_spin_type(
-            get_particle_property_from_dict(
-                graph.edge_props[in_edge_ids[0]], spin_type
-            )
+        parent_spin = Spin(
+            graph.edge_props[in_edge_ids[0]][0].spin,
+            graph.edge_props[in_edge_ids[0]][1],
         )
 
         daughter_spins: List[Spin] = []
 
         for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
-            daughter_spin = get_particle_property_from_dict(
-                graph.edge_props[out_edge_id], spin_type
+            daughter_spin = Spin(
+                graph.edge_props[out_edge_id][0].spin,
+                graph.edge_props[out_edge_id][1],
             )
             if daughter_spin is not None and isinstance(daughter_spin, Spin):
                 daughter_spins.append(daughter_spin)
@@ -167,18 +156,36 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
 
     @_clebsch_gordan_decorator
     def _generate_partial_decay(  # type: ignore
-        self, graph: StateTransitionGraph[dict], node_id: Optional[int] = None
+        self,
+        graph: StateTransitionGraph[ParticleWithSpin],
+        node_id: Optional[int] = None,
     ) -> DecayNode:
         return super()._generate_partial_decay(graph, node_id)
 
 
-def __validate_spin_type(
-    interaction_property: Optional[Union[Spin, float]]
+def __get_angular_momentum(
+    node_props: Dict[Type[NodeQuantumNumber], Union[int, float]]
 ) -> Spin:
-    if interaction_property is None or not isinstance(
-        interaction_property, Spin
-    ):
-        raise TypeError(
-            f"{interaction_property.__class__.__name__} is not of type {Spin.__name__}"
-        )
-    return interaction_property
+    l_mag = get_interaction_property(
+        node_props, NodeQuantumNumbers.l_magnitude
+    )
+    l_proj = get_interaction_property(
+        node_props, NodeQuantumNumbers.l_projection
+    )
+    if l_mag is None or l_proj is None:
+        raise TypeError("Angular momentum L not defined!")
+    return Spin(l_mag, l_proj)
+
+
+def __get_coupled_spin(
+    node_props: Dict[Type[NodeQuantumNumber], Union[int, float]]
+) -> Spin:
+    s_mag = get_interaction_property(
+        node_props, NodeQuantumNumbers.s_magnitude
+    )
+    s_proj = get_interaction_property(
+        node_props, NodeQuantumNumbers.s_projection
+    )
+    if s_mag is None or s_proj is None:
+        raise TypeError("Coupled spin S not defined!")
+    return Spin(s_mag, s_proj)

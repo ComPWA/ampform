@@ -1,15 +1,10 @@
 # pylint: disable=protected-access
 import pytest
 
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-    Labels,
-    _convert_edges_to_dict,
-)
+from expertsystem.data import NodeQuantumNumbers, Particle
 from expertsystem.state.properties import (
-    CompareGraphElementPropertiesFunctor,
+    CompareGraphNodePropertiesFunctor,
     _create_edge_id_particle_mapping,
-    create_spin_domain,
     match_external_edges,
     perform_external_edge_identical_particle_combinatorics,
 )
@@ -111,25 +106,13 @@ def test_external_edge_initialization(
 
 def make_ls_test_graph(angular_momentum_magnitude, coupled_spin_magnitude):
     graph = StateTransitionGraph[dict]()
-    graph.graph_element_properties_comparator = (
-        CompareGraphElementPropertiesFunctor()
+    graph.graph_node_properties_comparator = (
+        CompareGraphNodePropertiesFunctor()
     )
     graph.add_node(0)
     graph.node_props[0] = {
-        "QuantumNumber": [
-            {
-                "Value": str(coupled_spin_magnitude),
-                "Type": "S",
-                "Projection": "0.0",
-                "Class": "Spin",
-            },
-            {
-                "Value": str(angular_momentum_magnitude),
-                "Type": "L",
-                "Projection": "0.0",
-                "Class": "Spin",
-            },
-        ]
+        NodeQuantumNumbers.s_magnitude: coupled_spin_magnitude,
+        NodeQuantumNumbers.l_magnitude: angular_momentum_magnitude,
     }
     return graph
 
@@ -138,25 +121,13 @@ def make_ls_test_graph_scrambled(
     angular_momentum_magnitude, coupled_spin_magnitude
 ):
     graph = StateTransitionGraph[dict]()
-    graph.graph_element_properties_comparator = (
-        CompareGraphElementPropertiesFunctor()
+    graph.graph_node_properties_comparator = (
+        CompareGraphNodePropertiesFunctor()
     )
     graph.add_node(0)
     graph.node_props[0] = {
-        "QuantumNumber": [
-            {
-                "Class": "Spin",
-                "Value": str(angular_momentum_magnitude),
-                "Type": "L",
-                "Projection": "0.0",
-            },
-            {
-                "Projection": "0.0",
-                "Class": "Spin",
-                "Value": str(coupled_spin_magnitude),
-                "Type": "S",
-            },
-        ]
+        NodeQuantumNumbers.l_magnitude: angular_momentum_magnitude,
+        NodeQuantumNumbers.s_magnitude: coupled_spin_magnitude,
     }
     return graph
 
@@ -189,8 +160,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
                 [("foo", (1, 0)), ("foo", (1, 1))],
                 (
                     "foo",
-                    InteractionQuantumNumberNames.L,
-                    create_spin_domain([1], True),
+                    NodeQuantumNumbers.l_magnitude,
+                    [1],
                 ),
                 2,
             ),
@@ -198,8 +169,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
                 [("foo", (1, 0)), ("foo", (2, 1))],
                 (
                     "foo",
-                    InteractionQuantumNumberNames.L,
-                    create_spin_domain([1], True),
+                    NodeQuantumNumbers.l_magnitude,
+                    [1],
                 ),
                 1,
             ),
@@ -207,8 +178,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
                 [("foo", (1, 0)), ("foo", (1, 1))],
                 (
                     "foo~",
-                    InteractionQuantumNumberNames.L,
-                    create_spin_domain([1], True),
+                    NodeQuantumNumbers.l_magnitude,
+                    [1],
                 ),
                 0,
             ),
@@ -216,8 +187,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
                 [("foo", (0, 0)), ("foo", (1, 1)), ("foo", (2, 1))],
                 (
                     "foo",
-                    InteractionQuantumNumberNames.L,
-                    create_spin_domain([1, 2], True),
+                    NodeQuantumNumbers.l_magnitude,
+                    [1, 2],
                 ),
                 2,
             ),
@@ -225,8 +196,8 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
                 [("foo", (1, 0)), ("foo", (1, 1))],
                 (
                     "foo",
-                    InteractionQuantumNumberNames.S,
-                    create_spin_domain([1], True),
+                    NodeQuantumNumbers.s_magnitude,
+                    [1],
                 ),
                 1,
             ),
@@ -236,13 +207,15 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         self, input_values, filter_parameters, result
     ):
         graphs = []
-        name_label = Labels.Name.name
-        value_label = Labels.Value.name
+
         for value in input_values:
             tempgraph = make_ls_test_graph(value[1][0], value[1][1])
             tempgraph.add_edges([0])
             tempgraph.attach_edges_to_node_ingoing([0], 0)
-            tempgraph.edge_props[0] = {name_label: {value_label: value[0]}}
+            tempgraph.edge_props[0] = (
+                Particle(name=value[0], pid=0, mass=1.0, spin=1.0),
+                0.0,
+            )
             graphs.append(tempgraph)
 
         my_filter = require_interaction_property(*filter_parameters)
@@ -273,9 +246,8 @@ def test_edge_swap(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
-    for graph in init_graphs_dict:
+    for graph in init_graphs:
         ref_mapping = _create_edge_id_particle_mapping(
             graph, "get_final_state_edges"
         )
@@ -319,18 +291,17 @@ def test_match_external_edges(particle_database, initial_state, final_state):
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
-    match_external_edges(init_graphs_dict)
+    match_external_edges(init_graphs)
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        init_graphs_dict[0], "get_final_state_edges"
+        init_graphs[0], "get_final_state_edges"
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        init_graphs_dict[0], "get_initial_state_edges"
+        init_graphs[0], "get_initial_state_edges"
     )
 
-    for graph in init_graphs_dict[1:]:
+    for graph in init_graphs[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
             graph, "get_final_state_edges"
         )
@@ -396,12 +367,11 @@ def test_external_edge_identical_particle_combinatorics(
     topology_graphs = stm._build_topologies()
 
     init_graphs = stm._create_seed_graphs(topology_graphs)
-    init_graphs_dict = _convert_edges_to_dict(init_graphs)
 
-    match_external_edges(init_graphs_dict)
+    match_external_edges(init_graphs)
 
     comb_graphs = []
-    for group in init_graphs_dict:
+    for group in init_graphs:
         comb_graphs.extend(
             perform_external_edge_identical_particle_combinatorics(group)
         )

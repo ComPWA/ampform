@@ -31,7 +31,7 @@ def test_script():
 
     # print intermediate state particle names
     for solution in result.solutions:
-        print(solution.edge_props[1]["Name"])
+        print(solution.edge_props[1][0].name)
 
     amplitude_model = stm.generate_amplitude_model(result)
     io.write(amplitude_model, "D0ToKs0KpKm.xml")

@@ -4,7 +4,7 @@ import pytest
 
 from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.nested_dicts import InteractionQuantumNumberNames
+from expertsystem.data import NodeQuantumNumbers
 from expertsystem.state.properties import get_interaction_property
 from expertsystem.ui import (
     InteractionTypes,
@@ -76,7 +76,7 @@ def test_parity_prefactor(
         in_edge = [
             k
             for k, v in solution.edge_props.items()
-            if v["Name"] == ingoing_state
+            if v[0].name == ingoing_state
         ]
         assert len(in_edge) == 1
         node_id = solution.edges[in_edge[0]].ending_node_id
@@ -85,7 +85,7 @@ def test_parity_prefactor(
 
         prefactor = get_interaction_property(
             solution.node_props[node_id],
-            InteractionQuantumNumberNames.ParityPrefactor,
+            NodeQuantumNumbers.parity_prefactor,
         )
 
         assert relative_parity_prefactor == prefactor

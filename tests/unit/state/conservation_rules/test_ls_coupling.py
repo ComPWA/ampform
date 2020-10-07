@@ -125,7 +125,7 @@ def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-argum
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     stm.number_of_threads = 2
-    stm.filter_remove_qns = []
+    stm.filter_remove_qns = set()
 
     node_props = {
         0: {

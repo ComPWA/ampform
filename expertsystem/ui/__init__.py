@@ -15,6 +15,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    Type,
     Union,
 )
 
@@ -25,14 +26,11 @@ from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import (
+    NodeQuantumNumber,
+    NodeQuantumNumbers,
     Particle,
     ParticleCollection,
     ParticleWithSpin,
-)
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-    _convert_edges_to_dict,
-    _convert_nodes_to_dict,
 )
 from expertsystem.solving import (
     CSPSolver,
@@ -47,7 +45,7 @@ from expertsystem.state.combinatorics import (
     initialize_graph,
 )
 from expertsystem.state.properties import (
-    CompareGraphElementPropertiesFunctor,
+    CompareGraphNodePropertiesFunctor,
     filter_particles,
     match_external_edges,
 )
@@ -129,17 +127,17 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             InteractionTypes.EM,
             InteractionTypes.Weak,
         ]
-        self.filter_remove_qns: List[InteractionQuantumNumberNames] = []
-        self.filter_ignore_qns: List[InteractionQuantumNumberNames] = []
+        self.filter_remove_qns: Set[Type[NodeQuantumNumber]] = set()
+        self.filter_ignore_qns: Set[Type[NodeQuantumNumber]] = set()
         if formalism_type == "helicity":
-            self.filter_remove_qns = [
-                InteractionQuantumNumberNames.S,
-                InteractionQuantumNumberNames.L,
-            ]
+            self.filter_remove_qns = {
+                NodeQuantumNumbers.l_magnitude,
+                NodeQuantumNumbers.l_projection,
+                NodeQuantumNumbers.s_magnitude,
+                NodeQuantumNumbers.s_projection,
+            }
         if "helicity" in formalism_type:
-            self.filter_ignore_qns = [
-                InteractionQuantumNumberNames.ParityPrefactor
-            ]
+            self.filter_ignore_qns = {NodeQuantumNumbers.parity_prefactor}
         int_nodes = []
         use_mass_conservation = True
         use_nbody_topology = False
@@ -254,8 +252,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
             init_graphs.extend(initialized_graphs)
         for graph in init_graphs:
-            graph.graph_element_properties_comparator = (
-                CompareGraphElementPropertiesFunctor()
+            graph.graph_node_properties_comparator = (
+                CompareGraphNodePropertiesFunctor()
             )
 
         logging.info(f"initialized {len(init_graphs)} graphs!")
@@ -325,7 +323,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def find_solutions(
         self,
         graph_setting_groups: GraphSettingsGroups,
-    ) -> Result[dict]:  # pylint: disable=too-many-locals
+    ) -> Result:  # pylint: disable=too-many-locals
         """Check for solutions for a specific set of interaction settings."""
         results: Dict[float, Result] = {}
         logging.info(
@@ -378,14 +376,13 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
 
         # merge strengths
-        final_result = Result[ParticleWithSpin]([])
+        final_result = Result()
         for temp_result in results.values():
             final_result.extend(temp_result)
-        # remove duplicate solutions, which only differ in the interaction qn S
-        final_solutions = _convert_edges_to_dict(final_result.solutions)
-        _convert_nodes_to_dict(final_solutions)
+
+        # remove duplicate solutions, which only differ in the interaction qns
         final_solutions = remove_duplicate_solutions(
-            final_solutions,
+            final_result.solutions,
             self.filter_remove_qns,
             self.filter_ignore_qns,
         )
@@ -403,12 +400,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         state_graph_node_settings_pair: Tuple[
             StateTransitionGraph[ParticleWithSpin], GraphSettings
         ],
-    ) -> Result[ParticleWithSpin]:
+    ) -> Result:
         solver = CSPSolver(self.__allowed_intermediate_particles)
 
         return solver.find_solutions(*state_graph_node_settings_pair)
 
-    def generate_amplitude_model(self, result: Result[dict]) -> AmplitudeModel:
+    def generate_amplitude_model(self, result: Result) -> AmplitudeModel:
         """Generate an amplitude model from a generated `.Result`.
 
         The type of amplitude model (`.HelicityAmplitudeGenerator` or

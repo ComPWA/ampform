@@ -2,24 +2,19 @@
 
 import logging
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from typing import (
-    Any,
     Callable,
     Dict,
     List,
     Optional,
     Set,
     Tuple,
-    Union,
+    Type,
 )
 
-from expertsystem.data import ParticleWithSpin, Spin
+from expertsystem.data import NodeQuantumNumber, ParticleWithSpin, Spin
 from expertsystem.nested_dicts import (
     InteractionQuantumNumberNames,
-    Labels,
-    ParticlePropertyNames,
-    StateQuantumNumberNames,
 )
 from expertsystem.solving import (
     EdgeSettings,
@@ -29,7 +24,7 @@ from expertsystem.solving import (
 )
 from expertsystem.solving.conservation_rules import Rule
 from expertsystem.state.properties import (
-    CompareGraphElementPropertiesFunctor,
+    CompareGraphNodePropertiesFunctor,
     get_interaction_property,
 )
 from expertsystem.topology import StateTransitionGraph
@@ -139,8 +134,6 @@ class GammaCheck(_InteractionDeterminationFunctorInterface):
 class LeptonCheck(_InteractionDeterminationFunctorInterface):
     """Conservation check lepton numbers."""
 
-    qns_label = Labels.QuantumNumber.name
-
     def check(
         self,
         in_edge_props: List[ParticleWithSpin],
@@ -161,19 +154,19 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
 
 
 def remove_duplicate_solutions(
-    solutions: List[StateTransitionGraph[dict]],
-    remove_qns_list: Optional[Any] = None,
-    ignore_qns_list: Optional[Any] = None,
-) -> List[StateTransitionGraph[dict]]:
+    solutions: List[StateTransitionGraph[ParticleWithSpin]],
+    remove_qns_list: Optional[Set[Type[NodeQuantumNumber]]] = None,
+    ignore_qns_list: Optional[Set[Type[NodeQuantumNumber]]] = None,
+) -> List[StateTransitionGraph[ParticleWithSpin]]:
     if remove_qns_list is None:
-        remove_qns_list = []
+        remove_qns_list = set()
     if ignore_qns_list is None:
-        ignore_qns_list = []
+        ignore_qns_list = set()
     logging.info("removing duplicate solutions...")
     logging.info(f"removing these qns from graphs: {remove_qns_list}")
     logging.info(f"ignoring qns in graph comparison: {ignore_qns_list}")
 
-    filtered_solutions: List[StateTransitionGraph] = list()
+    filtered_solutions: List[StateTransitionGraph[ParticleWithSpin]] = list()
     remove_counter = 0
     for sol_graph in solutions:
         sol_graph = _remove_qns_from_graph(sol_graph, remove_qns_list)
@@ -192,67 +185,21 @@ def remove_duplicate_solutions(
 
 
 def _remove_qns_from_graph(  # pylint: disable=too-many-branches
-    graph: StateTransitionGraph,
-    qn_list: List[
-        Union[
-            InteractionQuantumNumberNames,
-            StateQuantumNumberNames,
-            ParticlePropertyNames,
-        ]
-    ],
-) -> StateTransitionGraph:
-    qns_label = Labels.QuantumNumber.name
-    type_label = Labels.Type.name
+    graph: StateTransitionGraph[ParticleWithSpin],
+    qn_list: Set[Type[NodeQuantumNumber]],
+) -> StateTransitionGraph[ParticleWithSpin]:
+    for node_props in graph.node_props.values():
+        for int_qn in qn_list:
+            if int_qn in node_props:
+                del node_props[int_qn]
 
-    int_qns = [
-        x for x in qn_list if isinstance(x, InteractionQuantumNumberNames)
-    ]
-    state_qns = [x for x in qn_list if isinstance(x, StateQuantumNumberNames)]
-    part_props = [x for x in qn_list if isinstance(x, ParticlePropertyNames)]
-
-    graph_copy = deepcopy(graph)
-
-    for int_qn in int_qns:
-        for props in graph_copy.node_props.values():
-            if qns_label in props:
-                for qn_entry in props[qns_label]:
-                    if (
-                        InteractionQuantumNumberNames[qn_entry[type_label]]
-                        is int_qn
-                    ):
-                        del props[qns_label][props[qns_label].index(qn_entry)]
-                        break
-
-    for state_qn in state_qns:
-        for props in graph_copy.edge_props.values():
-            if qns_label in props:
-                for qn_entry in props[qns_label]:
-                    if (
-                        StateQuantumNumberNames[qn_entry[type_label]]
-                        is state_qn
-                    ):
-                        del props[qns_label][props[qns_label].index(qn_entry)]
-                        break
-
-    for part_prop in part_props:
-        for props in graph_copy.edge_props.values():
-            if qns_label in props:
-                for qn_entry in graph_copy.edge_props[qns_label]:  # type: ignore
-                    if (
-                        ParticlePropertyNames[qn_entry[type_label]]
-                        is part_prop
-                    ):
-                        del props[qns_label][props[qns_label].index(qn_entry)]
-                        break
-    return graph_copy
+    return graph
 
 
 def _check_equal_ignoring_qns(
     ref_graph: StateTransitionGraph,
     solutions: List[StateTransitionGraph],
-    ignored_qn_list: List[
-        Union[StateQuantumNumberNames, InteractionQuantumNumberNames]
-    ],
+    ignored_qn_list: Set[Type[NodeQuantumNumber]],
 ) -> Optional[StateTransitionGraph]:
     """Define equal operator for the graphs ignoring certain quantum numbers."""
     if not isinstance(ref_graph, StateTransitionGraph):
@@ -260,16 +207,16 @@ def _check_equal_ignoring_qns(
             "Reference graph has to be of type StateTransitionGraph"
         )
     found_graph = None
-    old_comparator = ref_graph.graph_element_properties_comparator
-    ref_graph.graph_element_properties_comparator = (
-        CompareGraphElementPropertiesFunctor(ignored_qn_list)
+    old_comparator = ref_graph.graph_node_properties_comparator
+    ref_graph.graph_node_properties_comparator = (
+        CompareGraphNodePropertiesFunctor(ignored_qn_list)
     )
     for graph in solutions:
         if isinstance(graph, StateTransitionGraph):
             if ref_graph == graph:
                 found_graph = graph
                 break
-    ref_graph.graph_element_properties_comparator = old_comparator
+    ref_graph.graph_node_properties_comparator = old_comparator
     return found_graph
 
 
@@ -312,7 +259,7 @@ def filter_graphs(
 
 def require_interaction_property(
     ingoing_particle_name: str,
-    interaction_qn: InteractionQuantumNumberNames,
+    interaction_qn: Type[NodeQuantumNumber],
     allowed_values: List,
 ) -> Callable[[StateTransitionGraph], bool]:
     """Filter function.
@@ -325,7 +272,7 @@ def require_interaction_property(
     Args:
         ingoing_particle_name (str): name of particle, used to find nodes which
             have a particle with this name as "ingoing"
-        interaction_qn (:class:`.InteractionQuantumNumberNames`):
+        interaction_qn (:class:`.NodeQuantumNumber`):
             interaction quantum number
         allowed_values (list): list of allowed values, that the interaction
             quantum number may take
@@ -358,17 +305,15 @@ def require_interaction_property(
 def _find_node_ids_with_ingoing_particle_name(
     graph: StateTransitionGraph, ingoing_particle_name: str
 ) -> List[int]:
-    name_label = Labels.Name.name
     found_node_ids = []
     for node_id in graph.nodes:
         edge_ids = graph.get_edges_ingoing_to_node(node_id)
         for edge_id in edge_ids:
             edge_props = graph.edge_props[edge_id]
-            if name_label in edge_props:
-                edge_particle_name = edge_props[name_label]
-                if str(ingoing_particle_name) in str(edge_particle_name):
-                    found_node_ids.append(node_id)
-                    break
+            edge_particle_name = edge_props[0].name
+            if str(ingoing_particle_name) in str(edge_particle_name):
+                found_node_ids.append(node_id)
+                break
     return found_node_ids
 
 

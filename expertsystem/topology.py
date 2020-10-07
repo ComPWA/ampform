@@ -316,7 +316,7 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
         super().__init__(nodes, edges)
         self.node_props: Dict[int, dict] = {}
         self.edge_props: Dict[int, _EdgeType] = {}
-        self.graph_element_properties_comparator: Optional[Callable] = None
+        self.graph_node_properties_comparator: Optional[Callable] = None
 
     def __repr__(self) -> str:
         return (
@@ -331,17 +331,14 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
                 return False
             if self.edges != other.edges:
                 return False
-            if self.graph_element_properties_comparator is not None:
-                if not self.graph_element_properties_comparator(
+            if self.edge_props != other.edge_props:
+                return False
+            if self.graph_node_properties_comparator is not None:
+                return self.graph_node_properties_comparator(
                     self.node_props, other.node_props
-                ):
-                    return False
-                return self.graph_element_properties_comparator(
-                    self.edge_props, other.edge_props
                 )
-            raise NotImplementedError(
-                "Graph element properties comparator is not set!"
-            )
+            return self.node_props == other.node_props
+
         raise NotImplementedError
 
     @staticmethod

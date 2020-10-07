@@ -112,20 +112,12 @@ def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
 
 def __edge_label(graph: StateTransitionGraph, edge_id: int) -> str:
     if isinstance(graph, StateTransitionGraph) and edge_id in graph.edge_props:
-        properties = graph.edge_props[edge_id]
-        label = properties.get("Name", edge_id)
-        quantum_numbers = properties.get("QuantumNumber", None)
-        if quantum_numbers is not None:
-            spin_projection_candidates = [
-                number.get("Projection", None)
-                for number in quantum_numbers
-                if number["Type"] == "Spin"
-            ]
-            if spin_projection_candidates:
-                projection = float(spin_projection_candidates[0])
-                if projection.is_integer():
-                    projection = int(projection)
-                label += f"[{projection}]"
+        particle, spin_projection = graph.edge_props[edge_id]
+        label = particle.name
+        projection = float(spin_projection)
+        if projection.is_integer():
+            projection = int(projection)
+        label += f"[{projection}]"
     else:
         label = str(edge_id)
     return label
