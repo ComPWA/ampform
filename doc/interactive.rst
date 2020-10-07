@@ -27,11 +27,12 @@ set of quantum numbers.
 .. code-block:: python
   :class: thebe, thebe-init
 
-  results = pdg.filter(lambda p:
+  subset = pdg.filter(
+    lambda p:
     p.spin in [2.5, 3.5, 4.5]
     and p.name.startswith("N")
   )
-  sorted(list(results))
+  {p.name for p in subset}
 
 .. thebe-button::
 

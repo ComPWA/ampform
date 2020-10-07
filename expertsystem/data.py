@@ -262,6 +262,9 @@ class Particle:  # pylint: disable=too-many-instance-attributes
                 ")"
             )
 
+    def __neg__(self) -> "Particle":
+        return create_antiparticle(self)
+
     def __repr__(self) -> str:
         output_string = f"{self.__class__.__name__}("
         for member in fields(self):
