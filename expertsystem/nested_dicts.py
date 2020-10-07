@@ -4,8 +4,6 @@ This module will be phased out through `#254
 <https://github.com/ComPWA/expertsystem/issues/254>`_.
 """
 
-from abc import ABC, abstractmethod
-from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict
 
@@ -80,110 +78,6 @@ class InteractionQuantumNumberNames(Enum):
     ParityPrefactor = auto()
 
 
-class AbstractQNConverter(ABC):
-    """Abstract interface for a quantum number converter."""
-
-    @abstractmethod
-    def parse_from_dict(self, data_dict: Dict[str, Any]) -> Any:
-        pass
-
-    @abstractmethod
-    def convert_to_dict(
-        self,
-        qn_type: Enum,
-        qn_value: Any,
-    ) -> Dict[str, Any]:
-        pass
-
-
-class _IntQNConverter(AbstractQNConverter):
-    """Interface for converting `int` quantum numbers."""
-
-    value_label = Labels.Value.name
-    type_label = Labels.Type.name
-    class_label = Labels.Class.name
-
-    def parse_from_dict(self, data_dict: Dict[str, Any]) -> int:
-        return int(data_dict[self.value_label])
-
-    def convert_to_dict(
-        self,
-        qn_type: Enum,
-        qn_value: int,
-    ) -> Dict[str, Any]:
-        return {
-            self.type_label: qn_type.name,
-            self.class_label: QuantumNumberClasses.Int.name,
-            self.value_label: qn_value,
-        }
-
-
-class _FloatQNConverter(AbstractQNConverter):
-    """Interface for converting `float` quantum numbers."""
-
-    value_label = Labels.Value.name
-    type_label = Labels.Type.name
-    class_label = Labels.Class.name
-
-    def parse_from_dict(self, data_dict: Dict[str, Any]) -> float:
-        return float(data_dict[self.value_label])
-
-    def convert_to_dict(
-        self,
-        qn_type: Enum,
-        qn_value: float,
-    ) -> Dict[str, Any]:
-        return {
-            self.type_label: qn_type.name,
-            self.class_label: QuantumNumberClasses.Float.name,
-            self.value_label: qn_value,
-        }
-
-
-class _SpinQNConverter(AbstractQNConverter):
-    """Interface for converting `.Spin` quantum numbers."""
-
-    type_label = Labels.Type.name
-    class_label = Labels.Class.name
-    value_label = Labels.Value.name
-    proj_label = Labels.Projection.name
-
-    def __init__(self, parse_projection: bool = True) -> None:
-        self.parse_projection = bool(parse_projection)
-
-    def parse_from_dict(self, data_dict: Dict[str, Any]) -> Spin:
-        mag = data_dict[self.value_label]
-        proj = 0.0
-        if self.parse_projection:
-            if self.proj_label not in data_dict:
-                if float(mag) != 0.0:
-                    raise ValueError(
-                        "No projection set for spin-like quantum number!"
-                    )
-            else:
-                proj = data_dict[self.proj_label]
-        return Spin(mag, proj)
-
-    def convert_to_dict(
-        self,
-        qn_type: Enum,
-        qn_value: Spin,
-    ) -> Dict[str, Any]:
-        return {
-            self.type_label: qn_type.name,
-            self.class_label: QuantumNumberClasses.Spin.name,
-            self.value_label: qn_value.magnitude,
-            self.proj_label: qn_value.projection,
-        }
-
-
-QNClassConverterMapping = {
-    QuantumNumberClasses.Int: _IntQNConverter(),
-    QuantumNumberClasses.Float: _FloatQNConverter(),
-    QuantumNumberClasses.Spin: _SpinQNConverter(),
-}
-
-
 QNDefaultValues: Dict[StateQuantumNumberNames, Any] = {
     StateQuantumNumberNames.Charge: 0,
     StateQuantumNumberNames.IsoSpin: Spin(0.0, 0.0),
@@ -246,31 +140,3 @@ edge_qn_to_enum = {
     NodeQuantumNumbers.s_projection: InteractionQuantumNumberNames.S,
     NodeQuantumNumbers.parity_prefactor: InteractionQuantumNumberNames.ParityPrefactor,
 }
-
-
-def get_spin_projection(edge_props: dict) -> float:
-    qns_label = Labels.QuantumNumber.name
-    type_label = Labels.Type.name
-    spin_label = StateQuantumNumberNames.Spin.name
-    proj_label = Labels.Projection.name
-    for quantum_number in edge_props[qns_label]:
-        if quantum_number[type_label] == spin_label:
-            return float(quantum_number[proj_label])
-    raise ValueError(
-        "Could not find spin projection quantum number in", edge_props
-    )
-
-
-def remove_spin_projection(edge_props: dict) -> dict:
-    qns_label = Labels.QuantumNumber.name
-    type_label = Labels.Type.name
-    spin_label = StateQuantumNumberNames.Spin.name
-    proj_label = Labels.Projection.name
-
-    new_edge_props = deepcopy(edge_props)
-
-    for qn_entry in new_edge_props[qns_label]:
-        if StateQuantumNumberNames[qn_entry[type_label]] is spin_label:
-            del qn_entry[proj_label]
-            break
-    return new_edge_props
