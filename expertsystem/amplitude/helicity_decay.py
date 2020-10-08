@@ -1,12 +1,6 @@
 """Implementation of the helicity formalism for amplitude model generation."""
 import logging
-from typing import (
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Dict, List, Optional, Tuple, Union
 
 from expertsystem.data import (
     NodeQuantumNumbers,

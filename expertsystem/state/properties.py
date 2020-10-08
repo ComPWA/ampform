@@ -6,15 +6,7 @@ related to this.
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import permutations
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Type,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Set, Type, Union
 
 from expertsystem.data import (
     EdgeQuantumNumber,

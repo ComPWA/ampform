@@ -2,17 +2,12 @@ from itertools import product
 
 import pytest
 
-from expertsystem.data import (
-    EdgeQuantumNumbers,
-    NodeQuantumNumbers,
-    Parity,
-)
+from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Parity
 from expertsystem.solving.conservation_rules import (
     GParityConservation,
     GParityEdgeInput,
     GParityNodeInput,
 )
-
 
 # Currently need to cast to the proper Edge/NodeQuantumNumber type, see
 # https://github.com/ComPWA/expertsystem/issues/255

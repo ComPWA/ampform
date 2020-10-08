@@ -1,5 +1,4 @@
 import pydot
-
 import pytest
 
 from expertsystem import io

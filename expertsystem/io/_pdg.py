@@ -1,13 +1,9 @@
 """Create a `.ParticleCollection` instance from PDG info."""
 
 import re
-from typing import (
-    Optional,
-    Tuple,
-)
+from typing import Optional, Tuple
 
 from numpy import sign
-
 from particle import Particle as PdgDatabase
 from particle.particle import enums
 
@@ -18,7 +14,6 @@ from expertsystem.data import (
     ParticleCollection,
     Spin,
 )
-
 
 __skip_particles = {
     "K(L)0",  # no isospin projection

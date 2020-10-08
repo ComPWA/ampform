@@ -10,15 +10,9 @@ import json
 import xmltodict
 
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.data import (
-    Particle,
-    ParticleCollection,
-    Spin,
-)
+from expertsystem.data import Particle, ParticleCollection, Spin
 
-from . import _build
-from . import _dump
-from . import validation
+from . import _build, _dump, validation
 
 
 def load_amplitude_model(filename: str) -> AmplitudeModel:

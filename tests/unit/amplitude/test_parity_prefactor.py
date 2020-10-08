@@ -6,10 +6,7 @@ from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.data import NodeQuantumNumbers
 from expertsystem.state.properties import get_interaction_property
-from expertsystem.ui import (
-    InteractionTypes,
-    StateTransitionManager,
-)
+from expertsystem.ui import InteractionTypes, StateTransitionManager
 
 
 class Input(NamedTuple):

@@ -8,16 +8,7 @@ import logging
 from copy import deepcopy
 from enum import Enum, auto
 from multiprocessing import Pool
-from typing import (
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
 from progress.bar import IncrementalBar
 
@@ -40,10 +31,7 @@ from expertsystem.solving import (
     NodeSettings,
     Result,
 )
-from expertsystem.state.combinatorics import (
-    StateDefinition,
-    initialize_graph,
-)
+from expertsystem.state.combinatorics import StateDefinition, initialize_graph
 from expertsystem.state.properties import (
     CompareGraphNodePropertiesFunctor,
     filter_particles,
@@ -51,10 +39,10 @@ from expertsystem.state.properties import (
 )
 from expertsystem.topology import (
     InteractionNode,
+    SimpleStateTransitionTopologyBuilder,
     StateTransitionGraph,
     Topology,
 )
-from expertsystem.topology import SimpleStateTransitionTopologyBuilder
 
 from ._default_settings import (
     DEFAULT_PARTICLE_LIST_PATH,

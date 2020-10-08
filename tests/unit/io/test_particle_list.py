@@ -4,7 +4,6 @@ import pytest
 from expertsystem import io
 from expertsystem.data import ParticleCollection
 
-
 XML_FILE = "particle_list.xml"
 YAML_FILE = "particle_list.yml"
 

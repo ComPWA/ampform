@@ -27,12 +27,7 @@ __all__ = [
 
 import sys
 
-from . import amplitude
-from . import data
-from . import io
-from . import state
-from . import topology
-from . import ui
+from . import amplitude, data, io, state, topology, ui
 
 
 def __check_python_version() -> None:

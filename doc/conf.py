@@ -11,7 +11,6 @@ import subprocess
 
 import sphobjinv as soi
 
-
 # -- Copy example notebooks ---------------------------------------------------
 print("Copy example notebook and data files")
 PATH_SOURCE = "../examples"

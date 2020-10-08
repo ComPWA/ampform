@@ -2,16 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import (
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 from expertsystem.data import NodeQuantumNumber, ParticleWithSpin
 from expertsystem.solving import (
@@ -26,7 +17,6 @@ from expertsystem.state.properties import (
     get_interaction_property,
 )
 from expertsystem.topology import StateTransitionGraph
-
 
 Strength = float
 

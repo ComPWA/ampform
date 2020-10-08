@@ -6,6 +6,4 @@ __all__ = [
     "model",
 ]
 
-from . import canonical_decay
-from . import helicity_decay
-from . import model
+from . import canonical_decay, helicity_decay, model

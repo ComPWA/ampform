@@ -9,10 +9,7 @@ from expertsystem.state.properties import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.topology import StateTransitionGraph
-from expertsystem.ui import (
-    InteractionTypes,
-    StateTransitionManager,
-)
+from expertsystem.ui import InteractionTypes, StateTransitionManager
 from expertsystem.ui._system_control import (
     filter_graphs,
     remove_duplicate_solutions,

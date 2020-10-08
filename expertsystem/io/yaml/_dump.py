@@ -1,12 +1,5 @@
 """Dump recipe objects to `dict` instances for a YAML file."""
-from typing import (
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from expertsystem.amplitude.model import (
     AmplitudeModel,
@@ -28,12 +21,7 @@ from expertsystem.amplitude.model import (
     SequentialAmplitude,
     StrengthIntensity,
 )
-from expertsystem.data import (
-    Parity,
-    Particle,
-    ParticleCollection,
-    Spin,
-)
+from expertsystem.data import Parity, Particle, ParticleCollection, Spin
 
 from . import validation
 

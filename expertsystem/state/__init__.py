@@ -5,5 +5,4 @@ __all__ = [
     "properties",
 ]
 
-from . import combinatorics
-from . import properties
+from . import combinatorics, properties

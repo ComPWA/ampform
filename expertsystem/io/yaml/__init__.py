@@ -8,20 +8,15 @@ __all__ = [
 import yaml
 
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.data import (
-    Particle,
-    ParticleCollection,
-    Spin,
-)
+from expertsystem.data import Particle, ParticleCollection, Spin
 
-from . import _build
-from . import _dump
+from . import _build, _dump
 
 
 class _IncreasedIndent(yaml.Dumper):
     # pylint: disable=too-many-ancestors
     def increase_indent(self, flow=False, indentless=False):  # type: ignore
-        return super(_IncreasedIndent, self).increase_indent(flow, False)
+        return super().increase_indent(flow, False)
 
     def write_line_break(self, data=None):  # type: ignore
         """See https://stackoverflow.com/a/44284819."""

@@ -1,10 +1,7 @@
 """These tests can be removed when the internal `dict` have been removed."""
 
 from expertsystem import io
-from expertsystem.data import (
-    Particle,
-    Spin,
-)
+from expertsystem.data import Particle, Spin
 
 
 def test_particle():

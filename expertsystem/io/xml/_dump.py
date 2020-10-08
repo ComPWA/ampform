@@ -9,13 +9,7 @@ module therefore serves as a bridge between `.ParticleCollection` and the
 See also `expertsystem.nested_dict`.
 """
 
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Union
 
 from expertsystem.amplitude.model import (
     AmplitudeModel,
@@ -34,12 +28,7 @@ from expertsystem.amplitude.model import (
     SequentialAmplitude,
     StrengthIntensity,
 )
-from expertsystem.data import (
-    Parity,
-    Particle,
-    ParticleCollection,
-    Spin,
-)
+from expertsystem.data import Parity, Particle, ParticleCollection, Spin
 
 
 def from_amplitude_model(model: AmplitudeModel) -> dict:

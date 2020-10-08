@@ -15,17 +15,7 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field, fields, replace
 from enum import Enum, auto
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
 from constraint import (
     BacktrackingSolver,

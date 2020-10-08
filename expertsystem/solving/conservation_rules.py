@@ -15,16 +15,7 @@ See more information under `Rule`.
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import reduce
-from typing import (
-    Any,
-    Callable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Callable, List, Optional, Set, Tuple, Type, Union
 
 from numpy import arange
 

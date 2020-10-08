@@ -1,6 +1,5 @@
 # pylint: disable=redefined-outer-name
 import particle
-
 import pytest
 
 from expertsystem import io

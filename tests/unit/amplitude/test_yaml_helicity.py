@@ -3,12 +3,10 @@ import json
 from os.path import dirname, realpath
 
 import pytest
-
 import yaml
 
 from expertsystem import io
 from expertsystem.amplitude.model import AmplitudeModel
-
 
 SCRIPT_PATH = dirname(realpath(__file__))
 

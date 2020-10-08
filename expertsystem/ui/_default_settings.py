@@ -1,29 +1,21 @@
 """Default configuration for the `expertsystem`."""
 
 from copy import deepcopy
-from os.path import (
-    dirname,
-    join,
-    realpath,
-)
+from os.path import dirname, join, realpath
 from typing import Dict, List, Tuple, Union
 
 from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers
-from expertsystem.solving import (
-    EdgeSettings,
-    InteractionTypes,
-    NodeSettings,
-)
+from expertsystem.solving import EdgeSettings, InteractionTypes, NodeSettings
 from expertsystem.solving.conservation_rules import (
     BaryonNumberConservation,
     BottomnessConservation,
-    CParityConservation,
     ChargeConservation,
     CharmConservation,
     ClebschGordanCheckHelicityToCanonical,
+    CParityConservation,
     ElectronLNConservation,
-    GParityConservation,
     GellMannNishijimaRule,
+    GParityConservation,
     HelicityConservation,
     IdenticalParticleSymmetrization,
     IsoSpinConservation,

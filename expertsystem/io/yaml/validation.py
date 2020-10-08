@@ -8,7 +8,6 @@ from jsonschema import RefResolver
 
 import expertsystem
 
-
 _EXPERTSYSTEM_PATH = dirname(realpath(expertsystem.__file__))
 
 with open(f"{_EXPERTSYSTEM_PATH}/schemas/yaml/particle-list.json") as stream:

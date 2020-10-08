@@ -28,3 +28,8 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.isort]
+profile = "black"
+src_paths = ["expertsystem", "tests"]
+line_length = 79

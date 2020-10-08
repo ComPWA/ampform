@@ -5,10 +5,7 @@ from pathlib import Path
 from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import ParticleCollection
 
-from . import _pdg
-from . import dot
-from . import xml
-from . import yaml
+from . import _pdg, dot, xml, yaml
 
 
 def load_amplitude_model(filename: str) -> AmplitudeModel:

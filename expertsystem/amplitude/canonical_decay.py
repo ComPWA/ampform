@@ -8,9 +8,7 @@ from expertsystem.data import (
     ParticleWithSpin,
     Spin,
 )
-from expertsystem.state.properties import (
-    get_interaction_property,
-)
+from expertsystem.state.properties import get_interaction_property
 from expertsystem.topology import StateTransitionGraph
 
 from .helicity_decay import (

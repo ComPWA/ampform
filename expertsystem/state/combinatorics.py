@@ -20,13 +20,8 @@ from typing import (
 
 from numpy import arange
 
-from expertsystem.data import (
-    Particle,
-    ParticleCollection,
-    ParticleWithSpin,
-)
+from expertsystem.data import Particle, ParticleCollection, ParticleWithSpin
 from expertsystem.topology import StateTransitionGraph, Topology
-
 
 StateWithSpins = Tuple[str, Sequence[float]]
 StateDefinition = Union[str, StateWithSpins]

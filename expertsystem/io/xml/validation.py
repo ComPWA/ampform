@@ -14,7 +14,6 @@ import jsonschema
 
 import expertsystem
 
-
 _EXPERTSYSTEM_PATH = dirname(realpath(expertsystem.__file__))
 
 with open(f"{_EXPERTSYSTEM_PATH}/schemas/xml/particle.json") as stream:

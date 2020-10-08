@@ -61,6 +61,7 @@
         "imap",
         "ipynb",
         "ipython",
+        "isort",
         "isospin",
         "itertools",
         "jsonschema",

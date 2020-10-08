@@ -34,12 +34,7 @@ from expertsystem.amplitude.model import (
     SequentialAmplitude,
     StrengthIntensity,
 )
-from expertsystem.data import (
-    Parity,
-    Particle,
-    ParticleCollection,
-    Spin,
-)
+from expertsystem.data import Parity, Particle, ParticleCollection, Spin
 
 from . import validation
 

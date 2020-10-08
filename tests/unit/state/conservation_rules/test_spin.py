@@ -12,7 +12,6 @@ from expertsystem.solving.conservation_rules import (
     SpinNodeInput,
 )
 
-
 _SpinRuleInputType = Tuple[
     List[SpinEdgeInput], List[SpinEdgeInput], SpinNodeInput
 ]
