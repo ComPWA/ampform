@@ -463,18 +463,16 @@ class ParticleCollection(abc.MutableSet):
 
         For example:
 
-        .. doctest::
-
-            >>> from expertsystem import io
-            >>> pdg = io.load_pdg()
-            >>> results = pdg.filter(
-            ...     lambda p: p.mass > 1.8
-            ...     and p.mass < 2.0
-            ...     and p.spin == 2
-            ...     and p.strangeness == 1
-            ... )
-            >>> sorted([p.name for p in results])
-            ['K(2)(1820)+', 'K(2)(1820)0']
+        >>> from expertsystem import io
+        >>> pdg = io.load_pdg()
+        >>> results = pdg.filter(
+        ...     lambda p: p.mass > 1.8
+        ...     and p.mass < 2.0
+        ...     and p.spin == 2
+        ...     and p.strangeness == 1
+        ... )
+        >>> sorted([p.name for p in results])
+        ['K(2)(1820)+', 'K(2)(1820)0']
         """
         return ParticleCollection(
             {particle for particle in self if function(particle)}
