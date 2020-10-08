@@ -23,6 +23,7 @@ from typing import (
     Set,
     Tuple,
     Type,
+    Union,
 )
 
 from numpy import arange
@@ -154,6 +155,11 @@ class StrangenessConservation(Rule):
 
 @additive_quantum_number_rule(EdgeQuantumNumbers.charmness)
 class CharmConservation(Rule):
+    pass
+
+
+@additive_quantum_number_rule(EdgeQuantumNumbers.bottomness)
+class BottomnessConservation(Rule):
     pass
 
 
@@ -458,6 +464,12 @@ class SpinNodeInput:
     s_projection: NodeQuantumNumbers.s_projection
 
 
+@dataclass(frozen=True)
+class SpinMagnitudeNodeInput:
+    l_magnitude: NodeQuantumNumbers.l_magnitude
+    s_magnitude: NodeQuantumNumbers.s_magnitude
+
+
 def _check_spin_couplings(
     in_part: List[Spin],
     out_part: List[Spin],
@@ -474,7 +486,7 @@ def _check_spin_couplings(
 def _check_magnitude(
     in_part: List[float],
     out_part: List[float],
-    interaction_qns: Optional[SpinNodeInput],
+    interaction_qns: Optional[Union[SpinMagnitudeNodeInput, SpinNodeInput]],
 ) -> bool:
     def couple_mags(j_1: float, j_2: float) -> List[float]:
         return [
@@ -485,7 +497,10 @@ def _check_magnitude(
         ]
 
     def couple_magnitudes(
-        magnitudes: List[float], interaction_qns: Optional[SpinNodeInput]
+        magnitudes: List[float],
+        interaction_qns: Optional[
+            Union[SpinMagnitudeNodeInput, SpinNodeInput]
+        ],
     ) -> Set[float]:
         if len(magnitudes) == 1:
             return set(magnitudes)
@@ -583,6 +598,33 @@ class IsoSpinEdgeInput:
     isospin_proj: EdgeQuantumNumbers.isospin_projection
 
 
+def _check_spin_valid(magnitude: float, projection: float) -> bool:
+    if magnitude < abs(projection):
+        return False
+    return (magnitude - abs(projection)).is_integer()
+
+
+def _check_isospins_valid(isospins: List[IsoSpinEdgeInput]) -> bool:
+    for edge in isospins:
+        if not _check_spin_valid(
+            float(edge.isospin_mag), float(edge.isospin_proj)
+        ):
+            return False
+    return True
+
+
+class IsoSpinValidity(Rule):
+    r"""Check for valid isospin magnitude and projection."""
+
+    def __call__(  # type: ignore
+        self,
+        ingoing_isospins: List[IsoSpinEdgeInput],
+        outgoing_isospins: List[IsoSpinEdgeInput],
+        _=None,
+    ) -> bool:
+        return _check_isospins_valid(ingoing_isospins + outgoing_isospins)
+
+
 class IsoSpinConservation(Rule):
     r"""Check for isospin conservation.
 
@@ -605,6 +647,8 @@ class IsoSpinConservation(Rule):
             [x.isospin_proj for x in outgoing_isospins]
         ):
             return False
+        if not _check_isospins_valid(ingoing_isospins + outgoing_isospins):
+            return False
         return _check_spin_couplings(
             [Spin(x.isospin_mag, x.isospin_proj) for x in ingoing_isospins],
             [Spin(x.isospin_mag, x.isospin_proj) for x in outgoing_isospins],
@@ -616,6 +660,28 @@ class IsoSpinConservation(Rule):
 class SpinEdgeInput:
     spin_magnitude: EdgeQuantumNumbers.spin_magnitude
     spin_projection: EdgeQuantumNumbers.spin_projection
+
+
+def _check_spins_valid(
+    spins: List[SpinEdgeInput], node_qns: Optional[SpinNodeInput]
+) -> bool:
+    if node_qns:
+        if not _check_spin_valid(
+            float(node_qns.s_magnitude),
+            float(node_qns.s_projection),
+        ):
+            return False
+        if not _check_spin_valid(
+            float(node_qns.l_magnitude),
+            float(node_qns.l_projection),
+        ):
+            return False
+    for edge in spins:
+        if not _check_spin_valid(
+            float(edge.spin_magnitude), float(edge.spin_projection)
+        ):
+            return False
+    return True
 
 
 class SpinConservation(Rule):
@@ -635,6 +701,60 @@ class SpinConservation(Rule):
     are all 0.
     """
 
+    def __call__(
+        self,
+        ingoing_spins: List[SpinEdgeInput],
+        outgoing_spins: List[SpinEdgeInput],
+        interaction_qns: SpinNodeInput,
+    ) -> bool:
+        if not _check_spins_valid(
+            ingoing_spins + outgoing_spins, interaction_qns
+        ):
+            return False
+
+        # L and S can only be used if one side is a single state
+        # and the other side contains of two states (isobar)
+        # So do a full check if this is the case
+        if (len(ingoing_spins) == 1 and len(outgoing_spins) == 2) or (
+            len(ingoing_spins) == 2 and len(outgoing_spins) == 1
+        ):
+
+            return _check_spin_couplings(
+                [
+                    Spin(x.spin_magnitude, x.spin_projection)
+                    for x in ingoing_spins
+                ],
+                [
+                    Spin(x.spin_magnitude, x.spin_projection)
+                    for x in outgoing_spins
+                ],
+                interaction_qns,
+            )
+
+        # otherwise don't use S and L and just check magnitude
+        # are integral or non integral on both sides
+        return (
+            sum([float(x.spin_magnitude) for x in ingoing_spins]).is_integer()
+            == sum(
+                [float(x.spin_magnitude) for x in outgoing_spins]
+            ).is_integer()
+        )
+
+
+class SpinConservationMagnitude(Rule):
+    r"""Check for spin conservation.
+
+    Implements
+
+    .. math::
+        |S_1 - S_2| \leq S \leq |S_1 + S_2|
+
+    and
+
+    .. math::
+        |L - S| \leq J \leq |L + S|
+    """
+
     def __init__(self, use_projection: bool = True):
         self.__use_projection = use_projection
         super().__init__()
@@ -643,27 +763,17 @@ class SpinConservation(Rule):
         self,
         ingoing_spins: List[SpinEdgeInput],
         outgoing_spins: List[SpinEdgeInput],
-        interaction_qns: SpinNodeInput,
+        interaction_qns: SpinMagnitudeNodeInput,
     ) -> bool:
+        if not _check_spins_valid(ingoing_spins + outgoing_spins, None):
+            return False
+
         # L and S can only be used if one side is a single state
         # and the other side contains of two states (isobar)
         # So do a full check if this is the case
         if (len(ingoing_spins) == 1 and len(outgoing_spins) == 2) or (
             len(ingoing_spins) == 2 and len(outgoing_spins) == 1
         ):
-            if self.__use_projection:
-                return _check_spin_couplings(
-                    [
-                        Spin(x.spin_magnitude, x.spin_projection)
-                        for x in ingoing_spins
-                    ],
-                    [
-                        Spin(x.spin_magnitude, x.spin_projection)
-                        for x in outgoing_spins
-                    ],
-                    interaction_qns,
-                )
-
             return _check_magnitude(
                 [x.spin_magnitude for x in ingoing_spins],
                 [x.spin_magnitude for x in outgoing_spins],
@@ -693,6 +803,11 @@ class ClebschGordanCheckHelicityToCanonical(Rule):
         based on the conversion of helicity to canonical amplitude sums.
         """
         if len(ingoing_spins) == 1 and len(outgoing_spins) == 2:
+            if not _check_spins_valid(
+                ingoing_spins + outgoing_spins, interaction_qns
+            ):
+                return False
+
             out_spin1 = Spin(
                 outgoing_spins[0].spin_magnitude,
                 outgoing_spins[0].spin_projection,

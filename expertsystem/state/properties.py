@@ -16,8 +16,6 @@ from typing import (
     Union,
 )
 
-from numpy import arange
-
 from expertsystem.data import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
@@ -25,26 +23,8 @@ from expertsystem.data import (
     Parity,
     ParticleCollection,
     ParticleWithSpin,
-    Spin,
 )
 from expertsystem.topology import StateTransitionGraph
-
-
-def create_spin_domain(
-    list_of_magnitudes: List[float], set_projection_zero: bool = False
-) -> List[Spin]:
-    domain_list = []
-    for mag in list_of_magnitudes:
-        if set_projection_zero:
-            domain_list.append(
-                Spin(mag, 0)
-                if isinstance(mag, int) or mag.is_integer()
-                else Spin(mag, mag)
-            )
-        else:
-            for proj in arange(-mag, mag + 1, 1.0):  # type: ignore
-                domain_list.append(Spin(mag, proj))
-    return domain_list
 
 
 def get_particle_property(

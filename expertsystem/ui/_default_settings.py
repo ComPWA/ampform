@@ -6,12 +6,9 @@ from os.path import (
     join,
     realpath,
 )
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-    StateQuantumNumberNames,
-)
+from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers
 from expertsystem.solving import (
     EdgeSettings,
     InteractionTypes,
@@ -19,6 +16,7 @@ from expertsystem.solving import (
 )
 from expertsystem.solving.conservation_rules import (
     BaryonNumberConservation,
+    BottomnessConservation,
     CParityConservation,
     ChargeConservation,
     CharmConservation,
@@ -29,16 +27,16 @@ from expertsystem.solving.conservation_rules import (
     HelicityConservation,
     IdenticalParticleSymmetrization,
     IsoSpinConservation,
+    IsoSpinValidity,
     MassConservation,
     MuonLNConservation,
     ParityConservation,
     ParityConservationHelicity,
     SpinConservation,
+    SpinConservationMagnitude,
     StrangenessConservation,
     TauLNConservation,
 )
-from expertsystem.state.properties import create_spin_domain
-
 
 EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
 DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
@@ -50,6 +48,7 @@ DEFAULT_PARTICLE_LIST_PATH = join(
 # Higher number means higher priority
 CONSERVATION_LAW_PRIORITIES = {
     SpinConservation: 8,
+    SpinConservationMagnitude: 8,
     HelicityConservation: 7,
     MassConservation: 10,
     GellMannNishijimaRule: 50,
@@ -65,7 +64,9 @@ CONSERVATION_LAW_PRIORITIES = {
     CParityConservation: 5,
     ParityConservationHelicity: 4,
     IsoSpinConservation: 60,
+    IsoSpinValidity: 61,
     GParityConservation: 3,
+    BottomnessConservation: 68,
 }
 
 
@@ -85,6 +86,12 @@ def _get_ang_mom_magnitudes(is_nbody: bool) -> List[float]:
     return [0, 1, 2]
 
 
+def __create_projections(
+    magnitudes: List[Union[int, float]]
+) -> List[Union[int, float]]:
+    return magnitudes + list([-x for x in magnitudes if x > 0])
+
+
 def create_default_interaction_settings(
     formalism_type: str,
     nbody_topology: bool = False,
@@ -102,32 +109,48 @@ def create_default_interaction_settings(
 
     if "helicity" in formalism_type:
         formalism_node_settings.conservation_rules = {
-            SpinConservation(False),
+            SpinConservationMagnitude(),
             HelicityConservation(),
         }
         formalism_node_settings.qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain(
-                _get_ang_mom_magnitudes(nbody_topology), True
+            NodeQuantumNumbers.l_magnitude: _get_ang_mom_magnitudes(
+                nbody_topology
             ),
-            InteractionQuantumNumberNames.S: create_spin_domain(
-                _get_spin_magnitudes(nbody_topology), True
+            NodeQuantumNumbers.s_magnitude: _get_spin_magnitudes(
+                nbody_topology
             ),
         }
     elif formalism_type == "canonical":
         formalism_node_settings.conservation_rules = {
-            SpinConservation(not nbody_topology),
+            SpinConservationMagnitude()
+            if nbody_topology
+            else SpinConservation(),
         }
         formalism_node_settings.qn_domains = {
-            InteractionQuantumNumberNames.L: create_spin_domain(
+            NodeQuantumNumbers.l_magnitude: _get_ang_mom_magnitudes(
+                nbody_topology
+            ),
+            NodeQuantumNumbers.l_projection: __create_projections(
                 _get_ang_mom_magnitudes(nbody_topology)
             ),
-            InteractionQuantumNumberNames.S: create_spin_domain(
+            NodeQuantumNumbers.s_magnitude: _get_spin_magnitudes(
+                nbody_topology
+            ),
+            NodeQuantumNumbers.s_projection: __create_projections(
                 _get_spin_magnitudes(nbody_topology)
             ),
         }
     if formalism_type == "canonical-helicity":
         formalism_node_settings.conservation_rules.add(
             ClebschGordanCheckHelicityToCanonical()
+        )
+        formalism_node_settings.qn_domains.update(
+            {
+                NodeQuantumNumbers.l_projection: [0],
+                NodeQuantumNumbers.s_projection: __create_projections(
+                    _get_spin_magnitudes(nbody_topology)
+                ),
+            }
         )
     if use_mass_conservation:
         formalism_node_settings.conservation_rules.add(MassConservation(5))
@@ -140,6 +163,7 @@ def create_default_interaction_settings(
             MuonLNConservation(),
             TauLNConservation(),
             BaryonNumberConservation(),
+            IsoSpinValidity(),  # should be changed to a pure edge rule
             IdenticalParticleSymmetrization(),
             GellMannNishijimaRule(),  # should be changed to a pure edge rule
         ]
@@ -149,22 +173,25 @@ def create_default_interaction_settings(
     weak_edge_settings = deepcopy(formalism_edge_settings)
     weak_edge_settings.qn_domains.update(
         {
-            StateQuantumNumberNames.Charge: [-2, -1, 0, 1, 2],
-            StateQuantumNumberNames.BaryonNumber: [-1, 0, 1],
-            StateQuantumNumberNames.ElectronLN: [-1, 0, 1],
-            StateQuantumNumberNames.MuonLN: [-1, 0, 1],
-            StateQuantumNumberNames.TauLN: [-1, 0, 1],
-            StateQuantumNumberNames.Parity: [-1, 1],
-            StateQuantumNumberNames.CParity: [-1, 1, None],
-            StateQuantumNumberNames.GParity: [-1, 1, None],
-            StateQuantumNumberNames.Spin: create_spin_domain(
+            EdgeQuantumNumbers.charge: [-2, -1, 0, 1, 2],
+            EdgeQuantumNumbers.baryon_number: [-1, 0, 1],
+            EdgeQuantumNumbers.electron_lepton_number: [-1, 0, 1],
+            EdgeQuantumNumbers.muon_lepton_number: [-1, 0, 1],
+            EdgeQuantumNumbers.tau_lepton_number: [-1, 0, 1],
+            EdgeQuantumNumbers.parity: [-1, 1],
+            EdgeQuantumNumbers.c_parity: [-1, 1, None],
+            EdgeQuantumNumbers.g_parity: [-1, 1, None],
+            EdgeQuantumNumbers.spin_magnitude: [0, 0.5, 1, 1.5, 2],
+            EdgeQuantumNumbers.spin_projection: __create_projections(
                 [0, 0.5, 1, 1.5, 2]
             ),
-            StateQuantumNumberNames.IsoSpin: create_spin_domain(
+            EdgeQuantumNumbers.isospin_magnitude: [0, 0.5, 1, 1.5],
+            EdgeQuantumNumbers.isospin_projection: __create_projections(
                 [0, 0.5, 1, 1.5]
             ),
-            StateQuantumNumberNames.Charmness: [-1, 0, 1],
-            StateQuantumNumberNames.Strangeness: [-1, 0, 1],
+            EdgeQuantumNumbers.charmness: [-1, 0, 1],
+            EdgeQuantumNumbers.strangeness: [-1, 0, 1],
+            EdgeQuantumNumbers.bottomness: [-1, 0, 1],
         },
     )
 
@@ -178,6 +205,7 @@ def create_default_interaction_settings(
         {
             CharmConservation(),
             StrangenessConservation(),
+            BottomnessConservation(),
             ParityConservation(),
             CParityConservation(),
         }
@@ -185,7 +213,7 @@ def create_default_interaction_settings(
     if "helicity" in formalism_type:
         em_node_settings.conservation_rules.add(ParityConservationHelicity())
         em_node_settings.qn_domains.update(
-            {InteractionQuantumNumberNames.ParityPrefactor: [-1, 1]}
+            {NodeQuantumNumbers.parity_prefactor: [-1, 1]}
         )
     em_node_settings.interaction_strength = 1
 

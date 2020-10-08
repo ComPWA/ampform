@@ -9,8 +9,7 @@ import pytest
 
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.nested_dicts import InteractionQuantumNumberNames
-from expertsystem.state.properties import create_spin_domain
+from expertsystem.data import NodeQuantumNumbers
 from expertsystem.ui import (
     InteractionTypes,
     StateDefinition,
@@ -37,13 +36,13 @@ def test_script_simple(particle_database):
     int_settings = create_default_interaction_settings(formalism_type)
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.L,
-        create_spin_domain([0, 1, 2, 3], True),
+        NodeQuantumNumbers.l_magnitude,
+        [0, 1, 2, 3],
     )
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.S,
-        create_spin_domain([0, 1, 2], True),
+        NodeQuantumNumbers.s_magnitude,
+        [0, 1, 2],
     )
 
     stm = StateTransitionManager(
@@ -73,13 +72,13 @@ def test_script_simple(particle_database):
     int_settings = create_default_interaction_settings(formalism_type)
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.L,
-        create_spin_domain([0, 1, 2, 3], True),
+        NodeQuantumNumbers.l_magnitude,
+        [0, 1, 2, 3],
     )
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.S,
-        create_spin_domain([0, 1, 2], True),
+        NodeQuantumNumbers.s_magnitude,
+        [0, 1, 2],
     )
 
     stm = StateTransitionManager(
@@ -106,6 +105,9 @@ def test_script_simple(particle_database):
     )
 
 
+@pytest.mark.skip(
+    reason="Test takes too long. Can be enabled again after Rule refactoring"
+)
 @pytest.mark.slow
 def test_script_full(particle_database):
     # initialize the graph edges (initial and final state)
@@ -117,13 +119,13 @@ def test_script_full(particle_database):
     int_settings = create_default_interaction_settings(formalism_type)
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.L,
-        create_spin_domain([0, 1, 2, 3], True),
+        NodeQuantumNumbers.l_magnitude,
+        [0, 1, 2, 3],
     )
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.S,
-        create_spin_domain([0, 1, 2], True),
+        NodeQuantumNumbers.s_magnitude,
+        [0, 1, 2],
     )
 
     stm = StateTransitionManager(
@@ -153,13 +155,13 @@ def test_script_full(particle_database):
     int_settings = create_default_interaction_settings(formalism_type)
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.L,
-        create_spin_domain([0, 1, 2, 3], True),
+        NodeQuantumNumbers.l_magnitude,
+        [0, 1, 2, 3],
     )
     _change_qn_domain(
         int_settings[InteractionTypes.Strong],
-        InteractionQuantumNumberNames.S,
-        create_spin_domain([0, 1, 2], True),
+        NodeQuantumNumbers.s_magnitude,
+        [0, 1, 2],
     )
 
     stm = StateTransitionManager(

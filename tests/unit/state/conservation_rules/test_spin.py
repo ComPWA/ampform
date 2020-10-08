@@ -7,6 +7,7 @@ from expertsystem.solving.conservation_rules import (
     IsoSpinConservation,
     IsoSpinEdgeInput,
     SpinConservation,
+    SpinConservationMagnitude,
     SpinEdgeInput,
     SpinNodeInput,
 )
@@ -117,7 +118,7 @@ def __create_two_body_decay_spin_data(
 def test_spin_all_defined(
     rule_input: _SpinRuleInputType, expected: bool
 ) -> None:
-    spin_rule = SpinConservation(use_projection=True)
+    spin_rule = SpinConservation()
 
     assert spin_rule(*rule_input) is expected
 
@@ -158,9 +159,9 @@ def test_spin_all_defined(
 def test_spin_ignore_z_component(
     rule_input: _SpinRuleInputType, expected: bool
 ) -> None:
-    spin_rule = SpinConservation(False)
+    spin_rule = SpinConservationMagnitude()
 
-    assert spin_rule(*rule_input) is expected
+    assert spin_rule(*rule_input) is expected  # type: ignore
 
 
 @pytest.mark.parametrize(

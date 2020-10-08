@@ -10,12 +10,10 @@ from typing import (
     Set,
     Tuple,
     Type,
+    Union,
 )
 
-from expertsystem.data import NodeQuantumNumber, ParticleWithSpin, Spin
-from expertsystem.nested_dicts import (
-    InteractionQuantumNumberNames,
-)
+from expertsystem.data import NodeQuantumNumber, ParticleWithSpin
 from expertsystem.solving import (
     EdgeSettings,
     GraphSettings,
@@ -39,8 +37,8 @@ GraphSettingsGroups = Dict[
 
 def _change_qn_domain(
     settings: Tuple[EdgeSettings, NodeSettings],
-    qn_name: InteractionQuantumNumberNames,
-    new_domain: List[Spin],
+    qn_name: Type[NodeQuantumNumber],
+    new_domain: List[Union[int, float]],
 ) -> None:
     if (
         not isinstance(settings, tuple)
