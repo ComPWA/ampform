@@ -13,10 +13,10 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import dataclass, field, fields, replace
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
+import attr
 from constraint import (
     BacktrackingSolver,
     Constraint,
@@ -51,16 +51,16 @@ class InteractionTypes(Enum):
 Scalar = Union[int, float]
 
 
-@dataclass
+@attr.s
 class EdgeSettings:
     """Solver settings for a specific edge of a graph."""
 
-    conservation_rules: Set[Rule] = field(default_factory=set)
-    rule_priorities: Dict[Type[Rule], int] = field(default_factory=dict)
-    qn_domains: Dict[Any, Any] = field(default_factory=dict)
+    conservation_rules: Set[Rule] = attr.ib(factory=set)
+    rule_priorities: Dict[Type[Rule], int] = attr.ib(factory=dict)
+    qn_domains: Dict[Any, Any] = attr.ib(factory=dict)
 
 
-@dataclass
+@attr.s
 class NodeSettings:
     """Container class for the interaction settings.
 
@@ -74,16 +74,16 @@ class NodeSettings:
       - strength scale parameter (higher value means stronger force)
     """
 
-    conservation_rules: Set[Rule] = field(default_factory=set)
-    rule_priorities: Dict[Type[Rule], int] = field(default_factory=dict)
-    qn_domains: Dict[Any, Any] = field(default_factory=dict)
+    conservation_rules: Set[Rule] = attr.ib(factory=set)
+    rule_priorities: Dict[Type[Rule], int] = attr.ib(factory=dict)
+    qn_domains: Dict[Any, Any] = attr.ib(factory=dict)
     interaction_strength: float = 1.0
 
 
-@dataclass
+@attr.s
 class GraphSettings:
-    edge_settings: Dict[int, EdgeSettings]
-    node_settings: Dict[int, NodeSettings]
+    edge_settings: Dict[int, EdgeSettings] = attr.ib(factory=dict)
+    node_settings: Dict[int, NodeSettings] = attr.ib(factory=dict)
 
 
 def create_interaction_node_settings(
@@ -150,14 +150,14 @@ class Result:
                     self.__violated_rules[key].update(rules2)
 
 
-@dataclass(frozen=True)
+@attr.s(frozen=True)
 class QuantumNumberSolution:
     node_quantum_numbers: Dict[
         int, Dict[Type[NodeQuantumNumber], Scalar]
-    ] = field(default_factory=lambda: defaultdict(dict))
+    ] = attr.field(factory=lambda: defaultdict(dict))
     edge_quantum_numbers: Dict[
         int, Dict[Type[EdgeQuantumNumber], Scalar]
-    ] = field(default_factory=lambda: defaultdict(dict))
+    ] = attr.field(factory=lambda: defaultdict(dict))
 
 
 class Solver(ABC):
@@ -190,10 +190,15 @@ class Solver(ABC):
         """
 
 
-def _is_optional(class_field: Any) -> bool:
-    if "__args__" in class_field.__dict__:
-        if type(None) in class_field.__args__:
-            return True
+def _is_optional(
+    field_type: Union[EdgeQuantumNumber, NodeQuantumNumber]
+) -> bool:
+    if (
+        hasattr(field_type, "__origin__")
+        and getattr(field_type, "__origin__") is Union
+        and type(None) in getattr(field_type, "__args__")
+    ):
+        return True
     return False
 
 
@@ -209,9 +214,7 @@ def _init_class(
     return class_type(
         **{
             class_field.name: _extract_value(props, class_field.type)
-            for class_field in fields(class_type)
-            if not _is_optional(class_field.type)
-            or class_field.type.__args__[0] in props
+            for class_field in attr.fields(class_type)
         }
     )
 
@@ -222,8 +225,12 @@ def _extract_value(
 ) -> Any:
     if _is_optional(obj_type):
         obj_type = obj_type.__args__[0]
-
-    value = props[obj_type]
+        if obj_type in props:
+            value = props[obj_type]
+        else:
+            return None
+    else:
+        value = props[obj_type]
 
     if (
         "__supertype__" in obj_type.__dict__
@@ -237,12 +244,12 @@ def _check_arg_requirements(
     class_type: type,
     props: _GraphElementPropertyMap,
 ) -> bool:
-    if "__dataclass_fields__" in class_type.__dict__:
+    if attr.has(class_type):
         return all(
             [
                 bool(class_field.type in props)
-                for class_field in fields(class_type)
-                if not _is_optional(class_field.type)
+                for class_field in attr.fields(class_type)
+                if not _is_optional(class_field.type)  # type: ignore
             ]
         )
 
@@ -294,7 +301,7 @@ def _create_rule_edge_arg(
         raise TypeError("input type is incompatible...")
     in_list_type = input_type[0]
 
-    if "__dataclass_fields__" in in_list_type.__dict__:
+    if attr.has(in_list_type):
         # its a composite type -> create new class type here
         return [_init_class(in_list_type, x) for x in edge_props if x]
     return [_extract_value(x, in_list_type) for x in edge_props if x]
@@ -310,7 +317,7 @@ def _create_rule_node_arg(
     if type(input_type) is list or type(input_type) is tuple:
         raise TypeError("input type is incompatible...")
 
-    if "__dataclass_fields__" in input_type.__dict__:
+    if attr.has(input_type):
         # its a composite type -> create new class type here
         return _init_class(input_type, node_props)
     return _extract_value(node_props, input_type)
@@ -384,15 +391,18 @@ def _get_required_qns(
 
         class_type = input_type
         if "__origin__" in input_type.__dict__ and (
-            input_type.__origin__ is list or input_type.__origin__ is tuple
+            input_type.__origin__ is list
+            or input_type.__origin__ is tuple
+            or input_type.__origin__ is List
+            or input_type.__origin__ is Tuple
         ):
             class_type = input_type.__args__[0]
 
-        if "__dataclass_fields__" in class_type.__dict__:
-            for class_field in fields(class_type):
+        if attr.has(class_type):
+            for class_field in attr.fields(class_type):
                 qn_set.add(
-                    class_field.type.__args__[0]
-                    if _is_optional(class_field.type)
+                    class_field.type.__args__[0]  # type: ignore
+                    if _is_optional(class_field.type)  # type: ignore
                     else class_field.type
                 )
         else:
@@ -477,7 +487,7 @@ def __check_qns_equal(
         )
     if EdgeQuantumNumbers.spin_magnitude in state:
         changes_dict["spin"] = state[EdgeQuantumNumbers.spin_magnitude]
-    return replace(particle, **changes_dict) == particle
+    return attr.evolve(particle, **changes_dict) == particle
 
 
 def validate_fully_initialized_graph(
@@ -575,21 +585,19 @@ def _create_variable_string(
     return str(element_id) + "-" + qn_type.__name__
 
 
-@dataclass
+@attr.s
 class _VariableContainer:
-    ingoing_edge_variables: Set[_EdgeVariableInfo] = field(default_factory=set)
+    ingoing_edge_variables: Set[_EdgeVariableInfo] = attr.ib(factory=set)
     fixed_ingoing_edge_variables: Dict[
         int, Dict[Type[EdgeQuantumNumber], Scalar]
-    ] = field(default_factory=dict)
-    outgoing_edge_variables: Set[_EdgeVariableInfo] = field(
-        default_factory=set
-    )
+    ] = attr.ib(factory=dict)
+    outgoing_edge_variables: Set[_EdgeVariableInfo] = attr.ib(factory=set)
     fixed_outgoing_edge_variables: Dict[
         int, Dict[Type[EdgeQuantumNumber], Scalar]
-    ] = field(default_factory=dict)
-    node_variables: Set[_NodeVariableInfo] = field(default_factory=set)
-    fixed_node_variables: Dict[Type[NodeQuantumNumber], Scalar] = field(
-        default_factory=dict
+    ] = attr.ib(factory=dict)
+    node_variables: Set[_NodeVariableInfo] = attr.ib(factory=set)
+    fixed_node_variables: Dict[Type[NodeQuantumNumber], Scalar] = attr.ib(
+        factory=dict
     )
 
 

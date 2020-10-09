@@ -3,7 +3,6 @@
 
 from abc import ABC
 from collections import abc
-from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import (
     Any,
@@ -17,14 +16,16 @@ from typing import (
     Set,
 )
 
+import attr
+
 from expertsystem.data import Particle, ParticleCollection
 
 
-@dataclass
+@attr.s
 class FitParameter:
-    name: str
-    value: float = 0.0
-    is_fixed: bool = False
+    name: str = attr.ib()
+    value: float = attr.ib(default=0.0)
+    is_fixed: bool = attr.ib(default=False)
 
 
 class FitParameters(abc.Mapping):
@@ -82,21 +83,21 @@ class FormFactor(ABC):
     pass
 
 
-@dataclass
+@attr.s
 class BlattWeisskopf(FormFactor):
-    meson_radius: FitParameter
+    meson_radius: FitParameter = attr.ib()
 
 
-@dataclass
+@attr.s
 class NonDynamic(Dynamics):
-    form_factor: BlattWeisskopf
+    form_factor: BlattWeisskopf = attr.ib()
 
 
-@dataclass
+@attr.s
 class RelativisticBreitWigner(Dynamics):
-    pole_position: FitParameter
-    pole_width: FitParameter
-    form_factor: BlattWeisskopf
+    pole_position: FitParameter = attr.ib()
+    pole_width: FitParameter = attr.ib()
+    form_factor: BlattWeisskopf = attr.ib()
 
 
 class ParticleDynamics(abc.Mapping):
@@ -277,93 +278,93 @@ class IntensityNode(Node):
     pass
 
 
-@dataclass
+@attr.s
 class SequentialAmplitude(AmplitudeNode):
-    amplitudes: List[AmplitudeNode] = field(default_factory=list)
+    amplitudes: List[AmplitudeNode] = attr.ib(factory=list)
 
 
-@dataclass
+@attr.s
 class CoefficientAmplitude(AmplitudeNode):
-    component: str
-    magnitude: FitParameter
-    phase: FitParameter
-    amplitude: AmplitudeNode
-    prefactor: Optional[float] = None
+    component: str = attr.ib()
+    magnitude: FitParameter = attr.ib()
+    phase: FitParameter = attr.ib()
+    amplitude: AmplitudeNode = attr.ib()
+    prefactor: Optional[float] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class StrengthIntensity(IntensityNode):
-    component: str
-    strength: FitParameter
-    intensity: IntensityNode
+    component: str = attr.ib()
+    strength: FitParameter = attr.ib()
+    intensity: IntensityNode = attr.ib()
 
 
-@dataclass
+@attr.s
 class NormalizedIntensity(IntensityNode):
-    intensity: IntensityNode
+    intensity: IntensityNode = attr.ib()
 
 
-@dataclass
+@attr.s
 class IncoherentIntensity(IntensityNode):
-    intensities: List[IntensityNode] = field(default_factory=list)
+    intensities: List[IntensityNode] = attr.ib(factory=list)
 
 
-@dataclass
+@attr.s
 class CoherentIntensity(IntensityNode):
-    component: str
-    amplitudes: List[AmplitudeNode] = field(default_factory=list)
+    component: str = attr.ib()
+    amplitudes: List[AmplitudeNode] = attr.ib(factory=list)
 
 
-@dataclass
+@attr.s
 class HelicityParticle:
-    particle: Particle
-    helicity: float
+    particle: Particle = attr.ib()
+    helicity: float = attr.ib()
 
 
-@dataclass
+@attr.s
 class DecayProduct(HelicityParticle):
-    final_state_ids: List[int]
+    final_state_ids: List[int] = attr.ib()
 
 
-@dataclass
+@attr.s
 class RecoilSystem:
-    recoil_final_state: List[int]
-    parent_recoil_final_state: Optional[List[int]] = None
+    recoil_final_state: List[int] = attr.ib()
+    parent_recoil_final_state: Optional[List[int]] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class ClebschGordan:
-    J: float  # pylint: disable=invalid-name
-    M: float  # pylint: disable=invalid-name
-    j_1: float
-    m_1: float
-    j_2: float
-    m_2: float
+    J: float = attr.ib()  # pylint: disable=invalid-name
+    M: float = attr.ib()  # pylint: disable=invalid-name
+    j_1: float = attr.ib()
+    m_1: float = attr.ib()
+    j_2: float = attr.ib()
+    m_2: float = attr.ib()
 
 
-@dataclass
+@attr.s
 class HelicityDecay(DecayNode):
-    decaying_particle: HelicityParticle
-    decay_products: List[DecayProduct]
-    recoil_system: Optional[RecoilSystem] = None
+    decaying_particle: HelicityParticle = attr.ib()
+    decay_products: List[DecayProduct] = attr.ib()
+    recoil_system: Optional[RecoilSystem] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class CanonicalDecay(DecayNode):
-    decaying_particle: HelicityParticle
-    decay_products: List[DecayProduct]
-    l_s: ClebschGordan
-    s2s3: ClebschGordan
-    recoil_system: Optional[RecoilSystem] = None
+    decaying_particle: HelicityParticle = attr.ib()
+    decay_products: List[DecayProduct] = attr.ib()
+    l_s: ClebschGordan = attr.ib()
+    s2s3: ClebschGordan = attr.ib()
+    recoil_system: Optional[RecoilSystem] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class AmplitudeModel:
-    kinematics: Kinematics
-    particles: ParticleCollection
-    parameters: FitParameters
-    intensity: IntensityNode
-    dynamics: ParticleDynamics
+    kinematics: Kinematics = attr.ib()
+    particles: ParticleCollection = attr.ib()
+    parameters: FitParameters = attr.ib()
+    intensity: IntensityNode = attr.ib()
+    dynamics: ParticleDynamics = attr.ib()
 
 
 def _assert_arg_type(value: Any, value_type: type) -> None:

@@ -2,7 +2,6 @@
 
 import logging
 from collections import abc
-from dataclasses import dataclass, field, fields
 from functools import total_ordering
 from typing import (
     Any,
@@ -15,6 +14,8 @@ from typing import (
     Tuple,
     Union,
 )
+
+import attr
 
 
 @total_ordering
@@ -115,16 +116,16 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-@dataclass(frozen=True, init=False)
+@attr.s(frozen=True, init=False)
 class EdgeQuantumNumbers:  # pylint: disable=too-many-instance-attributes
     """Definition of quantum numbers for edges.
 
     This class defines the types that are used in the
     `~.solving.conservation_rules`, for instance in
-    `.additive_quantum_number_rule`. You can also create `dataclasses` with data
-    members that are typed as the data members of `EdgeQuantumNumbers` (see for
-    example `.HelicityParityEdgeInput`) and use them in conservation rules that
-    derive from `.Rule`.
+    `.additive_quantum_number_rule`. You can also create data classes (see
+    `attr.s`) with data members that are typed as the data members of
+    `.EdgeQuantumNumbers` (see for example `.HelicityParityEdgeInput`) and use
+    them in conservation rules that derive from `.Rule`.
     """
 
     pid = NewType("pid", int)
@@ -178,7 +179,7 @@ EdgeQuantumNumber = Union[
 ]
 
 
-@dataclass(frozen=True, init=False)
+@attr.s(frozen=True, init=False)
 class NodeQuantumNumbers:
     """Definition of quantum numbers for interaction nodes."""
 
@@ -205,7 +206,7 @@ NodeQuantumNumber = Union[
 ]
 
 
-@dataclass(frozen=True)
+@attr.s(frozen=True)
 class Particle:  # pylint: disable=too-many-instance-attributes
     """Immutable container of data defining a physical particle.
 
@@ -225,33 +226,34 @@ class Particle:  # pylint: disable=too-many-instance-attributes
         the user (see :doc:`/usage/particles`).
     """
 
-    name: str = field(compare=False)
-    pid: int = field(compare=False)
-    spin: float
-    mass: float
-    width: float = 0.0
-    charge: int = 0
-    isospin: Optional[Spin] = None
-    strangeness: int = 0
-    charmness: int = 0
-    bottomness: int = 0
-    topness: int = 0
-    baryon_number: int = 0
-    electron_lepton_number: int = 0
-    muon_lepton_number: int = 0
-    tau_lepton_number: int = 0
-    parity: Optional[Parity] = None
-    c_parity: Optional[Parity] = None
-    g_parity: Optional[Parity] = None
+    name: str = attr.ib(eq=False)
+    pid: int = attr.ib(eq=False)
+    spin: float = attr.ib()
+    mass: float = attr.ib()
+    width: float = attr.ib(default=0.0)
+    charge: int = attr.ib(default=0)
+    isospin: Optional[Spin] = attr.ib(default=None)
+    strangeness: int = attr.ib(default=0)
+    charmness: int = attr.ib(default=0)
+    bottomness: int = attr.ib(default=0)
+    topness: int = attr.ib(default=0)
+    baryon_number: int = attr.ib(default=0)
+    electron_lepton_number: int = attr.ib(default=0)
+    muon_lepton_number: int = attr.ib(default=0)
+    tau_lepton_number: int = attr.ib(default=0)
+    parity: Optional[Parity] = attr.ib(default=None)
+    c_parity: Optional[Parity] = attr.ib(default=None)
+    g_parity: Optional[Parity] = attr.ib(default=None)
 
-    def __post_init__(self) -> None:
+    @isospin.validator
+    def __check_gellmann_nishijima(self, attribute, value) -> None:  # type: ignore  # pylint: disable=unused-argument
         if (
             self.isospin is not None
             and GellmannNishijima.compute_charge(self) != self.charge
         ):
             raise ValueError(
-                f"Cannot construct particle {self.name} because its quantum numbers"
-                " don't agree with the Gell-Mann–Nishijima formula:\n"
+                f"Cannot construct particle {self.name}, because its quantum"
+                " numbers don't agree with the Gell-Mann–Nishijima formula:\n"
                 f"  Q[{self.charge}] != "
                 f"Iz[{self.isospin.projection}] + 1/2 "
                 f"(B[{self.baryon_number}] + "
@@ -267,7 +269,7 @@ class Particle:  # pylint: disable=too-many-instance-attributes
 
     def __repr__(self) -> str:
         output_string = f"{self.__class__.__name__}("
-        for member in fields(self):
+        for member in attr.fields(Particle):
             value = getattr(self, member.name)
             if value is None:
                 continue

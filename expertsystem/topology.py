@@ -10,7 +10,6 @@ import copy
 import itertools
 import logging
 from collections import OrderedDict
-from dataclasses import dataclass
 from typing import (
     Callable,
     Dict,
@@ -24,13 +23,15 @@ from typing import (
     TypeVar,
 )
 
+import attr
 
-@dataclass
+
+@attr.s
 class Edge:
     """Struct-like definition of an edge, used in `Topology`."""
 
-    ending_node_id: Optional[int] = None
-    originating_node_id: Optional[int] = None
+    ending_node_id: Optional[int] = attr.ib(default=None)
+    originating_node_id: Optional[int] = attr.ib(default=None)
 
     def get_connected_nodes(self) -> Set[int]:
         connected_nodes = {self.ending_node_id, self.originating_node_id}

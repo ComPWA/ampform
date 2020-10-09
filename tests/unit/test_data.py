@@ -2,9 +2,9 @@
 import logging
 import typing
 from copy import deepcopy
-from dataclasses import FrozenInstanceError
 
 import pytest
+from attr.exceptions import FrozenInstanceError
 
 from expertsystem.data import (
     GellmannNishijima,

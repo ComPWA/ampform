@@ -164,6 +164,7 @@ nitpick_ignore = [
 
 # Intersphinx settings
 intersphinx_mapping = {
+    "attrs": ("https://www.attrs.org/en/stable", None),
     "constraint": (
         "https://labix.org/doc/constraint/public/",
         "constraint.inv",
