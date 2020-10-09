@@ -17,8 +17,7 @@ from dataclasses import dataclass
 from functools import reduce
 from typing import Any, Callable, List, Optional, Set, Tuple, Type, Union
 
-from numpy import arange
-
+from expertsystem._utils import arange
 from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Spin
 
 
@@ -575,7 +574,7 @@ def __spin_couplings(spin1: Spin, spin2: Spin) -> Set[Spin]:
     sum_proj = spin1.projection + spin2.projection
     return set(
         Spin(x, sum_proj)
-        for x in arange(abs(s_1 - s_2), s_1 + s_2 + 1, 1.0).tolist()  # type: ignore
+        for x in arange(abs(s_1 - s_2), s_1 + s_2 + 1, 1.0)
         if x >= abs(sum_proj)
         and not _is_clebsch_gordan_coefficient_zero(
             spin1, spin2, Spin(x, sum_proj)

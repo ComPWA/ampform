@@ -3,10 +3,10 @@
 import re
 from typing import Optional, Tuple
 
-from numpy import sign
 from particle import Particle as PdgDatabase
 from particle.particle import enums
 
+from expertsystem._utils import sign
 from expertsystem.data import (
     GellmannNishijima,
     Parity,

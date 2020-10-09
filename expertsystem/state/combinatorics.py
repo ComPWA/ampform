@@ -18,8 +18,7 @@ from typing import (
     Union,
 )
 
-from numpy import arange
-
+from expertsystem._utils import arange
 from expertsystem.data import Particle, ParticleCollection, ParticleWithSpin
 from expertsystem.topology import StateTransitionGraph, Topology
 
@@ -319,9 +318,9 @@ def _safe_set_spin_projections(
         if isinstance(state, str):
             particle_name = state
             particle = particle_db[state]
-            spin_projections = arange(  # type: ignore
-                -particle.spin, particle.spin + 1, 1.0
-            ).tolist()
+            spin_projections = list(
+                arange(-particle.spin, particle.spin + 1, 1.0)
+            )
             if particle.mass == 0.0:
                 if 0.0 in spin_projections:
                     del spin_projections[spin_projections.index(0.0)]
