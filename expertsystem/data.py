@@ -12,10 +12,13 @@ from typing import (
     NewType,
     Optional,
     Tuple,
+    Type,
     Union,
 )
 
 import attr
+
+Scalar = Union[int, float]
 
 
 @total_ordering
@@ -204,6 +207,42 @@ NodeQuantumNumber = Union[
     NodeQuantumNumbers.s_projection,
     NodeQuantumNumbers.parity_prefactor,
 ]
+
+
+@attr.s(frozen=True)
+class InteractionProperties:
+    """Immutable data structure containing interaction properties.
+
+    .. note:: As opposed to `NodeQuantumNumbers`, the `InteractionProperties`
+        class serves as an interface to the user.
+    """
+
+    l_magnitude: Optional[int] = attr.ib(
+        default=None
+    )  # L cannot be half integer
+    l_projection: Optional[int] = attr.ib(default=None)
+    s_magnitude: Optional[float] = attr.ib(default=None)
+    s_projection: Optional[float] = attr.ib(default=None)
+    parity_prefactor: Optional[float] = attr.ib(default=None)
+
+
+def _get_node_quantum_number(
+    qn_type: Type[NodeQuantumNumber], node_props: InteractionProperties
+) -> Optional[Scalar]:
+    return getattr(node_props, qn_type.__name__)
+
+
+def _create_interaction_properties(
+    qn_solution: Dict[Type[NodeQuantumNumber], Scalar]
+) -> InteractionProperties:
+    converted_solution = {k.__name__: v for k, v in qn_solution.items()}
+    kw_args = {
+        x.name: converted_solution[x.name]
+        for x in attr.fields(InteractionProperties)
+        if x.name in converted_solution
+    }
+
+    return attr.evolve(InteractionProperties(), **kw_args)
 
 
 @attr.s(frozen=True)

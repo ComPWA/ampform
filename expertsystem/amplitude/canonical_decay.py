@@ -1,14 +1,8 @@
 """Implementation of the canonical formalism for amplitude model generation."""
 
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional
 
-from expertsystem.data import (
-    NodeQuantumNumber,
-    NodeQuantumNumbers,
-    ParticleWithSpin,
-    Spin,
-)
-from expertsystem.state.properties import get_interaction_property
+from expertsystem.data import InteractionProperties, ParticleWithSpin, Spin
 from expertsystem.topology import StateTransitionGraph
 
 from .helicity_decay import (
@@ -161,29 +155,17 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
         return super()._generate_partial_decay(graph, node_id)
 
 
-def __get_angular_momentum(
-    node_props: Dict[Type[NodeQuantumNumber], Union[int, float]]
-) -> Spin:
-    l_mag = get_interaction_property(
-        node_props, NodeQuantumNumbers.l_magnitude
-    )
-    l_proj = get_interaction_property(
-        node_props, NodeQuantumNumbers.l_projection
-    )
+def __get_angular_momentum(node_props: InteractionProperties) -> Spin:
+    l_mag = node_props.l_magnitude
+    l_proj = node_props.l_projection
     if l_mag is None or l_proj is None:
         raise TypeError("Angular momentum L not defined!")
     return Spin(l_mag, l_proj)
 
 
-def __get_coupled_spin(
-    node_props: Dict[Type[NodeQuantumNumber], Union[int, float]]
-) -> Spin:
-    s_mag = get_interaction_property(
-        node_props, NodeQuantumNumbers.s_magnitude
-    )
-    s_proj = get_interaction_property(
-        node_props, NodeQuantumNumbers.s_projection
-    )
+def __get_coupled_spin(node_props: InteractionProperties) -> Spin:
+    s_mag = node_props.s_magnitude
+    s_proj = node_props.s_projection
     if s_mag is None or s_proj is None:
         raise TypeError("Coupled spin S not defined!")
     return Spin(s_mag, s_proj)

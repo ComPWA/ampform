@@ -1,6 +1,6 @@
 import pytest
 
-from expertsystem.data import NodeQuantumNumbers, Spin
+from expertsystem.data import InteractionProperties, Spin
 from expertsystem.solving.conservation_rules import ParityConservationHelicity
 from expertsystem.ui import InteractionTypes, StateTransitionManager
 from expertsystem.ui._default_settings import (
@@ -125,12 +125,12 @@ def test_canonical_clebsch_gordan_ls_coupling(  # pylint: disable=too-many-argum
     stm.filter_remove_qns = set()
 
     node_props = {
-        0: {
-            NodeQuantumNumbers.l_magnitude: ang_mom.magnitude,
-            NodeQuantumNumbers.l_projection: ang_mom.projection,
-            NodeQuantumNumbers.s_magnitude: spin.magnitude,
-            NodeQuantumNumbers.s_projection: spin.projection,
-        }
+        0: InteractionProperties(
+            l_magnitude=int(ang_mom.magnitude),
+            l_projection=int(ang_mom.projection),
+            s_magnitude=spin.magnitude,
+            s_projection=spin.projection,
+        )
     }
     graph_node_setting_pairs = stm.prepare_graphs()
     for graph_node_settings in graph_node_setting_pairs.values():

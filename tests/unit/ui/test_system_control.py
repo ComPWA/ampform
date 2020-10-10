@@ -1,7 +1,11 @@
 # pylint: disable=protected-access
 import pytest
 
-from expertsystem.data import NodeQuantumNumbers, Particle
+from expertsystem.data import (
+    InteractionProperties,
+    NodeQuantumNumbers,
+    Particle,
+)
 from expertsystem.state.properties import (
     CompareGraphNodePropertiesFunctor,
     _create_edge_id_particle_mapping,
@@ -107,10 +111,10 @@ def make_ls_test_graph(angular_momentum_magnitude, coupled_spin_magnitude):
         CompareGraphNodePropertiesFunctor()
     )
     graph.add_node(0)
-    graph.node_props[0] = {
-        NodeQuantumNumbers.s_magnitude: coupled_spin_magnitude,
-        NodeQuantumNumbers.l_magnitude: angular_momentum_magnitude,
-    }
+    graph.node_props[0] = InteractionProperties(
+        s_magnitude=coupled_spin_magnitude,
+        l_magnitude=angular_momentum_magnitude,
+    )
     return graph
 
 
@@ -122,10 +126,10 @@ def make_ls_test_graph_scrambled(
         CompareGraphNodePropertiesFunctor()
     )
     graph.add_node(0)
-    graph.node_props[0] = {
-        NodeQuantumNumbers.l_magnitude: angular_momentum_magnitude,
-        NodeQuantumNumbers.s_magnitude: coupled_spin_magnitude,
-    }
+    graph.node_props[0] = InteractionProperties(
+        l_magnitude=angular_momentum_magnitude,
+        s_magnitude=coupled_spin_magnitude,
+    )
     return graph
 
 

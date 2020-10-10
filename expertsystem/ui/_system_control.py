@@ -4,7 +4,14 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
-from expertsystem.data import NodeQuantumNumber, ParticleWithSpin
+import attr
+
+from expertsystem.data import (
+    InteractionProperties,
+    NodeQuantumNumber,
+    ParticleWithSpin,
+    _get_node_quantum_number,
+)
 from expertsystem.solving import (
     EdgeSettings,
     GraphSettings,
@@ -12,10 +19,7 @@ from expertsystem.solving import (
     NodeSettings,
 )
 from expertsystem.solving.conservation_rules import Rule
-from expertsystem.state.properties import (
-    CompareGraphNodePropertiesFunctor,
-    get_interaction_property,
-)
+from expertsystem.state.properties import CompareGraphNodePropertiesFunctor
 from expertsystem.topology import StateTransitionGraph
 
 Strength = float
@@ -97,7 +101,7 @@ class _InteractionDeterminationFunctorInterface(ABC):
         self,
         in_edge_props: List[ParticleWithSpin],
         out_edge_props: List[ParticleWithSpin],
-        node_props: dict,
+        node_props: InteractionProperties,
     ) -> List[InteractionTypes]:
         pass
 
@@ -109,7 +113,7 @@ class GammaCheck(_InteractionDeterminationFunctorInterface):
         self,
         in_edge_props: List[ParticleWithSpin],
         out_edge_props: List[ParticleWithSpin],
-        node_props: dict,
+        node_props: InteractionProperties,
     ) -> List[InteractionTypes]:
         int_types = list(InteractionTypes)
         for particle, _ in in_edge_props + out_edge_props:
@@ -126,7 +130,7 @@ class LeptonCheck(_InteractionDeterminationFunctorInterface):
         self,
         in_edge_props: List[ParticleWithSpin],
         out_edge_props: List[ParticleWithSpin],
-        node_props: dict,
+        node_props: InteractionProperties,
     ) -> List[InteractionTypes]:
         node_interaction_types = list(InteractionTypes)
         for particle, _ in in_edge_props + out_edge_props:
@@ -176,10 +180,13 @@ def _remove_qns_from_graph(  # pylint: disable=too-many-branches
     graph: StateTransitionGraph[ParticleWithSpin],
     qn_list: Set[Type[NodeQuantumNumber]],
 ) -> StateTransitionGraph[ParticleWithSpin]:
-    for node_props in graph.node_props.values():
-        for int_qn in qn_list:
-            if int_qn in node_props:
-                del node_props[int_qn]
+    new_node_props = {}
+    for node_id, node_props in graph.node_props.items():
+        new_node_props[node_id] = attr.evolve(
+            node_props, **{x.__name__: None for x in qn_list}
+        )
+
+    graph.node_props = new_node_props
 
     return graph
 
@@ -281,7 +288,7 @@ def require_interaction_property(
             return False
         for i in node_ids:
             if (
-                get_interaction_property(graph.node_props[i], interaction_qn)
+                _get_node_quantum_number(interaction_qn, graph.node_props[i])
                 not in allowed_values
             ):
                 return False

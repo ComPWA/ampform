@@ -6,11 +6,14 @@ related to this.
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import permutations
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import Dict, List, Optional, Set, Type, Union
+
+import attr
 
 from expertsystem.data import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
+    InteractionProperties,
     NodeQuantumNumber,
     Parity,
     ParticleCollection,
@@ -49,17 +52,6 @@ def get_particle_property(
     return value
 
 
-def get_interaction_property(
-    interaction_properties: Dict[Type[NodeQuantumNumber], Union[int, float]],
-    qn_type: Type[NodeQuantumNumber],
-) -> Optional[Union[int, float]]:
-    found_prop = None
-    if qn_type in interaction_properties:
-        found_prop = interaction_properties[qn_type]
-
-    return found_prop
-
-
 class CompareGraphNodePropertiesFunctor:
     """Functor for comparing graph elements."""
 
@@ -71,20 +63,18 @@ class CompareGraphNodePropertiesFunctor:
 
     def __call__(
         self,
-        node_props1: Dict[int, Dict[str, Any]],
-        node_props2: Dict[int, Dict[str, Any]],
+        node_props1: Dict[int, InteractionProperties],
+        node_props2: Dict[int, InteractionProperties],
     ) -> bool:
         for node_id, node_props in node_props1.items():
             other_node_props = node_props2[node_id]
-            if {
-                k: v
-                for k, v in node_props.items()
-                if k not in self.__ignored_qn_list
-            } != {
-                k: v
-                for k, v in other_node_props.items()
-                if k not in self.__ignored_qn_list
-            }:
+            if attr.evolve(
+                node_props,
+                **{x.__name__: None for x in self.__ignored_qn_list},
+            ) != attr.evolve(
+                other_node_props,
+                **{x.__name__: None for x in self.__ignored_qn_list},
+            ):
                 return False
         return True
 

@@ -17,6 +17,7 @@ from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.data import (
+    InteractionProperties,
     NodeQuantumNumber,
     NodeQuantumNumbers,
     Particle,
@@ -271,7 +272,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     x for x in out_edge_ids if x in final_state_edges
                 ]
             ]
-            node_props = {}
+            node_props = InteractionProperties()
             if node_id in graph.node_props:
                 node_props = graph.node_props[node_id]
             for int_det in self.interaction_determinators:

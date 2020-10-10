@@ -2,14 +2,8 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
-from expertsystem.data import (
-    NodeQuantumNumbers,
-    ParticleCollection,
-    ParticleWithSpin,
-    Spin,
-)
+from expertsystem.data import ParticleCollection, ParticleWithSpin, Spin
 from expertsystem.state.properties import (
-    get_interaction_property,
     perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.topology import StateTransitionGraph, Topology
@@ -165,10 +159,7 @@ def get_prefactor(
     for node_id in graph.nodes:
         if node_id in graph.node_props:
             temp_prefactor = __validate_float_type(
-                get_interaction_property(
-                    graph.node_props[node_id],
-                    NodeQuantumNumbers.parity_prefactor,
-                )
+                graph.node_props[node_id].parity_prefactor
             )
             if temp_prefactor is not None:
                 if prefactor is None:

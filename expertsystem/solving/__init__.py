@@ -33,7 +33,10 @@ from expertsystem.data import (
     Particle,
     ParticleCollection,
     ParticleWithSpin,
+    Scalar,
     Spin,
+    _create_interaction_properties,
+    _get_node_quantum_number,
 )
 from expertsystem.solving.conservation_rules import IsoSpinValidity, Rule
 from expertsystem.state.properties import get_particle_property
@@ -46,9 +49,6 @@ class InteractionTypes(Enum):
     Strong = auto()
     EM = auto()
     Weak = auto()
-
-
-Scalar = Union[int, float]
 
 
 @attr.s
@@ -425,9 +425,11 @@ def _merge_solutions_with_graph(
         temp_graph = deepcopy(graph)
         for node_id in temp_graph.nodes:
             if node_id in solution.node_quantum_numbers:
-                temp_graph.node_props[node_id] = solution.node_quantum_numbers[
+                temp_graph.node_props[
                     node_id
-                ]
+                ] = _create_interaction_properties(
+                    solution.node_quantum_numbers[node_id]
+                )
 
         current_new_graphs = [temp_graph]
         for int_edge_id in intermediate_edges:
@@ -503,8 +505,11 @@ def validate_fully_initialized_graph(
         variables = {}
         if node_id in graph.node_props:
             for qn_type in qn_list:
-                if qn_type in graph.node_props[node_id]:
-                    variables[qn_type] = graph.node_props[node_id][qn_type]
+                value = _get_node_quantum_number(
+                    qn_type, graph.node_props[node_id]
+                )
+                if value is not None:
+                    variables[qn_type] = value
         return variables
 
     def _create_edge_variables(
@@ -795,8 +800,9 @@ class CSPSolver(Solver):
         if node_id in self.__graph.node_props:
             node_props = self.__graph.node_props[node_id]
             for qn_type in qn_list:
-                if qn_type in node_props and node_props[qn_type] is not None:
-                    variables[1].update({qn_type: node_props[qn_type]})
+                value = _get_node_quantum_number(qn_type, node_props)
+                if value is not None:
+                    variables[1].update({qn_type: value})
         else:
             for qn_type in qn_list:
                 var_info = (node_id, qn_type)

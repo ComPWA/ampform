@@ -4,8 +4,6 @@ import pytest
 
 from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.data import NodeQuantumNumbers
-from expertsystem.state.properties import get_interaction_property
 from expertsystem.ui import InteractionTypes, StateTransitionManager
 
 
@@ -80,12 +78,10 @@ def test_parity_prefactor(
 
         assert isinstance(node_id, int)
 
-        prefactor = get_interaction_property(
-            solution.node_props[node_id],
-            NodeQuantumNumbers.parity_prefactor,
+        assert (
+            relative_parity_prefactor
+            == solution.node_props[node_id].parity_prefactor
         )
-
-        assert relative_parity_prefactor == prefactor
 
     amp_gen = HelicityAmplitudeGenerator()
     amplitude_model = amp_gen.generate(result.solutions)

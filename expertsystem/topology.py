@@ -25,6 +25,8 @@ from typing import (
 
 import attr
 
+from expertsystem.data import InteractionProperties
+
 
 @attr.s
 class Edge:
@@ -315,7 +317,7 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
         edges: Optional[Dict[int, Edge]] = None,
     ) -> None:
         super().__init__(nodes, edges)
-        self.node_props: Dict[int, dict] = {}
+        self.node_props: Dict[int, InteractionProperties] = {}
         self.edge_props: Dict[int, _EdgeType] = {}
         self.graph_node_properties_comparator: Optional[Callable] = None
 
