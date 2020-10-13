@@ -9,7 +9,6 @@ Responsible for building all possible topologies bases on basic user input:
 import copy
 import itertools
 import logging
-from collections import OrderedDict
 from typing import (
     Callable,
     Dict,
@@ -344,6 +343,22 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
 
         raise NotImplementedError
 
+    def __copy__(self) -> "StateTransitionGraph[_EdgeType]":
+        """Makes a *shallow* copy.
+
+        The default shallow copy behavior was overwritten to also make copies
+        one level deeper. In other words copies of the containers (`nodes`,
+        `edges`, `node_props`, `edge_props`) are made as well. Just like the
+        default copy behavior, the existing contents of the containers are
+        **NOT** copied!
+        """
+        new_nodes = copy.copy(self.nodes)
+        new_edges = copy.copy(self.edges)
+        new_graph = type(self)(nodes=new_nodes, edges=new_edges)
+        new_graph.node_props = copy.copy(self.node_props)
+        new_graph.edge_props = copy.copy(self.edge_props)
+        return new_graph
+
     @staticmethod
     def from_topology(topology: Topology) -> "StateTransitionGraph":
         """Create a `StateTransitionGraph` from a `Topology`."""
@@ -520,9 +535,3 @@ def attach_node_to_edges(
         new_open_end_lines.append(edge_id)
 
     return (temp_graph, new_open_end_lines)
-
-
-def _dicts_unequal(dict1: dict, dict2: dict) -> bool:
-    return OrderedDict(sorted(dict1.items())) != OrderedDict(
-        sorted(dict2.items())
-    )

@@ -12,7 +12,7 @@ to an intermediate state) and use the implemented conservation rules of
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from copy import deepcopy
+from copy import copy
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
@@ -422,7 +422,7 @@ def _merge_solutions_with_graph(
     logging.debug("merging solutions with graph...")
     intermediate_edges = graph.get_intermediate_state_edges()
     for solution in solutions:
-        temp_graph = deepcopy(graph)
+        temp_graph = copy(graph)
         for node_id in temp_graph.nodes:
             if node_id in solution.node_quantum_numbers:
                 temp_graph.node_props[
@@ -445,7 +445,7 @@ def _merge_solutions_with_graph(
             new_graphs_temp = []
             for current_new_graph in current_new_graphs:
                 for particle_edge in particle_edges:
-                    temp_graph = deepcopy(current_new_graph)
+                    temp_graph = copy(current_new_graph)
                     temp_graph.edge_props[int_edge_id] = particle_edge
                     new_graphs_temp.append(temp_graph)
             current_new_graphs = new_graphs_temp
