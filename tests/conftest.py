@@ -1,7 +1,7 @@
 import pytest
 
 from expertsystem import ui
-from expertsystem.data import ParticleCollection
+from expertsystem.particle import ParticleCollection
 
 
 @pytest.fixture(scope="module")

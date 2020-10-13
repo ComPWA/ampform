@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from expertsystem.topology import (
+from expertsystem.reaction.topology import (
     Edge,
     InteractionNode,
     SimpleStateTransitionTopologyBuilder,

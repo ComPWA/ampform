@@ -3,7 +3,7 @@ import particle
 import pytest
 
 from expertsystem import io
-from expertsystem.data import ParticleCollection
+from expertsystem.particle import ParticleCollection
 
 
 @pytest.fixture(scope="module")

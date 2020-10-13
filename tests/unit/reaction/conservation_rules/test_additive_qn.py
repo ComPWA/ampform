@@ -1,6 +1,6 @@
 import pytest
 
-from expertsystem.solving.conservation_rules import ChargeConservation
+from expertsystem.reaction.conservation_rules import ChargeConservation
 
 
 @pytest.mark.parametrize(

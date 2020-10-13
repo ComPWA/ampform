@@ -18,7 +18,7 @@ from typing import (
 
 import attr
 
-from expertsystem.data import Particle, ParticleCollection
+from expertsystem.particle import Particle, ParticleCollection
 
 
 @attr.s

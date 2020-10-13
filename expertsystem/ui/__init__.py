@@ -1,7 +1,7 @@
 """Main interface of the `expertsystem`.
 
 This module contains the functions that you need for the most common use cases
-of the `expertsystem`.
+of the `expertsystem`. See the :doc:`/usage/quickstart`.
 """
 
 import logging
@@ -16,15 +16,19 @@ from expertsystem import io
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.data import (
+from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.reaction.combinatorics import (
+    StateDefinition,
+    initialize_graph,
+    match_external_edges,
+)
+from expertsystem.reaction.quantum_numbers import (
     InteractionProperties,
     NodeQuantumNumber,
     NodeQuantumNumbers,
-    Particle,
-    ParticleCollection,
     ParticleWithSpin,
 )
-from expertsystem.solving import (
+from expertsystem.reaction.solving import (
     CSPSolver,
     EdgeSettings,
     GraphSettings,
@@ -32,13 +36,7 @@ from expertsystem.solving import (
     NodeSettings,
     Result,
 )
-from expertsystem.state.combinatorics import StateDefinition, initialize_graph
-from expertsystem.state.properties import (
-    CompareGraphNodePropertiesFunctor,
-    filter_particles,
-    match_external_edges,
-)
-from expertsystem.topology import (
+from expertsystem.reaction.topology import (
     InteractionNode,
     SimpleStateTransitionTopologyBuilder,
     StateTransitionGraph,
@@ -50,6 +48,7 @@ from ._default_settings import (
     create_default_interaction_settings,
 )
 from ._system_control import (
+    CompareGraphNodePropertiesFunctor,
     GammaCheck,
     GraphSettingsGroups,
     LeptonCheck,
@@ -102,7 +101,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.__formalism_type = str(formalism_type)
         self.__particles = particles
         self.number_of_threads = int(number_of_threads)
-        self.solving_mode = str(solving_mode)
+        self.reaction_mode = str(solving_mode)
         self.initial_state = initial_state
         self.final_state = final_state
         self.interaction_type_settings = interaction_type_settings
@@ -158,11 +157,21 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         if reload_pdg or len(self.__particles) == 0:
             self.__particles = load_default_particles()
 
-        if allowed_intermediate_particles is None:
-            allowed_intermediate_particles = []
-        self.__allowed_intermediate_particles = filter_particles(
-            self.__particles, allowed_intermediate_particles
-        )
+        self.__allowed_intermediate_particles = self.__particles
+        if allowed_intermediate_particles is not None:
+            self.set_allowed_intermediate_particles(
+                allowed_intermediate_particles
+            )
+
+    def set_allowed_intermediate_particles(
+        self, particle_names: List[str]
+    ) -> None:
+        self.__allowed_intermediate_particles = ParticleCollection()
+        for particle_name in particle_names:
+            self.__allowed_intermediate_particles += self.__particles.filter(
+                lambda p: particle_name  # pylint: disable=cell-var-from-loop
+                in p.name
+            )
 
     @property
     def formalism_type(self) -> str:
@@ -354,7 +363,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     results[strength].extend(temp_result, True)
             if (
                 results[strength].solutions
-                and self.solving_mode == SolvingMode.Fast
+                and self.reaction_mode == SolvingMode.Fast
             ):
                 break
 

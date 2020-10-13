@@ -5,7 +5,7 @@ See :doc:`/usage/visualization` for more info.
 
 from typing import Any, Callable, List, Optional
 
-from expertsystem.topology import StateTransitionGraph, Topology
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 
 def convert_to_dot(instance: object) -> str:

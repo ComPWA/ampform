@@ -4,6 +4,8 @@ Responsible for building all possible topologies bases on basic user input:
 
   - number of initial state particles
   - number of final state particles
+
+The main interface is the `.StateTransitionGraph`.
 """
 
 import copy
@@ -24,7 +26,7 @@ from typing import (
 
 import attr
 
-from expertsystem.data import InteractionProperties
+from .quantum_numbers import InteractionProperties
 
 
 @attr.s

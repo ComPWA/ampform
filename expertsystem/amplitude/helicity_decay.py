@@ -2,11 +2,12 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
-from expertsystem.data import ParticleCollection, ParticleWithSpin, Spin
-from expertsystem.state.properties import (
+from expertsystem.particle import ParticleCollection, Spin
+from expertsystem.reaction.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
-from expertsystem.topology import StateTransitionGraph, Topology
+from expertsystem.reaction.quantum_numbers import ParticleWithSpin
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 from .model import (
     AmplitudeModel,

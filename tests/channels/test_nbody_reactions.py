@@ -3,7 +3,7 @@ from typing import Dict, Set, Tuple
 
 import pytest
 
-from expertsystem.solving import Rule
+from expertsystem.reaction.solving import Rule
 from expertsystem.ui import (
     InteractionTypes,
     SolvingMode,

@@ -1,24 +1,22 @@
-"""A collection of data containers."""
+"""A collection of particle info containers.
+
+The `~expertsystem.particle` module is the starting point of the
+`expertsystem`. Its main interface is the `ParticleCollection`, which is a
+collection of immutable `Particle` instances that are uniquely defined by their
+properties. As such it can be used stand-alone as a database of quantum numbers
+(see :doc:`/usage/particles`).
+
+The `.reaction` module uses the properties of `Particle` instances when
+computing which `.StateTransitionGraph` s are allowed between an initial state
+and final state.
+"""
 
 import logging
 from collections import abc
 from functools import total_ordering
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    NewType,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 
 import attr
-
-Scalar = Union[int, float]
 
 
 @total_ordering
@@ -119,132 +117,6 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-@attr.s(frozen=True, init=False)
-class EdgeQuantumNumbers:  # pylint: disable=too-many-instance-attributes
-    """Definition of quantum numbers for edges.
-
-    This class defines the types that are used in the
-    `~.solving.conservation_rules`, for instance in
-    `.additive_quantum_number_rule`. You can also create data classes (see
-    `attr.s`) with data members that are typed as the data members of
-    `.EdgeQuantumNumbers` (see for example `.HelicityParityEdgeInput`) and use
-    them in conservation rules that derive from `.Rule`.
-    """
-
-    pid = NewType("pid", int)
-    mass = NewType("mass", float)
-    width = NewType("width", float)
-    spin_magnitude = NewType("spin_magnitude", float)
-    spin_projection = NewType("spin_projection", float)
-    charge = NewType("charge", int)
-    isospin_magnitude = NewType("isospin_magnitude", float)
-    isospin_projection = NewType("isospin_projection", float)
-    strangeness = NewType("strangeness", int)
-    charmness = NewType("charmness", int)
-    bottomness = NewType("bottomness", int)
-    topness = NewType("topness", int)
-    baryon_number = NewType("baryon_number", int)
-    electron_lepton_number = NewType("electron_lepton_number", int)
-    muon_lepton_number = NewType("muon_lepton_number", int)
-    tau_lepton_number = NewType("tau_lepton_number", int)
-    parity = NewType("parity", Parity)
-    c_parity = NewType("c_parity", Parity)
-    g_parity = NewType("g_parity", Parity)
-
-
-for edge_qn_name, edge_qn_type in EdgeQuantumNumbers.__dict__.items():
-    if not edge_qn_name.startswith("__"):
-        edge_qn_type.__qualname__ = f"EdgeQuantumNumbers.{edge_qn_name}"
-        edge_qn_type.__module__ = "expertsystem.data"
-
-
-# for static typing
-EdgeQuantumNumber = Union[
-    EdgeQuantumNumbers.pid,
-    EdgeQuantumNumbers.mass,
-    EdgeQuantumNumbers.width,
-    EdgeQuantumNumbers.spin_magnitude,
-    EdgeQuantumNumbers.spin_projection,
-    EdgeQuantumNumbers.charge,
-    EdgeQuantumNumbers.isospin_magnitude,
-    EdgeQuantumNumbers.isospin_projection,
-    EdgeQuantumNumbers.strangeness,
-    EdgeQuantumNumbers.charmness,
-    EdgeQuantumNumbers.bottomness,
-    EdgeQuantumNumbers.topness,
-    EdgeQuantumNumbers.baryon_number,
-    EdgeQuantumNumbers.electron_lepton_number,
-    EdgeQuantumNumbers.muon_lepton_number,
-    EdgeQuantumNumbers.tau_lepton_number,
-    EdgeQuantumNumbers.parity,
-    EdgeQuantumNumbers.c_parity,
-    EdgeQuantumNumbers.g_parity,
-]
-
-
-@attr.s(frozen=True, init=False)
-class NodeQuantumNumbers:
-    """Definition of quantum numbers for interaction nodes."""
-
-    l_magnitude = NewType("l_magnitude", float)
-    l_projection = NewType("l_projection", float)
-    s_magnitude = NewType("s_magnitude", float)
-    s_projection = NewType("s_projection", float)
-    parity_prefactor = NewType("parity_prefactor", float)
-
-
-for node_qn_name, node_qn_type in NodeQuantumNumbers.__dict__.items():
-    if not node_qn_name.startswith("__"):
-        node_qn_type.__qualname__ = f"NodeQuantumNumbers.{node_qn_name}"
-        node_qn_type.__module__ = "expertsystem.data"
-
-
-# for static typing
-NodeQuantumNumber = Union[
-    NodeQuantumNumbers.l_magnitude,
-    NodeQuantumNumbers.l_projection,
-    NodeQuantumNumbers.s_magnitude,
-    NodeQuantumNumbers.s_projection,
-    NodeQuantumNumbers.parity_prefactor,
-]
-
-
-@attr.s(frozen=True)
-class InteractionProperties:
-    """Immutable data structure containing interaction properties.
-
-    .. note:: As opposed to `NodeQuantumNumbers`, the `InteractionProperties`
-        class serves as an interface to the user.
-    """
-
-    l_magnitude: Optional[int] = attr.ib(
-        default=None
-    )  # L cannot be half integer
-    l_projection: Optional[int] = attr.ib(default=None)
-    s_magnitude: Optional[float] = attr.ib(default=None)
-    s_projection: Optional[float] = attr.ib(default=None)
-    parity_prefactor: Optional[float] = attr.ib(default=None)
-
-
-def _get_node_quantum_number(
-    qn_type: Type[NodeQuantumNumber], node_props: InteractionProperties
-) -> Optional[Scalar]:
-    return getattr(node_props, qn_type.__name__)
-
-
-def _create_interaction_properties(
-    qn_solution: Dict[Type[NodeQuantumNumber], Scalar]
-) -> InteractionProperties:
-    converted_solution = {k.__name__: v for k, v in qn_solution.items()}
-    kw_args = {
-        x.name: converted_solution[x.name]
-        for x in attr.fields(InteractionProperties)
-        if x.name in converted_solution
-    }
-
-    return attr.evolve(InteractionProperties(), **kw_args)
-
-
 @attr.s(frozen=True)
 class Particle:  # pylint: disable=too-many-instance-attributes
     """Immutable container of data defining a physical particle.
@@ -260,8 +132,8 @@ class Particle:  # pylint: disable=too-many-instance-attributes
     are therefore just labels that are not taken into account when checking if
     two `Particle` instances are equal.
 
-    .. note:: As opposed to classes such as `EdgeQuantumNumbers` and
-        `NodeQuantumNumbers`, the `Particle` class serves as an interface to
+    .. note:: As opposed to classes such as `.EdgeQuantumNumbers` and
+        `.NodeQuantumNumbers`, the `Particle` class serves as an interface to
         the user (see :doc:`/usage/particles`).
     """
 
@@ -326,9 +198,6 @@ class Particle:  # pylint: disable=too-many-instance-attributes
             or self.muon_lepton_number != 0
             or self.tau_lepton_number != 0
         )
-
-
-ParticleWithSpin = Tuple[Particle, float]
 
 
 class GellmannNishijima:

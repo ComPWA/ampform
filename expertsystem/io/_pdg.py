@@ -1,13 +1,13 @@
 """Create a `.ParticleCollection` instance from PDG info."""
 
 import re
-from typing import Optional, Tuple
+from math import copysign
+from typing import Optional, Tuple, Union
 
 from particle import Particle as PdgDatabase
 from particle.particle import enums
 
-from expertsystem._utils import sign
-from expertsystem.data import (
+from expertsystem.particle import (
     GellmannNishijima,
     Parity,
     Particle,
@@ -21,6 +21,10 @@ __skip_particles = {
     "B(s2)*(5840)0",  # isospin(0.5, 0.0) ?
     "B(s2)*(5840)~0",  # isospin(0.5, 0.0) ?
 }
+
+
+def sign(value: Union[float, int]) -> int:
+    return int(copysign(1, value))
 
 
 def load_pdg() -> ParticleCollection:

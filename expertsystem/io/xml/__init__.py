@@ -10,7 +10,7 @@ import json
 import xmltodict
 
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.data import Particle, ParticleCollection, Spin
+from expertsystem.particle import Particle, ParticleCollection, Spin
 
 from . import _build, _dump, validation
 

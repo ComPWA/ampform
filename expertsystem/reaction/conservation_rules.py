@@ -1,8 +1,8 @@
 """Collection of quantum number conservation rules for particle reactions.
 
 This module is part of the core of the `expertsystem`. It is the place where
-the 'expert' defines the rules that verify quantum numbers of the reaction.
-The module therefore is strongly typed (both for the reader of the code and for
+the 'expert' defines the rules that verify quantum numbers of the reaction. The
+module therefore is strongly typed (both for the reader of the code and for
 type checking with :doc:`mypy <mypy:index>`). An example is
 `.HelicityParityEdgeInput`, which has been defined to provide type checks on
 `.ParityConservationHelicity`.
@@ -19,8 +19,10 @@ from typing import Any, Callable, List, Optional, Set, Tuple, Type, Union
 
 import attr
 
-from expertsystem._utils import arange
-from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Spin
+from expertsystem.particle import Spin
+
+from .combinatorics import arange
+from .quantum_numbers import EdgeQuantumNumbers, NodeQuantumNumbers
 
 
 def is_boson(spin_magnitude: float) -> bool:
@@ -46,7 +48,7 @@ class Rule:
         the type annotations of its `.__call__` method. The type annotations
         therefore are not just there for *static* type checking: they also
         carry more information about the rule that is extracted *dynamically*
-        by the `.solving` module.
+        by the `.reaction` module.
 
     Generally, the conditions can be separated into two categories:
 

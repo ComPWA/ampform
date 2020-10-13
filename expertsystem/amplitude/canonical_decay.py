@@ -2,8 +2,12 @@
 
 from typing import Any, Callable, List, Optional
 
-from expertsystem.data import InteractionProperties, ParticleWithSpin, Spin
-from expertsystem.topology import StateTransitionGraph
+from expertsystem.particle import Spin
+from expertsystem.reaction.quantum_numbers import (
+    InteractionProperties,
+    ParticleWithSpin,
+)
+from expertsystem.reaction.topology import StateTransitionGraph
 
 from .helicity_decay import (
     HelicityAmplitudeGenerator,

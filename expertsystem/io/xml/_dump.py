@@ -28,7 +28,7 @@ from expertsystem.amplitude.model import (
     SequentialAmplitude,
     StrengthIntensity,
 )
-from expertsystem.data import Parity, Particle, ParticleCollection, Spin
+from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 
 
 def from_amplitude_model(model: AmplitudeModel) -> dict:

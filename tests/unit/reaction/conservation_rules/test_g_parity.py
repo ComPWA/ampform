@@ -2,11 +2,15 @@ from itertools import product
 
 import pytest
 
-from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Parity
-from expertsystem.solving.conservation_rules import (
+from expertsystem.particle import Parity
+from expertsystem.reaction.conservation_rules import (
     GParityConservation,
     GParityEdgeInput,
     GParityNodeInput,
+)
+from expertsystem.reaction.quantum_numbers import (
+    EdgeQuantumNumbers,
+    NodeQuantumNumbers,
 )
 
 # Currently need to cast to the proper Edge/NodeQuantumNumber type, see

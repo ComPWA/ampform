@@ -1,7 +1,8 @@
 import pytest
 
-from expertsystem.data import InteractionProperties, Spin
-from expertsystem.solving.conservation_rules import ParityConservationHelicity
+from expertsystem.particle import Spin
+from expertsystem.reaction.conservation_rules import ParityConservationHelicity
+from expertsystem.reaction.quantum_numbers import InteractionProperties
 from expertsystem.ui import InteractionTypes, StateTransitionManager
 from expertsystem.ui._default_settings import (
     create_default_interaction_settings,

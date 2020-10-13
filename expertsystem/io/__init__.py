@@ -1,9 +1,15 @@
-"""Serialization module for containers of `expertsystem.data`."""
+"""Serialization module for the `expertsystem`.
+
+The `.io` module provides tools to export or import objects from the
+:mod:`.particle`, :mod:`.reaction` and :mod:`.amplitude` modules to and from
+disk, so that they can be used by external packages, or just to store (cache)
+the state of the system.
+"""
 
 from pathlib import Path
 
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.data import ParticleCollection
+from expertsystem.particle import ParticleCollection
 
 from . import _pdg, dot, xml, yaml
 

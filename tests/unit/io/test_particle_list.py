@@ -2,7 +2,7 @@
 import pytest
 
 from expertsystem import io
-from expertsystem.data import ParticleCollection
+from expertsystem.particle import ParticleCollection
 
 XML_FILE = "particle_list.xml"
 YAML_FILE = "particle_list.yml"

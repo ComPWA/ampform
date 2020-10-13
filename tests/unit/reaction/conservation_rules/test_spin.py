@@ -2,14 +2,18 @@ from typing import List, Tuple
 
 import pytest
 
-from expertsystem.data import EdgeQuantumNumbers, NodeQuantumNumbers, Spin
-from expertsystem.solving.conservation_rules import (
+from expertsystem.particle import Spin
+from expertsystem.reaction.conservation_rules import (
     IsoSpinConservation,
     IsoSpinEdgeInput,
     SpinConservation,
     SpinConservationMagnitude,
     SpinEdgeInput,
     SpinNodeInput,
+)
+from expertsystem.reaction.quantum_numbers import (
+    EdgeQuantumNumbers,
+    NodeQuantumNumbers,
 )
 
 _SpinRuleInputType = Tuple[
