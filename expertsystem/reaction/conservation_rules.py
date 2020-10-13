@@ -545,6 +545,7 @@ def __calculate_total_spins(
                     interaction_qns.l_magnitude, interaction_qns.l_projection
                 ),
             )
+        total_spins = set()
 
     return total_spins
 
@@ -748,10 +749,6 @@ class SpinConservationMagnitude(Rule):
     .. math::
         |L - S| \leq J \leq |L + S|
     """
-
-    def __init__(self, use_projection: bool = True):
-        self.__use_projection = use_projection
-        super().__init__()
 
     def __call__(
         self,

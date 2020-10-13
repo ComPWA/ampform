@@ -2,18 +2,16 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Set, Tuple, Type
 
 import attr
 
-from expertsystem.reaction.conservation_rules import Rule
 from expertsystem.reaction.quantum_numbers import (
     InteractionProperties,
     NodeQuantumNumber,
     ParticleWithSpin,
 )
 from expertsystem.reaction.solving import (
-    EdgeSettings,
     GraphSettings,
     InteractionTypes,
     NodeSettings,
@@ -53,50 +51,6 @@ class CompareGraphNodePropertiesFunctor:
             ):
                 return False
         return True
-
-
-def _change_qn_domain(
-    settings: Tuple[EdgeSettings, NodeSettings],
-    qn_name: Type[NodeQuantumNumber],
-    new_domain: List[Union[int, float]],
-) -> None:
-    if (
-        not isinstance(settings, tuple)
-        or not isinstance(settings[0], EdgeSettings)
-        or not isinstance(settings[1], NodeSettings)
-    ):
-        raise TypeError(
-            "graph_settings has to be of type Tuple[NodeSettings, EdgeSettings]"
-        )
-
-    def change_domain(qn_domains: dict) -> None:
-        if qn_name in qn_domains:
-            qn_domains.update({qn_name: new_domain})
-
-    change_domain(settings[0].qn_domains)
-    change_domain(settings[1].qn_domains)
-
-
-def _remove_conservation_law(
-    settings: Tuple[EdgeSettings, NodeSettings], cons_law: Rule
-) -> None:
-    if (
-        not isinstance(settings, tuple)
-        or not isinstance(settings[0], EdgeSettings)
-        or not isinstance(settings[1], NodeSettings)
-    ):
-        raise TypeError(
-            "graph_settings has to be of type Tuple[NodeSettings, EdgeSettings]"
-        )
-
-    def remove_rule(rule_set: Set[Rule]) -> None:
-        for rule in rule_set:
-            if str(rule) == str(cons_law):
-                rule_set.remove(rule)
-                break
-
-    remove_rule(settings[0].conservation_rules)
-    remove_rule(settings[1].conservation_rules)
 
 
 def filter_interaction_types(

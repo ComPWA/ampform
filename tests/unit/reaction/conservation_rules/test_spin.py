@@ -131,6 +131,100 @@ def test_spin_all_defined(
     [
         (
             __create_two_body_decay_spin_data(
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(0, 0),
+            ),
+            True,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+            ),
+            False,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(1, 1),
+                Spin(1, 1),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 0),
+            ),
+            False,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(1, 1),
+                Spin(1, 1),
+                Spin(1, 0),
+                Spin(1, 0),
+                Spin(1, 1),
+            ),
+            True,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(1, 0),
+                Spin(1, 1),
+                Spin(1, -1),
+                Spin(1, 0),
+                Spin(1, 0),
+            ),
+            False,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(1, 1),
+                Spin(1, 1),
+                Spin(1, -1),
+                Spin(1, 1),
+                Spin(1, 0),
+            ),
+            True,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(2, 0),
+                Spin(0, 0),
+                Spin(1, 1),
+                Spin(2, 0),
+                Spin(1, 0),
+            ),
+            False,
+        ),
+        (
+            __create_two_body_decay_spin_data(
+                Spin(3, 0),
+                Spin(1, 1),
+                Spin(1, -1),
+                Spin(2, 0),
+                Spin(1, 0),
+            ),
+            True,
+        ),
+    ],
+)
+def test_clebsch_gordan_ls_coupling(
+    rule_input: _SpinRuleInputType,
+    expected: bool,
+):
+    spin_rule = SpinConservation()
+
+    assert spin_rule(*rule_input) is expected
+
+
+@pytest.mark.parametrize(
+    "rule_input, expected",
+    [
+        (
+            __create_two_body_decay_spin_data(
                 in_spin=Spin(1, 1),
                 out_spin1=Spin(spin2_mag, 0),
                 out_spin2=Spin(1, -1),

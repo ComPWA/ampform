@@ -9,16 +9,11 @@ import pytest
 
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.reaction.quantum_numbers import NodeQuantumNumbers
 from expertsystem.ui import (
     InteractionTypes,
     StateDefinition,
     StateTransitionManager,
 )
-from expertsystem.ui._default_settings import (
-    create_default_interaction_settings,
-)
-from expertsystem.ui._system_control import _change_qn_domain
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,24 +28,12 @@ def test_script_simple(particle_database):
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
-    int_settings = create_default_interaction_settings(formalism_type)
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.l_magnitude,
-        [0, 1, 2, 3],
-    )
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.s_magnitude,
-        [0, 1, 2],
-    )
 
     stm = StateTransitionManager(
         initial_state,
         final_state,
         particle_database,
         allowed_intermediate_particles=["D*"],
-        interaction_type_settings=int_settings,
         formalism_type=formalism_type,
     )
 
@@ -69,24 +52,12 @@ def test_script_simple(particle_database):
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
-    int_settings = create_default_interaction_settings(formalism_type)
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.l_magnitude,
-        [0, 1, 2, 3],
-    )
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.s_magnitude,
-        [0, 1, 2],
-    )
 
     stm = StateTransitionManager(
         initial_state,
         final_state,
         particle_database,
         ["D*"],
-        interaction_type_settings=int_settings,
         formalism_type=formalism_type,
     )
 
@@ -116,24 +87,12 @@ def test_script_full(particle_database):
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "canonical-helicity"
-    int_settings = create_default_interaction_settings(formalism_type)
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.l_magnitude,
-        [0, 1, 2, 3],
-    )
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.s_magnitude,
-        [0, 1, 2],
-    )
 
     stm = StateTransitionManager(
         initial_state,
         final_state,
         particle_database,
         ["D*"],
-        interaction_type_settings=int_settings,
         formalism_type=formalism_type,
     )
 
@@ -152,24 +111,12 @@ def test_script_full(particle_database):
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
-    int_settings = create_default_interaction_settings(formalism_type)
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.l_magnitude,
-        [0, 1, 2, 3],
-    )
-    _change_qn_domain(
-        int_settings[InteractionTypes.Strong],
-        NodeQuantumNumbers.s_magnitude,
-        [0, 1, 2],
-    )
 
     stm = StateTransitionManager(
         initial_state,
         final_state,
         particle_database,
         ["D*"],
-        interaction_type_settings=int_settings,
         formalism_type=formalism_type,
     )
 

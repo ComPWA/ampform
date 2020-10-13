@@ -1,7 +1,11 @@
 {
-  "include": ["doc/conf.py", "expertsystem", "setup.py", "tests"],
   "exclude": [".git", ".tox"],
+  "include": ["doc/conf.py", "expertsystem", "setup.py", "tests"],
   "reportGeneralTypeIssues": false,
   "reportUnboundVariable": false,
+  "reportUnusedClass": true,
+  "reportUnusedFunction": true,
+  "reportUnusedImport": true,
+  "reportUnusedVariable": true,
   "stubPath": ""
 }
