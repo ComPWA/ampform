@@ -23,7 +23,7 @@ __skip_particles = {
 }
 
 
-def sign(value: Union[float, int]) -> int:
+def __sign(value: Union[float, int]) -> int:
     return int(copysign(1, value))
 
 
@@ -54,7 +54,7 @@ def __convert_pdg_instance(pdg_particle: PdgDatabase) -> Particle:
     quark_numbers = __compute_quark_numbers(pdg_particle)
     lepton_numbers = __compute_lepton_numbers(pdg_particle)
     if pdg_particle.pdgid.is_lepton:  # convention: C(fermion)=+1
-        parity: Optional[Parity] = Parity(sign(pdg_particle.pdgid))  # type: ignore
+        parity: Optional[Parity] = Parity(__sign(pdg_particle.pdgid))  # type: ignore
     else:
         parity = __create_parity(pdg_particle.P)
     return Particle(
@@ -107,7 +107,7 @@ def __compute_lepton_numbers(
     muon_lepton_number = 0
     tau_lepton_number = 0
     if pdg_particle.pdgid.is_lepton:
-        lepton_number = int(sign(pdg_particle.pdgid))
+        lepton_number = int(__sign(pdg_particle.pdgid))
         if "e" in pdg_particle.name:
             electron_lepton_number = lepton_number
         elif "mu" in pdg_particle.name:
@@ -118,7 +118,7 @@ def __compute_lepton_numbers(
 
 
 def __compute_baryonnumber(pdg_particle: PdgDatabase) -> int:
-    return int(sign(pdg_particle.pdgid) * pdg_particle.pdgid.is_baryon)
+    return int(__sign(pdg_particle.pdgid) * pdg_particle.pdgid.is_baryon)
 
 
 def __create_isospin(pdg_particle: PdgDatabase) -> Optional[Spin]:

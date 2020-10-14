@@ -37,15 +37,15 @@ from expertsystem.reaction.solving import (
     NodeSettings,
 )
 
-EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
-DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
+__EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
+__DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
 DEFAULT_PARTICLE_LIST_PATH = join(
-    EXPERT_SYSTEM_PATH, DEFAULT_PARTICLE_LIST_FILE
+    __EXPERT_SYSTEM_PATH, __DEFAULT_PARTICLE_LIST_FILE
 )
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority
-CONSERVATION_LAW_PRIORITIES = {
+__CONSERVATION_LAW_PRIORITIES = {
     SpinConservation: 8,
     SpinConservationMagnitude: 8,
     HelicityConservation: 7,
@@ -103,7 +103,7 @@ def create_default_interaction_settings(
     interaction_type_settings = {}
     formalism_edge_settings = EdgeSettings()
     formalism_node_settings = NodeSettings(
-        rule_priorities=CONSERVATION_LAW_PRIORITIES
+        rule_priorities=__CONSERVATION_LAW_PRIORITIES
     )
 
     if "helicity" in formalism_type:

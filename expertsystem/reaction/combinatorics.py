@@ -31,7 +31,7 @@ StateWithSpins = Tuple[str, Sequence[float]]
 StateDefinition = Union[str, StateWithSpins]
 
 
-class KinematicRepresentation:
+class _KinematicRepresentation:
     def __init__(
         self,
         final_state: Optional[Union[Sequence[List[Any]], List[Any]]] = None,
@@ -53,7 +53,7 @@ class KinematicRepresentation:
         return self.__final_state
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, KinematicRepresentation):
+        if isinstance(other, _KinematicRepresentation):
             return (
                 self.initial_state == other.initial_state
                 and self.final_state == other.final_state
@@ -97,7 +97,7 @@ class KinematicRepresentation:
                     return False
             return True
 
-        if isinstance(other, KinematicRepresentation):
+        if isinstance(other, _KinematicRepresentation):
             return is_sublist(
                 other.initial_state, self.initial_state
             ) and is_sublist(other.final_state, self.final_state)
@@ -146,9 +146,9 @@ class KinematicRepresentation:
         )
 
 
-def get_kinematic_representation(
+def _get_kinematic_representation(
     graph: StateTransitionGraph[StateWithSpins],
-) -> KinematicRepresentation:
+) -> _KinematicRepresentation:
     r"""Group final or initial states by node, sorted by length of the group.
 
     The resulting sorted groups can be used to check whether two
@@ -208,7 +208,7 @@ def get_kinematic_representation(
     final_state_edge_groups = fill_groupings(
         get_state_groupings(graph.get_originating_final_state_edges)
     )
-    return KinematicRepresentation(
+    return _KinematicRepresentation(
         initial_state=initial_state_edge_groups,
         final_state=final_state_edge_groups,
     )
@@ -233,7 +233,7 @@ def initialize_graph(  # pylint: disable=too-many-locals
         final_state_groupings = embed_in_list(final_state_groupings)
         final_state_groupings = embed_in_list(final_state_groupings)
         allowed_kinematic_groupings = [
-            KinematicRepresentation(final_state=grouping)
+            _KinematicRepresentation(final_state=grouping)
             for grouping in final_state_groupings
         ]
 
@@ -259,7 +259,7 @@ def _generate_kinematic_permutations(
     initial_state: Sequence[StateDefinition],
     final_state: Sequence[StateDefinition],
     allowed_kinematic_groupings: Optional[
-        List[KinematicRepresentation]
+        List[_KinematicRepresentation]
     ] = None,
 ) -> List[StateTransitionGraph[StateWithSpins]]:
     def assert_number_of_states(
@@ -275,7 +275,7 @@ def _generate_kinematic_permutations(
     assert_number_of_states(final_state, topology.get_final_state_edges())
 
     def is_allowed_grouping(
-        kinematic_representation: KinematicRepresentation,
+        kinematic_representation: _KinematicRepresentation,
     ) -> bool:
         if allowed_kinematic_groupings is None:
             return True
@@ -292,7 +292,7 @@ def _generate_kinematic_permutations(
     )
 
     graphs: List[StateTransitionGraph[StateWithSpins]] = list()
-    kinematic_representations: List[KinematicRepresentation] = list()
+    kinematic_representations: List[_KinematicRepresentation] = list()
     for permutation in _generate_outer_edge_permutations(
         topology,
         initial_state_with_projections,
@@ -302,7 +302,7 @@ def _generate_kinematic_permutations(
             StateWithSpins
         ] = StateTransitionGraph.from_topology(topology)
         graph.edge_props.update(permutation)
-        kinematic_representation = get_kinematic_representation(graph)
+        kinematic_representation = _get_kinematic_representation(graph)
         if kinematic_representation in kinematic_representations:
             continue
         if not is_allowed_grouping(kinematic_representation):

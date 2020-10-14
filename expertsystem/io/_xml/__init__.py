@@ -10,7 +10,7 @@ import json
 import xmltodict
 
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.particle import Particle, ParticleCollection, Spin
+from expertsystem.particle import Particle, ParticleCollection
 
 from . import _build, _dump, validation
 
@@ -57,15 +57,3 @@ def object_to_dict(instance: object) -> dict:
     if isinstance(instance, (Particle)):
         return _dump.from_particle(instance)
     raise NotImplementedError
-
-
-def dict_to_particle_collection(definition: dict) -> ParticleCollection:
-    return _build.build_particle_collection(definition)
-
-
-def dict_to_particle(definition: dict) -> Particle:
-    return _build.build_particle(definition)
-
-
-def dict_to_spin(definition: dict) -> Spin:
-    return _build.build_spin(definition)

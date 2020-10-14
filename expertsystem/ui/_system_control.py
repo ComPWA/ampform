@@ -73,7 +73,7 @@ def filter_interaction_types(
     return valid_determined_interaction_types
 
 
-class _InteractionDeterminationFunctorInterface(ABC):
+class InteractionDeterminator(ABC):
     """Interface for interaction determination."""
 
     @abstractmethod
@@ -86,7 +86,7 @@ class _InteractionDeterminationFunctorInterface(ABC):
         pass
 
 
-class GammaCheck(_InteractionDeterminationFunctorInterface):
+class GammaCheck(InteractionDeterminator):
     """Conservation check for photons."""
 
     def check(
@@ -103,7 +103,7 @@ class GammaCheck(_InteractionDeterminationFunctorInterface):
         return int_types
 
 
-class LeptonCheck(_InteractionDeterminationFunctorInterface):
+class LeptonCheck(InteractionDeterminator):
     """Conservation check lepton numbers."""
 
     def check(

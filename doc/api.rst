@@ -1,8 +1,11 @@
 API
 ===
 
-See :ref:`modindex`.
-
 .. toctree::
 
   api/expertsystem
+
+.. seealso::
+
+  * :ref:`modindex`
+  * :ref:`genindex`

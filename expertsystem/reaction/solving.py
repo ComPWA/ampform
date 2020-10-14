@@ -6,7 +6,7 @@ This module is responsible for solving a particle reaction problem stated by a
 `.StateTransitionGraph` and corresponding `.GraphSettings`. The `.Solver`
 classes (e.g. :class:`.CSPSolver`) generate new quantum numbers (for example
 belonging to an intermediate state) and validate the decay processes with the
-rules formulated by the :mod:.conservation_rules` module.
+rules formulated by the :mod:`.conservation_rules` module.
 """
 
 import logging
@@ -35,7 +35,7 @@ from .quantum_numbers import (
     NodeQuantumNumber,
     ParticleWithSpin,
 )
-from .topology import StateTransitionGraph, Topology
+from .topology import StateTransitionGraph
 
 Scalar = Union[int, float]
 
@@ -81,12 +81,6 @@ class NodeSettings:
 class GraphSettings:
     edge_settings: Dict[int, EdgeSettings] = attr.ib(factory=dict)
     node_settings: Dict[int, NodeSettings] = attr.ib(factory=dict)
-
-
-def create_interaction_node_settings(
-    graph: Topology, interaction_settings: NodeSettings
-) -> Dict[int, NodeSettings]:
-    return {node_id: interaction_settings for node_id in graph.nodes}
 
 
 class Result:
@@ -148,7 +142,7 @@ class Result:
 
 
 @attr.s(frozen=True)
-class QuantumNumberSolution:
+class _QuantumNumberSolution:
     node_quantum_numbers: Dict[
         int, Dict[Type[NodeQuantumNumber], Scalar]
     ] = attr.field(factory=lambda: defaultdict(dict))
@@ -410,7 +404,7 @@ def _get_required_qns(
 
 
 def _merge_solutions_with_graph(
-    solutions: List[QuantumNumberSolution],
+    solutions: List[_QuantumNumberSolution],
     graph: StateTransitionGraph[ParticleWithSpin],
     allowed_particles: ParticleCollection,
 ) -> List[StateTransitionGraph[ParticleWithSpin]]:
@@ -863,14 +857,14 @@ class CSPSolver(Solver):
     def __convert_solution_keys(
         self,
         solutions: List[Dict[str, Scalar]],
-    ) -> List[QuantumNumberSolution]:
+    ) -> List[_QuantumNumberSolution]:
         """Convert keys of CSP solutions from string to quantum number types."""
         initial_edges = self.__graph.get_initial_state_edges()
         final_edges = self.__graph.get_final_state_edges()
 
         converted_solutions = list()
         for solution in solutions:
-            qn_solution = QuantumNumberSolution()
+            qn_solution = _QuantumNumberSolution()
             for var_string, value in solution.items():
                 ele_id, qn_type = self.__var_string_to_data[var_string]
 

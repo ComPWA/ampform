@@ -11,12 +11,12 @@ from expertsystem.reaction.topology import StateTransitionGraph
 
 from .helicity_decay import (
     HelicityAmplitudeGenerator,
-    HelicityAmplitudeNameGenerator,
+    _HelicityAmplitudeNameGenerator,
 )
 from .model import CanonicalDecay, ClebschGordan, DecayNode, HelicityDecay
 
 
-def generate_clebsch_gordan_string(
+def _generate_clebsch_gordan_string(
     graph: StateTransitionGraph[ParticleWithSpin], node_id: int
 ) -> str:
     node_props = graph.node_props[node_id]
@@ -25,7 +25,7 @@ def generate_clebsch_gordan_string(
     return f"_L_{ang_orb_mom.magnitude}_S_{spin.magnitude}"
 
 
-class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
+class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
     """Generate names for canonical partial decays.
 
     That is, using the properties of the decay.
@@ -44,7 +44,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         for node in node_ids:
             name += (
                 super().generate_unique_amplitude_name(graph, node)[:-1]
-                + generate_clebsch_gordan_string(graph, node)
+                + _generate_clebsch_gordan_string(graph, node)
                 + ";"
             )
         return name
@@ -148,7 +148,7 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
 
     def __init__(self, top_node_no_dynamics: bool = True) -> None:
         super().__init__(top_node_no_dynamics)
-        self.name_generator = CanonicalAmplitudeNameGenerator()
+        self.name_generator = _CanonicalAmplitudeNameGenerator()
 
     @_clebsch_gordan_decorator
     def _generate_partial_decay(  # type: ignore

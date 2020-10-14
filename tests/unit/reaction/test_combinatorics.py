@@ -5,14 +5,13 @@ from math import factorial
 
 import pytest
 
-from expertsystem import io
 from expertsystem.reaction.combinatorics import (
-    KinematicRepresentation,
     _generate_kinematic_permutations,
     _generate_outer_edge_permutations,
     _generate_spin_permutations,
+    _get_kinematic_representation,
+    _KinematicRepresentation,
     _safe_set_spin_projections,
-    get_kinematic_representation,
     initialize_graph,
 )
 from expertsystem.reaction.topology import (
@@ -91,13 +90,13 @@ def test_generate_outer_edge_permutations(
 class TestKinematicRepresentation:
     @staticmethod
     def test_constructor():
-        representation = KinematicRepresentation(
+        representation = _KinematicRepresentation(
             initial_state=["J/psi"],
             final_state=["gamma", "pi0"],  # type: ignore
         )
         assert representation.initial_state == [["J/psi"]]
         assert representation.final_state == [["gamma", "pi0"]]
-        representation = KinematicRepresentation([["gamma", "pi0"]])
+        representation = _KinematicRepresentation([["gamma", "pi0"]])
         assert representation.initial_state is None
         assert representation.final_state == [["gamma", "pi0"]]
 
@@ -106,10 +105,10 @@ class TestKinematicRepresentation:
         graph1 = StateTransitionGraph.from_topology(three_body_decay)
         pion = particle_database["pi0"]
         graph1.edge_props[0] = ("J/psi", [-1, +1])
-        graph1.edge_props[2] = particle_database["pi0"]
-        graph1.edge_props[3] = io.xml.object_to_dict(pion)
+        graph1.edge_props[2] = pion
+        graph1.edge_props[3] = pion
         graph1.edge_props[4] = "gamma"
-        kinematic_representation1 = get_kinematic_representation(graph1)
+        kinematic_representation1 = _get_kinematic_representation(graph1)
         assert kinematic_representation1.initial_state == [
             ["J/psi"],
             ["J/psi"],
@@ -122,18 +121,18 @@ class TestKinematicRepresentation:
         graph2 = deepcopy(graph1)
         graph2.edge_props[3] = "gamma"
         graph2.edge_props[4] = "pi0"
-        kinematic_representation2 = get_kinematic_representation(graph2)
+        kinematic_representation2 = _get_kinematic_representation(graph2)
         assert kinematic_representation1 == kinematic_representation2
 
         graph3 = deepcopy(graph1)
         graph3.edge_props[2] = "pi0"
         graph3.edge_props[3] = "gamma"
-        kinematic_representation3 = get_kinematic_representation(graph3)
+        kinematic_representation3 = _get_kinematic_representation(graph3)
         assert kinematic_representation2 != kinematic_representation3
 
     @staticmethod
     def test_repr_and_equality():
-        kinematic_representation = KinematicRepresentation(
+        kinematic_representation = _KinematicRepresentation(
             initial_state=[["J/psi"]],
             final_state=[["gamma", "pi0"], ["gamma", "pi0", "pi0"]],
         )
@@ -144,10 +143,10 @@ class TestKinematicRepresentation:
 
     @staticmethod
     def test_in_operator():
-        kinematic_representation = KinematicRepresentation(
+        kinematic_representation = _KinematicRepresentation(
             [["gamma", "pi0"], ["gamma", "pi0", "pi0"]],
         )
-        subset_representation = KinematicRepresentation(
+        subset_representation = _KinematicRepresentation(
             [["gamma", "pi0", "pi0"]],
         )
         assert subset_representation in kinematic_representation
@@ -165,7 +164,7 @@ def test_generate_permutations(three_body_decay, particle_database):
         initial_state=[("J/psi(1S)", [-1, +1])],
         final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
-        allowed_kinematic_groupings=[KinematicRepresentation(["pi0", "pi0"])],
+        allowed_kinematic_groupings=[_KinematicRepresentation(["pi0", "pi0"])],
     )
     assert len(graphs) == 1
 

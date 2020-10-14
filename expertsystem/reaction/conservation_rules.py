@@ -1,11 +1,10 @@
 """Collection of quantum number conservation rules for particle reactions.
 
-This module is part of the core of the `expertsystem`. It is the place where
-the 'expert' defines the rules that verify quantum numbers of the reaction. The
-module therefore is strongly typed (both for the reader of the code and for
-type checking with :doc:`mypy <mypy:index>`). An example is
-`.HelicityParityEdgeInput`, which has been defined to provide type checks on
-`.ParityConservationHelicity`.
+This module is the place where the 'expert' defines the rules that verify
+quantum numbers of the reaction. The module is therefore strongly typed (both
+for the reader of the code and for type checking with :doc:`mypy
+<mypy:index>`). An example is `.HelicityParityEdgeInput`, which has been
+defined to provide type checks on `.ParityConservationHelicity`.
 
 See more information under `Rule`.
 """
@@ -25,11 +24,11 @@ from .combinatorics import arange
 from .quantum_numbers import EdgeQuantumNumbers, NodeQuantumNumbers
 
 
-def is_boson(spin_magnitude: float) -> bool:
+def _is_boson(spin_magnitude: float) -> bool:
     return abs(spin_magnitude % 1) < 0.01
 
 
-def is_particle_antiparticle_pair(pid1: int, pid2: int) -> bool:
+def _is_particle_antiparticle_pair(pid1: int, pid2: int) -> bool:
     # we just check if the pid is opposite in sign
     # this is a requirement of the pid numbers of course
     return pid1 == -pid2
@@ -254,12 +253,12 @@ class CParityConservation(Rule):
 
             # two particle case
             if len(part_qns) == 2:
-                if is_particle_antiparticle_pair(
+                if _is_particle_antiparticle_pair(
                     part_qns[0].pid, part_qns[1].pid
                 ):
                     ang_mom = interaction_qns.l_mag
                     # if boson
-                    if is_boson(part_qns[0].spin_mag):
+                    if _is_boson(part_qns[0].spin_mag):
                         return (-1) ** int(ang_mom)
                     coupled_spin = interaction_qns.s_mag
                     if (
@@ -334,13 +333,13 @@ class GParityConservation(Rule):
             isospin: EdgeQuantumNumbers.isospin_magnitude,
             double_state_qns: Tuple[GParityEdgeInput, GParityEdgeInput],
         ) -> Optional[int]:
-            if is_particle_antiparticle_pair(
+            if _is_particle_antiparticle_pair(
                 double_state_qns[0].pid, double_state_qns[1].pid
             ):
                 ang_mom = interaction_qns.l_mag
                 if isinstance(isospin, int) or isospin.is_integer():
                     # if boson
-                    if is_boson(double_state_qns[0].spin_mag):
+                    if _is_boson(double_state_qns[0].spin_mag):
                         return (-1) ** int(ang_mom + isospin)
                     coupled_spin = interaction_qns.s_mag
                     if (
@@ -414,7 +413,7 @@ class IdenticalParticleSymmetrization(Rule):
             return True
 
         if _check_particles_identical(outgoing_edge_qns):
-            if is_boson(outgoing_edge_qns[0].spin_magnitude):
+            if _is_boson(outgoing_edge_qns[0].spin_magnitude):
                 # we have a boson, check if parity of mother is even
                 parity = ingoing_edge_qns[0].parity
                 if parity == -1:

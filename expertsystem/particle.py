@@ -3,11 +3,11 @@
 The `~expertsystem.particle` module is the starting point of the
 `expertsystem`. Its main interface is the `ParticleCollection`, which is a
 collection of immutable `Particle` instances that are uniquely defined by their
-properties. As such it can be used stand-alone as a database of quantum numbers
-(see :doc:`/usage/particles`).
+properties. As such, it can be used stand-alone as a database of quantum
+numbers (see :doc:`/usage/particles`).
 
-The `.reaction` module uses the properties of `Particle` instances when
-computing which `.StateTransitionGraph` s are allowed between an initial state
+The `.reaction` module uses the properties of `Particle` instances when it
+computes which `.StateTransitionGraph` s are allowed between an initial state
 and final state.
 """
 

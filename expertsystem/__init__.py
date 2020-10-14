@@ -1,9 +1,13 @@
-"""A decision-making "expert system" that facilitates Partial Wave Analysis.
+"""A rule based system that facilitates particle reaction analysis.
 
-The responsibility of the `expertsystem` is to give advice on the form of an
-amplitude model based on the problem set one defines for a particle reaction
-process (initial state, final state, allowed interactions, intermediate states,
-etc.).
+The main responsibility of the `expertsystem` is to validate particle reactions
+as specified by the user. The user boundary conditions for a particle reaction
+problem are for example the initial state, final state, and allowed
+interactions.
+
+A further responsibility is to build amplitude models, if a reaction is valid.
+These models are based on the found solutions and represent the transition
+probability of the process.
 
 The `expertsystem` consists of three main components:
 
@@ -22,8 +26,9 @@ The `expertsystem` consists of three main components:
    packages.
 
 Finally, the `.ui` module glues these modules together through facade functions
-and the `.StateTransitionManager`, while the `.io` module provides tools that
-can read and write the objects of `particle`, `reaction`, and `amplitude`.
+and its `~expertsystem.ui.StateTransitionManager`, while the `.io` module
+provides tools that can read and write the objects of `particle`, `reaction`,
+and `amplitude`.
 """
 
 

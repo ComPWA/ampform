@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 import pydot
 import pytest
 
@@ -7,7 +9,7 @@ from expertsystem.reaction.topology import Edge, Topology
 
 def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions):
     for i in jpsi_to_gamma_pi_pi_helicity_solutions:
-        dot_data = io.dot.convert_to_dot(i)
+        dot_data = io.convert_to_dot(i)
         assert pydot.graph_from_dot_data(dot_data) is not None
 
 

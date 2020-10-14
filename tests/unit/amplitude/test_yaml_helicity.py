@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name
+# pylint: disable=protected-access,redefined-outer-name
 import json
 from os.path import dirname, realpath
 
@@ -39,7 +39,7 @@ def equalize_dict(input_dict):
 
 
 def test_recipe_validation(expected_dict):
-    io.yaml.validation.amplitude_model(expected_dict)
+    io._yaml.validation.amplitude_model(expected_dict)
 
 
 def test_not_implemented_writer(

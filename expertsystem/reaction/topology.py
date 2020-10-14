@@ -2,8 +2,8 @@
 
 Responsible for building all possible topologies bases on basic user input:
 
-  - number of initial state particles
-  - number of final state particles
+- number of initial state particles
+- number of final state particles
 
 The main interface is the `.StateTransitionGraph`.
 """
@@ -497,7 +497,7 @@ class SimpleStateTransitionTopologyBuilder:
                         combis.remove(comb2)
 
                 for combi in combis:
-                    new_graph = attach_node_to_edges(
+                    new_graph = _attach_node_to_edges(
                         graph, interaction_node, combi
                     )
                     extended_graph_list.append(new_graph)
@@ -505,7 +505,7 @@ class SimpleStateTransitionTopologyBuilder:
         return extended_graph_list
 
 
-def attach_node_to_edges(
+def _attach_node_to_edges(
     graph: Tuple[Topology, Sequence[int]],
     interaction_node: InteractionNode,
     ingoing_edge_ids: Sequence[int],
