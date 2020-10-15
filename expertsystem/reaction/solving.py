@@ -186,8 +186,8 @@ def _is_optional(
 ) -> bool:
     if (
         hasattr(field_type, "__origin__")
-        and getattr(field_type, "__origin__") is Union
-        and type(None) in getattr(field_type, "__args__")
+        and getattr(field_type, "__origin__") is Union  # noqa: B009
+        and type(None) in getattr(field_type, "__args__")  # noqa: B009
     ):
         return True
     return False
@@ -868,7 +868,9 @@ class CSPSolver(Solver):
             for var_string, value in solution.items():
                 ele_id, qn_type = self.__var_string_to_data[var_string]
 
-                if qn_type in getattr(EdgeQuantumNumber, "__args__"):
+                if qn_type in getattr(  # noqa: B009
+                    EdgeQuantumNumber, "__args__"
+                ):
                     if ele_id in initial_edges or ele_id in final_edges:
                         # skip if its an initial or final state edge
                         continue

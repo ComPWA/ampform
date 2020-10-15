@@ -75,7 +75,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self,
         initial_state: Sequence[StateDefinition],
         final_state: Sequence[StateDefinition],
-        particles: ParticleCollection = ParticleCollection(),
+        particles: Optional[ParticleCollection] = None,
         allowed_intermediate_particles: Optional[List[str]] = None,
         interaction_type_settings: Dict[
             InteractionTypes, Tuple[EdgeSettings, NodeSettings]
@@ -99,7 +99,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 f" Use {allowed_formalism_types} instead."
             )
         self.__formalism_type = str(formalism_type)
-        self.__particles = particles
+        self.__particles = ParticleCollection()
+        if particles is not None:
+            self.__particles = particles
         self.number_of_threads = int(number_of_threads)
         self.reaction_mode = str(solving_mode)
         self.initial_state = initial_state
