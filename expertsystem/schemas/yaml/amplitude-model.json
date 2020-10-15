@@ -313,22 +313,12 @@
             "additionalProperties": false,
             "properties": {
               "RecoilFinalState": {
-                "anyOf": [
-                  { "$ref": "#/definitions/StateID" },
-                  {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/StateID" }
-                  }
-                ]
+                "type": "array",
+                "items": { "$ref": "#/definitions/StateID" }
               },
               "ParentRecoilFinalState": {
-                "anyOf": [
-                  { "$ref": "#/definitions/StateID" },
-                  {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/StateID" }
-                  }
-                ]
+                "type": "array",
+                "items": { "$ref": "#/definitions/StateID" }
               }
             }
           },
