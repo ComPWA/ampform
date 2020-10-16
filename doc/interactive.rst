@@ -32,7 +32,7 @@ set of quantum numbers.
     p.spin in [2.5, 3.5, 4.5]
     and p.name.startswith("N")
   )
-  {p.name for p in subset}
+  subset.names
 
 .. thebe-button::
 

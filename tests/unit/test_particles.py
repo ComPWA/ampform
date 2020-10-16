@@ -255,7 +255,7 @@ class TestParticleCollection:
             and p.spin == 2
             and p.strangeness == 1
         )
-        assert {p.name for p in filtered_result} == {
+        assert filtered_result.names == {
             "K(2)(1820)0",
             "K(2)(1820)+",
         }
