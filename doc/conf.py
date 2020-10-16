@@ -32,14 +32,39 @@ for file_to_copy in FILES_TO_COPY:
 # -- Generate API skeleton ----------------------------------------------------
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
-    "sphinx-apidoc "
-    "--force "
-    "--no-toc "
-    "--templatedir _templates "
-    "--separate "
-    "-o api/ ../expertsystem/; ",
+    " ".join(
+        [
+            "sphinx-apidoc",
+            "../expertsystem/",
+            "-o api/",
+            "--force",
+            "--no-toc",
+            "--templatedir _templates",
+            "--separate",
+        ]
+    )
+    + ";",
     shell=True,
 )
+
+# -- Visualize dependencies ---------------------------------------------------
+subprocess.call(
+    " ".join(
+        [
+            "HOME=.",  # in case of calling through tox
+            "pydeps",
+            "../expertsystem",
+            "--exclude *._*",  # hide private modules
+            "--max-bacon=1",  # hide external dependencies
+            "--noshow",
+        ]
+    )
+    + ";",
+    shell=True,
+)
+if os.path.exists("expertsystem.svg"):
+    with open("api/expertsystem.rst", "a") as stream:
+        stream.write("\n.. image:: /expertsystem.svg")
 
 # -- Convert sphinx object inventory -----------------------------------------
 inv = soi.Inventory()
@@ -109,7 +134,7 @@ extensions = [
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
-    "adr/template.md",
+    "adr*",
     "tests",
 ]
 

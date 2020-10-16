@@ -147,12 +147,17 @@ Table of Contents
   interactive
   contribute
 
+* :ref:`Python API <modindex>`
+
 
 .. toctree::
-  :maxdepth: 1
   :hidden:
 
   api
-  adr
 
-* :ref:`Python API <modindex>`
+.. toctree::
+  :caption: Related projects
+  :hidden:
+
+  TensorWaves <http://pwa.readthedocs.io>
+  PWA Pages <http://pwa.readthedocs.io>
