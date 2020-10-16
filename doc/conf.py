@@ -203,7 +203,7 @@ intersphinx_mapping = {
         None,
     ),
     "mypy": ("https://mypy.readthedocs.io/en/stable", None),
-    "pwa": ("https://pwa.readthedocs.io/en/latest/", None),
+    "pwa": ("https://pwa.readthedocs.io", None),
     "pycompwa": ("https://compwa.github.io/", None),
     "python": ("https://docs.python.org/3", None),
     "tensorwaves": (

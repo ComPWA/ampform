@@ -1,10 +1,5 @@
 """Serialization from and to a YAML recipe file."""
 
-__all__ = [
-    "load_particle_collection",
-    "write",
-]
-
 import yaml
 
 from expertsystem.amplitude.model import AmplitudeModel

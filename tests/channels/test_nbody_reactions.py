@@ -3,12 +3,12 @@ from typing import Dict, Set, Tuple
 
 import pytest
 
-from expertsystem.reaction.solving import Rule
-from expertsystem.ui import (
+from expertsystem.reaction import (
     InteractionTypes,
     SolvingMode,
     StateTransitionManager,
 )
+from expertsystem.reaction.solving import Rule
 
 
 def reduce_violated_rules(

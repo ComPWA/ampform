@@ -2,6 +2,13 @@
 import pytest
 
 from expertsystem.particle import Particle
+from expertsystem.reaction import InteractionTypes, StateTransitionManager
+from expertsystem.reaction._system_control import (
+    CompareGraphNodePropertiesFunctor,
+    filter_graphs,
+    remove_duplicate_solutions,
+    require_interaction_property,
+)
 from expertsystem.reaction.combinatorics import (
     _create_edge_id_particle_mapping,
     match_external_edges,
@@ -12,13 +19,6 @@ from expertsystem.reaction.quantum_numbers import (
     NodeQuantumNumbers,
 )
 from expertsystem.reaction.topology import StateTransitionGraph
-from expertsystem.ui import InteractionTypes, StateTransitionManager
-from expertsystem.ui._system_control import (
-    CompareGraphNodePropertiesFunctor,
-    filter_graphs,
-    remove_duplicate_solutions,
-    require_interaction_property,
-)
 
 
 @pytest.mark.parametrize(

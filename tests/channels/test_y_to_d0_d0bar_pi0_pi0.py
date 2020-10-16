@@ -9,7 +9,7 @@ import pytest
 
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.ui import (
+from expertsystem.reaction import (
     InteractionTypes,
     StateDefinition,
     StateTransitionManager,

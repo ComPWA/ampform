@@ -1,4 +1,4 @@
-from expertsystem.ui import get_intermediate_state_names
+from expertsystem.reaction import get_intermediate_state_names
 
 
 def test_get_intermediate_state_names(jpsi_to_gamma_pi_pi_helicity_solutions):

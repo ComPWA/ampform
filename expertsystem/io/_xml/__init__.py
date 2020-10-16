@@ -1,10 +1,5 @@
 """Serialization from and to an XML recipe file."""
 
-__all__ = [
-    "load_particle_collection",
-    "write",
-]
-
 import json
 
 import xmltodict

@@ -91,12 +91,14 @@ class Result:
         ] = None,
         not_executed_rules: Optional[Dict[int, Set[Rule]]] = None,
         violated_rules: Optional[Dict[int, Set[Tuple[Rule]]]] = None,
+        formalism_type: Optional[str] = None,
     ) -> None:
         if solutions and violated_rules:
             raise ValueError(
                 "Invalid Result! Found solutions, but also violated rules."
             )
 
+        self.__formalism_type = formalism_type
         self.__solutions: List[StateTransitionGraph[ParticleWithSpin]] = list()
         if solutions is not None:
             self.__solutions = solutions
@@ -110,6 +112,10 @@ class Result:
         self.__violated_rules: Dict[int, Set[Tuple[Rule]]] = defaultdict(set)
         if violated_rules is not None:
             self.__violated_rules = violated_rules
+
+    @property
+    def formalism_type(self) -> Optional[str]:
+        return self.__formalism_type
 
     @property
     def solutions(self) -> List[StateTransitionGraph[ParticleWithSpin]]:

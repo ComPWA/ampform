@@ -6,7 +6,7 @@ import pytest
 from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.ui import InteractionTypes, StateTransitionManager
+from expertsystem.reaction import InteractionTypes, StateTransitionManager
 
 logging.basicConfig(level=logging.ERROR)
 

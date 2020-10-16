@@ -10,11 +10,29 @@ possible.
 """
 
 
-__all__ = [
-    "canonical_decay",
-    "helicity_decay",
-    "model",
-]
+from expertsystem.reaction.solving import Result
+
+from .canonical_decay import CanonicalAmplitudeGenerator
+from .helicity_decay import HelicityAmplitudeGenerator
+from .model import AmplitudeModel
 
 
-from . import canonical_decay, helicity_decay, model
+def generate_amplitude_model(result: Result) -> AmplitudeModel:
+    """Generate an amplitude model from a generated `.Result`.
+
+    The type of amplitude model (`.HelicityAmplitudeGenerator` or
+    `.CanonicalAmplitudeGenerator`) is determined from the
+    `.Result.formalism_type`.
+    """
+    formalism_type = result.formalism_type
+    if formalism_type is None:
+        raise ValueError(f"Result does not have a formalism type:\n{result}")
+    if formalism_type == "helicity":
+        amplitude_generator = HelicityAmplitudeGenerator()
+    elif formalism_type in ["canonical-helicity", "canonical"]:
+        amplitude_generator = CanonicalAmplitudeGenerator()
+    else:
+        raise NotImplementedError(
+            f'No amplitude generator for formalism type "{formalism_type}"'
+        )
+    return amplitude_generator.generate(result.solutions)

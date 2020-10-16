@@ -159,5 +159,5 @@ Table of Contents
   :caption: Related projects
   :hidden:
 
-  TensorWaves <http://pwa.readthedocs.io>
+  TensorWaves <http://tensorwaves.readthedocs.io>
   PWA Pages <http://pwa.readthedocs.io>

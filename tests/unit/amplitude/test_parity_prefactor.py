@@ -4,7 +4,7 @@ import pytest
 
 from expertsystem import io
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.ui import InteractionTypes, StateTransitionManager
+from expertsystem.reaction import InteractionTypes, StateTransitionManager
 
 
 class Input(NamedTuple):

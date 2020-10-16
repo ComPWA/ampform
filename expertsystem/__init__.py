@@ -25,10 +25,8 @@ The `expertsystem` consists of three main components:
    specifically designed to create amplitude model templates for PWA fitter
    packages.
 
-Finally, the `.ui` module glues these modules together through facade functions
-and its `~expertsystem.ui.StateTransitionManager`, while the `.io` module
-provides tools that can read and write the objects of `particle`, `reaction`,
-and `amplitude`.
+Finally, the `.io` module provides tools that can read and write the objects of
+`particle`, `reaction`, and `amplitude`.
 """
 
 
@@ -37,8 +35,7 @@ __all__ = [
     "io",
     "particle",
     "reaction",
-    "ui",
 ]
 
 
-from . import amplitude, io, particle, reaction, ui
+from . import amplitude, io, particle, reaction
