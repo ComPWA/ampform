@@ -34,11 +34,10 @@ def reduce_violated_rules(
         ((["Sigma0"], ["Lambda", "pi0"]), ["MassConservation"]),
         ((["Sigma-"], ["n", "pi-"]), []),
         ((["e+", "e-"], ["mu+", "mu-"]), []),
-        # (
+        # (  # https://github.com/ComPWA/expertsystem/issues/281
         #     (["mu-"], ["e-", "nu(e)~"]),
         #     ["MuonLNConservation", "SpinConservation"],
-        # ),
-        # this is just an additional lepton number test
+        # ),  # https://github.com/ComPWA/expertsystem/issues/281
         # (
         #     (["mu-"], ["e-", "nu(e)"]),
         #     [
@@ -49,7 +48,7 @@ def reduce_violated_rules(
         # ),
         ((["Delta(1232)+"], ["p", "pi0"]), []),
         ((["nu(e)~", "p"], ["n", "e+"]), []),
-        # (
+        # (  # https://github.com/ComPWA/expertsystem/issues/281
         #     (["e-", "p"], ["nu(e)", "pi0"]),
         #     ["BaryonNumberConservation", "SpinConservation"],
         # ),
@@ -74,9 +73,9 @@ def reduce_violated_rules(
         ((["Xi0"], ["p", "pi-"]), []),
         ((["pi-", "p"], ["Lambda", "K~0"]), []),
         ((["pi0"], ["gamma", "gamma"]), []),
-        ((["pi0"], ["gamma", "gamma", "gamma"]), []),
+        ((["pi0"], ["gamma", "gamma", "gamma"]), ["CParityConservation"]),
         ((["Sigma-"], ["n", "e-", "nu(e)~"]), []),
-        # (
+        # (  # https://github.com/ComPWA/expertsystem/issues/281
         #     (["rho(770)0"], ["pi0", "pi0"]),
         #     [
         #         "IsoSpinConservation",  # Clebsch Gordan coefficient = 0
@@ -84,7 +83,8 @@ def reduce_violated_rules(
         #         "IdenticalParticleSymmetrization",
         #     ],
         # ),
-        ((["rho(770)0"], ["gamma", "gamma"]), []),
+        ((["rho(770)0"], ["gamma", "gamma"]), ["CParityConservation"]),
+        ((["rho(770)0"], ["gamma", "gamma", "gamma"]), []),
         ((["J/psi(1S)"], ["pi0", "eta"]), []),
         ((["J/psi(1S)"], ["rho(770)0", "rho(770)0"]), []),
         ((["K~0"], ["pi+", "pi-", "pi0"]), []),

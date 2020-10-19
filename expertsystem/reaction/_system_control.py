@@ -98,7 +98,7 @@ class GammaCheck(InteractionDeterminator):
         int_types = list(InteractionTypes)
         for particle, _ in in_edge_props + out_edge_props:
             if "gamma" in particle.name:
-                int_types = [InteractionTypes.EM, InteractionTypes.Weak]
+                int_types = [InteractionTypes.EM]
                 break
         return int_types
 
