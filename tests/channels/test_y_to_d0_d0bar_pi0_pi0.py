@@ -48,7 +48,7 @@ def test_script_simple(particle_database):
     print("found " + str(len(result.solutions)) + " solutions!")
 
     canonical_xml_generator = CanonicalAmplitudeGenerator()
-    canonical_xml_generator.generate(result.solutions)
+    canonical_xml_generator.generate(result)
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
@@ -69,7 +69,7 @@ def test_script_simple(particle_database):
     print("found " + str(len(result.solutions)) + " solutions!")
 
     helicity_xml_generator = HelicityAmplitudeGenerator()
-    helicity_xml_generator.generate(result.solutions)
+    helicity_xml_generator.generate(result)
 
     assert len(helicity_xml_generator.fit_parameters) == len(
         canonical_xml_generator.fit_parameters
@@ -104,10 +104,10 @@ def test_script_full(particle_database):
 
     result = stm.find_solutions(graph_node_setting_pairs)
 
-    print("found " + str(len(result.solutions)) + " solutions!")
+    print(f"found {len(result.solutions)} solutions!")
 
     canonical_xml_generator = CanonicalAmplitudeGenerator()
-    canonical_xml_generator.generate(result.solutions)
+    canonical_xml_generator.generate(result)
 
     # because the amount of solutions is too big we change the default domains
     formalism_type = "helicity"
@@ -129,7 +129,7 @@ def test_script_full(particle_database):
     print("found " + str(len(result.solutions)) + " solutions!")
 
     helicity_xml_generator = HelicityAmplitudeGenerator()
-    helicity_xml_generator.generate(result.solutions)
+    helicity_xml_generator.generate(result)
 
     assert len(helicity_xml_generator.fit_parameters) == len(
         canonical_xml_generator.fit_parameters

@@ -146,6 +146,33 @@ class Result:
                 else:
                     self.__violated_rules[key].update(rules2)
 
+    def get_initial_state(self) -> List[Particle]:
+        graph = self.__get_first_graph()
+        return [
+            graph.edge_props[i][0] for i in graph.get_initial_state_edges()
+        ]
+
+    def get_final_state(self) -> List[Particle]:
+        graph = self.__get_first_graph()
+        return [graph.edge_props[i][0] for i in graph.get_final_state_edges()]
+
+    def __get_first_graph(self) -> StateTransitionGraph:
+        if len(self.solutions) == 0:
+            raise ValueError(
+                f"No solutions in {self.__class__.__name__} object"
+            )
+        return self.solutions[0]
+
+    def get_intermediate_particles(self) -> ParticleCollection:
+        """Extract the names of the intermediate state particles."""
+        intermediate_states = ParticleCollection()
+        for graph in self.solutions:
+            for edge_id in graph.get_intermediate_state_edges():
+                particle, _ = graph.edge_props[edge_id]
+                if particle not in intermediate_states:
+                    intermediate_states.add(particle)
+        return intermediate_states
+
 
 @attr.s(frozen=True)
 class _QuantumNumberSolution:

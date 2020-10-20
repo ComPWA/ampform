@@ -7,12 +7,13 @@ from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
 from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
 from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.reaction import InteractionTypes, StateTransitionManager
+from expertsystem.reaction.solving import Result
 
 logging.basicConfig(level=logging.ERROR)
 
 
 @pytest.fixture(scope="module")
-def jpsi_to_gamma_pi_pi_canonical_solutions():
+def jpsi_to_gamma_pi_pi_canonical_solutions() -> Result:
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
@@ -21,12 +22,11 @@ def jpsi_to_gamma_pi_pi_canonical_solutions():
     )
     stm.set_allowed_interaction_types([InteractionTypes.EM])
     graph_interaction_settings_groups = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings_groups)
-    return result.solutions
+    return stm.find_solutions(graph_interaction_settings_groups)
 
 
 @pytest.fixture(scope="module")
-def jpsi_to_gamma_pi_pi_helicity_solutions():
+def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
     stm = StateTransitionManager(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
@@ -37,12 +37,12 @@ def jpsi_to_gamma_pi_pi_helicity_solutions():
     )
     graph_interaction_settings_groups = stm.prepare_graphs()
     result = stm.find_solutions(graph_interaction_settings_groups)
-    return result.solutions
+    return result
 
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
-    jpsi_to_gamma_pi_pi_canonical_solutions,
+    jpsi_to_gamma_pi_pi_canonical_solutions: Result,
 ) -> AmplitudeModel:
     amplitude_generator = CanonicalAmplitudeGenerator()
     return amplitude_generator.generate(
@@ -52,7 +52,7 @@ def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
-    jpsi_to_gamma_pi_pi_helicity_solutions,
+    jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ) -> AmplitudeModel:
     amplitude_generator = HelicityAmplitudeGenerator()
     return amplitude_generator.generate(jpsi_to_gamma_pi_pi_helicity_solutions)

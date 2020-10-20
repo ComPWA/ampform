@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 from progress.bar import IncrementalBar
 
 from expertsystem import io
-from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.particle import ParticleCollection
 
 from ._default_settings import (
     DEFAULT_PARTICLE_LIST_PATH,
@@ -413,26 +413,3 @@ def load_default_particles() -> ParticleCollection:
     particles.update(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
-
-
-def get_intermediate_state_names(
-    solutions: List[StateTransitionGraph],
-) -> Set[str]:
-    """Extract the names of the intermediate states in the solutions."""
-    intermediate_states = set()
-    for graph in solutions:
-        for edge_id in graph.get_intermediate_state_edges():
-            edge_property = graph.edge_props[edge_id]
-            if isinstance(edge_property, dict):
-                intermediate_states.add(edge_property["Name"])
-            elif isinstance(edge_property, tuple) and isinstance(
-                edge_property[0], Particle
-            ):
-                particle, _ = edge_property
-                intermediate_states.add(particle.name)
-            else:
-                raise ValueError(
-                    "Cannot extract name from edge property of type "
-                    f"{edge_property.__class__.__name__}"
-                )
-    return intermediate_states

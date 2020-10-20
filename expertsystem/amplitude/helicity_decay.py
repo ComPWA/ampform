@@ -8,6 +8,7 @@ from expertsystem.reaction.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.reaction.quantum_numbers import ParticleWithSpin
+from expertsystem.reaction.solving import Result
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 from .model import (
@@ -179,22 +180,17 @@ def _generate_particle_collection(
 
 
 def _generate_kinematics(
-    graph: StateTransitionGraph[ParticleWithSpin],
-    particles: ParticleCollection,
+    result: Result, particles: ParticleCollection
 ) -> Kinematics:
     kinematics = Kinematics(particles)
-    initial_state: List[str] = [
-        graph.edge_props[edge_id][0].name
-        for edge_id in graph.get_initial_state_edges()
-    ]
-    final_state: List[str] = [
-        graph.edge_props[edge_id][0].name
-        for edge_id in graph.get_final_state_edges()
-    ]
+    initial_state = [p.name for p in result.get_initial_state()]
+    final_state = [p.name for p in result.get_final_state()]
     kinematics.set_reaction(
         initial_state=initial_state,
         final_state=final_state,
-        intermediate_states=len(graph.get_intermediate_state_edges()),
+        intermediate_states=len(
+            result.solutions[0].get_intermediate_state_edges()
+        ),
     )
     return kinematics
 
@@ -395,26 +391,23 @@ class HelicityAmplitudeGenerator:
         self.intensities: Optional[IntensityNode] = None
         self.fit_parameters: FitParameters = FitParameters()
 
-    def generate(
-        self, graphs: List[StateTransitionGraph[ParticleWithSpin]]
-    ) -> AmplitudeModel:
+    def generate(self, reaction_result: Result) -> AmplitudeModel:
+        graphs = reaction_result.solutions
         if len(graphs) < 1:
             raise ValueError(
                 f"At least one {StateTransitionGraph.__name__} required to"
                 " genenerate an amplitude model!"
             )
 
-        first_graph = graphs[0]
-        initial_state_ids = first_graph.get_initial_state_edges()
-        if len(initial_state_ids) != 1:
+        get_initial_state = reaction_result.get_initial_state()
+        if len(get_initial_state) != 1:
             raise ValueError(
                 "Helicity amplitude model requires exactly one initial state"
             )
-        initial_state_edge_id = initial_state_ids[0]
-        initial_state = first_graph.edge_props[initial_state_edge_id][0].name
+        initial_state = get_initial_state[0].name
 
         self.particles = _generate_particle_collection(graphs)
-        self.kinematics = _generate_kinematics(graphs[0], self.particles)
+        self.kinematics = _generate_kinematics(reaction_result, self.particles)
         self.dynamics = ParticleDynamics(self.particles, self.fit_parameters)
         if self.top_node_no_dynamics:
             self.dynamics.set_non_dynamic(initial_state)

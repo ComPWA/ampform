@@ -35,4 +35,4 @@ def generate_amplitude_model(result: Result) -> AmplitudeModel:
         raise NotImplementedError(
             f'No amplitude generator for formalism type "{formalism_type}"'
         )
-    return amplitude_generator.generate(result.solutions)
+    return amplitude_generator.generate(result)

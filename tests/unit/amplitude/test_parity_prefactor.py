@@ -84,7 +84,7 @@ def test_parity_prefactor(
         )
 
     amp_gen = HelicityAmplitudeGenerator()
-    amplitude_model = amp_gen.generate(result.solutions)
+    amplitude_model = amp_gen.generate(result)
     io.write(
         instance=amplitude_model,
         filename=f'amplitude_model_prefactor_{"-".join(test_input.intermediate_states)}.xml',
