@@ -343,7 +343,7 @@ class ParticleCollection(abc.MutableSet):
             logging.warning(f'Overwriting particle with name "{value.name}"')
         if value.pid in self.__pid_to_name:
             logging.warning(
-                f'Particle with PID "{value.pid} already exists: {self.find(value.pid).name}"'
+                f'Particle with PID {value.pid} already exists: "{self.find(value.pid).name}"'
             )
         self.__particles[value.name] = value
         self.__pid_to_name[value.pid] = value.name
