@@ -170,10 +170,16 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         self.__allowed_intermediate_particles = ParticleCollection()
         for particle_name in particle_names:
-            self.__allowed_intermediate_particles += self.__particles.filter(
+            matches = self.__particles.filter(
                 lambda p: particle_name  # pylint: disable=cell-var-from-loop
                 in p.name
             )
+            if len(matches) == 0:
+                raise LookupError(
+                    "Could not find any matches for allowed intermediate "
+                    f' particle "{particle_name}"'
+                )
+            self.__allowed_intermediate_particles += matches
 
     @property
     def formalism_type(self) -> str:
