@@ -251,14 +251,7 @@
         "properties": {
           "Class": { "$ref": "#/definitions/Amplitude/_types" },
           "Component": { "type": "string" },
-          "PreFactor": {
-            "type": "object",
-            "properties": {
-              "Real": { "type": "number" },
-              "Imaginary": { "type": "number" }
-            },
-            "anyOf": [{ "required": ["Real"] }, { "required": ["Imaginary"] }]
-          },
+          "PreFactor": { "type": "number" },
           "Magnitude": { "type": "string" },
           "Phase": { "type": "string" },
           "Amplitude": { "$ref": "#/definitions/Amplitude/_recursion" }
