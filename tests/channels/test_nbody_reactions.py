@@ -8,16 +8,15 @@ from expertsystem.reaction import (
     SolvingMode,
     StateTransitionManager,
 )
-from expertsystem.reaction.solving import Rule
 
 
 def reduce_violated_rules(
-    violated_rules: Dict[int, Set[Tuple[Rule]]]
+    violated_rules: Dict[int, Set[Tuple[str, ...]]]
 ) -> Set[str]:
     reduced_violations = set()
     for rule_set in violated_rules.values():
         for rule_group in rule_set:
-            reduced_violations.update(set(str(x) for x in rule_group))
+            reduced_violations.update(set(x for x in rule_group))
 
     return reduced_violations
 
@@ -28,7 +27,7 @@ def reduce_violated_rules(
     [
         (
             (["p", "p~"], ["pi+", "pi0"]),
-            ["ChargeConservation", "IsoSpinConservation"],
+            ["ChargeConservation", "isospin_conservation"],
         ),
         ((["eta"], ["gamma", "gamma"]), []),
         ((["Sigma0"], ["Lambda", "pi0"]), ["MassConservation"]),
@@ -61,19 +60,19 @@ def reduce_violated_rules(
         ((["n", "n~"], ["pi+", "pi-", "pi0"]), []),
         (
             (["pi+", "n"], ["pi-", "p"]),
-            ["ChargeConservation", "IsoSpinConservation"],
+            ["ChargeConservation", "isospin_conservation"],
         ),
         ((["K-"], ["pi-", "pi0"]), []),
         (
             (["Sigma+", "n"], ["Sigma-", "p"]),
-            ["ChargeConservation", "IsoSpinConservation"],
+            ["ChargeConservation", "isospin_conservation"],
         ),
         ((["Sigma0"], ["Lambda", "gamma"]), []),
         ((["Xi-"], ["Lambda", "pi-"]), []),
         ((["Xi0"], ["p", "pi-"]), []),
         ((["pi-", "p"], ["Lambda", "K~0"]), []),
         ((["pi0"], ["gamma", "gamma"]), []),
-        ((["pi0"], ["gamma", "gamma", "gamma"]), ["CParityConservation"]),
+        ((["pi0"], ["gamma", "gamma", "gamma"]), ["c_parity_conservation"]),
         ((["Sigma-"], ["n", "e-", "nu(e)~"]), []),
         # (  # https://github.com/ComPWA/expertsystem/issues/281
         #     (["rho(770)0"], ["pi0", "pi0"]),
@@ -83,7 +82,7 @@ def reduce_violated_rules(
         #         "IdenticalParticleSymmetrization",
         #     ],
         # ),
-        ((["rho(770)0"], ["gamma", "gamma"]), ["CParityConservation"]),
+        ((["rho(770)0"], ["gamma", "gamma"]), ["c_parity_conservation"]),
         ((["rho(770)0"], ["gamma", "gamma", "gamma"]), []),
         ((["J/psi(1S)"], ["pi0", "eta"]), []),
         ((["J/psi(1S)"], ["rho(770)0", "rho(770)0"]), []),
@@ -128,7 +127,7 @@ def test_general_reaction(test_input, expected):
         ((["pi0"], ["gamma", "gamma"]), []),
         (
             (["pi0"], ["gamma", "gamma", "gamma"]),
-            ["CParityConservation"],
+            ["c_parity_conservation"],
         ),
         ((["pi0"], ["e+", "e-", "gamma"]), []),
         ((["pi0"], ["e+", "e-"]), []),

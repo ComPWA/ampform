@@ -9,6 +9,8 @@ belonging to an intermediate state) and validate the decay processes with the
 rules formulated by the :mod:`.conservation_rules` module.
 """
 
+
+import inspect
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -27,7 +29,15 @@ from constraint import (
 
 from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 
-from .conservation_rules import IsoSpinValidity, Rule
+from .argument_handling import (
+    GraphEdgePropertyMap,
+    GraphNodePropertyMap,
+    Rule,
+    RuleArgumentHandler,
+    Scalar,
+    get_required_qns,
+)
+from .conservation_rules import isospin_validity
 from .quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
@@ -36,8 +46,6 @@ from .quantum_numbers import (
     ParticleWithSpin,
 )
 from .topology import StateTransitionGraph
-
-Scalar = Union[int, float]
 
 
 class InteractionTypes(Enum):
@@ -53,7 +61,7 @@ class EdgeSettings:
     """Solver settings for a specific edge of a graph."""
 
     conservation_rules: Set[Rule] = attr.ib(factory=set)
-    rule_priorities: Dict[Type[Rule], int] = attr.ib(factory=dict)
+    rule_priorities: Dict[Rule, int] = attr.ib(factory=dict)
     qn_domains: Dict[Any, Any] = attr.ib(factory=dict)
 
 
@@ -72,7 +80,7 @@ class NodeSettings:
     """
 
     conservation_rules: Set[Rule] = attr.ib(factory=set)
-    rule_priorities: Dict[Type[Rule], int] = attr.ib(factory=dict)
+    rule_priorities: Dict[Rule, int] = attr.ib(factory=dict)
     qn_domains: Dict[Any, Any] = attr.ib(factory=dict)
     interaction_strength: float = 1.0
 
@@ -83,14 +91,48 @@ class GraphSettings:
     node_settings: Dict[int, NodeSettings] = attr.ib(factory=dict)
 
 
+def convert_to_names(
+    rules: Union[
+        Dict[int, Set[Tuple[Rule, ...]]], Dict[int, Set[Tuple[str, ...]]]
+    ]
+) -> Dict[int, Set[Tuple[str, ...]]]:
+    def get_name(rule: Any) -> str:
+        if inspect.isfunction(rule):
+            return rule.__name__
+        if isinstance(rule, str):
+            return rule
+        return rule.__class__.__name__
+
+    converted_dict = {}
+    for node_id, rule_set in rules.items():
+        rule_name_set = set()
+        for rule_tuple in rule_set:
+            rule_name_set.add(tuple(get_name(rule) for rule in rule_tuple))
+
+        converted_dict[node_id] = rule_name_set
+
+    return converted_dict
+
+
 class Result:
+    """Defines a result to a problem set processed by the solving code.
+
+    The tuple of rules in `violated_rules` defines a group, which together
+    violate all quantum number combinations that were processed.
+    """
+
     def __init__(
         self,
         solutions: Optional[
             List[StateTransitionGraph[ParticleWithSpin]]
         ] = None,
         not_executed_rules: Optional[Dict[int, Set[Rule]]] = None,
-        violated_rules: Optional[Dict[int, Set[Tuple[Rule]]]] = None,
+        violated_rules: Optional[
+            Union[
+                Dict[int, Set[Tuple[Rule, ...]]],
+                Dict[int, Set[Tuple[str, ...]]],
+            ]
+        ] = None,
         formalism_type: Optional[str] = None,
     ) -> None:
         if solutions and violated_rules:
@@ -107,11 +149,11 @@ class Result:
         if not_executed_rules is not None:
             self.__not_executed_rules = not_executed_rules
 
-        # a tuple of rules defines a group which together violates all possible
-        # combinations that were processed
-        self.__violated_rules: Dict[int, Set[Tuple[Rule]]] = defaultdict(set)
+        self.__violated_rules: Dict[int, Set[Tuple[str, ...]]] = defaultdict(
+            set
+        )
         if violated_rules is not None:
-            self.__violated_rules = violated_rules
+            self.__violated_rules = convert_to_names(violated_rules)
 
     @property
     def formalism_type(self) -> Optional[str]:
@@ -126,7 +168,7 @@ class Result:
         return self.__not_executed_rules
 
     @property
-    def violated_rules(self) -> Dict[int, Set[Tuple[Rule]]]:
+    def violated_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
         return self.__violated_rules
 
     def extend(
@@ -212,228 +254,6 @@ class Solver(ABC):
           Result: contains possible solutions, violated rules and not executed
           rules due to requirement issues.
         """
-
-
-def _is_optional(
-    field_type: Union[EdgeQuantumNumber, NodeQuantumNumber]
-) -> bool:
-    if (
-        hasattr(field_type, "__origin__")
-        and getattr(field_type, "__origin__") is Union  # noqa: B009
-        and type(None) in getattr(field_type, "__args__")  # noqa: B009
-    ):
-        return True
-    return False
-
-
-_GraphEdgePropertyMap = Dict[Type[EdgeQuantumNumber], Any]
-_GraphNodePropertyMap = Dict[Type[NodeQuantumNumber], Any]
-_GraphElementPropertyMap = Union[_GraphEdgePropertyMap, _GraphNodePropertyMap]
-
-
-def _init_class(
-    class_type: Type,
-    props: _GraphElementPropertyMap,
-) -> object:
-    return class_type(
-        **{
-            class_field.name: _extract_value(props, class_field.type)
-            for class_field in attr.fields(class_type)
-        }
-    )
-
-
-def _extract_value(
-    props: _GraphElementPropertyMap,
-    obj_type: Any,
-) -> Any:
-    if _is_optional(obj_type):
-        obj_type = obj_type.__args__[0]
-        if obj_type in props:
-            value = props[obj_type]
-        else:
-            return None
-    else:
-        value = props[obj_type]
-
-    if (
-        "__supertype__" in obj_type.__dict__
-        and obj_type.__supertype__ == Parity
-    ):
-        return obj_type.__supertype__(value)
-    return obj_type(value)
-
-
-def _check_arg_requirements(
-    class_type: type,
-    props: _GraphElementPropertyMap,
-) -> bool:
-    if attr.has(class_type):
-        return all(
-            [
-                bool(class_field.type in props)
-                for class_field in attr.fields(class_type)
-                if not _is_optional(class_field.type)  # type: ignore
-            ]
-        )
-
-    return class_type in props
-
-
-def _check_requirements(
-    rule: Rule,
-    in_edge_props: Sequence[_GraphEdgePropertyMap],
-    out_edge_props: Sequence[_GraphEdgePropertyMap],
-    node_props: _GraphNodePropertyMap,
-) -> bool:
-    if not hasattr(rule.__class__.__call__, "__annotations__"):
-        raise TypeError(
-            f"missing type annotations for __call__ of rule {rule.__class__.__name__}"
-        )
-    arg_counter = 1
-    rule_annotations = _remove_return_annotation(
-        list(rule.__class__.__call__.__annotations__.values())
-    )
-    for arg_type, props in zip(
-        rule_annotations,
-        (in_edge_props, out_edge_props, node_props),
-    ):
-        if arg_counter == 3:
-            if not _check_arg_requirements(arg_type, props):  # type: ignore
-                return False
-        else:
-            if not all(
-                [
-                    _check_arg_requirements(arg_type.__args__[0], x)
-                    for x in props  # type: ignore
-                ]
-            ):
-                return False
-        arg_counter += 1
-
-    return True
-
-
-def _create_rule_edge_arg(
-    input_type: Type[Any],
-    edge_props: Sequence[_GraphEdgePropertyMap],
-) -> List[Any]:
-    # pylint: disable=unidiomatic-typecheck
-    if not isinstance(edge_props, (list, tuple)):
-        raise TypeError("edge_props are incompatible...")
-    if not (type(input_type) is list or type(input_type) is tuple):
-        raise TypeError("input type is incompatible...")
-    in_list_type = input_type[0]
-
-    if attr.has(in_list_type):
-        # its a composite type -> create new class type here
-        return [_init_class(in_list_type, x) for x in edge_props if x]
-    return [_extract_value(x, in_list_type) for x in edge_props if x]
-
-
-def _create_rule_node_arg(
-    input_type: Type[Any],
-    node_props: _GraphNodePropertyMap,
-) -> Any:
-    # pylint: disable=unidiomatic-typecheck
-    if isinstance(node_props, (list, tuple)):
-        raise TypeError("node_props is incompatible...")
-    if type(input_type) is list or type(input_type) is tuple:
-        raise TypeError("input type is incompatible...")
-
-    if attr.has(input_type):
-        # its a composite type -> create new class type here
-        return _init_class(input_type, node_props)
-    return _extract_value(node_props, input_type)
-
-
-def _create_rule_args(
-    rule: Rule,
-    in_edge_props: Sequence[_GraphEdgePropertyMap],
-    out_edge_props: Sequence[_GraphEdgePropertyMap],
-    node_props: _GraphNodePropertyMap,
-) -> list:
-    if not hasattr(rule.__class__.__call__, "__annotations__"):
-        raise TypeError(
-            f"missing type annotations for __call__ of rule {str(rule)}"
-        )
-    args = []
-    arg_counter = 0
-    rule_annotations = list(rule.__class__.__call__.__annotations__.values())
-    rule_annotations = _remove_return_annotation(rule_annotations)
-
-    ordered_props = (in_edge_props, out_edge_props, node_props)
-    for arg_type in rule_annotations:
-        if arg_counter == 2:
-            args.append(
-                _create_rule_node_arg(
-                    arg_type,
-                    ordered_props[arg_counter],  # type: ignore
-                )
-            )
-        else:
-            args.append(
-                _create_rule_edge_arg(
-                    arg_type.__args__,
-                    ordered_props[arg_counter],  # type: ignore
-                )
-            )
-        arg_counter += 1
-    if arg_counter == 2:
-        # the rule does not use the third argument, just add None
-        args.append(None)
-
-    return args
-
-
-def _remove_return_annotation(
-    rule_annotations: List[Type[Any]],
-) -> List[Type[Any]]:
-    # this assumes that all rules have also the return type defined
-    return rule_annotations[:-1]
-
-
-def _get_required_qns(
-    rule: Rule,
-) -> Tuple[Set[Type[EdgeQuantumNumber]], Set[Type[NodeQuantumNumber]]]:
-    if not hasattr(rule.__class__.__call__, "__annotations__"):
-        raise TypeError(
-            f"missing type annotations for __call__ of rule {rule.__class__.__name__}"
-        )
-
-    required_edge_qns: Set[Type[EdgeQuantumNumber]] = set()
-    required_node_qns: Set[Type[NodeQuantumNumber]] = set()
-
-    rule_annotations = list(rule.__class__.__call__.__annotations__.values())
-    rule_annotations = _remove_return_annotation(rule_annotations)
-
-    arg_counter = 0
-    for input_type in rule_annotations:
-        qn_set = required_edge_qns
-        if arg_counter == 2:
-            qn_set = required_node_qns  # type: ignore
-
-        class_type = input_type
-        if "__origin__" in input_type.__dict__ and (
-            input_type.__origin__ is list
-            or input_type.__origin__ is tuple
-            or input_type.__origin__ is List
-            or input_type.__origin__ is Tuple
-        ):
-            class_type = input_type.__args__[0]
-
-        if attr.has(class_type):
-            for class_field in attr.fields(class_type):
-                qn_set.add(
-                    class_field.type.__args__[0]  # type: ignore
-                    if _is_optional(class_field.type)  # type: ignore
-                    else class_field.type
-                )
-        else:
-            qn_set.add(class_type)
-        arg_counter += 1
-
-    return (required_edge_qns, required_node_qns)
 
 
 def _merge_solutions_with_graph(
@@ -522,6 +342,8 @@ def validate_fully_initialized_graph(
 ) -> Result:
     logging.debug("validating graph...")
 
+    rule_argument_handler = RuleArgumentHandler()
+
     def _create_node_variables(
         node_id: int, qn_list: Set[Type[NodeQuantumNumber]]
     ) -> Dict[Type[NodeQuantumNumber], Scalar]:
@@ -564,7 +386,7 @@ def validate_fully_initialized_graph(
         in_edges = graph.get_edges_ingoing_to_node(node_id)
         out_edges = graph.get_edges_outgoing_from_node(node_id)
 
-        edge_qns, node_qns = _get_required_qns(cons_law)
+        edge_qns, node_qns = get_required_qns(cons_law)
         in_edges_vars = _create_edge_variables(in_edges, edge_qns)  # type: ignore
         out_edges_vars = _create_edge_variables(out_edges, edge_qns)  # type: ignore
 
@@ -572,24 +394,27 @@ def validate_fully_initialized_graph(
 
         return (in_edges_vars, out_edges_vars, node_vars)
 
-    node_violated_rules: Dict[int, Set[Tuple[Rule]]] = defaultdict(set)
+    node_violated_rules: Dict[int, Set[Tuple[Rule, ...]]] = defaultdict(set)
     node_not_executed_rules: Dict[int, Set[Rule]] = defaultdict(set)
     for node_id, rules in rules_per_node.items():
         for rule in rules:
             # get the needed qns for this conservation law
             # for all edges and the node
+            (
+                check_requirements,
+                create_rule_args,
+            ) = rule_argument_handler.register_rule(rule)
+
             var_containers = _create_variable_containers(node_id, rule)
             # check the requirements
-            if isinstance(rule, IsoSpinValidity) or _check_requirements(
-                rule,
+            if rule is isospin_validity or check_requirements(
                 var_containers[0],
                 var_containers[1],
                 var_containers[2],
             ):
                 # and run the rule check
                 if not rule(
-                    *_create_rule_args(
-                        rule,
+                    *create_rule_args(
                         var_containers[0],
                         var_containers[1],
                         var_containers[2],
@@ -671,7 +496,9 @@ class CSPSolver(Solver):
             node_id: set(x.rule for x in constraints)
             for node_id, constraints in self.__non_executable_constraints.items()
         }
-        not_satisfied_rules: Dict[int, Set[Tuple[Rule]]] = defaultdict(set)
+        not_satisfied_rules: Dict[int, Set[Tuple[Rule, ...]]] = defaultdict(
+            set
+        )
         for node_id, constraints in self.__constraints.items():
             for constraint in constraints:
                 if (
@@ -746,16 +573,15 @@ class CSPSolver(Solver):
             # and strip away the priorities again
             return [x[0] for x in sorted_list]
 
+        arg_handler = RuleArgumentHandler()
+
         for node_id in self.__graph.nodes:
-            # currently we only have rules related to graph nodes
-            # later on rules that are directly connected to edge can also be
-            # defined (GellmannNishijimaRule can be changed to that)
-            for cons_law in get_rules_by_priority(
+            for rule in get_rules_by_priority(
                 graph_settings.node_settings[node_id]
             ):
                 variable_mapping = _VariableContainer()
                 # from cons law and graph determine needed var lists
-                edge_qns, node_qns = _get_required_qns(cons_law)
+                edge_qns, node_qns = get_required_qns(rule)
 
                 in_edges = self.__graph.get_edges_ingoing_to_node(node_id)
                 in_edge_vars = self.__create_edge_variables(
@@ -788,8 +614,9 @@ class CSPSolver(Solver):
                 var_list.extend(list(variable_mapping.node_variables))
 
                 constraint = _ConservationRuleConstraintWrapper(
-                    cons_law,
+                    rule,
                     variable_mapping,
+                    arg_handler,
                 )
                 if var_list:
                     var_strings = [
@@ -926,17 +753,27 @@ class _ConservationRuleConstraintWrapper(Constraint):
     cleaner user interface.
     """
 
-    def __init__(self, rule: Rule, variables: _VariableContainer) -> None:
-        if not isinstance(rule, Rule):
-            raise TypeError("rule has to be of type Rule!")
+    # pylint: disable=too-many-instance-attributes
+    def __init__(
+        self,
+        rule: Rule,
+        variables: _VariableContainer,
+        argument_handler: RuleArgumentHandler,
+    ) -> None:
+        if not callable(rule):
+            raise TypeError("rule has to be a callable!")
         self.__rule = rule
+        (
+            self.__check_rule_requirements,
+            self.__create_rule_args,
+        ) = argument_handler.register_rule(rule)
         self.__var_string_to_data: Dict[
             str,
             Union[_EdgeVariableInfo, _NodeVariableInfo],
         ] = {}
-        self.__in_edges_qns: Dict[int, _GraphEdgePropertyMap] = {}
-        self.__out_edges_qns: Dict[int, _GraphEdgePropertyMap] = {}
-        self.__node_qns: _GraphNodePropertyMap = {}
+        self.__in_edges_qns: Dict[int, GraphEdgePropertyMap] = {}
+        self.__out_edges_qns: Dict[int, GraphEdgePropertyMap] = {}
+        self.__node_qns: GraphNodePropertyMap = {}
 
         self.conditions_never_met = False
         self.scenario_results = [0, 0]
@@ -961,9 +798,9 @@ class _ConservationRuleConstraintWrapper(Constraint):
         def _initialize_edge_container(
             variable_set: Set[_EdgeVariableInfo],
             fixed_variables: Dict[int, Dict[Type[EdgeQuantumNumber], Scalar]],
-            container: Dict[int, _GraphEdgePropertyMap],
+            container: Dict[int, GraphEdgePropertyMap],
         ) -> None:
-            container.update(fixed_variables)
+            container.update(fixed_variables)  # type: ignore
             for element_id, qn_type in variable_set:
                 self.__var_string_to_data[
                     _create_variable_string(element_id, qn_type)
@@ -1032,19 +869,20 @@ class _ConservationRuleConstraintWrapper(Constraint):
             return True
 
         self.__update_variable_lists(params)
-        if not isinstance(self.rule, IsoSpinValidity):
-            if not _check_requirements(
-                self.__rule,
+
+        if (
+            self.rule is not isospin_validity
+            and not self.__check_rule_requirements(
                 list(self.__in_edges_qns.values()),
                 list(self.__out_edges_qns.values()),
                 self.__node_qns,
-            ):
-                self.conditions_never_met = True
-                return True
+            )
+        ):
+            self.conditions_never_met = True
+            return True
 
         passed = self.__rule(
-            *_create_rule_args(
-                self.__rule,
+            *self.__create_rule_args(
                 list(self.__in_edges_qns.values()),
                 list(self.__out_edges_qns.values()),
                 self.__node_qns,

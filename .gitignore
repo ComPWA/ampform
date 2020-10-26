@@ -38,6 +38,7 @@ prof/
 
 # Virtual environments
 *venv/
+pyvenv*/
 
 # Settings
 .idea/

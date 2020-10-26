@@ -25,7 +25,8 @@ class EdgeQuantumNumbers:  # pylint: disable=too-many-instance-attributes
     `.additive_quantum_number_rule`. You can also create data classes (see
     `attr.s`) with data members that are typed as the data members of
     `.EdgeQuantumNumbers` (see for example `.HelicityParityEdgeInput`) and use
-    them in conservation rules that derive from `.Rule`.
+    them in conservation rules that satisfy the appropriate rule protocol (see
+    `.ConservationRule`, `.EdgeQNConservationRule`).
     """
 
     pid = NewType("pid", int)

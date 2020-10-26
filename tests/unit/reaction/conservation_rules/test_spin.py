@@ -4,12 +4,12 @@ import pytest
 
 from expertsystem.particle import Spin
 from expertsystem.reaction.conservation_rules import (
-    IsoSpinConservation,
     IsoSpinEdgeInput,
-    SpinConservation,
-    SpinConservationMagnitude,
     SpinEdgeInput,
     SpinNodeInput,
+    isospin_conservation,
+    spin_conservation,
+    spin_magnitude_conservation,
 )
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
@@ -132,9 +132,7 @@ def __create_two_body_decay_spin_data(
 def test_spin_all_defined(
     rule_input: _SpinRuleInputType, expected: bool
 ) -> None:
-    spin_rule = SpinConservation()
-
-    assert spin_rule(*rule_input) is expected
+    assert spin_conservation(*rule_input) is expected
 
 
 @pytest.mark.parametrize(
@@ -226,9 +224,7 @@ def test_clebsch_gordan_ls_coupling(
     rule_input: _SpinRuleInputType,
     expected: bool,
 ):
-    spin_rule = SpinConservation()
-
-    assert spin_rule(*rule_input) is expected
+    assert spin_conservation(*rule_input) is expected
 
 
 @pytest.mark.parametrize(
@@ -267,9 +263,7 @@ def test_clebsch_gordan_ls_coupling(
 def test_spin_ignore_z_component(
     rule_input: _SpinRuleInputType, expected: bool
 ) -> None:
-    spin_rule = SpinConservationMagnitude()
-
-    assert spin_rule(*rule_input) is expected  # type: ignore
+    assert spin_magnitude_conservation(*rule_input) is expected  # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -291,10 +285,8 @@ def test_isospin_clebsch_gordan_zeros(
     isospin_mag2: int,
     expected: bool,
 ) -> None:
-    isospin_rule = IsoSpinConservation()
-
     assert (
-        isospin_rule(
+        isospin_conservation(
             [IsoSpinEdgeInput(coupled_isospin_mag, 0)],  # type: ignore
             [
                 IsoSpinEdgeInput(isospin_mag1, 0),  # type: ignore

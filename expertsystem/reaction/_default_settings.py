@@ -9,23 +9,25 @@ from expertsystem.reaction.conservation_rules import (
     BottomnessConservation,
     ChargeConservation,
     CharmConservation,
-    ClebschGordanCheckHelicityToCanonical,
-    CParityConservation,
+    ConservationRule,
+    EdgeQNConservationRule,
     ElectronLNConservation,
-    GellMannNishijimaRule,
-    GParityConservation,
-    HelicityConservation,
-    IdenticalParticleSymmetrization,
-    IsoSpinConservation,
-    IsoSpinValidity,
     MassConservation,
     MuonLNConservation,
-    ParityConservation,
-    ParityConservationHelicity,
-    SpinConservation,
-    SpinConservationMagnitude,
     StrangenessConservation,
     TauLNConservation,
+    c_parity_conservation,
+    clebsch_gordan_helicity_to_canonical,
+    g_parity_conservation,
+    gellmann_nishijima,
+    helicity_conservation,
+    identical_particle_symmetrization,
+    isospin_conservation,
+    isospin_validity,
+    parity_conservation,
+    parity_conservation_helicity,
+    spin_conservation,
+    spin_magnitude_conservation,
 )
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
@@ -45,26 +47,28 @@ DEFAULT_PARTICLE_LIST_PATH = join(
 
 # If a conservation law is not listed here, a default priority of 1 is assumed.
 # Higher number means higher priority
-__CONSERVATION_LAW_PRIORITIES = {
-    SpinConservation: 8,
-    SpinConservationMagnitude: 8,
-    HelicityConservation: 7,
+__CONSERVATION_LAW_PRIORITIES: Dict[
+    Union[EdgeQNConservationRule, ConservationRule], int
+] = {
+    spin_conservation: 8,
+    spin_magnitude_conservation: 8,
+    helicity_conservation: 7,
     MassConservation: 10,
-    GellMannNishijimaRule: 50,
+    gellmann_nishijima: 50,
     ChargeConservation: 100,
     ElectronLNConservation: 45,
     MuonLNConservation: 44,
     TauLNConservation: 43,
     BaryonNumberConservation: 90,
-    IdenticalParticleSymmetrization: 2,
+    identical_particle_symmetrization: 2,
     CharmConservation: 70,
     StrangenessConservation: 69,
-    ParityConservation: 6,
-    CParityConservation: 5,
-    ParityConservationHelicity: 4,
-    IsoSpinConservation: 60,
-    IsoSpinValidity: 61,
-    GParityConservation: 3,
+    parity_conservation: 6,
+    c_parity_conservation: 5,
+    parity_conservation_helicity: 4,
+    isospin_conservation: 60,
+    isospin_validity: 61,
+    g_parity_conservation: 3,
     BottomnessConservation: 68,
 }
 
@@ -108,8 +112,8 @@ def create_default_interaction_settings(
 
     if "helicity" in formalism_type:
         formalism_node_settings.conservation_rules = {
-            SpinConservationMagnitude(),
-            HelicityConservation(),
+            spin_magnitude_conservation,
+            helicity_conservation,
         }
         formalism_node_settings.qn_domains = {
             NodeQuantumNumbers.l_magnitude: _get_ang_mom_magnitudes(
@@ -121,9 +125,9 @@ def create_default_interaction_settings(
         }
     elif formalism_type == "canonical":
         formalism_node_settings.conservation_rules = {
-            SpinConservationMagnitude()
+            spin_magnitude_conservation
             if nbody_topology
-            else SpinConservation(),
+            else spin_conservation,
         }
         formalism_node_settings.qn_domains = {
             NodeQuantumNumbers.l_magnitude: _get_ang_mom_magnitudes(
@@ -141,7 +145,7 @@ def create_default_interaction_settings(
         }
     if formalism_type == "canonical-helicity":
         formalism_node_settings.conservation_rules.add(
-            ClebschGordanCheckHelicityToCanonical()
+            clebsch_gordan_helicity_to_canonical
         )
         formalism_node_settings.qn_domains.update(
             {
@@ -162,9 +166,9 @@ def create_default_interaction_settings(
             MuonLNConservation(),
             TauLNConservation(),
             BaryonNumberConservation(),
-            IsoSpinValidity(),  # should be changed to a pure edge rule
-            IdenticalParticleSymmetrization(),
-            GellMannNishijimaRule(),  # should be changed to a pure edge rule
+            isospin_validity,  # should be changed to a pure edge rule
+            identical_particle_symmetrization,
+            gellmann_nishijima,  # should be changed to a pure edge rule
         ]
     )
     weak_node_settings.interaction_strength = 10 ** (-4)
@@ -205,12 +209,12 @@ def create_default_interaction_settings(
             CharmConservation(),
             StrangenessConservation(),
             BottomnessConservation(),
-            ParityConservation(),
-            CParityConservation(),
+            parity_conservation,
+            c_parity_conservation,
         }
     )
     if "helicity" in formalism_type:
-        em_node_settings.conservation_rules.add(ParityConservationHelicity())
+        em_node_settings.conservation_rules.add(parity_conservation_helicity)
         em_node_settings.qn_domains.update(
             {NodeQuantumNumbers.parity_prefactor: [-1, 1]}
         )
@@ -225,7 +229,7 @@ def create_default_interaction_settings(
 
     strong_node_settings = deepcopy(em_node_settings)
     strong_node_settings.conservation_rules.update(
-        {IsoSpinConservation(), GParityConservation()}
+        {isospin_conservation, g_parity_conservation}
     )
     strong_node_settings.interaction_strength = 60
 

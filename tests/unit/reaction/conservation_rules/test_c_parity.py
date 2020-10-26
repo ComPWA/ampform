@@ -4,9 +4,9 @@ import pytest
 
 from expertsystem.particle import Parity
 from expertsystem.reaction.conservation_rules import (
-    CParityConservation,
     CParityEdgeInput,
     CParityNodeInput,
+    c_parity_conservation,
 )
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
@@ -73,9 +73,7 @@ from expertsystem.reaction.quantum_numbers import (
     ],
 )
 def test_c_parity_all_defined(rule_input, expected):
-    rule = CParityConservation()
-
-    assert rule(*rule_input) is expected
+    assert c_parity_conservation(*rule_input) is expected
 
 
 @pytest.mark.parametrize(
@@ -111,9 +109,7 @@ def test_c_parity_all_defined(rule_input, expected):
     ],
 )
 def test_c_parity_multiparticle_boson(rule_input, expected):
-    rule = CParityConservation()
-
-    assert rule(*rule_input) is expected
+    assert c_parity_conservation(*rule_input) is expected
 
 
 @pytest.mark.parametrize(
@@ -151,6 +147,4 @@ def test_c_parity_multiparticle_boson(rule_input, expected):
     ],
 )
 def test_c_parity_multiparticle_fermion(rule_input, expected):
-    rule = CParityConservation()
-
-    assert rule(*rule_input) is expected
+    assert c_parity_conservation(*rule_input) is expected
