@@ -298,14 +298,15 @@ class ParticleCollection(abc.MutableSet):
         error_message = (
             f'No particle with name "{particle_name} in the database"'
         )
-        candidate_names = {
-            name for name in self.__particles if particle_name in name
-        }
-        if candidate_names:
+        candidates = self.filter(lambda p: particle_name in p.name)
+        if candidates:
+            sorted_by_mass = sorted(
+                (p for p in candidates), key=lambda p: p.mass
+            )
             raise KeyError(
                 error_message,
                 "Did you mean one of these?",
-                candidate_names,
+                [p.name for p in sorted_by_mass],
             )
         raise KeyError(error_message)
 
