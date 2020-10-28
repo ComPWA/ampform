@@ -11,24 +11,6 @@ import subprocess
 
 import sphobjinv as soi
 
-# -- Copy example notebooks ---------------------------------------------------
-print("Copy example notebook and data files")
-PATH_SOURCE = "../examples"
-PATH_TARGET = "usage"
-FILES_TO_COPY = [
-    "additional_particles.yml",
-    "particles.ipynb",
-    "quickstart.ipynb",
-    "visualization.ipynb",
-]
-shutil.rmtree(PATH_TARGET, ignore_errors=True)
-os.makedirs(PATH_TARGET, exist_ok=True)
-for file_to_copy in FILES_TO_COPY:
-    path_from = os.path.join(PATH_SOURCE, file_to_copy)
-    path_to = os.path.join(PATH_TARGET, file_to_copy)
-    print("  copy", path_from, "to", path_to)
-    shutil.copyfile(path_from, path_to, follow_symlinks=True)
-
 # -- Generate API skeleton ----------------------------------------------------
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
@@ -42,8 +24,7 @@ subprocess.call(
             "--templatedir _templates",
             "--separate",
         ]
-    )
-    + ";",
+    ),
     shell=True,
 )
 
@@ -165,7 +146,7 @@ html_theme_options = {
     "use_issues_button": True,
     "use_repository_button": True,
     "launch_buttons": {
-        "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=examples",
+        "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=doc/usage",
         "notebook_interface": "jupyterlab",
         "thebe": True,
         "thebelab": True,

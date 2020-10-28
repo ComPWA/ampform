@@ -204,9 +204,9 @@ or just click "details" under the RTD check once you submit your PR.
 Jupyter Notebooks
 -----------------
 
-The `examples <https://github.com/ComPWA/expertsystem/tree/master/examples>`_
+The `doc/usage <https://github.com/ComPWA/expertsystem/tree/master/doc>`_
 folder contains a few notebooks that illustrate how to use the `expertsystem`.
-These notebooks are also available on the :doc:`Usage <usage>` page and are run
+These notebooks are also rendered on the :doc:`Usage <usage>` page and are run
 and tested whenever you make a :ref:`pull request <contribute:Git and GitHub>`.
 As such, they serve both as up-to-date documentation and as tests of the
 interface.
@@ -227,9 +227,8 @@ addition, recommend to install a few extensions:
 
   jupyter serverextension enable --py jupyterlab_code_formatter
 
-Now, if you want to test all notebooks in the :file:`examples` folder and check
-how they will look like in the :ref:`contribute:Documentation`, you can do this
-with:
+Now, if you want to test all notebooks documentation folder and check how they
+will look like in the :ref:`contribute:Documentation`, you can do this with:
 
 .. code-block:: shell
 

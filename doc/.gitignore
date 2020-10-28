@@ -3,4 +3,4 @@
 *build/
 api/
 expertsystem.svg
-usage/*.ipynb
+!usage/additional_particles.yml
