@@ -1,5 +1,3 @@
-<!-- cspell:ignore Colab -->
-
 # PWA Expert System
 
 [![Documentation build status](https://readthedocs.org/projects/expertsystem/badge/?version=latest)](https://expertsystem.readthedocs.io)

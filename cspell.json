@@ -94,6 +94,7 @@
         "codacy",
         "codecov",
         "codemirror",
+        "colab",
         "commitlint",
         "doctest",
         "doctests",

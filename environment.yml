@@ -4,5 +4,6 @@ channels:
 dependencies:
   - python>=3.6
   - pip
+  - graphviz # for binder
   - pip:
-      - -e .[doc] # for binder
+      - -e .[doc]

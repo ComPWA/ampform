@@ -129,6 +129,7 @@ html_theme_options = {
     "use_repository_button": True,
     "launch_buttons": {
         "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=doc/usage",
+        "colab_url": "https://colab.research.google.com/github/ComPWA/expertsystem/blob/master",
         "notebook_interface": "jupyterlab",
         "thebe": True,
         "thebelab": True,
