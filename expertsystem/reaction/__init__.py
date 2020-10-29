@@ -427,6 +427,7 @@ def generate(  # pylint: disable=too-many-arguments
     formalism_type: str = "helicity",
     particles: Optional[ParticleCollection] = None,
     topology_building: str = "isobar",
+    number_of_threads: Optional[int] = None,
 ) -> Result:
     """A convenient facade for the :doc:`usual workflow </usage/workflow>`.
 
@@ -459,6 +460,7 @@ def generate(  # pylint: disable=too-many-arguments
         allowed_intermediate_particles=allowed_intermediate_particles,
         formalism_type=formalism_type,
         topology_building=topology_building,
+        number_of_threads=number_of_threads,
     )
     if allowed_interaction_types is not None:
         interaction_types = _determine_interaction_types(

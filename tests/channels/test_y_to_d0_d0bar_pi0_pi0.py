@@ -1,136 +1,56 @@
-""" sample script for the testing purposes using the decay
-    Y(4260) -> D*0 D*0bar -> D0 D0bar pi0 pi0
-"""
-
-import logging
-from typing import List
+# cspell:ignore skipif
 
 import pytest
 
-from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
-from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
-from expertsystem.reaction import (
-    InteractionTypes,
-    StateDefinition,
-    StateTransitionManager,
+import expertsystem as es
+from expertsystem.reaction import InteractionTypes, StateTransitionManager
+
+
+@pytest.mark.parametrize(
+    "formalism_type, n_solutions",
+    [
+        ("helicity", 14),
+        ("canonical-helicity", 100),
+    ],
 )
-
-logging.basicConfig(level=logging.INFO)
-
-
-def test_script_simple(particle_database):
-    # initialize the graph edges (initial and final state)
-    initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
-    final_state: List[StateDefinition] = [
-        ("D*(2007)0", [-1, 0, 1]),
-        ("D*(2007)~0", [-1, 0, 1]),
-    ]
-
-    # because the amount of solutions is too big we change the default domains
-    formalism_type = "canonical-helicity"
-
-    stm = StateTransitionManager(
-        initial_state,
-        final_state,
-        particle_database,
-        allowed_intermediate_particles=["D*"],
+def test_simple(formalism_type, n_solutions, particle_database):
+    result = es.generate_transitions(
+        initial_state=[("Y(4260)", [-1, +1])],
+        final_state=["D*(2007)0", "D*(2007)~0"],
+        particles=particle_database,
         formalism_type=formalism_type,
+        allowed_interaction_types="strong",
+        number_of_threads=1,
     )
-
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    # stm.add_final_state_grouping([['D0', 'pi0'], ['D0bar', 'pi0']])
-    stm.number_of_threads = 2
-
-    graph_node_setting_pairs = stm.prepare_graphs()
-
-    result = stm.find_solutions(graph_node_setting_pairs)
-
-    print("found " + str(len(result.solutions)) + " solutions!")
-
-    canonical_xml_generator = CanonicalAmplitudeGenerator()
-    canonical_xml_generator.generate(result)
-
-    # because the amount of solutions is too big we change the default domains
-    formalism_type = "helicity"
-
-    stm = StateTransitionManager(
-        initial_state,
-        final_state,
-        particle_database,
-        ["D*"],
-        formalism_type=formalism_type,
-    )
-
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    stm.number_of_threads = 2
-
-    graph_node_setting_pairs = stm.prepare_graphs()
-    result = stm.find_solutions(graph_node_setting_pairs)
-    print("found " + str(len(result.solutions)) + " solutions!")
-
-    helicity_xml_generator = HelicityAmplitudeGenerator()
-    helicity_xml_generator.generate(result)
-
-    assert len(helicity_xml_generator.fit_parameters) == len(
-        canonical_xml_generator.fit_parameters
-    )
+    assert len(result.solutions) == n_solutions
+    model = es.generate_amplitudes(result)
+    assert len(model.parameters) == 10
 
 
 @pytest.mark.skip(
-    reason="Test takes too long. Can be enabled again after Rule refactoring"
+    reason="Test takes too long. Can be enabled again after Rule refactoring",
 )
 @pytest.mark.slow
-def test_script_full(particle_database):
-    # initialize the graph edges (initial and final state)
-    initial_state: List[StateDefinition] = [("Y(4260)", [-1, 1])]
-    final_state: List[StateDefinition] = ["D0", "D~0", "pi0", "pi0"]
-
-    # because the amount of solutions is too big we change the default domains
-    formalism_type = "canonical-helicity"
-
+@pytest.mark.parametrize(
+    "formalism_type, n_solutions",
+    [
+        ("helicity", 14),
+        ("canonical-helicity", 100),
+    ],
+)
+def test_full(formalism_type, n_solutions, particle_database):
     stm = StateTransitionManager(
-        initial_state,
-        final_state,
-        particle_database,
-        ["D*"],
+        initial_state=[("Y(4260)", [-1, +1])],
+        final_state=["D0", "D~0", "pi0", "pi0"],
+        particles=particle_database,
+        allowed_intermediate_particles=["D*"],
         formalism_type=formalism_type,
+        number_of_threads=1,
     )
-
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     stm.add_final_state_grouping([["D0", "pi0"], ["D~0", "pi0"]])
-    stm.number_of_threads = 2
-
-    graph_node_setting_pairs = stm.prepare_graphs()
-
-    result = stm.find_solutions(graph_node_setting_pairs)
-
-    print(f"found {len(result.solutions)} solutions!")
-
-    canonical_xml_generator = CanonicalAmplitudeGenerator()
-    canonical_xml_generator.generate(result)
-
-    # because the amount of solutions is too big we change the default domains
-    formalism_type = "helicity"
-
-    stm = StateTransitionManager(
-        initial_state,
-        final_state,
-        particle_database,
-        ["D*"],
-        formalism_type=formalism_type,
-    )
-
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    stm.add_final_state_grouping([["D0", "pi0"], ["D~0", "pi0"]])
-    stm.number_of_threads = 2
-
     graph_node_setting_pairs = stm.prepare_graphs()
     result = stm.find_solutions(graph_node_setting_pairs)
-    print("found " + str(len(result.solutions)) + " solutions!")
-
-    helicity_xml_generator = HelicityAmplitudeGenerator()
-    helicity_xml_generator.generate(result)
-
-    assert len(helicity_xml_generator.fit_parameters) == len(
-        canonical_xml_generator.fit_parameters
-    )
+    assert len(result.solutions) == n_solutions
+    model = es.generate_amplitudes(result)
+    assert len(model.parameters) == 10

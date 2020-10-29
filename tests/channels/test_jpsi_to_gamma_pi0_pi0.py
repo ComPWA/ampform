@@ -1,18 +1,9 @@
-""" sample script for the testing purposes using the decay
-    JPsi -> gamma pi0 pi0
-"""
-
-import logging
-
 import pytest
 
-from expertsystem.reaction import InteractionTypes, StateTransitionManager
+import expertsystem as es
 from expertsystem.reaction.combinatorics import (
     _create_edge_id_particle_mapping,
 )
-
-logging.basicConfig(level=logging.ERROR)
-logging.getLogger().setLevel(logging.ERROR)
 
 
 @pytest.mark.parametrize(
@@ -38,32 +29,29 @@ logging.getLogger().setLevel(logging.ERROR)
 def test_number_of_solutions(
     particle_database, allowed_intermediate_particles, number_of_solutions
 ):
-    stm = StateTransitionManager(
-        initial_state=[("J/psi(1S)", [-1, 1])],
-        final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
+    result = es.generate_transitions(
+        initial_state=("J/psi(1S)", [-1, +1]),
+        final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
+        allowed_interaction_types="strong and EM",
         allowed_intermediate_particles=allowed_intermediate_particles,
         number_of_threads=1,
     )
-    stm.set_allowed_interaction_types(
-        [InteractionTypes.Strong, InteractionTypes.EM]
-    )
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings_groups)
     assert len(result.solutions) == number_of_solutions
+    assert result.get_intermediate_particles().names == set(
+        allowed_intermediate_particles
+    )
 
 
 def test_id_to_particle_mappings(particle_database):
-    stm = StateTransitionManager(
-        initial_state=[("J/psi(1S)", [-1, 1])],
-        final_state=[("gamma", [-1, 1]), ("pi0", [0]), ("pi0", [0])],
+    result = es.generate_transitions(
+        initial_state=("J/psi(1S)", [-1, +1]),
+        final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
+        allowed_interaction_types="strong",
         allowed_intermediate_particles=["f(0)(980)"],
         number_of_threads=1,
     )
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings_groups)
     assert len(result.solutions) == 4
     ref_mapping_fs = _create_edge_id_particle_mapping(
         result.solutions[0], "get_final_state_edges"

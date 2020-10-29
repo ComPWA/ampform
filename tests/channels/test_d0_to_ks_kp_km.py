@@ -1,40 +1,29 @@
-""" sample script for the testing purposes using the decay
-    D0 -> K~0 K+ K-
-"""
-
-import logging
-
 import expertsystem as es
-from expertsystem.reaction import StateTransitionManager
-
-logging.basicConfig(level=logging.ERROR)
-logging.getLogger().setLevel(logging.ERROR)
 
 
 def test_script():
-    stm = StateTransitionManager(
-        initial_state=[("D0", [0])],
-        final_state=[("K~0", [0]), ("K+", [0]), ("K-", [0])],
+    result = es.generate_transitions(
+        initial_state="D0",
+        final_state=["K~0", "K+", "K-"],
         allowed_intermediate_particles=[
             "a(0)(980)",
             "a(2)(1320)-",
             "phi(1020)",
         ],
+        number_of_threads=1,
     )
-    stm.number_of_threads = 1
-
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings_groups)
-
-    print("found " + str(len(result.solutions)) + " solutions!")
     assert len(result.solutions) == 5
-
-    # print intermediate state particle names
-    for solution in result.solutions:
-        print(solution.edge_props[1][0].name)
-
-    amplitude_model = es.amplitude.generate(result)
-    es.io.write(amplitude_model, "D0ToKs0KpKm.xml")
+    assert result.get_intermediate_particles().names == {
+        "a(0)(980)+",
+        "a(0)(980)-",
+        "a(0)(980)0",
+        "a(2)(1320)-",
+        "phi(1020)",
+    }
+    model = es.generate_amplitudes(result)
+    assert len(model.parameters) == 12
+    es.io.write(model, "D0_to_K0sKpKm.xml")
+    es.io.write(model, "D0_to_K0sKpKm.yml")
 
 
 if __name__ == "__main__":
