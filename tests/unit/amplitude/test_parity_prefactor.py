@@ -2,14 +2,11 @@ from typing import NamedTuple, Tuple
 
 import pytest
 
-from expertsystem import io
-from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
+import expertsystem as es
 from expertsystem.reaction import InteractionTypes, StateTransitionManager
 
 
 class Input(NamedTuple):
-    """Helper tuple for tests."""
-
     initial_state: list
     final_state: list
     intermediate_states: list
@@ -83,9 +80,8 @@ def test_parity_prefactor(
             == solution.node_props[node_id].parity_prefactor
         )
 
-    amp_gen = HelicityAmplitudeGenerator()
-    amplitude_model = amp_gen.generate(result)
-    io.write(
+    amplitude_model = es.generate_amplitudes(result)
+    es.io.write(
         instance=amplitude_model,
         filename=f'amplitude_model_prefactor_{"-".join(test_input.intermediate_states)}.xml',
     )

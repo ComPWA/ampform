@@ -1,9 +1,13 @@
 # cspell:ignore skipif
 
+import os
+
 import pytest
 
 import expertsystem as es
 from expertsystem.reaction import InteractionTypes, StateTransitionManager
+
+RUN_SLOW_TEST_CI_BRANCH = "refs/heads/master"
 
 
 @pytest.mark.parametrize(
@@ -27,7 +31,8 @@ def test_simple(formalism_type, n_solutions, particle_database):
     assert len(model.parameters) == 10
 
 
-@pytest.mark.skip(
+@pytest.mark.skipif(
+    os.environ.get("GITHUB_REF", "") != RUN_SLOW_TEST_CI_BRANCH,
     reason="Test takes too long. Can be enabled again after Rule refactoring",
 )
 @pytest.mark.slow
