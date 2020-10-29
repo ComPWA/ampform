@@ -110,20 +110,25 @@ Testing
 -------
 
 More thorough checks (that is, **runtime tests**) can be run in one go with the
-command
+following command:
+
+.. margin:: Running jobs in parallel
+
+  The :code:`-p` flag lets the jobs run in parallel. It also provides a nicer
+  overview of the progress. See :ref:`tox:parallel_mode`.
 
 .. code-block:: shell
 
-  tox
+  tox -p
 
-This command will run :code:`pytest`, check for test coverage, build the
-documentation, and verify cross-references in the documentation and the API.
-It's especially recommended to *run tox before submitting a pull request!*
+This command will run :code:`pytest`, build the documentation, and verify
+cross-references in the documentation and the API. It's especially recommended
+to **run tox before submitting a pull request!**
 
 More specialized :code:`tox` tests are defined in the `tox.ini
 <https://github.com/ComPWA/expertsystem/blob/master/tox.ini>`__ file, under
-each :code:`testenv`. You can list all environments, along with a description
-of what they do, by running:
+each :code:`testenv` section. You can list all environments, along with a
+description of what they do, by running:
 
 .. code-block:: shell
 
@@ -133,10 +138,7 @@ Try to keep test coverage high. You can compute current coverage by running
 
 .. code-block:: shell
 
-  pytest \
-    --cov-report=html \
-    --cov-report=xml \
-    --cov=expertsystem
+  tox -e cov
 
 and opening :file:`htmlcov/index.html` in a browser. In VScode, you can
 visualize which lines in the code base are covered by tests with the `Coverage
@@ -152,6 +154,7 @@ extension (for this you need to run :code:`pytest` with the flag
   file.
 
 .. admonition:: Organizing unit tests
+  :class: dropdown
 
   When **unit** tests are well-organized, you avoid writing duplicate tests. In
   addition, it allows you to check for coverage of specific parts of the code.
@@ -204,7 +207,7 @@ or just click "details" under the RTD check once you submit your PR.
 Jupyter Notebooks
 -----------------
 
-The `doc/usage <https://github.com/ComPWA/expertsystem/tree/master/doc>`_
+The `doc/usage <https://github.com/ComPWA/expertsystem/tree/master/doc/usage>`_
 folder contains a few notebooks that illustrate how to use the `expertsystem`.
 These notebooks are also rendered on the :doc:`Usage <usage>` page and are run
 and tested whenever you make a :ref:`pull request <contribute:Git and GitHub>`.

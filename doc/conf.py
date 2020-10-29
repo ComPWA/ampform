@@ -28,25 +28,6 @@ subprocess.call(
     shell=True,
 )
 
-# -- Visualize dependencies ---------------------------------------------------
-subprocess.call(
-    " ".join(
-        [
-            "HOME=.",  # in case of calling through tox
-            "pydeps",
-            "../expertsystem",
-            "--exclude *._*",  # hide private modules
-            "--max-bacon=1",  # hide external dependencies
-            "--noshow",
-        ]
-    )
-    + ";",
-    shell=True,
-)
-if os.path.exists("expertsystem.svg"):
-    with open("api/expertsystem.rst", "a") as stream:
-        stream.write("\n.. image:: /expertsystem.svg")
-
 # -- Convert sphinx object inventory -----------------------------------------
 inv = soi.Inventory()
 inv.project = "constraint"
@@ -176,22 +157,23 @@ nitpick_ignore = [
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
     "constraint": (
-        "https://labix.org/doc/constraint/public/",
+        "https://labix.org/doc/constraint/public",
         "constraint.inv",
     ),
-    "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
+    "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "jsonschema": (
-        "https://python-jsonschema.readthedocs.io/en/latest/",
+        "https://python-jsonschema.readthedocs.io/en/latest",
         None,
     ),
     "mypy": ("https://mypy.readthedocs.io/en/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
-    "pycompwa": ("https://compwa.github.io/", None),
+    "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
     "tensorwaves": (
-        "https://pwa.readthedocs.io/projects/tensorwaves/en/latest/",
+        "https://pwa.readthedocs.io/projects/tensorwaves/en/latest",
         None,
     ),
+    "tox": ("https://tox.readthedocs.io/en/stable", None),
 }
 
 # Settings for autosectionlabel
@@ -209,7 +191,6 @@ else:
 nbsphinx_timeout = -1
 nbsphinx_execute_arguments = [
     "--InlineBackend.figure_formats={'svg', 'pdf'}",
-    "--InlineBackend.rc={'figure.dpi': 96}",
 ]
 
 # Settings for myst-parser
@@ -220,3 +201,23 @@ thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
+
+# -- Visualize dependencies ---------------------------------------------------
+if nbsphinx_execute == "always":
+    print("Generating module dependency tree...")
+    subprocess.call(
+        " ".join(
+            [
+                "HOME=.",  # in case of calling through tox
+                "pydeps",
+                "../expertsystem",
+                "--exclude *._*",  # hide private modules
+                "--max-bacon=1",  # hide external dependencies
+                "--noshow",
+            ]
+        ),
+        shell=True,
+    )
+    if os.path.exists("expertsystem.svg"):
+        with open("api/expertsystem.rst", "a") as stream:
+            stream.write("\n.. image:: /expertsystem.svg")

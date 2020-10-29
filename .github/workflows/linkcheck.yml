@@ -29,4 +29,4 @@ jobs:
           sudo apt-get -y install pandoc
       - name: Check external links
         working-directory: doc
-        run: make linkcheck
+        run: make ignore-warnings=1 linkcheck

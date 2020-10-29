@@ -91,7 +91,7 @@ jobs:
         run: make html
       - name: Test doctests in docstrings
         working-directory: doc
-        run: make doctest
+        run: make ignore-warnings=1 doctest
 
   style:
     name: Style checks
