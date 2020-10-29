@@ -39,6 +39,7 @@ __all__ = [
     # Facade functions
     "generate_transitions",
     "generate_amplitudes",
+    "check_reaction",
 ]
 
 

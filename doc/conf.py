@@ -113,6 +113,7 @@ autodoc_default_options = {
         ]
     ),
 }
+html_baseurl = "https://expertsystem.readthedocs.io/en/stable/"
 html_copy_source = True  # needed for download notebook button
 html_show_copyright = False
 html_show_sourcelink = False
