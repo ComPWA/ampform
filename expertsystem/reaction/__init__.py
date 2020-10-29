@@ -12,7 +12,7 @@ from enum import Enum, auto
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
-from progress.bar import IncrementalBar
+from tqdm import tqdm
 
 from expertsystem import io
 from expertsystem.particle import ParticleCollection
@@ -336,8 +336,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             "Number of interaction settings groups being processed: %d",
             len(graph_setting_groups),
         )
-        for strength, graph_setting_group in sorted(
-            graph_setting_groups.items(), reverse=True
+        for strength, graph_setting_group in tqdm(
+            sorted(graph_setting_groups.items(), reverse=True),
+            desc="Propagating quantum numbers",
+            disable=logging.getLogger().level > logging.WARNING,
         ):
             logging.info(
                 "processing interaction settings group with "
@@ -347,23 +349,15 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             logging.info(f"running with {self.number_of_threads} threads...")
 
             temp_results: List[Result] = []
-            progress_bar = IncrementalBar(
-                "Propagating quantum numbers...", max=len(graph_setting_group)
-            )
-            progress_bar.update()
             if self.number_of_threads > 1:
                 with Pool(self.number_of_threads) as pool:
                     for result in pool.imap_unordered(
                         self._solve, graph_setting_group, 1
                     ):
                         temp_results.append(result)
-                        progress_bar.next()
             else:
                 for graph_setting_pair in graph_setting_group:
                     temp_results.append(self._solve(graph_setting_pair))
-                    progress_bar.next()
-            progress_bar.finish()
-            logging.info("Finished!")
             for temp_result in temp_results:
                 if strength not in results:
                     results[strength] = temp_result

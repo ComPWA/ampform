@@ -135,6 +135,7 @@
         "startswith",
         "stm's",
         "tolist",
+        "tqdm",
         "unparse",
         "untracked",
         "virtualenv",
