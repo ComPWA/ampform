@@ -417,3 +417,134 @@ def load_default_particles() -> ParticleCollection:
     particles.update(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
+
+
+def generate(  # pylint: disable=too-many-arguments
+    initial_state: Union[StateDefinition, Sequence[StateDefinition]],
+    final_state: Sequence[StateDefinition],
+    allowed_intermediate_particles: Optional[List[str]] = None,
+    allowed_interaction_types: Optional[Union[str, List[str]]] = None,
+    formalism_type: str = "helicity",
+    particles: Optional[ParticleCollection] = None,
+    topology_building: str = "isobar",
+) -> Result:
+    """A convenient facade for the :doc:`usual workflow </usage/workflow>`.
+
+    An example (where, for illustrative purposes only, we specify all
+    arguments) would be:
+
+    >>> import expertsystem as es
+    >>> result = es.reaction.generate(
+    ...     initial_state="D0",
+    ...     final_state=["K~0", "K+", "K-"],
+    ...     allowed_intermediate_particles=["a(0)(980)", "a(2)(1320)-"],
+    ...     allowed_interaction_types="ew",
+    ...     formalism_type="helicity",
+    ...     particles=es.io.load_pdg(),
+    ...     topology_building="isobar",
+    ... )
+    >>> len(result.solutions)
+    4
+    """
+    if isinstance(initial_state, str) or (
+        isinstance(initial_state, tuple)
+        and len(initial_state) == 2
+        and isinstance(initial_state[0], str)
+    ):
+        initial_state = [initial_state]  # type: ignore
+    stm = StateTransitionManager(
+        initial_state=initial_state,  # type: ignore
+        final_state=final_state,
+        particles=particles,
+        allowed_intermediate_particles=allowed_intermediate_particles,
+        formalism_type=formalism_type,
+        topology_building=topology_building,
+    )
+    if allowed_interaction_types is not None:
+        interaction_types = _determine_interaction_types(
+            allowed_interaction_types
+        )
+        stm.set_allowed_interaction_types(list(interaction_types))
+    graph_interaction_settings_groups = stm.prepare_graphs()
+    return stm.find_solutions(graph_interaction_settings_groups)
+
+
+def _determine_interaction_types(
+    description: Union[str, List[str]]
+) -> Set[InteractionTypes]:
+    interaction_types: Set[InteractionTypes] = set()
+    if isinstance(description, list):
+        for i in description:
+            interaction_types.update(
+                _determine_interaction_types(description=i)
+            )
+        return interaction_types
+    if not isinstance(description, str):
+        raise ValueError(
+            "Cannot handle interaction description of type "
+            f"{description.__class__.__name__}"
+        )
+    if len(description) == 0:
+        raise ValueError('Provided an empty interaction name ("")')
+    interaction_name_lower = description.lower()
+    if "all" in interaction_name_lower:
+        for interaction in InteractionTypes:
+            interaction_types.add(interaction)
+    if (
+        "em" in interaction_name_lower
+        or "ele" in interaction_name_lower
+        or interaction_name_lower.startswith("e")
+    ):
+        interaction_types.add(InteractionTypes.EM)
+    if "w" in interaction_name_lower:
+        interaction_types.add(InteractionTypes.Weak)
+    if "strong" in interaction_name_lower or interaction_name_lower == "s":
+        interaction_types.add(InteractionTypes.Strong)
+    if len(interaction_types) == 0:
+        raise ValueError(
+            f'Could not determine interaction type from "{description}"'
+        )
+    return interaction_types
+
+
+def check(
+    initial_state: Union[List[str], str],
+    final_state: Union[List[str], str],
+    allowed_interactions: Optional[str] = None,
+) -> Set[str]:
+    """Check whether a transition from some initial to final state is allowed.
+
+    Raises:
+        ValueError: if the reaction is not allowed. The second item of its
+            `~BaseException.args` contains the violated conservation rules.
+
+    Returns:
+        A `set` of the names of allowed intermediate states.
+    """
+    if (isinstance(initial_state, list) and len(initial_state) > 1) or (
+        isinstance(initial_state, list) and len(final_state) > 2
+    ):
+        topology_building = "nbody"
+    else:
+        topology_building = "isobar"
+
+    results = generate(
+        initial_state=initial_state,
+        final_state=final_state,
+        allowed_interaction_types=allowed_interactions,
+        formalism_type="helicity",
+        topology_building=topology_building,
+    )
+
+    if any(map(len, results.violated_rules.values())):
+        if isinstance(initial_state, list):
+            initial_state = " ".join(initial_state)
+        if isinstance(final_state, list):
+            final_state = " ".join(final_state)
+        raise ValueError(
+            f'Reaction "{initial_state} -> {final_state}" violates',
+            results.violated_rules,
+            "when using interaction types",
+            allowed_interactions,
+        )
+    return results.get_intermediate_particles().names

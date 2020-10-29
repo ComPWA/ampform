@@ -17,7 +17,7 @@ from .helicity_decay import HelicityAmplitudeGenerator
 from .model import AmplitudeModel
 
 
-def generate_amplitude_model(result: Result) -> AmplitudeModel:
+def generate(result: Result) -> AmplitudeModel:
     """Generate an amplitude model from a generated `.Result`.
 
     The type of amplitude model (`.HelicityAmplitudeGenerator` or

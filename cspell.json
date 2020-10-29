@@ -75,7 +75,6 @@
         "pydot",
         "pylint",
         "pytest",
-        "quickstart",
         "redeboer",
         "setuptools",
         "spflueger",

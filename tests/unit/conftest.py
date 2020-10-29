@@ -3,10 +3,8 @@ import logging
 
 import pytest
 
-from expertsystem.amplitude.canonical_decay import CanonicalAmplitudeGenerator
-from expertsystem.amplitude.helicity_decay import HelicityAmplitudeGenerator
+import expertsystem as es
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.reaction import InteractionTypes, StateTransitionManager
 from expertsystem.reaction.solving import Result
 
 logging.basicConfig(level=logging.ERROR)
@@ -14,45 +12,35 @@ logging.basicConfig(level=logging.ERROR)
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_canonical_solutions() -> Result:
-    stm = StateTransitionManager(
+    return es.reaction.generate(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
+        allowed_interaction_types="strong only",
         formalism_type="canonical-helicity",
     )
-    stm.set_allowed_interaction_types([InteractionTypes.EM])
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    return stm.find_solutions(graph_interaction_settings_groups)
 
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
-    stm = StateTransitionManager(
+    return es.reaction.generate(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
+        allowed_interaction_types="strong only",
+        formalism_type="helicity",
     )
-    stm.set_allowed_interaction_types(
-        [InteractionTypes.Strong, InteractionTypes.EM]
-    )
-    graph_interaction_settings_groups = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings_groups)
-    return result
 
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions: Result,
 ) -> AmplitudeModel:
-    amplitude_generator = CanonicalAmplitudeGenerator()
-    return amplitude_generator.generate(
-        jpsi_to_gamma_pi_pi_canonical_solutions
-    )
+    return es.amplitude.generate(jpsi_to_gamma_pi_pi_canonical_solutions)
 
 
 @pytest.fixture(scope="module")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ) -> AmplitudeModel:
-    amplitude_generator = HelicityAmplitudeGenerator()
-    return amplitude_generator.generate(jpsi_to_gamma_pi_pi_helicity_solutions)
+    return es.amplitude.generate(jpsi_to_gamma_pi_pi_helicity_solutions)
