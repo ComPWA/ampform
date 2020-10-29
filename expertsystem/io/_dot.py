@@ -5,8 +5,8 @@ See :doc:`/usage/visualization` for more info.
 
 from typing import Any, Callable, List, Optional
 
-from expertsystem.particle import Particle
-from expertsystem.reaction.topology import StateTransitionGraph
+from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 _DOT_HEAD = """digraph {
     rankdir=LR;
@@ -85,21 +85,24 @@ def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
 
 
 def __edge_label(graph: StateTransitionGraph, edge_id: int) -> str:
-    if isinstance(graph, StateTransitionGraph) and edge_id in graph.edge_props:
+    if isinstance(graph, StateTransitionGraph):
+        if edge_id not in graph.edge_props:
+            return str(edge_id)
         edge_prop = graph.edge_props[edge_id]
         if isinstance(edge_prop, Particle):
-            particle = edge_prop
-            spin_projection = None
-        elif isinstance(edge_prop, tuple):
+            return edge_prop.name
+        if isinstance(edge_prop, tuple):
             particle, projection = edge_prop
             spin_projection = float(projection)
             if spin_projection.is_integer():
                 spin_projection = int(spin_projection)
-        else:
-            raise NotImplementedError
-        label = particle.name
-        if spin_projection is not None:
-            label += f"[{projection}]"
-    else:
-        label = str(edge_id)
-    return label
+            label = particle.name
+            if spin_projection is not None:
+                label += f"[{projection}]"
+            return label
+        if isinstance(edge_prop, ParticleCollection):
+            return "\n".join(sorted(edge_prop.names))
+        raise NotImplementedError
+    if isinstance(graph, Topology):
+        return str(edge_id)
+    raise NotImplementedError

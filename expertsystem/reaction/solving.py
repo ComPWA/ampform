@@ -249,6 +249,63 @@ class Result:
         )
         return inventory
 
+    def collapse_graphs(
+        self,
+    ) -> List[StateTransitionGraph[ParticleCollection]]:
+        def merge_into(
+            graph: StateTransitionGraph[Particle],
+            merged_graph: StateTransitionGraph[ParticleCollection],
+        ) -> None:
+            if (
+                graph.get_intermediate_state_edges()
+                != merged_graph.get_intermediate_state_edges()
+            ):
+                raise ValueError(
+                    "Cannot merge graphs that don't have the same edge IDs"
+                )
+            for i in graph.edges:
+                particle = graph.edge_props[i]
+                other_particles = merged_graph.edge_props[i]
+                if particle not in other_particles:
+                    other_particles += particle
+
+        def is_same_shape(
+            graph: StateTransitionGraph[Particle],
+            merged_graph: StateTransitionGraph[ParticleCollection],
+        ) -> bool:
+            if graph.edges != merged_graph.edges:
+                return False
+            for edge_id in (
+                graph.get_initial_state_edges() + graph.get_final_state_edges()
+            ):
+                edge_prop = merged_graph.edge_props[edge_id]
+                if len(edge_prop) != 1:
+                    return False
+                other_particle = next(iter(edge_prop))
+                if other_particle != graph.edge_props[edge_id]:
+                    return False
+            return True
+
+        graphs = self.get_particle_graphs()
+        inventory: List[StateTransitionGraph[ParticleCollection]] = list()
+        for graph in graphs:
+            append_to_inventory = True
+            for merged_graph in inventory:
+                if is_same_shape(graph, merged_graph):
+                    merge_into(graph, merged_graph)
+                    append_to_inventory = False
+                    break
+            if append_to_inventory:
+                converted: StateTransitionGraph[
+                    ParticleCollection
+                ] = StateTransitionGraph.from_topology(graph)
+                converted.edge_props = {
+                    edge_id: ParticleCollection({particle})
+                    for edge_id, particle in graph.edge_props.items()
+                }
+                inventory.append(converted)
+        return inventory
+
 
 @attr.s(frozen=True)
 class _QuantumNumberSolution:

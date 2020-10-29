@@ -29,3 +29,23 @@ class TestResult:
                 particle_graphs[0].edge_props[edge_id]
                 is particle_graphs[1].edge_props[edge_id]
             )
+
+    def test_collapse_graphs(
+        self,
+        jpsi_to_gamma_pi_pi_helicity_solutions: Result,
+        particle_database: ParticleCollection,
+    ):
+        pdg = particle_database
+        result = jpsi_to_gamma_pi_pi_helicity_solutions
+        particle_graphs = result.get_particle_graphs()
+        assert len(particle_graphs) == 2
+        collapsed_graphs = result.collapse_graphs()
+        assert len(collapsed_graphs) == 1
+        graph = collapsed_graphs[0]
+        edge_id = graph.get_intermediate_state_edges()[0]
+        f_resonances = pdg.filter(
+            lambda p: p.name in ["f(0)(980)", "f(0)(1500)"]
+        )
+        intermediate_states = graph.edge_props[edge_id]
+        assert isinstance(intermediate_states, ParticleCollection)
+        assert intermediate_states == f_resonances

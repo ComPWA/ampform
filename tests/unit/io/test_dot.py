@@ -9,9 +9,16 @@ from expertsystem.reaction.topology import Edge, Topology
 
 
 def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
-    for i in jpsi_to_gamma_pi_pi_helicity_solutions.solutions:
-        dot_data = io.convert_to_dot(i)
+    result = jpsi_to_gamma_pi_pi_helicity_solutions
+    for graph in result.solutions:
+        dot_data = io.convert_to_dot(graph)
         assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(result.solutions)
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(result.get_particle_graphs())
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(result.collapse_graphs())
+    assert pydot.graph_from_dot_data(dot_data) is not None
 
 
 class TestWrite:
