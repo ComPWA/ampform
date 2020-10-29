@@ -111,6 +111,7 @@
         "linkcheck",
         "macos",
         "markdownlint",
+        "mathrm",
         "maxdepth",
         "mimetype",
         "modindex",
