@@ -7,6 +7,7 @@ particle reaction problems.
 """
 
 import logging
+import multiprocessing
 from copy import deepcopy
 from enum import Enum, auto
 from multiprocessing import Pool
@@ -70,7 +71,7 @@ class SolvingMode(Enum):
 class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     """Main handler for decay topologies."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-branches
         self,
         initial_state: Sequence[StateDefinition],
         final_state: Sequence[StateDefinition],
@@ -81,7 +82,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         ] = None,
         formalism_type: str = "helicity",
         topology_building: str = "isobar",
-        number_of_threads: int = 4,
+        number_of_threads: Optional[int] = None,
         solving_mode: SolvingMode = SolvingMode.Fast,
         reload_pdg: bool = False,
     ) -> None:
@@ -101,7 +102,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.__particles = ParticleCollection()
         if particles is not None:
             self.__particles = particles
-        self.number_of_threads = int(number_of_threads)
+        if number_of_threads is None:
+            self.number_of_threads = multiprocessing.cpu_count()
+        else:
+            self.number_of_threads = int(number_of_threads)
         self.reaction_mode = str(solving_mode)
         self.initial_state = initial_state
         self.final_state = final_state
