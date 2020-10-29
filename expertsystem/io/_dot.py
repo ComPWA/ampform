@@ -5,6 +5,7 @@ See :doc:`/usage/visualization` for more info.
 
 from typing import Any, Callable, List, Optional
 
+from expertsystem.particle import Particle
 from expertsystem.reaction.topology import StateTransitionGraph
 
 _DOT_HEAD = """digraph {
@@ -34,7 +35,7 @@ def embed_dot(func: Callable[[Any], str]) -> Callable[[Any], str]:
 @embed_dot
 def graph_list_to_dot(graphs: List[StateTransitionGraph]) -> str:
     dot_source = ""
-    for i, graph in enumerate(graphs):
+    for i, graph in enumerate(reversed(graphs)):
         dot_source += __graph_to_dot_content(graph, prefix=f"g{i}_")
     return dot_source
 
@@ -85,12 +86,20 @@ def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
 
 def __edge_label(graph: StateTransitionGraph, edge_id: int) -> str:
     if isinstance(graph, StateTransitionGraph) and edge_id in graph.edge_props:
-        particle, spin_projection = graph.edge_props[edge_id]
+        edge_prop = graph.edge_props[edge_id]
+        if isinstance(edge_prop, Particle):
+            particle = edge_prop
+            spin_projection = None
+        elif isinstance(edge_prop, tuple):
+            particle, projection = edge_prop
+            spin_projection = float(projection)
+            if spin_projection.is_integer():
+                spin_projection = int(spin_projection)
+        else:
+            raise NotImplementedError
         label = particle.name
-        projection = float(spin_projection)
-        if projection.is_integer():
-            projection = int(projection)
-        label += f"[{projection}]"
+        if spin_projection is not None:
+            label += f"[{projection}]"
     else:
         label = str(edge_id)
     return label

@@ -61,3 +61,18 @@ class TestWrite:
         with open(output_file, "r") as stream:
             dot_data = stream.read()
         assert pydot.graph_from_dot_data(dot_data) is not None
+
+    @staticmethod
+    def test_write_particle_graphs(
+        jpsi_to_gamma_pi_pi_helicity_solutions: Result,
+    ):
+        result = jpsi_to_gamma_pi_pi_helicity_solutions
+        particle_graphs = result.get_particle_graphs()
+        output_file = "test_particle_graphs.gv"
+        io.write(
+            instance=particle_graphs,
+            filename=output_file,
+        )
+        with open(output_file, "r") as stream:
+            dot_data = stream.read()
+        assert pydot.graph_from_dot_data(dot_data) is not None

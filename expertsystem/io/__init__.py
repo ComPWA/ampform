@@ -67,6 +67,8 @@ def convert_to_dot(instance: object) -> str:
 
     Only works for objects that can be represented as a graph, particularly a
     `.StateTransitionGraph` or a `list` of `.StateTransitionGraph` instances.
+
+    .. seealso:: :doc:`/usage/visualization`
     """
     if isinstance(instance, (StateTransitionGraph, Topology)):
         return _dot.graph_to_dot(instance)

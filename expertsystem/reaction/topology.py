@@ -12,6 +12,7 @@ import copy
 import itertools
 import logging
 from typing import (
+    Any,
     Callable,
     Dict,
     Generic,
@@ -365,6 +366,30 @@ class StateTransitionGraph(Topology, Generic[_EdgeType]):
     def from_topology(topology: Topology) -> "StateTransitionGraph":
         """Create a `StateTransitionGraph` from a `Topology`."""
         return StateTransitionGraph(topology.nodes, topology.edges)
+
+    def compare(
+        self,
+        other: "StateTransitionGraph",
+        edge_comparator: Optional[Callable[[Any, Any], bool]] = None,
+        node_comparator: Optional[Callable[[Any, Any], bool]] = None,
+    ) -> bool:
+        if self.nodes != other.nodes:
+            return False
+        if self.edges != other.edges:
+            return False
+        if edge_comparator is not None:
+            for i in self.edges:
+                if not edge_comparator(
+                    self.edge_props[i], other.edge_props[i]
+                ):
+                    return False
+        if node_comparator is not None:
+            for i in self.nodes:
+                if not node_comparator(
+                    self.node_props[i], other.node_props[i]
+                ):
+                    return False
+        return True
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
         super().swap_edges(edge_id1, edge_id2)
