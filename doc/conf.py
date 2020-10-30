@@ -185,7 +185,10 @@ autosectionlabel_prefix_document = True
 linkcheck_anchors = False
 
 # Settings for nbsphinx
-if "NBSPHINX_EXECUTE" in os.environ:
+if (
+    "NBSPHINX_EXECUTE" in os.environ
+    or "READTHEDOCS" in os.environ  # PR preview on RTD
+):
     print("\033[93;1mWill run Jupyter notebooks!\033[0m")
     nbsphinx_execute = "always"
 else:
