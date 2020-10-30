@@ -92,12 +92,12 @@ def test_external_edge_initialization(
         final_state,
         particle_database,
         formalism_type="helicity",
+        number_of_threads=1,
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     for group in final_state_groupings:
         stm.add_final_state_grouping(group)
-    stm.number_of_threads = 1
 
     topology_graphs = stm._build_topologies()
 
@@ -240,10 +240,9 @@ def test_edge_swap(particle_database, initial_state, final_state):
         final_state,
         particle_database,
         formalism_type="helicity",
+        number_of_threads=1,
     )
-
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    stm.number_of_threads = 1
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
@@ -285,10 +284,10 @@ def test_match_external_edges(particle_database, initial_state, final_state):
         final_state,
         particle_database,
         formalism_type="helicity",
+        number_of_threads=1,
     )
 
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
-    stm.number_of_threads = 1
 
     topology_graphs = stm._build_topologies()
     init_graphs = stm._create_seed_graphs(topology_graphs)
@@ -358,12 +357,11 @@ def test_external_edge_identical_particle_combinatorics(
         final_state,
         particle_database,
         formalism_type="helicity",
+        number_of_threads=1,
     )
-
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     for group in final_state_groupings:
         stm.add_final_state_grouping(group)
-    stm.number_of_threads = 1
 
     topology_graphs = stm._build_topologies()
 

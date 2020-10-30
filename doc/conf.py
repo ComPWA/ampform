@@ -17,7 +17,7 @@ subprocess.call(
     " ".join(
         [
             "sphinx-apidoc",
-            "../expertsystem/",
+            "../src/expertsystem/",
             "-o api/",
             "--force",
             "--no-toc",
@@ -97,7 +97,7 @@ exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
     "adr*",
-    "tests",
+    "test",
 ]
 
 # General sphinx settings

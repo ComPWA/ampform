@@ -43,22 +43,24 @@
   "python.linting.pylintCategorySeverity.refactor": "Information",
   "python.linting.pylintEnabled": true,
   "python.linting.pylintUseMinimalCheckers": false,
-  "python.testing.pytestArgs": ["tests", "--no-cov"],
+  "python.testing.pytestArgs": ["--no-cov"],
   "python.testing.pytestEnabled": true,
   "restructuredtext.builtDocumentationPath": "${workspaceFolder}/doc/_build/html",
   "restructuredtext.confPath": "${workspaceFolder}/doc",
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
-    "**/tests/**/__init__.py": true,
+    "**/test/**/__init__.py": true,
     "doc/tox.ini": true,
-    "tests/tox.ini": true
+    "test/tox.ini": true
   },
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./expertsystem/schemas/xml/particle-list.json": ["*particle*xml.y*ml"],
-    "./expertsystem/schemas/yaml/amplitude-model.json": ["*recipe.y*ml"],
-    "./expertsystem/schemas/yaml/particle-list.json": ["*particle.y*ml"],
+    "./src/expertsystem/schemas/xml/particle-list.json": [
+      "*particle*xml.y*ml"
+    ],
+    "./src/expertsystem/schemas/yaml/amplitude-model.json": ["*recipe.y*ml"],
+    "./src/expertsystem/schemas/yaml/particle-list.json": ["*particle.y*ml"],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }

@@ -4,6 +4,36 @@
 *.xml
 *.yaml
 *.yml
+
+# Build files
+*.egg-info/
+*build/
+.eggs/
+.fuse_*
+dist/
+version.py
+
+# Temporary files
+*.pyc
+.coverage
+.coverage.*
+.ipynb_checkpoints/
+.mypy*/
+.pytest_cache/
+__pycache__/
+htmlcov/
+prof/
+
+# Virtual environments
+*venv/
+.tox/
+pyvenv*/
+
+# Settings
+.idea/
+**.code-workspace
+
+# Exceptions
 !.github/*.yml
 !.github/*/*.yml
 !.gitpod.yml
@@ -11,35 +41,5 @@
 !.readthedocs.yml
 !codecov.yml
 !environment.yml
-!examples/additional_particles.yml
-!expertsystem/additional_particle_definitions.yml
-!tests/**/expected_recipe.yml
-
-# Build output
-*.egg-info/
-*build/
-.fuse_*
-dist/
-version.py
-
-# Python temporary files
-*.egg-info/
-*.pyc
-.coverage
-.coverage.*
-.eggs/
-.ipynb_checkpoints/
-.mypy*/
-.pytest_cache/
-.tox/
-__pycache__/
-htmlcov/
-prof/
-
-# Virtual environments
-*venv/
-pyvenv*/
-
-# Settings
-.idea/
-**.code-workspace
+!src/expertsystem/additional_particle_definitions.yml
+!test/**/expected_recipe.yml

@@ -6,7 +6,7 @@ requires = [
 ]
 
 [tool.setuptools_scm]
-write_to = "expertsystem/version.py"
+write_to = "src/expertsystem/version.py"
 
 [tool.black]
 line-length = 79
@@ -32,6 +32,6 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-src_paths = ["expertsystem", "tests"]
+src_paths = ["src", "test"]
 line_length = 79
 known_third_party = "THIRDPARTY,particle"
