@@ -11,7 +11,7 @@ from expertsystem.amplitude.model import AmplitudeModel
 SCRIPT_PATH = dirname(realpath(__file__))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def imported_dict(
     output_dir,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
@@ -26,7 +26,7 @@ def imported_dict(
     return loaded_dict
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def expected_dict() -> dict:
     expected_recipe_file = f"{SCRIPT_PATH}/expected_recipe.yml"
     with open(expected_recipe_file, "rb") as input_file:

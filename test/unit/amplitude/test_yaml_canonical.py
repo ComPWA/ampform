@@ -8,7 +8,7 @@ from expertsystem import io
 from expertsystem.amplitude.model import AmplitudeModel
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def imported_dict(
     output_dir,
     jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,

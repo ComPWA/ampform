@@ -6,7 +6,7 @@ from expertsystem import io
 from expertsystem.particle import ParticleCollection
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def pdg() -> ParticleCollection:
     return io.load_pdg()
 

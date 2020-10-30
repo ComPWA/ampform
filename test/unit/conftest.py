@@ -10,7 +10,7 @@ from expertsystem.reaction.solving import Result
 logging.basicConfig(level=logging.ERROR)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_canonical_solutions() -> Result:
     return es.reaction.generate(
         initial_state=[("J/psi(1S)", [-1, 1])],
@@ -21,7 +21,7 @@ def jpsi_to_gamma_pi_pi_canonical_solutions() -> Result:
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
     return es.reaction.generate(
         initial_state=[("J/psi(1S)", [-1, 1])],
@@ -32,14 +32,14 @@ def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions: Result,
 ) -> AmplitudeModel:
     return es.amplitude.generate(jpsi_to_gamma_pi_pi_canonical_solutions)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ) -> AmplitudeModel:

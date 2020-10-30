@@ -8,7 +8,7 @@ XML_FILE = "particle_selection.xml"
 YAML_FILE = "particle_selection.yml"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def particle_selection(output_dir, particle_database: ParticleCollection):
     selection = ParticleCollection()
     selection += particle_database.filter(lambda p: p.name.startswith("pi"))

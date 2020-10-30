@@ -22,7 +22,7 @@ from expertsystem.reaction.topology import (
 )
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def three_body_decay() -> Topology:
     two_body_decay_node = InteractionNode("TwoBodyDecay", 1, 2)
     simple_builder = SimpleStateTransitionTopologyBuilder(

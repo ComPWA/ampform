@@ -108,6 +108,15 @@ config files of these tools.
 Testing
 -------
 
+The fastest way to run all tests is with the command:
+
+.. code-block:: shell
+
+  pytest -n auto
+
+The flag :command:`-n auto` causes :code:`pytest` to `run with a distributed
+strategy <https://pypi.org/project/pytest-xdist>`_.
+
 More thorough checks can be run in one go with the following command:
 
 .. margin:: Running jobs in parallel

@@ -12,7 +12,7 @@ from expertsystem.reaction.topology import (
 )
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def two_to_three_decay() -> Topology:
     r"""Create a dummy `Topology`.
 
