@@ -13,9 +13,10 @@ SCRIPT_PATH = dirname(realpath(__file__))
 
 @pytest.fixture(scope="module")
 def imported_dict(
+    output_dir,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
 ):
-    output_filename = "JPsiToGammaPi0Pi0_heli_recipe.yml"
+    output_filename = output_dir + "JPsiToGammaPi0Pi0_heli_recipe.yml"
     io.write(
         instance=jpsi_to_gamma_pi_pi_helicity_amplitude_model,
         filename=output_filename,

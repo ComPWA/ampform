@@ -4,43 +4,41 @@ import pytest
 from expertsystem import io
 from expertsystem.particle import ParticleCollection
 
-XML_FILE = "particle_list.xml"
-YAML_FILE = "particle_list.yml"
+XML_FILE = "particle_selection.xml"
+YAML_FILE = "particle_selection.yml"
 
 
 @pytest.fixture(scope="module")
-def particle_selection(particle_database: ParticleCollection):
+def particle_selection(output_dir, particle_database: ParticleCollection):
     selection = ParticleCollection()
-    selection += particle_database.filter(lambda p: "pi" in p.name)
-    selection += particle_database.filter(lambda p: "K" in p.name)
-    selection += particle_database.filter(lambda p: "D" in p.name)
-    selection += particle_database.filter(lambda p: "J/psi" in p.name)
+    selection += particle_database.filter(lambda p: p.name.startswith("pi"))
+    selection += particle_database.filter(lambda p: p.name.startswith("K"))
+    selection += particle_database.filter(lambda p: p.name.startswith("D"))
+    selection += particle_database.filter(lambda p: p.name.startswith("J/psi"))
+    io.write(selection, output_dir + XML_FILE)
+    io.write(selection, output_dir + YAML_FILE)
     return selection
 
 
-def write_test_files(particle_selection):
-    io.write(particle_selection, XML_FILE)
-    io.write(particle_selection, YAML_FILE)
-
-
-def test_not_implemented_errors(particle_selection: ParticleCollection):
+def test_not_implemented_errors(
+    output_dir, particle_selection: ParticleCollection
+):
     with pytest.raises(NotImplementedError):
-        io.load_particle_collection(__file__)
+        io.load_particle_collection(output_dir + __file__)
     with pytest.raises(NotImplementedError):
-        io.write(particle_selection, __file__)
+        io.write(particle_selection, output_dir + __file__)
     with pytest.raises(Exception):
-        io.write(particle_selection, "no_file_extension")
+        io.write(particle_selection, output_dir + "no_file_extension")
     with pytest.raises(NotImplementedError):
-        io.write(666, "wont_work_anyway.xml")
+        io.write(666, output_dir + "wont_work_anyway.xml")
 
 
 @pytest.mark.parametrize("filename", [XML_FILE, YAML_FILE])
 def test_write_read_particle_collection(
-    particle_selection: ParticleCollection, filename: str
+    output_dir, particle_selection: ParticleCollection, filename: str
 ):
-    write_test_files(particle_selection)
-    assert len(particle_selection) == 182
-    imported_collection = io.load_particle_collection(filename)
+    assert len(particle_selection) == 181
+    imported_collection = io.load_particle_collection(output_dir + filename)
     assert len(particle_selection) == len(imported_collection)
     for particle in particle_selection:
         exported = particle_selection[particle.name]
@@ -48,14 +46,11 @@ def test_write_read_particle_collection(
         assert imported == exported
 
 
-def test_equivalence_xml_yaml_particle_list(
-    particle_selection: ParticleCollection,
-):
-    write_test_files(particle_selection)
-    xml_particle_collection = io.load_particle_collection(XML_FILE)
-    yml_particle_collection = io.load_particle_collection(YAML_FILE)
-    for particle in xml_particle_collection:
-        xml_particle = xml_particle_collection[particle.name]
-        yml_particle = yml_particle_collection[particle.name]
+def test_equivalence_xml_yaml_particle_list(output_dir):
+    xml_particles = io.load_particle_collection(output_dir + XML_FILE)
+    yml_particles = io.load_particle_collection(output_dir + YAML_FILE)
+    for particle in xml_particles:
+        xml_particle = xml_particles[particle.name]
+        yml_particle = yml_particles[particle.name]
         assert xml_particle == yml_particle
         assert xml_particle is not yml_particle

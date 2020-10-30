@@ -11,8 +11,9 @@ def test_write_load(
     formalism: str,
     jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
+    output_dir,
 ):
-    filename = f"test_write_read_{formalism}.{file_extension}"
+    filename = output_dir + f"test_write_read_{formalism}.{file_extension}"
     exported = None
     if formalism == "helicity":
         exported = jpsi_to_gamma_pi_pi_helicity_amplitude_model
@@ -36,6 +37,7 @@ def test_equivalence(
     formalism: str,
     jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
+    output_dir,
 ):
     exported = None
     if formalism == "helicity":
@@ -44,7 +46,7 @@ def test_equivalence(
         exported = jpsi_to_gamma_pi_pi_canonical_amplitude_model
     else:
         raise NotImplementedError(formalism)
-    filename = f"test_io_cross_check_{formalism}"
+    filename = output_dir + f"test_io_cross_check_{formalism}"
     filename_xml = f"{filename}.xml"
     filename_yml = f"{filename}.yml"
     io.write(exported, filename_xml)

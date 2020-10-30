@@ -1,7 +1,7 @@
 import expertsystem as es
 
 
-def test_script():
+def test_script(output_dir):
     result = es.generate_transitions(
         initial_state="D0",
         final_state=["K~0", "K+", "K-"],
@@ -22,9 +22,5 @@ def test_script():
     }
     model = es.generate_amplitudes(result)
     assert len(model.parameters) == 12
-    es.io.write(model, "D0_to_K0sKpKm.xml")
-    es.io.write(model, "D0_to_K0sKpKm.yml")
-
-
-if __name__ == "__main__":
-    test_script()
+    es.io.write(model, output_dir + "D0_to_K0bar_Kp_Km.xml")
+    es.io.write(model, output_dir + "D0_to_K0bar_Kp_Km.yml")

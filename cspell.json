@@ -130,6 +130,7 @@
         "pypi",
         "pyproject",
         "pyright",
+        "pytestconfig",
         "rightarrow",
         "rtfd",
         "seealso",

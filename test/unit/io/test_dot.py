@@ -23,16 +23,16 @@ def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
 
 class TestWrite:
     @staticmethod
-    def test_exception():
+    def test_exception(output_dir):
         with pytest.raises(NotImplementedError):
             io.write(
                 instance="nope, can't write a str",
-                filename="dummy_file.gv",
+                filename=output_dir + "dummy_file.gv",
             )
 
     @staticmethod
-    def test_write_topology():
-        output_file = "two_body_decay_topology.gv"
+    def test_write_topology(output_dir):
+        output_file = output_dir + "two_body_decay_topology.gv"
         topology = Topology(
             nodes={0},
             edges={0: Edge(0, None), 1: Edge(None, 0), 2: Edge(None, 0)},
@@ -47,9 +47,10 @@ class TestWrite:
 
     @staticmethod
     def test_write_single_graph(
+        output_dir,
         jpsi_to_gamma_pi_pi_helicity_solutions: Result,
     ):
-        output_file = "test_single_graph.gv"
+        output_file = output_dir + "test_single_graph.gv"
         io.write(
             instance=jpsi_to_gamma_pi_pi_helicity_solutions.solutions[0],
             filename=output_file,
@@ -59,8 +60,10 @@ class TestWrite:
         assert pydot.graph_from_dot_data(dot_data) is not None
 
     @staticmethod
-    def test_write_graph_list(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
-        output_file = "test_graph_list.gv"
+    def test_write_graph_list(
+        output_dir, jpsi_to_gamma_pi_pi_helicity_solutions: Result
+    ):
+        output_file = output_dir + "test_graph_list.gv"
         io.write(
             instance=jpsi_to_gamma_pi_pi_helicity_solutions.solutions,
             filename=output_file,
@@ -71,11 +74,12 @@ class TestWrite:
 
     @staticmethod
     def test_write_particle_graphs(
+        output_dir,
         jpsi_to_gamma_pi_pi_helicity_solutions: Result,
     ):
         result = jpsi_to_gamma_pi_pi_helicity_solutions
         particle_graphs = result.get_particle_graphs()
-        output_file = "test_particle_graphs.gv"
+        output_file = output_dir + "test_particle_graphs.gv"
         io.write(
             instance=particle_graphs,
             filename=output_file,
