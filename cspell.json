@@ -98,6 +98,7 @@
         "commitlint",
         "doctest",
         "doctests",
+        "eval",
         "flatte",
         "gellmann",
         "genindex",

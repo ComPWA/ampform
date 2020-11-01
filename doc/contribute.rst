@@ -1,8 +1,8 @@
 .. cSpell:ignore aquirdturtle docnb htmlcov ijmbarr labextension pylintrc
 .. cSpell:ignore ryantam serverextension testenv
 
-How to contribute?
-==================
+Develop
+=======
 
 .. list-table::
 
@@ -189,10 +189,10 @@ Documentation
 The documentation that you find on `expertsystem.rtfd.io
 <http://expertsystem.rtfd.io>`_ are built from the `documentation source code
 folder <https://github.com/ComPWA/expertsystem/tree/master/doc>`_ (:file:`doc`)
-with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also builds the API and
-therefore checks whether the `docstrings
-<https://www.python.org/dev/peps/pep-0257/>`_ in the Python source code are
-valid and correctly interlinked.
+with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also `builds the API
+<https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html>`_ and therefore
+checks whether the `docstrings <https://www.python.org/dev/peps/pep-0257/>`_ in
+the Python source code are valid and correctly interlinked.
 
 You can quickly build the documentation from the root directory of this
 repository with the command:
@@ -206,7 +206,7 @@ Alternatively, you can run :code:`sphinx-build` yourself as follows:
 .. code-block:: shell
 
   cd doc
-  make html  # or NBSPHINX_EXECUTE= make html
+  make html  # or EXECUTE_NB= make html
 
 A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
 our documentation, is that documentation is built for each pull request as
@@ -214,6 +214,13 @@ well. This means that you can view the documentation for your changes as well.
 For more info, see `here
 <https://docs.readthedocs.io/en/stable/guides/autobuild-docs-for-pull-requests.html>`__,
 or just click "details" under the RTD check once you submit your PR.
+
+We make use of `Markedly Structured Text <https://myst-parser.readthedocs.io>`_
+(MyST), so you can write the documentation in either `reStructuredText
+<https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_ or
+`Markdown <https://www.markdownguide.org>`_. In addition, it's easy to write
+(interactive) code examples in Jupyter notebooks and host them on the website,
+(see `MyST-NB <https://myst-nb.readthedocs.io>`_)!
 
 
 Jupyter Notebooks

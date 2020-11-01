@@ -54,7 +54,7 @@ jobs:
       - name: Build documentation and run notebooks
         working-directory: doc
         env:
-          NBSPHINX_EXECUTE: YES
+          EXECUTE_NB: YES
         run: make html
       - name: Test doctests in docstrings
         working-directory: doc
