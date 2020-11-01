@@ -41,7 +41,7 @@ def load_pdg() -> ParticleCollection:
     """Create a `.ParticleCollection` with all entries from the PDG.
 
     PDG info is imported from the `scikit-hep/particle
-    <https://github.com/scikit-hep/particle/blob/master/README.rst>`_ package.
+    <https://github.com/scikit-hep/particle>`_ package.
     """
     return _pdg.load_pdg()
 

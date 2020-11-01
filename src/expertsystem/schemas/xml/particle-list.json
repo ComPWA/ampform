@@ -1,5 +1,5 @@
 {
-  "$id": "https://github.com/ComPWA/expertsystem/blob/master/src/expertsystem/schemas/xml/particle-list.json",
+  "$id": "https://github.com/ComPWA/expertsystem/blob/stable/src/expertsystem/schemas/xml/particle-list.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Validation schema for a YAML/JSON file directly converted from particle_list.xml",
   "description": "Useful in combination with a GUI that can use this schema to validate wile reworking it",

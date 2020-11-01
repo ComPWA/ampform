@@ -122,14 +122,14 @@ html_sourcelink_suffix = ""
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/ComPWA/expertsystem",
-    "repository_branch": "master",
+    "repository_branch": "stable",
     "path_to_docs": "doc",
     "use_edit_page_button": True,
     "use_issues_button": True,
     "use_repository_button": True,
     "launch_buttons": {
-        "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=doc/usage",
-        "colab_url": "https://colab.research.google.com/github/ComPWA/expertsystem/blob/master",
+        "binderhub_url": "https://mybinder.org/v2/gh/ComPWA/expertsystem/stable?filepath=doc/usage",
+        "colab_url": "https://colab.research.google.com/github/ComPWA/expertsystem/blob/stable",
         "notebook_interface": "jupyterlab",
         "thebe": True,
         "thebelab": True,

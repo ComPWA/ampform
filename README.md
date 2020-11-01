@@ -1,8 +1,8 @@
 # PWA Expert System
 
 [![Documentation build status](https://readthedocs.org/projects/expertsystem/badge/?version=latest)](https://expertsystem.readthedocs.io)
-[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/expertsystem/master?filepath=doc/usage)
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/expertsystem)
+[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/expertsystem/stable?filepath=doc/usage)
+[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/expertsystem/blob/stable)
 [![GPLv3+ license](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 [![GitPod](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ComPWA/expertsystem)
 <br>
@@ -19,8 +19,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
-Visit
-[expertsystem.rtfd.io](https://pwa.readthedocs.io/projects/expertsystem/en/latest/)
+Visit [expertsystem.rtfd.io](https://pwa.readthedocs.io/projects/expertsystem)
 for an introduction to the Particle Wave Analysis Expert System!
 
 _For an overview of **upcoming releases and planned functionality**, see
@@ -54,4 +53,4 @@ _For an overview of **upcoming releases and planned functionality**, see
 - **Output**: Write transition graph to human-readable recipe file
   - [x] XML (_old format for [ComPWA](https://compwa.github.io/)_)
   - [x] YAML (_new format for
-        [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves/en/latest)_)
+        [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves)_)

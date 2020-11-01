@@ -7,8 +7,6 @@ import pytest
 import expertsystem as es
 from expertsystem.reaction import InteractionTypes, StateTransitionManager
 
-RUN_SLOW_TEST_CI_BRANCH = "refs/heads/master"
-
 
 @pytest.mark.parametrize(
     "formalism_type, n_solutions",
@@ -32,7 +30,7 @@ def test_simple(formalism_type, n_solutions, particle_database):
 
 
 @pytest.mark.skipif(
-    os.environ.get("GITHUB_REF", "") != RUN_SLOW_TEST_CI_BRANCH,
+    "PYTEST_RUN_SLOW_TESTS" not in os.environ,
     reason="Test takes too long. Can be enabled again after Rule refactoring",
 )
 @pytest.mark.slow
