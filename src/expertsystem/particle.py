@@ -126,7 +126,7 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=True, repr=False)
 class Particle:  # pylint: disable=too-many-instance-attributes
     """Immutable container of data defining a physical particle.
 

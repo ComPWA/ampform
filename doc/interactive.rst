@@ -18,7 +18,7 @@ vice versa, look up particle candidates based on a set of quantum numbers.
 
 .. margin::
 
-  Use `~.ParticleCollection.find` so search for a `.Particle` by name or by ID
+  Use `~.ParticleCollection.find` to search for a `.Particle` by name or by ID
   `as defined by the PDG
   <https://pdg.lbl.gov/2020/reviews/rpp2020-rev-monte-carlo-numbering.pdf>`_.
 
@@ -28,16 +28,14 @@ vice versa, look up particle candidates based on a set of quantum numbers.
   import expertsystem as es
   pdg = es.io.load_pdg()
 
-  pdg.find(22)  # by PID
-  pdg.find("Delta(1920)++")  # by name
+  pdg.find(22)
+  pdg.find("Delta(1920)++")
 
 .. margin::
 
-  The `~.ParticleCollection.filter` method can perform any type of search. For
-  available search properties, have a look at properties of `.Particle` class.
-  For more info on the search syntax, read more about `lambda functions in
-  Python
+  `~.ParticleCollection.filter` can perform any type of search using a `lambda
   <https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions>`_.
+  Have a look at `.Particle` for the available properties.
 
 .. code-block:: python
   :class: thebe, thebe-init
@@ -49,26 +47,22 @@ vice versa, look up particle candidates based on a set of quantum numbers.
   )
   subset.names
 
+.. tip:: See :doc:`/usage/particles`
+
 
 Check allowed reactions
 -----------------------
 
 .. margin::
 
-  .. note::
-    The allowed `.InteractionTypes` determine which rules are checked. For
-    instance, if you allow `.InteractionTypes.Weak`, the check on
-    :math:`C`-parity is not performed and the `expertsystem` would consider
-    this reaction to be allowed. See `.reaction.generate`.
-
-  .. warning::
-    The larger the number of particles in the final state, the longer it takes
-    to compute. For more fine-tuning, it's better to use the
-    `.StateTransitionManager` directly. See the :doc:`/usage/workflow`.
+  The :code:`allowed_interactions` determine which rules are checked. For
+  instance, if you allow `~.InteractionTypes.Weak` interactions, the check on
+  :math:`C`-parity is not performed and the `expertsystem` would consider this
+  reaction to be allowed.
 
 The `expertsystem` can be used to `~.reaction.check` whether a transition
-between an initial and final state is valid. If a solution is allowed, the
-`~.reaction.check` returns a `set` of names of the allowed intermediate states,
+between an initial and final state is valid. If a solution is allowed,
+`.check_reaction` returns a `set` of names of the allowed intermediate states,
 if not, it will raise a `ValueError` containing the violated conservation
 rules:
 
@@ -89,7 +83,9 @@ Investigate intermediate resonances
 
 .. margin::
 
-  .. tip:: See :doc:`/usage/workflow`
+  .. warning::
+    The larger the number final state particles, the longer the computation
+    time. Use the `.StateTransitionManager` directly for fine-tuning.
 
 The `expertsystem` is designed to be a tool when doing Partial Wave Analysis.
 It's main features are therefore the `.generate_transitions` and
@@ -104,8 +100,14 @@ these transitions online:
 
   result = es.generate_transitions(
     initial_state=("J/psi(1S)", [-1, +1]),
-    final_state=["K0", "Sigma+", "p~"],
+    final_state=["p", "p~", "eta"],
     allowed_interaction_types="strong",
   )
   graphs = result.collapse_graphs()
   Source(es.io.convert_to_dot(graphs))
+
+.. toggle::
+
+  This example takes around **1 minute** to compute on Binder.
+
+.. tip:: See :doc:`/usage` and :doc:`/usage/workflow`

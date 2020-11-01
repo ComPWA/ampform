@@ -69,7 +69,10 @@ class SolvingMode(Enum):
 
 
 class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
-    """Main handler for decay topologies."""
+    """Main handler for decay topologies.
+
+    .. seealso:: :doc:`/usage/workflow` and `generate`
+    """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-branches
         self,
@@ -412,7 +415,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
 
 def load_default_particles() -> ParticleCollection:
-    """Load the default particle list that comes with the expertsystem."""
+    """Load the default particle list that comes with the `expertsystem`.
+
+    Runs `.load_pdg` and supplements its output definitions from the file
+    :download:`additional_particle_definitions.yml
+    </../src/expertsystem/additional_particle_definitions.yml>`.
+    """
     particles = io.load_pdg()
     particles.update(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
     logging.info(f"Loaded {len(particles)} particles!")
@@ -429,7 +437,50 @@ def generate(  # pylint: disable=too-many-arguments
     topology_building: str = "isobar",
     number_of_threads: Optional[int] = None,
 ) -> Result:
-    """A convenient facade for the :doc:`usual workflow </usage/workflow>`.
+    """Generate allowed transitions between an initial and final state.
+
+    Serves as a facade to the `.StateTransitionManager` (see
+    :doc:`/usage/workflow`).
+
+    Arguments:
+        initial_state (list): A list of particle names in the initial
+            state. You can specify spin projections for these particles with a
+            `tuple`, e.g. :code:`("J/psi(1S)", [-1, 0, +1])`. If spin
+            projections are not specified, all projections are taken, so the
+            example here would be equivalent to :code:`"J/psi(1S)"`.
+
+        final_state (list): Same as :code:`initial_state`, but for final state
+            particles.
+
+        allowed_intermediate_particles (`list`, optional): A list of particle
+            states that you want to allow as intermediate states. This helps
+            (1) filter out resonances in the eventual `.AmplitudeModel` and (2)
+            speed up computation time.
+
+        allowed_interaction_types (`str`, optional): Interaction types you want
+            to consider. For instance, both :code:`"strong and EM"` and
+            :code:`["s", "em"]` results in `~.InteractionTypes.EM` and
+            `~.InteractionTypes.Strong`.
+
+        formalism_type (`str`, optional): Formalism that you intend to use in the
+            eventual `.AmplitudeModel`.
+
+        particles (`.ParticleCollection`, optional): The particles that you
+            want to be involved in the reaction. Uses `.load_default_particles`
+            by default. It's better to use a subset for larger reactions,
+            because of the computation times. This argument is especially
+            useful when you want to use your own particle definitions (see
+            :doc:`/usage/particles`).
+
+        topology_building (str): Technique with which to build the `.Topology`
+            instances. Allowed values are:
+
+            - :code:`"isobar"`: Isobar model (each state decays into two states)
+            - :code:`"nbody"`: Use one central node and connect initial and final
+              states to it
+
+        number_of_threads (int): Number of cores with which to compute the
+            allowed transitions. Defaults to all cores on the system.
 
     An example (where, for illustrative purposes only, we specify all
     arguments) would be:

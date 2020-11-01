@@ -24,7 +24,7 @@ limited to a single quantum number, but can be a composite (see
 .. warning::
     Besides the rule logic itself, a rule also has the responsibility of
     stating its run conditions. These run conditions **must** be stated by
-    the type annotations of its **__call__** method. The type annotations
+    the type annotations of its :code:`__call__` method. The type annotations
     therefore are not just there for *static* type checking: they also
     carry more information about the rule that is extracted *dynamically*
     by the `.reaction` module.

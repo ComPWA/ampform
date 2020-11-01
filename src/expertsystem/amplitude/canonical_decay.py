@@ -138,12 +138,14 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
     This class defines a full amplitude in the canonical formalism, using the
     helicity formalism as a foundation. The key here is that we take the full
     helicity intensity as a template, and just exchange the helicity amplitudes
-    :math:`F` as a sum of canonical amplitudes a:
+    :math:`F` as a sum of canonical amplitudes :math:`A`:
 
     .. math::
-        F^J_{\lambda_1},\lambda_2 = sum_LS { norm * a^J_LS * CG * CG }.
 
-    Here, :math:`CG` stands for Clebsch-Gordan factor.
+        F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
+
+    Here, :math:`C` stands for `Clebsch-Gordan factor
+    <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
     """
 
     def __init__(self, top_node_no_dynamics: bool = True) -> None:

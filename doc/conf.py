@@ -59,7 +59,7 @@ soi.writebytes("constraint.inv", ztext)
 # -- Project information -----------------------------------------------------
 project = "ExpertSystem"
 copyright = "2020, ComPWA"
-author = "The ComPWA Team"
+author = "Common Partial Wave Analysis"
 
 
 # -- General configuration ---------------------------------------------------
