@@ -1,41 +1,35 @@
 Installation
 ============
 
-There are two ways to install `expertsystem`. Even though the PyPI installation
-is the fastest, we recommend following the :ref:`install:Development mode`
-procedure.
-
-
-Installation through PyPI
--------------------------
-
-The `expertsystem` is `available as a PyPI package
-<https://pypi.org/project/expertsystem/>`_, so installation is super easy:
+The fastest way of installing the `expertsystem` is through PyPI:
 
 .. code-block:: shell
 
-  pip install expertsystem
+  python3 -m pip install expertsystem
 
-Et voilà, that's it! You can try out whether the installation works by running:
+This installs the `latest release <https://pypi.org/project/expertsystem>`_
+that you can find on the `stable
+<https://github.com/ComPWA/expertsystem/tree/stable>`_ branch. The latest
+version on the `master <https://github.com/ComPWA/expertsystem/tree/master>`_
+branch can be installed as follows:
 
-.. code-block:: python
+.. code-block:: shell
 
-  import expertsystem
+  python3 -m pip install git+https://github.com/ComPWA/expertsystem@master
 
-from the `Python interpreter
-<https://docs.python.org/3/tutorial/interpreter.html>`_. Note that PyPI only
-allows you to install `specific releases
-<https://pypi.org/project/expertsystem/#history>`_, so we recommend using the
-more dynamic, :ref:`'development mode' <install:Development mode>` instead.
+but in that case, we highly recommend using the more dynamic,
+:ref:`'editable mode' <install:Editable mode>` instead.
 
 
-Development mode
-----------------
+Editable mode
+-------------
 
 The `expertsystem` is an academic research project and is bound to continuously
 evolve. We therefore highly recommend installing the `expertsystem` from `the
-source code <https://github.com/ComPWA/expertsystem>`_, so that you work with
-the latest version.
+source code <https://github.com/ComPWA/expertsystem>`_ as an `editable install
+<https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs>`_, so
+that you work with the latest version and try out your own modifications to the
+source code.
 
 Moreover, since you read as far as this, you must have an interest in particle
 physics, and it is researchers like you who can help bring this project
@@ -49,13 +43,13 @@ Step 1: Get the source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `expertsystem` source code is maintained through `Git
-<https://git-scm.com/>`_, so you need to `install Git
+<https://git-scm.com>`_, so you need to `install Git
 <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_ first. Once
 you've done so, navigate to a suitable folder and run:
 
 .. code-block:: shell
 
-  git clone https://github.com/ComPWA/expertsystem.git
+  git clone https://github.com/ComPWA/expertsystem
   cd expertsystem
 
 After that, there should be a folder called :file:`expertsystem` into which we
@@ -84,72 +78,68 @@ case something goes wrong with the dependencies: you can just trash the
 environment and recreate it. There are two options: :ref:`Conda <install:Conda
 environment>` or :ref:`Python's venv <install:Python venv>`.
 
-Conda environment
-~~~~~~~~~~~~~~~~~
+.. tabbed:: Conda environment
 
-`Conda <https://www.anaconda.com/>`_ can be installed without administrator
-rights, see instructions on `this page
-<https://www.anaconda.com/distribution/>`_. Once installed, navigate to the
-:ref:`local repository <local-repository>` and create the Conda environment for
-the `expertsystem` as follows:
+  `Conda <https://www.anaconda.com/>`_ can be installed without administrator
+  rights, see instructions on `this page
+  <https://www.anaconda.com/distribution/>`_. Once installed, navigate to the
+  :ref:`local repository <local-repository>` and create the Conda environment
+  for the `expertsystem` as follows:
 
-.. code-block:: shell
+  .. code-block:: shell
 
-  conda env create
+    conda env create
 
-This command uses the `environment.yml
-<https://github.com/ComPWA/expertsystem/blob/master/environment.yml>`_ file and
-immediately installs the `expertsystem` in `development mode
-<https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs>`__.
+  This command uses the `environment.yml
+  <https://github.com/ComPWA/expertsystem/blob/master/environment.yml>`_ file
+  and immediately installs the `expertsystem` in `editable mode
+  <https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs>`__.
 
-After Conda finishes creating the environment, you can activate it with as
-follows:
+  After Conda finishes creating the environment, you can activate it with as
+  follows:
 
-.. code-block:: shell
+  .. code-block:: shell
 
-  conda activate es
+    conda activate es
+
+  You need to have the environment called :code:`es` activated whenever you
+  want to run the `expertsystem`.
 
 
-You need to have the environment called :code:`es` activated whenever you want
-to run the `expertsystem`.
+.. tabbed:: Python venv
 
-Python venv
-~~~~~~~~~~~
+  Alternatively, you can use `Python's venv
+  <https://docs.python.org/3/library/venv.html>`_, if you have that available
+  on your system. All you have to do, is navigate into :ref:`local repository
+  <local-repository>` and run:
 
-Alternatively, you can use `Python's venv
-<https://docs.python.org/3/library/venv.html>`_, if you have that available on
-your system. All you have to do, is navigate into :ref:`local repository
-<local-repository>` and run:
+  .. code-block:: shell
 
-.. code-block:: shell
+    python3 -m venv ./venv
 
-  python3 -m venv ./venv
+  This creates a folder called :file:`venv` where all Python packages will be
+  contained. You first have to activate the environment, and will have to do so
+  whenever you want to run the `expertsystem`.
 
-This creates a folder called :file:`venv` where all Python packages will be
-contained. You first have to activate the environment, and will have to do so
-whenever you want to run the `expertsystem`.
+  .. code-block:: shell
 
-.. code-block:: shell
+    source ./venv/bin/activate
 
-  source ./venv/bin/activate
+  Now you can safely install the `expertsystem` in `editable mode
+  <https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs>`__:
 
-Now you can safely install the `expertsystem` in `development mode
-<https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs>`__:
+  .. code-block:: shell
 
-.. code-block:: shell
+    pip install -e .
 
-  pip install -e .
-
-That's it, now you're all set to :doc:`install expertsystem <install>`!
+That's it, now you're all set to :doc:`help develop the project <contribute>`!
 
 
 Step 3: Test the installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, navigate out of the main directory of the :ref:`local repository
-<local-repository>` in order to make sure that the `expertsystem` we run, is
-the system installation and not the :file:`expertsystem` folder in the current
-working directory. Then, simply launch a Python interpreter and run:
+Once you've installed the `expertsystem`, simply launch a Python interpreter
+and run:
 
 .. code-block:: python
 

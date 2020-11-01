@@ -10,6 +10,15 @@ import shutil
 import subprocess
 
 import sphobjinv as soi
+from pkg_resources import get_distribution
+
+# -- Project information -----------------------------------------------------
+project = "ExpertSystem"
+copyright = "2020, ComPWA"
+author = "Common Partial Wave Analysis"
+
+__release = get_distribution("expertsystem").version
+version = ".".join(__release.split(".")[:3])
 
 # -- Generate API skeleton ----------------------------------------------------
 shutil.rmtree("api", ignore_errors=True)
@@ -56,12 +65,6 @@ ztext = soi.compress(text)
 soi.writebytes("constraint.inv", ztext)
 
 
-# -- Project information -----------------------------------------------------
-project = "ExpertSystem"
-copyright = "2020, ComPWA"
-author = "Common Partial Wave Analysis"
-
-
 # -- General configuration ---------------------------------------------------
 master_doc = "index.md"
 source_suffix = {
@@ -88,6 +91,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_thebe",
     "sphinx_togglebutton",
+    "sphinx_panels",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",

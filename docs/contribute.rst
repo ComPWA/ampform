@@ -11,7 +11,7 @@ Develop
         :align: left
         :target: https://gitpod.io/#https://github.com/ComPWA/expertsystem
 
-If you have installed the `expertsystem` in :ref:`install:Development mode`, it
+If you have installed the `expertsystem` in :ref:`install:Editable mode`, it
 is easy to tweak the source code and try out new ideas immediately, because the
 source code is considered the 'installation'.
 
@@ -39,7 +39,7 @@ Automated style checks
 
 When working on the source code of the `expertsystem`, it is highly recommended
 to install certain additional Python tools. Assuming you installed the
-`expertsystem` in :ref:`development mode <install:Development mode>`, these
+`expertsystem` in :ref:`editable mode <install:Editable mode>`, these
 additional tools can be installed into your :ref:`virtual environment
 <install:Step 2: Create a virtual environment>` in one go:
 
