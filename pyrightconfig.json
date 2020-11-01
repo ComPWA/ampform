@@ -1,6 +1,6 @@
 {
   "exclude": [".git", ".tox"],
-  "include": ["doc", "src", "test"],
+  "include": ["docs", "src", "tests"],
   "reportGeneralTypeIssues": false,
   "reportUnboundVariable": false,
   "reportUnusedClass": true,

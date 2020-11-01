@@ -52,12 +52,12 @@ jobs:
           pip install .[doc]
           sudo apt-get -y install pandoc graphviz
       - name: Build documentation and run notebooks
-        working-directory: doc
+        working-directory: docs
         env:
           EXECUTE_NB: YES
         run: make html
       - name: Test doctests in docstrings
-        working-directory: doc
+        working-directory: docs
         run: make ignore-warnings=1 doctest
 
   style:

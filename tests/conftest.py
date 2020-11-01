@@ -11,4 +11,4 @@ def particle_database() -> ParticleCollection:
 
 @pytest.fixture(scope="session")
 def output_dir(pytestconfig) -> str:
-    return f"{pytestconfig.rootpath}/test/output/"
+    return f"{pytestconfig.rootpath}/tests/output/"

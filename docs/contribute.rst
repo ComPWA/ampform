@@ -174,8 +174,8 @@ extension (for this you need to run :code:`pytest` with the flag
   Therefore, when writing new tests, try to follow the module and class
   structure of the package. For example, put unit tests that test the functions
   and methods defined in the `expertsystem.particle` module into a test file
-  called :file:`test_particle.py` that is directly placed under the `test/unit
-  <https://github.com/ComPWA/expertsystem/tree/master/test/unit>`_ folder.
+  called :file:`test_particle.py` that is directly placed under the `tests/unit
+  <https://github.com/ComPWA/expertsystem/tree/master/tests/unit>`_ folder.
   Similarly, bundle for `.ParticleCollection` under a
   :code:`TestParticleCollection` class.
 
@@ -188,11 +188,12 @@ Documentation
 
 The documentation that you find on `expertsystem.rtfd.io
 <http://expertsystem.rtfd.io>`_ are built from the `documentation source code
-folder <https://github.com/ComPWA/expertsystem/tree/master/doc>`_ (:file:`doc`)
-with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also `builds the API
-<https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html>`_ and therefore
-checks whether the `docstrings <https://www.python.org/dev/peps/pep-0257/>`_ in
-the Python source code are valid and correctly interlinked.
+folder <https://github.com/ComPWA/expertsystem/tree/master/docs>`_
+(:file:`docs`) with `Sphinx <https://www.sphinx-doc.org>`_. Sphinx also `builds
+the API <https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html>`_ and
+therefore checks whether the `docstrings
+<https://www.python.org/dev/peps/pep-0257/>`_ in the Python source code are
+valid and correctly interlinked.
 
 You can quickly build the documentation from the root directory of this
 repository with the command:
@@ -205,7 +206,7 @@ Alternatively, you can run :code:`sphinx-build` yourself as follows:
 
 .. code-block:: shell
 
-  cd doc
+  cd docs
   make html  # or EXECUTE_NB= make html
 
 A nice feature of `Read the Docs <https://readthedocs.org/>`_, where we host
@@ -234,11 +235,12 @@ Jupyter Notebooks
     In that case, have a look at `these instructions
     <https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments>`__.
 
-The `doc/usage <https://github.com/ComPWA/expertsystem/tree/master/doc/usage>`_
-folder contains a few notebooks that illustrate how to use the `expertsystem`.
-These notebooks are also rendered on the :doc:`Usage <usage>` page and are run
-and tested whenever you make a :ref:`pull request <contribute:Git and GitHub>`.
-As such, they serve both as up-to-date documentation and as tests of the
+The `docs/usage
+<https://github.com/ComPWA/expertsystem/tree/master/docs/usage>`_ folder
+contains a few notebooks that illustrate how to use the `expertsystem`. These
+notebooks are also rendered on the :doc:`Usage <usage>` page and are run and
+tested whenever you make a :ref:`pull request <contribute:Git and GitHub>`. As
+such, they serve both as up-to-date documentation and as tests of the
 interface.
 
 If you want to improve those notebooks, we recommend working with `Jupyter Lab

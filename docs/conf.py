@@ -93,7 +93,7 @@ exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
     "adr*",
-    "test",
+    "tests",
 ]
 
 # General sphinx settings
@@ -119,7 +119,7 @@ html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/ComPWA/expertsystem",
     "repository_branch": "stable",
-    "path_to_docs": "doc",
+    "path_to_docs": "docs",
     "use_edit_page_button": True,
     "use_issues_button": True,
     "use_repository_button": True,

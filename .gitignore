@@ -43,4 +43,4 @@ pyvenv*/
 !codecov.yml
 !environment.yml
 !src/expertsystem/additional_particle_definitions.yml
-!test/**/expected_recipe.yml
+!tests/**/expected_recipe.yml
