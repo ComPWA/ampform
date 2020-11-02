@@ -113,7 +113,6 @@ autodoc_default_options = {
         ]
     ),
 }
-html_baseurl = "https://expertsystem.readthedocs.io/en/stable/"
 html_copy_source = True  # needed for download notebook button
 html_show_copyright = False
 html_show_sourcelink = False
@@ -218,7 +217,6 @@ if (
 # Settings for myst-parser
 myst_admonition_enable = True
 myst_update_mathjax = False
-suppress_warnings = ["app.add_directive"]
 
 # Settings for Thebe cell output
 thebe_config = {
@@ -234,7 +232,7 @@ if jupyter_execute_notebooks != "off":
             [
                 "HOME=.",  # in case of calling through tox
                 "pydeps",
-                "../expertsystem",
+                "../src/expertsystem",
                 "--exclude *._*",  # hide private modules
                 "--max-bacon=1",  # hide external dependencies
                 "--noshow",

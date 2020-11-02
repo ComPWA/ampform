@@ -119,7 +119,7 @@ maxdepth: 2
 install
 usage
 interactive
-contribute
+develop
 ```
 
 - {ref}`Python API <modindex>`

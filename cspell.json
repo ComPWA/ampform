@@ -6,6 +6,7 @@
         "xml"
     ],
     "flagWords": [
+        "analyse",
         "colour",
         "comparision",
         "favour",
@@ -21,6 +22,7 @@
         "*particle*.*ml",
         ".gitignore",
         ".gitpod.*",
+        ".pre-commit-config.yaml",
         ".pylintrc",
         ".readthedocs.yml",
         ".vscode/*",

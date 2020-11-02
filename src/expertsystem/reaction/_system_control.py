@@ -247,8 +247,9 @@ def require_interaction_property(
     Args:
         ingoing_particle_name (str): name of particle, used to find nodes which
             have a particle with this name as "ingoing"
-        interaction_qn (:class:`.NodeQuantumNumber`):
-            interaction quantum number
+
+        interaction_qn ([Type[NodeQuantumNumber]]): interaction quantum number
+
         allowed_values (list): list of allowed values, that the interaction
             quantum number may take
 

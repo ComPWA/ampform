@@ -132,7 +132,7 @@ environment>` or :ref:`Python's venv <install:Python venv>`.
 
     pip install -e .
 
-That's it, now you're all set to :doc:`help develop the project <contribute>`!
+That's it, now you're all set to :doc:`help develop the project <develop>`!
 
 
 Step 3: Test the installation
@@ -154,5 +154,26 @@ For more thorough testing, navigate back to the you can run the unit tests:
   pip install -e .[test]  # install dependencies for testing
   pytest -n auto
 
-After that, it's worth having a look at the :doc:`contribute page
-<contribute>`!
+After that, it's worth having a look at the :doc:`contribute page <develop>`!
+
+Updating to the latest version
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When new commits are merged into the `master branch
+<https://github.com/ComPWA/expertsystem/tree/master>`_, you need to update your
+:ref:`local copy of the source code <local-repository>` as follows:
+
+.. code-block:: shell
+
+  git checkout master
+  git pull
+  pip install -e .
+
+It's best to have a clean your `working tree
+<https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository>`_
+before you do a :command:`git pull`. We also call :command:`pip install` again,
+because we sometimes introduce upgrades of the dependencies.
+
+If you face any issues when calling :code:`pip install -e .`, just trash your
+install Conda environment or venv and repeat from :ref:`Step 2 <install:Step 2:
+Create a virtual environment>`.
