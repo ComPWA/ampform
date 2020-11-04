@@ -103,7 +103,7 @@ def convert_to_names(
             return rule
         return rule.__class__.__name__
 
-    converted_dict = {}
+    converted_dict = defaultdict(set)
     for node_id, rule_set in rules.items():
         rule_name_set = set()
         for rule_tuple in rule_set:
