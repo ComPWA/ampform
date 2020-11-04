@@ -172,7 +172,7 @@ intersphinx_mapping = {
     "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
     "tensorwaves": (
-        "https://pwa.readthedocs.io/projects/tensorwaves/en/latest",
+        "https://pwa.readthedocs.io/projects/tensorwaves/en/stable",
         None,
     ),
     "tox": ("https://tox.readthedocs.io/en/stable", None),

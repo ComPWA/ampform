@@ -47,7 +47,7 @@
   "python.linting.pylintEnabled": true,
   "python.linting.pylintUseMinimalCheckers": false,
   "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestArgs": ["--no-cov"],
+  "python.testing.pytestArgs": ["--color=no", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/_build/html",

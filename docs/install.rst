@@ -75,8 +75,7 @@ Step 2: Create a virtual environment
 It is safest to install the `expertsystem` within a virtual environment, so
 that all Python dependencies are contained within there. This is helpful in
 case something goes wrong with the dependencies: you can just trash the
-environment and recreate it. There are two options: :ref:`Conda <install:Conda
-environment>` or :ref:`Python's venv <install:Python venv>`.
+environment and recreate it. There are two options: Conda or Python's venv.
 
 .. tabbed:: Conda environment
 

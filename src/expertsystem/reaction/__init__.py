@@ -343,10 +343,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             "Number of interaction settings groups being processed: %d",
             len(graph_setting_groups),
         )
-        for strength, graph_setting_group in tqdm(
-            sorted(graph_setting_groups.items(), reverse=True),
+        total = sum(map(len, graph_setting_groups.values()))
+        progress_bar = tqdm(
+            total=total,
             desc="Propagating quantum numbers",
             disable=logging.getLogger().level > logging.WARNING,
+        )
+        for strength, graph_setting_group in sorted(
+            graph_setting_groups.items(), reverse=True
         ):
             logging.info(
                 "processing interaction settings group with "
@@ -362,9 +366,11 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                         self._solve, graph_setting_group, 1
                     ):
                         temp_results.append(result)
+                        progress_bar.update()
             else:
                 for graph_setting_pair in graph_setting_group:
                     temp_results.append(self._solve(graph_setting_pair))
+                    progress_bar.update()
             for temp_result in temp_results:
                 if strength not in results:
                     results[strength] = temp_result
@@ -375,6 +381,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 and self.reaction_mode == SolvingMode.Fast
             ):
                 break
+        progress_bar.close()
 
         for key, result in results.items():
             logging.info(

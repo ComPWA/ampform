@@ -8,7 +8,7 @@
 <br>
 [![PyPI package](https://badge.fury.io/py/expertsystem.svg)](https://pypi.org/project/expertsystem)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/expertsystem)](https://pypi.org/project/expertsystem)
-[![Checked with mypy](./docs/mypy_badge.svg)](http://mypy-lang.org) <br>
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy.readthedocs.io)
 [![CI status](https://github.com/ComPWA/expertsystem/workflows/CI/badge.svg)](https://github.com/ComPWA/expertsystem/actions?query=branch%3Amaster+workflow%3ACI)
 [![Test coverage](https://codecov.io/gh/ComPWA/expertsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/ComPWA/expertsystem)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db355758fb0e4654818b85997f03e3b8)](https://www.codacy.com/gh/ComPWA/expertsystem)
