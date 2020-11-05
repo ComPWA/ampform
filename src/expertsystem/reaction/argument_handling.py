@@ -25,12 +25,17 @@ import attr
 
 from expertsystem.particle import Parity
 
-from .conservation_rules import ConservationRule, EdgeQNConservationRule
+from .conservation_rules import (
+    ConservationRule,
+    EdgeQNConservationRule,
+    GraphElementRule,
+)
 from .quantum_numbers import EdgeQuantumNumber, NodeQuantumNumber
 
 Scalar = Union[int, float]
 
-Rule = Union[EdgeQNConservationRule, ConservationRule]
+# InteractionRule = Union[EdgeQNConservationRule, ConservationRule]
+Rule = Union[GraphElementRule, EdgeQNConservationRule, ConservationRule]
 
 _ElementType = TypeVar("_ElementType", EdgeQuantumNumber, NodeQuantumNumber)
 

@@ -278,7 +278,17 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         # pylint: disable=too-many-locals
         final_state_edges = graph.get_final_state_edges()
         initial_state_edges = graph.get_initial_state_edges()
-        graph_settings: List[GraphSettings] = [GraphSettings({}, {})]
+        graph_settings: List[GraphSettings] = [
+            GraphSettings(
+                edge_settings={
+                    edge_id: self.interaction_type_settings[
+                        InteractionTypes.Weak
+                    ][0]
+                    for edge_id in graph.edges
+                },
+                node_settings={},
+            )
+        ]
 
         for node_id in graph.nodes:
             interaction_types: List[InteractionTypes] = []
@@ -323,9 +333,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             for temp_setting in temp_graph_settings:
                 for int_type in interaction_types:
                     updated_setting = deepcopy(temp_setting)
-                    updated_setting.edge_settings[node_id] = deepcopy(
-                        self.interaction_type_settings[int_type][0]
-                    )
                     updated_setting.node_settings[node_id] = deepcopy(
                         self.interaction_type_settings[int_type][1]
                     )
@@ -389,7 +396,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 f"after qn solving: {len(result.solutions)}",
             )
 
-        # merge strengths
         final_result = Result()
         for temp_result in results.values():
             final_result.extend(temp_result)
@@ -405,8 +411,10 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             match_external_edges(final_solutions)
         return Result(
             final_solutions,
-            final_result.not_executed_rules,
-            final_result.violated_rules,
+            final_result.not_executed_node_rules,
+            final_result.violated_node_rules,
+            final_result.not_executed_edge_rules,
+            final_result.violated_edge_rules,
             formalism_type=self.formalism_type,
         )
 
@@ -596,14 +604,17 @@ def check(
         topology_building=topology_building,
     )
 
-    if any(map(len, results.violated_rules.values())):
+    if any(map(len, results.violated_node_rules.values())) or any(
+        map(len, results.violated_edge_rules.values())
+    ):
         if isinstance(initial_state, list):
             initial_state = " ".join(initial_state)
         if isinstance(final_state, list):
             final_state = " ".join(final_state)
         raise ValueError(
             f'Reaction "{initial_state} -> {final_state}" violates',
-            results.violated_rules,
+            results.violated_node_rules,
+            results.violated_edge_rules,
             "when using interaction types",
             allowed_interactions,
         )

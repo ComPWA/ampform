@@ -16,7 +16,20 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import copy
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import attr
 from constraint import (
@@ -31,13 +44,13 @@ from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 
 from .argument_handling import (
     GraphEdgePropertyMap,
+    GraphElementRule,
     GraphNodePropertyMap,
     Rule,
     RuleArgumentHandler,
     Scalar,
     get_required_qns,
 )
-from .conservation_rules import isospin_validity
 from .quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
@@ -60,8 +73,8 @@ class InteractionTypes(Enum):
 class EdgeSettings:
     """Solver settings for a specific edge of a graph."""
 
-    conservation_rules: Set[Rule] = attr.ib(factory=set)
-    rule_priorities: Dict[Rule, int] = attr.ib(factory=dict)
+    conservation_rules: Set[GraphElementRule] = attr.ib(factory=set)
+    rule_priorities: Dict[GraphElementRule, int] = attr.ib(factory=dict)
     qn_domains: Dict[Any, Any] = attr.ib(factory=dict)
 
 
@@ -91,9 +104,10 @@ class GraphSettings:
     node_settings: Dict[int, NodeSettings] = attr.ib(factory=dict)
 
 
-def convert_to_names(
+def convert_violated_rules_to_names(
     rules: Union[
-        Dict[int, Set[Tuple[Rule, ...]]], Dict[int, Set[Tuple[str, ...]]]
+        Dict[int, Set[Tuple[Rule, ...]]],
+        Dict[int, Set[Tuple[GraphElementRule, ...]]],
     ]
 ) -> Dict[int, Set[Tuple[str, ...]]]:
     def get_name(rule: Any) -> str:
@@ -114,28 +128,52 @@ def convert_to_names(
     return converted_dict
 
 
+def convert_non_executed_rules_to_names(
+    rules: Union[
+        Dict[int, Set[Rule]],
+        Dict[int, Set[GraphElementRule]],
+    ]
+) -> Dict[int, Set[str]]:
+    def get_name(rule: Any) -> str:
+        if inspect.isfunction(rule):
+            return rule.__name__
+        if isinstance(rule, str):
+            return rule
+        return rule.__class__.__name__
+
+    converted_dict = defaultdict(set)
+    for node_id, rule_set in rules.items():
+        rule_name_set = set()
+        for rule_tuple in rule_set:
+            rule_name_set.add(get_name(rule_tuple))
+
+        converted_dict[node_id] = rule_name_set
+
+    return converted_dict
+
+
 class Result:
     """Defines a result to a problem set processed by the solving code.
 
-    The tuple of rules in `violated_rules` defines a group, which together
-    violate all quantum number combinations that were processed.
+    The tuple of rules in `violated_node_rules` and `violated_edge_rules`
+    defines a group, which together violate all quantum number combinations
+    that were processed.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         solutions: Optional[
             List[StateTransitionGraph[ParticleWithSpin]]
         ] = None,
-        not_executed_rules: Optional[Dict[int, Set[Rule]]] = None,
-        violated_rules: Optional[
-            Union[
-                Dict[int, Set[Tuple[Rule, ...]]],
-                Dict[int, Set[Tuple[str, ...]]],
-            ]
-        ] = None,
+        not_executed_node_rules: Optional[Dict[int, Set[str]]] = None,
+        violated_node_rules: Optional[Dict[int, Set[Tuple[str, ...]]]] = None,
+        not_executed_edge_rules: Optional[Dict[int, Set[str]]] = None,
+        violated_edge_rules: Optional[Dict[int, Set[Tuple[str, ...]]]] = None,
         formalism_type: Optional[str] = None,
     ) -> None:
-        if solutions and violated_rules:
+        # pylint: disable=too-many-locals
+        if solutions and (violated_node_rules or violated_edge_rules):
             raise ValueError(
                 "Invalid Result! Found solutions, but also violated rules."
             )
@@ -145,15 +183,25 @@ class Result:
         if solutions is not None:
             self.__solutions = solutions
 
-        self.__not_executed_rules: Dict[int, Set[Rule]] = defaultdict(set)
-        if not_executed_rules is not None:
-            self.__not_executed_rules = not_executed_rules
+        self.__not_executed_node_rules: Dict[int, Set[str]] = defaultdict(set)
+        if not_executed_node_rules is not None:
+            self.__not_executed_node_rules = not_executed_node_rules
 
-        self.__violated_rules: Dict[int, Set[Tuple[str, ...]]] = defaultdict(
-            set
-        )
-        if violated_rules is not None:
-            self.__violated_rules = convert_to_names(violated_rules)
+        self.__violated_node_rules: Dict[
+            int, Set[Tuple[str, ...]]
+        ] = defaultdict(set)
+        if violated_node_rules is not None:
+            self.__violated_node_rules = violated_node_rules
+
+        self.__not_executed_edge_rules: Dict[int, Set[str]] = defaultdict(set)
+        if not_executed_edge_rules is not None:
+            self.__not_executed_edge_rules = not_executed_edge_rules
+
+        self.__violated_edge_rules: Dict[
+            int, Set[Tuple[str, ...]]
+        ] = defaultdict(set)
+        if violated_edge_rules is not None:
+            self.__violated_edge_rules = violated_edge_rules
 
     @property
     def formalism_type(self) -> Optional[str]:
@@ -164,29 +212,48 @@ class Result:
         return self.__solutions
 
     @property
-    def not_executed_rules(self) -> Dict[int, Set[Rule]]:
-        return self.__not_executed_rules
+    def not_executed_node_rules(self) -> Dict[int, Set[str]]:
+        return self.__not_executed_node_rules
 
     @property
-    def violated_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
-        return self.__violated_rules
+    def violated_node_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
+        return self.__violated_node_rules
+
+    @property
+    def not_executed_edge_rules(self) -> Dict[int, Set[str]]:
+        return self.__not_executed_edge_rules
+
+    @property
+    def violated_edge_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
+        return self.__violated_edge_rules
 
     def extend(
         self, other_result: "Result", intersect_violations: bool = False
     ) -> None:
         if self.solutions or other_result.solutions:
             self.__solutions.extend(other_result.solutions)
-            self.__not_executed_rules.clear()
-            self.__violated_rules.clear()
+            self.__not_executed_node_rules.clear()
+            self.__violated_node_rules.clear()
+            self.__not_executed_edge_rules.clear()
+            self.__violated_edge_rules.clear()
         else:
-            for key, rules in other_result.not_executed_rules.items():
-                self.__not_executed_rules[key].update(rules)
+            for key, rules in other_result.not_executed_node_rules.items():
+                self.__not_executed_node_rules[key].update(rules)
 
-            for key, rules2 in other_result.violated_rules.items():
+            for key, rules in other_result.not_executed_edge_rules.items():
+                self.__not_executed_edge_rules[key].update(rules)
+
+            for key, rules2 in other_result.violated_node_rules.items():
                 if intersect_violations:
-                    self.__violated_rules[key] &= rules2
+                    self.__violated_node_rules[key] &= rules2
                 else:
-                    self.__violated_rules[key].update(rules2)
+                    self.__violated_node_rules[key].update(rules2)
+
+            for key, rules2 in other_result.violated_edge_rules.items():
+                if intersect_violations:
+                    self.__violated_edge_rules[key] &= rules2
+                else:
+                    self.__violated_edge_rules[key].update(rules2)
 
     def get_initial_state(self) -> List[Particle]:
         graph = self.__get_first_graph()
@@ -430,7 +497,9 @@ def __check_qns_equal(
 def validate_fully_initialized_graph(
     graph: StateTransitionGraph[ParticleWithSpin],
     rules_per_node: Dict[int, Set[Rule]],
+    rules_per_edge: Dict[int, Set[GraphElementRule]],
 ) -> Result:
+    # pylint: disable=too-many-locals
     logging.debug("validating graph...")
 
     rule_argument_handler = RuleArgumentHandler()
@@ -485,8 +554,37 @@ def validate_fully_initialized_graph(
 
         return (in_edges_vars, out_edges_vars, node_vars)
 
+    edge_violated_rules: Dict[
+        int, Set[Tuple[GraphElementRule, ...]]
+    ] = defaultdict(set)
+    edge_not_executed_rules: Dict[int, Set[GraphElementRule]] = defaultdict(
+        set
+    )
     node_violated_rules: Dict[int, Set[Tuple[Rule, ...]]] = defaultdict(set)
     node_not_executed_rules: Dict[int, Set[Rule]] = defaultdict(set)
+    for edge_id, edge_rules in rules_per_edge.items():
+        for edge_rule in edge_rules:
+            # get the needed qns for this conservation law
+            # for all edges and the node
+            (
+                check_requirements,
+                create_rule_args,
+            ) = rule_argument_handler.register_rule(edge_rule)
+
+            edge_qns, _ = get_required_qns(edge_rule)
+            edge_variables = _create_edge_variables([edge_id], edge_qns)[0]
+            if check_requirements(
+                edge_variables,
+            ):
+                if not edge_rule(
+                    *create_rule_args(
+                        edge_variables,
+                    )
+                ):
+                    edge_violated_rules[edge_id].add((edge_rule,))
+            else:
+                edge_not_executed_rules[edge_id].add(edge_rule)
+
     for node_id, rules in rules_per_node.items():
         for rule in rules:
             # get the needed qns for this conservation law
@@ -497,13 +595,11 @@ def validate_fully_initialized_graph(
             ) = rule_argument_handler.register_rule(rule)
 
             var_containers = _create_variable_containers(node_id, rule)
-            # check the requirements
-            if rule is isospin_validity or check_requirements(
+            if check_requirements(
                 var_containers[0],
                 var_containers[1],
                 var_containers[2],
             ):
-                # and run the rule check
                 if not rule(
                     *create_rule_args(
                         var_containers[0],
@@ -515,7 +611,13 @@ def validate_fully_initialized_graph(
             else:
                 node_not_executed_rules[node_id].add(rule)
     if node_violated_rules or node_not_executed_rules:
-        return Result([], node_not_executed_rules, node_violated_rules)
+        return Result(
+            [],
+            convert_non_executed_rules_to_names(node_not_executed_rules),
+            convert_violated_rules_to_names(node_violated_rules),
+            convert_non_executed_rules_to_names(edge_not_executed_rules),
+            convert_violated_rules_to_names(edge_violated_rules),
+        )
     return Result([graph])
 
 
@@ -557,6 +659,7 @@ class CSPSolver(Solver):
     constraints and a special wrapper class serves as an adapter.
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, allowed_intermediate_particles: ParticleCollection):
         self.__graph = StateTransitionGraph[ParticleWithSpin]()
         self.__variables: Set[
@@ -565,74 +668,90 @@ class CSPSolver(Solver):
         self.__var_string_to_data: Dict[
             str, Union[_EdgeVariableInfo, _NodeVariableInfo]
         ] = {}
-        self.__constraints: Dict[
-            int, Set[_ConservationRuleConstraintWrapper]
-        ] = defaultdict(set)
-        self.__non_executable_constraints: Dict[
-            int, Set[_ConservationRuleConstraintWrapper]
+        self.__node_rules: Dict[int, Set[Rule]] = defaultdict(set)
+        self.__non_executable_node_rules: Dict[int, Set[Rule]] = defaultdict(
+            set
+        )
+        self.__edge_rules: Dict[int, Set[GraphElementRule]] = defaultdict(set)
+        self.__non_executable_edge_rules: Dict[
+            int, Set[GraphElementRule]
         ] = defaultdict(set)
         self.__problem = Problem(BacktrackingSolver(True))
         self.__allowed_intermediate_particles = allowed_intermediate_particles
+        self.__scoresheet = Scoresheet()
 
     def find_solutions(
         self,
         graph: StateTransitionGraph[ParticleWithSpin],
         graph_settings: GraphSettings,
     ) -> Result:
+        # pylint: disable=too-many-locals
         self.__graph = graph
         self.__initialize_constraints(graph_settings)
         solutions = self.__problem.getSolutions()
 
-        not_executed_rules: Dict[int, Set[Rule]] = {
-            node_id: set(x.rule for x in constraints)
-            for node_id, constraints in self.__non_executable_constraints.items()
-        }
-        not_satisfied_rules: Dict[int, Set[Tuple[Rule, ...]]] = defaultdict(
-            set
-        )
-        for node_id, constraints in self.__constraints.items():
-            for constraint in constraints:
-                if (
-                    constraint.conditions_never_met
-                    or sum(constraint.scenario_results) == 0
-                ):
-                    not_executed_rules[node_id].add(constraint.rule)
-                if (
-                    sum(constraint.scenario_results) > 0
-                    and constraint.scenario_results[1] == 0
-                ):
-                    not_satisfied_rules[node_id].add((constraint.rule,))
+        node_not_executed_rules = self.__non_executable_node_rules
+        node_not_satisfied_rules: Dict[
+            int, Set[Tuple[Rule, ...]]
+        ] = defaultdict(set)
+        edge_not_executed_rules = self.__non_executable_edge_rules
+        edge_not_satisfied_rules: Dict[
+            int, Set[Tuple[GraphElementRule, ...]]
+        ] = defaultdict(set)
+        for node_id, rules in self.__node_rules.items():
+            for rule in rules:
+                if self.__scoresheet.rule_calls[(node_id, rule)] == 0:
+                    node_not_executed_rules[node_id].add(rule)
+                elif self.__scoresheet.rule_passes[(node_id, rule)] == 0:
+                    node_not_satisfied_rules[node_id].add((rule,))
+
+        for edge_id, edge_rules in self.__edge_rules.items():
+            for rule in edge_rules:
+                if self.__scoresheet.rule_calls[(edge_id, rule)] == 0:
+                    edge_not_executed_rules[edge_id].add(rule)
+                elif self.__scoresheet.rule_passes[(edge_id, rule)] == 0:
+                    edge_not_satisfied_rules[edge_id].add((rule,))
 
         # insert particle instances
         solutions = self.__convert_solution_keys(solutions)
-        if self.__constraints:
+        if self.__node_rules or self.__edge_rules:
             full_particle_graphs = _merge_solutions_with_graph(
                 solutions, graph, self.__allowed_intermediate_particles
             )
         else:
             full_particle_graphs = [graph]
 
-        if full_particle_graphs and not_executed_rules:
+        if full_particle_graphs and (
+            node_not_executed_rules or edge_not_executed_rules
+        ):
             # rerun solver on these graphs using not executed rules
             # and combine results
             result = Result()
             for full_particle_graph in full_particle_graphs:
                 result.extend(
                     validate_fully_initialized_graph(
-                        full_particle_graph, not_executed_rules
+                        full_particle_graph,
+                        node_not_executed_rules,
+                        edge_not_executed_rules,
                     )
                 )
             return result
 
         return Result(
-            full_particle_graphs, not_executed_rules, not_satisfied_rules
+            full_particle_graphs,
+            convert_non_executed_rules_to_names(node_not_executed_rules),
+            convert_violated_rules_to_names(node_not_satisfied_rules),
+            convert_non_executed_rules_to_names(edge_not_executed_rules),
+            convert_violated_rules_to_names(edge_not_satisfied_rules),
         )
 
     def __clear(self) -> None:
         self.__variables = set()
         self.__var_string_to_data = {}
-        self.__constraints = defaultdict(set)
+        self.__node_rules = defaultdict(set)
+        self.__edge_rules = defaultdict(set)
         self.__problem = Problem(BacktrackingSolver(True))
+        self.__scoresheet = Scoresheet()
 
     def __initialize_constraints(self, graph_settings: GraphSettings) -> None:
         """Initialize all of the constraints for this graph.
@@ -648,14 +767,17 @@ class CSPSolver(Solver):
         self.__clear()
 
         def get_rules_by_priority(
-            node_settings: NodeSettings,
+            graph_element_settings: Union[
+                NodeSettings,
+                EdgeSettings,
+            ]
         ) -> List[Rule]:
             # first add priorities to the entries
             priority_list = [
-                (x, node_settings.rule_priorities[type(x)])
-                if type(x) in node_settings.rule_priorities
+                (x, graph_element_settings.rule_priorities[type(x)])
+                if type(x) in graph_element_settings.rule_priorities
                 else (x, 1)
-                for x in node_settings.conservation_rules
+                for x in graph_element_settings.conservation_rules
             ]
             # then sort according to priority
             sorted_list = sorted(
@@ -665,6 +787,42 @@ class CSPSolver(Solver):
             return [x[0] for x in sorted_list]
 
         arg_handler = RuleArgumentHandler()
+
+        for edge_id in self.__graph.edges:
+            for rule in get_rules_by_priority(
+                graph_settings.edge_settings[edge_id]
+            ):
+                variable_mapping = _VariableContainer()
+                # from cons law and graph determine needed var lists
+                edge_qns, node_qns = get_required_qns(rule)
+
+                edge_vars, fixed_edge_vars = self.__create_edge_variables(
+                    [
+                        edge_id,
+                    ],
+                    edge_qns,
+                    graph_settings.edge_settings,
+                )
+
+                score_callback = self.__scoresheet.register_rule(edge_id, rule)
+                constraint = _GraphElementConstraint[EdgeQuantumNumber](
+                    rule,  # type: ignore
+                    edge_vars,
+                    fixed_edge_vars,
+                    arg_handler,
+                    score_callback,
+                )
+
+                if edge_vars:
+                    var_strings = [
+                        _create_variable_string(*x) for x in edge_vars
+                    ]
+                    self.__edge_rules[edge_id].add(rule)  # type: ignore
+                    self.__problem.addConstraint(constraint, var_strings)
+                else:
+                    self.__non_executable_edge_rules[edge_id].add(
+                        rule  # type: ignore
+                    )
 
         for node_id in self.__graph.nodes:
             for rule in get_rules_by_priority(
@@ -704,19 +862,27 @@ class CSPSolver(Solver):
                 variable_mapping.fixed_node_variables = int_node_vars[1]
                 var_list.extend(list(variable_mapping.node_variables))
 
-                constraint = _ConservationRuleConstraintWrapper(
-                    rule,
-                    variable_mapping,
-                    arg_handler,
-                )
+                score_callback = self.__scoresheet.register_rule(node_id, rule)
+                if len(inspect.signature(rule).parameters) == 1:
+                    constraint = _GraphElementConstraint[NodeQuantumNumber](
+                        rule,  # type: ignore
+                        int_node_vars[0],
+                        {node_id: int_node_vars[1]},
+                        arg_handler,
+                        score_callback,
+                    )
+                else:
+                    constraint = _ConservationRuleConstraintWrapper(
+                        rule, variable_mapping, arg_handler, score_callback
+                    )
                 if var_list:
                     var_strings = [
                         _create_variable_string(*x) for x in var_list
                     ]
-                    self.__constraints[node_id].add(constraint)
+                    self.__node_rules[node_id].add(rule)
                     self.__problem.addConstraint(constraint, var_strings)
                 else:
-                    self.__non_executable_constraints[node_id].add(constraint)
+                    self.__non_executable_node_rules[node_id].add(rule)
 
     def __create_node_variables(
         self,
@@ -837,6 +1003,162 @@ class CSPSolver(Solver):
         return converted_solutions
 
 
+class Scoresheet:
+    def __init__(self) -> None:
+        self.__rule_calls: Dict[Tuple[int, Rule], int] = {}
+        self.__rule_passes: Dict[Tuple[int, Rule], int] = {}
+
+    def register_rule(
+        self, graph_element_id: int, rule: Rule
+    ) -> Callable[[bool], None]:
+        self.__rule_calls[(graph_element_id, rule)] = 0
+        self.__rule_passes[(graph_element_id, rule)] = 0
+
+        return self.__create_callback(graph_element_id, rule)
+
+    def __create_callback(
+        self, graph_element_id: int, rule: Rule
+    ) -> Callable[[bool], None]:
+        def passed_callback(passed: bool) -> None:
+            if passed:
+                self.__rule_passes[(graph_element_id, rule)] += 1
+            self.__rule_calls[(graph_element_id, rule)] += 1
+
+        return passed_callback
+
+    @property
+    def rule_calls(self) -> Dict[Tuple[int, Rule], int]:
+        return self.__rule_calls
+
+    @property
+    def rule_passes(self) -> Dict[Tuple[int, Rule], int]:
+        return self.__rule_passes
+
+
+_QNType = TypeVar("_QNType", EdgeQuantumNumber, NodeQuantumNumber)
+
+
+class _GraphElementConstraint(Generic[_QNType], Constraint):
+    """Wrapper class of the python-constraint Constraint class.
+
+    This allows a customized definition of conservation rules, and hence a
+    cleaner user interface.
+    """
+
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        rule: GraphElementRule,
+        variables: Set[Tuple[int, Type[_QNType]]],
+        fixed_variables: Dict[int, Dict[Type[_QNType], Scalar]],
+        argument_handler: RuleArgumentHandler,
+        scoresheet: Callable[[bool], None],
+    ) -> None:
+        if not callable(rule):
+            raise TypeError("rule has to be a callable!")
+        self.__rule = rule
+        (
+            self.__check_rule_requirements,
+            self.__create_rule_args,
+        ) = argument_handler.register_rule(rule)
+        self.__score_callback = scoresheet
+
+        self.__var_string_to_data: Dict[str, Type[_QNType]] = {}
+        self.__qns: Dict[Type[_QNType], Optional[Scalar]] = {}
+
+        self.__initialize_variable_containers(variables, fixed_variables)
+
+    @property
+    def rule(self) -> Rule:
+        return self.__rule
+
+    def __initialize_variable_containers(
+        self,
+        variables: Set[Tuple[int, Type[_QNType]]],
+        fixed_variables: Dict[int, Dict[Type[_QNType], Scalar]],
+    ) -> None:
+        """Fill the name decoding map.
+
+        Also initialize the in and out particle lists. The variable names
+        follow the scheme edge_id(delimiter)qn_name. This method creates a dict
+        linking the var name to a list that consists of the particle list index
+        and the qn name.
+        """
+        self.__qns.update(list(fixed_variables.values())[0])  # type: ignore
+        for element_id, qn_type in variables:
+            self.__var_string_to_data[
+                _create_variable_string(element_id, qn_type)
+            ] = qn_type
+            self.__qns.update({qn_type: None})
+
+    def __call__(
+        self,
+        variables: Set[str],
+        domains: dict,
+        assignments: dict,
+        forwardcheck: bool = False,
+        _unassigned: Variable = Unassigned,
+    ) -> bool:
+        """Perform the constraint checking.
+
+        If the forwardcheck parameter is not false, besides telling if the
+        constraint is currently broken or not, the constraint implementation
+        may choose to hide values from the domains of unassigned variables to
+        prevent them from being used, and thus prune the search space.
+
+        Args:
+            variables: Variables affected by that constraint, in the same order
+                provided by the user.
+
+            domains (dict): Dictionary mapping variables to their domains.
+
+            assignments (dict): Dictionary mapping assigned variables to their
+                current assumed value.
+
+            forwardcheck (bool): Boolean value stating whether forward checking
+                should be performed or not.
+
+            _unassigned: Can be left empty
+
+        Return:
+            bool:
+                Boolean value stating if this constraint is currently broken
+                or not.
+        """
+        params = [(x, assignments.get(x, _unassigned)) for x in variables]
+        missing = [name for (name, val) in params if val is _unassigned]
+        if missing:
+            return True
+
+        self.__update_variable_lists(params)
+
+        if not self.__check_rule_requirements(
+            self.__qns,
+        ):
+            return True
+
+        passed = self.__rule(*self.__create_rule_args(self.__qns))
+
+        self.__score_callback(passed)
+
+        return passed
+
+    def __update_variable_lists(
+        self,
+        parameters: List[Tuple[str, Any]],
+    ) -> None:
+        for var_string, value in parameters:
+            qn_type = self.__var_string_to_data[var_string]
+            if qn_type in self.__qns:
+                self.__qns[qn_type] = value  # type: ignore
+            else:
+                raise ValueError(
+                    "The variable with name "
+                    + qn_type.__name__
+                    + "does not appear in the variable mapping!"
+                )
+
+
 class _ConservationRuleConstraintWrapper(Constraint):
     """Wrapper class of the python-constraint Constraint class.
 
@@ -850,6 +1172,7 @@ class _ConservationRuleConstraintWrapper(Constraint):
         rule: Rule,
         variables: _VariableContainer,
         argument_handler: RuleArgumentHandler,
+        score_callback: Callable[[bool], None],
     ) -> None:
         if not callable(rule):
             raise TypeError("rule has to be a callable!")
@@ -858,6 +1181,8 @@ class _ConservationRuleConstraintWrapper(Constraint):
             self.__check_rule_requirements,
             self.__create_rule_args,
         ) = argument_handler.register_rule(rule)
+        self.__score_callback = score_callback
+
         self.__var_string_to_data: Dict[
             str,
             Union[_EdgeVariableInfo, _NodeVariableInfo],
@@ -866,14 +1191,7 @@ class _ConservationRuleConstraintWrapper(Constraint):
         self.__out_edges_qns: Dict[int, GraphEdgePropertyMap] = {}
         self.__node_qns: GraphNodePropertyMap = {}
 
-        self.conditions_never_met = False
-        self.scenario_results = [0, 0]
-
         self.__initialize_variable_containers(variables)
-
-    @property
-    def rule(self) -> Rule:
-        return self.__rule
 
     def __initialize_variable_containers(
         self, variables: _VariableContainer
@@ -952,8 +1270,6 @@ class _ConservationRuleConstraintWrapper(Constraint):
                 Boolean value stating if this constraint is currently broken
                 or not.
         """
-        if self.conditions_never_met:
-            return True
         params = [(x, assignments.get(x, _unassigned)) for x in variables]
         missing = [name for (name, val) in params if val is _unassigned]
         if missing:
@@ -961,15 +1277,11 @@ class _ConservationRuleConstraintWrapper(Constraint):
 
         self.__update_variable_lists(params)
 
-        if (
-            self.rule is not isospin_validity
-            and not self.__check_rule_requirements(
-                list(self.__in_edges_qns.values()),
-                list(self.__out_edges_qns.values()),
-                self.__node_qns,
-            )
+        if not self.__check_rule_requirements(
+            list(self.__in_edges_qns.values()),
+            list(self.__out_edges_qns.values()),
+            self.__node_qns,
         ):
-            self.conditions_never_met = True
             return True
 
         passed = self.__rule(
@@ -979,12 +1291,7 @@ class _ConservationRuleConstraintWrapper(Constraint):
                 self.__node_qns,
             )
         )
-
-        # before returning gather statistics about the rule
-        if passed:
-            self.scenario_results[1] += 1
-        else:
-            self.scenario_results[0] += 1
+        self.__score_callback(passed)
         return passed
 
     def __update_variable_lists(
