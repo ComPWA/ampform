@@ -106,10 +106,10 @@ class GraphSettings:
 
 def convert_violated_rules_to_names(
     rules: Union[
-        Dict[int, Set[Tuple[Rule, ...]]],
-        Dict[int, Set[Tuple[GraphElementRule, ...]]],
+        Dict[int, Set[Rule]],
+        Dict[int, Set[GraphElementRule]],
     ]
-) -> Dict[int, Set[Tuple[str, ...]]]:
+) -> Dict[int, Set[str]]:
     def get_name(rule: Any) -> str:
         if inspect.isfunction(rule):
             return rule.__name__
@@ -119,11 +119,7 @@ def convert_violated_rules_to_names(
 
     converted_dict = defaultdict(set)
     for node_id, rule_set in rules.items():
-        rule_name_set = set()
-        for rule_tuple in rule_set:
-            rule_name_set.add(tuple(get_name(rule) for rule in rule_tuple))
-
-        converted_dict[node_id] = rule_name_set
+        converted_dict[node_id] = {get_name(rule) for rule in rule_set}
 
     return converted_dict
 
@@ -153,12 +149,7 @@ def convert_non_executed_rules_to_names(
 
 
 class Result:
-    """Defines a result to a problem set processed by the solving code.
-
-    The tuple of rules in `violated_node_rules` and `violated_edge_rules`
-    defines a group, which together violate all quantum number combinations
-    that were processed.
-    """
+    """Defines a result to a problem set processed by the solving code."""
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -167,9 +158,9 @@ class Result:
             List[StateTransitionGraph[ParticleWithSpin]]
         ] = None,
         not_executed_node_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_node_rules: Optional[Dict[int, Set[Tuple[str, ...]]]] = None,
+        violated_node_rules: Optional[Dict[int, Set[str]]] = None,
         not_executed_edge_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_edge_rules: Optional[Dict[int, Set[Tuple[str, ...]]]] = None,
+        violated_edge_rules: Optional[Dict[int, Set[str]]] = None,
         formalism_type: Optional[str] = None,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -187,9 +178,7 @@ class Result:
         if not_executed_node_rules is not None:
             self.__not_executed_node_rules = not_executed_node_rules
 
-        self.__violated_node_rules: Dict[
-            int, Set[Tuple[str, ...]]
-        ] = defaultdict(set)
+        self.__violated_node_rules: Dict[int, Set[str]] = defaultdict(set)
         if violated_node_rules is not None:
             self.__violated_node_rules = violated_node_rules
 
@@ -197,9 +186,7 @@ class Result:
         if not_executed_edge_rules is not None:
             self.__not_executed_edge_rules = not_executed_edge_rules
 
-        self.__violated_edge_rules: Dict[
-            int, Set[Tuple[str, ...]]
-        ] = defaultdict(set)
+        self.__violated_edge_rules: Dict[int, Set[str]] = defaultdict(set)
         if violated_edge_rules is not None:
             self.__violated_edge_rules = violated_edge_rules
 
@@ -216,7 +203,7 @@ class Result:
         return self.__not_executed_node_rules
 
     @property
-    def violated_node_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
+    def violated_node_rules(self) -> Dict[int, Set[str]]:
         return self.__violated_node_rules
 
     @property
@@ -224,7 +211,7 @@ class Result:
         return self.__not_executed_edge_rules
 
     @property
-    def violated_edge_rules(self) -> Dict[int, Set[Tuple[str, ...]]]:
+    def violated_edge_rules(self) -> Dict[int, Set[str]]:
         return self.__violated_edge_rules
 
     def extend(
@@ -554,13 +541,11 @@ def validate_fully_initialized_graph(
 
         return (in_edges_vars, out_edges_vars, node_vars)
 
-    edge_violated_rules: Dict[
-        int, Set[Tuple[GraphElementRule, ...]]
-    ] = defaultdict(set)
+    edge_violated_rules: Dict[int, Set[GraphElementRule]] = defaultdict(set)
     edge_not_executed_rules: Dict[int, Set[GraphElementRule]] = defaultdict(
         set
     )
-    node_violated_rules: Dict[int, Set[Tuple[Rule, ...]]] = defaultdict(set)
+    node_violated_rules: Dict[int, Set[Rule]] = defaultdict(set)
     node_not_executed_rules: Dict[int, Set[Rule]] = defaultdict(set)
     for edge_id, edge_rules in rules_per_edge.items():
         for edge_rule in edge_rules:
@@ -581,7 +566,7 @@ def validate_fully_initialized_graph(
                         edge_variables,
                     )
                 ):
-                    edge_violated_rules[edge_id].add((edge_rule,))
+                    edge_violated_rules[edge_id].add(edge_rule)
             else:
                 edge_not_executed_rules[edge_id].add(edge_rule)
 
@@ -607,7 +592,7 @@ def validate_fully_initialized_graph(
                         var_containers[2],
                     )
                 ):
-                    node_violated_rules[node_id].add((rule,))
+                    node_violated_rules[node_id].add(rule)
             else:
                 node_not_executed_rules[node_id].add(rule)
     if node_violated_rules or node_not_executed_rules:
@@ -691,26 +676,24 @@ class CSPSolver(Solver):
         solutions = self.__problem.getSolutions()
 
         node_not_executed_rules = self.__non_executable_node_rules
-        node_not_satisfied_rules: Dict[
-            int, Set[Tuple[Rule, ...]]
-        ] = defaultdict(set)
+        node_not_satisfied_rules: Dict[int, Set[Rule]] = defaultdict(set)
         edge_not_executed_rules = self.__non_executable_edge_rules
         edge_not_satisfied_rules: Dict[
-            int, Set[Tuple[GraphElementRule, ...]]
+            int, Set[GraphElementRule]
         ] = defaultdict(set)
         for node_id, rules in self.__node_rules.items():
             for rule in rules:
                 if self.__scoresheet.rule_calls[(node_id, rule)] == 0:
                     node_not_executed_rules[node_id].add(rule)
                 elif self.__scoresheet.rule_passes[(node_id, rule)] == 0:
-                    node_not_satisfied_rules[node_id].add((rule,))
+                    node_not_satisfied_rules[node_id].add(rule)
 
         for edge_id, edge_rules in self.__edge_rules.items():
             for rule in edge_rules:
                 if self.__scoresheet.rule_calls[(edge_id, rule)] == 0:
                     edge_not_executed_rules[edge_id].add(rule)
                 elif self.__scoresheet.rule_passes[(edge_id, rule)] == 0:
-                    edge_not_satisfied_rules[edge_id].add((rule,))
+                    edge_not_satisfied_rules[edge_id].add(rule)
 
         # insert particle instances
         solutions = self.__convert_solution_keys(solutions)

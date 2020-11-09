@@ -42,7 +42,7 @@ __all__ = [
     # Facade functions
     "generate_transitions",
     "generate_amplitudes",
-    "check_reaction",
+    "check_reaction_violations",
 ]
 
 
@@ -51,8 +51,8 @@ from . import amplitude, io, particle, reaction
 generate_transitions = reaction.generate
 """An alias to `.reaction.generate`."""
 
-check_reaction = reaction.check
-"""An alias to `.reaction.check`."""
+check_reaction_violations = reaction.check_reaction_violations
+"""An alias to `.reaction.check_reaction_violations`."""
 
 generate_amplitudes = amplitude.generate
 """An alias to `.amplitude.generate`."""

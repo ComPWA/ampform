@@ -1,22 +1,20 @@
 # pylint: disable=redefined-outer-name
-from typing import Dict, Set, Tuple
+from typing import FrozenSet, Set, Union
 
 import pytest
 
-from expertsystem.reaction import (
-    InteractionTypes,
-    SolvingMode,
-    StateTransitionManager,
-)
+from expertsystem.reaction import check_reaction_violations
 
 
 def reduce_violated_rules(
-    violated_rules: Dict[int, Set[Tuple[str, ...]]]
-) -> Set[str]:
-    reduced_violations = set()
-    for rule_set in violated_rules.values():
-        for rule_group in rule_set:
-            reduced_violations.update(set(x for x in rule_group))
+    violated_rules: Set[FrozenSet[str]],
+) -> Set[Union[str, FrozenSet[str]]]:
+    reduced_violations: Set[Union[str, FrozenSet[str]]] = set()
+    for rule_group in violated_rules:
+        if len(rule_group) == 1:
+            reduced_violations.add(tuple(rule_group)[0])
+        else:
+            reduced_violations.add(rule_group)
 
     return reduced_violations
 
@@ -27,164 +25,136 @@ def reduce_violated_rules(
     [
         (
             (["p", "p~"], ["pi+", "pi0"]),
-            ["ChargeConservation", "isospin_conservation"],
+            {"ChargeConservation", "isospin_conservation"},
         ),
-        ((["eta"], ["gamma", "gamma"]), []),
-        ((["Sigma0"], ["Lambda", "pi0"]), ["MassConservation"]),
-        ((["Sigma-"], ["n", "pi-"]), []),
-        ((["e+", "e-"], ["mu+", "mu-"]), []),
-        # (  # https://github.com/ComPWA/expertsystem/issues/281
-        #     (["mu-"], ["e-", "nu(e)~"]),
-        #     ["MuonLNConservation", "SpinConservation"],
-        # ),  # https://github.com/ComPWA/expertsystem/issues/281
-        # (
-        #     (["mu-"], ["e-", "nu(e)"]),
-        #     [
-        #         "ElectronLNConservation",
-        #         "MuonLNConservation",
-        #         "SpinConservation",
-        #     ],
-        # ),
-        ((["Delta(1232)+"], ["p", "pi0"]), []),
-        ((["nu(e)~", "p"], ["n", "e+"]), []),
-        # (  # https://github.com/ComPWA/expertsystem/issues/281
-        #     (["e-", "p"], ["nu(e)", "pi0"]),
-        #     ["BaryonNumberConservation", "SpinConservation"],
-        # ),
-        ((["p", "p"], ["Sigma+", "n", "K~0", "pi+", "pi0"]), []),
+        ((["eta"], ["gamma", "gamma"]), {}),
         (
-            (["p"], ["e+", "gamma"]),
-            ["ElectronLNConservation", "BaryonNumberConservation"],
+            (["eta"], ["pi+", "pi-"]),
+            {
+                (
+                    "c_parity_conservation",
+                    "parity_conservation",
+                    "spin_magnitude_conservation",
+                )
+            },
         ),
-        ((["p", "p"], ["p", "p", "p", "p~"]), []),
-        ((["n", "n~"], ["pi+", "pi-", "pi0"]), []),
         (
-            (["pi+", "n"], ["pi-", "p"]),
-            ["ChargeConservation", "isospin_conservation"],
+            (["Sigma0"], ["Lambda", "pi0"]),
+            {"MassConservation"},
         ),
-        ((["K-"], ["pi-", "pi0"]), []),
         (
-            (["Sigma+", "n"], ["Sigma-", "p"]),
-            ["ChargeConservation", "isospin_conservation"],
+            (["Sigma-"], ["n", "pi-"]),
+            {
+                "isospin_conservation",
+                "StrangenessConservation",
+            },
         ),
-        ((["Sigma0"], ["Lambda", "gamma"]), []),
-        ((["Xi-"], ["Lambda", "pi-"]), []),
-        ((["Xi0"], ["p", "pi-"]), []),
-        ((["pi-", "p"], ["Lambda", "K0"]), []),
-        ((["pi0"], ["gamma", "gamma"]), []),
-        ((["pi0"], ["gamma", "gamma", "gamma"]), ["c_parity_conservation"]),
-        ((["Sigma-"], ["n", "e-", "nu(e)~"]), []),
-        # (  # https://github.com/ComPWA/expertsystem/issues/281
-        #     (["rho(770)0"], ["pi0", "pi0"]),
-        #     [
-        #         "IsoSpinConservation",  # Clebsch Gordan coefficient = 0
-        #         "CParityConservation",
-        #         "IdenticalParticleSymmetrization",
-        #     ],
-        # ),
-        ((["rho(770)0"], ["gamma", "gamma"]), ["c_parity_conservation"]),
-        ((["rho(770)0"], ["gamma", "gamma", "gamma"]), []),
-        ((["J/psi(1S)"], ["pi0", "eta"]), []),
-        ((["J/psi(1S)"], ["rho(770)0", "rho(770)0"]), []),
-        ((["K~0"], ["pi+", "pi-", "pi0"]), []),
-    ],
-)
-def test_general_reaction(test_input, expected):
-    # define all of the different decay scenarios
-    print("processing case:" + str(test_input))
-
-    stm = StateTransitionManager(
-        initial_state=test_input[0],
-        final_state=test_input[1],
-        formalism_type="canonical",
-        topology_building="nbody"
-        if len(test_input[0]) > 1 or len(test_input[1]) > 2
-        else "isobar",
-        solving_mode=SolvingMode.Full,
-        number_of_threads=1,
-    )
-
-    graph_interaction_settings = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings)
-
-    if len(result.solutions) > 0:
-        print("is valid")
-        assert len(expected) == 0
-    else:
-        reduced_violations = reduce_violated_rules(result.violated_node_rules)
-        print("not allowed! violates: " + str(reduced_violations))
-        assert reduced_violations == set(expected)
-
-
-@pytest.mark.parametrize(
-    "test_input, expected",
-    [
-        ((["f(0)(980)"], ["pi+", "pi-"]), []),
-        # (
-        #     (["J/psi(1S)"], ["pi0", "f(0)(980)"]),
-        #     ["CParityConservation", "SpinConservation"],
-        # ),
-        ((["pi0"], ["gamma", "gamma"]), []),
+        ((["e+", "e-"], ["mu+", "mu-"]), {}),
+        (
+            (["mu-"], ["e-", "nu(e)~"]),
+            {"MuonLNConservation", "spin_magnitude_conservation"},
+        ),
+        (
+            (["mu-"], ["e-", "nu(e)"]),
+            {
+                "ElectronLNConservation",
+                "MuonLNConservation",
+                "spin_magnitude_conservation",
+            },
+        ),
+        ((["Delta(1232)+"], ["p", "pi0"]), {}),
+        ((["nu(e)~", "p"], ["n", "e+"]), {}),
+        (
+            (["e-", "p"], ["nu(e)", "pi0"]),
+            {"BaryonNumberConservation", "spin_magnitude_conservation"},
+        ),
+        ((["f(0)(980)"], ["pi+", "pi-"]), {}),
+        ((["pi0"], ["gamma", "gamma"]), {}),
         (
             (["pi0"], ["gamma", "gamma", "gamma"]),
-            ["c_parity_conservation"],
+            {"c_parity_conservation"},
         ),
-        ((["pi0"], ["e+", "e-", "gamma"]), []),
-        ((["pi0"], ["e+", "e-"]), []),
-    ],
-)
-def test_em_reactions(test_input, expected):
-    stm = StateTransitionManager(
-        initial_state=test_input[0],
-        final_state=test_input[1],
-        formalism_type="canonical",
-        topology_building="nbody"
-        if len(test_input[0]) > 1 or len(test_input[1]) > 2
-        else "isobar",
-        solving_mode=SolvingMode.Full,
-        number_of_threads=1,
-    )
-
-    stm.set_allowed_interaction_types([InteractionTypes.EM])
-
-    graph_interaction_settings = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings)
-
-    reduced_violations = reduce_violated_rules(result.violated_node_rules)
-    assert reduced_violations == set(expected)
-
-
-@pytest.mark.parametrize(
-    "test_input,expected",
-    [
-        ((["f(0)(980)"], ["pi+", "pi-"]), []),
-        # (
-        #     (["J/psi(1S)"], ["pi0", "f(0)(980)"]),
-        #     ["IsoSpinConservation", "CParityConservation", "SpinConservation"],
-        # ),
-        ((["p", "p"], ["Sigma+", "n", "K0", "pi+", "pi0"]), []),
+        ((["pi0"], ["e+", "e-", "gamma"]), {}),
+        ((["pi0"], ["e+", "e-"]), {}),
+        (
+            (["J/psi(1S)"], ["pi0", "f(0)(980)"]),
+            {
+                "isospin_conservation",
+                "c_parity_conservation",
+                ("parity_conservation", "spin_magnitude_conservation"),
+            },
+        ),
+        ((["p", "p"], ["Sigma+", "n", "K0", "pi+", "pi0"]), {}),
         (
             (["p", "p"], ["Sigma+", "n", "K~0", "pi+", "pi0"]),
-            ["StrangenessConservation", "isospin_conservation"],
+            {"StrangenessConservation", "isospin_conservation"},
+        ),
+        (
+            (["p"], ["e+", "gamma"]),
+            {"ElectronLNConservation", "BaryonNumberConservation"},
+        ),
+        ((["p", "p"], ["p", "p", "p", "p~"]), {}),
+        ((["n", "n~"], ["pi+", "pi-", "pi0"]), {}),
+        (
+            (["pi+", "n"], ["pi-", "p"]),
+            {"ChargeConservation", "isospin_conservation"},
+        ),
+        (
+            (["K-"], ["pi-", "pi0"]),
+            {
+                "isospin_conservation",
+                "StrangenessConservation",
+                ("parity_conservation", "spin_magnitude_conservation"),
+            },
+        ),
+        (
+            (["Sigma+", "n"], ["Sigma-", "p"]),
+            {"ChargeConservation", "isospin_conservation"},
+        ),
+        ((["Sigma0"], ["Lambda", "gamma"]), []),
+        (
+            (["Xi-"], ["Lambda", "pi-"]),
+            {"StrangenessConservation", "isospin_conservation"},
+        ),
+        (
+            (["Xi0"], ["p", "pi-"]),
+            {"StrangenessConservation", "isospin_conservation"},
+        ),
+        ((["pi-", "p"], ["Lambda", "K0"]), {}),
+        ((["pi0"], ["gamma", "gamma"]), {}),
+        ((["pi0"], ["gamma", "gamma", "gamma"]), {"c_parity_conservation"}),
+        ((["Sigma-"], ["n", "e-", "nu(e)~"]), {"StrangenessConservation"}),
+        (
+            (["rho(770)0"], ["pi0", "pi0"]),
+            {
+                "isospin_conservation",  # Clebsch Gordan coefficient = 0
+                "c_parity_conservation",
+                "identical_particle_symmetrization",
+            },
+        ),
+        ((["rho(770)0"], ["gamma", "gamma"]), {"c_parity_conservation"}),
+        ((["rho(770)0"], ["gamma", "gamma", "gamma"]), {}),
+        (
+            (["J/psi(1S)"], ["pi0", "eta"]),
+            {"c_parity_conservation", "isospin_conservation"},
+        ),
+        (
+            (["J/psi(1S)"], ["rho(770)0", "rho(770)0"]),
+            {"c_parity_conservation", "g_parity_conservation"},
+        ),
+        (
+            (["K~0"], ["pi+", "pi-", "pi0"]),
+            {"isospin_conservation", "StrangenessConservation"},
         ),
     ],
 )
-def test_strong_reactions(test_input, expected):
-    stm = StateTransitionManager(
+def test_nbody_reaction(test_input, expected):
+    violations = check_reaction_violations(
         initial_state=test_input[0],
         final_state=test_input[1],
-        formalism_type="canonical",
-        topology_building="nbody"
-        if len(test_input[0]) > 1 or len(test_input[1]) > 2
-        else "isobar",
-        solving_mode=SolvingMode.Full,
-        number_of_threads=1,
     )
 
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
-
-    graph_interaction_settings = stm.prepare_graphs()
-    result = stm.find_solutions(graph_interaction_settings)
-
-    reduced_violations = reduce_violated_rules(result.violated_node_rules)
-    assert set(reduced_violations) == set(expected)
+    reduced_violations = reduce_violated_rules(violations)
+    assert reduced_violations == {
+        frozenset(x) if isinstance(x, tuple) else x for x in expected
+    }
