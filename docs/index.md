@@ -4,28 +4,10 @@
 
 ```
 
-<!-- prettier:disable -->
-
-```{eval-rst}
-.. list-table::
-  :widths: auto
-  :align: left
-
-  * - .. image:: https://badge.fury.io/py/expertsystem.svg
-        :alt: PyPI package
-        :target: https://pypi.org/project/expertsystem
-    - .. image:: https://img.shields.io/pypi/pyversions/expertsystem
-        :alt: Supported Python versions
-        :target: https://pypi.org/project/expertsystem
-    - .. image:: https://codecov.io/gh/ComPWA/expertsystem/branch/master/graph/badge.svg
-        :alt: Test Coverage
-        :target: https://codecov.io/gh/ComPWA/expertsystem
-    - .. image:: https://api.codacy.com/project/badge/Grade/db355758fb0e4654818b85997f03e3b8
-        :alt: Codacy Badge
-        :target: https://www.codacy.com/gh/ComPWA/expertsystem
-```
-
-<!-- prettier:enable -->
+[![PyPI package](https://badge.fury.io/py/expertsystem.svg)](https://pypi.org/project/expertsystem)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/expertsystem)](https://pypi.org/project/expertsystem)
+[![Test coverage](https://codecov.io/gh/ComPWA/expertsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/ComPWA/expertsystem)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/db355758fb0e4654818b85997f03e3b8)](https://www.codacy.com/gh/ComPWA/expertsystem)
 
 ````{margin}
 ```{tip}
