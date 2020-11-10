@@ -12,7 +12,7 @@ from expertsystem.reaction import InteractionTypes, StateTransitionManager
     "formalism_type, n_solutions",
     [
         ("helicity", 14),
-        ("canonical-helicity", 100),
+        ("canonical-helicity", 28),  # two different LS couplings 2*14 = 28
     ],
 )
 def test_simple(formalism_type, n_solutions, particle_database):
@@ -38,7 +38,7 @@ def test_simple(formalism_type, n_solutions, particle_database):
     "formalism_type, n_solutions",
     [
         ("helicity", 14),
-        ("canonical-helicity", 100),
+        ("canonical-helicity", 28),  # two different LS couplings 2*14 = 28
     ],
 )
 def test_full(formalism_type, n_solutions, particle_database):
