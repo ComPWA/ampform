@@ -185,7 +185,7 @@ def parity_conservation(
 
 @attr.s(frozen=True)
 class HelicityParityEdgeInput:
-    parity: Optional[EdgeQuantumNumbers.parity] = attr.ib()
+    parity: EdgeQuantumNumbers.parity = attr.ib()
     spin_mag: EdgeQuantumNumbers.spin_magnitude = attr.ib()
     spin_proj: EdgeQuantumNumbers.spin_projection = attr.ib()
 
@@ -202,8 +202,10 @@ def parity_conservation_helicity(
     .. math:: A_{-\lambda_1-\lambda_2} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1}
         A_{\lambda_1\lambda_2}
 
-    Notice that only the special case :math:`\lambda_1=\lambda_2=0` may
-    return False.
+    .. math:: \mathrm{parity\,prefactor} = P_1 P_2 P_3 (-1)^{S_2+S_3-S_1}
+
+    .. note:: Only the special case :math:`\lambda_1=\lambda_2=0` may
+      return False independent on the parity prefactor.
     """
     if len(ingoing_edge_qns) == 1 and len(outgoing_edge_qns) == 2:
         out_spins = [x.spin_mag for x in outgoing_edge_qns]
@@ -217,10 +219,11 @@ def parity_conservation_helicity(
             sum(out_spins) - ingoing_edge_qns[0].spin_mag
         )
 
-        daughter_hel = [0 for x in outgoing_edge_qns if x.spin_proj == 0.0]
-        if len(daughter_hel) == 2:
-            if prefactor == -1:
-                return False
+        if (
+            all([x.spin_proj == 0.0 for x in outgoing_edge_qns])
+            and prefactor == -1
+        ):
+            return False
 
         return prefactor == parity_prefactor
     return True
@@ -382,23 +385,37 @@ def g_parity_conservation(
 
 
 @attr.s(frozen=True)
-class IdenticalParticleSymmetryEdgeInput:
-    parity: EdgeQuantumNumbers.parity = attr.ib()
+class IdenticalParticleSymmetryOutEdgeInput:
     spin_magnitude: EdgeQuantumNumbers.spin_magnitude = attr.ib()
     spin_projection: EdgeQuantumNumbers.spin_projection = attr.ib()
     pid: EdgeQuantumNumbers.pid = attr.ib()
 
 
 def identical_particle_symmetrization(
-    ingoing_edge_qns: List[IdenticalParticleSymmetryEdgeInput],
-    outgoing_edge_qns: List[IdenticalParticleSymmetryEdgeInput],
+    ingoing_parities: List[EdgeQuantumNumbers.parity],
+    outgoing_edge_qns: List[IdenticalParticleSymmetryOutEdgeInput],
 ) -> bool:
-    """Implementation of particle symmetrization."""
+    """Verifies multi particle state symmetrization for identical particles.
+
+    In case of a multi particle state with identical particles, their exchange
+    symmetry has to follow the spin statistic theorem.
+
+    For bosonic systems the total exchange symmetry (parity) has to be even
+    (+1). For fermionic systems the total exchange symmetry (parity) has to be
+    odd (-1).
+
+    In case of a particle decaying into N identical particles (N>1), the
+    decaying particle has to have the same parity as required by the spin
+    statistic theorem of the multi body state.
+    """
 
     def _check_particles_identical(
-        particles: List[IdenticalParticleSymmetryEdgeInput],
+        particles: List[IdenticalParticleSymmetryOutEdgeInput],
     ) -> bool:
         """Check if pids and spins match."""
+        if len(particles) == 1:
+            return False
+
         reference_pid = particles[0].pid
         reference_spin_proj = particles[0].spin_projection
         for particle in particles[1:]:
@@ -408,18 +425,19 @@ def identical_particle_symmetrization(
                 return False
         return True
 
-    if _check_particles_identical(outgoing_edge_qns):
-        if _is_boson(outgoing_edge_qns[0].spin_magnitude):
-            # we have a boson, check if parity of mother is even
-            parity = ingoing_edge_qns[0].parity
-            if parity == -1:
-                # if its odd then return False
-                return False
-        else:
-            # its fermion
-            parity = ingoing_edge_qns[0].parity
-            if parity == 1:
-                return False
+    if len(ingoing_parities) == 1:
+        if _check_particles_identical(outgoing_edge_qns):
+            if _is_boson(outgoing_edge_qns[0].spin_magnitude):
+                # we have a boson, check if parity of mother is even
+                parity = ingoing_parities[0]
+                if parity == -1:
+                    # if its odd then return False
+                    return False
+            else:
+                # its fermion
+                parity = ingoing_parities[0]
+                if parity == 1:
+                    return False
 
     return True
 
