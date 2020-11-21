@@ -1,6 +1,9 @@
 # Output files
 *.gv
+*.json
+*.npy
 *.pdf
+*.png
 *.svg
 *.xml
 *.yaml
@@ -16,7 +19,7 @@ version.py
 
 # Temporary files
 *.pyc
-.condaenv.*
+*condaenv.*
 .coverage
 .coverage.*
 .ipynb_checkpoints/
@@ -39,12 +42,16 @@ pyvenv*/
 !.github/*.yml
 !.github/*/*.yml
 !.gitpod.yml
+!.markdownlint.json
 !.pre-commit-config.yaml
 !.readthedocs.yml
+!.vscode/*.json
 !codecov.yml
+!cspell.json
 !environment.yml
 !pyrightconfig.json
 
 !docs/usage/additional_particles.yml
 !src/expertsystem/additional_particle_definitions.yml
+!src/expertsystem/schemas/*/*.json
 !tests/**/expected_recipe.yml

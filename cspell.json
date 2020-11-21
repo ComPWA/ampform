@@ -17,6 +17,7 @@
         "parmater"
     ],
     "ignorePaths": [
+        "*.bib",
         "*.rst_t",
         "*.svg",
         "*particle*.*ml",
@@ -129,6 +130,7 @@
         "permalinks",
         "phsp",
         "pids",
+        "precommit",
         "prefactor",
         "pygments",
         "pylance",

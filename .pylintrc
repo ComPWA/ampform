@@ -18,7 +18,8 @@ disable=
     unused-import,  # https://www.flake8rules.com/rules/F401
 
 [MASTER]
-ignore=conf.py
+ignore=
+    conf.py
 
 [DESIGN]
 # Minimum number of public methods for a class (see R0903). Default is 2.

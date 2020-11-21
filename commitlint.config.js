@@ -9,6 +9,7 @@ module.exports = {
         "ci",
         "chore",
         "docs",
+        "epic",
         "feat",
         "fix",
         "refactor",

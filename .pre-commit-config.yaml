@@ -5,7 +5,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v3.3.0
     hooks:
       - id: check-ast
       - id: check-case-conflict
@@ -16,38 +16,40 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: cspell.json
+        exclude: >
+          (?x)^(
+            cspell.json|
+            .*\.bib
+          )$
       - id: mixed-line-ending
       - id: name-tests-test
         name: Tests should start with test_
         args: ["--django"]
       - id: trailing-whitespace
 
-  - repo: https://github.com/psf/black
-    rev: 20.8b1
-    hooks:
-      - id: black
-
-  - repo: https://github.com/PyCQA/doc8
-    rev: 0.8.1
-    hooks:
-      - id: doc8
-        args: ["-q"]
-
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.3.8
-    hooks:
-      - id: nbstripout
-        files: ".ipynb"
-
-  - repo: https://github.com/prettier/prettier
-    rev: 2.1.2
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.2.0
     hooks:
       - id: prettier
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: local
     hooks:
+      - id: black
+        name: black
+        entry: black
+        language: system
+        types:
+          - python
+
+      - id: doc8
+        name: doc8
+        entry: doc8
+        args:
+          - -q
+        language: system
+        files: \.(inc|rst)$
+
       - id: flake8
         name: flake8
         entry: flake8
@@ -69,6 +71,13 @@ repos:
         types:
           - python
 
+      - id: nbstripout
+        name: nbstripout
+        entry: nbstripout
+        language: system
+        types:
+          - jupyter
+
       - id: pydocstyle
         name: pydocstyle
         entry: pydocstyle
@@ -78,7 +87,10 @@ repos:
 
       - id: pylint
         name: pylint
-        entry: pylint --rcfile=.pylintrc --score=no
+        entry: pylint
+        args:
+          - --rcfile=.pylintrc
+          - --score=no
         language: system
         types:
           - python

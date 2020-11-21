@@ -1,4 +1,7 @@
 {
+  "[bibtex]": {
+    "editor.formatOnSave": false
+  },
   "[ipynb]": {
     "editor.formatOnSave": false
   },
@@ -9,7 +12,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "off"
   },
   "[python]": {
     "editor.codeActionsOnSave": {
