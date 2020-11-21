@@ -1,5 +1,5 @@
 {
-  "exclude": [".git", ".tox"],
+  "exclude": [".git", ".tox", "docs/_build"],
   "include": ["docs", "src", "tests"],
   "reportGeneralTypeIssues": false,
   "reportUnboundVariable": false,

@@ -1,6 +1,7 @@
 # Output files
 *.gv
 *.pdf
+*.svg
 *.xml
 *.yaml
 *.yml
@@ -42,5 +43,8 @@ pyvenv*/
 !.readthedocs.yml
 !codecov.yml
 !environment.yml
+!pyrightconfig.json
+
+!docs/usage/additional_particles.yml
 !src/expertsystem/additional_particle_definitions.yml
 !tests/**/expected_recipe.yml

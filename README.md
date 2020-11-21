@@ -53,3 +53,7 @@ For an overview of **upcoming releases and planned functionality**, see
   - [x] XML (_old format for [ComPWA](https://compwa.github.io/)_)
   - [x] YAML (_new format for
         [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves)_)
+
+## Contribute
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md)

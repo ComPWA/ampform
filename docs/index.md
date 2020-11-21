@@ -12,7 +12,7 @@
 ````{margin}
 ```{tip}
 For an overview of upcoming releases and planned functionality, see
-[here](https://github.com/ComPWA/expertsystem/milestones?direction=asc&sort=title&state=open)
+[here](https://github.com/ComPWA/expertsystem/milestones?direction=asc&sort=title&state=open).
 ```
 ````
 
@@ -101,17 +101,13 @@ maxdepth: 2
 install
 usage
 interactive
-develop
+API <api/expertsystem>
+Develop <https://pwa.readthedocs.io/develop.html>
 ```
 
 - {ref}`Python API <modindex>`
-
-```{toctree}
----
-hidden:
----
-api
-```
+- {ref}`General Index <genindex>`
+- {ref}`Search <search>`
 
 ```{toctree}
 ---
