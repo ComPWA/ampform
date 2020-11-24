@@ -18,6 +18,7 @@
     ],
     "ignorePaths": [
         "*.bib",
+        "*.root",
         "*.rst_t",
         "*.svg",
         "*particle*.*ml",

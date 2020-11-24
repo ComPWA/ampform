@@ -77,13 +77,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .[precommit]
-          sudo npm install -g cspell markdownlint-cli pyright
+          sudo npm install -g cspell pyright
       - name: Perform style checks
         run: pre-commit run -a
       - name: Check spelling
         run: cspell $(git ls-files)
-      - name: Lint Markdown files
-        run: markdownlint .
       - name: Run pyright
         run: pyright
 
