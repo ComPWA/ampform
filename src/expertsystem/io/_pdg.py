@@ -29,7 +29,8 @@ def __sign(value: Union[float, int]) -> int:
 
 def load_pdg() -> ParticleCollection:
     all_pdg_particles = PdgDatabase.findall(
-        lambda item: item.charge.is_integer()  # remove quarks
+        lambda item: item.charge is not None
+        and item.charge.is_integer()  # remove quarks
         and item.J is not None  # remove new physics and nuclei
         and abs(item.pdgid) < 1e9  # p and n as nucleus
         and item.name not in __skip_particles
@@ -51,6 +52,8 @@ def __convert_pdg_instance(pdg_particle: PdgDatabase) -> Particle:
             float(value) / 1e3
         )
 
+    if pdg_particle.charge is None:
+        raise ValueError(f"PDG instance has no charge:\n{pdg_particle}")
     quark_numbers = __compute_quark_numbers(pdg_particle)
     lepton_numbers = __compute_lepton_numbers(pdg_particle)
     if pdg_particle.pdgid.is_lepton:  # convention: C(fermion)=+1
@@ -130,6 +133,8 @@ def __create_isospin(pdg_particle: PdgDatabase) -> Optional[Spin]:
 
 
 def __compute_isospin_projection(pdg_particle: PdgDatabase) -> float:
+    if pdg_particle.charge is None:
+        raise ValueError(f"PDG instance has no charge:\n{pdg_particle}")
     if "qq" in pdg_particle.quarks.lower():
         strangeness, charmness, bottomness, topness = __compute_quark_numbers(
             pdg_particle
@@ -150,7 +155,10 @@ def __compute_isospin_projection(pdg_particle: PdgDatabase) -> float:
             projection += quark_content.count("u") + quark_content.count("D")
             projection -= quark_content.count("U") + quark_content.count("d")
             projection *= 0.5
-    if not (pdg_particle.I - projection).is_integer():
+    if (
+        pdg_particle.I is not None
+        and not (pdg_particle.I - projection).is_integer()
+    ):
         raise ValueError(f"Cannot have isospin {(pdg_particle.I, projection)}")
     return projection
 

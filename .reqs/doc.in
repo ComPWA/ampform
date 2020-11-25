@@ -1,0 +1,15 @@
+-r ../requirements.txt
+
+# Requirements to build documentation
+graphviz
+ipywidgets
+jupyter
+myst-nb
+pydeps
+Sphinx >= 3
+sphinx-book-theme
+sphinx-copybutton
+sphinx-panels
+sphinx-thebe
+sphinx-togglebutton
+sphobjinv

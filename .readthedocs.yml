@@ -11,5 +11,6 @@ formats:
 python:
   version: 3.7
   install:
+    - requirements: .reqs/doc.txt
     - method: pip
-      path: .[doc]
+      path: .

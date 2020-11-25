@@ -15,6 +15,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "off"
   },
+  "[pip-requirements]": {
+    "editor.wordWrap": "off"
+  },
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
@@ -59,6 +62,7 @@
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
+    ".reqs/*.txt": true,
     "docs/tox.ini": true,
     "tests/tox.ini": true
   },

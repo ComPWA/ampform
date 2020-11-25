@@ -1,0 +1,10 @@
+-r ../requirements.txt
+-r doc.txt
+-r test.txt
+-r sty.txt
+
+jupyterlab
+jupyterlab-code-formatter
+labels
+pip-tools
+tox >= 1.9  # for skip_install, use_develop

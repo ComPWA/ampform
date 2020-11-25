@@ -1,0 +1,24 @@
+-r ../requirements.txt
+-r test.txt  # for pytest type hints
+
+pre-commit >= 1.4.0
+
+# Requirements for formatting files
+black
+isort
+nbstripout
+
+# Lint Python source code
+flake8  >= 3  # for per-file-ignores
+flake8-blind-except
+flake8-bugbear
+flake8-builtins
+flake8-rst-docstrings
+mypy
+pep8-naming
+pydocstyle
+pylint
+
+# Lint documentation files
+doc8
+rstcheck

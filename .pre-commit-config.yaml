@@ -19,7 +19,8 @@ repos:
         exclude: >
           (?x)^(
             cspell.json|
-            .*\.bib
+            .*\.bib|
+            .*\.svg
           )$
       - id: mixed-line-ending
       - id: name-tests-test
@@ -37,6 +38,9 @@ repos:
     hooks:
       - id: prettier
         language_version: 12.18.2 # prettier does not specify node correctly
+
+  # The following tools have to be install locally, because they can also be
+  # used by code editors (e.g. linting and format-on-save).
 
   - repo: local
     hooks:

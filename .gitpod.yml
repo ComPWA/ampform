@@ -1,5 +1,5 @@
 tasks:
-  - init: pip install -e .[dev]
+  - init: pip install -r requirements-dev.txt -e .
 
 github:
   prebuilds:

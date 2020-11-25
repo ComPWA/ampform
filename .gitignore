@@ -51,6 +51,7 @@ pyvenv*/
 !environment.yml
 !pyrightconfig.json
 
+!docs/_static/*
 !docs/usage/additional_particles.yml
 !src/expertsystem/additional_particle_definitions.yml
 !src/expertsystem/schemas/*/*.json
