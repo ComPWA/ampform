@@ -10,6 +10,7 @@ from expertsystem.amplitude.model import (
     Dynamics,
     FitParameter,
     FitParameters,
+    FormFactor,
     HelicityDecay,
     IncoherentIntensity,
     Kinematics,
@@ -18,6 +19,7 @@ from expertsystem.amplitude.model import (
     NonDynamic,
     NormalizedIntensity,
     ParticleDynamics,
+    RelativisticBreitWigner,
     SequentialAmplitude,
     StrengthIntensity,
 )
@@ -158,21 +160,31 @@ def __dynamics_section_to_dict(particle_dynamics: ParticleDynamics) -> dict:
 
 
 def __dynamics_to_dict(dynamics: Dynamics) -> dict:
+    output: dict = {"Type": dynamics.__class__.__name__}
     if isinstance(dynamics, NonDynamic):
-        if isinstance(dynamics.form_factor, BlattWeisskopf):
-            form_factor = {
-                "Type": "BlattWeisskopf",
-                "MesonRadius": dynamics.form_factor.meson_radius.value,
-            }
-        else:
-            raise NotImplementedError(
-                "No conversion for", dynamics.form_factor
-            )
-        return {
-            "Type": "NonDynamic",
-            "FormFactor": form_factor,
+        output.update(__form_factor_to_dict(dynamics.form_factor))
+        return output
+    if isinstance(dynamics, RelativisticBreitWigner):
+        output["PoleParameters"] = {
+            "Real": dynamics.pole_position.name,
+            "Imaginary": dynamics.pole_width.name,
         }
+        output.update(__form_factor_to_dict(dynamics.form_factor))
+        return output
     raise NotImplementedError("No conversion for", dynamics)
+
+
+def __form_factor_to_dict(form_factor: Optional[FormFactor]) -> dict:
+    if form_factor is None:
+        return dict()
+    if isinstance(form_factor, BlattWeisskopf):
+        return {
+            "FormFactor": {
+                "Type": "BlattWeisskopf",
+                "MesonRadius": form_factor.meson_radius.name,
+            }
+        }
+    raise NotImplementedError("No conversion for", form_factor)
 
 
 def __intensity_to_dict(  # pylint: disable=too-many-return-statements

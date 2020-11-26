@@ -165,7 +165,7 @@ def __build_particle_dynamics(
     dynamics = ParticleDynamics(particles=particles, parameters=parameters)
     type_mapping: Dict[str, Callable[[str], Dynamics]] = {
         "nonResonant": dynamics.set_non_dynamic,
-        "RelativisticBreitWigner": dynamics.set_breit_wigner,
+        "relativisticBreitWigner": dynamics.set_breit_wigner,
     }
     for particle_def in definition:
         decay_info: Optional[dict] = particle_def.get("DecayInfo")

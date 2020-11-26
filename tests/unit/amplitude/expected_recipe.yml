@@ -28,10 +28,26 @@ Parameters:
   - Name: &par5 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
-  - Name: MesonRadius_J/psi(1S)
+  - Name: &par6 MesonRadius_J/psi(1S)
     Type: MesonRadius
     Value: 1.0
     Fix: true
+  - Name: &par7 Position_f(0)(980)
+    Value: 0.99
+  - Name: &par8 Width_f(0)(980)
+    Value: 0.06
+  - Name: &par9 MesonRadius_f(0)(980)
+    Value: 1.0
+    Fix: true
+    Type: MesonRadius
+  - Name: &par10 Position_f(0)(1500)
+    Value: 1.506
+  - Name: &par11 Width_f(0)(1500)
+    Value: 0.112
+  - Name: &par12 MesonRadius_f(0)(1500)
+    Value: 1.0
+    Fix: true
+    Type: MesonRadius
 
 Intensity:
   Class: StrengthIntensity
@@ -412,4 +428,20 @@ Dynamics:
     Type: NonDynamic
     FormFactor:
       Type: BlattWeisskopf
-      MesonRadius: 1.0
+      MesonRadius: *par6
+  f(0)(980):
+    Type: RelativisticBreitWigner
+    PoleParameters:
+      Real: *par7
+      Imaginary: *par8
+    FormFactor:
+      Type: BlattWeisskopf
+      MesonRadius: *par9
+  f(0)(1500):
+    Type: RelativisticBreitWigner
+    PoleParameters:
+      Real: *par10
+      Imaginary: *par11
+    FormFactor:
+      Type: BlattWeisskopf
+      MesonRadius: *par12

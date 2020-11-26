@@ -25,6 +25,7 @@ from expertsystem.amplitude.model import (
     Node,
     NonDynamic,
     NormalizedIntensity,
+    RelativisticBreitWigner,
     SequentialAmplitude,
     StrengthIntensity,
 )
@@ -182,6 +183,8 @@ def __kinematics_to_dict(kin: Kinematics) -> dict:
 def __dynamics_to_dict(dynamics: Dynamics) -> dict:
     if isinstance(dynamics, NonDynamic):
         return {"Type": "nonResonant"}
+    if isinstance(dynamics, RelativisticBreitWigner):
+        return {"Type": "relativisticBreitWigner"}
     raise NotImplementedError("No conversion for", dynamics)
 
 

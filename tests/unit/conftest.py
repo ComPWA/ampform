@@ -36,11 +36,18 @@ def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions: Result,
 ) -> AmplitudeModel:
-    return es.amplitude.generate(jpsi_to_gamma_pi_pi_canonical_solutions)
+    return __create_model(jpsi_to_gamma_pi_pi_canonical_solutions)
 
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ) -> AmplitudeModel:
-    return es.amplitude.generate(jpsi_to_gamma_pi_pi_helicity_solutions)
+    return __create_model(jpsi_to_gamma_pi_pi_helicity_solutions)
+
+
+def __create_model(result: Result) -> AmplitudeModel:
+    model = es.amplitude.generate(result)
+    for name in result.get_intermediate_particles().names:
+        model.dynamics.set_breit_wigner(name)
+    return model

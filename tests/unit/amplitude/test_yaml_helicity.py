@@ -57,7 +57,7 @@ def test_create_recipe_dict(
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
 ):
     assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.particles) == 5
-    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.dynamics) == 1
+    assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.dynamics) == 3
 
 
 def test_particle_section(imported_dict):
@@ -91,32 +91,39 @@ def test_kinematics_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 6
+    assert len(parameter_list) == 12
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter
-        assert "Type" in parameter
         assert parameter.get("Fix", True)
 
 
 def test_dynamics_section(imported_dict):
+    parameter_list: list = imported_dict["Parameters"]
+
+    def get_parameter(parameter_name: str) -> dict:
+        for par in parameter_list:
+            name = par["Name"]
+            if name == parameter_name:
+                return par
+        raise LookupError(f'Could not find parameter  "{parameter_name}"')
+
     dynamics = imported_dict["Dynamics"]
-    assert len(dynamics) == 1
+    assert len(dynamics) == 3
 
     j_psi = dynamics["J/psi(1S)"]
     assert j_psi["Type"] == "NonDynamic"
     assert j_psi["FormFactor"]["Type"] == "BlattWeisskopf"
-    assert j_psi["FormFactor"]["MesonRadius"] == 1.0
+    assert get_parameter(j_psi["FormFactor"]["MesonRadius"])["Value"] == 1.0
 
     f0_980 = dynamics.get("f(0)(980)", None)
     if f0_980:
         assert f0_980["Type"] == "RelativisticBreitWigner"
         assert f0_980["FormFactor"]["Type"] == "BlattWeisskopf"
-        assert f0_980["FormFactor"]["MesonRadius"] == {
-            "Max": 2.0,
-            "Min": 0.0,
-            "Value": 1.0,
-        }
+        assert f0_980["FormFactor"]["MesonRadius"] == "MesonRadius_f(0)(980)"
+        assert (
+            get_parameter(f0_980["FormFactor"]["MesonRadius"])["Value"] == 1.0
+        )
 
 
 def test_intensity_section(imported_dict):
