@@ -87,7 +87,7 @@ notebook==6.1.5           # via -r .reqs/doc.txt, jupyter, jupyterlab, jupyterla
 packaging==20.4           # via -r .reqs/doc.txt, -r .reqs/sty.txt, -r .reqs/test.txt, bleach, jupyterlab-code-formatter, pytest, sphinx, tox
 pandocfilters==1.4.3      # via -r .reqs/doc.txt, nbconvert
 parso==0.7.1              # via -r .reqs/doc.txt, jedi
-particle==0.13.1          # via -r .reqs/../requirements.txt, -r .reqs/doc.txt, -r .reqs/sty.txt, -r .reqs/test.txt
+particle==0.14.0          # via -r .reqs/../requirements.txt, -r .reqs/doc.txt, -r .reqs/sty.txt, -r .reqs/test.txt
 pathspec==0.8.1           # via -r .reqs/sty.txt, black
 pbr==5.5.1                # via -r .reqs/sty.txt, stevedore
 pep8-naming==0.11.1       # via -r .reqs/sty.txt
@@ -95,7 +95,7 @@ pexpect==4.8.0            # via -r .reqs/doc.txt, ipython
 pickleshare==0.7.5        # via -r .reqs/doc.txt, ipython
 pip-tools==5.4.0          # via -r .reqs/dev.in
 pluggy==0.13.1            # via -r .reqs/sty.txt, -r .reqs/test.txt, pytest, tox
-pre-commit==2.9.0         # via -r .reqs/sty.txt
+pre-commit==2.9.2         # via -r .reqs/sty.txt
 prometheus-client==0.9.0  # via -r .reqs/doc.txt, notebook
 prompt-toolkit==3.0.8     # via -r .reqs/doc.txt, ipython, jupyter-console
 ptyprocess==0.6.0         # via -r .reqs/doc.txt, pexpect, terminado

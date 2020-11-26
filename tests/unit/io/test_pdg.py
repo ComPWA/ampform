@@ -33,8 +33,14 @@ def test_maybe_qq():
 
 
 def test_pdg_size(pdg: ParticleCollection):
-    assert len(pdg) == 512
-    assert len(pdg.filter(lambda p: "~" in p.name)) == 165
+    assert len(pdg) in [
+        512,  # particle==0.13
+        519,  # particle==0.14
+    ]
+    assert len(pdg.filter(lambda p: "~" in p.name)) in [
+        165,  # particle==0.13
+        172,  # particle==0.14
+    ]
 
 
 def test_missing_in_pdg(

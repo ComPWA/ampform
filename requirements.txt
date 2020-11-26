@@ -7,7 +7,7 @@
 attrs==20.3.0             # via expertsystem (setup.py), jsonschema, particle
 hepunits==2.0.1           # via particle
 jsonschema==3.2.0         # via expertsystem (setup.py)
-particle==0.13.1          # via expertsystem (setup.py)
+particle==0.14.0          # via expertsystem (setup.py)
 pyrsistent==0.17.3        # via jsonschema
 python-constraint==1.4.0  # via expertsystem (setup.py)
 pyyaml==5.3.1             # via expertsystem (setup.py)

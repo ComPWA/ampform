@@ -171,6 +171,8 @@ def __filter_quark_content(pdg_particle: PdgDatabase) -> str:
 
 
 def __create_parity(parity_enum: enums.Parity) -> Optional[Parity]:
-    if parity_enum in [enums.Parity.o, enums.Parity.u]:
+    if parity_enum is None or parity_enum == enums.Parity.u:
+        return None
+    if parity_enum == getattr(parity_enum, "o", None):  # particle < 0.14
         return None
     return Parity(parity_enum)

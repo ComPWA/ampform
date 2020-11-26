@@ -13,7 +13,7 @@ hepunits==2.0.1           # via -r requirements.txt, particle
 iniconfig==1.1.1          # via pytest
 jsonschema==3.2.0         # via -r requirements.txt
 packaging==20.4           # via pytest
-particle==0.13.1          # via -r requirements.txt
+particle==0.14.0          # via -r requirements.txt
 pluggy==0.13.1            # via pytest
 py==1.9.0                 # via pytest, pytest-forked
 pydot==1.4.1              # via -r .reqs/test.in

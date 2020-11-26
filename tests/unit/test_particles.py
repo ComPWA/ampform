@@ -409,7 +409,10 @@ def test_create_antiparticle(
 
 def test_create_antiparticle_tilde(particle_database: ParticleCollection):
     anti_particles = particle_database.filter(lambda p: "~" in p.name)
-    assert len(anti_particles) == 165
+    assert len(anti_particles) in [
+        165,  # particle==0.13
+        172,  # particle==0.14
+    ]
     for anti_particle in anti_particles:
         particle_name = anti_particle.name.replace("~", "")
         if "+" in particle_name:
@@ -434,7 +437,10 @@ def test_create_antiparticle_by_pid(particle_database: ParticleCollection):
         anti_particle = next(iter(anti_particles_by_pid))
         particle_from_anti = -anti_particle
         assert particle == particle_from_anti
-    assert n_particles_with_neg_pid == 428
+    assert n_particles_with_neg_pid in [
+        428,  # particle==0.13
+        442,  # particle==0.14
+    ]
 
 
 @pytest.mark.parametrize(
