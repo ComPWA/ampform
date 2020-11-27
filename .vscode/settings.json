@@ -37,6 +37,12 @@
   "files.associations": {
     "*.inc": "restructuredtext"
   },
+  "files.watcherExclude": {
+    "**/*_cache/**": true,
+    "**/.eggs/**": true,
+    "**/.git/**": true,
+    "**/.tox/**": true
+  },
   "git.rebaseWhenSync": true,
   "githubPullRequests.telemetry.enabled": false,
   "gitlens.advanced.telemetry.enabled": false,
