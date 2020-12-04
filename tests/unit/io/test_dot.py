@@ -4,7 +4,7 @@ import pydot
 import pytest
 
 from expertsystem import io
-from expertsystem.reaction.solving import Result
+from expertsystem.reaction import Result
 from expertsystem.reaction.topology import Edge, Topology
 
 

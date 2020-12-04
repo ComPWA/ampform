@@ -4,12 +4,12 @@ import logging
 from typing import Dict, List, Optional, Tuple, Union
 
 from expertsystem.particle import ParticleCollection, Spin
+from expertsystem.reaction import Result
 from expertsystem.reaction.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.reaction.quantum_numbers import ParticleWithSpin
-from expertsystem.reaction.solving import Result
-from expertsystem.reaction.topology import StateTransitionGraph, Topology
+from expertsystem.reaction.topology import StateTransitionGraph
 
 from .model import (
     AmplitudeModel,
@@ -47,13 +47,16 @@ def _group_graphs_same_initial_and_final(
         Tuple[tuple, tuple], List[StateTransitionGraph[ParticleWithSpin]]
     ] = dict()
     for graph in graphs:
-        ise = graph.get_final_state_edges()
-        fse = graph.get_initial_state_edges()
+        ise = graph.get_final_state_edge_ids()
+        fse = graph.get_initial_state_edge_ids()
         graph_group = (
             tuple(
                 sorted(
                     [
-                        (graph.edge_props[x][0].name, graph.edge_props[x][1])
+                        (
+                            graph.get_edge_props(x)[0].name,
+                            graph.get_edge_props(x)[1],
+                        )
                         for x in ise
                     ]
                 )
@@ -61,7 +64,10 @@ def _group_graphs_same_initial_and_final(
             tuple(
                 sorted(
                     [
-                        (graph.edge_props[x][0].name, graph.edge_props[x][1])
+                        (
+                            graph.get_edge_props(x)[0].name,
+                            graph.get_edge_props(x)[1],
+                        )
                         for x in fse
                     ]
                 )
@@ -80,8 +86,8 @@ def _get_graph_group_unique_label(
 ) -> str:
     label = ""
     if graph_group:
-        ise = graph_group[0].get_initial_state_edges()
-        fse = graph_group[0].get_final_state_edges()
+        ise = graph_group[0].get_initial_state_edge_ids()
+        fse = graph_group[0].get_final_state_edge_ids()
         is_names = _get_name_hel_list(graph_group[0], ise)
         fs_names = _get_name_hel_list(graph_group[0], fse)
         label += (
@@ -93,7 +99,7 @@ def _get_graph_group_unique_label(
 
 
 def _determine_attached_final_state(
-    graph: Topology, edge_id: int
+    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
 ) -> List[int]:
     """Determine all final state particles of a graph.
 
@@ -101,7 +107,7 @@ def _determine_attached_final_state(
     the root).
     """
     final_state_edge_ids = []
-    all_final_state_edges = graph.get_final_state_edges()
+    all_final_state_edges = graph.get_final_state_edge_ids()
     current_edges = [edge_id]
     while current_edges:
         temp_current_edges = current_edges
@@ -111,18 +117,21 @@ def _determine_attached_final_state(
                 final_state_edge_ids.append(current_edge)
             else:
                 node_id = graph.edges[current_edge].ending_node_id
-                current_edges.extend(
-                    graph.get_edges_outgoing_from_node(node_id)
-                )
+                if node_id:
+                    current_edges.extend(
+                        graph.get_edge_ids_outgoing_from_node(node_id)
+                    )
     return final_state_edge_ids
 
 
-def _get_recoil_edge(graph: Topology, edge_id: int) -> Optional[int]:
+def _get_recoil_edge(
+    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
+) -> Optional[int]:
     """Determine the id of the recoil edge for the specified edge of a graph."""
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    outgoing_edges = graph.get_edges_outgoing_from_node(node_id)
+    outgoing_edges = graph.get_edge_ids_outgoing_from_node(node_id)
     outgoing_edges.remove(edge_id)
     if len(outgoing_edges) != 1:
         raise ValueError(
@@ -132,12 +141,14 @@ def _get_recoil_edge(graph: Topology, edge_id: int) -> Optional[int]:
     return outgoing_edges[0]
 
 
-def _get_parent_recoil_edge(graph: Topology, edge_id: int) -> Optional[int]:
+def _get_parent_recoil_edge(
+    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
+) -> Optional[int]:
     """Determine the id of the recoil edge of the parent edge."""
     node_id = graph.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    ingoing_edges = graph.get_edges_ingoing_to_node(node_id)
+    ingoing_edges = graph.get_edge_ids_ingoing_to_node(node_id)
     if len(ingoing_edges) != 1:
         raise ValueError(
             f"The node with id {node_id} does not have a single ingoing edge!\n"
@@ -152,10 +163,9 @@ def _get_prefactor(
     """Calculate the product of all prefactors defined in this graph."""
     prefactor = None
     for node_id in graph.nodes:
-        if node_id in graph.node_props:
-            temp_prefactor = __validate_float_type(
-                graph.node_props[node_id].parity_prefactor
-            )
+        node_props = graph.get_node_props(node_id)
+        if node_props:
+            temp_prefactor = __validate_float_type(node_props.parity_prefactor)
             if temp_prefactor is not None:
                 if prefactor is None:
                     prefactor = temp_prefactor
@@ -172,7 +182,7 @@ def _generate_particle_collection(
 ) -> ParticleCollection:
     particles = ParticleCollection()
     for graph in graphs:
-        for edge_props in graph.edge_props.values():
+        for edge_props in map(graph.get_edge_props, graph.edges):
             particle_name = edge_props[0].name
             if particle_name not in particles:
                 particles.add(edge_props[0])
@@ -189,7 +199,7 @@ def _generate_kinematics(
         initial_state=initial_state,
         final_state=final_state,
         intermediate_states=len(
-            result.solutions[0].get_intermediate_state_edges()
+            result.solutions[0].get_intermediate_state_edge_ids()
         ),
     )
     return kinematics
@@ -217,11 +227,11 @@ def _get_name_hel_list(
 ) -> List[Tuple[str, float]]:
     name_hel_list = []
     for i in edge_ids:
-        temp_hel = graph.edge_props[i][1]
+        temp_hel = graph.get_edge_props(i)[1]
         # remove .0
         if temp_hel % 1 == 0:
             temp_hel = int(temp_hel)
-        name_hel_list.append((graph.edge_props[i][0].name, temp_hel))
+        name_hel_list.append((graph.get_edge_props(i)[0].name, temp_hel))
 
     # in order to ensure correct naming of amplitude coefficients the list has
     # to be sorted by name. The same coefficient names have to be created for
@@ -315,7 +325,7 @@ class _HelicityAmplitudeNameGenerator:
         """
         name = ""
         if isinstance(node_id, int):
-            nodelist = {node_id}
+            nodelist = frozenset({node_id})
         else:
             nodelist = graph.nodes
         for node in nodelist:
@@ -335,8 +345,8 @@ class _HelicityAmplitudeNameGenerator:
     def _retrieve_helicity_info(
         graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> Tuple[List[Tuple[str, float]], List[Tuple[str, float]]]:
-        in_edges = graph.get_edges_ingoing_to_node(node_id)
-        out_edges = graph.get_edges_outgoing_from_node(node_id)
+        in_edges = graph.get_edge_ids_ingoing_to_node(node_id)
+        out_edges = graph.get_edge_ids_outgoing_from_node(node_id)
 
         in_names_hel_list = _get_name_hel_list(graph, in_edges)
         out_names_hel_list = _get_name_hel_list(graph, out_edges)
@@ -503,9 +513,7 @@ class HelicityAmplitudeGenerator:
         )
 
     def _generate_partial_decay(
-        self,
-        graph: StateTransitionGraph[ParticleWithSpin],
-        node_id: Optional[int] = None,
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> DecayNode:
         def create_helicity_particle(
             edge_props: ParticleWithSpin,
@@ -519,8 +527,8 @@ class HelicityAmplitudeGenerator:
             return HelicityParticle(particle, helicity)
 
         decay_products: List[DecayProduct] = list()
-        for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
-            edge_props = graph.edge_props[out_edge_id]
+        for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):
+            edge_props = graph.get_edge_props(out_edge_id)
             helicity_particle = create_helicity_particle(edge_props)
             final_state_ids = _determine_attached_final_state(
                 graph, out_edge_id
@@ -533,11 +541,11 @@ class HelicityAmplitudeGenerator:
                 )
             )
 
-        in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
+        in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
         if len(in_edge_ids) != 1:
             raise ValueError("This node does not represent a two body decay!")
         ingoing_edge_id = in_edge_ids[0]
-        edge_props = graph.edge_props[ingoing_edge_id]
+        edge_props = graph.get_edge_props(ingoing_edge_id)
         helicity_particle = create_helicity_particle(edge_props)
         helicity_decay = HelicityDecay(helicity_particle, decay_products)
 

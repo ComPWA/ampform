@@ -15,6 +15,7 @@ from typing import (
     Dict,
     Generator,
     List,
+    Mapping,
     Optional,
     Sequence,
     Set,
@@ -22,13 +23,21 @@ from typing import (
     Union,
 )
 
+import attr
+
 from expertsystem.particle import Particle, ParticleCollection
 
-from .quantum_numbers import ParticleWithSpin
+from .quantum_numbers import InteractionProperties, ParticleWithSpin
 from .topology import StateTransitionGraph, Topology
 
 StateWithSpins = Tuple[str, Sequence[float]]
 StateDefinition = Union[str, StateWithSpins]
+
+
+@attr.s(frozen=True)
+class InitialFacts:
+    edge_props: Dict[int, ParticleWithSpin] = attr.ib(factory=dict)
+    node_props: Dict[int, InteractionProperties] = attr.ib(factory=dict)
 
 
 class _KinematicRepresentation:
@@ -147,7 +156,8 @@ class _KinematicRepresentation:
 
 
 def _get_kinematic_representation(
-    graph: StateTransitionGraph[StateWithSpins],
+    topology: Topology,
+    initial_facts: Mapping[int, StateWithSpins],
 ) -> _KinematicRepresentation:
     r"""Group final or initial states by node, sorted by length of the group.
 
@@ -194,19 +204,21 @@ def _get_kinematic_representation(
     def get_state_groupings(
         edge_per_node_getter: Callable[[int], List[int]]
     ) -> List[List[int]]:
-        return [edge_per_node_getter(i) for i in graph.nodes]
+        return [edge_per_node_getter(i) for i in topology.nodes]
 
-    def fill_groupings(grouping_with_ids: List[List[Any]]) -> List[List[Any]]:
+    def fill_groupings(
+        grouping_with_ids: List[List[int]],
+    ) -> List[List[StateWithSpins]]:
         return [
-            [graph.edge_props[edge_id] for edge_id in group]
+            [initial_facts[edge_id] for edge_id in group]
             for group in grouping_with_ids
         ]
 
     initial_state_edge_groups = fill_groupings(
-        get_state_groupings(graph.get_originating_initial_state_edges)
+        get_state_groupings(topology.get_originating_initial_state_edge_ids)
     )
     final_state_edge_groups = fill_groupings(
-        get_state_groupings(graph.get_originating_final_state_edges)
+        get_state_groupings(topology.get_originating_final_state_edge_ids)
     )
     return _KinematicRepresentation(
         initial_state=initial_state_edge_groups,
@@ -214,7 +226,7 @@ def _get_kinematic_representation(
     )
 
 
-def initialize_graph(  # pylint: disable=too-many-locals
+def create_initial_facts(  # pylint: disable=too-many-locals
     topology: Topology,
     particles: ParticleCollection,
     initial_state: Sequence[StateDefinition],
@@ -222,7 +234,7 @@ def initialize_graph(  # pylint: disable=too-many-locals
     final_state_groupings: Optional[
         Union[List[List[List[str]]], List[List[str]], List[str]]
     ] = None,
-) -> List[StateTransitionGraph[ParticleWithSpin]]:
+) -> List[InitialFacts]:
     def embed_in_list(some_list: List[Any]) -> List[List[Any]]:
         if not isinstance(some_list[0], list):
             return [some_list]
@@ -244,13 +256,15 @@ def initialize_graph(  # pylint: disable=too-many-locals
         final_state=final_state,
         allowed_kinematic_groupings=allowed_kinematic_groupings,
     )
-    output_graphs = list()
+    edge_initial_facts = list()
     for kinematic_permutation in kinematic_permutation_graphs:
         spin_permutations = _generate_spin_permutations(
             kinematic_permutation, particles
         )
-        output_graphs.extend(spin_permutations)
-    return output_graphs
+        edge_initial_facts.extend(
+            [InitialFacts(edge_props=x) for x in spin_permutations]
+        )
+    return edge_initial_facts
 
 
 def _generate_kinematic_permutations(
@@ -261,7 +275,7 @@ def _generate_kinematic_permutations(
     allowed_kinematic_groupings: Optional[
         List[_KinematicRepresentation]
     ] = None,
-) -> List[StateTransitionGraph[StateWithSpins]]:
+) -> List[Dict[int, StateWithSpins]]:
     def assert_number_of_states(
         state_definitions: Sequence, edge_ids: Sequence[int]
     ) -> None:
@@ -271,8 +285,10 @@ def _generate_kinematic_permutations(
                 f"(len({state_definitions}) != len({edge_ids})"
             )
 
-    assert_number_of_states(initial_state, topology.get_initial_state_edges())
-    assert_number_of_states(final_state, topology.get_final_state_edges())
+    assert_number_of_states(
+        initial_state, topology.get_initial_state_edge_ids()
+    )
+    assert_number_of_states(final_state, topology.get_final_state_edge_ids())
 
     def is_allowed_grouping(
         kinematic_representation: _KinematicRepresentation,
@@ -291,26 +307,24 @@ def _generate_kinematic_permutations(
         final_state, particles
     )
 
-    graphs: List[StateTransitionGraph[StateWithSpins]] = list()
+    initial_facts_combinations: List[Dict[int, StateWithSpins]] = list()
     kinematic_representations: List[_KinematicRepresentation] = list()
     for permutation in _generate_outer_edge_permutations(
         topology,
         initial_state_with_projections,
         final_state_with_projections,
     ):
-        graph: StateTransitionGraph[
-            StateWithSpins
-        ] = StateTransitionGraph.from_topology(topology)
-        graph.edge_props.update(permutation)
-        kinematic_representation = _get_kinematic_representation(graph)
+        kinematic_representation = _get_kinematic_representation(
+            topology, permutation
+        )
         if kinematic_representation in kinematic_representations:
             continue
         if not is_allowed_grouping(kinematic_representation):
             continue
         kinematic_representations.append(kinematic_representation)
-        graphs.append(graph)
+        initial_facts_combinations.append(permutation)
 
-    return graphs
+    return initial_facts_combinations
 
 
 def _safe_set_spin_projections(
@@ -352,8 +366,8 @@ def _generate_outer_edge_permutations(
     initial_state: Sequence[StateWithSpins],
     final_state: Sequence[StateWithSpins],
 ) -> Generator[Dict[int, StateWithSpins], None, None]:
-    initial_state_ids = topology.get_initial_state_edges()
-    final_state_ids = topology.get_final_state_edges()
+    initial_state_ids = topology.get_initial_state_edge_ids()
+    final_state_ids = topology.get_final_state_edge_ids()
     for initial_state_permutation in permutations(initial_state):
         for final_state_permutation in permutations(final_state):
             yield dict(
@@ -365,43 +379,47 @@ def _generate_outer_edge_permutations(
 
 
 def _generate_spin_permutations(
-    graph: StateTransitionGraph[StateWithSpins],
+    initial_facts: Dict[int, StateWithSpins],
     particle_db: ParticleCollection,
-) -> List[StateTransitionGraph[ParticleWithSpin]]:
+) -> List[Dict[int, ParticleWithSpin]]:
     def populate_edge_with_spin_projections(
-        uninitialized_graph: StateTransitionGraph[ParticleWithSpin],
+        permutation: Dict[int, ParticleWithSpin],
         edge_id: int,
         state: StateWithSpins,
-    ) -> List[StateTransitionGraph[ParticleWithSpin]]:
+    ) -> List[Dict[int, ParticleWithSpin]]:
         particle_name, spin_projections = state
         particle = particle_db[particle_name]
-        output_graph = []
+        new_permutations = []
         for projection in spin_projections:
-            graph_copy = deepcopy(uninitialized_graph)
-            graph_copy.edge_props[edge_id] = (particle, projection)
-            output_graph.append(graph_copy)
-        return output_graph
+            temp_permutation = deepcopy(permutation)
+            temp_permutation.update({edge_id: (particle, projection)})
+            new_permutations.append(temp_permutation)
+        return new_permutations
 
-    edge_particle_dict = {
-        edge_id: graph.edge_props[edge_id]
-        for edge_id in graph.get_initial_state_edges()
-        + graph.get_final_state_edges()
-    }
-
-    # now add more quantum numbers given by user (spin_projection)
-    uninitialized_graph = StateTransitionGraph.from_topology(graph)
-    output_graphs: List[StateTransitionGraph[ParticleWithSpin]] = [
-        uninitialized_graph
-    ]
-    for edge_id, state in edge_particle_dict.items():
-        temp_graphs = output_graphs
-        output_graphs = []
-        for temp_graph in temp_graphs:
-            output_graphs.extend(
-                populate_edge_with_spin_projections(temp_graph, edge_id, state)
+    initial_facts_permutations: List[Dict[int, ParticleWithSpin]] = [dict()]
+    for edge_id, state in initial_facts.items():
+        temp_permutations = initial_facts_permutations
+        initial_facts_permutations = []
+        for temp_permutation in temp_permutations:
+            initial_facts_permutations.extend(
+                populate_edge_with_spin_projections(
+                    temp_permutation, edge_id, state
+                )
             )
 
-    return output_graphs
+    return initial_facts_permutations
+
+
+def __get_initial_state_edge_ids(
+    graph: StateTransitionGraph[ParticleWithSpin],
+) -> List[int]:
+    return graph.get_initial_state_edge_ids()
+
+
+def __get_final_state_edge_ids(
+    graph: StateTransitionGraph[ParticleWithSpin],
+) -> List[int]:
+    return graph.get_final_state_edge_ids()
 
 
 def match_external_edges(
@@ -412,24 +430,28 @@ def match_external_edges(
     if not graphs:
         return
     ref_graph_id = 0
-    _match_external_edge_ids(graphs, ref_graph_id, "get_final_state_edges")
-    _match_external_edge_ids(graphs, ref_graph_id, "get_initial_state_edges")
+    _match_external_edge_ids(graphs, ref_graph_id, __get_final_state_edge_ids)
+    _match_external_edge_ids(
+        graphs, ref_graph_id, __get_initial_state_edge_ids
+    )
 
 
 def _match_external_edge_ids(  # pylint: disable=too-many-locals
     graphs: List[StateTransitionGraph[ParticleWithSpin]],
     ref_graph_id: int,
-    external_edge_getter_function: str,
+    external_edge_getter_function: Callable[
+        [StateTransitionGraph], Sequence[int]
+    ],
 ) -> None:
     ref_graph = graphs[ref_graph_id]
     # create external edge to particle mapping
     ref_edge_id_particle_mapping = _create_edge_id_particle_mapping(
-        ref_graph, external_edge_getter_function
+        ref_graph, external_edge_getter_function(ref_graph)
     )
 
     for graph in graphs[:ref_graph_id] + graphs[ref_graph_id + 1 :]:
         edge_id_particle_mapping = _create_edge_id_particle_mapping(
-            graph, external_edge_getter_function
+            graph, external_edge_getter_function(graph)
         )
         # remove matching entries
         ref_mapping_copy = deepcopy(ref_edge_id_particle_mapping)
@@ -465,13 +487,13 @@ def perform_external_edge_identical_particle_combinatorics(
     if not isinstance(graph, StateTransitionGraph):
         raise TypeError("graph argument is not of type StateTransitionGraph!")
     temp_new_graphs = _external_edge_identical_particle_combinatorics(
-        graph, "get_final_state_edges"
+        graph, __get_final_state_edge_ids
     )
     new_graphs = []
     for new_graph in temp_new_graphs:
         new_graphs.extend(
             _external_edge_identical_particle_combinatorics(
-                new_graph, "get_initial_state_edges"
+                new_graph, __get_initial_state_edge_ids
             )
         )
     return new_graphs
@@ -479,12 +501,14 @@ def perform_external_edge_identical_particle_combinatorics(
 
 def _external_edge_identical_particle_combinatorics(
     graph: StateTransitionGraph[ParticleWithSpin],
-    external_edge_getter_function: str,
+    external_edge_getter_function: Callable[
+        [StateTransitionGraph], Sequence[int]
+    ],
 ) -> List[StateTransitionGraph]:
     # pylint: disable=too-many-locals
     new_graphs = [graph]
     edge_particle_mapping = _create_edge_id_particle_mapping(
-        graph, external_edge_getter_function
+        graph, external_edge_getter_function(graph)
     )
     identical_particle_groups: Dict[str, Set[int]] = {}
     for key, value in edge_particle_mapping.items():
@@ -536,10 +560,10 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
 
 
 def _create_edge_id_particle_mapping(
-    graph: StateTransitionGraph[ParticleWithSpin],
-    external_edge_getter_function: str,
+    graph: StateTransitionGraph[ParticleWithSpin], edge_ids: Sequence[int]
 ) -> Dict[int, str]:
     return {
-        i: graph.edge_props[i][0].name
-        for i in getattr(graph, external_edge_getter_function)()
+        i: graph.get_edge_props(i)[0].name
+        for i in edge_ids
+        if graph.get_edge_props(i)
     }

@@ -10,7 +10,7 @@ possible.
 """
 
 
-from expertsystem.reaction.solving import Result
+from expertsystem.reaction import Result
 
 from .canonical_decay import CanonicalAmplitudeGenerator
 from .helicity_decay import HelicityAmplitudeGenerator

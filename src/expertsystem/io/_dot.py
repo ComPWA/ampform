@@ -49,8 +49,8 @@ def __graph_to_dot_content(
     graph: StateTransitionGraph, prefix: str = ""
 ) -> str:
     dot_source = ""
-    top = graph.get_initial_state_edges()
-    outs = graph.get_final_state_edges()
+    top = graph.get_initial_state_edge_ids()
+    outs = graph.get_final_state_edge_ids()
     for edge_id in top + outs:
         dot_source += _DOT_DEFAULT_NODE.format(
             prefix + __node_name(edge_id), __edge_label(graph, edge_id)
@@ -86,9 +86,9 @@ def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
 
 def __edge_label(graph: StateTransitionGraph, edge_id: int) -> str:
     if isinstance(graph, StateTransitionGraph):
-        if edge_id not in graph.edge_props:
+        edge_prop = graph.get_edge_props(edge_id)
+        if not edge_prop:
             return str(edge_id)
-        edge_prop = graph.edge_props[edge_id]
         if isinstance(edge_prop, Particle):
             return edge_prop.name
         if isinstance(edge_prop, tuple):

@@ -1,6 +1,5 @@
 # pylint: disable=redefined-outer-name
 
-from copy import deepcopy
 from math import factorial
 
 import pytest
@@ -12,12 +11,11 @@ from expertsystem.reaction.combinatorics import (
     _get_kinematic_representation,
     _KinematicRepresentation,
     _safe_set_spin_projections,
-    initialize_graph,
+    create_initial_facts,
 )
 from expertsystem.reaction.topology import (
     InteractionNode,
     SimpleStateTransitionTopologyBuilder,
-    StateTransitionGraph,
     Topology,
 )
 
@@ -46,14 +44,14 @@ def three_body_decay() -> Topology:
 def test_initialize_graph(
     final_state_groupings, three_body_decay, particle_database
 ):
-    graphs = initialize_graph(
+    initial_facts = create_initial_facts(
         three_body_decay,
         initial_state=[("J/psi(1S)", [-1, +1])],
         final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
         final_state_groupings=final_state_groupings,
     )
-    assert len(graphs) == 4
+    assert len(initial_facts) == 4
 
 
 @pytest.mark.parametrize(
@@ -101,14 +99,13 @@ class TestKinematicRepresentation:
         assert representation.final_state == [["gamma", "pi0"]]
 
     @staticmethod
-    def test_from_graph(three_body_decay, particle_database):
-        graph1 = StateTransitionGraph.from_topology(three_body_decay)
-        pion = particle_database["pi0"]
-        graph1.edge_props[0] = ("J/psi", [-1, +1])
-        graph1.edge_props[2] = pion
-        graph1.edge_props[3] = pion
-        graph1.edge_props[4] = "gamma"
-        kinematic_representation1 = _get_kinematic_representation(graph1)
+    def test_from_topology(three_body_decay):
+        pi0 = ("pi0", [0])
+        gamma = ("gamma", [-1, 1])
+        edge_props = {0: ("J/psi", [-1, +1]), 2: pi0, 3: pi0, 4: gamma}
+        kinematic_representation1 = _get_kinematic_representation(
+            three_body_decay, edge_props
+        )
         assert kinematic_representation1.initial_state == [
             ["J/psi"],
             ["J/psi"],
@@ -118,16 +115,21 @@ class TestKinematicRepresentation:
             ["gamma", "pi0", "pi0"],
         ]
 
-        graph2 = deepcopy(graph1)
-        graph2.edge_props[3] = "gamma"
-        graph2.edge_props[4] = "pi0"
-        kinematic_representation2 = _get_kinematic_representation(graph2)
+        kinematic_representation2 = _get_kinematic_representation(
+            topology=three_body_decay,
+            initial_facts={0: ("J/psi", [-1, +1]), 2: pi0, 3: gamma, 4: pi0},
+        )
         assert kinematic_representation1 == kinematic_representation2
 
-        graph3 = deepcopy(graph1)
-        graph3.edge_props[2] = "pi0"
-        graph3.edge_props[3] = "gamma"
-        kinematic_representation3 = _get_kinematic_representation(graph3)
+        kinematic_representation3 = _get_kinematic_representation(
+            topology=three_body_decay,
+            initial_facts={
+                0: ("J/psi", [-1, +1]),
+                2: pi0,
+                3: gamma,
+                4: gamma,
+            },
+        )
         assert kinematic_representation2 != kinematic_representation3
 
     @staticmethod
@@ -159,29 +161,29 @@ class TestKinematicRepresentation:
 
 
 def test_generate_permutations(three_body_decay, particle_database):
-    graphs = _generate_kinematic_permutations(
+    permutations = _generate_kinematic_permutations(
         three_body_decay,
         initial_state=[("J/psi(1S)", [-1, +1])],
         final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
         allowed_kinematic_groupings=[_KinematicRepresentation(["pi0", "pi0"])],
     )
-    assert len(graphs) == 1
+    assert len(permutations) == 1
 
-    graphs = _generate_kinematic_permutations(
+    permutations = _generate_kinematic_permutations(
         three_body_decay,
         initial_state=[("J/psi(1S)", [-1, +1])],
         final_state=["gamma", "pi0", "pi0"],
         particles=particle_database,
     )
-    assert len(graphs) == 2
+    assert len(permutations) == 2
     graph0_final_state_node1 = [
-        graphs[0].edge_props[edge_id]
-        for edge_id in graphs[0].get_originating_final_state_edges(1)
+        permutations[0][edge_id]
+        for edge_id in three_body_decay.get_originating_final_state_edge_ids(1)
     ]
     graph1_final_state_node1 = [
-        graphs[1].edge_props[edge_id]
-        for edge_id in graphs[1].get_originating_final_state_edges(1)
+        permutations[1][edge_id]
+        for edge_id in three_body_decay.get_originating_final_state_edge_ids(1)
     ]
     assert graph0_final_state_node1 == [
         ("pi0", [0]),
@@ -192,12 +194,14 @@ def test_generate_permutations(three_body_decay, particle_database):
         ("pi0", [0]),
     ]
 
-    graph0 = graphs[0]
-    output_graphs0 = _generate_spin_permutations(graph0, particle_database)
-    assert len(output_graphs0) == 4
-    assert output_graphs0[0].edge_props[0][1] == -1
-    assert output_graphs0[0].edge_props[2][1] == -1
-    assert output_graphs0[1].edge_props[0][1] == -1
-    assert output_graphs0[1].edge_props[2][1] == +1
-    assert output_graphs0[2].edge_props[0][1] == +1
-    assert output_graphs0[3].edge_props[0][1] == +1
+    permutation0 = permutations[0]
+    spin_permutations = _generate_spin_permutations(
+        permutation0, particle_database
+    )
+    assert len(spin_permutations) == 4
+    assert spin_permutations[0][0][1] == -1
+    assert spin_permutations[0][2][1] == -1
+    assert spin_permutations[1][0][1] == -1
+    assert spin_permutations[1][2][1] == +1
+    assert spin_permutations[2][0][1] == +1
+    assert spin_permutations[3][0][1] == +1

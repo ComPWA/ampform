@@ -52,8 +52,8 @@ def test_full(formalism_type, n_solutions, particle_database):
     )
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
     stm.add_final_state_grouping([["D0", "pi0"], ["D~0", "pi0"]])
-    graph_node_setting_pairs = stm.prepare_graphs()
-    result = stm.find_solutions(graph_node_setting_pairs)
+    problem_sets = stm.create_problem_sets()
+    result = stm.find_solutions(problem_sets)
     assert len(result.solutions) == n_solutions
     model = es.generate_amplitudes(result)
     assert len(model.parameters) == 10

@@ -61,15 +61,15 @@ def test_parity_prefactor(
     )
     stm.add_final_state_grouping(test_input.final_state_grouping)
     stm.set_allowed_interaction_types([InteractionTypes.EM])
-    graph_interaction_settings_groups = stm.prepare_graphs()
+    problem_sets = stm.create_problem_sets()
 
-    result = stm.find_solutions(graph_interaction_settings_groups)
+    result = stm.find_solutions(problem_sets)
 
     for solution in result.solutions:
         in_edge = [
-            k
-            for k, v in solution.edge_props.items()
-            if v[0].name == ingoing_state
+            edge_id
+            for edge_id in solution.edges
+            if solution.get_edge_props(edge_id)[0].name == ingoing_state
         ]
         assert len(in_edge) == 1
         node_id = solution.edges[in_edge[0]].ending_node_id
@@ -78,7 +78,7 @@ def test_parity_prefactor(
 
         assert (
             relative_parity_prefactor
-            == solution.node_props[node_id].parity_prefactor
+            == solution.get_node_props(node_id).parity_prefactor
         )
 
     amplitude_model = es.generate_amplitudes(result)

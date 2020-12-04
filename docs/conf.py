@@ -156,7 +156,7 @@ nitpick_ignore = [
     ("py:class", "StateTransitionGraph"),
     ("py:class", "a set-like object providing a view on D's items"),
     ("py:class", "a set-like object providing a view on D's keys"),
-    ("py:class", "_T"),
+    ("py:class", "_EdgeType"),
     ("py:class", "an object providing a view on D's values"),
     ("py:class", "typing_extensions.Protocol"),
 ]

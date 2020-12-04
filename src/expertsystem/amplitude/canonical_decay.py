@@ -19,7 +19,7 @@ from .model import CanonicalDecay, ClebschGordan, DecayNode, HelicityDecay
 def _generate_clebsch_gordan_string(
     graph: StateTransitionGraph[ParticleWithSpin], node_id: int
 ) -> str:
-    node_props = graph.node_props[node_id]
+    node_props = graph.get_node_props(node_id)
     ang_orb_mom = __get_angular_momentum(node_props)
     spin = __get_coupled_spin(node_props)
     return f"_L_{ang_orb_mom.magnitude}_S_{spin.magnitude}"
@@ -38,7 +38,7 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
     ) -> str:
         name = ""
         if isinstance(node_id, int):
-            node_ids = {node_id}
+            node_ids = frozenset({node_id})
         else:
             node_ids = graph.nodes
         for node in node_ids:
@@ -72,7 +72,7 @@ def _clebsch_gordan_decorator(
                 f"Can only decorate with return value {HelicityDecay.__name__}"
             )
 
-        node_props = graph.node_props[node_id]
+        node_props = graph.get_node_props(node_id)
         ang_mom = __get_angular_momentum(node_props)
         if ang_mom.projection != 0.0:
             raise ValueError(f"Projection of L is non-zero!: {ang_mom}")
@@ -83,19 +83,19 @@ def _clebsch_gordan_decorator(
                 f"{spin.__class__.__name__} is not of type {Spin.__name__}"
             )
 
-        in_edge_ids = graph.get_edges_ingoing_to_node(node_id)
+        in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
 
         parent_spin = Spin(
-            graph.edge_props[in_edge_ids[0]][0].spin,
-            graph.edge_props[in_edge_ids[0]][1],
+            graph.get_edge_props(in_edge_ids[0])[0].spin,
+            graph.get_edge_props(in_edge_ids[0])[1],
         )
 
         daughter_spins: List[Spin] = []
 
-        for out_edge_id in graph.get_edges_outgoing_from_node(node_id):
+        for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):
             daughter_spin = Spin(
-                graph.edge_props[out_edge_id][0].spin,
-                graph.edge_props[out_edge_id][1],
+                graph.get_edge_props(out_edge_id)[0].spin,
+                graph.get_edge_props(out_edge_id)[1],
             )
             if daughter_spin is not None and isinstance(daughter_spin, Spin):
                 daughter_spins.append(daughter_spin)
@@ -154,9 +154,7 @@ class CanonicalAmplitudeGenerator(HelicityAmplitudeGenerator):
 
     @_clebsch_gordan_decorator
     def _generate_partial_decay(  # type: ignore
-        self,
-        graph: StateTransitionGraph[ParticleWithSpin],
-        node_id: Optional[int] = None,
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> DecayNode:
         return super()._generate_partial_decay(graph, node_id)
 

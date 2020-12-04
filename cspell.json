@@ -99,6 +99,7 @@
     "ignoreWords": [
         "adrs",
         "arange",
+        "asdict",
         "cano",
         "celltoolbar",
         "codacy",

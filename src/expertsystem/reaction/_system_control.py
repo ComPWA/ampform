@@ -6,16 +6,20 @@ from typing import Callable, Dict, List, Optional, Set, Tuple, Type
 
 import attr
 
+from expertsystem.particle import Parity, Particle, ParticleCollection
+from expertsystem.reaction.default_settings import InteractionTypes
 from expertsystem.reaction.quantum_numbers import (
+    EdgeQuantumNumber,
+    EdgeQuantumNumbers,
     InteractionProperties,
     NodeQuantumNumber,
+    NodeQuantumNumbers,
     ParticleWithSpin,
 )
 from expertsystem.reaction.solving import (
+    GraphEdgePropertyMap,
+    GraphNodePropertyMap,
     GraphSettings,
-    InteractionTypes,
-    NodeSettings,
-    _get_node_quantum_number,
 )
 from expertsystem.reaction.topology import StateTransitionGraph
 
@@ -24,6 +28,103 @@ Strength = float
 GraphSettingsGroups = Dict[
     Strength, List[Tuple[StateTransitionGraph, GraphSettings]]
 ]
+
+
+def create_edge_properties(
+    particle: Particle,
+    spin_projection: Optional[float] = None,
+) -> GraphEdgePropertyMap:
+    edge_qn_mapping: Dict[str, Type[EdgeQuantumNumber]] = {
+        qn_name: qn_type
+        for qn_name, qn_type in EdgeQuantumNumbers.__dict__.items()
+        if not qn_name.startswith("__")
+    }  # Note using attr.fields does not work here because init=False
+    property_map: GraphEdgePropertyMap = {}
+    isospin = None
+    for qn_name, value in attr.asdict(particle).items():
+        if isinstance(value, Parity):
+            value = value.value
+        if qn_name in edge_qn_mapping:
+            property_map[edge_qn_mapping[qn_name]] = value
+        else:
+            if "isospin" in qn_name:
+                isospin = value
+            elif "spin" in qn_name:
+                property_map[EdgeQuantumNumbers.spin_magnitude] = value
+
+    if spin_projection is not None:
+        property_map[EdgeQuantumNumbers.spin_projection] = spin_projection
+    if isospin is not None:
+        property_map[EdgeQuantumNumbers.isospin_magnitude] = isospin.magnitude
+        property_map[
+            EdgeQuantumNumbers.isospin_projection
+        ] = isospin.projection
+    return property_map
+
+
+def create_node_properties(
+    node_props: InteractionProperties,
+) -> GraphNodePropertyMap:
+    node_qn_mapping: Dict[str, Type[NodeQuantumNumber]] = {
+        qn_name: qn_type
+        for qn_name, qn_type in NodeQuantumNumbers.__dict__.items()
+        if not qn_name.startswith("__")
+    }  # Note using attr.fields does not work here because init=False
+    property_map: GraphNodePropertyMap = {}
+    for qn_name, value in attr.asdict(node_props).items():
+        if value is None:
+            continue
+        if qn_name in node_qn_mapping:
+            property_map[node_qn_mapping[qn_name]] = value
+        else:
+            raise TypeError(
+                f"Missmatch between InteractionProperties and "
+                f"NodeQuantumNumbers. NodeQuantumNumbers does not define "
+                f"{qn_name}"
+            )
+    return property_map
+
+
+def create_particle(
+    edge_props: GraphEdgePropertyMap, particles: ParticleCollection
+) -> ParticleWithSpin:
+    """Create a Particle with spin projection from a qn dictionary.
+
+    The implementation assumes the edge properties match the attributes of a
+    particle inside the `.ParticleCollection`.
+
+    Args:
+        edge_props: The quantum number dictionary.
+        particles: A `.ParticleCollection` which is used to retrieve a
+          reference particle instance to lower the memory footprint.
+
+    Raises:
+        KeyError: If the edge properties do not contain the pid information or
+          no particle with the same pid is found in the `.ParticleCollection`.
+
+        ValueError: If the edge properties do not contain spin projection info.
+    """
+    particle = particles.find(int(edge_props[EdgeQuantumNumbers.pid]))
+    if EdgeQuantumNumbers.spin_projection not in edge_props:
+        raise ValueError(
+            "GraphEdgePropertyMap does not contain a spin projection!"
+        )
+    spin_projection = edge_props[EdgeQuantumNumbers.spin_projection]
+
+    return (particle, spin_projection)
+
+
+def create_interaction_properties(
+    qn_solution: GraphNodePropertyMap,
+) -> InteractionProperties:
+    converted_solution = {k.__name__: v for k, v in qn_solution.items()}
+    kw_args = {
+        x.name: converted_solution[x.name]
+        for x in attr.fields(InteractionProperties)
+        if x.name in converted_solution
+    }
+
+    return attr.evolve(InteractionProperties(), **kw_args)
 
 
 class CompareGraphNodePropertiesFunctor:
@@ -37,20 +138,16 @@ class CompareGraphNodePropertiesFunctor:
 
     def __call__(
         self,
-        node_props1: Dict[int, InteractionProperties],
-        node_props2: Dict[int, InteractionProperties],
+        node_props1: InteractionProperties,
+        node_props2: InteractionProperties,
     ) -> bool:
-        for node_id, node_props in node_props1.items():
-            other_node_props = node_props2[node_id]
-            if attr.evolve(
-                node_props,
-                **{x.__name__: None for x in self.__ignored_qn_list},
-            ) != attr.evolve(
-                other_node_props,
-                **{x.__name__: None for x in self.__ignored_qn_list},
-            ):
-                return False
-        return True
+        return attr.evolve(
+            node_props1,
+            **{x.__name__: None for x in self.__ignored_qn_list},
+        ) == attr.evolve(
+            node_props2,
+            **{x.__name__: None for x in self.__ignored_qn_list},
+        )
 
 
 def filter_interaction_types(
@@ -161,14 +258,13 @@ def _remove_qns_from_graph(  # pylint: disable=too-many-branches
     qn_list: Set[Type[NodeQuantumNumber]],
 ) -> StateTransitionGraph[ParticleWithSpin]:
     new_node_props = {}
-    for node_id, node_props in graph.node_props.items():
+    for node_id in graph.nodes:
+        node_props = graph.get_node_props(node_id)
         new_node_props[node_id] = attr.evolve(
             node_props, **{x.__name__: None for x in qn_list}
         )
 
-    graph.node_props = new_node_props
-
-    return graph
+    return graph.evolve(node_props=new_node_props)
 
 
 def _check_equal_ignoring_qns(
@@ -236,7 +332,7 @@ def require_interaction_property(
     ingoing_particle_name: str,
     interaction_qn: Type[NodeQuantumNumber],
     allowed_values: List,
-) -> Callable[[StateTransitionGraph], bool]:
+) -> Callable[[StateTransitionGraph[ParticleWithSpin]], bool]:
     """Filter function.
 
     Closure, which can be used as a filter function in :func:`.filter_graphs`.
@@ -261,7 +357,7 @@ def require_interaction_property(
             - *False* otherwise
     """
 
-    def check(graph: StateTransitionGraph) -> bool:
+    def check(graph: StateTransitionGraph[ParticleWithSpin]) -> bool:
         node_ids = _find_node_ids_with_ingoing_particle_name(
             graph, ingoing_particle_name
         )
@@ -269,7 +365,7 @@ def require_interaction_property(
             return False
         for i in node_ids:
             if (
-                _get_node_quantum_number(interaction_qn, graph.node_props[i])
+                getattr(graph.get_node_props(i), interaction_qn.__name__)
                 not in allowed_values
             ):
                 return False
@@ -283,32 +379,10 @@ def _find_node_ids_with_ingoing_particle_name(
 ) -> List[int]:
     found_node_ids = []
     for node_id in graph.nodes:
-        edge_ids = graph.get_edges_ingoing_to_node(node_id)
-        for edge_id in edge_ids:
-            edge_props = graph.edge_props[edge_id]
+        for edge_id in graph.get_edge_ids_ingoing_to_node(node_id):
+            edge_props = graph.get_edge_props(edge_id)
             edge_particle_name = edge_props[0].name
             if str(ingoing_particle_name) in str(edge_particle_name):
                 found_node_ids.append(node_id)
                 break
     return found_node_ids
-
-
-def group_by_strength(
-    graph_node_setting_pairs: List[Tuple[StateTransitionGraph, GraphSettings]]
-) -> GraphSettingsGroups:
-    graph_settings_groups: GraphSettingsGroups = {}
-    for (instance, graph_settings) in graph_node_setting_pairs:
-        strength = _calculate_strength(graph_settings.node_settings)
-        if strength not in graph_settings_groups:
-            graph_settings_groups[strength] = []
-        graph_settings_groups[strength].append((instance, graph_settings))
-    return graph_settings_groups
-
-
-def _calculate_strength(
-    node_interaction_settings: Dict[int, NodeSettings]
-) -> float:
-    strength = 1.0
-    for int_setting in node_interaction_settings.values():
-        strength *= int_setting.interaction_strength
-    return strength

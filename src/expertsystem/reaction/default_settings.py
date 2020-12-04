@@ -1,6 +1,7 @@
 """Default configuration for the `expertsystem`."""
 
 from copy import deepcopy
+from enum import Enum, auto
 from os.path import dirname, join, realpath
 from typing import Dict, List, Tuple, Union
 
@@ -36,11 +37,7 @@ from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
     NodeQuantumNumbers,
 )
-from expertsystem.reaction.solving import (
-    EdgeSettings,
-    InteractionTypes,
-    NodeSettings,
-)
+from expertsystem.reaction.solving import EdgeSettings, NodeSettings
 
 __EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
 __DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
@@ -80,6 +77,14 @@ __EDGE_RULE_PRIORITIES: Dict[GraphElementRule, int] = {
     isospin_validity: 61,
     spin_validity: 62,
 }
+
+
+class InteractionTypes(Enum):
+    """Types of interactions in the form of an enumerate."""
+
+    Strong = auto()
+    EM = auto()
+    Weak = auto()
 
 
 def _get_spin_magnitudes(is_nbody: bool) -> List[float]:

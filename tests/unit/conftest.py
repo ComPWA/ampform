@@ -5,7 +5,7 @@ import pytest
 
 import expertsystem as es
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.reaction.solving import Result
+from expertsystem.reaction import Result
 
 logging.basicConfig(level=logging.ERROR)
 

@@ -27,13 +27,13 @@ def two_to_three_decay() -> Topology:
     topology = Topology(
         nodes={0, 1, 2},
         edges={
-            0: Edge(0, None),
-            1: Edge(0, None),
-            2: Edge(1, 0),
-            3: Edge(2, 1),
-            4: Edge(None, 1),
-            5: Edge(None, 2),
-            6: Edge(None, 2),
+            0: Edge(None, 0),
+            1: Edge(None, 0),
+            2: Edge(0, 1),
+            3: Edge(1, 2),
+            4: Edge(1, None),
+            5: Edge(2, None),
+            6: Edge(2, None),
         },
     )
     return topology
@@ -182,23 +182,11 @@ class TestTopology:
     @staticmethod
     def test_getters(two_to_three_decay):
         topology: Topology = two_to_three_decay  # shorter name
-        assert topology.get_originating_node_list([0]) == [None]
+        assert topology.get_originating_node_list([0]) == []
         assert topology.get_originating_node_list([5, 6]) == [2, 2]
-        assert topology.get_initial_state_edges() == [0, 1]
-        assert topology.get_final_state_edges() == [4, 5, 6]
-        assert topology.get_intermediate_state_edges() == [2, 3]
-        assert topology.get_edges_ingoing_to_node(0) == [0, 1]
-        assert topology.get_edges_outgoing_from_node(0) == [2]
-        assert (
-            topology.get_edges_outgoing_from_node(None)
-            == topology.get_initial_state_edges()
-        )
-        assert (
-            topology.get_edges_ingoing_to_node(None)
-            == topology.get_final_state_edges()
-        )
-        assert topology.get_originating_initial_state_edges(0) == [0, 1]
-        assert topology.get_originating_final_state_edges(2) == [5, 6]
+        assert topology.get_initial_state_edge_ids() == [0, 1]
+        assert topology.get_final_state_edge_ids() == [4, 5, 6]
+        assert topology.get_intermediate_state_edge_ids() == [2, 3]
 
     @staticmethod
     def test_swap(two_to_three_decay):
