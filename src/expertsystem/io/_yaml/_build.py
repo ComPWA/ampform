@@ -217,7 +217,7 @@ def __build_amplitude(  # pylint: disable=too-many-locals
         amplitude = __build_amplitude(
             definition["Amplitude"], particles, parameters
         )
-        prefactor = definition.get("Prefactor")
+        prefactor = definition.get("PreFactor")
         return CoefficientAmplitude(
             component=component,
             magnitude=magnitude,
