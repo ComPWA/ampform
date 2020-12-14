@@ -1,7 +1,3 @@
-# cspell:ignore skipif
-
-import os
-
 import pytest
 
 import expertsystem as es
@@ -29,10 +25,6 @@ def test_simple(formalism_type, n_solutions, particle_database):
     assert len(model.parameters) == 10
 
 
-@pytest.mark.skipif(
-    "PYTEST_RUN_SLOW_TESTS" not in os.environ,
-    reason="Test takes too long. Can be enabled again after Rule refactoring",
-)
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "formalism_type, n_solutions",

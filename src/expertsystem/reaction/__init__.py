@@ -11,7 +11,7 @@ particle reaction problems.
 import logging
 import multiprocessing
 from collections import defaultdict
-from copy import deepcopy
+from copy import copy, deepcopy
 from enum import Enum, auto
 from itertools import product
 from multiprocessing import Pool
@@ -78,6 +78,8 @@ from .default_settings import (
     create_default_interaction_settings,
 )
 from .quantum_numbers import (
+    EdgeQuantumNumber,
+    EdgeQuantumNumbers,
     InteractionProperties,
     NodeQuantumNumber,
     NodeQuantumNumbers,
@@ -86,6 +88,7 @@ from .quantum_numbers import (
 from .solving import (
     CSPSolver,
     EdgeSettings,
+    GraphEdgePropertyMap,
     GraphElementProperties,
     GraphSettings,
     NodeSettings,
@@ -501,7 +504,12 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         if reload_pdg or len(self.__particles) == 0:
             self.__particles = load_default_particles()
 
-        self.__allowed_intermediate_particles = list()
+        self.__user_allowed_intermediate_particles = (
+            allowed_intermediate_particles
+        )
+        self.__allowed_intermediate_particles: List[
+            GraphEdgePropertyMap
+        ] = list()
         if allowed_intermediate_particles is not None:
             self.set_allowed_intermediate_particles(
                 allowed_intermediate_particles
@@ -612,14 +620,58 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self, topology: Topology, initial_facts: InitialFacts
     ) -> List[GraphSettings]:
         # pylint: disable=too-many-locals
+        def create_intermediate_edge_qn_domains() -> Dict:
+            # if a list of intermediate states is given by user,
+            # built a domain based on these states
+            if self.__user_allowed_intermediate_particles:
+                intermediate_edge_domains: Dict[
+                    Type[EdgeQuantumNumber], Set
+                ] = defaultdict(set)
+                intermediate_edge_domains[
+                    EdgeQuantumNumbers.spin_projection
+                ].update(
+                    self.interaction_type_settings[InteractionTypes.Weak][
+                        0
+                    ].qn_domains[EdgeQuantumNumbers.spin_projection]
+                )
+                for particle_props in self.__allowed_intermediate_particles:
+                    for edge_qn, qn_value in particle_props.items():
+                        intermediate_edge_domains[edge_qn].add(qn_value)
+
+                return dict(
+                    {
+                        k: list(v)
+                        for k, v in intermediate_edge_domains.items()
+                        if k is not EdgeQuantumNumbers.pid
+                        and k is not EdgeQuantumNumbers.mass
+                        and k is not EdgeQuantumNumbers.width
+                    }
+                )
+
+            return self.interaction_type_settings[InteractionTypes.Weak][
+                0
+            ].qn_domains
+
+        intermediate_state_edges = topology.get_intermediate_state_edge_ids()
+        int_edge_domains = create_intermediate_edge_qn_domains()
+
+        def create_edge_settings(edge_id: int) -> EdgeSettings:
+            settings = copy(
+                self.interaction_type_settings[InteractionTypes.Weak][0]
+            )
+            if edge_id in intermediate_state_edges:
+                settings.qn_domains = int_edge_domains
+            else:
+                settings.qn_domains = {}
+            return settings
+
         final_state_edges = topology.get_final_state_edge_ids()
         initial_state_edges = topology.get_initial_state_edge_ids()
+
         graph_settings: List[GraphSettings] = [
             GraphSettings(
                 edge_settings={
-                    edge_id: self.interaction_type_settings[
-                        InteractionTypes.Weak
-                    ][0]
+                    edge_id: create_edge_settings(edge_id)
                     for edge_id in topology.edges
                 },
                 node_settings={},

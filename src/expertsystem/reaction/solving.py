@@ -289,13 +289,15 @@ def _merge_particle_candidates_with_solutions(
             new_solutions_temp = []
             for current_new_solution in current_new_solutions:
                 for particle_edge in particle_edges:
-                    new_edge_qns = copy(particle_edge)
-                    new_edge_qns.update(
-                        solution.edge_quantum_numbers[int_edge_id]
-                    )
+                    # a "shallow" copy of the nested dicts is needed
+                    new_edge_qns = {
+                        k: copy(v)
+                        for k, v in current_new_solution.edge_quantum_numbers.items()
+                    }
+                    new_edge_qns[int_edge_id].update(particle_edge)
                     temp_solution = attr.evolve(
                         current_new_solution,
-                        edge_quantum_numbers={int_edge_id: new_edge_qns},
+                        edge_quantum_numbers=new_edge_qns,
                     )
                     new_solutions_temp.append(temp_solution)
             current_new_solutions = new_solutions_temp
