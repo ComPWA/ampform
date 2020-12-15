@@ -1,4 +1,4 @@
-# cspell:ignore bdist noreply prereleased pypa reqs sdist
+# cspell:ignore bdist noreply prereleased sdist
 
 name: CD
 
@@ -9,88 +9,10 @@ on:
       - released
 
 jobs:
-  test:
-    name: Run pytest with unpinned dependencies
-    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - macos-10.15
-          - ubuntu-18.04
-        python-version: [3.6, 3.7, 3.8]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r .reqs/test.in
-          pip install .
-      - name: Test with pytest
-        env:
-          PYTEST_RUN_SLOW_TESTS: YES
-        run: pytest -n auto
-
-  documentation:
-    name: Build documentation and run notebooks
-    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r .reqs/doc.txt
-          pip install .
-          sudo apt-get -y install pandoc graphviz
-      - name: Build documentation and run notebooks
-        working-directory: docs
-        env:
-          EXECUTE_NB: YES
-        run: make html
-      - name: Test doctests in docstrings
-        working-directory: docs
-        run: make ignore-warnings=1 doctest
-
-  style:
-    name: Style checks
-    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r .reqs/sty.txt
-          pip install .
-          sudo npm install -g cspell pyright
-      - name: Perform style checks
-        run: pre-commit run -a
-      - name: Check spelling
-        run: cspell $(git ls-files)
-      - name: Run pyright
-        run: pyright
-
   push:
     name: Push to stable branch
     if: startsWith(github.ref, 'refs/tags')
     runs-on: ubuntu-18.04
-    needs:
-      - documentation
-      - style
-      - test
     steps:
       - uses: actions/checkout@master
       - name: Push to stable branch
