@@ -1,4 +1,4 @@
-# https://github.com/jazzband/pip-tools/issues/625
+-r requirements.in
 
 # Requirements for running pytest
 pydot

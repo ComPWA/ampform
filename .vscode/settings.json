@@ -68,7 +68,7 @@
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
-    ".reqs/*.txt": true,
+    "reqs/3.*/*.txt": true,
     "docs/tox.ini": true,
     "tests/tox.ini": true
   },

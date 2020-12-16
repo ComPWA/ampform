@@ -1,0 +1,11 @@
+-r requirements.in
+-r requirements-doc.in
+-r requirements-test.in
+-r requirements-sty.in
+
+# Additional developer tools
+jupyterlab
+jupyterlab-code-formatter
+labels
+pip-tools
+tox >= 1.9  # for skip_install, use_develop

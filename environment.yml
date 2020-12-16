@@ -2,9 +2,9 @@ name: es
 channels:
   - defaults
 dependencies:
-  - python>=3.6,<3.9
+  - python==3.8.*
   - pip
   - graphviz # for binder
   - pip:
-      - -r requirements-dev.txt
+      - -r reqs/3.8/requirements-dev.txt
       - -e .
