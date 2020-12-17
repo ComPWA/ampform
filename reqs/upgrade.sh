@@ -12,6 +12,7 @@ mkdir -p reqs/$PYTHON_VERSION &&
     cp reqs/requirements*.in reqs/$PYTHON_VERSION/ &&
     rm reqs/$PYTHON_VERSION/requirements-dev.in &&
     pip-compile --upgrade \
+        --no-annotate \
         reqs/requirements*.in \
         -o reqs/$PYTHON_VERSION/requirements-dev.txt &&
     for in_file in $(ls reqs/$PYTHON_VERSION/requirements*.in); do
