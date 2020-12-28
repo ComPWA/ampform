@@ -6,7 +6,7 @@
 #
 apipkg==1.5
 attrs==20.3.0
-coverage==5.3
+coverage==5.3.1
 execnet==1.7.1
 gprof2dot==2019.11.30
 hepunits==2.0.1

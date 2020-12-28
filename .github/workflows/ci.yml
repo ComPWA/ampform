@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-20.04]
         python-version: [3.7]
     steps:
       - uses: actions/checkout@master
@@ -48,14 +48,14 @@ jobs:
       matrix:
         os:
           - macos-10.15
-          - ubuntu-18.04
+          - ubuntu-20.04
         python-version: [3.6, 3.7, 3.8]
         exclude:
           - os: macos-10.15
             python-version: 3.6
           - os: macos-10.15
             python-version: 3.8
-          - os: ubuntu-18.04 # coverage job
+          - os: ubuntu-20.04 # coverage job
             python-version: 3.7
     steps:
       - uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
   documentation:
     name: Build documentation and run notebooks
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -99,7 +99,7 @@ jobs:
   style:
     name: Style checks
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7

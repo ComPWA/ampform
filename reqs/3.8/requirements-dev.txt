@@ -22,7 +22,7 @@ cfgv==3.2.0
 chardet==4.0.0
 click==7.1.2
 colorama==0.4.4
-coverage==5.3
+coverage==5.3.1
 decorator==4.4.2
 defusedxml==0.6.0
 distlib==0.3.1
@@ -138,7 +138,7 @@ sphinx-copybutton==0.3.1
 sphinx-panels==0.5.2
 sphinx-thebe==0.0.8
 sphinx-togglebutton==0.2.3
-sphinx==3.3.1
+sphinx==3.4.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==1.0.3
@@ -146,7 +146,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
 sphobjinv==2.0.1
-sqlalchemy==1.3.20
+sqlalchemy==1.3.22
 stdlib-list==0.8.0
 stevedore==3.3.0
 terminado==0.9.1

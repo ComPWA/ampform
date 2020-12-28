@@ -297,11 +297,11 @@ class Topology:
         self.__edges[edge_id1] = popped_edge_id2
 
 
-_EdgeType = TypeVar("_EdgeType")
+EdgeType = TypeVar("EdgeType")
 """A TypeVar representing the type of edge properties."""
 
 
-class StateTransitionGraph(Generic[_EdgeType]):
+class StateTransitionGraph(Generic[EdgeType]):
     """Graph class that resembles a frozen `.Topology` with properties.
 
     This class should contain the full information of a state transition from a
@@ -315,12 +315,12 @@ class StateTransitionGraph(Generic[_EdgeType]):
         self,
         topology: Topology,
         node_props: Dict[int, InteractionProperties] = None,
-        edge_props: Dict[int, _EdgeType] = None,
+        edge_props: Dict[int, EdgeType] = None,
     ) -> None:
         # make a copy of Topology otherwise swapping of edges screws things up
         self.__topology = Topology(nodes=topology.nodes, edges=topology.edges)
         self.__node_props: Dict[int, InteractionProperties] = {}
-        self.__edge_props: Dict[int, _EdgeType] = {}
+        self.__edge_props: Dict[int, EdgeType] = {}
         if node_props:
             self.__node_props = node_props
         if edge_props:
@@ -399,14 +399,14 @@ class StateTransitionGraph(Generic[_EdgeType]):
     def get_node_props(self, node_id: int) -> InteractionProperties:
         return self.__node_props[node_id]
 
-    def get_edge_props(self, edge_id: int) -> _EdgeType:
+    def get_edge_props(self, edge_id: int) -> EdgeType:
         return self.__edge_props[edge_id]
 
     def evolve(
         self,
         node_props: Optional[Dict[int, InteractionProperties]] = None,
-        edge_props: Optional[Dict[int, _EdgeType]] = None,
-    ) -> "StateTransitionGraph[_EdgeType]":
+        edge_props: Optional[Dict[int, EdgeType]] = None,
+    ) -> "StateTransitionGraph[EdgeType]":
         """Changes the node and edge properties of a graph instance.
 
         Since a `.StateTransitionGraph` is frozen (cannot be modified), the
@@ -426,7 +426,7 @@ class StateTransitionGraph(Generic[_EdgeType]):
                     raise KeyError(f"Edge id {edge_id} does not exist!")
                 new_edge_props[edge_id] = edge_prop
 
-        return StateTransitionGraph[_EdgeType](
+        return StateTransitionGraph[EdgeType](
             topology=self.__topology,
             node_props=new_node_props,
             edge_props=new_edge_props,
@@ -435,9 +435,7 @@ class StateTransitionGraph(Generic[_EdgeType]):
     def compare(
         self,
         other: "StateTransitionGraph",
-        edge_comparator: Optional[
-            Callable[[_EdgeType, _EdgeType], bool]
-        ] = None,
+        edge_comparator: Optional[Callable[[EdgeType, EdgeType], bool]] = None,
         node_comparator: Optional[
             Callable[[InteractionProperties, InteractionProperties], bool]
         ] = None,
@@ -462,8 +460,8 @@ class StateTransitionGraph(Generic[_EdgeType]):
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
         self.__topology.swap_edges(edge_id1, edge_id2)
-        value1: Optional[_EdgeType] = None
-        value2: Optional[_EdgeType] = None
+        value1: Optional[EdgeType] = None
+        value2: Optional[EdgeType] = None
         if edge_id1 in self.__edge_props:
             value1 = self.__edge_props.pop(edge_id1)
         if edge_id2 in self.__edge_props:
