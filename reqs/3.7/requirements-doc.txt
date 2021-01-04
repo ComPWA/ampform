@@ -100,7 +100,7 @@ stdlib-list==0.8.0
 terminado==0.9.1
 testpath==0.4.4
 tornado==6.1
-tqdm==4.55.0
+tqdm==4.55.1
 traitlets==5.0.5
 typing-extensions==3.7.4.3 ; python_version < "3.8.0"
 urllib3==1.26.2
