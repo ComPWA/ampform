@@ -22,7 +22,7 @@ def test_simple(formalism_type, n_solutions, particle_database):
     )
     assert len(result.solutions) == n_solutions
     model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 10
+    assert len(model.parameters) == 9
 
 
 @pytest.mark.slow
@@ -48,4 +48,4 @@ def test_full(formalism_type, n_solutions, particle_database):
     result = stm.find_solutions(problem_sets)
     assert len(result.solutions) == n_solutions
     model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 10
+    assert len(model.parameters) == 9

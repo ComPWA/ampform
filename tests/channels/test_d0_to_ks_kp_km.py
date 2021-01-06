@@ -21,6 +21,6 @@ def test_script(output_dir):
         "phi(1020)",
     }
     model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 12
+    assert len(model.parameters) == 11
     es.io.write(model, output_dir + "D0_to_K0bar_Kp_Km.xml")
     es.io.write(model, output_dir + "D0_to_K0bar_Kp_Km.yml")

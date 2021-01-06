@@ -53,16 +53,14 @@ def test_particle_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 12
+    assert len(parameter_list) == 11
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter
 
 
 def test_clebsch_gordan(imported_dict):
-    strength_intensity = imported_dict["Intensity"]
-    normalized_intensity = strength_intensity["Intensity"]
-    incoherent_intensity = normalized_intensity["Intensity"]
+    incoherent_intensity = imported_dict["Intensity"]
     coherent_intensity = incoherent_intensity["Intensities"][0]
     coefficient_amplitude = coherent_intensity["Amplitudes"][0]
     sequential_amplitude = coefficient_amplitude["Amplitude"]

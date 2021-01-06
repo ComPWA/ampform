@@ -25,11 +25,9 @@ from .model import (
     IncoherentIntensity,
     IntensityNode,
     Kinematics,
-    NormalizedIntensity,
     ParticleDynamics,
     RecoilSystem,
     SequentialAmplitude,
-    StrengthIntensity,
 )
 
 
@@ -444,14 +442,11 @@ class HelicityAmplitudeGenerator:
                 graph_group
             )
             incoherent_intensity.intensities.append(coherent_intensity)
-        if len(incoherent_intensity.intensities) > 1:
-            intensity: IntensityNode = NormalizedIntensity(
-                incoherent_intensity
-            )
-        else:
-            intensity = incoherent_intensity.intensities[0]
-        strength_intensity = self.__prepend_strength(intensity)
-        return strength_intensity
+        if len(incoherent_intensity.intensities) == 0:
+            raise ValueError("List of incoherent intensities cannot be empty")
+        if len(incoherent_intensity.intensities) == 1:
+            return incoherent_intensity.intensities[0]
+        return incoherent_intensity
 
     def __create_parameter_couplings(
         self, graph_groups: List[List[StateTransitionGraph[ParticleWithSpin]]]
@@ -477,20 +472,6 @@ class HelicityAmplitudeGenerator:
                     self.__generate_sequential_decay(seq_graph)
                 )
         return coherent_intensity
-
-    def __prepend_strength(
-        self, intensity: IntensityNode
-    ) -> StrengthIntensity:
-        strength = self.__register_parameter(
-            name="strength_incoherent",
-            value=1.0,
-            fix=True,
-        )
-        return StrengthIntensity(
-            component="incoherent_with_strength",
-            strength=strength,
-            intensity=intensity,
-        )
 
     def __generate_sequential_decay(
         self, graph: StateTransitionGraph[ParticleWithSpin]

@@ -91,7 +91,7 @@ def test_kinematics_section(imported_dict):
 
 def test_parameter_section(imported_dict):
     parameter_list = imported_dict["Parameters"]
-    assert len(parameter_list) == 12
+    assert len(parameter_list) == 11
     for parameter in parameter_list:
         assert "Name" in parameter
         assert "Value" in parameter
@@ -128,11 +128,6 @@ def test_dynamics_section(imported_dict):
 
 def test_intensity_section(imported_dict):
     intensity = imported_dict["Intensity"]
-    assert intensity["Class"] == "StrengthIntensity"
-    intensity = intensity["Intensity"]
-    assert intensity["Class"] == "NormalizedIntensity"
-
-    intensity = intensity["Intensity"]
     assert intensity["Class"] == "IncoherentIntensity"
     assert len(intensity["Intensities"]) == 4
 
