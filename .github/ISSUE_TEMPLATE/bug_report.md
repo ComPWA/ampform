@@ -1,26 +1,32 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUG] "
-labels: bug
+title: ""
+labels: Bug
 assignees: ""
 ---
 
-**Describe the bug** A clear and concise description of what the bug is.
+## Bug description
 
-**To Reproduce** Steps to reproduce the behavior:
+<!-- A clear and concise description of what the bug is. -->
+
+<!-- If applicable, add a log or screenshot to help explain your problem. -->
+
+## How to reproduce?
+
+Steps to reproduce the behavior:
 
 1.
 
-**Expected behavior** A clear and concise description of what you expected to
-happen.
+## Expected behavior
 
-**Error log** If applicable, add an error log or screenshots to help explain
-your problem.
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Desktop (please complete the following information):**
+## System info
 
-- OS: [e.g. iOS]
-- Version [e.g. 22]
+Bug resulted on the following system:
 
-**Additional context** Add any other context about the problem here.
+- OS: <!-- e.g. macOS, WSL Ubuntu, ...-->
+- Version <!-- e.g. 10.15, 20.04, ... -->
+- Python version: <!-- e.g. 3.6, 3.7, ... -->
+- Virtual environment: <!-- e.g. venv, Conda, pip user install, ... -->
