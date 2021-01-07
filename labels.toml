@@ -8,6 +8,11 @@ color = "3E4B9E"
 name = "Epic"
 description = ""
 
+["⚠️ Interface"]
+color = "BFDADC"
+name = "⚠️ Interface"
+description = "Changes to the interface"
+
 ["⚪ Duplicate"]
 color = "cfd3d7"
 name = "⚪ Duplicate"
@@ -23,10 +28,10 @@ color = "88506B"
 name = "❔ Question"
 description = "Discuss this matter in the team"
 
-["💡 Enhancement"]
+["💡 Feature"]
 color = "c2e0c6"
-name = "💡 Enhancement"
-description = "New feature or improvement of existing code"
+name = "💡 Feature"
+description = "New feature added to the package"
 
 ["💫 Good first issue"]
 color = "F4EAEF"
@@ -41,7 +46,7 @@ description = "Improvements or additions to documentation"
 ["🔨 Maintenance"]
 color = "FFCD8F"
 name = "🔨 Maintenance"
-description = "Refactoring or redesign"
+description = "Refactoring that doesn't affect the interface"
 
 ["🖱️ DX"]
 color = "fef2c0"

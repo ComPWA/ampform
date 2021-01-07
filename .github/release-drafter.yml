@@ -3,14 +3,16 @@ tag-template: $NEXT_PATCH_VERSION
 
 categories:
   - title: 💡 New features
-    label: 💡 Enhancement
+    label: 💡 Feature
+  - title: ⚠️ Interface
+    label: ⚠️ Interface
   - title: 🐛 Bug fixes
     label: Bug
-  - title: 🔨 Interface changes
+  - title: 🔨 Internal maintenance
     label: 🔨 Maintenance
   - title: 📝 Documentation
     label: 📝 Docs
-  - title: 🖱️ Internals
+  - title: 🖱️ Developer Experience
     label: 🖱️ DX
 
 change-template: "- $TITLE (#$NUMBER)"

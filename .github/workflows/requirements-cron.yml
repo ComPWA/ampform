@@ -58,7 +58,6 @@ jobs:
           reviewers: ${{ github.actor }}
           labels: |
             🖱️ DX
-            🔨 Maintenance
           branch-suffix: timestamp
           delete-branch: true
           token: ${{ secrets.PAT }}
