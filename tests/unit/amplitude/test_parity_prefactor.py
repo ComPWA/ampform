@@ -113,3 +113,52 @@ def extract_prefactor(node, coefficient_amplitude_name):
             if prefactor is not None:
                 return prefactor
     return None
+
+
+@pytest.mark.parametrize(
+    "test_input, parameter_count",
+    [
+        (
+            Input(
+                [("Lambda(c)+", [0.5])],
+                ["p", "K-", "pi+"],
+                ["Lambda(1405)"],
+                [],
+            ),
+            5,
+        ),
+        (
+            Input(
+                [("Lambda(c)+", [0.5])],
+                ["p", "K-", "pi+"],
+                ["Delta(1232)++"],
+                [],
+            ),
+            5,
+        ),
+        (
+            Input(
+                [("Lambda(c)+", [0.5])],
+                ["p", "K-", "pi+"],
+                ["K*(892)0"],
+                [],
+            ),
+            9,
+        ),
+    ],
+)
+def test_parity_amplitude_coupling(
+    test_input: Input,
+    parameter_count: int,
+) -> None:
+    stm = StateTransitionManager(
+        test_input.initial_state,
+        test_input.final_state,
+        allowed_intermediate_particles=test_input.intermediate_states,
+        number_of_threads=1,
+    )
+    problem_sets = stm.create_problem_sets()
+    result = stm.find_solutions(problem_sets)
+
+    amplitude_model = es.generate_amplitudes(result)
+    assert len(amplitude_model.parameters) == parameter_count

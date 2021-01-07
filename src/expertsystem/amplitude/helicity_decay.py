@@ -157,21 +157,15 @@ def _get_parent_recoil_edge(
 
 def _get_prefactor(
     graph: StateTransitionGraph[ParticleWithSpin],
-) -> Optional[float]:
+) -> float:
     """Calculate the product of all prefactors defined in this graph."""
-    prefactor = None
+    prefactor = 1.0
     for node_id in graph.nodes:
         node_props = graph.get_node_props(node_id)
         if node_props:
             temp_prefactor = __validate_float_type(node_props.parity_prefactor)
             if temp_prefactor is not None:
-                if prefactor is None:
-                    prefactor = temp_prefactor
-                else:
-                    prefactor *= temp_prefactor
-            else:
-                prefactor = None
-                break
+                prefactor *= temp_prefactor
     return prefactor
 
 
@@ -280,6 +274,9 @@ class _HelicityAmplitudeNameGenerator:
                 priority_partner_coefficient_suffix,
             ) = self._generate_amplitude_coefficient_couple(graph, node_id)
 
+            if graph.get_node_props(node_id).parity_prefactor is None:
+                continue
+
             if (
                 coefficient_suffix
                 not in self.parity_partner_coefficient_mapping
@@ -370,17 +367,10 @@ class _HelicityAmplitudeNameGenerator:
         """Generate unique suffix for a sequential amplitude graph."""
         output_suffix = ""
         for node_id in graph.nodes:
-            raw_suffix = self.generate_amplitude_coefficient_name(
-                graph, node_id
-            )
-            if raw_suffix not in self.parity_partner_coefficient_mapping:
-                raise KeyError(
-                    f"Coefficient name {raw_suffix} not found in mapping!"
-                )
-            coefficient_suffix = self.parity_partner_coefficient_mapping[
-                raw_suffix
-            ]
-            output_suffix += coefficient_suffix + ";"
+            suffix = self.generate_amplitude_coefficient_name(graph, node_id)
+            if suffix in self.parity_partner_coefficient_mapping:
+                suffix = self.parity_partner_coefficient_mapping[suffix]
+            output_suffix += suffix + ";"
         return output_suffix
 
 
@@ -571,20 +561,24 @@ class HelicityAmplitudeGenerator:
         self, graph: StateTransitionGraph[ParticleWithSpin]
     ) -> Optional[float]:
         prefactor = _get_prefactor(graph)
-        for node_id in graph.nodes:
-            raw_suffix = (
-                self.name_generator.generate_amplitude_coefficient_name(
-                    graph, node_id
+        if prefactor != 1.0:
+            for node_id in graph.nodes:
+                raw_suffix = (
+                    self.name_generator.generate_amplitude_coefficient_name(
+                        graph, node_id
+                    )
                 )
-            )
-            coefficient_suffix = (
-                self.name_generator.parity_partner_coefficient_mapping[
+                if (
                     raw_suffix
-                ]
-            )
-            if coefficient_suffix != raw_suffix:
-                if prefactor != 1.0 and prefactor is not None:
-                    return prefactor
+                    in self.name_generator.parity_partner_coefficient_mapping
+                ):
+                    coefficient_suffix = (
+                        self.name_generator.parity_partner_coefficient_mapping[
+                            raw_suffix
+                        ]
+                    )
+                    if coefficient_suffix != raw_suffix:
+                        return prefactor
         return None
 
     def __register_parameter(
