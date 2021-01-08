@@ -8,6 +8,18 @@ from expertsystem.particle import Particle, ParticleCollection
 from . import _build, _dump
 
 
+def asdict(instance: object) -> dict:
+    if isinstance(instance, Particle):
+        return _dump.from_particle(instance)
+    if isinstance(instance, ParticleCollection):
+        return _dump.from_particle_collection(instance)
+    if isinstance(instance, AmplitudeModel):
+        return _dump.from_amplitude_model(instance)
+    raise NotImplementedError(
+        f"No conversion for dict available for class {instance.__class__.__name__}"
+    )
+
+
 class _IncreasedIndent(yaml.Dumper):
     # pylint: disable=too-many-ancestors
     def increase_indent(self, flow=False, indentless=False):  # type: ignore
@@ -33,27 +45,11 @@ def load_particle_collection(filename: str) -> ParticleCollection:
 
 
 def write(instance: object, filename: str) -> None:
-    if isinstance(instance, ParticleCollection):
-        output_dict = _dump.from_particle_collection(instance)
-    elif isinstance(instance, AmplitudeModel):
-        output_dict = _dump.from_amplitude_model(instance)
-    else:
-        raise NotImplementedError(
-            f"No YAML writer for class {instance.__class__.__name__}"
-        )
     with open(filename, "w") as yaml_file:
         yaml.dump(
-            output_dict,
+            asdict(instance),
             yaml_file,
             sort_keys=False,
             Dumper=_IncreasedIndent,
             default_flow_style=False,
         )
-
-
-def object_to_dict(instance: object) -> dict:
-    if isinstance(instance, ParticleCollection):
-        return _dump.from_particle_collection(instance)
-    if isinstance(instance, Particle):
-        return _dump.from_particle(instance)
-    raise NotImplementedError

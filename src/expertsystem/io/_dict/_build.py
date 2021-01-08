@@ -27,11 +27,11 @@ from expertsystem.amplitude.model import (
 )
 from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 
-from . import validation
+from . import _validate
 
 
 def build_amplitude_model(definition: dict) -> AmplitudeModel:
-    validation.amplitude_model(definition)
+    _validate.amplitude_model(definition)
     particles = build_particle_collection(definition, validate=False)
     parameters = __build_fit_parameters(definition["Parameters"])
     kinematics = __build_kinematics(definition["Kinematics"], particles)
@@ -54,7 +54,7 @@ def build_particle_collection(
     definition: dict, validate: bool = True
 ) -> ParticleCollection:
     if validate:
-        validation.particle_list(definition)
+        _validate.particle_collection(definition)
     definition = definition["ParticleList"]
     particles = ParticleCollection()
     for name, particle_def in definition.items():

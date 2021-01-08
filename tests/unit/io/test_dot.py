@@ -1,5 +1,3 @@
-# pylint: disable=protected-access
-
 import pydot
 import pytest
 

@@ -12,13 +12,36 @@ from expertsystem.amplitude.model import AmplitudeModel
 from expertsystem.particle import ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
-from . import _dot, _pdg, _yaml
+from . import _dict, _dot, _pdg
+
+
+def asdict(instance: object) -> dict:
+    return _dict.asdict(instance)
+
+
+def fromdict(definition: dict) -> object:
+    # pylint: disable=protected-access
+    type_defined = _determine_type(definition)
+    if type_defined == AmplitudeModel:
+        return _dict._build.build_amplitude_model(definition)
+    if type_defined == ParticleCollection:
+        return _dict._build.build_particle_collection(definition)
+    raise NotImplementedError
+
+
+def validate(instance: dict) -> None:
+    # pylint: disable=protected-access
+    type_defined = _determine_type(instance)
+    if type_defined == AmplitudeModel:
+        _dict._validate.amplitude_model(instance)
+    elif type_defined == ParticleCollection:
+        _dict._validate.particle_collection(instance)
 
 
 def load_amplitude_model(filename: str) -> AmplitudeModel:
     file_extension = _get_file_extension(filename)
     if file_extension in ["yaml", "yml"]:
-        return _yaml.load_amplitude_model(filename)
+        return _dict.load_amplitude_model(filename)
     raise NotImplementedError(
         f'No parser parser defined for file type "{file_extension}"'
     )
@@ -27,7 +50,7 @@ def load_amplitude_model(filename: str) -> AmplitudeModel:
 def load_particle_collection(filename: str) -> ParticleCollection:
     file_extension = _get_file_extension(filename)
     if file_extension in ["yaml", "yml"]:
-        return _yaml.load_particle_collection(filename)
+        return _dict.load_particle_collection(filename)
     raise NotImplementedError(
         f'No parser parser defined for file type "{file_extension}"'
     )
@@ -45,7 +68,7 @@ def load_pdg() -> ParticleCollection:
 def write(instance: object, filename: str) -> None:
     file_extension = _get_file_extension(filename)
     if file_extension in ["yaml", "yml"]:
-        return _yaml.write(instance, filename)
+        return _dict.write(instance, filename)
     if file_extension == "gv":
         output_str = convert_to_dot(instance)
         with open(filename, "w") as stream:
@@ -80,3 +103,18 @@ def _get_file_extension(filename: str) -> str:
         raise Exception(f"No file extension in file {filename}")
     extension = extension[1:]
     return extension
+
+
+def _determine_type(definition: dict) -> type:
+    keys = set(definition.keys())
+    if keys == {
+        "Dynamics",
+        "Intensity",
+        "Kinematics",
+        "Parameters",
+        "ParticleList",
+    }:
+        return AmplitudeModel
+    if keys == {"ParticleList"}:
+        return ParticleCollection
+    raise NotImplementedError(f"Could not determine type from keys {keys}")

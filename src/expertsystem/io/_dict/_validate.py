@@ -14,7 +14,7 @@ with open(f"{_EXPERTSYSTEM_PATH}/schemas/amplitude-model.json") as stream:
     _SCHEMA_AMPLITUDE = json.load(stream)
 
 
-def particle_list(instance: dict) -> None:
+def particle_collection(instance: dict) -> None:
     jsonschema.validate(instance=instance, schema=_SCHEMA_PARTICLES)
 
 
