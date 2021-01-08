@@ -18,7 +18,7 @@ doc8==0.8.1
 docutils==0.16
 execnet==1.7.1
 filelock==3.0.12
-flake8-blind-except==0.1.1
+flake8-blind-except==0.2.0
 flake8-bugbear==20.11.1
 flake8-builtins==1.5.3
 flake8-polyfill==1.0.2
@@ -75,7 +75,6 @@ typed-ast==1.4.2
 typing-extensions==3.7.4.3
 virtualenv==20.2.2
 wrapt==1.12.1
-xmltodict==0.12.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

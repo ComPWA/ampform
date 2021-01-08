@@ -12,7 +12,7 @@ indent_style = tab
 [*.{py,toml}]
 indent_size = 4
 
-[*.{json,xml,yaml,yml}]
+[*.{json,yaml,yml}]
 indent_size = 2
 
 [*.{rst,inc}]

@@ -2,8 +2,7 @@
     "version": "0.1",
     "enableFiletypes": [
         "git-commit",
-        "jupyter",
-        "xml"
+        "jupyter"
     ],
     "flagWords": [
         "analyse",
@@ -93,8 +92,7 @@
         "toctree",
         "topness",
         "venv",
-        "weisskopf",
-        "xmltodict"
+        "weisskopf"
     ],
     "ignoreWords": [
         "adrs",

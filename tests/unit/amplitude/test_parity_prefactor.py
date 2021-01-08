@@ -85,7 +85,7 @@ def test_parity_prefactor(
     es.io.write(
         instance=amplitude_model,
         filename=output_dir
-        + f'amplitude_model_prefactor_{"-".join(test_input.intermediate_states)}.xml',
+        + f'amplitude_model_prefactor_{"-".join(test_input.intermediate_states)}.yml',
     )
 
     prefactor1 = extract_prefactor(amplitude_model, related_component_names[0])

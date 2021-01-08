@@ -75,11 +75,8 @@
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./src/expertsystem/schemas/xml/particle-list.json": [
-      "*particle*xml.y*ml"
-    ],
-    "./src/expertsystem/schemas/yaml/amplitude-model.json": ["*recipe.y*ml"],
-    "./src/expertsystem/schemas/yaml/particle-list.json": ["*particle.y*ml"],
+    "./src/expertsystem/schemas/amplitude-model.json": ["*recipe.y*ml"],
+    "./src/expertsystem/schemas/particle-list.json": ["*particle.y*ml"],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }

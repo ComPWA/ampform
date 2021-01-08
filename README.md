@@ -50,7 +50,7 @@ For an overview of **upcoming releases and planned functionality**, see
   - [x] Canonical formalism
   - [ ] Tensor formalisms
 - **Output**: Write transition graph to human-readable recipe file
-  - [x] XML (_old format for [ComPWA](https://compwa.github.io/)_)
+  - ~~XML (_old format for [ComPWA](https://compwa.github.io/)_)~~
   - [x] YAML (_new format for
         [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves)_)
 
