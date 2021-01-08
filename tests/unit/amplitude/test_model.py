@@ -1,6 +1,7 @@
 import pytest
 
 from expertsystem.amplitude.model import (
+    AmplitudeModel,
     FitParameter,
     FitParameters,
     Kinematics,
@@ -32,6 +33,15 @@ class TestFitParameters:
         parameters.add(par2)
         parameters.add(par1)
         assert list(parameters) == ["p2", "p1"]
+
+    def test_eval(  # pylint: disable=no-self-use
+        self,
+        jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
+    ):
+        model = jpsi_to_gamma_pi_pi_canonical_amplitude_model
+        parameters = model.parameters
+        from_repr = eval(repr(parameters))  # pylint: disable=eval-used
+        assert from_repr == parameters
 
 
 class TestKinematics:

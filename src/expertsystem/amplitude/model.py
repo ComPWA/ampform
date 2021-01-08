@@ -51,6 +51,16 @@ class FitParameters(abc.Mapping):
     def parameter_names(self) -> Set[str]:
         return set(self.__parameters)
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, FitParameters):
+            if self.parameter_names != other.parameter_names:
+                return False
+            for par_name in self.keys():
+                if self[par_name] != other[par_name]:
+                    return False
+            return True
+        raise NotImplementedError
+
     def __getitem__(self, name: str) -> FitParameter:
         return self.__parameters[name]
 
@@ -59,6 +69,15 @@ class FitParameters(abc.Mapping):
 
     def __len__(self) -> int:
         return len(self.__parameters)
+
+    def __repr__(self) -> str:
+        output = f"{self.__class__.__name__}(["
+        for parameter in sorted(
+            self.__parameters.values(), key=lambda p: p.name
+        ):
+            output += f"\n    {parameter},"
+        output += "\n])"
+        return output
 
     def add(self, parameter: FitParameter) -> None:
         _assert_arg_type(parameter, FitParameter)

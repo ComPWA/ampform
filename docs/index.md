@@ -18,7 +18,7 @@ For an overview of upcoming releases and planned functionality, see
 
 The two purposes of the Partial Wave Analysis Expert System are to:
 
-1. validate a particle reaction, based on given information. E.g.: Can a
+1. validate a particle reaction, based on given information. <br> E.g.: Can a
    $\pi^0$ decay into 1, 2, 3 $\gamma$ particles?
 2. create partial wave analysis amplitude models, based on basic information of
    a reaction, for instance, an amplitude model for
