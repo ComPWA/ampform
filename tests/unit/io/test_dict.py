@@ -26,9 +26,9 @@ def test_not_implemented_errors(
     output_dir, particle_selection: ParticleCollection
 ):
     with pytest.raises(NotImplementedError):
-        io.load_particle_collection(output_dir + __file__)
+        io.load(__file__)
     with pytest.raises(NotImplementedError):
-        io.write(particle_selection, output_dir + __file__)
+        io.write(particle_selection, output_dir + "test.py")
     with pytest.raises(Exception):
         io.write(particle_selection, output_dir + "no_file_extension")
     with pytest.raises(NotImplementedError):
@@ -76,12 +76,13 @@ class TestHelicityFormalism:
 
     def test_not_implemented_writer(
         self,
+        output_dir: str,
         jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
     ):
         with pytest.raises(NotImplementedError):
             io.write(
                 instance=jpsi_to_gamma_pi_pi_helicity_amplitude_model,
-                filename="JPsiToGammaPi0Pi0.csv",
+                filename=output_dir + "JPsiToGammaPi0Pi0.csv",
             )
 
     def test_create_recipe_dict(

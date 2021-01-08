@@ -6,53 +6,58 @@ disk, so that they can be used by external packages, or just to store (cache)
 the state of the system.
 """
 
+import json
 from pathlib import Path
 
+import yaml
+
 from expertsystem.amplitude.model import AmplitudeModel
-from expertsystem.particle import ParticleCollection
+from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 from . import _dict, _dot, _pdg
 
 
 def asdict(instance: object) -> dict:
-    return _dict.asdict(instance)
+    if isinstance(instance, Particle):
+        return _dict.dump.from_particle(instance)
+    if isinstance(instance, ParticleCollection):
+        return _dict.dump.from_particle_collection(instance)
+    if isinstance(instance, AmplitudeModel):
+        return _dict.dump.from_amplitude_model(instance)
+    raise NotImplementedError(
+        f"No conversion for dict available for class {instance.__class__.__name__}"
+    )
 
 
 def fromdict(definition: dict) -> object:
-    # pylint: disable=protected-access
     type_defined = _determine_type(definition)
     if type_defined == AmplitudeModel:
-        return _dict._build.build_amplitude_model(definition)
+        return _dict.build.build_amplitude_model(definition)
     if type_defined == ParticleCollection:
-        return _dict._build.build_particle_collection(definition)
+        return _dict.build.build_particle_collection(definition)
     raise NotImplementedError
 
 
 def validate(instance: dict) -> None:
-    # pylint: disable=protected-access
     type_defined = _determine_type(instance)
     if type_defined == AmplitudeModel:
-        _dict._validate.amplitude_model(instance)
+        _dict.validate.amplitude_model(instance)
     elif type_defined == ParticleCollection:
-        _dict._validate.particle_collection(instance)
+        _dict.validate.particle_collection(instance)
 
 
-def load_amplitude_model(filename: str) -> AmplitudeModel:
-    file_extension = _get_file_extension(filename)
-    if file_extension in ["yaml", "yml"]:
-        return _dict.load_amplitude_model(filename)
+def load(filename: str) -> object:
+    with open(filename) as stream:
+        file_extension = _get_file_extension(filename)
+        if file_extension == "json":
+            definition = json.load(stream)
+            return fromdict(definition)
+        if file_extension in ["yaml", "yml"]:
+            definition = yaml.load(stream, Loader=yaml.SafeLoader)
+            return fromdict(definition)
     raise NotImplementedError(
-        f'No parser parser defined for file type "{file_extension}"'
-    )
-
-
-def load_particle_collection(filename: str) -> ParticleCollection:
-    file_extension = _get_file_extension(filename)
-    if file_extension in ["yaml", "yml"]:
-        return _dict.load_particle_collection(filename)
-    raise NotImplementedError(
-        f'No parser parser defined for file type "{file_extension}"'
+        f'No loader defined for file type "{file_extension}"'
     )
 
 
@@ -65,15 +70,38 @@ def load_pdg() -> ParticleCollection:
     return _pdg.load_pdg()
 
 
+class _IncreasedIndent(yaml.Dumper):
+    # pylint: disable=too-many-ancestors
+    def increase_indent(self, flow=False, indentless=False):  # type: ignore
+        return super().increase_indent(flow, False)
+
+    def write_line_break(self, data=None):  # type: ignore
+        """See https://stackoverflow.com/a/44284819."""
+        super().write_line_break(data)
+        if len(self.indents) == 1:
+            super().write_line_break()
+
+
 def write(instance: object, filename: str) -> None:
-    file_extension = _get_file_extension(filename)
-    if file_extension in ["yaml", "yml"]:
-        return _dict.write(instance, filename)
-    if file_extension == "gv":
-        output_str = convert_to_dot(instance)
-        with open(filename, "w") as stream:
-            stream.write(output_str)
-        return None
+    with open(filename, "w") as stream:
+        file_extension = _get_file_extension(filename)
+        if file_extension == "json":
+            json.dump(asdict(instance), stream, indent=2)
+            return
+        if file_extension in ["yaml", "yml"]:
+            yaml.dump(
+                asdict(instance),
+                stream,
+                sort_keys=False,
+                Dumper=_IncreasedIndent,
+                default_flow_style=False,
+            )
+            return
+        if file_extension == "gv":
+            output_str = convert_to_dot(instance)
+            with open(filename, "w") as stream:
+                stream.write(output_str)
+            return
     raise NotImplementedError(
         f'No writer defined for file type "{file_extension}"'
     )

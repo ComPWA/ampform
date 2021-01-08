@@ -1079,7 +1079,9 @@ def load_default_particles() -> ParticleCollection:
     </../src/expertsystem/additional_particle_definitions.yml>`.
     """
     particles = io.load_pdg()
-    particles.update(io.load_particle_collection(DEFAULT_PARTICLE_LIST_PATH))
+    additional_particles = io.load(DEFAULT_PARTICLE_LIST_PATH)
+    assert isinstance(additional_particles, ParticleCollection)
+    particles.update(additional_particles)
     logging.info(f"Loaded {len(particles)} particles!")
     return particles
 
