@@ -113,26 +113,12 @@ def __parameters_to_dict(parameters: FitParameters) -> List[dict]:
 
 
 def __parameter_to_dict(parameter: FitParameter) -> dict:
-    parameter_type = ""
-    if "_" in parameter.name:
-        name_prefix = parameter.name.split("_")[0]
-        name_prefix = name_prefix.lower()
-        if name_prefix == "magnitude":
-            parameter_type = "Magnitude"
-        elif name_prefix == "phase":
-            parameter_type = "Phase"
-        elif name_prefix == "strength":
-            parameter_type = "Strength"
-        elif name_prefix == "mesonradius":
-            parameter_type = "MesonRadius"
     output_dict = {
         "Name": parameter.name,
         "Value": parameter.value,
     }
     if parameter.is_fixed:
         output_dict["Fix"] = True
-    if parameter_type:
-        output_dict["Type"] = parameter_type
     return output_dict
 
 

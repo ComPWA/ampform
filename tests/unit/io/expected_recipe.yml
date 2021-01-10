@@ -13,19 +13,14 @@ Kinematics:
 
 Parameters:
   - Name: &par1 Magnitude_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
-    Type: Magnitude
     Value: 1.0
   - Name: &par2 Phase_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
-    Type: Phase
     Value: 0.0
   - Name: &par3 Magnitude_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
-    Type: Magnitude
     Value: 1.0
   - Name: &par4 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
-    Type: Phase
     Value: 0.0
   - Name: &par5 MesonRadius_J/psi(1S)
-    Type: MesonRadius
     Value: 1.0
     Fix: true
   - Name: &par6 Position_f(0)(980)
@@ -35,7 +30,6 @@ Parameters:
   - Name: &par8 MesonRadius_f(0)(980)
     Value: 1.0
     Fix: true
-    Type: MesonRadius
   - Name: &par9 Position_f(0)(1500)
     Value: 1.506
   - Name: &par10 Width_f(0)(1500)
@@ -43,7 +37,6 @@ Parameters:
   - Name: &par11 MesonRadius_f(0)(1500)
     Value: 1.0
     Fix: true
-    Type: MesonRadius
 
 Intensity:
   Class: StrengthIntensity

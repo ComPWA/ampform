@@ -61,7 +61,6 @@
             "title": "Parameter name",
             "description": "Has to be a unique string that is used to identify where the parameter is used in the rest of the model"
           },
-          "Type": { "type": "string" },
           "Value": {
             "type": "number",
             "title": "Starting value of the fit parameter"
