@@ -24,7 +24,7 @@ from expertsystem.particle import Particle, ParticleCollection
 @attr.s
 class FitParameter:
     name: str = attr.ib()
-    value: float = attr.ib(default=0.0)
+    value: float = attr.ib()
     is_fixed: bool = attr.ib(default=False)
 
 

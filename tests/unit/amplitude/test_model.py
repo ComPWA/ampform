@@ -20,16 +20,17 @@ class TestFitParameters:
         parameters = FitParameters()
         with pytest.raises(TypeError):
             parameters.add("par1")  # type: ignore
-        parameters.add(FitParameter(name="par1"))
+        dummy_par = FitParameter(name="par1", value=0.0)
+        parameters.add(dummy_par)
         with pytest.raises(KeyError):
-            parameters.add(FitParameter("par1"))
+            parameters.add(dummy_par)
 
     @staticmethod
     def test_remove():
         parameters = FitParameters()
         assert len(parameters) == 0
-        par1 = FitParameter(name="p1")
-        par2 = FitParameter(name="p2")
+        par1 = FitParameter(name="p1", value=0.0)
+        par2 = FitParameter(name="p2", value=0.0)
         parameters.add(par2)
         parameters.add(par1)
         assert list(parameters) == ["p2", "p1"]
