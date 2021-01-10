@@ -12,39 +12,35 @@ Kinematics:
       ID: 4
 
 Parameters:
-  - Name: &par1 strength_incoherent
-    Type: Strength
-    Value: 1
-    Fix: true
-  - Name: &par2 Magnitude_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
+  - Name: &par1 Magnitude_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par3 Phase_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
+  - Name: &par2 Phase_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
-  - Name: &par4 Magnitude_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
+  - Name: &par3 Magnitude_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Magnitude
     Value: 1.0
-  - Name: &par5 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
+  - Name: &par4 Phase_J/psi(1S)_to_f(0)(1500)_0+gamma_1;f(0)(1500)_to_pi0_0+pi0_0;
     Type: Phase
     Value: 0.0
-  - Name: &par6 MesonRadius_J/psi(1S)
+  - Name: &par5 MesonRadius_J/psi(1S)
     Type: MesonRadius
     Value: 1.0
     Fix: true
-  - Name: &par7 Position_f(0)(980)
+  - Name: &par6 Position_f(0)(980)
     Value: 0.99
-  - Name: &par8 Width_f(0)(980)
+  - Name: &par7 Width_f(0)(980)
     Value: 0.06
-  - Name: &par9 MesonRadius_f(0)(980)
+  - Name: &par8 MesonRadius_f(0)(980)
     Value: 1.0
     Fix: true
     Type: MesonRadius
-  - Name: &par10 Position_f(0)(1500)
+  - Name: &par9 Position_f(0)(1500)
     Value: 1.506
-  - Name: &par11 Width_f(0)(1500)
+  - Name: &par10 Width_f(0)(1500)
     Value: 0.112
-  - Name: &par12 MesonRadius_f(0)(1500)
+  - Name: &par11 MesonRadius_f(0)(1500)
     Value: 1.0
     Fix: true
     Type: MesonRadius
@@ -63,8 +59,8 @@ Intensity:
           Amplitudes:
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_-1_to_f(0)(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
-              Magnitude: *par2
-              Phase: *par3
+              Magnitude: *par1
+              Phase: *par2
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -100,8 +96,8 @@ Intensity:
                         - 2
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_-1_to_f(0)(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
-              Magnitude: *par4
-              Phase: *par5
+              Magnitude: *par3
+              Phase: *par4
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -140,8 +136,8 @@ Intensity:
           Amplitudes:
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_1_to_f(0)(980)_0+gamma_-1;f(0)(980)_0_to_pi0_0+pi0_0;
-              Magnitude: *par2
-              Phase: *par3
+              Magnitude: *par1
+              Phase: *par2
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -177,8 +173,8 @@ Intensity:
                         - 2
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_1_to_f(0)(1500)_0+gamma_-1;f(0)(1500)_0_to_pi0_0+pi0_0;
-              Magnitude: *par4
-              Phase: *par5
+              Magnitude: *par3
+              Phase: *par4
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -217,8 +213,8 @@ Intensity:
           Amplitudes:
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_-1_to_f(0)(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
-              Magnitude: *par2
-              Phase: *par3
+              Magnitude: *par1
+              Phase: *par2
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -254,8 +250,8 @@ Intensity:
                         - 2
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_-1_to_f(0)(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
-              Magnitude: *par4
-              Phase: *par5
+              Magnitude: *par3
+              Phase: *par4
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -294,8 +290,8 @@ Intensity:
           Amplitudes:
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_1_to_f(0)(980)_0+gamma_1;f(0)(980)_0_to_pi0_0+pi0_0;
-              Magnitude: *par2
-              Phase: *par3
+              Magnitude: *par1
+              Phase: *par2
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -331,8 +327,8 @@ Intensity:
                         - 2
             - Class: CoefficientAmplitude
               Component: J/psi(1S)_1_to_f(0)(1500)_0+gamma_1;f(0)(1500)_0_to_pi0_0+pi0_0;
-              Magnitude: *par4
-              Phase: *par5
+              Magnitude: *par3
+              Phase: *par4
               Amplitude:
                 Class: SequentialAmplitude
                 Amplitudes:
@@ -428,20 +424,20 @@ Dynamics:
     Type: NonDynamic
     FormFactor:
       Type: BlattWeisskopf
-      MesonRadius: *par6
+      MesonRadius: *par5
   f(0)(980):
     Type: RelativisticBreitWigner
     PoleParameters:
-      Real: *par7
-      Imaginary: *par8
+      Real: *par6
+      Imaginary: *par7
     FormFactor:
       Type: BlattWeisskopf
-      MesonRadius: *par9
+      MesonRadius: *par8
   f(0)(1500):
     Type: RelativisticBreitWigner
     PoleParameters:
-      Real: *par10
-      Imaginary: *par11
+      Real: *par9
+      Imaginary: *par10
     FormFactor:
       Type: BlattWeisskopf
-      MesonRadius: *par12
+      MesonRadius: *par11

@@ -23,7 +23,7 @@ def particle_selection(particle_database: ParticleCollection):
 
 
 def test_not_implemented_errors(
-    output_dir, particle_selection: ParticleCollection
+    output_dir: str, particle_selection: ParticleCollection
 ):
     with pytest.raises(NotImplementedError):
         io.load(__file__)
@@ -35,7 +35,9 @@ def test_not_implemented_errors(
         io.write(666, output_dir + "wont_work_anyway.yml")
 
 
-def test_serialization(output_dir, particle_selection: ParticleCollection):
+def test_serialization(
+    output_dir: str, particle_selection: ParticleCollection
+):
     assert len(particle_selection) == 181
     io.write(particle_selection, output_dir + "particle_selection.yml")
     asdict = io.asdict(particle_selection)
@@ -56,7 +58,7 @@ class TestHelicityFormalism:
         return jpsi_to_gamma_pi_pi_helicity_amplitude_model
 
     @pytest.fixture(scope="session")
-    def imported_dict(self, output_dir, model: AmplitudeModel):
+    def imported_dict(self, output_dir: str, model: AmplitudeModel):
         output_filename = output_dir + "JPsiToGammaPi0Pi0_heli_recipe.yml"
         asdict = io.asdict(model)
         io.write(model, output_filename)
@@ -180,7 +182,7 @@ class TestHelicityFormalism:
         else:
             expected_items = sorted(expected_section, key=lambda p: p["Name"])
             imported_items = sorted(imported_section, key=lambda p: p["Name"])
-        # assert len(imported_items) == len(expected_items)
+        assert len(imported_items) == len(expected_items)
         for imported, expected in zip(imported_items, expected_items):
             assert imported == expected
 
@@ -193,7 +195,7 @@ class TestCanonicalFormalism:
         return jpsi_to_gamma_pi_pi_canonical_amplitude_model
 
     @pytest.fixture(scope="session")
-    def imported_dict(self, output_dir, model: AmplitudeModel):
+    def imported_dict(self, output_dir: str, model: AmplitudeModel):
         output_filename = output_dir + "JPsiToGammaPi0Pi0_cano_recipe.yml"
         asdict = io.asdict(model)
         io.write(model, output_filename)
@@ -201,12 +203,13 @@ class TestCanonicalFormalism:
 
     def test_not_implemented_writer(
         self,
+        output_dir: str,
         jpsi_to_gamma_pi_pi_canonical_amplitude_model: AmplitudeModel,
     ):
         with pytest.raises(NotImplementedError):
             io.write(
                 instance=jpsi_to_gamma_pi_pi_canonical_amplitude_model,
-                filename="JPsiToGammaPi0Pi0.csv",
+                filename=output_dir + "JPsiToGammaPi0Pi0.csv",
             )
 
     def test_particle_section(self, imported_dict):

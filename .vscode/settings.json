@@ -46,6 +46,16 @@
   "git.rebaseWhenSync": true,
   "githubPullRequests.telemetry.enabled": false,
   "gitlens.advanced.telemetry.enabled": false,
+  "json.schemas": [
+    {
+      "fileMatch": ["*recipe*.json", "test_write_read_*.json"],
+      "url": "./src/expertsystem/schemas/amplitude-model.json"
+    },
+    {
+      "fileMatch": ["*particle*.json"],
+      "url": "./src/expertsystem/schemas/particle-list.json"
+    }
+  ],
   "python.analysis.autoImportCompletions": false,
   "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "black",
@@ -68,15 +78,18 @@
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
-    "reqs/3.*/*.txt": true,
     "docs/tox.ini": true,
+    "reqs/3.*/*.txt": true,
     "tests/tox.ini": true
   },
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./src/expertsystem/schemas/amplitude-model.json": ["*recipe.y*ml"],
-    "./src/expertsystem/schemas/particle-list.json": ["*particle.y*ml"],
+    "./src/expertsystem/schemas/amplitude-model.json": [
+      "*recipe*.y*ml",
+      "test_write_read_*.yml"
+    ],
+    "./src/expertsystem/schemas/particle-list.json": ["*particle*.y*ml"],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }
