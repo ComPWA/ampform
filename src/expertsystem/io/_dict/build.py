@@ -1,10 +1,11 @@
 """Read recipe objects from a YAML file."""
 
-from typing import Callable, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from expertsystem.amplitude.model import (
     AmplitudeModel,
     AmplitudeNode,
+    BlattWeisskopf,
     CanonicalDecay,
     ClebschGordan,
     CoefficientAmplitude,
@@ -13,15 +14,18 @@ from expertsystem.amplitude.model import (
     Dynamics,
     FitParameter,
     FitParameters,
+    FormFactor,
     HelicityDecay,
     HelicityParticle,
     IncoherentIntensity,
     IntensityNode,
     Kinematics,
     KinematicsType,
+    NonDynamic,
     NormalizedIntensity,
     ParticleDynamics,
     RecoilSystem,
+    RelativisticBreitWigner,
     SequentialAmplitude,
     StrengthIntensity,
 )
@@ -148,20 +152,56 @@ def __build_particle_dynamics(
     particles: ParticleCollection,
     parameters: FitParameters,
 ) -> ParticleDynamics:
-    dynamics = ParticleDynamics(particles=particles, parameters=parameters)
-    type_mapping: Dict[str, Callable[[str], Dynamics]] = {
-        "NonDynamic": dynamics.set_non_dynamic,
-        "RelativisticBreitWigner": dynamics.set_breit_wigner,
-    }
+    particle_dynamics = ParticleDynamics(
+        particles=particles, parameters=parameters
+    )
     for particle_name, dynamics_def in definition.items():
-        dynamics_type = dynamics_def["Type"]
-        dynamics_setter = type_mapping.get(dynamics_type, None)
-        if dynamics_setter is None:
-            raise SyntaxError(
-                f"No conversion defined for dynamics type {dynamics_type}"
-            )
-        dynamics_setter(particle_name)
-    return dynamics
+        particle_dynamics[particle_name] = __build_dynamics(
+            dynamics_def, parameters
+        )
+    return particle_dynamics
+
+
+def __build_dynamics(definition: dict, parameters: FitParameters) -> Dynamics:
+    dynamics_type = definition["Type"]
+    form_factor = definition.get("FormFactor")
+    if form_factor is not None:
+        form_factor = __build_form_factor(form_factor, parameters)
+    if dynamics_type == "NonDynamic":
+        return NonDynamic(form_factor)
+    if dynamics_type == "RelativisticBreitWigner":
+        pole = definition["PoleParameters"]
+        pole_position = __safely_get_parameter(pole["Real"], parameters)
+        pole_width = __safely_get_parameter(pole["Imaginary"], parameters)
+        return RelativisticBreitWigner(
+            form_factor=form_factor,
+            pole_position=pole_position,
+            pole_width=pole_width,
+        )
+    raise ValueError(f'Dynamics type "{dynamics_type}" not defined')
+
+
+def __build_form_factor(
+    definition: dict, parameters: FitParameters
+) -> FormFactor:
+    form_factor_type = definition["Type"]
+    if form_factor_type == "BlattWeisskopf":
+        par_name = definition["MesonRadius"]
+        meson_radius = __safely_get_parameter(par_name, parameters)
+        return BlattWeisskopf(meson_radius)
+    raise NotImplementedError(
+        f'Form factor "{form_factor_type}" does not exist'
+    )
+
+
+def __safely_get_parameter(
+    name: str, parameters: FitParameters
+) -> FitParameter:
+    if name not in parameters:
+        raise SyntaxError(
+            "Meson radius has not been defined in the Parameters section"
+        )
+    return parameters[name]
 
 
 def __build_intensity(

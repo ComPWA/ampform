@@ -94,10 +94,6 @@ class FitParameters(abc.Mapping):
         )
 
 
-class Dynamics(ABC):
-    pass
-
-
 class FormFactor(ABC):
     pass
 
@@ -108,18 +104,21 @@ class BlattWeisskopf(FormFactor):
 
 
 @attr.s
+class Dynamics:
+    form_factor: Optional[FormFactor] = attr.ib(default=None)
+
+
 class NonDynamic(Dynamics):
-    form_factor: BlattWeisskopf = attr.ib()
+    pass
 
 
 @attr.s
 class RelativisticBreitWigner(Dynamics):
-    pole_position: FitParameter = attr.ib()
-    pole_width: FitParameter = attr.ib()
-    form_factor: BlattWeisskopf = attr.ib()
+    pole_position: FitParameter = attr.ib(kw_only=True)
+    pole_width: FitParameter = attr.ib(kw_only=True)
 
 
-class ParticleDynamics(abc.Mapping):
+class ParticleDynamics(abc.MutableMapping):
     """Assign dynamics to certain particles in a `.ParticleCollection`."""
 
     def __init__(
@@ -133,8 +132,23 @@ class ParticleDynamics(abc.Mapping):
         self.__parameters = parameters
         self.__dynamics: Dict[str, Dynamics] = dict()
 
+    def __delitem__(self, particle_name: str) -> None:
+        del self.__dynamics[particle_name]
+
     def __getitem__(self, particle_name: str) -> Dynamics:
         return self.__dynamics[particle_name]
+
+    def __setitem__(self, particle_name: str, dynamics: Dynamics) -> None:
+        _assert_arg_type(dynamics, Dynamics)
+        if particle_name not in self.__particles:
+            raise KeyError(
+                f'Particle "{particle_name}" not in {ParticleCollection.__name__}'
+            )
+        for field in attr.fields(dynamics.__class__):
+            if field.type is FitParameter:
+                parameter = getattr(dynamics, field.name)
+                self.__register_parameter(parameter)
+        self.__dynamics[particle_name] = dynamics
 
     def __iter__(self) -> Iterator[str]:
         return self.__dynamics.__iter__()
@@ -150,7 +164,7 @@ class ParticleDynamics(abc.Mapping):
         dynamics = NonDynamic(
             form_factor=self.__create_form_factor(particle_name)
         )
-        self.__set(particle_name, dynamics)
+        self[particle_name] = dynamics
         return dynamics
 
     def set_breit_wigner(
@@ -159,48 +173,39 @@ class ParticleDynamics(abc.Mapping):
         if not relativistic:
             raise NotImplementedError
         particle = self.__particles[particle_name]
-        pole_position = self.__register_parameter(
-            name=f"Position_{particle.name}",
-            value=particle.mass,
-            fix=False,
+        pole_position = FitParameter(
+            name=f"Position_{particle.name}", value=particle.mass
         )
-        pole_width = self.__register_parameter(
-            name=f"Width_{particle.name}",
-            value=particle.width,
-            fix=False,
+        pole_width = FitParameter(
+            name=f"Width_{particle.name}", value=particle.width
         )
+        self.__register_parameter(pole_position)
+        self.__register_parameter(pole_width)
         dynamics = RelativisticBreitWigner(
             pole_position=pole_position,
             pole_width=pole_width,
             form_factor=self.__create_form_factor(particle.name),
         )
-        self.__set(particle_name, dynamics)
+        self[particle_name] = dynamics
         return dynamics
 
     def __create_form_factor(self, particle_name: str) -> BlattWeisskopf:
-        meson_radius = self.__register_parameter(
+        meson_radius = FitParameter(
             name=f"MesonRadius_{particle_name}",
             value=1.0,
-            fix=True,
+            is_fixed=True,
         )
+        self.__register_parameter(meson_radius)
         return BlattWeisskopf(meson_radius)
 
-    def __set(self, particle_name: str, value: Dynamics) -> None:
-        _assert_arg_type(value, Dynamics)
-        if particle_name not in self.__particles:
-            raise KeyError(
-                f'Particle "{particle_name}" not in {ParticleCollection.__name__}'
-            )
-        self.__dynamics[particle_name] = value
-
-    def __register_parameter(
-        self, name: str, value: float, fix: bool = False
-    ) -> FitParameter:
-        if name in self.__parameters:
-            return self.__parameters[name]
-        parameter = FitParameter(name=name, value=value, is_fixed=fix)
-        self.__parameters.add(parameter)
-        return parameter
+    def __register_parameter(self, parameter: FitParameter) -> None:
+        if parameter.name in self.__parameters:
+            if parameter is not self.__parameters[parameter.name]:
+                raise ValueError(
+                    f'Fit parameter "{parameter.name}" already exists'
+                )
+        else:
+            self.__parameters.add(parameter)
 
 
 class KinematicsType(Enum):

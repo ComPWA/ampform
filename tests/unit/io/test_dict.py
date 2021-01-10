@@ -1,12 +1,13 @@
 # pylint: disable=no-self-use,redefined-outer-name
 import json
+from copy import deepcopy
 from os.path import dirname, realpath
 
 import pytest
 import yaml
 
 from expertsystem import io
-from expertsystem.amplitude.model import AmplitudeModel
+from expertsystem.amplitude.model import AmplitudeModel, Dynamics
 from expertsystem.particle import ParticleCollection
 
 SCRIPT_PATH = dirname(realpath(__file__))
@@ -242,6 +243,26 @@ class TestCanonicalFormalism:
         s2s3 = canonical_sum["s2s3"]["ClebschGordan"]
         assert list(s2s3) == ["J", "M", "j1", "m1", "j2", "m2"]
         assert s2s3["J"] == 1.0
+
+
+def test_form_factor(
+    output_dir: str,
+    jpsi_to_gamma_pi_pi_helicity_amplitude_model: AmplitudeModel,
+):
+    model = deepcopy(jpsi_to_gamma_pi_pi_helicity_amplitude_model)
+    for dynamics in model.dynamics.values():
+        assert isinstance(dynamics, Dynamics)
+        dynamics.form_factor = None
+
+    io.write(model, output_dir + "test_form_factor.yml")
+    asdict = io.asdict(model)
+    imported_model = io.fromdict(asdict)
+
+    assert isinstance(imported_model, AmplitudeModel)
+    for dynamics in imported_model.dynamics.values():
+        assert isinstance(dynamics, Dynamics)
+        assert dynamics.form_factor is None
+    assert imported_model == model
 
 
 def equalize_dict(input_dict):
