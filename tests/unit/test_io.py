@@ -20,6 +20,8 @@ def test_serialization(
         exported = jpsi_to_gamma_pi_pi_canonical_amplitude_model
     else:
         raise NotImplementedError(formalism)
+    filename = output_dir + f"test_write_read_{formalism}.{file_extension}"
+    io.write(exported, filename)
     asdict = io.asdict(exported)
     imported = io.fromdict(asdict)
     assert isinstance(imported, AmplitudeModel)
@@ -30,5 +32,3 @@ def test_serialization(
     assert exported.intensity == imported.intensity
     assert exported == imported
     assert exported is not imported
-    filename = output_dir + f"test_write_read_{formalism}.{file_extension}"
-    io.write(exported, filename)

@@ -25,8 +25,6 @@ from expertsystem.amplitude.model import (
 )
 from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 
-from . import validate
-
 
 def from_amplitude_model(model: AmplitudeModel) -> dict:
     output_dict = {
@@ -36,14 +34,12 @@ def from_amplitude_model(model: AmplitudeModel) -> dict:
         **from_particle_collection(model.particles),
         "Dynamics": __dynamics_section_to_dict(model.dynamics),
     }
-    validate.amplitude_model(output_dict)
     return output_dict
 
 
 def from_particle_collection(particles: ParticleCollection) -> dict:
     output = {p.name: from_particle(p) for p in particles}
     output = {"ParticleList": output}
-    validate.particle_collection(output)
     return output
 
 

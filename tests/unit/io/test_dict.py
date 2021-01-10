@@ -38,8 +38,8 @@ def test_not_implemented_errors(
 def test_serialization(
     output_dir: str, particle_selection: ParticleCollection
 ):
-    assert len(particle_selection) == 181
     io.write(particle_selection, output_dir + "particle_selection.yml")
+    assert len(particle_selection) == 181
     asdict = io.asdict(particle_selection)
     imported_collection = io.fromdict(asdict)
     assert isinstance(imported_collection, ParticleCollection)
@@ -60,8 +60,8 @@ class TestHelicityFormalism:
     @pytest.fixture(scope="session")
     def imported_dict(self, output_dir: str, model: AmplitudeModel):
         output_filename = output_dir + "JPsiToGammaPi0Pi0_heli_recipe.yml"
-        asdict = io.asdict(model)
         io.write(model, output_filename)
+        asdict = io.asdict(model)
         return asdict
 
     @pytest.fixture(scope="session")
@@ -197,8 +197,8 @@ class TestCanonicalFormalism:
     @pytest.fixture(scope="session")
     def imported_dict(self, output_dir: str, model: AmplitudeModel):
         output_filename = output_dir + "JPsiToGammaPi0Pi0_cano_recipe.yml"
-        asdict = io.asdict(model)
         io.write(model, output_filename)
+        asdict = io.asdict(model)
         return asdict
 
     def test_not_implemented_writer(
