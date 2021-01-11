@@ -111,7 +111,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r reqs/3.7/requirements-sty.txt
           pip install .
-          sudo npm install -g cspell pyright
+          sudo npm install -g cspell pyright@1.1.99
+        # https://github.com/ComPWA/expertsystem/issues/437
       - name: Perform style checks
         run: pre-commit run -a
       - name: Check spelling
