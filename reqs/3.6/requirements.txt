@@ -6,7 +6,7 @@
 #
 attrs==20.3.0
 hepunits==2.0.1
-importlib-metadata==2.1.1
+importlib-metadata==3.4.0
 importlib-resources==3.0.0
 jsonschema==3.2.0
 particle==0.14.0
@@ -14,7 +14,7 @@ pyrsistent==0.17.3
 python-constraint==1.4.0
 pyyaml==5.3.1
 six==1.15.0
-tqdm==4.55.1
+tqdm==4.56.0
 typing-extensions==3.7.4.3 ; python_version < "3.8.0"
 zipp==3.4.0
 

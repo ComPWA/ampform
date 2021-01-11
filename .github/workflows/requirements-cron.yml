@@ -51,11 +51,8 @@ jobs:
         with:
           commit-message: "ci: upgrade developer dependencies"
           committer: GitHub <noreply@github.com>
-          author:
-            ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          author: GitHub <noreply@github.com>
           title: "ci: upgrade developer dependencies"
-          assignees: ${{ github.actor }}
-          reviewers: ${{ github.actor }}
           labels: |
             🖱️ DX
           branch-suffix: timestamp

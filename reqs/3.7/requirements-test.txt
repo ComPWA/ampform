@@ -10,7 +10,7 @@ coverage==5.3.1
 execnet==1.7.1
 gprof2dot==2019.11.30
 hepunits==2.0.1
-importlib-metadata==2.1.1
+importlib-metadata==3.4.0
 iniconfig==1.1.1
 jsonschema==3.2.0
 packaging==20.8
@@ -29,7 +29,7 @@ python-constraint==1.4.0
 pyyaml==5.3.1
 six==1.15.0
 toml==0.10.2
-tqdm==4.55.1
+tqdm==4.56.0
 typing-extensions==3.7.4.3 ; python_version < "3.8.0"
 zipp==3.4.0
 
