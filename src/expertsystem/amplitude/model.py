@@ -114,8 +114,8 @@ class NonDynamic(Dynamics):
 
 @attr.s
 class RelativisticBreitWigner(Dynamics):
-    pole_position: FitParameter = attr.ib(kw_only=True)
-    pole_width: FitParameter = attr.ib(kw_only=True)
+    pole_real: FitParameter = attr.ib(kw_only=True)
+    pole_imag: FitParameter = attr.ib(kw_only=True)
 
 
 class ParticleDynamics(abc.MutableMapping):
@@ -173,17 +173,17 @@ class ParticleDynamics(abc.MutableMapping):
         if not relativistic:
             raise NotImplementedError
         particle = self.__particles[particle_name]
-        pole_position = FitParameter(
+        pole_real = FitParameter(
             name=f"Position_{particle.name}", value=particle.mass
         )
-        pole_width = FitParameter(
+        pole_imag = FitParameter(
             name=f"Width_{particle.name}", value=particle.width
         )
-        self.__register_parameter(pole_position)
-        self.__register_parameter(pole_width)
+        self.__register_parameter(pole_real)
+        self.__register_parameter(pole_imag)
         dynamics = RelativisticBreitWigner(
-            pole_position=pole_position,
-            pole_width=pole_width,
+            pole_real=pole_real,
+            pole_imag=pole_imag,
             form_factor=self.__create_form_factor(particle.name),
         )
         self[particle_name] = dynamics

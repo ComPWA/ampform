@@ -120,11 +120,11 @@ def __build_dynamics(definition: dict, parameters: FitParameters) -> Dynamics:
     if dynamics_type == "RelativisticBreitWigner":
         return RelativisticBreitWigner(
             form_factor=form_factor,
-            pole_position=__safely_get_parameter(
-                definition["pole_position"], parameters
+            pole_real=__safely_get_parameter(
+                definition["pole_real"], parameters
             ),
-            pole_width=__safely_get_parameter(
-                definition["pole_width"], parameters
+            pole_imag=__safely_get_parameter(
+                definition["pole_imag"], parameters
             ),
         )
     raise ValueError(f'Dynamics type "{dynamics_type}" not defined')

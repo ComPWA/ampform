@@ -434,15 +434,15 @@ dynamics:
       meson_radius: *par5
   f(0)(980):
     type: RelativisticBreitWigner
-    pole_position: *par6
-    pole_width: *par7
+    pole_real: *par6
+    pole_imag: *par7
     form_factor:
       type: BlattWeisskopf
       meson_radius: *par8
   f(0)(1500):
     type: RelativisticBreitWigner
-    pole_position: *par9
-    pole_width: *par10
+    pole_real: *par9
+    pole_imag: *par10
     form_factor:
       type: BlattWeisskopf
       meson_radius: *par11
