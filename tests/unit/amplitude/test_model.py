@@ -103,7 +103,7 @@ class TestParticleDynamics:
         gamma_width = pars[f"Width_{gamma}"]
         assert gamma_mass.value == pdg[gamma].mass
         assert gamma_width.value == pdg[gamma].width
-        assert list(pars.filter(lambda p: not p.is_fixed).values()) == [
+        assert list(pars.filter(lambda p: not p.fix).values()) == [
             gamma_mass,
             gamma_width,
         ]

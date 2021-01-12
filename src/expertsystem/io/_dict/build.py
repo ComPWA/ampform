@@ -1,6 +1,5 @@
 """Read recipe objects from a YAML file."""
 
-from typing import List, Optional, Union
 
 from expertsystem.amplitude.model import (
     AmplitudeModel,
@@ -37,13 +36,13 @@ from . import validate
 def build_amplitude_model(definition: dict) -> AmplitudeModel:
     validate.amplitude_model(definition)
     particles = build_particle_collection(definition, do_validate=False)
-    parameters = __build_fit_parameters(definition["Parameters"])
-    kinematics = __build_kinematics(definition["Kinematics"], particles)
+    parameters = build_fit_parameters(definition)
+    kinematics = __build_kinematics(definition["kinematics"], particles)
     dynamics = __build_particle_dynamics(
-        definition["Dynamics"], particles, parameters
+        definition["dynamics"], particles, parameters
     )
     intensity = __build_intensity(
-        definition["Intensity"], particles, parameters
+        definition["intensity"], particles, parameters
     )
     return AmplitudeModel(
         particles=particles,
@@ -59,90 +58,39 @@ def build_particle_collection(
 ) -> ParticleCollection:
     if do_validate:
         validate.particle_collection(definition)
-    definition = definition["ParticleList"]
-    particles = ParticleCollection()
-    for name, particle_def in definition.items():
-        particles.add(build_particle(name, particle_def))
-    return particles
-
-
-def build_particle(name: str, definition: dict) -> Particle:
-    qn_def = definition["QuantumNumbers"]
-    return Particle(
-        name=name,
-        pid=int(definition["PID"]),
-        mass=float(definition["Mass"]),
-        width=float(definition.get("Width", 0.0)),
-        charge=int(qn_def["Charge"]),
-        spin=float(qn_def["Spin"]),
-        strangeness=int(qn_def.get("Strangeness", 0)),
-        charmness=int(qn_def.get("Charmness", 0)),
-        bottomness=int(qn_def.get("Bottomness", 0)),
-        topness=int(qn_def.get("Topness", 0)),
-        baryon_number=int(qn_def.get("BaryonNumber", 0)),
-        electron_lepton_number=int(qn_def.get("ElectronLN", 0)),
-        muon_lepton_number=int(qn_def.get("MuonLN", 0)),
-        tau_lepton_number=int(qn_def.get("TauLN", 0)),
-        isospin=__yaml_to_isospin(qn_def.get("IsoSpin", None)),
-        parity=__yaml_to_parity(qn_def.get("Parity", None)),
-        c_parity=__yaml_to_parity(qn_def.get("CParity", None)),
-        g_parity=__yaml_to_parity(qn_def.get("GParity", None)),
+    return ParticleCollection(
+        __build_particle(p) for p in definition["particles"]
     )
 
 
-def build_spin(definition: Union[dict, float, int, str]) -> Spin:
-    def check_missing_projection(magnitude: float) -> None:
-        if magnitude != 0.0:
-            raise ValueError(
-                "Can only have a spin without projection if magnitude = 0"
-            )
-
-    if isinstance(definition, (float, int)):
-        magnitude = float(definition)
-        check_missing_projection(magnitude)
-        projection = 0.0
-    elif not isinstance(definition, dict):
-        raise ValueError(f"Cannot create Spin from definition {definition}")
-    else:
-        magnitude = float(definition["Value"])
-        if "Projection" not in definition:
-            check_missing_projection(magnitude)
-        projection = definition.get("Projection", 0.0)
-    return Spin(magnitude, projection)
+def __build_particle(definition: dict) -> Particle:
+    isospin_def = definition.get("isospin", None)
+    if isospin_def is not None:
+        definition["isospin"] = Spin(**isospin_def)
+    for parity in ["parity", "c_parity", "g_parity"]:
+        parity_def = definition.get(parity, None)
+        if parity_def is not None:
+            definition[parity] = Parity(**parity_def)
+    return Particle(**definition)
 
 
-def __build_fit_parameters(definition: List[dict]) -> FitParameters:
-    parameters = FitParameters()
-    for parameter_def in definition:
-        parameter = __build_fit_parameter(parameter_def)
-        parameters.add(parameter)
-    return parameters
-
-
-def __build_fit_parameter(definition: dict) -> FitParameter:
-    return FitParameter(
-        name=str(definition["Name"]),
-        value=float(definition.get("Value", 0.0)),
-        is_fixed=bool(definition.get("Fix", False)),
-    )
+def build_fit_parameters(definition: dict) -> FitParameters:
+    return FitParameters(FitParameter(**p) for p in definition["parameters"])
 
 
 def __build_kinematics(
     definition: dict, particles: ParticleCollection
 ) -> Kinematics:
-    str_to_kinematics_type = {"Helicity": KinematicsType.Helicity}
-    kinematics_type = str_to_kinematics_type[definition["Type"]]
+    kinematics_type = eval(  # pylint: disable=eval-used
+        f'{KinematicsType.__name__}.{definition["type"]}'
+    )
     kinematics = Kinematics(
         kinematics_type=kinematics_type,
         particles=particles,
     )
-    for item in definition["InitialState"]:
-        state_id = int(item["ID"])
-        particle_name = str(item["Particle"])
+    for state_id, particle_name in definition["initial_state"].items():
         kinematics.add_initial_state(state_id, particle_name)
-    for item in definition["FinalState"]:
-        state_id = int(item["ID"])
-        particle_name = str(item["Particle"])
+    for state_id, particle_name in definition["final_state"].items():
         kinematics.add_final_state(state_id, particle_name)
     return kinematics
 
@@ -163,20 +111,21 @@ def __build_particle_dynamics(
 
 
 def __build_dynamics(definition: dict, parameters: FitParameters) -> Dynamics:
-    dynamics_type = definition["Type"]
-    form_factor = definition.get("FormFactor")
+    dynamics_type = definition["type"]
+    form_factor = definition.get("form_factor")
     if form_factor is not None:
         form_factor = __build_form_factor(form_factor, parameters)
     if dynamics_type == "NonDynamic":
         return NonDynamic(form_factor)
     if dynamics_type == "RelativisticBreitWigner":
-        pole = definition["PoleParameters"]
-        pole_position = __safely_get_parameter(pole["Real"], parameters)
-        pole_width = __safely_get_parameter(pole["Imaginary"], parameters)
         return RelativisticBreitWigner(
             form_factor=form_factor,
-            pole_position=pole_position,
-            pole_width=pole_width,
+            pole_position=__safely_get_parameter(
+                definition["pole_position"], parameters
+            ),
+            pole_width=__safely_get_parameter(
+                definition["pole_width"], parameters
+            ),
         )
     raise ValueError(f'Dynamics type "{dynamics_type}" not defined')
 
@@ -184,9 +133,9 @@ def __build_dynamics(definition: dict, parameters: FitParameters) -> Dynamics:
 def __build_form_factor(
     definition: dict, parameters: FitParameters
 ) -> FormFactor:
-    form_factor_type = definition["Type"]
+    form_factor_type = definition["type"]
     if form_factor_type == "BlattWeisskopf":
-        par_name = definition["MesonRadius"]
+        par_name = definition["meson_radius"]
         meson_radius = __safely_get_parameter(par_name, parameters)
         return BlattWeisskopf(meson_radius)
     raise NotImplementedError(
@@ -207,39 +156,32 @@ def __safely_get_parameter(
 def __build_intensity(
     definition: dict, particles: ParticleCollection, parameters: FitParameters
 ) -> IntensityNode:
-    intensity_type = definition["Class"]
-    if intensity_type == "StrengthIntensity":
-        strength = parameters[definition["Strength"]]
-        component = str(definition["Component"])
+    intensity_type = eval(definition["type"])  # pylint: disable=eval-used
+    if intensity_type in {NormalizedIntensity, StrengthIntensity}:
+        intensity = __build_intensity(
+            definition["intensity"], particles, parameters
+        )
+        if intensity_type is NormalizedIntensity:
+            return NormalizedIntensity(intensity=intensity)
         return StrengthIntensity(
-            component=component,
-            strength=strength,
-            intensity=__build_intensity(
-                definition["Intensity"], particles, parameters
-            ),
+            component=str(definition["component"]),
+            strength=parameters[definition["Strength"]],
+            intensity=intensity,
         )
-    if intensity_type == "NormalizedIntensity":
-        return NormalizedIntensity(
-            intensity=__build_intensity(
-                definition["Intensity"], particles, parameters
-            )
-        )
-    if intensity_type == "IncoherentIntensity":
+    if intensity_type is IncoherentIntensity:
         return IncoherentIntensity(
             intensities=[
                 __build_intensity(item, particles, parameters)
-                for item in definition["Intensities"]
+                for item in definition["intensities"]
             ]
         )
-    if intensity_type == "CoherentIntensity":
-        component = str(definition["Component"])
-        amplitudes = [
-            __build_amplitude(item, particles, parameters)
-            for item in definition["Amplitudes"]
-        ]
+    if intensity_type is CoherentIntensity:
         return CoherentIntensity(
-            component=component,
-            amplitudes=amplitudes,
+            component=str(definition["component"]),
+            amplitudes=[
+                __build_amplitude(item, particles, parameters)
+                for item in definition["amplitudes"]
+            ],
         )
     raise SyntaxError(
         f"No conversion defined for intensity type {intensity_type}"
@@ -249,92 +191,54 @@ def __build_intensity(
 def __build_amplitude(  # pylint: disable=too-many-locals
     definition: dict, particles: ParticleCollection, parameters: FitParameters
 ) -> AmplitudeNode:
-    amplitude_type = definition["Class"]
-    if amplitude_type == "CoefficientAmplitude":
-        component = definition["Component"]
-        magnitude = parameters[definition["Magnitude"]]
-        phase = parameters[definition["Phase"]]
-        amplitude = __build_amplitude(
-            definition["Amplitude"], particles, parameters
-        )
-        prefactor = definition.get("PreFactor")
+    amplitude_type = eval(definition["type"])  # pylint: disable=eval-used
+    if amplitude_type is CoefficientAmplitude:
         return CoefficientAmplitude(
-            component=component,
-            magnitude=magnitude,
-            phase=phase,
-            amplitude=amplitude,
-            prefactor=prefactor,
+            component=definition["component"],
+            magnitude=parameters[definition["magnitude"]],
+            phase=parameters[definition["phase"]],
+            amplitude=__build_amplitude(
+                definition["amplitude"], particles, parameters
+            ),
+            prefactor=definition.get("prefactor"),
         )
-    if amplitude_type == "SequentialAmplitude":
-        amplitudes = [
-            __build_amplitude(item, particles, parameters)
-            for item in definition["Amplitudes"]
-        ]
-        return SequentialAmplitude(amplitudes)
-    if amplitude_type == "HelicityDecay":
-        decay_particle_def = definition["DecayParticle"]
+    if amplitude_type is SequentialAmplitude:
+        return SequentialAmplitude(
+            amplitudes=[
+                __build_amplitude(item, particles, parameters)
+                for item in definition["amplitudes"]
+            ]
+        )
+    if amplitude_type in {CanonicalDecay, HelicityDecay}:
+        decaying_particle_def = definition["decaying_particle"]
         decaying_particle = HelicityParticle(
-            particle=particles[decay_particle_def["Name"]],
-            helicity=float(decay_particle_def["Helicity"]),
+            particle=particles[decaying_particle_def["particle"]],
+            helicity=decaying_particle_def["helicity"],
         )
         decay_products = [
             DecayProduct(
-                particles[item["Name"]],
-                float(item["Helicity"]),
-                list(item["FinalState"]),
+                particle=particles[item["particle"]],
+                helicity=item["helicity"],
+                final_state_ids=item["final_state_ids"],
             )
-            for item in definition["DecayProducts"]
+            for item in definition["decay_products"]
         ]
-        recoil_system: Optional[RecoilSystem] = None
-        recoil_def = definition.get("RecoilSystem", None)
-        if recoil_def is not None:
-            recoil_system = RecoilSystem(
-                recoil_final_state=recoil_def["RecoilFinalState"]
-            )
-        canonical_def = definition.get("Canonical", None)
-        if canonical_def is None:
+        recoil_system = definition.get("recoil_system", None)
+        if recoil_system is not None:
+            recoil_system = RecoilSystem(**recoil_system)
+        if amplitude_type is HelicityDecay:
             return HelicityDecay(
-                decaying_particle, decay_products, recoil_system
+                decaying_particle=decaying_particle,
+                decay_products=decay_products,
+                recoil_system=recoil_system,
             )
-        ls_def = canonical_def["LS"]["ClebschGordan"]
-        s2s3_def = canonical_def["s2s3"]["ClebschGordan"]
         return CanonicalDecay(
             decaying_particle=decaying_particle,
             decay_products=decay_products,
             recoil_system=recoil_system,
-            l_s=ClebschGordan(
-                J=float(ls_def["J"]),
-                M=float(ls_def["M"]),
-                j_1=float(ls_def["j1"]),
-                m_1=float(ls_def["m1"]),
-                j_2=float(ls_def["j2"]),
-                m_2=float(ls_def["m2"]),
-            ),
-            s2s3=ClebschGordan(
-                J=float(s2s3_def["J"]),
-                M=float(s2s3_def["M"]),
-                j_1=float(s2s3_def["j1"]),
-                m_1=float(s2s3_def["m1"]),
-                j_2=float(s2s3_def["j2"]),
-                m_2=float(s2s3_def["m2"]),
-            ),
+            l_s=ClebschGordan(**definition["l_s"]),
+            s2s3=ClebschGordan(**definition["s2s3"]),
         )
     raise SyntaxError(
         f"No conversion defined for amplitude type {amplitude_type}"
     )
-
-
-def __yaml_to_parity(
-    definition: Optional[Union[float, int, str]]
-) -> Optional[Parity]:
-    if definition is None:
-        return None
-    return Parity(definition)
-
-
-def __yaml_to_isospin(
-    definition: Optional[Union[dict, float, int, str]]
-) -> Optional[Spin]:
-    if definition is None:
-        return None
-    return build_spin(definition)

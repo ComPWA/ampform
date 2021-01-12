@@ -11,7 +11,11 @@ from pathlib import Path
 
 import yaml
 
-from expertsystem.amplitude.model import AmplitudeModel
+from expertsystem.amplitude.model import (
+    AmplitudeModel,
+    FitParameter,
+    FitParameters,
+)
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
@@ -19,6 +23,10 @@ from . import _dict, _dot, _pdg
 
 
 def asdict(instance: object) -> dict:
+    if isinstance(instance, FitParameter):
+        return _dict.dump.from_fit_parameter(instance)
+    if isinstance(instance, FitParameters):
+        return _dict.dump.from_fit_parameters(instance)
     if isinstance(instance, Particle):
         return _dict.dump.from_particle(instance)
     if isinstance(instance, ParticleCollection):
@@ -34,6 +42,8 @@ def fromdict(definition: dict) -> object:
     type_defined = _determine_type(definition)
     if type_defined == AmplitudeModel:
         return _dict.build.build_amplitude_model(definition)
+    if type_defined == FitParameters:
+        return _dict.build.build_fit_parameters(definition)
     if type_defined == ParticleCollection:
         return _dict.build.build_particle_collection(definition)
     raise NotImplementedError
@@ -42,9 +52,10 @@ def fromdict(definition: dict) -> object:
 def validate(instance: dict) -> None:
     type_defined = _determine_type(instance)
     if type_defined == AmplitudeModel:
-        _dict.validate.amplitude_model(instance)
-    elif type_defined == ParticleCollection:
-        _dict.validate.particle_collection(instance)
+        return _dict.validate.amplitude_model(instance)
+    if type_defined == ParticleCollection:
+        return _dict.validate.particle_collection(instance)
+    raise NotImplementedError
 
 
 def load(filename: str) -> object:
@@ -136,13 +147,15 @@ def _get_file_extension(filename: str) -> str:
 def _determine_type(definition: dict) -> type:
     keys = set(definition.keys())
     if keys == {
-        "Dynamics",
-        "Intensity",
-        "Kinematics",
-        "Parameters",
-        "ParticleList",
+        "dynamics",
+        "intensity",
+        "kinematics",
+        "parameters",
+        "particles",
     }:
         return AmplitudeModel
-    if keys == {"ParticleList"}:
+    if keys == {"parameters"}:
+        return FitParameters
+    if keys == {"particles"}:
         return ParticleCollection
     raise NotImplementedError(f"Could not determine type from keys {keys}")

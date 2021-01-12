@@ -586,7 +586,7 @@ class HelicityAmplitudeGenerator:
     ) -> FitParameter:
         if name in self.fit_parameters:
             return self.fit_parameters[name]
-        parameter = FitParameter(name=name, value=value, is_fixed=fix)
+        parameter = FitParameter(name=name, value=value, fix=fix)
         self.fit_parameters.add(parameter)
         return parameter
 

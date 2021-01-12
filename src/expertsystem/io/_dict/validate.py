@@ -1,3 +1,5 @@
+# cspell:ignore stringyfied
+
 """JSON validation schema for a YAML recipe file."""
 
 import json
@@ -26,9 +28,9 @@ def amplitude_model(instance: dict) -> None:
         f"file://{_EXPERTSYSTEM_PATH}/schemas/",
         "amplitude-model.json",
     )
-
+    stringyfied_instance = json.loads(json.dumps(instance))
     jsonschema.validate(
-        instance=instance,
+        instance=stringyfied_instance,
         schema=_SCHEMA_AMPLITUDE,
         resolver=resolver,
     )

@@ -96,80 +96,79 @@ class TestHelicityFormalism:
         assert len(jpsi_to_gamma_pi_pi_helicity_amplitude_model.dynamics) == 3
 
     def test_particle_section(self, imported_dict):
-        particle_list = imported_dict.get("ParticleList", imported_dict)
-        gamma = particle_list["gamma"]
-        assert gamma["PID"] == 22
-        assert gamma["Mass"] == 0.0
-        gamma_qns = gamma["QuantumNumbers"]
-        assert gamma_qns["Spin"] == 1
-        assert gamma_qns["Charge"] == 0
-        assert gamma_qns["Parity"] == -1
-        assert gamma_qns["CParity"] == -1
+        particle_list = imported_dict.get("particles", imported_dict)
+        gamma = next(p for p in particle_list if p["name"] == "gamma")
+        assert gamma["pid"] == 22
+        assert gamma["mass"] == 0.0
+        assert gamma["spin"] == 1.0
+        assert gamma["parity"]["value"] == -1
+        assert gamma["c_parity"]["value"] == -1
 
-        f0_980 = particle_list["f(0)(980)"]
-        assert f0_980["Width"] == 0.06
+        f0_980 = next(p for p in particle_list if p["name"] == "f(0)(980)")
+        assert f0_980["width"] == 0.06
 
-        pi0_qns = particle_list["pi0"]["QuantumNumbers"]
-        assert pi0_qns["IsoSpin"]["Value"] == 1
-        assert pi0_qns["IsoSpin"]["Projection"] == 0
+        pi0 = next(p for p in particle_list if p["name"] == "pi0")
+        assert pi0["isospin"]["magnitude"] == 1
+        assert pi0["isospin"]["projection"] == 0
 
     def test_kinematics_section(self, imported_dict):
-        kinematics = imported_dict["Kinematics"]
-        initial_state = kinematics["InitialState"]
-        final_state = kinematics["FinalState"]
-        assert kinematics["Type"] == "Helicity"
+        kinematics = imported_dict["kinematics"]
+        initial_state = kinematics["initial_state"]
+        final_state = kinematics["final_state"]
+        assert kinematics["type"] == "Helicity"
         assert len(initial_state) == 1
-        assert initial_state[0]["Particle"] == "J/psi(1S)"
+        assert initial_state[0] == "J/psi(1S)"
         assert len(final_state) == 3
 
     def test_parameter_section(self, imported_dict):
-        parameter_list = imported_dict["Parameters"]
+        parameter_list = imported_dict["parameters"]
         assert len(parameter_list) == 11
         for parameter in parameter_list:
-            assert "Name" in parameter
-            assert "Value" in parameter
-            assert parameter.get("Fix", True)
+            assert "name" in parameter
+            assert "value" in parameter
+            assert isinstance(parameter["fix"], bool)
 
     def test_dynamics_section(self, imported_dict):
-        parameter_list: list = imported_dict["Parameters"]
+        parameter_list: list = imported_dict["parameters"]
 
         def get_parameter(parameter_name: str) -> dict:
             for par in parameter_list:
-                name = par["Name"]
+                name = par["name"]
                 if name == parameter_name:
                     return par
             raise LookupError(f'Could not find parameter  "{parameter_name}"')
 
-        dynamics = imported_dict["Dynamics"]
+        dynamics = imported_dict["dynamics"]
         assert len(dynamics) == 3
 
         j_psi = dynamics["J/psi(1S)"]
-        assert j_psi["Type"] == "NonDynamic"
-        assert j_psi["FormFactor"]["Type"] == "BlattWeisskopf"
+        assert j_psi["type"] == "NonDynamic"
+        assert j_psi["form_factor"]["type"] == "BlattWeisskopf"
         assert (
-            get_parameter(j_psi["FormFactor"]["MesonRadius"])["Value"] == 1.0
+            get_parameter(j_psi["form_factor"]["meson_radius"])["value"] == 1.0
         )
 
         f0_980 = dynamics.get("f(0)(980)", None)
         if f0_980:
-            assert f0_980["Type"] == "RelativisticBreitWigner"
-            assert f0_980["FormFactor"]["Type"] == "BlattWeisskopf"
+            assert f0_980["type"] == "RelativisticBreitWigner"
+            assert f0_980["form_factor"]["type"] == "BlattWeisskopf"
             assert (
-                f0_980["FormFactor"]["MesonRadius"] == "MesonRadius_f(0)(980)"
+                f0_980["form_factor"]["meson_radius"]
+                == "MesonRadius_f(0)(980)"
             )
             assert (
-                get_parameter(f0_980["FormFactor"]["MesonRadius"])["Value"]
+                get_parameter(f0_980["form_factor"]["meson_radius"])["value"]
                 == 1.0
             )
 
     def test_intensity_section(self, imported_dict):
-        intensity = imported_dict["Intensity"]
-        assert intensity["Class"] == "IncoherentIntensity"
-        assert len(intensity["Intensities"]) == 4
+        intensity = imported_dict["intensity"]
+        assert intensity["type"] == "IncoherentIntensity"
+        assert len(intensity["intensities"]) == 4
 
     @pytest.mark.parametrize(
         "section",
-        ["Dynamics", "Kinematics", "Parameters", "ParticleList"],
+        ["dynamics", "kinematics", "parameters", "particles"],
     )
     def test_expected_recipe_shape(
         self, imported_dict, expected_dict, section
@@ -181,8 +180,8 @@ class TestHelicityFormalism:
             imported_items = list(imported_section.values())
             expected_items = list(expected_section.values())
         else:
-            expected_items = sorted(expected_section, key=lambda p: p["Name"])
-            imported_items = sorted(imported_section, key=lambda p: p["Name"])
+            expected_items = sorted(expected_section, key=lambda p: p["name"])
+            imported_items = sorted(imported_section, key=lambda p: p["name"])
         assert len(imported_items) == len(expected_items)
         for imported, expected in zip(imported_items, expected_items):
             assert imported == expected
@@ -214,34 +213,31 @@ class TestCanonicalFormalism:
             )
 
     def test_particle_section(self, imported_dict):
-        particle_list = imported_dict["ParticleList"]
-        gamma = particle_list["gamma"]
-        assert gamma["PID"] == 22
-        assert gamma["Mass"] == 0.0
-        gamma_qns = gamma["QuantumNumbers"]
-        assert gamma_qns["CParity"] == -1
-        f0_980 = particle_list["f(0)(980)"]
-        assert f0_980["Width"] == 0.06
-        pi0_qns = particle_list["pi0"]["QuantumNumbers"]
-        assert pi0_qns["IsoSpin"]["Value"] == 1
+        particle_list = imported_dict["particles"]
+        gamma = next(p for p in particle_list if p["name"] == "gamma")
+        assert gamma["pid"] == 22
+        assert gamma["mass"] == 0.0
+        assert gamma["c_parity"]["value"] == -1
+        f0_980 = next(p for p in particle_list if p["name"] == "f(0)(980)")
+        assert f0_980["width"] == 0.06
+        pi0 = next(p for p in particle_list if p["name"] == "pi0")
+        assert pi0["isospin"]["magnitude"] == 1
 
     def test_parameter_section(self, imported_dict):
-        parameter_list = imported_dict["Parameters"]
+        parameter_list = imported_dict["parameters"]
         assert len(parameter_list) == 11
         for parameter in parameter_list:
-            assert "Name" in parameter
-            assert "Value" in parameter
+            assert "name" in parameter
+            assert "value" in parameter
 
     def test_clebsch_gordan(self, imported_dict):
-        incoherent_intensity = imported_dict["Intensity"]
-        coherent_intensity = incoherent_intensity["Intensities"][0]
-        coefficient_amplitude = coherent_intensity["Amplitudes"][0]
-        sequential_amplitude = coefficient_amplitude["Amplitude"]
-        helicity_decay = sequential_amplitude["Amplitudes"][0]
-        canonical_sum = helicity_decay["Canonical"]
-        assert list(canonical_sum) == ["LS", "s2s3"]
-        s2s3 = canonical_sum["s2s3"]["ClebschGordan"]
-        assert list(s2s3) == ["J", "M", "j1", "m1", "j2", "m2"]
+        incoherent_intensity = imported_dict["intensity"]
+        coherent_intensity = incoherent_intensity["intensities"][0]
+        coefficient_amplitude = coherent_intensity["amplitudes"][0]
+        sequential_amplitude = coefficient_amplitude["amplitude"]
+        canonical_decay = sequential_amplitude["amplitudes"][0]
+        s2s3 = canonical_decay["s2s3"]
+        assert list(s2s3) == ["J", "M", "j_1", "m_1", "j_2", "m_2"]
         assert s2s3["J"] == 1.0
 
 

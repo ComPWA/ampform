@@ -25,7 +25,7 @@ from expertsystem.particle import Particle, ParticleCollection
 class FitParameter:
     name: str = attr.ib()
     value: float = attr.ib()
-    is_fixed: bool = attr.ib(default=False)
+    fix: bool = attr.ib(default=False)
 
 
 class FitParameters(abc.Mapping):
@@ -34,7 +34,7 @@ class FitParameters(abc.Mapping):
     ) -> None:
         self.__parameters: Dict[str, FitParameter] = dict()
         if parameters is not None:
-            if not isinstance(parameters, (list, set, tuple)):
+            if not isinstance(parameters, abc.Iterable):
                 raise ValueError(
                     f"Cannot construct a {self.__class__.__name__} "
                     f"from a {parameters.__class__.__name__}"
@@ -193,7 +193,7 @@ class ParticleDynamics(abc.MutableMapping):
         meson_radius = FitParameter(
             name=f"MesonRadius_{particle_name}",
             value=1.0,
-            is_fixed=True,
+            fix=True,
         )
         self.__register_parameter(meson_radius)
         return BlattWeisskopf(meson_radius)
