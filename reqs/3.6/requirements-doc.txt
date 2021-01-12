@@ -30,7 +30,7 @@ idna==2.10
 imagesize==1.2.0
 importlib-metadata==3.4.0
 importlib-resources==3.0.0
-ipykernel==5.4.2
+ipykernel==5.4.3
 ipython-genutils==0.2.0
 ipython==7.16.1
 ipywidgets==7.6.3
@@ -41,13 +41,13 @@ jupyter-cache==0.4.1
 jupyter-client==6.1.11
 jupyter-console==6.2.0
 jupyter-core==4.7.0
-jupyter-sphinx==0.3.2
+jupyter-sphinx==0.3.1
 jupyter==1.0.0
 jupyterlab-widgets==1.0.0
 markdown-it-py==0.5.8
 markupsafe==1.1.1
 mistune==0.8.4
-myst-nb==0.10.1
+myst-nb==0.10.2
 myst-parser==0.12.10
 nbclient==0.5.1
 nbconvert==5.6.1
@@ -67,7 +67,7 @@ ptyprocess==0.7.0
 pycparser==2.20
 pydata-sphinx-theme==0.4.1
 pydeps==1.9.13
-pygments==2.7.3
+pygments==2.7.4
 pyparsing==2.4.7
 pyrsistent==0.17.3
 python-constraint==1.4.0

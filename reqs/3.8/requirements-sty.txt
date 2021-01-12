@@ -51,7 +51,7 @@ pycodestyle==2.6.0
 pydocstyle==5.1.1
 pydot==1.4.1
 pyflakes==2.2.0
-pygments==2.7.3
+pygments==2.7.4
 pylint==2.6.0
 pyparsing==2.4.7
 pyrsistent==0.17.3
