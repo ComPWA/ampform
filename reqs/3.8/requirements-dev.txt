@@ -62,13 +62,13 @@ jupyter-cache==0.4.1
 jupyter-client==6.1.11
 jupyter-console==6.2.0
 jupyter-core==4.7.0
-jupyter-server==1.2.1
+jupyter-server==1.2.2
 jupyter-sphinx==0.3.1
 jupyter==1.0.0
 jupyterlab-code-formatter==1.4.1
 jupyterlab-server==2.1.2
 jupyterlab-widgets==1.0.0
-jupyterlab==3.0.4
+jupyterlab==3.0.5
 labels==20.1.0
 lazy-object-proxy==1.4.3
 livereload==2.6.3
@@ -84,7 +84,7 @@ nbclassic==0.2.6
 nbclient==0.5.1
 nbconvert==5.6.1
 nbdime==2.1.0
-nbformat==5.0.8
+nbformat==5.1.2
 nbstripout==0.3.9
 nest-asyncio==1.4.3
 nodeenv==1.5.0
@@ -126,7 +126,7 @@ python-dateutil==2.8.1
 pytoml==0.1.21
 pytz==2020.5
 pyyaml==5.3.1
-pyzmq==20.0.0
+pyzmq==21.0.1
 qtconsole==5.0.1
 qtpy==1.9.0
 regex==2020.11.13

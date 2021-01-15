@@ -49,12 +49,14 @@ jobs:
         os:
           - macos-10.15
           - ubuntu-20.04
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
         exclude:
           - os: macos-10.15
             python-version: 3.6
           - os: macos-10.15
             python-version: 3.8
+          - os: macos-10.15
+            python-version: 3.9
           - os: ubuntu-20.04 # coverage job
             python-version: 3.7
     steps:

@@ -51,7 +51,7 @@ myst-parser==0.12.10
 nbclient==0.5.1
 nbconvert==5.6.1
 nbdime==2.1.0
-nbformat==5.0.8
+nbformat==5.1.2
 nest-asyncio==1.4.3
 notebook==6.2.0
 packaging==20.8
@@ -73,7 +73,7 @@ python-constraint==1.4.0
 python-dateutil==2.8.1
 pytz==2020.5
 pyyaml==5.3.1
-pyzmq==20.0.0
+pyzmq==21.0.1
 qtconsole==5.0.1
 qtpy==1.9.0
 requests==2.25.1
