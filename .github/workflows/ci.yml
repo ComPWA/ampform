@@ -71,7 +71,7 @@ jobs:
           pip install -r reqs/${{ matrix.python-version }}/requirements-test.txt
           pip install .
       - name: Test with pytest
-        run: pytest
+        run: pytest -n auto
 
   documentation:
     name: Build documentation and run notebooks
