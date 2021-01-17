@@ -362,6 +362,7 @@ intensity:
 
 particles:
   - name: J/psi(1S)
+    latex: J/\psi(1S)
     pid: 443
     mass: 3.0969
     width: 9.29e-05
@@ -376,6 +377,7 @@ particles:
       magnitude: 0.0
       projection: 0.0
   - name: gamma
+    latex: \gamma
     pid: 22
     mass: 0.0
     spin: 1.0
@@ -384,6 +386,7 @@ particles:
     c_parity:
       value: -1
   - name: pi0
+    latex: \pi^{0}
     pid: 111
     mass: 0.1349768
     width: 7.73e-09
@@ -398,6 +401,7 @@ particles:
       magnitude: 1.0
       projection: 0.0
   - name: f(0)(980)
+    latex: f_{0}(980)
     pid: 9010221
     mass: 0.99
     width: 0.06
@@ -412,6 +416,7 @@ particles:
       magnitude: 0.0
       projection: 0.0
   - name: f(0)(1500)
+    latex: f_{0}(1500)
     pid: 9030221
     mass: 1.506
     width: 0.112

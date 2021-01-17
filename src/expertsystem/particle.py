@@ -126,7 +126,7 @@ class Spin(abc.Hashable):
         return hash(repr(self))
 
 
-@attr.s(frozen=True, repr=False)
+@attr.s(frozen=True, repr=True, kw_only=True)
 class Particle:  # pylint: disable=too-many-instance-attributes
     """Immutable container of data defining a physical particle.
 
@@ -146,8 +146,11 @@ class Particle:  # pylint: disable=too-many-instance-attributes
         the user (see :doc:`/usage/particles`).
     """
 
+    # Labels
     name: str = attr.ib(eq=False)
     pid: int = attr.ib(eq=False)
+    latex: Optional[str] = attr.ib(eq=False, default=None)
+    # Unique properties
     spin: float = attr.ib()
     mass: float = attr.ib()
     width: float = attr.ib(default=0.0)
@@ -186,20 +189,6 @@ class Particle:  # pylint: disable=too-many-instance-attributes
 
     def __neg__(self) -> "Particle":
         return create_antiparticle(self)
-
-    def __repr__(self) -> str:
-        output_string = f"{self.__class__.__name__}("
-        for member in attr.fields(Particle):
-            value = getattr(self, member.name)
-            if value is None:
-                continue
-            if member.name not in ["mass", "spin", "isospin"] and value == 0:
-                continue
-            if isinstance(value, str):
-                value = f'"{value}"'
-            output_string += f"\n    {member.name}={value},"
-        output_string += "\n)"
-        return output_string
 
     def is_lepton(self) -> bool:
         return (
@@ -328,7 +317,11 @@ class ParticleCollection(abc.MutableSet):
         return self
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({set(self.__particles.values())})"
+        output = f"{self.__class__.__name__}("
+        for particle in self:
+            output += f"\n    {particle},"
+        output += ")"
+        return output
 
     def add(self, value: Particle) -> None:
         if value in self.__particles.values():
@@ -415,6 +408,7 @@ class ParticleCollection(abc.MutableSet):
 def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
     template_particle: Particle,
     name: Optional[str] = None,
+    latex: Optional[str] = None,
     pid: Optional[int] = None,
     mass: Optional[float] = None,
     width: Optional[float] = None,
@@ -436,6 +430,7 @@ def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
     return Particle(
         name=name if name else template_particle.name,
         pid=pid if pid else template_particle.pid,
+        latex=latex if latex else template_particle.latex,
         mass=mass if mass is not None else template_particle.mass,
         width=width if width else template_particle.width,
         spin=spin if spin else template_particle.spin,
@@ -472,7 +467,9 @@ def create_particle(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def create_antiparticle(
-    template_particle: Particle, new_name: str = None
+    template_particle: Particle,
+    new_name: Optional[str] = None,
+    new_latex: Optional[str] = None,
 ) -> Particle:
     isospin: Optional[Spin] = None
     if template_particle.isospin:
@@ -486,6 +483,9 @@ def create_antiparticle(
     return Particle(
         name=new_name if new_name else "anti-" + template_particle.name,
         pid=-template_particle.pid,
+        latex=new_latex
+        if new_latex
+        else fR"\overline{{{template_particle.latex}}}",
         mass=template_particle.mass,
         width=template_particle.width,
         charge=-template_particle.charge,

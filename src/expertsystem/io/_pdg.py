@@ -60,8 +60,12 @@ def __convert_pdg_instance(pdg_particle: PdgDatabase) -> Particle:
         parity: Optional[Parity] = Parity(__sign(pdg_particle.pdgid))  # type: ignore
     else:
         parity = __create_parity(pdg_particle.P)
+    latex = None
+    if pdg_particle.latex_name != "Unknown":
+        latex = str(pdg_particle.latex_name)
     return Particle(
         name=str(pdg_particle.name),
+        latex=latex,
         pid=int(pdg_particle.pdgid),
         mass=convert_mass_width(pdg_particle.mass),
         width=convert_mass_width(pdg_particle.width),

@@ -19,6 +19,7 @@
       "required": ["name", "pid", "mass", "spin"],
       "properties": {
         "name": { "type": "string" },
+        "latex": { "type": "string" },
         "pid": { "type": "integer" },
         "mass": { "type": "number" },
         "width": { "type": "number" },
