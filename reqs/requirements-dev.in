@@ -8,5 +8,6 @@ jupyterlab
 jupyterlab-code-formatter
 labels
 pip-tools
+pydeps
 sphinx-autobuild
 tox >= 1.9  # for skip_install, use_develop

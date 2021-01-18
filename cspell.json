@@ -78,7 +78,6 @@
         "mypy",
         "nishijima",
         "pycompwa",
-        "pydeps",
         "pydocstyle",
         "pydot",
         "pylint",

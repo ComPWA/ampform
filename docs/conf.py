@@ -228,24 +228,3 @@ thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
-
-# -- Visualize dependencies ---------------------------------------------------
-if jupyter_execute_notebooks != "off":
-    print("Generating module dependency tree...")
-    subprocess.call(
-        " ".join(
-            [
-                "HOME=.",  # in case of calling through tox
-                "pydeps",
-                f"../src/{package}",
-                "-o module_structure.svg",
-                "--exclude *._*",  # hide private modules
-                "--max-bacon=1",  # hide external dependencies
-                "--noshow",
-            ]
-        ),
-        shell=True,
-    )
-    if os.path.exists("module_structure.svg"):
-        with open(f"api/{package}.rst", "a") as stream:
-            stream.write("\n.. image:: /module_structure.svg")
