@@ -6,7 +6,7 @@ description = "Something isn't working"
 [Epic]
 color = "3E4B9E"
 name = "Epic"
-description = ""
+description = "Collection of issues, managed by ZenHub"
 
 ["⚠️ Interface"]
 color = "BFDADC"

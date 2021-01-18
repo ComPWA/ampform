@@ -27,8 +27,6 @@
         ".pre-commit-config.yaml",
         ".pylintrc",
         ".readthedocs.yml",
-        "reqs/**/*.in",
-        "reqs/**/*.txt",
         ".vscode/*",
         ".vscode/.gitignore",
         "Makefile",
@@ -38,7 +36,8 @@
         "docs/conf.py",
         "pyproject.toml",
         "pyrightconfig.json",
-        "requirements*.txt",
+        "reqs/**/*.in",
+        "reqs/**/*.txt",
         "setup.cfg",
         "setup.py",
         "tox.ini"

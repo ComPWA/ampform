@@ -37,7 +37,7 @@ ipywidgets==7.6.3
 jedi==0.18.0
 jinja2==2.11.2
 jsonschema==3.2.0
-jupyter-cache==0.4.1
+jupyter-cache==0.4.2
 jupyter-client==6.1.11
 jupyter-console==6.2.0
 jupyter-core==4.7.0
