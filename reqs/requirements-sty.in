@@ -18,7 +18,3 @@ mypy >= 0.570  # attrs support
 pep8-naming
 pydocstyle
 pylint
-
-# Lint documentation files
-doc8
-rstcheck

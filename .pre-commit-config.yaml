@@ -50,14 +50,6 @@ repos:
         types:
           - python
 
-      - id: doc8
-        name: doc8
-        entry: doc8
-        args:
-          - -q
-        language: system
-        files: \.(inc|rst)$
-
       - id: flake8
         name: flake8
         entry: flake8
@@ -102,9 +94,3 @@ repos:
         language: system
         types:
           - python
-
-      - id: rstcheck
-        name: rstcheck
-        entry: rstcheck
-        language: system
-        files: \.(inc|rst)$

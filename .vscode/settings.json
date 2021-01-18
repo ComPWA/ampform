@@ -34,9 +34,6 @@
   "coverage-gutters.showLineCoverage": true,
   "editor.formatOnSave": true,
   "editor.rulers": [80],
-  "files.associations": {
-    "*.inc": "restructuredtext"
-  },
   "files.watcherExclude": {
     "**/*_cache/**": true,
     "**/.eggs/**": true,
@@ -73,8 +70,6 @@
   "python.testing.pytestArgs": ["--color=no", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/_build/html",
-  "restructuredtext.confPath": "${workspaceFolder}/docs",
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
