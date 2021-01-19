@@ -1,7 +1,7 @@
-# [ADR-xxxx] <!-- short title of solved problem and solution -->
+# [ADR-xxx] <!-- short title of solved problem and solution -->
 
 Status: **[proposed | rejected | accepted | deprecated | … | superseded by
-[ADR-xxxx](xxxx-example.md)]**
+[ADR-xxx](xxx-example.md)]**
 
 Deciders: [list everyone involved in the decision] <!-- optional -->
 
@@ -65,5 +65,5 @@ out best (see below)].
 ## Links <!-- optional -->
 
 - [Link type][link to adr]
-  <!-- example: Refined by [ADR-0005](0005-example.md) -->
+  <!-- example: Refined by [ADR-005](005-example.md) -->
 - … <!-- numbers of links can vary -->

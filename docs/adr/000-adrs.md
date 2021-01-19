@@ -1,6 +1,6 @@
 <!-- cSpell:ignore ADRs, joelparkerhenderson, MADR, Nygard's -->
 
-# [ADR-0000] Use Markdown Architectural Decision Records
+# [ADR-000] Use ADRs
 
 Status: **accepted**
 

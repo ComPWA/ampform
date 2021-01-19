@@ -1,0 +1,159 @@
+<!-- markdownlint-disable MD013 -->
+<!-- cspell:ignore amplitf lambdify -->
+
+# [ADR-001] Amplitude model
+
+- Status: **accepted**
+- Deciders: @redeboer @spflueger
+
+## Context and Problem Statement
+
+From the perspective of a PWA fitter package, the responsibility of the
+`expertsystem` is to construct an `AmplitudeModel` that serves as blueprint for
+a function that can be evaluated. Such a **function** has the following
+requirements:
+
+1. It should be able to compute a list of real-valued intensities
+   $\mathbb{R}^m$ from a dataset of four-momenta
+   $\mathbb{R}^{m\times n\times4}$, where $m$ is the number of events and $n$
+   is the number of final state particles.
+2. It should contain **parameters** that can be tweaked, so that they can be
+   optimized with regard to a certain estimator.
+
+Requirements for the `AmplitudeModel`:
+
+1. The `AmplitudeModel` has to be convertible to a function which can be
+   **evaluated using various computation back-ends** (numpy, tensorflow,
+   theano, jax, ...)
+2. Ideally, the model should be complete in the sense that it contains all
+   information to construct the complete model. This means that some "common"
+   functions like a Breit-Wigner and Blatt-Weisskopf form factors should also
+   be contained inside the `AmplitudeModel`. This guarantees
+   **reproducibility**!
+3. Adding new operators/models should not trigger many code modifications
+   ([open-closed principle](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle)),
+   for instance adding new dynamics or formalisms.
+4. Extendible:
+   - Add or replace current parts of an existing model. For example replace the
+     dynamics part of some decay.
+   - Change a function plus a dataset to an estimator function. This is a
+     subtle but important point. The function should hide its details (which
+     backend and its mathematical expression) and yet be extendable to an
+     estimator.
+5. Definition and easy extraction of components. Components are certain
+   sub-parts of the complete mathematical expression. This is at least needed
+   for the calculation of fit fractions, or plotting individual parts of the
+   intensity.
+
+## Decision Drivers
+
+- [#382](https://github.com/ComPWA/expertsystem/issues/382): Coupling
+  parameters in the `AmplitudeModel` is difficult (has to be done through the
+  place where they are used in the `dynamics` or `intensity` section) and
+  counter-intuitive (cannot be done through the `parameters` section)
+- [#440](https://github.com/ComPWA/expertsystem/issues/440): when overwriting
+  existing dynamics, old parameters are not cleaned up from the `parameters`
+  section
+- [#441](https://github.com/ComPWA/expertsystem/issues/441): parameters contain
+  a name that can be changed, but that results in a mismatch between the key
+  that is used in the `parameters` section and the name of the parameter to
+  which that entry points.
+- [ComPWA#226](https://github.com/ComPWA/ComPWA/issues/226): Use a math
+  language for the blueprint of the function. This was also discussed early to
+  mid 2020, but dropped in favor of custom python code + `amplitf`. The
+  reasoning was that the effort of writing some new math language plus
+  generators converting a mathematical expression into a function (using
+  various back-ends) requires too much manpower.
+
+## Considered Options
+
+### Current set-up
+
+Currently
+([v0.6.8](https://pwa.readthedocs.io/projects/expertsystem/en/0.6.8)), the
+[`AmplitudeModel`](https://pwa.readthedocs.io/projects/expertsystem/en/0.6.8/api/expertsystem.amplitude.model.html#expertsystem.amplitude.model.AmplitudeModel)
+contains five **sections** (instances of specific classes):
+
+- `kinematics`: defines initial and final state
+- `particles`: particle definitions (spin, etc.)
+- `dynamics`: a mapping that defines which dynamics type to apply to which
+  particle
+- `intensity`: the actual amplitude model that is to be converted by a fitter
+  package into a function as described above
+- `parameters`: an inventory of parameters that are used in `intensity` and
+  `dynamics`
+
+This structure can be represented in YAML, see an example
+[here](https://github.com/ComPWA/expertsystem/blob/f4f1c55/tests/unit/io/expected_recipe.yml).
+
+A fitter package converts `intensity` together with `dynamics` into a function.
+Any references to parameters that `intensity` or `dynamics` contain are
+converted into a parameter of the function. The parameters are initialized with
+the value as listed in the `parameters` section of the `AmplitudeModel`.
+
+### Alternative solutions
+
+```{toctree}
+---
+maxdepth: 1
+---
+examples/001/sympy
+examples/001/operators
+```
+
+## Decision Outcome
+
+Use {doc}`examples/001/sympy`. Initially, we leave the existing amplitude
+builders (modules
+[`helicity_decay`](https://pwa.readthedocs.io/projects/expertsystem/en/0.6.8/api/expertsystem.amplitude.helicity_decay.html)
+and
+[`canonical_decay`](https://pwa.readthedocs.io/projects/expertsystem/en/0.6.8/api/expertsystem.amplitude.canonical_decay.html))
+alongside a SymPy implementation, so that it's possible to compare the results.
+Once it turns out the this set-up results in the same results and a comparable
+performance, we replace the old amplitude builders with the new SymPy
+implementation.
+
+## Pros and Cons of the Options
+
+### {doc}`SymPy <examples/001/sympy>`
+
+- **Positive**
+  - Easy to render amplitude model as LaTeX
+  - Model description is complete! Absolutely all information about the model
+    is included. (reproducibility)
+  - Follows open-closed principle. New models and formalism can be added
+    without any changes to other interfacing components (here: `tensorwaves`)
+  - Use
+    [`lambdify`](https://docs.sympy.org/latest/tutorial/basic_operations.html#lambdify)
+    to convert the expression to any back-end
+  - Use
+    [`Expr.subs`](https://docs.sympy.org/latest/modules/core.html#sympy.core.basic.Basic.subs)
+    (substitute) to couple parameters or replace components of the model, for
+    instance to set custom dynamics
+- **Negative**
+  - `lambdify` becomes a core dependency while its behavior cannot be modified,
+    but is defined by `sympy`.
+  - Need to keep track of components in the expression tree with symbol
+    mappings
+
+### {doc}`Python's operator library <examples/001/operators>`
+
+- **Positive**
+  - More control over different components of in the expression tree
+  - More control over convert functionality to functions
+  - No additional dependencies
+- **Negative**
+  - Essentially re-inventing SymPy
+
+### Customized python code (current state)
+
+- **Positive**
+  - "Faster" implementation / prototyping possible compared to python operators
+  - No additional dependencies
+- **Negative**
+  - Not open-closed to new models
+  - Conversion to various back-ends not DRY
+  - Function replacement or extension feature becomes very difficult to handle.
+  - Model is not complete, since no complete mathematical description is used.
+    For example Breit-Wigner functions are referred to directly and their
+    implementations is not defined in the amplitude model.

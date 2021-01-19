@@ -197,6 +197,10 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 linkcheck_anchors = False
 
 # Settings for myst_nb
+execution_excludepatterns = [
+    "adr/examples/*",
+    "adr/examples/*/*",
+]
 execution_timeout = -1
 nb_output_stderr = "remove"
 nb_render_priority = {
