@@ -84,15 +84,15 @@ def __build_kinematics(
     kinematics_type = eval(  # pylint: disable=eval-used
         f'{KinematicsType.__name__}.{definition["type"]}'
     )
-    kinematics = Kinematics(
-        kinematics_type=kinematics_type,
-        particles=particles,
+    return Kinematics(
+        type=kinematics_type,
+        initial_state={
+            i: particles[n] for i, n in definition["initial_state"].items()
+        },
+        final_state={
+            i: particles[n] for i, n in definition["final_state"].items()
+        },
     )
-    for state_id, particle_name in definition["initial_state"].items():
-        kinematics.add_initial_state(state_id, particle_name)
-    for state_id, particle_name in definition["final_state"].items():
-        kinematics.add_final_state(state_id, particle_name)
-    return kinematics
 
 
 def __build_particle_dynamics(

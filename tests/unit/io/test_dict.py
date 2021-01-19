@@ -116,9 +116,8 @@ class TestHelicityFormalism:
         initial_state = kinematics["initial_state"]
         final_state = kinematics["final_state"]
         assert kinematics["type"] == "Helicity"
-        assert len(initial_state) == 1
-        assert initial_state[0] == "J/psi(1S)"
-        assert len(final_state) == 3
+        assert initial_state == {0: "J/psi(1S)"}
+        assert final_state == {2: "gamma", 3: "pi0", 4: "pi0"}
 
     def test_parameter_section(self, imported_dict):
         parameter_list = imported_dict["parameters"]

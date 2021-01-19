@@ -1,5 +1,6 @@
 """Dump recipe objects to `dict` instances for a YAML file."""
 from collections import abc
+from enum import Enum
 from typing import Any
 
 import attr
@@ -47,12 +48,12 @@ def from_fit_parameter(parameter: FitParameter) -> dict:
     return attr.asdict(parameter, recurse=True)
 
 
-def __kinematics_to_dict(kin: Kinematics) -> dict:
-    return {
-        "type": kin.kinematics_type.name,
-        "initial_state": {i: p.name for i, p in kin.initial_state.items()},
-        "final_state": {i: p.name for i, p in kin.final_state.items()},
-    }
+def __kinematics_to_dict(kinematics: Kinematics) -> dict:
+    return attr.asdict(
+        kinematics,
+        recurse=True,
+        value_serializer=__value_serializer,
+    )
 
 
 def __dynamics_section_to_dict(particle_dynamics: ParticleDynamics) -> dict:
@@ -62,9 +63,14 @@ def __dynamics_section_to_dict(particle_dynamics: ParticleDynamics) -> dict:
     }
 
 
-def __value_serializer(  # pylint: disable=unused-argument
+def __value_serializer(  # pylint: disable=too-many-return-statements,unused-argument
     inst: type, field: attr.Attribute, value: Any
 ) -> Any:
+    if isinstance(value, Enum):
+        return value.name
+    if isinstance(value, abc.Mapping):
+        if all(map(lambda p: isinstance(p, Particle), value.values())):
+            return {k: v.name for k, v in value.items()}
     if isinstance(value, abc.Iterable):
         if all(map(lambda p: isinstance(p, Node), value)):
             return [__asdict_with_type(item) for item in value]

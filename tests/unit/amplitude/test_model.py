@@ -12,6 +12,7 @@ from expertsystem.amplitude.model import (
     _assert_arg_type,
 )
 from expertsystem.particle import ParticleCollection
+from expertsystem.reaction import Result
 
 
 class TestFitParameters:
@@ -47,27 +48,26 @@ class TestFitParameters:
 
 class TestKinematics:
     @staticmethod
-    def test_init(particle_database):
-        jpsi = particle_database["J/psi(1S)"]
-        gamma = particle_database["gamma"]
+    def test_post_init(particle_database: ParticleCollection):
         pi0 = particle_database["pi0"]
-        kinematics = Kinematics(particle_database)
-        assert kinematics.kinematics_type == KinematicsType.Helicity
-        kinematics.set_reaction(
-            initial_state=["J/psi(1S)"],
-            final_state=["gamma", "pi0", "pi0"],
-            intermediate_states=1,
-        )
-        assert kinematics.initial_state == {0: jpsi}
-        assert kinematics.final_state == {2: gamma, 3: pi0, 4: pi0}
-        assert kinematics.id_to_particle(0) is jpsi
-        with pytest.raises(KeyError):
-            kinematics.id_to_particle(1)
-        assert kinematics.id_to_particle(2) is gamma
-        assert kinematics.id_to_particle(3) is pi0
-        assert kinematics.id_to_particle(4) is pi0
-        with pytest.raises(KeyError):
-            kinematics.id_to_particle(5)
+        with pytest.raises(ValueError):
+            Kinematics(
+                initial_state={0: pi0, 1: pi0},
+                final_state={1: pi0, 2: pi0},
+            )
+
+    @staticmethod
+    def test_from_graph(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
+        result = jpsi_to_gamma_pi_pi_helicity_solutions
+        graph = next(iter(result.solutions))
+        kinematics = Kinematics.from_graph(graph)
+        assert len(kinematics.initial_state) == 1
+        assert len(kinematics.final_state) == 3
+        assert kinematics.id_to_particle[0].name == "J/psi(1S)"
+        assert kinematics.id_to_particle[2].name == "gamma"
+        assert kinematics.id_to_particle[3].name == "pi0"
+        assert kinematics.id_to_particle[4].name == "pi0"
+        assert kinematics.type == KinematicsType.Helicity
 
 
 class TestParticleDynamics:

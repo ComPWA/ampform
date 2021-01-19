@@ -181,20 +181,9 @@ def _generate_particle_collection(
     return particles
 
 
-def _generate_kinematics(
-    result: Result, particles: ParticleCollection
-) -> Kinematics:
-    kinematics = Kinematics(particles)
-    initial_state = [p.name for p in result.get_initial_state()]
-    final_state = [p.name for p in result.get_final_state()]
-    kinematics.set_reaction(
-        initial_state=initial_state,
-        final_state=final_state,
-        intermediate_states=len(
-            result.solutions[0].get_intermediate_state_edge_ids()
-        ),
-    )
-    return kinematics
+def _generate_kinematics(result: Result) -> Kinematics:
+    graph = next(iter(result.solutions))
+    return Kinematics.from_graph(graph)
 
 
 def _generate_particles_string(
@@ -405,7 +394,7 @@ class HelicityAmplitudeGenerator:
         initial_state = get_initial_state[0].name
 
         self.particles = _generate_particle_collection(graphs)
-        self.kinematics = _generate_kinematics(reaction_result, self.particles)
+        self.kinematics = _generate_kinematics(reaction_result)
         self.dynamics = ParticleDynamics(self.particles, self.fit_parameters)
         if self.top_node_no_dynamics:
             self.dynamics.set_non_dynamic(initial_state)

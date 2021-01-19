@@ -4,21 +4,13 @@
 from abc import ABC
 from collections import abc
 from enum import Enum, auto
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Set,
-)
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Set
 
 import attr
 
 from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.reaction.quantum_numbers import ParticleWithSpin
+from expertsystem.reaction.topology import StateTransitionGraph
 
 
 @attr.s
@@ -212,78 +204,51 @@ class KinematicsType(Enum):
     Helicity = auto()
 
 
+def _determine_default_kinematics(
+    kinematics_type: Optional[KinematicsType],
+) -> KinematicsType:
+    if kinematics_type is None:
+        return KinematicsType.Helicity
+    return kinematics_type
+
+
+@attr.s(frozen=True)
 class Kinematics:
-    def __init__(
-        self,
-        particles: ParticleCollection,
-        kinematics_type: KinematicsType = KinematicsType.Helicity,
-    ) -> None:
-        _assert_arg_type(particles, ParticleCollection)
-        _assert_arg_type(kinematics_type, KinematicsType)
-        self.__particles = particles
-        self.__initial_state: Dict[int, Particle] = dict()
-        self.__final_state: Dict[int, Particle] = dict()
-        self.__kinematics_type: KinematicsType = kinematics_type
+    initial_state: Dict[int, Particle] = attr.ib()
+    final_state: Dict[int, Particle] = attr.ib()
+    type: KinematicsType = attr.ib(  # noqa: A003
+        default=KinematicsType.Helicity,
+        converter=_determine_default_kinematics,
+    )
 
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, Kinematics):
-            return (
-                self.initial_state == other.initial_state
-                and self.final_state == other.final_state
-                and self.kinematics_type == other.kinematics_type
+    def __attrs_post_init__(self) -> None:
+        overlapping_ids = set(self.initial_state) & set(self.final_state)
+        if len(overlapping_ids) > 0:
+            raise ValueError(
+                "Initial and final state have overlapping IDs",
+                overlapping_ids,
             )
-        raise NotImplementedError
 
     @property
-    def initial_state(self) -> Dict[int, Particle]:
-        return self.__initial_state
+    def id_to_particle(self) -> Dict[int, Particle]:
+        return {**self.initial_state, **self.final_state}
 
-    @property
-    def final_state(self) -> Dict[int, Particle]:
-        return self.__final_state
-
-    @property
-    def kinematics_type(self) -> KinematicsType:
-        return self.__kinematics_type
-
-    def set_reaction(
-        self,
-        initial_state: Sequence[str],
-        final_state: Sequence[str],
-        intermediate_states: int,
-    ) -> None:
-        ini_particles = [self.__particles[name] for name in initial_state]
-        final_particles = [self.__particles[name] for name in final_state]
-        self.__initial_state = dict(enumerate(ini_particles))
-        self.__final_state = dict(
-            enumerate(
-                final_particles, start=len(initial_state) + intermediate_states
-            )
+    @staticmethod
+    def from_graph(
+        graph: StateTransitionGraph[ParticleWithSpin],
+        kinematics_type: Optional[KinematicsType] = None,
+    ) -> "Kinematics":
+        initial_state = dict()
+        for state_id in graph.get_initial_state_edge_ids():
+            initial_state[state_id] = graph.get_edge_props(state_id)[0]
+        final_state = dict()
+        for state_id in graph.get_final_state_edge_ids():
+            final_state[state_id] = graph.get_edge_props(state_id)[0]
+        return Kinematics(
+            type=kinematics_type,
+            initial_state=initial_state,
+            final_state=final_state,
         )
-
-    def id_to_particle(self, state_id: int) -> Particle:
-        particle = self.__initial_state.get(
-            state_id, self.__final_state.get(state_id, None)
-        )
-        if particle is None:
-            raise KeyError(f"Kinematics does not contain state ID {state_id}")
-        return particle
-
-    def add_initial_state(self, state_id: int, particle_name: str) -> None:
-        _assert_arg_type(particle_name, str)
-        _assert_arg_type(state_id, int)
-        if state_id in self.__initial_state:
-            raise ValueError(f"Initial state ID {state_id} already exists")
-        particle = self.__particles[particle_name]
-        self.__initial_state[state_id] = particle
-
-    def add_final_state(self, state_id: int, particle_name: str) -> None:
-        _assert_arg_type(particle_name, str)
-        _assert_arg_type(state_id, int)
-        if state_id in self.__final_state:
-            raise ValueError(f"Initial state ID {state_id} already exists")
-        particle = self.__particles[particle_name]
-        self.__final_state[state_id] = particle
 
 
 class Node(ABC):
