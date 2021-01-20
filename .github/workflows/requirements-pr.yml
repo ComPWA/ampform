@@ -5,16 +5,10 @@ name: Requirements (PR)
 on:
   pull_request:
     branches: [master]
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
 
 jobs:
   upgrade:
     name: Upgrade requirement files
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -62,7 +56,6 @@ jobs:
 
   push:
     name: Push changes
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-20.04
     needs:
       - upgrade
