@@ -30,7 +30,7 @@
         ".vscode/*",
         ".vscode/.gitignore",
         "Makefile",
-        "docs/adr/examples/**",
+        "docs/adr/*/*",
         "codecov.yml",
         "cspell.json",
         "docs/_templates/*",
