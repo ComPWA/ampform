@@ -5,7 +5,6 @@
 
 # Additional developer tools
 jupyterlab
-jupyterlab-code-formatter
 labels
 pip-tools
 pydeps
