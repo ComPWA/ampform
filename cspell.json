@@ -39,6 +39,7 @@
         "pyrightconfig.json",
         "reqs/**/*.in",
         "reqs/**/*.txt",
+        "requirements*.txt",
         "setup.cfg",
         "setup.py",
         "tox.ini"
