@@ -223,7 +223,12 @@ if "EXECUTE_NB" in os.environ:
     jupyter_execute_notebooks = "force"
 
 # Settings for myst-parser
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "dollarmath",
+    "smartquotes",
+]
 myst_update_mathjax = False
 
 # Settings for Thebe cell output
