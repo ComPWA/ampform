@@ -9,9 +9,8 @@
   superseded by [ADR-xxx](./xxx.md)
   -->
 - **Deciders**: <!-- @github-user -->
-<!-- - Technical Story: [description | ticket/issue URL] -->
 
-## Context and Problem Statement
+## Context and problem statement
 
 <!--
 Describe the context and problem statement, e.g., in free form using two to
@@ -19,29 +18,85 @@ three sentences. You may want to articulate the problem in form of a question.
 -->
 
 <!--
-## Decision Drivers
+### Issues with existing set-up
 
-- [driver 1, e.g., a force, facing concern, …]
-- [driver 2, e.g., a force, facing concern, …]
+Summary of problems with the existing design, possibly with some snippets.
 -->
-
-## Considered Options
 
 <!--
-### [Option 1]
+### Technical story
 
-#### Pros
+If available, list and link related issues, PRs, or ADRs that led up to this
+ADR:
 
-#### Cons
-
-### [Option 2]
-
-#### Pros
-
-#### Cons
+- [#000](https://github.com/ComPWA/expertsystem/issues/000)
+- [#000](https://github.com/ComPWA/expertsystem/issues/000)
 -->
 
-## Decision Outcome
+## Decision drivers
+
+<!--
+### Solution requirements
+
+1. Requirement 1
+2. Requirement 2
+-->
+
+## Considered solutions
+
+<!--
+Solutions can be illustrated with Jupyter notebooks or MyST files in a
+subfolder. They should only factually illustrate design and implementation: the
+discussion should take place in the main document.
+
+To include documents in a sub-folder, use a toctree:
+
+```{toctree}
+xxx/option1
+xxx/option2
+```
+-->
+
+## Evaluation
+
+### Pros and Cons
+
+<!--
+List some advantages and disadvantages of each of the implementations, possibly
+with links (using e.g. {ref} or {doc}) to the proposed solutions.
+
+#### Option 1
+
+- **Positive**:
+  1.
+  2.
+- **Negative**:
+  1.
+  2.
+
+#### Option 2
+
+- **Positive**:
+  1.
+  2.
+- **Negative**:
+  1.
+  2.
+-->
+
+<!--
+### Requirement evaluation
+
+See [requirements](#solution-requirements).
+
+|          | 1   | 2   | 3   | ... |
+| -------- | --- | --- | --- | --- |
+| Option 1 |     |     |     |     |
+| Option 2 |     |     |     |     |
+| ...      |     |     |     |     |
+-->
+
+## Decision outcome
 
 <!--
 Chosen option: "[option 1]", because [justification. e.g., only option, which
@@ -50,13 +105,13 @@ out best (see below)].
 -->
 
 <!--
-### Positive Consequences
+### Positive consequences
 
 - [e.g., improvement of quality attribute satisfaction, follow-up decisions
   required, …]
 - …
 
-### Negative Consequences
+### Negative consequences
 
 - [e.g., compromising quality attribute, follow-up decisions required, …]
 - …
