@@ -54,13 +54,13 @@ ipython==7.19.0
 ipywidgets==7.6.3
 isort==5.7.0
 jedi==0.18.0
-jinja2==2.11.2
+jinja2==2.11.3
 json5==0.9.5
 jsonschema==3.2.0
 jupyter-cache==0.4.2
 jupyter-client==6.1.11
 jupyter-console==6.2.0
-jupyter-core==4.7.0
+jupyter-core==4.7.1
 jupyter-server==1.2.2
 jupyter-sphinx==0.3.1
 jupyter==1.0.0
@@ -88,7 +88,7 @@ nbstripout==0.3.9
 nest-asyncio==1.5.1
 nodeenv==1.5.0
 notebook==6.2.0
-packaging==20.8
+packaging==20.9
 pandocfilters==1.4.3
 parso==0.8.1
 particle==0.14.0
@@ -162,7 +162,7 @@ traitlets==5.0.5
 typed-ast==1.4.2
 typing-extensions==3.7.4.3 ; python_version < "3.8.0"
 urllib3==1.26.3
-virtualenv==20.4.0
+virtualenv==20.4.1
 wcwidth==0.2.5
 webencodings==0.5.1
 wheel==0.36.2
