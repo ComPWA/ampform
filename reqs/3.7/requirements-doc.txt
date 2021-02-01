@@ -71,7 +71,7 @@ pyparsing==2.4.7
 pyrsistent==0.17.3
 python-constraint==1.4.0
 python-dateutil==2.8.1
-pytz==2020.5
+pytz==2021.1
 pyyaml==5.4.1
 pyzmq==22.0.2
 qtconsole==5.0.2

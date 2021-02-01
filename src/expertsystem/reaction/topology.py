@@ -301,6 +301,14 @@ EdgeType = TypeVar("EdgeType")
 """A TypeVar representing the type of edge properties."""
 
 
+def _copy_topology(topology: Topology) -> Topology:
+    return Topology(
+        nodes=topology.nodes,
+        edges=topology.edges,
+    )
+
+
+@attr.s(on_setattr=attr.setters.frozen, eq=False)
 class StateTransitionGraph(Generic[EdgeType]):
     """Graph class that resembles a frozen `.Topology` with properties.
 
@@ -311,31 +319,22 @@ class StateTransitionGraph(Generic[EdgeType]):
     retrieval.
     """
 
-    def __init__(
-        self,
-        topology: Topology,
-        node_props: Dict[int, InteractionProperties] = None,
-        edge_props: Dict[int, EdgeType] = None,
-    ) -> None:
-        # make a copy of Topology otherwise swapping of edges screws things up
-        self.__topology = Topology(nodes=topology.nodes, edges=topology.edges)
-        self.__node_props: Dict[int, InteractionProperties] = {}
-        self.__edge_props: Dict[int, EdgeType] = {}
-        if node_props:
-            self.__node_props = node_props
-        if edge_props:
-            self.__edge_props = edge_props
+    topology: Topology = attr.ib(converter=_copy_topology)
+    node_props: Dict[int, InteractionProperties] = attr.ib(factory=dict)
+    edge_props: Dict[int, EdgeType] = attr.ib(factory=dict)
+    graph_node_properties_comparator: Optional[Callable] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.is_callable()),
+        on_setattr=attr.setters.NO_OP,
+    )
 
-        self.graph_node_properties_comparator: Optional[Callable] = None
+    @property
+    def nodes(self) -> FrozenSet[int]:
+        return frozenset(self.topology.nodes)
 
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"nodes={self.nodes},"
-            f"edges={self.edges},"
-            f"node_props={self.__node_props},"
-            f"edge_props={self.__edge_props})"
-        )
+    @property
+    def edges(self) -> Dict[int, Edge]:
+        return self.topology.edges
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, StateTransitionGraph):
@@ -359,48 +358,39 @@ class StateTransitionGraph(Generic[EdgeType]):
                 self.get_node_props(i) == other.get_node_props(i)
                 for i in self.nodes
             )
-
         raise NotImplementedError
 
-    @property
-    def nodes(self) -> FrozenSet[int]:
-        return frozenset(self.__topology.nodes)
-
-    @property
-    def edges(self) -> Dict[int, Edge]:
-        return self.__topology.edges
-
     def get_initial_state_edge_ids(self) -> List[int]:
-        return self.__topology.get_initial_state_edge_ids()
+        return self.topology.get_initial_state_edge_ids()
 
     def get_final_state_edge_ids(self) -> List[int]:
-        return self.__topology.get_final_state_edge_ids()
+        return self.topology.get_final_state_edge_ids()
 
     def get_intermediate_state_edge_ids(self) -> List[int]:
-        return self.__topology.get_intermediate_state_edge_ids()
+        return self.topology.get_intermediate_state_edge_ids()
 
     def get_edge_ids_ingoing_to_node(self, node_id: int) -> List[int]:
         return [
             edge_id
-            for edge_id, edge in self.__topology.edges.items()
+            for edge_id, edge in self.topology.edges.items()
             if edge.ending_node_id == node_id
         ]
 
     def get_edge_ids_outgoing_from_node(self, node_id: int) -> List[int]:
         return [
             edge_id
-            for edge_id, edge in self.__topology.edges.items()
+            for edge_id, edge in self.topology.edges.items()
             if edge.originating_node_id == node_id
         ]
 
     def get_originating_node_list(self, edge_ids: Iterable[int]) -> List[int]:
-        return self.__topology.get_originating_node_list(edge_ids)
+        return self.topology.get_originating_node_list(edge_ids)
 
     def get_node_props(self, node_id: int) -> InteractionProperties:
-        return self.__node_props[node_id]
+        return self.node_props[node_id]
 
     def get_edge_props(self, edge_id: int) -> EdgeType:
-        return self.__edge_props[edge_id]
+        return self.edge_props[edge_id]
 
     def evolve(
         self,
@@ -412,14 +402,14 @@ class StateTransitionGraph(Generic[EdgeType]):
         Since a `.StateTransitionGraph` is frozen (cannot be modified), the
         evolve function will also create a shallow copy the properties.
         """
-        new_node_props = copy.copy(self.__node_props)
+        new_node_props = copy.copy(self.node_props)
         if node_props:
             for node_id, node_prop in node_props.items():
                 if node_id not in self.nodes:
                     raise KeyError(f"Node id {node_id} does not exist!")
                 new_node_props[node_id] = node_prop
 
-        new_edge_props = copy.copy(self.__edge_props)
+        new_edge_props = copy.copy(self.edge_props)
         if edge_props:
             for edge_id, edge_prop in edge_props.items():
                 if edge_id not in self.edges:
@@ -427,7 +417,7 @@ class StateTransitionGraph(Generic[EdgeType]):
                 new_edge_props[edge_id] = edge_prop
 
         return StateTransitionGraph[EdgeType](
-            topology=self.__topology,
+            topology=self.topology,
             node_props=new_node_props,
             edge_props=new_edge_props,
         )
@@ -459,39 +449,36 @@ class StateTransitionGraph(Generic[EdgeType]):
         return True
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
-        self.__topology.swap_edges(edge_id1, edge_id2)
+        self.topology.swap_edges(edge_id1, edge_id2)
         value1: Optional[EdgeType] = None
         value2: Optional[EdgeType] = None
-        if edge_id1 in self.__edge_props:
-            value1 = self.__edge_props.pop(edge_id1)
-        if edge_id2 in self.__edge_props:
-            value2 = self.__edge_props.pop(edge_id2)
+        if edge_id1 in self.edge_props:
+            value1 = self.edge_props.pop(edge_id1)
+        if edge_id2 in self.edge_props:
+            value2 = self.edge_props.pop(edge_id2)
         if value1 is not None:
-            self.__edge_props[edge_id2] = value1
+            self.edge_props[edge_id2] = value1
         if value2 is not None:
-            self.__edge_props[edge_id1] = value2
+            self.edge_props[edge_id1] = value2
 
 
-class InteractionNode:  # pylint: disable=too-few-public-methods
+@attr.s
+class InteractionNode:
     """Struct-like definition of an interaction node."""
 
-    def __init__(
-        self,
-        type_name: str,
-        number_of_ingoing_edges: int,
-        number_of_outgoing_edges: int,
-    ) -> None:
-        if not isinstance(number_of_ingoing_edges, int):
-            raise TypeError("NumberOfIngoingEdges must be an integer")
-        if not isinstance(number_of_outgoing_edges, int):
-            raise TypeError("NumberOfOutgoingEdges must be an integer")
-        if number_of_ingoing_edges < 1:
+    type_name: str = attr.ib(converter=str)
+    number_of_ingoing_edges: int = attr.ib(
+        validator=attr.validators.instance_of(int)
+    )
+    number_of_outgoing_edges: int = attr.ib(
+        validator=attr.validators.instance_of(int)
+    )
+
+    def __attrs_post_init__(self) -> None:
+        if self.number_of_ingoing_edges < 1:
             raise ValueError("NumberOfIngoingEdges has to be larger than 0")
-        if number_of_outgoing_edges < 1:
+        if self.number_of_outgoing_edges < 1:
             raise ValueError("NumberOfOutgoingEdges has to be larger than 0")
-        self.type_name = str(type_name)
-        self.number_of_ingoing_edges = int(number_of_ingoing_edges)
-        self.number_of_outgoing_edges = int(number_of_outgoing_edges)
 
 
 class SimpleStateTransitionTopologyBuilder:

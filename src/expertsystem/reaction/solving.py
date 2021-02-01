@@ -166,82 +166,51 @@ def _convert_non_executed_rules_to_names(
     return converted_dict
 
 
+@attr.s(on_setattr=attr.setters.frozen)
 class QNResult:
     """Defines a result to a problem set processed by the solving code."""
 
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        solutions: Optional[List[QuantumNumberSolution]] = None,
-        not_executed_node_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_node_rules: Optional[Dict[int, Set[str]]] = None,
-        not_executed_edge_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_edge_rules: Optional[Dict[int, Set[str]]] = None,
-    ) -> None:
-        # pylint: disable=too-many-locals
-        if solutions and (violated_node_rules or violated_edge_rules):
+    solutions: List[QuantumNumberSolution] = attr.ib(factory=list)
+    not_executed_node_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    violated_node_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    not_executed_edge_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    violated_edge_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+
+    def __attrs_post_init__(self) -> None:
+        if self.solutions and (
+            self.violated_node_rules or self.violated_edge_rules
+        ):
             raise ValueError(
                 "Invalid Result! Found solutions, but also violated rules."
             )
-        self.__solutions: List[QuantumNumberSolution] = list()
-        if solutions is not None:
-            self.__solutions = solutions
-
-        self.__not_executed_node_rules: Dict[int, Set[str]] = defaultdict(set)
-        if not_executed_node_rules is not None:
-            self.__not_executed_node_rules = not_executed_node_rules
-
-        self.__violated_node_rules: Dict[int, Set[str]] = defaultdict(set)
-        if violated_node_rules is not None:
-            self.__violated_node_rules = violated_node_rules
-
-        self.__not_executed_edge_rules: Dict[int, Set[str]] = defaultdict(set)
-        if not_executed_edge_rules is not None:
-            self.__not_executed_edge_rules = not_executed_edge_rules
-
-        self.__violated_edge_rules: Dict[int, Set[str]] = defaultdict(set)
-        if violated_edge_rules is not None:
-            self.__violated_edge_rules = violated_edge_rules
-
-    @property
-    def solutions(self) -> List[QuantumNumberSolution]:
-        return self.__solutions
-
-    @property
-    def not_executed_node_rules(self) -> Dict[int, Set[str]]:
-        return self.__not_executed_node_rules
-
-    @property
-    def violated_node_rules(self) -> Dict[int, Set[str]]:
-        return self.__violated_node_rules
-
-    @property
-    def not_executed_edge_rules(self) -> Dict[int, Set[str]]:
-        return self.__not_executed_edge_rules
-
-    @property
-    def violated_edge_rules(self) -> Dict[int, Set[str]]:
-        return self.__violated_edge_rules
 
     def extend(self, other_result: "QNResult") -> None:
         if self.solutions or other_result.solutions:
-            self.__solutions.extend(other_result.solutions)
-            self.__not_executed_node_rules.clear()
-            self.__violated_node_rules.clear()
-            self.__not_executed_edge_rules.clear()
-            self.__violated_edge_rules.clear()
+            self.solutions.extend(other_result.solutions)
+            self.not_executed_node_rules.clear()
+            self.violated_node_rules.clear()
+            self.not_executed_edge_rules.clear()
+            self.violated_edge_rules.clear()
         else:
             for key, rules in other_result.not_executed_node_rules.items():
-                self.__not_executed_node_rules[key].update(rules)
+                self.not_executed_node_rules[key].update(rules)
 
             for key, rules in other_result.not_executed_edge_rules.items():
-                self.__not_executed_edge_rules[key].update(rules)
+                self.not_executed_edge_rules[key].update(rules)
 
             for key, rules2 in other_result.violated_node_rules.items():
-                self.__violated_node_rules[key].update(rules2)
+                self.violated_node_rules[key].update(rules2)
 
             for key, rules2 in other_result.violated_edge_rules.items():
-                self.__violated_edge_rules[key].update(rules2)
+                self.violated_edge_rules[key].update(rules2)
 
 
 class Solver(ABC):

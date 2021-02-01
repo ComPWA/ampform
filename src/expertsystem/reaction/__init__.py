@@ -114,102 +114,68 @@ class SolvingMode(Enum):
     """find all possible solutions"""
 
 
+@attr.s(on_setattr=attr.setters.frozen)
 class Result:
     """Defines a result of a `.ProblemSet`.
 
     Returned by the `.StateTransitionManager`
     """
 
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        solutions: Optional[
-            List[StateTransitionGraph[ParticleWithSpin]]
-        ] = None,
-        not_executed_node_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_node_rules: Optional[Dict[int, Set[str]]] = None,
-        not_executed_edge_rules: Optional[Dict[int, Set[str]]] = None,
-        violated_edge_rules: Optional[Dict[int, Set[str]]] = None,
-        formalism_type: Optional[str] = None,
-    ) -> None:
-        # pylint: disable=too-many-locals
-        if solutions and (violated_node_rules or violated_edge_rules):
+    solutions: List[StateTransitionGraph[ParticleWithSpin]] = attr.ib(
+        factory=list
+    )
+    not_executed_node_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    violated_node_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    not_executed_edge_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    violated_edge_rules: Dict[int, Set[str]] = attr.ib(
+        factory=lambda: defaultdict(set)
+    )
+    formalism_type: Optional[str] = attr.ib(default=None)
+
+    def __attrs_post_init__(self) -> None:
+        if self.solutions and (
+            self.violated_node_rules or self.violated_edge_rules
+        ):
             raise ValueError(
-                "Invalid Result! Found solutions, but also violated rules."
+                f"Invalid {self.__class__.__name__}!"
+                f" Found {len(self.solutions)} solutions, but also violated rules.",
+                self.violated_node_rules,
+                self.violated_edge_rules,
             )
-
-        self.__formalism_type = formalism_type
-        self.__solutions: List[StateTransitionGraph[ParticleWithSpin]] = list()
-        if solutions is not None:
-            self.__solutions = solutions
-
-        self.__not_executed_node_rules: Dict[int, Set[str]] = defaultdict(set)
-        if not_executed_node_rules is not None:
-            self.__not_executed_node_rules = not_executed_node_rules
-
-        self.__violated_node_rules: Dict[int, Set[str]] = defaultdict(set)
-        if violated_node_rules is not None:
-            self.__violated_node_rules = violated_node_rules
-
-        self.__not_executed_edge_rules: Dict[int, Set[str]] = defaultdict(set)
-        if not_executed_edge_rules is not None:
-            self.__not_executed_edge_rules = not_executed_edge_rules
-
-        self.__violated_edge_rules: Dict[int, Set[str]] = defaultdict(set)
-        if violated_edge_rules is not None:
-            self.__violated_edge_rules = violated_edge_rules
-
-    @property
-    def formalism_type(self) -> Optional[str]:
-        return self.__formalism_type
-
-    @property
-    def solutions(self) -> List[StateTransitionGraph[ParticleWithSpin]]:
-        return self.__solutions
-
-    @property
-    def not_executed_node_rules(self) -> Dict[int, Set[str]]:
-        return self.__not_executed_node_rules
-
-    @property
-    def violated_node_rules(self) -> Dict[int, Set[str]]:
-        return self.__violated_node_rules
-
-    @property
-    def not_executed_edge_rules(self) -> Dict[int, Set[str]]:
-        return self.__not_executed_edge_rules
-
-    @property
-    def violated_edge_rules(self) -> Dict[int, Set[str]]:
-        return self.__violated_edge_rules
 
     def extend(
         self, other_result: "Result", intersect_violations: bool = False
     ) -> None:
         if self.solutions or other_result.solutions:
-            self.__solutions.extend(other_result.solutions)
-            self.__not_executed_node_rules.clear()
-            self.__violated_node_rules.clear()
-            self.__not_executed_edge_rules.clear()
-            self.__violated_edge_rules.clear()
+            self.solutions.extend(other_result.solutions)
+            self.not_executed_node_rules.clear()
+            self.violated_node_rules.clear()
+            self.not_executed_edge_rules.clear()
+            self.violated_edge_rules.clear()
         else:
             for key, rules in other_result.not_executed_node_rules.items():
-                self.__not_executed_node_rules[key].update(rules)
+                self.not_executed_node_rules[key].update(rules)
 
             for key, rules in other_result.not_executed_edge_rules.items():
-                self.__not_executed_edge_rules[key].update(rules)
+                self.not_executed_edge_rules[key].update(rules)
 
             for key, rules2 in other_result.violated_node_rules.items():
                 if intersect_violations:
-                    self.__violated_node_rules[key] &= rules2
+                    self.violated_node_rules[key] &= rules2
                 else:
-                    self.__violated_node_rules[key].update(rules2)
+                    self.violated_node_rules[key].update(rules2)
 
             for key, rules2 in other_result.violated_edge_rules.items():
                 if intersect_violations:
-                    self.__violated_edge_rules[key] &= rules2
+                    self.violated_edge_rules[key] &= rules2
                 else:
-                    self.__violated_edge_rules[key].update(rules2)
+                    self.violated_edge_rules[key].update(rules2)
 
     def get_initial_state(self) -> List[Particle]:
         graph = self.__get_first_graph()

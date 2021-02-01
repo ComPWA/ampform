@@ -122,7 +122,7 @@ pytest==6.2.2
 python-constraint==1.4.0
 python-dateutil==2.8.1
 pytoml==0.1.21
-pytz==2020.5
+pytz==2021.1
 pyyaml==5.4.1
 pyzmq==22.0.2
 qtconsole==5.0.2
@@ -162,7 +162,7 @@ traitlets==5.0.5
 typed-ast==1.4.2
 typing-extensions==3.7.4.3
 urllib3==1.26.3
-virtualenv==20.4.1
+virtualenv==20.4.2
 wcwidth==0.2.5
 webencodings==0.5.1
 wheel==0.36.2
