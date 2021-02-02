@@ -179,6 +179,7 @@ intersphinx_mapping = {
     "pwa": ("https://pwa.readthedocs.io", None),
     "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
+    "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": (
         "https://pwa.readthedocs.io/projects/tensorwaves/en/stable",
         None,
@@ -199,6 +200,7 @@ linkcheck_anchors = False
 # Settings for myst_nb
 execution_excludepatterns = [
     "adr/001/*",
+    "adr/002/*",
 ]
 execution_timeout = -1
 nb_output_stderr = "remove"

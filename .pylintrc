@@ -2,6 +2,15 @@
 #   pylint --generate-rcfile > .pylintrc_new
 # and compare the output
 
+[BASIC]
+good-names=
+    _,
+    i,
+    j,
+    k,
+    q,
+    x,
+
 [VARIABLES]
 init-import=yes
 
