@@ -544,11 +544,11 @@ class SimpleStateTransitionTopologyBuilder:
         return result_graph_list
 
     def extend_graph(
-        self, graph: Tuple[Topology, Sequence[int]]
+        self, pair: Tuple[Topology, Sequence[int]]
     ) -> List[Tuple[Topology, List[int]]]:
         extended_graph_list: List[Tuple[Topology, List[int]]] = []
 
-        current_open_end_edges = graph[1]
+        topology, current_open_end_edges = pair
 
         # Try to extend the graph with interaction nodes
         # that have equal or less ingoing lines than active lines
@@ -565,14 +565,14 @@ class SimpleStateTransitionTopologyBuilder:
                 )
                 # remove all combinations that originate from the same nodes
                 for comb1, comb2 in itertools.combinations(combis, 2):
-                    if graph[0].get_originating_node_list(comb1) == graph[
-                        0
-                    ].get_originating_node_list(comb2):
+                    if topology.get_originating_node_list(
+                        comb1
+                    ) == topology.get_originating_node_list(comb2):
                         combis.remove(comb2)
 
                 for combi in combis:
                     new_graph = _attach_node_to_edges(
-                        graph, interaction_node, combi
+                        pair, interaction_node, combi
                     )
                     extended_graph_list.append(new_graph)
 

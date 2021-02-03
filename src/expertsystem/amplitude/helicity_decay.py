@@ -177,9 +177,9 @@ def _generate_particle_collection(
     particles = ParticleCollection()
     for graph in graphs:
         for edge_props in map(graph.get_edge_props, graph.edges):
-            particle_name = edge_props[0].name
-            if particle_name not in particles:
-                particles.add(edge_props[0])
+            particle, _ = edge_props
+            if particle not in particles:
+                particles.add(particle)
     return particles
 
 
@@ -210,11 +210,11 @@ def _get_name_hel_list(
 ) -> List[Tuple[str, float]]:
     name_hel_list = []
     for i in edge_ids:
-        temp_hel = graph.get_edge_props(i)[1]
-        # remove .0
-        if temp_hel % 1 == 0:
-            temp_hel = int(temp_hel)
-        name_hel_list.append((graph.get_edge_props(i)[0].name, temp_hel))
+        particle, spin_projection = graph.get_edge_props(i)
+        helicity = float(spin_projection)
+        if helicity.is_integer():
+            helicity = int(helicity)
+        name_hel_list.append((particle.name, helicity))
 
     # in order to ensure correct naming of amplitude coefficients the list has
     # to be sorted by name. The same coefficient names have to be created for
@@ -485,9 +485,8 @@ class HelicityAmplitudeGenerator:
                 raise ValueError(
                     f"{ParticleCollection.__name__} not yet initialized!"
                 )
-            particle = edge_props[0]
-            helicity = edge_props[1]
-            return HelicityParticle(particle, helicity)
+            particle, spin_projection = edge_props
+            return HelicityParticle(particle, spin_projection)
 
         decay_products: List[DecayProduct] = list()
         for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):

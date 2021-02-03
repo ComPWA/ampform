@@ -86,17 +86,19 @@ def _clebsch_gordan_decorator(
         in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
         in_edge_id = next(iter(in_edge_ids))
 
+        particle, spin_projection = graph.get_edge_props(in_edge_id)
         parent_spin = Spin(
-            graph.get_edge_props(in_edge_id)[0].spin,
-            graph.get_edge_props(in_edge_id)[1],
+            particle.spin,
+            spin_projection,
         )
 
         daughter_spins: List[Spin] = []
 
         for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):
+            particle, spin_projection = graph.get_edge_props(out_edge_id)
             daughter_spin = Spin(
-                graph.get_edge_props(out_edge_id)[0].spin,
-                graph.get_edge_props(out_edge_id)[1],
+                particle.spin,
+                spin_projection,
             )
             if daughter_spin is not None and isinstance(daughter_spin, Spin):
                 daughter_spins.append(daughter_spin)
