@@ -14,11 +14,13 @@ from typing import (
     Callable,
     Dict,
     Generator,
+    Iterable,
     List,
     Mapping,
     Optional,
     Sequence,
     Set,
+    Sized,
     Tuple,
     Union,
 )
@@ -202,12 +204,12 @@ def _get_kinematic_representation(
     """
 
     def get_state_groupings(
-        edge_per_node_getter: Callable[[int], List[int]]
-    ) -> List[List[int]]:
+        edge_per_node_getter: Callable[[int], Iterable[int]]
+    ) -> List[Iterable[int]]:
         return [edge_per_node_getter(i) for i in topology.nodes]
 
     def fill_groupings(
-        grouping_with_ids: List[List[int]],
+        grouping_with_ids: Iterable[Iterable[int]],
     ) -> List[List[StateWithSpins]]:
         return [
             [initial_facts[edge_id] for edge_id in group]
@@ -277,7 +279,7 @@ def _generate_kinematic_permutations(
     ] = None,
 ) -> List[Dict[int, StateWithSpins]]:
     def assert_number_of_states(
-        state_definitions: Sequence, edge_ids: Sequence[int]
+        state_definitions: Sized, edge_ids: Sized
     ) -> None:
         if len(state_definitions) != len(edge_ids):
             raise ValueError(
@@ -412,13 +414,13 @@ def _generate_spin_permutations(
 
 def __get_initial_state_edge_ids(
     graph: StateTransitionGraph[ParticleWithSpin],
-) -> List[int]:
+) -> Iterable[int]:
     return graph.get_initial_state_edge_ids()
 
 
 def __get_final_state_edge_ids(
     graph: StateTransitionGraph[ParticleWithSpin],
-) -> List[int]:
+) -> Iterable[int]:
     return graph.get_final_state_edge_ids()
 
 
@@ -440,7 +442,7 @@ def _match_external_edge_ids(  # pylint: disable=too-many-locals
     graphs: List[StateTransitionGraph[ParticleWithSpin]],
     ref_graph_id: int,
     external_edge_getter_function: Callable[
-        [StateTransitionGraph], Sequence[int]
+        [StateTransitionGraph], Iterable[int]
     ],
 ) -> None:
     ref_graph = graphs[ref_graph_id]
@@ -502,7 +504,7 @@ def perform_external_edge_identical_particle_combinatorics(
 def _external_edge_identical_particle_combinatorics(
     graph: StateTransitionGraph[ParticleWithSpin],
     external_edge_getter_function: Callable[
-        [StateTransitionGraph], Sequence[int]
+        [StateTransitionGraph], Iterable[int]
     ],
 ) -> List[StateTransitionGraph]:
     # pylint: disable=too-many-locals
@@ -560,7 +562,7 @@ def _calculate_swappings(id_mapping: Dict[int, int]) -> OrderedDict:
 
 
 def _create_edge_id_particle_mapping(
-    graph: StateTransitionGraph[ParticleWithSpin], edge_ids: Sequence[int]
+    graph: StateTransitionGraph[ParticleWithSpin], edge_ids: Iterable[int]
 ) -> Dict[int, str]:
     return {
         i: graph.get_edge_props(i)[0].name

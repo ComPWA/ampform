@@ -84,10 +84,11 @@ def _clebsch_gordan_decorator(
             )
 
         in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
+        in_edge_id = next(iter(in_edge_ids))
 
         parent_spin = Spin(
-            graph.get_edge_props(in_edge_ids[0])[0].spin,
-            graph.get_edge_props(in_edge_ids[0])[1],
+            graph.get_edge_props(in_edge_id)[0].spin,
+            graph.get_edge_props(in_edge_id)[1],
         )
 
         daughter_spins: List[Spin] = []

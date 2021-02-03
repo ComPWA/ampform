@@ -3,7 +3,7 @@
 See :doc:`/usage/visualization` for more info.
 """
 
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Iterable, List, Optional
 
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
@@ -78,7 +78,7 @@ def __node_name(edge_id: int, node_id: Optional[int] = None) -> str:
     return f"node{node_id}"
 
 
-def __rank_string(node_edge_ids: List[int], prefix: str = "") -> str:
+def __rank_string(node_edge_ids: Iterable[int], prefix: str = "") -> str:
     name_list = [f'"{prefix}{__node_name(i)}"' for i in node_edge_ids]
     name_string = ", ".join(name_list)
     return _DOT_RANK_SAME.format(name_string)

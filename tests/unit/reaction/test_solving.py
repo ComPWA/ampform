@@ -40,8 +40,8 @@ class TestResult:
         assert len(particle_graphs) == 2
         collapsed_graphs = result.collapse_graphs()
         assert len(collapsed_graphs) == 1
-        graph = collapsed_graphs[0]
-        edge_id = graph.get_intermediate_state_edge_ids()[0]
+        graph = next(iter(collapsed_graphs))
+        edge_id = next(iter(graph.get_intermediate_state_edge_ids()))
         f_resonances = pdg.filter(
             lambda p: p.name in ["f(0)(980)", "f(0)(1500)"]
         )

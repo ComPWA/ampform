@@ -492,7 +492,7 @@ class SimpleStateTransitionTopologyBuilder:
     """
 
     def __init__(
-        self, interaction_node_set: Sequence[InteractionNode]
+        self, interaction_node_set: Iterable[InteractionNode]
     ) -> None:
         if not isinstance(interaction_node_set, list):
             raise TypeError("interaction_node_set must be a list")
@@ -582,7 +582,7 @@ class SimpleStateTransitionTopologyBuilder:
 def _attach_node_to_edges(
     graph: Tuple[Topology, Sequence[int]],
     interaction_node: InteractionNode,
-    ingoing_edge_ids: Sequence[int],
+    ingoing_edge_ids: Iterable[int],
 ) -> Tuple[Topology, List[int]]:
     temp_graph = copy.deepcopy(graph[0])
     new_open_end_lines = list(copy.deepcopy(graph[1]))

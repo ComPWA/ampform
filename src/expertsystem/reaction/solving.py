@@ -20,9 +20,9 @@ from typing import (
     Callable,
     Dict,
     Generic,
+    Iterable,
     List,
     Optional,
-    Sequence,
     Set,
     Tuple,
     Type,
@@ -323,7 +323,7 @@ def validate_full_solution(problem_set: QNProblemSet) -> QNResult:
         return variables
 
     def _create_edge_variables(
-        edge_ids: Sequence[int],
+        edge_ids: Iterable[int],
         qn_list: Set[Type[EdgeQuantumNumber]],
     ) -> List[dict]:
         """Create variables for the quantum numbers of the specified edges.
@@ -762,7 +762,7 @@ class CSPSolver(Solver):
 
     def __create_edge_variables(
         self,
-        edge_ids: Sequence[int],
+        edge_ids: Iterable[int],
         qn_list: Set[Type[EdgeQuantumNumber]],
         problem_set: QNProblemSet,
     ) -> Tuple[Set[_EdgeVariableInfo], Dict[int, GraphEdgePropertyMap]]:

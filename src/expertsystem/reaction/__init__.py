@@ -202,7 +202,7 @@ class Result:
             raise ValueError(
                 f"No solutions in {self.__class__.__name__} object"
             )
-        return self.solutions[0]
+        return next(iter(self.solutions))
 
     def get_intermediate_particles(self) -> ParticleCollection:
         """Extract the names of the intermediate state particles."""
