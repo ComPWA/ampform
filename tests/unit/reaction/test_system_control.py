@@ -1,5 +1,6 @@
 # pylint: disable=protected-access
 from copy import deepcopy
+from typing import List
 
 import pytest
 
@@ -340,7 +341,9 @@ class TestSolutionFilter:  # pylint: disable=no-self-use
         assert len(filtered_graphs) == result
 
 
-def _create_graph(problem_set: ProblemSet):
+def _create_graph(
+    problem_set: ProblemSet,
+) -> StateTransitionGraph[ParticleWithSpin]:
     return StateTransitionGraph[ParticleWithSpin](
         topology=problem_set.topology,
         node_props=problem_set.initial_facts.node_props,
@@ -369,7 +372,7 @@ def test_edge_swap(particle_database, initial_state, final_state):
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
 
     problem_sets = stm.create_problem_sets()
-    init_graphs = []
+    init_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
     for _, problem_set_list in problem_sets.items():
         init_graphs.extend([_create_graph(x) for x in problem_set_list])
 
@@ -416,7 +419,7 @@ def test_match_external_edges(particle_database, initial_state, final_state):
     stm.set_allowed_interaction_types([InteractionTypes.Strong])
 
     problem_sets = stm.create_problem_sets()
-    init_graphs = []
+    init_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
     for _, problem_set_list in problem_sets.items():
         init_graphs.extend([_create_graph(x) for x in problem_set_list])
 
@@ -499,7 +502,7 @@ def test_external_edge_identical_particle_combinatorics(
 
     match_external_edges(init_graphs)
 
-    comb_graphs = []
+    comb_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
     for group in init_graphs:
         comb_graphs.extend(
             perform_external_edge_identical_particle_combinatorics(group)

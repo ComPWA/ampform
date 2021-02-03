@@ -147,14 +147,14 @@ class TestTopology:
             assert Topology(nodes=nodes, edges=edges)
 
     @staticmethod
-    def test_repr_and_eq(two_to_three_decay):
+    def test_repr_and_eq(two_to_three_decay: Topology):
         topology = eval(str(two_to_three_decay))  # pylint: disable=eval-used
         assert topology == two_to_three_decay
         with pytest.raises(NotImplementedError):
             assert topology == float()
 
     @staticmethod
-    def test_add_and_attach(two_to_three_decay):
+    def test_add_and_attach(two_to_three_decay: Topology):
         topology = deepcopy(two_to_three_decay)
         topology.add_node(3)
         topology.add_edges([7, 8])
@@ -162,10 +162,10 @@ class TestTopology:
         with pytest.raises(ValueError):
             topology.verify()
         topology.attach_edges_to_node_ingoing([6], 3)
-        assert topology.verify() is None
+        topology.verify()
 
     @staticmethod
-    def test_add_exceptions(two_to_three_decay):
+    def test_add_exceptions(two_to_three_decay: Topology):
         with pytest.raises(ValueError):
             two_to_three_decay.add_node(0)
         with pytest.raises(ValueError):
@@ -180,8 +180,8 @@ class TestTopology:
             two_to_three_decay.attach_edges_to_node_outgoing([7], 2)
 
     @staticmethod
-    def test_getters(two_to_three_decay):
-        topology: Topology = two_to_three_decay  # shorter name
+    def test_getters(two_to_three_decay: Topology):
+        topology = two_to_three_decay  # shorter name
         assert topology.get_originating_node_list([0]) == []
         assert topology.get_originating_node_list([5, 6]) == [2, 2]
         assert topology.get_initial_state_edge_ids() == [0, 1]
@@ -189,7 +189,7 @@ class TestTopology:
         assert topology.get_intermediate_state_edge_ids() == [2, 3]
 
     @staticmethod
-    def test_swap(two_to_three_decay):
+    def test_swap(two_to_three_decay: Topology):
         topology = deepcopy(two_to_three_decay)
         topology.swap_edges(0, 1)
         assert topology == two_to_three_decay

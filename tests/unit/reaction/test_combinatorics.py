@@ -4,6 +4,7 @@ from math import factorial
 
 import pytest
 
+from expertsystem.particle import ParticleCollection
 from expertsystem.reaction.combinatorics import (
     _generate_kinematic_permutations,
     _generate_outer_edge_permutations,
@@ -42,7 +43,9 @@ def three_body_decay() -> Topology:
     ],
 )
 def test_initialize_graph(
-    final_state_groupings, three_body_decay, particle_database
+    final_state_groupings,
+    three_body_decay: Topology,
+    particle_database: ParticleCollection,
 ):
     initial_facts = create_initial_facts(
         three_body_decay,
@@ -64,7 +67,10 @@ def test_initialize_graph(
     ],
 )
 def test_generate_outer_edge_permutations(
-    initial_state, final_state, three_body_decay, particle_database
+    initial_state,
+    final_state,
+    three_body_decay: Topology,
+    particle_database: ParticleCollection,
 ):
     initial_state_with_spins = _safe_set_spin_projections(
         initial_state, particle_database
@@ -99,7 +105,7 @@ class TestKinematicRepresentation:
         assert representation.final_state == [["gamma", "pi0"]]
 
     @staticmethod
-    def test_from_topology(three_body_decay):
+    def test_from_topology(three_body_decay: Topology):
         pi0 = ("pi0", [0])
         gamma = ("gamma", [-1, 1])
         edge_props = {0: ("J/psi", [-1, +1]), 2: pi0, 3: pi0, 4: gamma}
@@ -160,7 +166,9 @@ class TestKinematicRepresentation:
             assert ["should be nested list"] in kinematic_representation
 
 
-def test_generate_permutations(three_body_decay, particle_database):
+def test_generate_permutations(
+    three_body_decay: Topology, particle_database: ParticleCollection
+):
     permutations = _generate_kinematic_permutations(
         three_body_decay,
         initial_state=[("J/psi(1S)", [-1, +1])],

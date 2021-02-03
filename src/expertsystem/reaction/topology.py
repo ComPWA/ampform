@@ -322,7 +322,9 @@ class StateTransitionGraph(Generic[EdgeType]):
     topology: Topology = attr.ib(converter=_copy_topology)
     node_props: Dict[int, InteractionProperties] = attr.ib(factory=dict)
     edge_props: Dict[int, EdgeType] = attr.ib(factory=dict)
-    graph_node_properties_comparator: Optional[Callable] = attr.ib(
+    graph_node_properties_comparator: Optional[
+        Callable[[InteractionProperties, InteractionProperties], bool]
+    ] = attr.ib(
         default=None,
         validator=attr.validators.optional(attr.validators.is_callable()),
         on_setattr=attr.setters.NO_OP,
@@ -494,7 +496,9 @@ class SimpleStateTransitionTopologyBuilder:
     ) -> None:
         if not isinstance(interaction_node_set, list):
             raise TypeError("interaction_node_set must be a list")
-        self.interaction_node_set = list(interaction_node_set)
+        self.interaction_node_set: List[InteractionNode] = list(
+            interaction_node_set
+        )
 
     def build_graphs(
         self, number_of_initial_edges: int, number_of_final_edges: int
@@ -508,12 +512,14 @@ class SimpleStateTransitionTopologyBuilder:
 
         logging.info("building topology graphs...")
         # result list
-        graph_tuple_list = []
+        graph_tuple_list: List[Tuple[Topology, List[int]]] = []
         # create seed graph
         seed_graph = Topology()
         current_open_end_edges = list(range(number_of_initial_edges))
         seed_graph.add_edges(current_open_end_edges)
-        extendable_graph_list = [(seed_graph, current_open_end_edges)]
+        extendable_graph_list: List[Tuple[Topology, List[int]]] = [
+            (seed_graph, current_open_end_edges)
+        ]
 
         while extendable_graph_list:
             active_graph_list = extendable_graph_list
