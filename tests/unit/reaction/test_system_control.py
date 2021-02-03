@@ -425,14 +425,16 @@ def test_match_external_edges(particle_database, initial_state, final_state):
 
     match_external_edges(init_graphs)
 
+    iter_graphs = iter(init_graphs)
+    first_graph = next(iter_graphs)
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        init_graphs[0], init_graphs[0].get_final_state_edge_ids()
+        first_graph, first_graph.get_final_state_edge_ids()
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        init_graphs[0], init_graphs[0].get_initial_state_edge_ids()
+        first_graph, first_graph.get_initial_state_edge_ids()
     )
 
-    for graph in init_graphs[1:]:
+    for graph in iter_graphs:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
             graph, graph.get_final_state_edge_ids()
         )
