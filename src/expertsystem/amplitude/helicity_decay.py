@@ -9,7 +9,7 @@ from expertsystem.reaction.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from expertsystem.reaction.quantum_numbers import ParticleWithSpin
-from expertsystem.reaction.topology import StateTransitionGraph
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 from .model import (
     AmplitudeModel,
@@ -98,7 +98,7 @@ def _get_graph_group_unique_label(
 
 
 def _determine_attached_final_state(
-    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
+    topology: Topology, edge_id: int
 ) -> List[int]:
     """Determine all final state particles of a graph.
 
@@ -106,7 +106,7 @@ def _determine_attached_final_state(
     the root).
     """
     final_state_edge_ids = []
-    all_final_state_edges = graph.get_final_state_edge_ids()
+    all_final_state_edges = topology.get_final_state_edge_ids()
     current_edges = [edge_id]
     while current_edges:
         temp_current_edges = current_edges
@@ -115,46 +115,42 @@ def _determine_attached_final_state(
             if current_edge in all_final_state_edges:
                 final_state_edge_ids.append(current_edge)
             else:
-                node_id = graph.edges[current_edge].ending_node_id
+                node_id = topology.edges[current_edge].ending_node_id
                 if node_id:
                     current_edges.extend(
-                        graph.get_edge_ids_outgoing_from_node(node_id)
+                        topology.get_edge_ids_outgoing_from_node(node_id)
                     )
     return final_state_edge_ids
 
 
-def _get_recoil_edge(
-    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
-) -> Optional[int]:
+def _get_recoil_edge(topology: Topology, edge_id: int) -> Optional[int]:
     """Determine the id of the recoil edge for the specified edge of a graph."""
-    node_id = graph.edges[edge_id].originating_node_id
+    node_id = topology.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    outgoing_edges = graph.get_edge_ids_outgoing_from_node(node_id)
+    outgoing_edges = topology.get_edge_ids_outgoing_from_node(node_id)
     outgoing_edges.remove(edge_id)
     if len(outgoing_edges) != 1:
         raise ValueError(
             f"The node with id {node_id} has more than 2 outgoing edges:\n"
-            + str(graph)
+            + str(topology)
         )
     return next(iter(outgoing_edges))
 
 
-def _get_parent_recoil_edge(
-    graph: StateTransitionGraph[ParticleWithSpin], edge_id: int
-) -> Optional[int]:
+def _get_parent_recoil_edge(topology: Topology, edge_id: int) -> Optional[int]:
     """Determine the id of the recoil edge of the parent edge."""
-    node_id = graph.edges[edge_id].originating_node_id
+    node_id = topology.edges[edge_id].originating_node_id
     if node_id is None:
         return None
-    ingoing_edges = graph.get_edge_ids_ingoing_to_node(node_id)
+    ingoing_edges = topology.get_edge_ids_ingoing_to_node(node_id)
     if len(ingoing_edges) != 1:
         raise ValueError(
             f"The node with id {node_id} does not have a single ingoing edge!\n"
-            + str(graph)
+            + str(topology)
         )
     ingoing_edge = next(iter(ingoing_edges))
-    return _get_recoil_edge(graph, ingoing_edge)
+    return _get_recoil_edge(topology, ingoing_edge)
 
 
 def _get_prefactor(
@@ -493,7 +489,7 @@ class HelicityAmplitudeGenerator:
             edge_props = graph.get_edge_props(out_edge_id)
             helicity_particle = create_helicity_particle(edge_props)
             final_state_ids = _determine_attached_final_state(
-                graph, out_edge_id
+                graph.topology, out_edge_id
             )
             decay_products.append(
                 DecayProduct(
@@ -511,18 +507,18 @@ class HelicityAmplitudeGenerator:
         helicity_particle = create_helicity_particle(edge_props)
         helicity_decay = HelicityDecay(helicity_particle, decay_products)
 
-        recoil_edge_id = _get_recoil_edge(graph, ingoing_edge_id)
+        recoil_edge_id = _get_recoil_edge(graph.topology, ingoing_edge_id)
         if recoil_edge_id is not None:
             helicity_decay.recoil_system = RecoilSystem(
-                _determine_attached_final_state(graph, recoil_edge_id)
+                _determine_attached_final_state(graph.topology, recoil_edge_id)
             )
             parent_recoil_edge_id = _get_parent_recoil_edge(
-                graph, ingoing_edge_id
+                graph.topology, ingoing_edge_id
             )
             if parent_recoil_edge_id is not None:
                 helicity_decay.recoil_system.parent_recoil_final_state = (
                     _determine_attached_final_state(
-                        graph, parent_recoil_edge_id
+                        graph.topology, parent_recoil_edge_id
                     )
                 )
 
