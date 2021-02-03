@@ -297,8 +297,201 @@ class Topology:
         self.__edges[edge_id1] = popped_edge_id2
 
 
+@attr.s
+class InteractionNode:
+    """Helper class for the `.SimpleStateTransitionTopologyBuilder`."""
+
+    number_of_ingoing_edges: int = attr.ib(
+        validator=attr.validators.instance_of(int)
+    )
+    number_of_outgoing_edges: int = attr.ib(
+        validator=attr.validators.instance_of(int)
+    )
+
+    def __attrs_post_init__(self) -> None:
+        if self.number_of_ingoing_edges < 1:
+            raise ValueError("NumberOfIngoingEdges has to be larger than 0")
+        if self.number_of_outgoing_edges < 1:
+            raise ValueError("NumberOfOutgoingEdges has to be larger than 0")
+
+
+class SimpleStateTransitionTopologyBuilder:
+    """Simple topology builder.
+
+    Recursively tries to add the interaction nodes to available open end
+    edges/lines in all combinations until the number of open end lines matches
+    the final state lines.
+    """
+
+    def __init__(
+        self, interaction_node_set: Iterable[InteractionNode]
+    ) -> None:
+        if not isinstance(interaction_node_set, list):
+            raise TypeError("interaction_node_set must be a list")
+        self.interaction_node_set: List[InteractionNode] = list(
+            interaction_node_set
+        )
+
+    def build(
+        self, number_of_initial_edges: int, number_of_final_edges: int
+    ) -> List[Topology]:
+        number_of_initial_edges = int(number_of_initial_edges)
+        number_of_final_edges = int(number_of_final_edges)
+        if number_of_initial_edges < 1:
+            raise ValueError("number_of_initial_edges has to be larger than 0")
+        if number_of_final_edges < 1:
+            raise ValueError("number_of_final_edges has to be larger than 0")
+
+        logging.info("building topology graphs...")
+        # result list
+        graph_tuple_list: List[Tuple[Topology, List[int]]] = []
+        # create seed graph
+        seed_graph = Topology()
+        current_open_end_edges = list(range(number_of_initial_edges))
+        seed_graph.add_edges(current_open_end_edges)
+        extendable_graph_list: List[Tuple[Topology, List[int]]] = [
+            (seed_graph, current_open_end_edges)
+        ]
+
+        while extendable_graph_list:
+            active_graph_list = extendable_graph_list
+            extendable_graph_list = []
+            for active_graph in active_graph_list:
+                # check if finished
+                if (
+                    len(active_graph[1]) == number_of_final_edges
+                    and len(active_graph[0].nodes) > 0
+                ):
+                    active_graph[0].verify()
+                    graph_tuple_list.append(active_graph)
+                    continue
+
+                extendable_graph_list.extend(self.extend_graph(active_graph))
+
+        logging.info("finished building topology graphs...")
+        # strip the current open end edges list from the result graph tuples
+        result_graph_list = []
+        for graph_tuple in graph_tuple_list:
+            result_graph_list.append(graph_tuple[0])
+        return result_graph_list
+
+    def extend_graph(
+        self, pair: Tuple[Topology, Sequence[int]]
+    ) -> List[Tuple[Topology, List[int]]]:
+        extended_graph_list: List[Tuple[Topology, List[int]]] = []
+
+        topology, current_open_end_edges = pair
+
+        # Try to extend the graph with interaction nodes
+        # that have equal or less ingoing lines than active lines
+        for interaction_node in self.interaction_node_set:
+            if interaction_node.number_of_ingoing_edges <= len(
+                current_open_end_edges
+            ):
+                # make all combinations
+                combis = list(
+                    itertools.combinations(
+                        current_open_end_edges,
+                        interaction_node.number_of_ingoing_edges,
+                    )
+                )
+                # remove all combinations that originate from the same nodes
+                for comb1, comb2 in itertools.combinations(combis, 2):
+                    if topology.get_originating_node_list(
+                        comb1
+                    ) == topology.get_originating_node_list(comb2):
+                        combis.remove(comb2)
+
+                for combi in combis:
+                    new_graph = _attach_node_to_edges(
+                        pair, interaction_node, combi
+                    )
+                    extended_graph_list.append(new_graph)
+
+        return extended_graph_list
+
+
+def create_isobar_topologies(
+    number_of_initial_states: int, number_of_final_states: int
+) -> List[Topology]:
+    if number_of_initial_states != 1:
+        raise ValueError(
+            "Can only create an isobar decay if there's one initial state"
+        )
+    if number_of_final_states < 2:
+        raise ValueError(
+            "At least two final states required for an isobar decay"
+        )
+    builder = SimpleStateTransitionTopologyBuilder([InteractionNode(1, 2)])
+    topologies = builder.build(
+        number_of_initial_edges=number_of_initial_states,
+        number_of_final_edges=number_of_final_states,
+    )
+    return topologies
+
+
+def create_n_body_topology(
+    number_of_initial_states: int, number_of_final_states: int
+) -> Topology:
+    n_in = number_of_initial_states
+    n_out = number_of_final_states
+    builder = SimpleStateTransitionTopologyBuilder(
+        [
+            InteractionNode(
+                number_of_ingoing_edges=n_in,
+                number_of_outgoing_edges=n_out,
+            )
+        ]
+    )
+    topologies = builder.build(
+        number_of_initial_edges=n_in,
+        number_of_final_edges=n_out,
+    )
+    decay_name = f"{n_in} to {n_out}"
+    if len(topologies) == 0:
+        raise ValueError(f"Could not create n-body decay for {decay_name}")
+    if len(topologies) > 1:
+        raise RuntimeError(f"Several n-body decays for {decay_name}")
+    topology = next(iter(topologies))
+    return topology
+
+
+def _attach_node_to_edges(
+    graph: Tuple[Topology, Sequence[int]],
+    interaction_node: InteractionNode,
+    ingoing_edge_ids: Iterable[int],
+) -> Tuple[Topology, List[int]]:
+    temp_graph = copy.deepcopy(graph[0])
+    new_open_end_lines = list(copy.deepcopy(graph[1]))
+
+    # add node
+    new_node_id = len(temp_graph.nodes)
+    temp_graph.add_node(new_node_id)
+
+    # attach the edges to the node
+    temp_graph.attach_edges_to_node_ingoing(ingoing_edge_ids, new_node_id)
+    # update the newly connected edges
+    for edge_id in ingoing_edge_ids:
+        new_open_end_lines.remove(edge_id)
+
+    # make new edges for the outgoing lines
+    new_edge_start_id = len(temp_graph.edges)
+    new_edge_ids = list(
+        range(
+            new_edge_start_id,
+            new_edge_start_id + interaction_node.number_of_outgoing_edges,
+        )
+    )
+    temp_graph.add_edges(new_edge_ids)
+    temp_graph.attach_edges_to_node_outgoing(new_edge_ids, new_node_id)
+    for edge_id in new_edge_ids:
+        new_open_end_lines.append(edge_id)
+
+    return (temp_graph, new_open_end_lines)
+
+
 EdgeType = TypeVar("EdgeType")
-"""A TypeVar representing the type of edge properties."""
+"""A `~typing.TypeVar` representing the type of edge properties."""
 
 
 def _copy_topology(topology: Topology) -> Topology:
@@ -462,152 +655,3 @@ class StateTransitionGraph(Generic[EdgeType]):
             self.edge_props[edge_id2] = value1
         if value2 is not None:
             self.edge_props[edge_id1] = value2
-
-
-@attr.s
-class InteractionNode:
-    """Struct-like definition of an interaction node."""
-
-    type_name: str = attr.ib(converter=str)
-    number_of_ingoing_edges: int = attr.ib(
-        validator=attr.validators.instance_of(int)
-    )
-    number_of_outgoing_edges: int = attr.ib(
-        validator=attr.validators.instance_of(int)
-    )
-
-    def __attrs_post_init__(self) -> None:
-        if self.number_of_ingoing_edges < 1:
-            raise ValueError("NumberOfIngoingEdges has to be larger than 0")
-        if self.number_of_outgoing_edges < 1:
-            raise ValueError("NumberOfOutgoingEdges has to be larger than 0")
-
-
-class SimpleStateTransitionTopologyBuilder:
-    """Simple topology builder.
-
-    Recursively tries to add the interaction nodes to available open end
-    edges/lines in all combinations until the number of open end lines matches
-    the final state lines.
-    """
-
-    def __init__(
-        self, interaction_node_set: Iterable[InteractionNode]
-    ) -> None:
-        if not isinstance(interaction_node_set, list):
-            raise TypeError("interaction_node_set must be a list")
-        self.interaction_node_set: List[InteractionNode] = list(
-            interaction_node_set
-        )
-
-    def build_graphs(
-        self, number_of_initial_edges: int, number_of_final_edges: int
-    ) -> List[Topology]:
-        number_of_initial_edges = int(number_of_initial_edges)
-        number_of_final_edges = int(number_of_final_edges)
-        if number_of_initial_edges < 1:
-            raise ValueError("number_of_initial_edges has to be larger than 0")
-        if number_of_final_edges < 1:
-            raise ValueError("number_of_final_edges has to be larger than 0")
-
-        logging.info("building topology graphs...")
-        # result list
-        graph_tuple_list: List[Tuple[Topology, List[int]]] = []
-        # create seed graph
-        seed_graph = Topology()
-        current_open_end_edges = list(range(number_of_initial_edges))
-        seed_graph.add_edges(current_open_end_edges)
-        extendable_graph_list: List[Tuple[Topology, List[int]]] = [
-            (seed_graph, current_open_end_edges)
-        ]
-
-        while extendable_graph_list:
-            active_graph_list = extendable_graph_list
-            extendable_graph_list = []
-            for active_graph in active_graph_list:
-                # check if finished
-                if (
-                    len(active_graph[1]) == number_of_final_edges
-                    and len(active_graph[0].nodes) > 0
-                ):
-                    active_graph[0].verify()
-                    graph_tuple_list.append(active_graph)
-                    continue
-
-                extendable_graph_list.extend(self.extend_graph(active_graph))
-
-        logging.info("finished building topology graphs...")
-        # strip the current open end edges list from the result graph tuples
-        result_graph_list = []
-        for graph_tuple in graph_tuple_list:
-            result_graph_list.append(graph_tuple[0])
-        return result_graph_list
-
-    def extend_graph(
-        self, pair: Tuple[Topology, Sequence[int]]
-    ) -> List[Tuple[Topology, List[int]]]:
-        extended_graph_list: List[Tuple[Topology, List[int]]] = []
-
-        topology, current_open_end_edges = pair
-
-        # Try to extend the graph with interaction nodes
-        # that have equal or less ingoing lines than active lines
-        for interaction_node in self.interaction_node_set:
-            if interaction_node.number_of_ingoing_edges <= len(
-                current_open_end_edges
-            ):
-                # make all combinations
-                combis = list(
-                    itertools.combinations(
-                        current_open_end_edges,
-                        interaction_node.number_of_ingoing_edges,
-                    )
-                )
-                # remove all combinations that originate from the same nodes
-                for comb1, comb2 in itertools.combinations(combis, 2):
-                    if topology.get_originating_node_list(
-                        comb1
-                    ) == topology.get_originating_node_list(comb2):
-                        combis.remove(comb2)
-
-                for combi in combis:
-                    new_graph = _attach_node_to_edges(
-                        pair, interaction_node, combi
-                    )
-                    extended_graph_list.append(new_graph)
-
-        return extended_graph_list
-
-
-def _attach_node_to_edges(
-    graph: Tuple[Topology, Sequence[int]],
-    interaction_node: InteractionNode,
-    ingoing_edge_ids: Iterable[int],
-) -> Tuple[Topology, List[int]]:
-    temp_graph = copy.deepcopy(graph[0])
-    new_open_end_lines = list(copy.deepcopy(graph[1]))
-
-    # add node
-    new_node_id = len(temp_graph.nodes)
-    temp_graph.add_node(new_node_id)
-
-    # attach the edges to the node
-    temp_graph.attach_edges_to_node_ingoing(ingoing_edge_ids, new_node_id)
-    # update the newly connected edges
-    for edge_id in ingoing_edge_ids:
-        new_open_end_lines.remove(edge_id)
-
-    # make new edges for the outgoing lines
-    new_edge_start_id = len(temp_graph.edges)
-    new_edge_ids = list(
-        range(
-            new_edge_start_id,
-            new_edge_start_id + interaction_node.number_of_outgoing_edges,
-        )
-    )
-    temp_graph.add_edges(new_edge_ids)
-    temp_graph.attach_edges_to_node_outgoing(new_edge_ids, new_node_id)
-    for edge_id in new_edge_ids:
-        new_open_end_lines.append(edge_id)
-
-    return (temp_graph, new_open_end_lines)

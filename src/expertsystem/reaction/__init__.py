@@ -98,10 +98,10 @@ from .solving import (
     validate_full_solution,
 )
 from .topology import (
-    InteractionNode,
-    SimpleStateTransitionTopologyBuilder,
     StateTransitionGraph,
     Topology,
+    create_isobar_topologies,
+    create_n_body_topology,
 )
 
 
@@ -439,18 +439,17 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             }
         if "helicity" in formalism_type:
             self.filter_ignore_qns = {NodeQuantumNumbers.parity_prefactor}
-        int_nodes = []
         use_mass_conservation = True
         use_nbody_topology = False
+        topology_building = topology_building.lower()
         if topology_building == "isobar":
-            if len(initial_state) == 1:
-                int_nodes.append(InteractionNode("TwoBodyDecay", 1, 2))
-        else:
-            int_nodes.append(
-                InteractionNode(
-                    "NBodyScattering", len(initial_state), len(final_state)
-                )
+            self.__topologies = create_isobar_topologies(
+                len(initial_state), len(final_state)
             )
+        elif "n-body" in topology_building or "nbody" in topology_building:
+            self.__topologies = [
+                create_n_body_topology(len(initial_state), len(final_state))
+            ]
             use_nbody_topology = True
             # turn of mass conservation, in case more than one initial state
             # particle is present
@@ -465,7 +464,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     use_mass_conservation=use_mass_conservation,
                 )
             )
-        self.topology_builder = SimpleStateTransitionTopologyBuilder(int_nodes)
 
         if reload_pdg or len(self.__particles) == 0:
             self.__particles = load_default_particles()
@@ -507,11 +505,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     def formalism_type(self) -> str:
         return self.__formalism_type
 
-    def set_topology_builder(
-        self, topology_builder: SimpleStateTransitionTopologyBuilder
-    ) -> None:
-        self.topology_builder = topology_builder
-
     def add_final_state_grouping(
         self, fs_group: List[Union[str, List[str]]]
     ) -> None:
@@ -544,9 +537,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         self.allowed_interaction_types = allowed_interaction_types
 
     def create_problem_sets(self) -> Dict[float, List[ProblemSet]]:
-        topology_graphs = self.__build_topologies()
         problem_sets = []
-        for topology in topology_graphs:
+        for topology in self.__topologies:
             for initial_facts in self.__create_initial_facts(topology):
                 problem_sets.extend(
                     [
@@ -562,13 +554,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 )
         # create groups of settings ordered by "probability"
         return _group_by_strength(problem_sets)
-
-    def __build_topologies(self) -> List[Topology]:
-        all_graphs = self.topology_builder.build_graphs(
-            len(self.initial_state), len(self.final_state)
-        )
-        logging.info(f"number of topology graphs: {len(all_graphs)}")
-        return all_graphs
 
     def __create_initial_facts(self, topology: Topology) -> List[InitialFacts]:
         initial_facts = create_initial_facts(
@@ -918,18 +903,6 @@ def check_reaction_violations(
                 f" {edge_check_result.violated_edge_rules.values()}"
             )
 
-    def create_n_body_topology() -> Topology:
-        topology_builder = SimpleStateTransitionTopologyBuilder(
-            [
-                InteractionNode(
-                    "NBodyScattering", len(initial_state), len(final_state)
-                )
-            ]
-        )
-        return topology_builder.build_graphs(
-            len(initial_state), len(final_state)
-        )[0]
-
     def check_edge_qn_conservation() -> Set[FrozenSet[str]]:
         """Check if edge quantum numbers are conserved.
 
@@ -965,7 +938,7 @@ def check_reaction_violations(
     # Using a n-body topology is enough, to determine the violations reliably
     # since only certain spin rules require the isobar model. These spin rules
     # are not required here though.
-    topology = create_n_body_topology()
+    topology = create_n_body_topology(len(initial_state), len(final_state))
     node_id = next(iter(topology.nodes))
 
     initial_facts = create_initial_facts(

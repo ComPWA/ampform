@@ -14,21 +14,14 @@ from expertsystem.reaction.combinatorics import (
     _safe_set_spin_projections,
     create_initial_facts,
 )
-from expertsystem.reaction.topology import (
-    InteractionNode,
-    SimpleStateTransitionTopologyBuilder,
-    Topology,
-)
+from expertsystem.reaction.topology import Topology, create_isobar_topologies
 
 
 @pytest.fixture(scope="session")
 def three_body_decay() -> Topology:
-    two_body_decay_node = InteractionNode("TwoBodyDecay", 1, 2)
-    simple_builder = SimpleStateTransitionTopologyBuilder(
-        [two_body_decay_node]
-    )
-    all_graphs = simple_builder.build_graphs(1, 3)
-    return all_graphs[0]
+    topologies = create_isobar_topologies(1, 3)
+    topology = next(iter(topologies))
+    return topology
 
 
 @pytest.mark.parametrize(

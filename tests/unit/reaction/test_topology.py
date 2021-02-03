@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, redefined-outer-name
+# pylint: disable=no-self-use, redefined-outer-name, too-many-arguments
 
 from copy import deepcopy
 
@@ -9,6 +9,8 @@ from expertsystem.reaction.topology import (
     InteractionNode,
     SimpleStateTransitionTopologyBuilder,
     Topology,
+    create_isobar_topologies,
+    create_n_body_topology,
 )
 
 
@@ -53,28 +55,23 @@ class TestEdge:
 class TestInteractionNode:
     @staticmethod
     def test_constructor_exceptions():
-        dummy_type_name = "type_name"
         with pytest.raises(TypeError):
             assert InteractionNode(
-                dummy_type_name,
                 number_of_ingoing_edges="has to be int",  # type: ignore
                 number_of_outgoing_edges=2,
             )
         with pytest.raises(TypeError):
             assert InteractionNode(
-                dummy_type_name,
                 number_of_outgoing_edges="has to be int",  # type: ignore
                 number_of_ingoing_edges=2,
             )
         with pytest.raises(ValueError):
             assert InteractionNode(
-                dummy_type_name,
                 number_of_outgoing_edges=0,
                 number_of_ingoing_edges=1,
             )
         with pytest.raises(ValueError):
             assert InteractionNode(
-                dummy_type_name,
                 number_of_outgoing_edges=1,
                 number_of_ingoing_edges=0,
             )
@@ -83,14 +80,11 @@ class TestInteractionNode:
 class TestSimpleStateTransitionTopologyBuilder:
     @staticmethod
     def test_two_body_states():
-        four_body_decay_node = InteractionNode("TwoBodyDecay", 1, 2)
-
+        two_body_decay_node = InteractionNode(1, 2)
         simple_builder = SimpleStateTransitionTopologyBuilder(
-            [four_body_decay_node]
+            [two_body_decay_node]
         )
-
-        all_graphs = simple_builder.build_graphs(1, 3)
-
+        all_graphs = simple_builder.build(1, 3)
         assert len(all_graphs) == 1
 
 
@@ -197,3 +191,70 @@ class TestTopology:
         assert topology == two_to_three_decay
         topology.swap_edges(4, 6)
         assert topology != two_to_three_decay
+
+
+@pytest.mark.parametrize(
+    "n_initial, n_final, n_topologies, exception",
+    [
+        (1, 0, None, ValueError),
+        (0, 1, None, ValueError),
+        (0, 0, None, ValueError),
+        (1, 1, None, ValueError),
+        (2, 1, None, ValueError),
+        (1, 2, 1, None),
+        (1, 3, 1, None),
+        (1, 4, 2, None),
+        (1, 5, 5, None),
+        (1, 6, 16, None),
+        (1, 7, 61, None),
+        (1, 8, 272, None),
+    ],
+)
+def test_create_isobar_topologies(
+    n_initial: int,
+    n_final: int,
+    n_topologies: int,
+    exception,
+):
+    if exception is not None:
+        with pytest.raises(exception):
+            create_isobar_topologies(n_initial, n_final)
+    else:
+        topologies = create_isobar_topologies(n_initial, n_final)
+        assert len(topologies) == n_topologies
+        n_expected_nodes = n_final - 1
+        n_intermediate_edges = n_final - 2
+        for topology in topologies:
+            assert len(topology.get_initial_state_edge_ids()) == n_initial
+            assert len(topology.get_final_state_edge_ids()) == n_final
+            assert (
+                len(topology.get_intermediate_state_edge_ids())
+                == n_intermediate_edges
+            )
+            assert len(topology.nodes) == n_expected_nodes
+
+
+@pytest.mark.parametrize(
+    "n_initial, n_final, exception",
+    [
+        (1, 0, ValueError),
+        (0, 1, ValueError),
+        (0, 0, ValueError),
+        (1, 1, None),
+        (2, 1, None),
+        (3, 1, None),
+        (1, 2, None),
+        (1, 3, None),
+        (2, 4, None),
+    ],
+)
+def test_create_n_body_topology(n_initial: int, n_final: int, exception):
+    if exception is not None:
+        with pytest.raises(exception):
+            create_n_body_topology(n_initial, n_final)
+    else:
+        topology = create_n_body_topology(n_initial, n_final)
+        assert len(topology.get_initial_state_edge_ids()) == n_initial
+        assert len(topology.get_final_state_edge_ids()) == n_final
+        assert len(topology.get_intermediate_state_edge_ids()) == 0
+        assert len(topology.nodes) == 1
