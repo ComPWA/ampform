@@ -13,6 +13,7 @@ import itertools
 import logging
 from typing import (
     Callable,
+    Collection,
     Dict,
     FrozenSet,
     Generic,
@@ -494,14 +495,6 @@ EdgeType = TypeVar("EdgeType")
 """A `~typing.TypeVar` representing the type of edge properties."""
 
 
-def _copy_topology(topology: Topology) -> Topology:
-    return Topology(
-        nodes=topology.nodes,
-        edges=topology.edges,
-    )
-
-
-@attr.s(on_setattr=attr.setters.frozen, eq=False)
 class StateTransitionGraph(Generic[EdgeType]):
     """Graph class that resembles a frozen `.Topology` with properties.
 
@@ -512,16 +505,28 @@ class StateTransitionGraph(Generic[EdgeType]):
     retrieval.
     """
 
-    topology: Topology = attr.ib(converter=_copy_topology)
-    node_props: Dict[int, InteractionProperties] = attr.ib(factory=dict)
-    edge_props: Dict[int, EdgeType] = attr.ib(factory=dict)
-    graph_node_properties_comparator: Optional[
-        Callable[[InteractionProperties, InteractionProperties], bool]
-    ] = attr.ib(
-        default=None,
-        validator=attr.validators.optional(attr.validators.is_callable()),
-        on_setattr=attr.setters.NO_OP,
-    )
+    def __init__(
+        self,
+        topology: Topology,
+        node_props: Mapping[int, InteractionProperties],
+        edge_props: Mapping[int, EdgeType],
+    ):
+        self.__node_props = dict(node_props)
+        self.__edge_props = dict(edge_props)
+        if not isinstance(topology, Topology):
+            raise TypeError
+        self.__topology = Topology(
+            nodes=topology.nodes,
+            edges=topology.edges,
+        )
+
+    def __post_init__(self) -> None:
+        _assert_over_defined(self.topology.nodes, self.__node_props)
+        _assert_over_defined(self.topology.edges, self.__edge_props)
+
+    @property
+    def topology(self) -> Topology:
+        return self.__topology
 
     @property
     def nodes(self) -> FrozenSet[int]:
@@ -558,10 +563,10 @@ class StateTransitionGraph(Generic[EdgeType]):
         return self.topology.get_originating_node_list(edge_ids)
 
     def get_node_props(self, node_id: int) -> InteractionProperties:
-        return self.node_props[node_id]
+        return self.__node_props[node_id]
 
     def get_edge_props(self, edge_id: int) -> EdgeType:
-        return self.edge_props[edge_id]
+        return self.__edge_props[edge_id]
 
     def evolve(
         self,
@@ -573,18 +578,16 @@ class StateTransitionGraph(Generic[EdgeType]):
         Since a `.StateTransitionGraph` is frozen (cannot be modified), the
         evolve function will also create a shallow copy the properties.
         """
-        new_node_props = copy.copy(self.node_props)
+        new_node_props = copy.copy(self.__node_props)
         if node_props:
+            _assert_over_defined(self.topology.nodes, node_props)
             for node_id, node_prop in node_props.items():
-                if node_id not in self.nodes:
-                    raise KeyError(f"Node id {node_id} does not exist!")
                 new_node_props[node_id] = node_prop
 
-        new_edge_props = copy.copy(self.edge_props)
+        new_edge_props = copy.copy(self.__edge_props)
         if edge_props:
+            _assert_over_defined(self.topology.edges, edge_props)
             for edge_id, edge_prop in edge_props.items():
-                if edge_id not in self.edges:
-                    raise KeyError(f"Edge id {edge_id} does not exist!")
                 new_edge_props[edge_id] = edge_prop
 
         return StateTransitionGraph[EdgeType](
@@ -620,14 +623,25 @@ class StateTransitionGraph(Generic[EdgeType]):
         return True
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
-        self.topology.swap_edges(edge_id1, edge_id2)
+        self.__topology.swap_edges(edge_id1, edge_id2)
         value1: Optional[EdgeType] = None
         value2: Optional[EdgeType] = None
-        if edge_id1 in self.edge_props:
-            value1 = self.edge_props.pop(edge_id1)
-        if edge_id2 in self.edge_props:
-            value2 = self.edge_props.pop(edge_id2)
+        if edge_id1 in self.__edge_props:
+            value1 = self.__edge_props.pop(edge_id1)
+        if edge_id2 in self.__edge_props:
+            value2 = self.__edge_props.pop(edge_id2)
         if value1 is not None:
-            self.edge_props[edge_id2] = value1
+            self.__edge_props[edge_id2] = value1
         if value2 is not None:
-            self.edge_props[edge_id1] = value2
+            self.__edge_props[edge_id1] = value2
+
+
+def _assert_over_defined(items: Collection, properties: Mapping) -> None:
+    defined = set(properties)
+    existing = set(items)
+    over_defined = existing & defined ^ defined
+    if over_defined:
+        raise ValueError(
+            "Properties have been defined for items that don't exist."
+            f" Available items: {existing}, over-defined: {over_defined}"
+        )
