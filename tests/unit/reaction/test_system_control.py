@@ -11,7 +11,6 @@ from expertsystem.reaction import (
     StateTransitionManager,
 )
 from expertsystem.reaction._system_control import (
-    CompareGraphNodePropertiesFunctor,
     create_edge_properties,
     filter_graphs,
     remove_duplicate_solutions,
@@ -218,9 +217,6 @@ def make_ls_test_graph(
         },
         edge_props={0: (particle, 0)},
     )
-    graph.graph_node_properties_comparator = (
-        CompareGraphNodePropertiesFunctor()
-    )
     return graph
 
 
@@ -237,10 +233,6 @@ def make_ls_test_graph_scrambled(
         },
         edge_props={0: (particle, 0)},
     )
-    graph.graph_node_properties_comparator = (
-        CompareGraphNodePropertiesFunctor()
-    )
-
     return graph
 
 

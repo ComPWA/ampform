@@ -531,30 +531,6 @@ class StateTransitionGraph(Generic[EdgeType]):
     def edges(self) -> Dict[int, Edge]:
         return self.topology.edges
 
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, StateTransitionGraph):
-            if self.nodes != other.nodes:
-                return False
-            if self.edges != other.edges:
-                return False
-            if any(
-                self.get_edge_props(i) != other.get_edge_props(i)
-                for i in self.edges
-            ):
-                return False
-            if self.graph_node_properties_comparator is not None:
-                return all(
-                    self.graph_node_properties_comparator(
-                        self.get_node_props(i), other.get_node_props(i)
-                    )
-                    for i in self.nodes
-                )
-            return all(
-                self.get_node_props(i) == other.get_node_props(i)
-                for i in self.nodes
-            )
-        raise NotImplementedError
-
     def get_initial_state_edge_ids(self) -> List[int]:
         return self.topology.get_initial_state_edge_ids()
 

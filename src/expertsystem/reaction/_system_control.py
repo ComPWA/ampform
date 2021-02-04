@@ -127,29 +127,6 @@ def create_interaction_properties(
     return attr.evolve(InteractionProperties(), **kw_args)
 
 
-class CompareGraphNodePropertiesFunctor:
-    """Functor for comparing graph elements."""
-
-    def __init__(
-        self,
-        ignored_qn_list: Optional[Set[Type[NodeQuantumNumber]]] = None,
-    ) -> None:
-        self.__ignored_qn_list = ignored_qn_list if ignored_qn_list else set()
-
-    def __call__(
-        self,
-        node_props1: InteractionProperties,
-        node_props2: InteractionProperties,
-    ) -> bool:
-        return attr.evolve(
-            node_props1,
-            **{x.__name__: None for x in self.__ignored_qn_list},
-        ) == attr.evolve(
-            node_props2,
-            **{x.__name__: None for x in self.__ignored_qn_list},
-        )
-
-
 def filter_interaction_types(
     valid_determined_interaction_types: List[InteractionTypes],
     allowed_interaction_types: List[InteractionTypes],
@@ -278,17 +255,40 @@ def _check_equal_ignoring_qns(
             "Reference graph has to be of type StateTransitionGraph"
         )
     found_graph = None
-    old_comparator = ref_graph.graph_node_properties_comparator
-    ref_graph.graph_node_properties_comparator = (
-        CompareGraphNodePropertiesFunctor(ignored_qn_list)
-    )
+    node_comparator = NodePropertyComparator(ignored_qn_list)
     for graph in solutions:
         if isinstance(graph, StateTransitionGraph):
-            if ref_graph == graph:
+            if graph.compare(
+                ref_graph,
+                edge_comparator=lambda e1, e2: e1 == e2,
+                node_comparator=node_comparator,
+            ):
                 found_graph = graph
                 break
-    ref_graph.graph_node_properties_comparator = old_comparator
     return found_graph
+
+
+class NodePropertyComparator:
+    """Functor for comparing node properties in two graphs."""
+
+    def __init__(
+        self,
+        ignored_qn_list: Optional[Set[Type[NodeQuantumNumber]]] = None,
+    ) -> None:
+        self.__ignored_qn_list = ignored_qn_list if ignored_qn_list else set()
+
+    def __call__(
+        self,
+        node_props1: InteractionProperties,
+        node_props2: InteractionProperties,
+    ) -> bool:
+        return attr.evolve(
+            node_props1,
+            **{x.__name__: None for x in self.__ignored_qn_list},
+        ) == attr.evolve(
+            node_props2,
+            **{x.__name__: None for x in self.__ignored_qn_list},
+        )
 
 
 def filter_graphs(

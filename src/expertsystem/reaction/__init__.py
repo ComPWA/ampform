@@ -55,7 +55,6 @@ from expertsystem.reaction.conservation_rules import (
 )
 
 from ._system_control import (
-    CompareGraphNodePropertiesFunctor,
     GammaCheck,
     InteractionDeterminator,
     LeptonCheck,
@@ -793,9 +792,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     i: create_particle(x, self.__particles)
                     for i, x in solution.edge_quantum_numbers.items()
                 },
-            )
-            graph.graph_node_properties_comparator = (
-                CompareGraphNodePropertiesFunctor()
             )
             solutions.append(graph)
 
