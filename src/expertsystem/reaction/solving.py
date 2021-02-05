@@ -189,7 +189,10 @@ class QNResult:
             self.violated_node_rules or self.violated_edge_rules
         ):
             raise ValueError(
-                "Invalid Result! Found solutions, but also violated rules."
+                f"Invalid {self.__class__.__name__}!"
+                f" Found {len(self.solutions)} solutions, but also violated rules.",
+                self.violated_node_rules,
+                self.violated_edge_rules,
             )
 
     def extend(self, other_result: "QNResult") -> None:
