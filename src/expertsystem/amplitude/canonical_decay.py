@@ -40,7 +40,7 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
         if isinstance(node_id, int):
             node_ids = frozenset({node_id})
         else:
-            node_ids = graph.nodes
+            node_ids = graph.topology.nodes
         for node in node_ids:
             name += (
                 super().generate_unique_amplitude_name(graph, node)[:-1]
@@ -82,10 +82,11 @@ def _clebsch_gordan_decorator(
             raise ValueError(
                 f"{spin.__class__.__name__} is not of type {Spin.__name__}"
             )
+        topology = graph.topology
+        in_edge_ids = topology.get_edge_ids_ingoing_to_node(node_id)
+        out_edge_ids = topology.get_edge_ids_outgoing_from_node(node_id)
 
-        in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
         in_edge_id = next(iter(in_edge_ids))
-
         particle, spin_projection = graph.get_edge_props(in_edge_id)
         parent_spin = Spin(
             particle.spin,
@@ -93,8 +94,7 @@ def _clebsch_gordan_decorator(
         )
 
         daughter_spins: List[Spin] = []
-
-        for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):
+        for out_edge_id in out_edge_ids:
             particle, spin_projection = graph.get_edge_props(out_edge_id)
             daughter_spin = Spin(
                 particle.spin,

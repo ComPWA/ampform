@@ -239,10 +239,10 @@ class Kinematics:
         kinematics_type: Optional[KinematicsType] = None,
     ) -> "Kinematics":
         initial_state = dict()
-        for state_id in graph.get_initial_state_edge_ids():
+        for state_id in graph.topology.incoming_edge_ids:
             initial_state[state_id] = graph.get_edge_props(state_id)[0]
         final_state = dict()
-        for state_id in graph.get_final_state_edge_ids():
+        for state_id in graph.topology.outgoing_edge_ids:
             final_state[state_id] = graph.get_edge_props(state_id)[0]
         return Kinematics(
             type=kinematics_type,

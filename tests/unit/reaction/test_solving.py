@@ -23,7 +23,7 @@ class TestResult:
         assert len(particle_graphs) == 2
         assert particle_graphs[0].get_edge_props(1) == pdg["f(0)(980)"]
         assert particle_graphs[1].get_edge_props(1) == pdg["f(0)(1500)"]
-        assert len(particle_graphs[0].edges) == 5
+        assert len(particle_graphs[0].topology.edges) == 5
         for edge_id in (0, 2, 3, 4):
             assert particle_graphs[0].get_edge_props(
                 edge_id
@@ -41,7 +41,7 @@ class TestResult:
         collapsed_graphs = result.collapse_graphs()
         assert len(collapsed_graphs) == 1
         graph = next(iter(collapsed_graphs))
-        edge_id = next(iter(graph.get_intermediate_state_edge_ids()))
+        edge_id = next(iter(graph.topology.intermediate_edge_ids))
         f_resonances = pdg.filter(
             lambda p: p.name in ["f(0)(980)", "f(0)(1500)"]
         )

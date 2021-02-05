@@ -242,7 +242,7 @@ def _merge_particle_candidates_with_solutions(
     merged_solutions = []
 
     logging.debug("merging solutions with graph...")
-    intermediate_edges = topology.get_intermediate_state_edge_ids()
+    intermediate_edges = topology.intermediate_edge_ids
     for solution in solutions:
         current_new_solutions = [solution]
         for int_edge_id in intermediate_edges:

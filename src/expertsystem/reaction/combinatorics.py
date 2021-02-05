@@ -30,7 +30,7 @@ import attr
 from expertsystem.particle import Particle, ParticleCollection
 
 from .quantum_numbers import InteractionProperties, ParticleWithSpin
-from .topology import StateTransitionGraph, Topology
+from .topology import StateTransitionGraph, Topology, get_originating_node_list
 
 StateWithSpins = Tuple[str, Sequence[float]]
 StateDefinition = Union[str, StateWithSpins]
@@ -287,10 +287,8 @@ def _generate_kinematic_permutations(
                 f"(len({state_definitions}) != len({edge_ids})"
             )
 
-    assert_number_of_states(
-        initial_state, topology.get_initial_state_edge_ids()
-    )
-    assert_number_of_states(final_state, topology.get_final_state_edge_ids())
+    assert_number_of_states(initial_state, topology.incoming_edge_ids)
+    assert_number_of_states(final_state, topology.outgoing_edge_ids)
 
     def is_allowed_grouping(
         kinematic_representation: _KinematicRepresentation,
@@ -368,8 +366,8 @@ def _generate_outer_edge_permutations(
     initial_state: Sequence[StateWithSpins],
     final_state: Sequence[StateWithSpins],
 ) -> Generator[Dict[int, StateWithSpins], None, None]:
-    initial_state_ids = topology.get_initial_state_edge_ids()
-    final_state_ids = topology.get_final_state_edge_ids()
+    initial_state_ids = list(topology.incoming_edge_ids)
+    final_state_ids = list(topology.outgoing_edge_ids)
     for initial_state_permutation in permutations(initial_state):
         for final_state_permutation in permutations(final_state):
             yield dict(
@@ -415,13 +413,13 @@ def _generate_spin_permutations(
 def __get_initial_state_edge_ids(
     graph: StateTransitionGraph[ParticleWithSpin],
 ) -> Iterable[int]:
-    return graph.get_initial_state_edge_ids()
+    return graph.topology.incoming_edge_ids
 
 
 def __get_final_state_edge_ids(
     graph: StateTransitionGraph[ParticleWithSpin],
 ) -> Iterable[int]:
-    return graph.get_final_state_edge_ids()
+    return graph.topology.outgoing_edge_ids
 
 
 def match_external_edges(
@@ -527,7 +525,7 @@ def _external_edge_identical_particle_combinatorics(
         combinations = permutations(edge_group)
         graph_combinations = set()
         ext_edge_combinations = []
-        ref_node_origin = graph.get_originating_node_list(edge_group)
+        ref_node_origin = get_originating_node_list(graph.topology, edge_group)
         for comb in combinations:
             temp_edge_node_mapping = tuple(sorted(zip(comb, ref_node_origin)))
             if temp_edge_node_mapping not in graph_combinations:

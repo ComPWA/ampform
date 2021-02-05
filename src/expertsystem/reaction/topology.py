@@ -11,13 +11,17 @@ The main interface is the `.StateTransitionGraph`.
 import copy
 import itertools
 import logging
+from collections import abc
 from typing import (
     Callable,
     Collection,
     Dict,
     FrozenSet,
     Generic,
+    ItemsView,
     Iterable,
+    Iterator,
+    KeysView,
     List,
     Mapping,
     Optional,
@@ -25,14 +29,56 @@ from typing import (
     Set,
     Tuple,
     TypeVar,
+    ValuesView,
 )
 
 import attr
 
 from .quantum_numbers import InteractionProperties
 
+_K = TypeVar("_K")
+_V = TypeVar("_V")
 
-@attr.s
+
+class FrozenDict(  # pylint: disable=too-many-ancestors
+    Generic[_K, _V], abc.Hashable, abc.Mapping
+):
+    def __init__(self, mapping: Optional[Mapping] = None):
+        self.__mapping: Dict[_K, _V] = {}
+        if mapping is not None:
+            self.__mapping = dict(mapping)
+        self.__hash = hash(None)
+        if len(self.__mapping) != 0:
+            self.__hash = 0
+            for key_value_pair in self.items():
+                self.__hash ^= hash(key_value_pair)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.__mapping})"
+
+    def __iter__(self) -> Iterator[_K]:
+        return iter(self.__mapping)
+
+    def __len__(self) -> int:
+        return len(self.__mapping)
+
+    def __getitem__(self, key: _K) -> _V:
+        return self.__mapping[key]
+
+    def __hash__(self) -> int:
+        return self.__hash
+
+    def keys(self) -> KeysView[_K]:
+        return self.__mapping.keys()
+
+    def items(self) -> ItemsView[_K, _V]:
+        return self.__mapping.items()
+
+    def values(self) -> ValuesView[_V]:
+        return self.__mapping.values()
+
+
+@attr.s(frozen=True)
 class Edge:
     """Struct-like definition of an edge, used in `Topology`."""
 
@@ -45,6 +91,7 @@ class Edge:
         return connected_nodes  # type: ignore
 
 
+@attr.s(frozen=True)
 class Topology:
     """Directed Feynman-like graph without edge or node properties.
 
@@ -55,107 +102,50 @@ class Topology:
     because it allows open edges, like a Feynman-diagram.
     """
 
-    def __init__(
-        self,
-        nodes: Optional[Set[int]] = None,
-        edges: Optional[Mapping[int, Edge]] = None,
-    ) -> None:
-        self.__nodes: Set[int] = set()
-        self.__edges: Dict[int, Edge] = dict()
-        if nodes is not None:
-            self.__nodes = set(nodes)
-        if edges is not None:
-            self.__edges = dict(edges)
-        self.verify()
+    nodes: FrozenSet[int] = attr.ib(converter=frozenset)
+    edges: FrozenDict[int, Edge] = attr.ib(converter=FrozenDict)
 
-    @property
-    def nodes(self) -> Set[int]:
-        return self.__nodes
+    incoming_edge_ids: FrozenSet[int] = attr.ib(init=False, repr=False)
+    outgoing_edge_ids: FrozenSet[int] = attr.ib(init=False, repr=False)
+    intermediate_edge_ids: FrozenSet[int] = attr.ib(init=False, repr=False)
 
-    @property
-    def edges(self) -> Dict[int, Edge]:
-        return self.__edges
+    def __attrs_post_init__(self) -> None:
+        self.__verify()
+        object.__setattr__(
+            self,
+            "incoming_edge_ids",
+            frozenset(
+                edge_id
+                for edge_id, edge in self.edges.items()
+                if edge.originating_node_id is None
+            ),
+        )
+        object.__setattr__(
+            self,
+            "outgoing_edge_ids",
+            frozenset(
+                edge_id
+                for edge_id, edge in self.edges.items()
+                if edge.ending_node_id is None
+            ),
+        )
+        object.__setattr__(
+            self,
+            "intermediate_edge_ids",
+            frozenset(self.edges)
+            ^ self.incoming_edge_ids
+            ^ self.outgoing_edge_ids,
+        )
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}{(self.nodes, self.edges)}"
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, Topology):
-            return self.nodes == other.nodes and self.edges == other.edges
-        raise NotImplementedError
-
-    def add_node(self, node_id: int) -> None:
-        """Adds a node with id node_id.
-
-        Raises:
-            ValueError: if node_id already exists
-        """
-        if node_id in self.__nodes:
-            raise ValueError(f"Node with id {node_id} already exists!")
-        self.__nodes.add(node_id)
-
-    def add_edges(self, edge_ids: List[int]) -> None:
-        """Add edges with the ids in the edge_ids list."""
-        for edge_id in edge_ids:
-            if edge_id in self.__edges:
-                raise ValueError(f"Edge with id {edge_id} already exists!")
-            self.__edges[edge_id] = Edge()
-
-    def attach_edges_to_node_ingoing(
-        self, ingoing_edge_ids: Iterable[int], node_id: int
-    ) -> None:
-        """Attach existing edges to nodes.
-
-        So that the are ingoing to these nodes.
-
-        Args:
-            ingoing_edge_ids ([int]): list of edge ids, that will be attached
-            node_id (int): id of the node to which the edges will be attached
-
-        Raises:
-            ValueError: if an edge not doesn't exist.
-            ValueError: if an edge ID is already an ingoing node.
-        """
-        # first check if the ingoing edges are all available
-        for edge_id in ingoing_edge_ids:
-            if edge_id not in self.__edges:
-                raise ValueError(f"Edge with id {edge_id} does not exist!")
-            if self.__edges[edge_id].ending_node_id is not None:
-                raise ValueError(
-                    f"Edge with id {edge_id} is already ingoing to"
-                    f" node {self.__edges[edge_id].ending_node_id}"
-                )
-
-        # update the newly connected edges
-        for edge_id in ingoing_edge_ids:
-            self.__edges[edge_id].ending_node_id = node_id
-
-    def attach_edges_to_node_outgoing(
-        self, outgoing_edge_ids: Iterable[int], node_id: int
-    ) -> None:
-        # first check if the ingoing edges are all available
-        for edge_id in outgoing_edge_ids:
-            if edge_id not in self.__edges:
-                raise ValueError(f"Edge with id {edge_id} does not exist!")
-            if self.__edges[edge_id].originating_node_id is not None:
-                raise ValueError(
-                    f"Edge with id {edge_id} is already outgoing from"
-                    f" node {self.__edges[edge_id].originating_node_id}"
-                )
-
-        # update the edges
-        for edge_id in outgoing_edge_ids:
-            self.__edges[edge_id].originating_node_id = node_id
-
-    def verify(self) -> None:
+    def __verify(self) -> None:
         """Verify if there are no dangling edges or nodes."""
-        for edge_id, edge in self.__edges.items():
+        for edge_id, edge in self.edges.items():
             connected_nodes = edge.get_connected_nodes()
             if not connected_nodes:
                 raise ValueError(
                     f"Edge nr. {edge_id} is not connected to any node ({edge})"
                 )
-            if not connected_nodes <= self.__nodes:
+            if not connected_nodes <= self.nodes:
                 raise ValueError(
                     f"{edge} (ID: {edge_id}) has non-existing node IDs.\n"
                     f"Available node IDs: {self.nodes}"
@@ -191,111 +181,169 @@ class Topology:
         """
         raise NotImplementedError
 
-    def get_originating_node_list(self, edge_ids: Iterable[int]) -> List[int]:
-        """Get list of node ids from which the supplied edges originate from.
-
-        Args:
-            edge_ids ([int]): list of edge ids for which the origin node is
-                searched for
-
-        Returns:
-            [int]: a list of node ids
-        """
-
-        def __get_originating_node(edge_id: int) -> Optional[int]:
-            return self.__edges[edge_id].originating_node_id
-
-        return [
-            node_id
-            for node_id in map(__get_originating_node, edge_ids)
-            if node_id
-        ]
-
-    def get_initial_state_edge_ids(self) -> List[int]:
-        return sorted(
-            [
-                edge_id
-                for edge_id, edge in self.__edges.items()
-                if edge.originating_node_id is None
-            ]
-        )
-
-    def get_final_state_edge_ids(self) -> List[int]:
-        return sorted(
-            [
-                edge_id
-                for edge_id, edge in self.__edges.items()
-                if edge.ending_node_id is None
-            ]
-        )
-
-    def get_intermediate_state_edge_ids(self) -> List[int]:
-        return sorted(
-            [
-                edge_id
-                for edge_id, edge in self.__edges.items()
-                if edge.ending_node_id is not None
-                and edge.originating_node_id is not None
-            ]
-        )
-
-    def get_edge_ids_ingoing_to_node(self, node_id: int) -> List[int]:
-        return [
+    def get_edge_ids_ingoing_to_node(self, node_id: int) -> Set[int]:
+        return {
             edge_id
             for edge_id, edge in self.edges.items()
             if edge.ending_node_id == node_id
-        ]
+        }
 
-    def get_edge_ids_outgoing_from_node(self, node_id: int) -> List[int]:
-        return [
+    def get_edge_ids_outgoing_from_node(self, node_id: int) -> Set[int]:
+        return {
             edge_id
             for edge_id, edge in self.edges.items()
             if edge.originating_node_id == node_id
-        ]
+        }
 
-    def get_originating_final_state_edge_ids(self, node_id: int) -> List[int]:
-        fs_edges = self.get_final_state_edge_ids()
-        edge_list = []
+    def get_originating_final_state_edge_ids(self, node_id: int) -> Set[int]:
+        fs_edges = self.outgoing_edge_ids
+        edge_ids = set()
         temp_edge_list = self.get_edge_ids_outgoing_from_node(node_id)
         while temp_edge_list:
-            new_temp_edge_list = []
+            new_temp_edge_list = set()
             for edge_id in temp_edge_list:
                 if edge_id in fs_edges:
-                    edge_list.append(edge_id)
+                    edge_ids.add(edge_id)
                 else:
                     new_node_id = self.edges[edge_id].ending_node_id
                     if new_node_id is not None:
-                        new_temp_edge_list.extend(
+                        new_temp_edge_list.update(
                             self.get_edge_ids_outgoing_from_node(new_node_id)
                         )
             temp_edge_list = new_temp_edge_list
-        return edge_list
+        return edge_ids
 
-    def get_originating_initial_state_edge_ids(
-        self, node_id: int
-    ) -> List[int]:
-        is_edges = self.get_initial_state_edge_ids()
-        edge_list = []
+    def get_originating_initial_state_edge_ids(self, node_id: int) -> Set[int]:
+        is_edges = self.incoming_edge_ids
+        edge_ids: Set[int] = set()
         temp_edge_list = self.get_edge_ids_ingoing_to_node(node_id)
         while temp_edge_list:
-            new_temp_edge_list = []
+            new_temp_edge_list = set()
             for edge_id in temp_edge_list:
                 if edge_id in is_edges:
-                    edge_list.append(edge_id)
+                    edge_ids.add(edge_id)
                 else:
                     new_node_id = self.edges[edge_id].originating_node_id
                     if new_node_id is not None:
-                        new_temp_edge_list.extend(
+                        new_temp_edge_list.update(
                             self.get_edge_ids_ingoing_to_node(new_node_id)
                         )
             temp_edge_list = new_temp_edge_list
-        return edge_list
+        return edge_ids
 
-    def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
-        popped_edge_id1 = self.__edges.pop(edge_id1)
-        popped_edge_id2 = self.__edges.pop(edge_id2)
-        self.__edges[edge_id2] = popped_edge_id1
-        self.__edges[edge_id1] = popped_edge_id2
+    def swap_edges(self, edge_id1: int, edge_id2: int) -> "Topology":
+        new_edges = dict(self.edges.items())
+        new_edges.update(
+            {
+                edge_id1: self.edges[edge_id2],
+                edge_id2: self.edges[edge_id1],
+            }
+        )
+        return attr.evolve(self, edges=FrozenDict(new_edges))
+
+
+def get_originating_node_list(
+    topology: Topology, edge_ids: Iterable[int]
+) -> List[int]:
+    """Get list of node ids from which the supplied edges originate from.
+
+    Args:
+        edge_ids ([int]): list of edge ids for which the origin node is
+            searched for
+
+    Returns:
+        [int]: a list of node ids
+    """
+
+    def __get_originating_node(edge_id: int) -> Optional[int]:
+        return topology.edges[edge_id].originating_node_id
+
+    return [
+        node_id for node_id in map(__get_originating_node, edge_ids) if node_id
+    ]
+
+
+@attr.s(kw_only=True)
+class _MutableTopology:
+    edges: Dict[int, Edge] = attr.ib(factory=dict, converter=dict)
+    nodes: Set[int] = attr.ib(factory=set, converter=set)
+
+    def freeze(self) -> Topology:
+        return Topology(
+            edges=self.edges,
+            nodes=self.nodes,  # type: ignore
+        )
+
+    def add_node(self, node_id: int) -> None:
+        """Adds a node with id node_id.
+
+        Raises:
+            ValueError: if node_id already exists
+        """
+        if node_id in self.nodes:
+            raise ValueError(f"Node with id {node_id} already exists!")
+        self.nodes.add(node_id)
+
+    def add_edges(self, edge_ids: List[int]) -> None:
+        """Add edges with the ids in the edge_ids list."""
+        for edge_id in edge_ids:
+            if edge_id in self.edges:
+                raise ValueError(f"Edge with id {edge_id} already exists!")
+            self.edges[edge_id] = Edge()
+
+    def attach_edges_to_node_ingoing(
+        self, ingoing_edge_ids: Iterable[int], node_id: int
+    ) -> None:
+        """Attach existing edges to nodes.
+
+        So that the are ingoing to these nodes.
+
+        Args:
+            ingoing_edge_ids ([int]): list of edge ids, that will be attached
+            node_id (int): id of the node to which the edges will be attached
+
+        Raises:
+            ValueError: if an edge not doesn't exist.
+            ValueError: if an edge ID is already an ingoing node.
+        """
+        # first check if the ingoing edges are all available
+        for edge_id in ingoing_edge_ids:
+            if edge_id not in self.edges:
+                raise ValueError(f"Edge with id {edge_id} does not exist!")
+            if self.edges[edge_id].ending_node_id is not None:
+                raise ValueError(
+                    f"Edge with id {edge_id} is already ingoing to"
+                    f" node {self.edges[edge_id].ending_node_id}"
+                )
+
+        # update the newly connected edges
+        for edge_id in ingoing_edge_ids:
+            edge = self.edges[edge_id]
+            self.edges[edge_id] = Edge(
+                ending_node_id=node_id,
+                originating_node_id=edge.originating_node_id,
+            )
+
+    def attach_edges_to_node_outgoing(
+        self, outgoing_edge_ids: Iterable[int], node_id: int
+    ) -> None:
+        # first check if the ingoing edges are all available
+        for edge_id in outgoing_edge_ids:
+            if edge_id not in self.edges:
+                raise ValueError(f"Edge with id {edge_id} does not exist!")
+            if self.edges[edge_id].originating_node_id is not None:
+                raise ValueError(
+                    f"Edge with id {edge_id} is already outgoing from"
+                    f" node {self.edges[edge_id].originating_node_id}"
+                )
+
+        # update the edges
+        for edge_id in outgoing_edge_ids:
+            edge = self.edges[edge_id]
+            self.edges[edge_id] = Edge(
+                ending_node_id=edge.ending_node_id,
+                originating_node_id=node_id,
+            )
 
 
 @attr.s
@@ -335,7 +383,7 @@ class SimpleStateTransitionTopologyBuilder:
 
     def build(
         self, number_of_initial_edges: int, number_of_final_edges: int
-    ) -> List[Topology]:
+    ) -> FrozenSet[Topology]:
         number_of_initial_edges = int(number_of_initial_edges)
         number_of_final_edges = int(number_of_final_edges)
         if number_of_initial_edges < 1:
@@ -345,12 +393,12 @@ class SimpleStateTransitionTopologyBuilder:
 
         logging.info("building topology graphs...")
         # result list
-        graph_tuple_list: List[Tuple[Topology, List[int]]] = []
+        graph_tuple_list: List[Tuple[_MutableTopology, List[int]]] = []
         # create seed graph
-        seed_graph = Topology()
+        seed_graph = _MutableTopology()
         current_open_end_edges = list(range(number_of_initial_edges))
         seed_graph.add_edges(current_open_end_edges)
-        extendable_graph_list: List[Tuple[Topology, List[int]]] = [
+        extendable_graph_list: List[Tuple[_MutableTopology, List[int]]] = [
             (seed_graph, current_open_end_edges)
         ]
 
@@ -363,23 +411,23 @@ class SimpleStateTransitionTopologyBuilder:
                     len(active_graph[1]) == number_of_final_edges
                     and len(active_graph[0].nodes) > 0
                 ):
-                    active_graph[0].verify()
+                    active_graph[0].freeze()  # verify
                     graph_tuple_list.append(active_graph)
                     continue
 
-                extendable_graph_list.extend(self.extend_graph(active_graph))
+                extendable_graph_list.extend(self._extend_graph(active_graph))
 
         logging.info("finished building topology graphs...")
         # strip the current open end edges list from the result graph tuples
-        result_graph_list = []
+        topologies: Set[Topology] = set()
         for graph_tuple in graph_tuple_list:
-            result_graph_list.append(graph_tuple[0])
-        return result_graph_list
+            topologies.add(graph_tuple[0].freeze())
+        return frozenset(topologies)
 
-    def extend_graph(
-        self, pair: Tuple[Topology, Sequence[int]]
-    ) -> List[Tuple[Topology, List[int]]]:
-        extended_graph_list: List[Tuple[Topology, List[int]]] = []
+    def _extend_graph(
+        self, pair: Tuple[_MutableTopology, Sequence[int]]
+    ) -> List[Tuple[_MutableTopology, List[int]]]:
+        extended_graph_list: List[Tuple[_MutableTopology, List[int]]] = []
 
         topology, current_open_end_edges = pair
 
@@ -398,9 +446,11 @@ class SimpleStateTransitionTopologyBuilder:
                 )
                 # remove all combinations that originate from the same nodes
                 for comb1, comb2 in itertools.combinations(combis, 2):
-                    if topology.get_originating_node_list(
-                        comb1
-                    ) == topology.get_originating_node_list(comb2):
+                    if get_originating_node_list(
+                        topology, comb1  # type: ignore
+                    ) == get_originating_node_list(
+                        topology, comb2  # type: ignore
+                    ):
                         combis.remove(comb2)
 
                 for combi in combis:
@@ -414,7 +464,7 @@ class SimpleStateTransitionTopologyBuilder:
 
 def create_isobar_topologies(
     number_of_initial_states: int, number_of_final_states: int
-) -> List[Topology]:
+) -> FrozenSet[Topology]:
     if number_of_initial_states != 1:
         raise ValueError(
             "Can only create an isobar decay if there's one initial state"
@@ -428,7 +478,7 @@ def create_isobar_topologies(
         number_of_initial_edges=number_of_initial_states,
         number_of_final_edges=number_of_final_states,
     )
-    return topologies
+    return frozenset(topologies)
 
 
 def create_n_body_topology(
@@ -458,10 +508,10 @@ def create_n_body_topology(
 
 
 def _attach_node_to_edges(
-    graph: Tuple[Topology, Sequence[int]],
+    graph: Tuple[_MutableTopology, Sequence[int]],
     interaction_node: InteractionNode,
     ingoing_edge_ids: Iterable[int],
-) -> Tuple[Topology, List[int]]:
+) -> Tuple[_MutableTopology, List[int]]:
     temp_graph = copy.deepcopy(graph[0])
     new_open_end_lines = list(copy.deepcopy(graph[1]))
 
@@ -515,52 +565,11 @@ class StateTransitionGraph(Generic[EdgeType]):
         self.__edge_props = dict(edge_props)
         if not isinstance(topology, Topology):
             raise TypeError
-        self.__topology = Topology(
-            nodes=topology.nodes,
-            edges=topology.edges,
-        )
+        self.topology = topology
 
     def __post_init__(self) -> None:
         _assert_over_defined(self.topology.nodes, self.__node_props)
         _assert_over_defined(self.topology.edges, self.__edge_props)
-
-    @property
-    def topology(self) -> Topology:
-        return self.__topology
-
-    @property
-    def nodes(self) -> FrozenSet[int]:
-        return frozenset(self.topology.nodes)
-
-    @property
-    def edges(self) -> Dict[int, Edge]:
-        return self.topology.edges
-
-    def get_initial_state_edge_ids(self) -> List[int]:
-        return self.topology.get_initial_state_edge_ids()
-
-    def get_final_state_edge_ids(self) -> List[int]:
-        return self.topology.get_final_state_edge_ids()
-
-    def get_intermediate_state_edge_ids(self) -> List[int]:
-        return self.topology.get_intermediate_state_edge_ids()
-
-    def get_edge_ids_ingoing_to_node(self, node_id: int) -> List[int]:
-        return [
-            edge_id
-            for edge_id, edge in self.topology.edges.items()
-            if edge.ending_node_id == node_id
-        ]
-
-    def get_edge_ids_outgoing_from_node(self, node_id: int) -> List[int]:
-        return [
-            edge_id
-            for edge_id, edge in self.topology.edges.items()
-            if edge.originating_node_id == node_id
-        ]
-
-    def get_originating_node_list(self, edge_ids: Iterable[int]) -> List[int]:
-        return self.topology.get_originating_node_list(edge_ids)
 
     def get_node_props(self, node_id: int) -> InteractionProperties:
         return self.__node_props[node_id]
@@ -604,18 +613,16 @@ class StateTransitionGraph(Generic[EdgeType]):
             Callable[[InteractionProperties, InteractionProperties], bool]
         ] = None,
     ) -> bool:
-        if self.nodes != other.nodes:
-            return False
-        if self.edges != other.edges:
+        if self.topology != other.topology:
             return False
         if edge_comparator is not None:
-            for i in self.edges:
+            for i in self.topology.edges:
                 if not edge_comparator(
                     self.get_edge_props(i), other.get_edge_props(i)
                 ):
                     return False
         if node_comparator is not None:
-            for i in self.nodes:
+            for i in self.topology.nodes:
                 if not node_comparator(
                     self.get_node_props(i), other.get_node_props(i)
                 ):
@@ -623,7 +630,7 @@ class StateTransitionGraph(Generic[EdgeType]):
         return True
 
     def swap_edges(self, edge_id1: int, edge_id2: int) -> None:
-        self.__topology.swap_edges(edge_id1, edge_id2)
+        self.topology = self.topology.swap_edges(edge_id1, edge_id2)
         value1: Optional[EdgeType] = None
         value2: Optional[EdgeType] = None
         if edge_id1 in self.__edge_props:

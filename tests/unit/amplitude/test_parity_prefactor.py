@@ -68,11 +68,11 @@ def test_parity_prefactor(
     for solution in result.solutions:
         in_edge = [
             edge_id
-            for edge_id in solution.edges
+            for edge_id in solution.topology.edges
             if solution.get_edge_props(edge_id)[0].name == ingoing_state
         ]
         assert len(in_edge) == 1
-        node_id = solution.edges[in_edge[0]].ending_node_id
+        node_id = solution.topology.edges[in_edge[0]].ending_node_id
 
         assert isinstance(node_id, int)
 

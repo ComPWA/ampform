@@ -45,8 +45,8 @@ def _group_graphs_same_initial_and_final(
         Tuple[tuple, tuple], List[StateTransitionGraph[ParticleWithSpin]]
     ] = dict()
     for graph in graphs:
-        ise = graph.get_final_state_edge_ids()
-        fse = graph.get_initial_state_edge_ids()
+        ise = graph.topology.outgoing_edge_ids
+        fse = graph.topology.incoming_edge_ids
         graph_group = (
             tuple(
                 sorted(
@@ -85,8 +85,8 @@ def _get_graph_group_unique_label(
     label = ""
     if graph_group:
         first_graph = next(iter(graph_group))
-        ise = first_graph.topology.get_initial_state_edge_ids()
-        fse = first_graph.topology.get_final_state_edge_ids()
+        ise = first_graph.topology.incoming_edge_ids
+        fse = first_graph.topology.outgoing_edge_ids
         is_names = _get_name_hel_list(first_graph, ise)
         fs_names = _get_name_hel_list(first_graph, fse)
         label += (
@@ -106,7 +106,7 @@ def _determine_attached_final_state(
     the root).
     """
     final_state_edge_ids = []
-    all_final_state_edges = topology.get_final_state_edge_ids()
+    all_final_state_edges = topology.outgoing_edge_ids
     current_edges = [edge_id]
     while current_edges:
         temp_current_edges = current_edges
@@ -158,7 +158,7 @@ def _get_prefactor(
 ) -> float:
     """Calculate the product of all prefactors defined in this graph."""
     prefactor = 1.0
-    for node_id in graph.nodes:
+    for node_id in graph.topology.nodes:
         node_props = graph.get_node_props(node_id)
         if node_props:
             temp_prefactor = __validate_float_type(node_props.parity_prefactor)
@@ -172,7 +172,7 @@ def _generate_particle_collection(
 ) -> ParticleCollection:
     particles = ParticleCollection()
     for graph in graphs:
-        for edge_props in map(graph.get_edge_props, graph.edges):
+        for edge_props in map(graph.get_edge_props, graph.topology.edges):
             particle, _ = edge_props
             if particle not in particles:
                 particles.add(particle)
@@ -254,7 +254,7 @@ class _HelicityAmplitudeNameGenerator:
     def register_amplitude_coefficient_name(
         self, graph: StateTransitionGraph[ParticleWithSpin]
     ) -> None:
-        for node_id in graph.nodes:
+        for node_id in graph.topology.nodes:
             (
                 coefficient_suffix,
                 parity_partner_coefficient_suffix,
@@ -309,7 +309,7 @@ class _HelicityAmplitudeNameGenerator:
         if isinstance(node_id, int):
             nodelist = frozenset({node_id})
         else:
-            nodelist = graph.nodes
+            nodelist = graph.topology.nodes
         for node in nodelist:
             (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
                 graph, node
@@ -327,8 +327,9 @@ class _HelicityAmplitudeNameGenerator:
     def _retrieve_helicity_info(
         graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> Tuple[List[Tuple[str, float]], List[Tuple[str, float]]]:
-        in_edges = graph.get_edge_ids_ingoing_to_node(node_id)
-        out_edges = graph.get_edge_ids_outgoing_from_node(node_id)
+        topology = graph.topology
+        in_edges = topology.get_edge_ids_ingoing_to_node(node_id)
+        out_edges = topology.get_edge_ids_outgoing_from_node(node_id)
 
         in_names_hel_list = _get_name_hel_list(graph, in_edges)
         out_names_hel_list = _get_name_hel_list(graph, out_edges)
@@ -353,7 +354,7 @@ class _HelicityAmplitudeNameGenerator:
     ) -> str:
         """Generate unique suffix for a sequential amplitude graph."""
         output_suffix = ""
-        for node_id in graph.nodes:
+        for node_id in graph.topology.nodes:
             suffix = self.generate_amplitude_coefficient_name(graph, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
                 suffix = self.parity_partner_coefficient_mapping[suffix]
@@ -456,7 +457,7 @@ class HelicityAmplitudeGenerator:
     ) -> AmplitudeNode:
         partial_decays: List[AmplitudeNode] = [
             self._generate_partial_decay(graph, node_id)
-            for node_id in graph.nodes
+            for node_id in graph.topology.nodes
         ]
         sequential_amplitudes = SequentialAmplitude(partial_decays)
 
@@ -485,11 +486,12 @@ class HelicityAmplitudeGenerator:
             return HelicityParticle(particle, spin_projection)
 
         decay_products: List[DecayProduct] = list()
-        for out_edge_id in graph.get_edge_ids_outgoing_from_node(node_id):
+        topology = graph.topology
+        for out_edge_id in topology.get_edge_ids_outgoing_from_node(node_id):
             edge_props = graph.get_edge_props(out_edge_id)
             helicity_particle = create_helicity_particle(edge_props)
             final_state_ids = _determine_attached_final_state(
-                graph.topology, out_edge_id
+                topology, out_edge_id
             )
             decay_products.append(
                 DecayProduct(
@@ -499,7 +501,7 @@ class HelicityAmplitudeGenerator:
                 )
             )
 
-        in_edge_ids = graph.get_edge_ids_ingoing_to_node(node_id)
+        in_edge_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         if len(in_edge_ids) != 1:
             raise ValueError("This node does not represent a two body decay!")
         ingoing_edge_id = next(iter(in_edge_ids))
@@ -507,18 +509,18 @@ class HelicityAmplitudeGenerator:
         helicity_particle = create_helicity_particle(edge_props)
         helicity_decay = HelicityDecay(helicity_particle, decay_products)
 
-        recoil_edge_id = _get_recoil_edge(graph.topology, ingoing_edge_id)
+        recoil_edge_id = _get_recoil_edge(topology, ingoing_edge_id)
         if recoil_edge_id is not None:
             helicity_decay.recoil_system = RecoilSystem(
-                _determine_attached_final_state(graph.topology, recoil_edge_id)
+                _determine_attached_final_state(topology, recoil_edge_id)
             )
             parent_recoil_edge_id = _get_parent_recoil_edge(
-                graph.topology, ingoing_edge_id
+                topology, ingoing_edge_id
             )
             if parent_recoil_edge_id is not None:
                 helicity_decay.recoil_system.parent_recoil_final_state = (
                     _determine_attached_final_state(
-                        graph.topology, parent_recoil_edge_id
+                        topology, parent_recoil_edge_id
                     )
                 )
 
@@ -549,7 +551,7 @@ class HelicityAmplitudeGenerator:
     ) -> Optional[float]:
         prefactor = _get_prefactor(graph)
         if prefactor != 1.0:
-            for node_id in graph.nodes:
+            for node_id in graph.topology.nodes:
                 raw_suffix = (
                     self.name_generator.generate_amplitude_coefficient_name(
                         graph, node_id

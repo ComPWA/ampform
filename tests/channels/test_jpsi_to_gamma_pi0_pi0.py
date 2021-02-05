@@ -53,16 +53,18 @@ def test_id_to_particle_mappings(particle_database):
         number_of_threads=1,
     )
     assert len(result.solutions) == 4
+    iter_solutions = iter(result.solutions)
+    first_solution = next(iter_solutions)
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        result.solutions[0], result.solutions[0].get_final_state_edge_ids()
+        first_solution, first_solution.topology.outgoing_edge_ids
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        result.solutions[0], result.solutions[0].get_initial_state_edge_ids()
+        first_solution, first_solution.topology.incoming_edge_ids
     )
-    for solution in result.solutions[1:]:
+    for solution in iter_solutions:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            solution, solution.get_final_state_edge_ids()
+            solution, solution.topology.outgoing_edge_ids
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            solution, solution.get_initial_state_edge_ids()
+            solution, solution.topology.incoming_edge_ids
         )

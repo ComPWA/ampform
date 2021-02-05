@@ -208,7 +208,10 @@ def make_ls_test_graph(
     angular_momentum_magnitude, coupled_spin_magnitude, particle
 ):
     graph = StateTransitionGraph[ParticleWithSpin](
-        topology=Topology(nodes={0}, edges={0: Edge(None, 0)}),
+        topology=Topology(
+            nodes={0},  # type: ignore
+            edges={0: Edge(None, 0)},
+        ),
         node_props={
             0: InteractionProperties(
                 s_magnitude=coupled_spin_magnitude,
@@ -224,7 +227,10 @@ def make_ls_test_graph_scrambled(
     angular_momentum_magnitude, coupled_spin_magnitude, particle
 ):
     graph = StateTransitionGraph[ParticleWithSpin](
-        topology=Topology(nodes={0}, edges={0: Edge(None, 0)}),
+        topology=Topology(
+            nodes={0},  # type: ignore
+            edges={0: Edge(None, 0)},
+        ),
         node_props={
             0: InteractionProperties(
                 l_magnitude=angular_momentum_magnitude,
@@ -370,18 +376,18 @@ def test_edge_swap(particle_database, initial_state, final_state):
 
     for graph in init_graphs:
         ref_mapping = _create_edge_id_particle_mapping(
-            graph, graph.get_final_state_edge_ids()
+            graph, graph.topology.outgoing_edge_ids
         )
         edge_keys = list(ref_mapping.keys())
         edge1 = edge_keys[0]
-        edge1_val = graph.edges[edge1]
+        edge1_val = graph.topology.edges[edge1]
         edge1_props = deepcopy(graph.get_edge_props(edge1))
         edge2 = edge_keys[1]
-        edge2_val = graph.edges[edge2]
+        edge2_val = graph.topology.edges[edge2]
         edge2_props = deepcopy(graph.get_edge_props(edge2))
         graph.swap_edges(edge1, edge2)
-        assert graph.edges[edge1] == edge2_val
-        assert graph.edges[edge2] == edge1_val
+        assert graph.topology.edges[edge1] == edge2_val
+        assert graph.topology.edges[edge2] == edge1_val
         assert graph.get_edge_props(edge1) == edge2_props
         assert graph.get_edge_props(edge2) == edge1_props
 
@@ -420,18 +426,18 @@ def test_match_external_edges(particle_database, initial_state, final_state):
     iter_graphs = iter(init_graphs)
     first_graph = next(iter_graphs)
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        first_graph, first_graph.get_final_state_edge_ids()
+        first_graph, first_graph.topology.outgoing_edge_ids
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        first_graph, first_graph.get_initial_state_edge_ids()
+        first_graph, first_graph.topology.incoming_edge_ids
     )
 
     for graph in iter_graphs:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            graph, graph.get_final_state_edge_ids()
+            graph, first_graph.topology.outgoing_edge_ids
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            graph, graph.get_initial_state_edge_ids()
+            graph, first_graph.topology.incoming_edge_ids
         )
 
 
@@ -504,16 +510,16 @@ def test_external_edge_identical_particle_combinatorics(
     assert len(comb_graphs) == result_graph_count
 
     ref_mapping_fs = _create_edge_id_particle_mapping(
-        comb_graphs[0], comb_graphs[0].get_final_state_edge_ids()
+        comb_graphs[0], comb_graphs[0].topology.outgoing_edge_ids
     )
     ref_mapping_is = _create_edge_id_particle_mapping(
-        comb_graphs[0], comb_graphs[0].get_initial_state_edge_ids()
+        comb_graphs[0], comb_graphs[0].topology.incoming_edge_ids
     )
 
     for group in comb_graphs[1:]:
         assert ref_mapping_fs == _create_edge_id_particle_mapping(
-            group, group.get_final_state_edge_ids()
+            group, group.topology.outgoing_edge_ids
         )
         assert ref_mapping_is == _create_edge_id_particle_mapping(
-            group, group.get_initial_state_edge_ids()
+            group, group.topology.incoming_edge_ids
         )

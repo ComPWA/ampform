@@ -235,7 +235,7 @@ def _remove_qns_from_graph(  # pylint: disable=too-many-branches
     qn_list: Set[Type[NodeQuantumNumber]],
 ) -> StateTransitionGraph[ParticleWithSpin]:
     new_node_props = {}
-    for node_id in graph.nodes:
+    for node_id in graph.topology.nodes:
         node_props = graph.get_node_props(node_id)
         new_node_props[node_id] = attr.evolve(
             node_props, **{x.__name__: None for x in qn_list}
@@ -375,11 +375,12 @@ def require_interaction_property(
 
 
 def _find_node_ids_with_ingoing_particle_name(
-    graph: StateTransitionGraph, ingoing_particle_name: str
+    graph: StateTransitionGraph[ParticleWithSpin], ingoing_particle_name: str
 ) -> List[int]:
+    topology = graph.topology
     found_node_ids = []
-    for node_id in graph.nodes:
-        for edge_id in graph.get_edge_ids_ingoing_to_node(node_id):
+    for node_id in topology.nodes:
+        for edge_id in topology.get_edge_ids_ingoing_to_node(node_id):
             edge_props = graph.get_edge_props(edge_id)
             edge_particle_name = edge_props[0].name
             if str(ingoing_particle_name) in str(edge_particle_name):

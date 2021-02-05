@@ -181,7 +181,7 @@ class Result:
         return [
             x[0]
             for x in map(
-                graph.get_edge_props, graph.get_initial_state_edge_ids()
+                graph.get_edge_props, graph.topology.incoming_edge_ids
             )
             if x
         ]
@@ -191,7 +191,7 @@ class Result:
         return [
             x[0]
             for x in map(
-                graph.get_edge_props, graph.get_final_state_edge_ids()
+                graph.get_edge_props, graph.topology.outgoing_edge_ids
             )
             if x
         ]
@@ -208,7 +208,8 @@ class Result:
         intermediate_states = ParticleCollection()
         for graph in self.solutions:
             for edge_props in map(
-                graph.get_edge_props, graph.get_intermediate_state_edge_ids()
+                graph.get_edge_props,
+                graph.topology.intermediate_edge_ids,
             ):
                 if edge_props:
                     particle, _ = edge_props
@@ -236,19 +237,18 @@ class Result:
             ):
                 continue
             new_edge_props = dict()
-            for edge_id in graph.edges:
+            for edge_id in graph.topology.edges:
                 edge_props = graph.get_edge_props(edge_id)
                 if edge_props:
                     new_edge_props[edge_id] = edge_props[0]
             inventory.append(
                 StateTransitionGraph[Particle](
-                    topology=Topology(
-                        nodes=set(graph.nodes), edges=graph.edges
-                    ),
+                    topology=graph.topology,
                     node_props={
                         i: node_props
                         for i, node_props in zip(
-                            graph.nodes, map(graph.get_node_props, graph.nodes)
+                            graph.topology.nodes,
+                            map(graph.get_node_props, graph.topology.nodes),
                         )
                         if node_props
                     },
@@ -259,7 +259,7 @@ class Result:
             inventory,
             key=lambda g: [
                 g.get_edge_props(i).mass
-                for i in g.get_intermediate_state_edge_ids()
+                for i in g.topology.intermediate_edge_ids
             ],
         )
         return inventory
@@ -272,13 +272,13 @@ class Result:
             merged_graph: StateTransitionGraph[ParticleCollection],
         ) -> None:
             if (
-                graph.get_intermediate_state_edge_ids()
-                != merged_graph.get_intermediate_state_edge_ids()
+                graph.topology.intermediate_edge_ids
+                != merged_graph.topology.intermediate_edge_ids
             ):
                 raise ValueError(
                     "Cannot merge graphs that don't have the same edge IDs"
                 )
-            for i in graph.edges:
+            for i in graph.topology.edges:
                 particle = graph.get_edge_props(i)
                 other_particles = merged_graph.get_edge_props(i)
                 if particle not in other_particles:
@@ -288,11 +288,11 @@ class Result:
             graph: StateTransitionGraph[Particle],
             merged_graph: StateTransitionGraph[ParticleCollection],
         ) -> bool:
-            if graph.edges != merged_graph.edges:
+            if graph.topology.edges != merged_graph.topology.edges:
                 return False
             for edge_id in (
-                graph.get_initial_state_edge_ids()
-                + graph.get_final_state_edge_ids()
+                graph.topology.incoming_edge_ids
+                | graph.topology.outgoing_edge_ids
             ):
                 edge_prop = merged_graph.get_edge_props(edge_id)
                 if len(edge_prop) != 1:
@@ -316,15 +316,14 @@ class Result:
                     edge_id: ParticleCollection(
                         {graph.get_edge_props(edge_id)}
                     )
-                    for edge_id in graph.edges
+                    for edge_id in graph.topology.edges
                 }
                 inventory.append(
                     StateTransitionGraph[ParticleCollection](
-                        topology=Topology(
-                            nodes=set(graph.nodes), edges=graph.edges
-                        ),
+                        topology=graph.topology,
                         node_props={
-                            i: graph.get_node_props(i) for i in graph.nodes
+                            i: graph.get_node_props(i)
+                            for i in graph.topology.nodes
                         },
                         edge_props=new_edge_props,
                     )
@@ -446,9 +445,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 len(initial_state), len(final_state)
             )
         elif "n-body" in topology_building or "nbody" in topology_building:
-            self.__topologies = [
-                create_n_body_topology(len(initial_state), len(final_state))
-            ]
+            self.__topologies = frozenset(
+                {create_n_body_topology(len(initial_state), len(final_state))}
+            )
             use_nbody_topology = True
             # turn of mass conservation, in case more than one initial state
             # particle is present
@@ -602,7 +601,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 0
             ].qn_domains
 
-        intermediate_state_edges = topology.get_intermediate_state_edge_ids()
+        intermediate_state_edges = topology.intermediate_edge_ids
         int_edge_domains = create_intermediate_edge_qn_domains()
 
         def create_edge_settings(edge_id: int) -> EdgeSettings:
@@ -615,8 +614,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 settings.qn_domains = {}
             return settings
 
-        final_state_edges = topology.get_final_state_edge_ids()
-        initial_state_edges = topology.get_initial_state_edge_ids()
+        final_state_edges = topology.outgoing_edge_ids
+        initial_state_edges = topology.incoming_edge_ids
 
         graph_settings: List[GraphSettings] = [
             GraphSettings(
@@ -888,8 +887,8 @@ def check_reaction_violations(
             node_rules={},
             edge_rules={
                 edge_id: pure_edge_rules
-                for edge_id in topology.get_initial_state_edge_ids()
-                + topology.get_final_state_edge_ids()
+                for edge_id in topology.incoming_edge_ids
+                | topology.outgoing_edge_ids
             },
         )
 
