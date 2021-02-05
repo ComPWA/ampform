@@ -8,10 +8,10 @@ from expertsystem.reaction.topology import Edge, Topology
 
 def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
     result = jpsi_to_gamma_pi_pi_helicity_solutions
-    for graph in result.solutions:
-        dot_data = io.convert_to_dot(graph)
+    for transition in result.transitions:
+        dot_data = io.convert_to_dot(transition)
         assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(result.solutions)
+    dot_data = io.convert_to_dot(result.transitions)
     assert pydot.graph_from_dot_data(dot_data) is not None
     dot_data = io.convert_to_dot(result.get_particle_graphs())
     assert pydot.graph_from_dot_data(dot_data) is not None
@@ -50,7 +50,7 @@ class TestWrite:
     ):
         output_file = output_dir + "test_single_graph.gv"
         io.write(
-            instance=jpsi_to_gamma_pi_pi_helicity_solutions.solutions[0],
+            instance=jpsi_to_gamma_pi_pi_helicity_solutions.transitions[0],
             filename=output_file,
         )
         with open(output_file, "r") as stream:
@@ -63,7 +63,7 @@ class TestWrite:
     ):
         output_file = output_dir + "test_graph_list.gv"
         io.write(
-            instance=jpsi_to_gamma_pi_pi_helicity_solutions.solutions,
+            instance=jpsi_to_gamma_pi_pi_helicity_solutions.transitions,
             filename=output_file,
         )
         with open(output_file, "r") as stream:

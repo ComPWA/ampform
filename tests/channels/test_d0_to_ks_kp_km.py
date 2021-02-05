@@ -12,7 +12,7 @@ def test_script(output_dir):
         ],
         number_of_threads=1,
     )
-    assert len(result.solutions) == 5
+    assert len(result.transitions) == 5
     assert result.get_intermediate_particles().names == {
         "a(0)(980)+",
         "a(0)(980)-",

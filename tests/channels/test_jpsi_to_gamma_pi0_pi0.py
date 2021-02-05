@@ -37,7 +37,7 @@ def test_number_of_solutions(
         allowed_intermediate_particles=allowed_intermediate_particles,
         number_of_threads=1,
     )
-    assert len(result.solutions) == number_of_solutions
+    assert len(result.transitions) == number_of_solutions
     assert result.get_intermediate_particles().names == set(
         allowed_intermediate_particles
     )
@@ -52,8 +52,8 @@ def test_id_to_particle_mappings(particle_database):
         allowed_intermediate_particles=["f(0)(980)"],
         number_of_threads=1,
     )
-    assert len(result.solutions) == 4
-    iter_solutions = iter(result.solutions)
+    assert len(result.transitions) == 4
+    iter_solutions = iter(result.transitions)
     first_solution = next(iter_solutions)
     ref_mapping_fs = _create_edge_id_particle_mapping(
         first_solution, first_solution.topology.outgoing_edge_ids

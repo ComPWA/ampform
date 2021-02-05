@@ -65,7 +65,7 @@ def test_parity_prefactor(
 
     result = stm.find_solutions(problem_sets)
 
-    for solution in result.solutions:
+    for solution in result.transitions:
         in_edge = [
             edge_id
             for edge_id in solution.topology.edges

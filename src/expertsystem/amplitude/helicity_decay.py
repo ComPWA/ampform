@@ -180,7 +180,7 @@ def _generate_particle_collection(
 
 
 def _generate_kinematics(result: Result) -> Kinematics:
-    graph = next(iter(result.solutions))
+    graph = next(iter(result.transitions))
     return Kinematics.from_graph(graph)
 
 
@@ -378,7 +378,7 @@ class HelicityAmplitudeGenerator:
         self.fit_parameters: FitParameters = FitParameters()
 
     def generate(self, reaction_result: Result) -> AmplitudeModel:
-        graphs = reaction_result.solutions
+        graphs = reaction_result.transitions
         if len(graphs) < 1:
             raise ValueError(
                 f"At least one {StateTransitionGraph.__name__} required to"

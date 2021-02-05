@@ -191,7 +191,7 @@ class _SolutionContainer:
 
 @attr.s(on_setattr=attr.setters.frozen)
 class Result:
-    solutions: List[StateTransitionGraph[ParticleWithSpin]] = attr.ib(
+    transitions: List[StateTransitionGraph[ParticleWithSpin]] = attr.ib(
         factory=list
     )
     formalism_type: Optional[str] = attr.ib(default=None)
@@ -217,19 +217,19 @@ class Result:
         ]
 
     def __get_first_graph(self) -> StateTransitionGraph[ParticleWithSpin]:
-        if len(self.solutions) == 0:
+        if len(self.transitions) == 0:
             raise ValueError(
                 f"No solutions in {self.__class__.__name__} object"
             )
-        return next(iter(self.solutions))
+        return next(iter(self.transitions))
 
     def get_intermediate_particles(self) -> ParticleCollection:
         """Extract the names of the intermediate state particles."""
         intermediate_states = ParticleCollection()
-        for graph in self.solutions:
+        for transition in self.transitions:
             for edge_props in map(
-                graph.get_edge_props,
-                graph.topology.intermediate_edge_ids,
+                transition.get_edge_props,
+                transition.topology.intermediate_edge_ids,
             ):
                 if edge_props:
                     particle, _ = edge_props
@@ -246,10 +246,10 @@ class Result:
         .. seealso:: :doc:`/usage/visualization`
         """
         inventory: List[StateTransitionGraph[Particle]] = list()
-        for graph in self.solutions:
+        for transition in self.transitions:
             if any(
                 [
-                    graph.compare(
+                    transition.compare(
                         other, edge_comparator=lambda e1, e2: e1[0] == e2
                     )
                     for other in inventory
@@ -257,18 +257,21 @@ class Result:
             ):
                 continue
             new_edge_props = dict()
-            for edge_id in graph.topology.edges:
-                edge_props = graph.get_edge_props(edge_id)
+            for edge_id in transition.topology.edges:
+                edge_props = transition.get_edge_props(edge_id)
                 if edge_props:
                     new_edge_props[edge_id] = edge_props[0]
             inventory.append(
                 StateTransitionGraph[Particle](
-                    topology=graph.topology,
+                    topology=transition.topology,
                     node_props={
                         i: node_props
                         for i, node_props in zip(
-                            graph.topology.nodes,
-                            map(graph.get_node_props, graph.topology.nodes),
+                            transition.topology.nodes,
+                            map(
+                                transition.get_node_props,
+                                transition.topology.nodes,
+                            ),
                         )
                         if node_props
                     },
@@ -322,9 +325,9 @@ class Result:
                     return False
             return True
 
-        graphs = self.get_particle_graphs()
+        particle_graphs = self.get_particle_graphs()
         inventory: List[StateTransitionGraph[ParticleCollection]] = list()
-        for graph in graphs:
+        for graph in particle_graphs:
             append_to_inventory = True
             for merged_graph in inventory:
                 if is_same_shape(graph, merged_graph):
@@ -1117,7 +1120,7 @@ def generate(  # pylint: disable=too-many-arguments
     ...     particles=es.io.load_pdg(),
     ...     topology_building="isobar",
     ... )
-    >>> len(result.solutions)
+    >>> len(result.transitions)
     4
     """
     if isinstance(initial_state, str) or (

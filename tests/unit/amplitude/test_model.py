@@ -59,7 +59,7 @@ class TestKinematics:
     @staticmethod
     def test_from_graph(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
         result = jpsi_to_gamma_pi_pi_helicity_solutions
-        graph = next(iter(result.solutions))
+        graph = next(iter(result.transitions))
         kinematics = Kinematics.from_graph(graph)
         assert len(kinematics.initial_state) == 1
         assert len(kinematics.final_state) == 3
