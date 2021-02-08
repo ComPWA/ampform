@@ -5,7 +5,7 @@
 #    pip-compile --no-annotate --output-file=reqs/3.8/requirements-dev.txt reqs/requirements-dev.in reqs/requirements-doc.in reqs/requirements-sty.in reqs/requirements-test.in reqs/requirements.in
 #
 alabaster==0.7.12
-anyio==2.0.2
+anyio==2.1.0
 apipkg==1.5
 appdirs==1.4.4
 argon2-cffi==20.1.0
@@ -70,10 +70,10 @@ jupyterlab==3.0.7
 labels==20.1.0
 lazy-object-proxy==1.4.3
 livereload==2.6.3
-markdown-it-py==0.6.1
+markdown-it-py==0.6.2
 markupsafe==1.1.1
 mccabe==0.6.1
-mdit-py-plugins==0.2.4
+mdit-py-plugins==0.2.5
 mistune==0.8.4
 mypy-extensions==0.4.3
 mypy==0.800
@@ -98,7 +98,7 @@ pexpect==4.8.0
 pickleshare==0.7.5
 pip-tools==5.5.0
 pluggy==0.13.1
-pre-commit==2.10.0
+pre-commit==2.10.1
 prometheus-client==0.9.0
 prompt-toolkit==3.0.14
 ptyprocess==0.7.0
