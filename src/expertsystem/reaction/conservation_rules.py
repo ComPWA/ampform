@@ -220,7 +220,7 @@ def parity_conservation_helicity(
         )
 
         if (
-            all([x.spin_proj == 0.0 for x in outgoing_edge_qns])
+            all(x.spin_proj == 0.0 for x in outgoing_edge_qns)
             and prefactor == -1
         ):
             return False
@@ -655,7 +655,7 @@ def isospin_conservation(
     ):
         return False
     if not all(
-        [isospin_validity(x) for x in ingoing_isospins + outgoing_isospins]
+        isospin_validity(x) for x in ingoing_isospins + outgoing_isospins
     ):
         return False
     return _check_spin_couplings(

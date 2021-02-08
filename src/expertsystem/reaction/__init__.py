@@ -248,12 +248,10 @@ class Result:
         inventory: List[StateTransitionGraph[Particle]] = list()
         for transition in self.transitions:
             if any(
-                [
-                    transition.compare(
-                        other, edge_comparator=lambda e1, e2: e1[0] == e2
-                    )
-                    for other in inventory
-                ]
+                transition.compare(
+                    other, edge_comparator=lambda e1, e2: e1[0] == e2
+                )
+                for other in inventory
             ):
                 continue
             new_edge_props = dict()

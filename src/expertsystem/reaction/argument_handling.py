@@ -86,10 +86,8 @@ class _CompositeArgumentCheck:
         props: GraphElementPropertyMap,
     ) -> bool:
         return all(
-            [
-                bool(class_field_type in props)
-                for class_field_type in self.__class_field_types
-            ]
+            class_field_type in props
+            for class_field_type in self.__class_field_types
         )
 
 
@@ -107,14 +105,14 @@ def _sequence_input_check(func: Callable) -> Callable[[Sequence], bool]:
         if not isinstance(edge_props_list, (list, tuple)):
             raise TypeError("Rule evaluated with invalid argument type...")
 
-        return all([func(x) for x in edge_props_list])
+        return all(func(x) for x in edge_props_list)
 
     return wrapper
 
 
 def _check_all_arguments(checks: List[Callable]) -> Callable[..., bool]:
     def wrapper(*args: Any) -> bool:
-        return all([check(arg) for check, arg in zip(checks, args)])
+        return all(check(arg) for check, arg in zip(checks, args))
 
     return wrapper
 
