@@ -3,7 +3,7 @@
 from copy import deepcopy
 from enum import Enum, auto
 from os.path import dirname, join, realpath
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from expertsystem.reaction.conservation_rules import (
     BaryonNumberConservation,
@@ -112,7 +112,7 @@ def __create_projections(
 def create_default_interaction_settings(
     formalism_type: str,
     nbody_topology: bool = False,
-    use_mass_conservation: bool = True,
+    mass_conservation_factor: Optional[float] = 5.0,
 ) -> Dict[InteractionTypes, Tuple[EdgeSettings, NodeSettings]]:
     """Create a container that holds the settings for the various interactions.
 
@@ -203,8 +203,10 @@ def create_default_interaction_settings(
                 ),
             }
         )
-    if use_mass_conservation:
-        formalism_node_settings.conservation_rules.add(MassConservation(5))
+    if mass_conservation_factor is not None:
+        formalism_node_settings.conservation_rules.add(
+            MassConservation(mass_conservation_factor)
+        )
 
     weak_node_settings = deepcopy(formalism_node_settings)
     weak_node_settings.conservation_rules.update(

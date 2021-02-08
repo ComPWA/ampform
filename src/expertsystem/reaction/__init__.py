@@ -413,6 +413,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         number_of_threads: Optional[int] = None,
         solving_mode: SolvingMode = SolvingMode.Fast,
         reload_pdg: bool = False,
+        mass_conservation_factor: Optional[float] = 5.0,
     ) -> None:
         if interaction_type_settings is None:
             interaction_type_settings = {}
@@ -460,7 +461,6 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             }
         if "helicity" in formalism_type:
             self.filter_ignore_qns = {NodeQuantumNumbers.parity_prefactor}
-        use_mass_conservation = True
         use_nbody_topology = False
         topology_building = topology_building.lower()
         if topology_building == "isobar":
@@ -475,14 +475,14 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             # turn of mass conservation, in case more than one initial state
             # particle is present
             if len(initial_state) > 1:
-                use_mass_conservation = False
+                mass_conservation_factor = None
 
         if not self.interaction_type_settings:
             self.interaction_type_settings = (
                 create_default_interaction_settings(
                     formalism_type,
                     nbody_topology=use_nbody_topology,
-                    use_mass_conservation=use_mass_conservation,
+                    mass_conservation_factor=mass_conservation_factor,
                 )
             )
 
@@ -878,6 +878,7 @@ def _convert_to_qn_problem_set(
 def check_reaction_violations(
     initial_state: Union[StateDefinition, Sequence[StateDefinition]],
     final_state: Sequence[StateDefinition],
+    mass_conservation_factor: Optional[float] = 5.0,
 ) -> Set[FrozenSet[str]]:
     """Determine violated interaction rules for a given particle reaction.
 
@@ -891,6 +892,8 @@ def check_reaction_violations(
         projections.
       final_state: Shortform description of the final state w/o spin
         projections.
+      mass_conservation_factor: Factor with which the width is multiplied when
+        checking for `.MassConservation`.
 
     Returns:
       Set of least violating rules. The set can have multiple entries, as
@@ -966,8 +969,10 @@ def check_reaction_violations(
             TauLNConservation(),
             isospin_conservation,
         }
-        if len(initial_state) == 1:
-            edge_qn_conservation_rules.add(MassConservation(5))
+        if len(initial_state) == 1 and mass_conservation_factor is not None:
+            edge_qn_conservation_rules.add(
+                MassConservation(mass_conservation_factor)
+            )
 
         return {
             frozenset((x,))
