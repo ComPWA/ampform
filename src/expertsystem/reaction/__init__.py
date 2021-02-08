@@ -779,12 +779,30 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         if (
             final_result.execution_info.violated_edge_rules
             or final_result.execution_info.violated_node_rules
-            or final_result.execution_info.not_executed_edge_rules
-            or final_result.execution_info.violated_node_rules
         ):
+            execution_info = final_result.execution_info
+            violated_rules: Set[str] = set()
+            for rules in execution_info.violated_edge_rules.values():
+                violated_rules |= rules
+            for rules in execution_info.violated_node_rules.values():
+                violated_rules |= rules
+            if violated_rules:
+                raise RuntimeError(
+                    "There were violated conservation rules: "
+                    + ", ".join(violated_rules)
+                )
+        if (
+            final_result.execution_info.not_executed_edge_rules
+            or final_result.execution_info.not_executed_node_rules
+        ):
+            not_executed_rules: Set[str] = set()
+            for rules in execution_info.not_executed_edge_rules.values():
+                not_executed_rules |= rules
+            for rules in execution_info.not_executed_node_rules.values():
+                not_executed_rules |= rules
             raise RuntimeWarning(
-                "There were violated or non-executed conservation rules",
-                final_result.execution_info,
+                "There are conservation rules that were not executed: "
+                + ", ".join(not_executed_rules)
             )
         if not final_solutions:
             raise ValueError("No solutions were found")
