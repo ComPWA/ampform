@@ -466,8 +466,8 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 len(initial_state), len(final_state)
             )
         elif "n-body" in topology_building or "nbody" in topology_building:
-            self.__topologies = frozenset(
-                {create_n_body_topology(len(initial_state), len(final_state))}
+            self.__topologies = (
+                create_n_body_topology(len(initial_state), len(final_state)),
             )
             use_nbody_topology = True
             # turn of mass conservation, in case more than one initial state
