@@ -394,7 +394,7 @@ def _group_by_strength(
 class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     """Main handler for decay topologies.
 
-    .. seealso:: :doc:`/usage/workflow` and `generate`
+    .. seealso:: :doc:`/usage/transition` and `generate`
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-branches
@@ -1086,7 +1086,7 @@ def generate(  # pylint: disable=too-many-arguments
     """Generate allowed transitions between an initial and final state.
 
     Serves as a facade to the `.StateTransitionManager` (see
-    :doc:`/usage/workflow`).
+    :doc:`/usage/transition`).
 
     Arguments:
         initial_state (list): A list of particle names in the initial
