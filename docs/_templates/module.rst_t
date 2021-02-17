@@ -1,6 +1,10 @@
 {%- if show_headings and not separate %}
 {{ basename.split(".")[-1] | e | heading }}
 
+.. code-block:: python
+
+    import {{ basename }}
+
 {% endif -%}
 .. automodule:: {{ qualname }}
 {%- for option in automodule_options %}

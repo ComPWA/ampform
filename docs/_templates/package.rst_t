@@ -13,6 +13,11 @@
 {%- endmacro %}
 
 {{ pkgname.split(".")[-1] | e | heading }}
+
+.. code-block:: python
+
+    import {{ pkgname }}
+
 {%- if modulefirst and not is_namespace %}
 {{ automodule(pkgname, automodule_options) }}
 {% endif %}
