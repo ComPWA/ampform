@@ -91,6 +91,12 @@ class Edge:
         return connected_nodes  # type: ignore
 
 
+def _to_frozenset(iterable: Iterable[int]) -> FrozenSet[int]:
+    if not all(map(lambda i: isinstance(i, int), iterable)):
+        raise TypeError(f"Not all items in {iterable} are of type int")
+    return frozenset(iterable)
+
+
 @attr.s(frozen=True)
 class Topology:
     """Directed Feynman-like graph without edge or node properties.
@@ -102,7 +108,7 @@ class Topology:
     because it allows open edges, like a Feynman-diagram.
     """
 
-    nodes: FrozenSet[int] = attr.ib(converter=frozenset)
+    nodes: FrozenSet[int] = attr.ib(converter=_to_frozenset)
     edges: FrozenDict[int, Edge] = attr.ib(converter=FrozenDict)
 
     incoming_edge_ids: FrozenSet[int] = attr.ib(init=False, repr=False)
@@ -271,7 +277,7 @@ class _MutableTopology:
     def freeze(self) -> Topology:
         return Topology(
             edges=self.edges,
-            nodes=self.nodes,  # type: ignore
+            nodes=self.nodes,
         )
 
     def add_node(self, node_id: int) -> None:

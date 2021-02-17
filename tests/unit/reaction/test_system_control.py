@@ -209,7 +209,7 @@ def make_ls_test_graph(
 ):
     graph = StateTransitionGraph[ParticleWithSpin](
         topology=Topology(
-            nodes={0},  # type: ignore
+            nodes={0},
             edges={0: Edge(None, 0)},
         ),
         node_props={
@@ -228,7 +228,7 @@ def make_ls_test_graph_scrambled(
 ):
     graph = StateTransitionGraph[ParticleWithSpin](
         topology=Topology(
-            nodes={0},  # type: ignore
+            nodes={0},
             edges={0: Edge(None, 0)},
         ),
         node_props={

@@ -32,7 +32,7 @@ class TestWrite:
     def test_write_topology(output_dir):
         output_file = output_dir + "two_body_decay_topology.gv"
         topology = Topology(
-            nodes={0},  # type: ignore
+            nodes={0},
             edges={0: Edge(0, None), 1: Edge(None, 0), 2: Edge(None, 0)},
         )
         io.write(
