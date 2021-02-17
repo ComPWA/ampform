@@ -42,7 +42,8 @@
         "requirements*.txt",
         "setup.cfg",
         "setup.py",
-        "tox.ini"
+        "tox.ini",
+        "typings"
     ],
     "language": "en-US",
     "words": [

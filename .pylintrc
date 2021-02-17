@@ -29,7 +29,10 @@ disable=
 
 [MASTER]
 ignore=
-    conf.py
+    conf.py,
+    sympy
+ignore-patterns=
+    .*\.pyi
 
 [DESIGN]
 # Minimum number of public methods for a class (see R0903). Default is 2.

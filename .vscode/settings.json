@@ -73,9 +73,8 @@
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
-    "docs/tox.ini": true,
-    "reqs/3.*/*.txt": true,
-    "tests/tox.ini": true
+    "*/tox.ini": true,
+    "reqs/3.*/*.txt": true
   },
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,

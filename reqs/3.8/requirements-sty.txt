@@ -23,7 +23,7 @@ flake8-polyfill==1.0.2
 flake8-rst-docstrings==0.0.14
 flake8==3.8.4
 gprof2dot==2019.11.30
-hepunits==2.0.1
+hepunits==2.1.0
 identify==1.5.13
 iniconfig==1.1.1
 ipython-genutils==0.2.0
@@ -46,9 +46,9 @@ pre-commit==2.10.1
 py==1.10.0
 pycodestyle==2.6.0
 pydocstyle==5.1.1
-pydot==1.4.1
+pydot==1.4.2
 pyflakes==2.2.0
-pylint==2.6.0
+pylint==2.6.2
 pyparsing==2.4.7
 pyrsistent==0.17.3
 pytest-cov==2.11.1
