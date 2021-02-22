@@ -42,7 +42,7 @@ def test_full(formalism_type, n_solutions, particle_database):
         formalism_type=formalism_type,
         number_of_threads=1,
     )
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.STRONG])
     stm.add_final_state_grouping([["D0", "pi0"], ["D~0", "pi0"]])
     problem_sets = stm.create_problem_sets()
     result = stm.find_solutions(problem_sets)

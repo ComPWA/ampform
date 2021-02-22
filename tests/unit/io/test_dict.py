@@ -115,7 +115,7 @@ class TestHelicityFormalism:
         kinematics = imported_dict["kinematics"]
         initial_state = kinematics["initial_state"]
         final_state = kinematics["final_state"]
-        assert kinematics["type"] == "Helicity"
+        assert kinematics["type"] == "HELICITY"
         assert initial_state == {0: "J/psi(1S)"}
         assert final_state == {2: "gamma", 3: "pi0", 4: "pi0"}
 

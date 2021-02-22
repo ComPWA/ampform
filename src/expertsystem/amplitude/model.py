@@ -201,14 +201,14 @@ class ParticleDynamics(abc.MutableMapping):
 
 
 class KinematicsType(Enum):
-    Helicity = auto()
+    HELICITY = auto()
 
 
 def _determine_default_kinematics(
     kinematics_type: Optional[KinematicsType],
 ) -> KinematicsType:
     if kinematics_type is None:
-        return KinematicsType.Helicity
+        return KinematicsType.HELICITY
     return kinematics_type
 
 
@@ -217,7 +217,7 @@ class Kinematics:
     initial_state: Dict[int, Particle] = attr.ib()
     final_state: Dict[int, Particle] = attr.ib()
     type: KinematicsType = attr.ib(  # noqa: A003
-        default=KinematicsType.Helicity,
+        default=KinematicsType.HELICITY,
         converter=_determine_default_kinematics,
     )
 

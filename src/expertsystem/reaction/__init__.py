@@ -107,10 +107,10 @@ from .topology import (
 class SolvingMode(Enum):
     """Types of modes for solving."""
 
-    Fast = auto()
-    """find "likeliest" solutions only"""
-    Full = auto()
-    """find all possible solutions"""
+    FAST = auto()
+    """Find "likeliest" solutions only."""
+    FULL = auto()
+    """Find all possible solutions."""
 
 
 @attr.s(on_setattr=attr.setters.frozen)
@@ -409,7 +409,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         formalism_type: str = "helicity",
         topology_building: str = "isobar",
         number_of_threads: Optional[int] = None,
-        solving_mode: SolvingMode = SolvingMode.Fast,
+        solving_mode: SolvingMode = SolvingMode.FAST,
         reload_pdg: bool = False,
         mass_conservation_factor: Optional[float] = 5.0,
     ) -> None:
@@ -444,9 +444,9 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         ]
         self.final_state_groupings: Optional[List[List[List[str]]]] = None
         self.allowed_interaction_types: List[InteractionTypes] = [
-            InteractionTypes.Strong,
+            InteractionTypes.STRONG,
             InteractionTypes.EM,
-            InteractionTypes.Weak,
+            InteractionTypes.WEAK,
         ]
         self.filter_remove_qns: Set[Type[NodeQuantumNumber]] = set()
         self.filter_ignore_qns: Set[Type[NodeQuantumNumber]] = set()
@@ -600,7 +600,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                 intermediate_edge_domains[
                     EdgeQuantumNumbers.spin_projection
                 ].update(
-                    self.interaction_type_settings[InteractionTypes.Weak][
+                    self.interaction_type_settings[InteractionTypes.WEAK][
                         0
                     ].qn_domains[EdgeQuantumNumbers.spin_projection]
                 )
@@ -618,7 +618,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     }
                 )
 
-            return self.interaction_type_settings[InteractionTypes.Weak][
+            return self.interaction_type_settings[InteractionTypes.WEAK][
                 0
             ].qn_domains
 
@@ -627,7 +627,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
 
         def create_edge_settings(edge_id: int) -> EdgeSettings:
             settings = copy(
-                self.interaction_type_settings[InteractionTypes.Weak][0]
+                self.interaction_type_settings[InteractionTypes.WEAK][0]
             )
             if edge_id in intermediate_state_edges:
                 settings.qn_domains = int_edge_domains
@@ -752,7 +752,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
                     results[strength].extend(temp_result, True)
             if (
                 results[strength].solutions
-                and self.reaction_mode == SolvingMode.Fast
+                and self.reaction_mode == SolvingMode.FAST
             ):
                 break
         progress_bar.close()
@@ -1106,7 +1106,7 @@ def generate(  # pylint: disable=too-many-arguments
         allowed_interaction_types (`str`, optional): Interaction types you want
             to consider. For instance, both :code:`"strong and EM"` and
             :code:`["s", "em"]` results in `~.InteractionTypes.EM` and
-            `~.InteractionTypes.Strong`.
+            `~.InteractionTypes.STRONG`.
 
         formalism_type (`str`, optional): Formalism that you intend to use in the
             eventual `.AmplitudeModel`.
@@ -1196,9 +1196,9 @@ def _determine_interaction_types(
     ):
         interaction_types.add(InteractionTypes.EM)
     if "w" in interaction_name_lower:
-        interaction_types.add(InteractionTypes.Weak)
+        interaction_types.add(InteractionTypes.WEAK)
     if "strong" in interaction_name_lower or interaction_name_lower == "s":
-        interaction_types.add(InteractionTypes.Strong)
+        interaction_types.add(InteractionTypes.STRONG)
     if len(interaction_types) == 0:
         raise ValueError(
             f'Could not determine interaction type from "{description}"'

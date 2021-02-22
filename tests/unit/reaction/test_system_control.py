@@ -104,7 +104,7 @@ def test_external_edge_initialization(
         number_of_threads=1,
     )
 
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.STRONG])
     for group in final_state_groupings:
         stm.add_final_state_grouping(group)
 
@@ -367,7 +367,7 @@ def test_edge_swap(particle_database, initial_state, final_state):
         formalism_type="helicity",
         number_of_threads=1,
     )
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.STRONG])
 
     problem_sets = stm.create_problem_sets()
     init_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
@@ -414,7 +414,7 @@ def test_match_external_edges(particle_database, initial_state, final_state):
         number_of_threads=1,
     )
 
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.STRONG])
 
     problem_sets = stm.create_problem_sets()
     init_graphs: List[StateTransitionGraph[ParticleWithSpin]] = []
@@ -490,7 +490,7 @@ def test_external_edge_identical_particle_combinatorics(
         formalism_type="helicity",
         number_of_threads=1,
     )
-    stm.set_allowed_interaction_types([InteractionTypes.Strong])
+    stm.set_allowed_interaction_types([InteractionTypes.STRONG])
     for group in final_state_groupings:
         stm.add_final_state_grouping(group)
 

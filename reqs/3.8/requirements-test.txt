@@ -8,7 +8,7 @@ apipkg==1.5
 attrs==20.3.0
 coverage==5.4
 execnet==1.8.0
-gprof2dot==2019.11.30
+gprof2dot==2021.2.21
 hepunits==2.1.0
 iniconfig==1.1.1
 jsonschema==3.2.0
@@ -28,7 +28,7 @@ python-constraint==1.4.0
 pyyaml==5.4.1
 six==1.15.0
 toml==0.10.2
-tqdm==4.56.2
+tqdm==4.57.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

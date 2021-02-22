@@ -67,7 +67,7 @@ class TestKinematics:
         assert kinematics.id_to_particle[2].name == "gamma"
         assert kinematics.id_to_particle[3].name == "pi0"
         assert kinematics.id_to_particle[4].name == "pi0"
-        assert kinematics.type == KinematicsType.Helicity
+        assert kinematics.type == KinematicsType.HELICITY
 
 
 class TestParticleDynamics:

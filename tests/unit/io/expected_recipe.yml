@@ -1,5 +1,5 @@
 kinematics:
-  type: Helicity
+  type: HELICITY
   initial_state:
     0: J/psi(1S)
   final_state:

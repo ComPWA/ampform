@@ -18,7 +18,7 @@
       "additionalProperties": false,
       "properties": {
         "type": {
-          "enum": ["Helicity"],
+          "enum": ["HELICITY"],
           "title": "Formalism with which the reaction is studied"
         },
         "initial_state": {

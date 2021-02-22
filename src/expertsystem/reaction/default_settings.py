@@ -82,9 +82,9 @@ __EDGE_RULE_PRIORITIES: Dict[GraphElementRule, int] = {
 class InteractionTypes(Enum):
     """Types of interactions in the form of an enumerate."""
 
-    Strong = auto()
+    STRONG = auto()
     EM = auto()
-    Weak = auto()
+    WEAK = auto()
 
 
 def _get_spin_magnitudes(is_nbody: bool) -> List[float]:
@@ -106,7 +106,7 @@ def _get_ang_mom_magnitudes(is_nbody: bool) -> List[float]:
 def __create_projections(
     magnitudes: List[Union[int, float]]
 ) -> List[Union[int, float]]:
-    return magnitudes + list([-x for x in magnitudes if x > 0])
+    return magnitudes + [-x for x in magnitudes if x > 0]
 
 
 def create_default_interaction_settings(
@@ -222,7 +222,7 @@ def create_default_interaction_settings(
     weak_node_settings.interaction_strength = 10 ** (-4)
     weak_edge_settings = deepcopy(formalism_edge_settings)
 
-    interaction_type_settings[InteractionTypes.Weak] = (
+    interaction_type_settings[InteractionTypes.WEAK] = (
         weak_edge_settings,
         weak_node_settings,
     )
@@ -259,7 +259,7 @@ def create_default_interaction_settings(
 
     strong_edge_settings = deepcopy(em_edge_settings)
 
-    interaction_type_settings[InteractionTypes.Strong] = (
+    interaction_type_settings[InteractionTypes.STRONG] = (
         strong_edge_settings,
         strong_node_settings,
     )

@@ -190,11 +190,11 @@ class LeptonCheck(InteractionDeterminator):
         for particle, _ in in_edge_props + out_edge_props:
             if particle.is_lepton():
                 if particle.name.startswith("nu("):
-                    node_interaction_types = [InteractionTypes.Weak]
+                    node_interaction_types = [InteractionTypes.WEAK]
                     break
                 node_interaction_types = [
                     InteractionTypes.EM,
-                    InteractionTypes.Weak,
+                    InteractionTypes.WEAK,
                 ]
         return node_interaction_types
 
