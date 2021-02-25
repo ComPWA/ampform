@@ -3,7 +3,7 @@
 See :doc:`/usage/visualization` for more info.
 """
 
-from typing import Any, Callable, Iterable, List, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Sequence, Union
 
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.quantum_numbers import (
@@ -37,7 +37,7 @@ def embed_dot(func: Callable[[Any], str]) -> Callable[[Any], str]:
 
 
 @embed_dot
-def graph_list_to_dot(graphs: List[StateTransitionGraph]) -> str:
+def graph_list_to_dot(graphs: Sequence[StateTransitionGraph]) -> str:
     dot_source = ""
     for i, graph in enumerate(reversed(graphs)):
         dot_source += __graph_to_dot_content(graph, prefix=f"g{i}_")
@@ -86,6 +86,12 @@ def __graph_to_dot_content(
             dot_source += _DOT_DEFAULT_NODE.format(
                 f"{prefix}node{node_id}", node_label
             )
+    if isinstance(graph, Topology):
+        if len(topology.nodes) > 1:
+            for node_id in topology.nodes:
+                dot_source += _DOT_DEFAULT_NODE.format(
+                    f"{prefix}node{node_id}", f"({node_id})"
+                )
     return dot_source
 
 

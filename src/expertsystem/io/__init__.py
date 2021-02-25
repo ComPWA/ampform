@@ -7,6 +7,7 @@ the state of the system.
 """
 
 import json
+from collections import abc
 from pathlib import Path
 
 import yaml
@@ -128,7 +129,7 @@ def convert_to_dot(instance: object) -> str:
     """
     if isinstance(instance, (StateTransitionGraph, Topology)):
         return _dot.graph_to_dot(instance)
-    if isinstance(instance, list):
+    if isinstance(instance, abc.Sequence):
         return _dot.graph_list_to_dot(instance)
     raise NotImplementedError(
         f"Cannot convert a {instance.__class__.__name__} to DOT language"

@@ -3,10 +3,15 @@ import pytest
 
 from expertsystem import io
 from expertsystem.reaction import Result
-from expertsystem.reaction.topology import Edge, Topology
+from expertsystem.reaction.topology import (
+    Edge,
+    Topology,
+    create_isobar_topologies,
+    create_n_body_topology,
+)
 
 
-def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
+def test_convert_to_dot(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
     result = jpsi_to_gamma_pi_pi_helicity_solutions
     for transition in result.transitions:
         dot_data = io.convert_to_dot(transition)
@@ -16,6 +21,14 @@ def test_dot_syntax(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
     dot_data = io.convert_to_dot(result.get_particle_graphs())
     assert pydot.graph_from_dot_data(dot_data) is not None
     dot_data = io.convert_to_dot(result.collapse_graphs())
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(create_n_body_topology(3, 4))
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(create_isobar_topologies(2))
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(create_isobar_topologies(3))
+    assert pydot.graph_from_dot_data(dot_data) is not None
+    dot_data = io.convert_to_dot(create_isobar_topologies(4))
     assert pydot.graph_from_dot_data(dot_data) is not None
 
 
