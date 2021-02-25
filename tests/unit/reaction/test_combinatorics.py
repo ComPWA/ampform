@@ -19,7 +19,7 @@ from expertsystem.reaction.topology import Topology, create_isobar_topologies
 
 @pytest.fixture(scope="session")
 def three_body_decay() -> Topology:
-    topologies = create_isobar_topologies(1, 3)
+    topologies = create_isobar_topologies(3)
     topology = next(iter(topologies))
     return topology
 

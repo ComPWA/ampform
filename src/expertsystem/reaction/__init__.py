@@ -462,9 +462,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         use_nbody_topology = False
         topology_building = topology_building.lower()
         if topology_building == "isobar":
-            self.__topologies = create_isobar_topologies(
-                len(initial_state), len(final_state)
-            )
+            self.__topologies = create_isobar_topologies(len(final_state))
         elif "n-body" in topology_building or "nbody" in topology_building:
             self.__topologies = (
                 create_n_body_topology(len(initial_state), len(final_state)),
