@@ -4,6 +4,7 @@
 -r requirements-sty.in
 
 # Additional developer tools
+aquirdturtle_collapsible_headings
 jupyterlab
 jupyterlab-code-formatter
 labels
