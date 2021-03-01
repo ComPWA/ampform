@@ -5,12 +5,12 @@
 #    pip-compile --no-annotate --output-file=reqs/3.6/requirements-dev.txt reqs/requirements-dev.in reqs/requirements-doc.in reqs/requirements-sty.in reqs/requirements-test.in reqs/requirements.in
 #
 alabaster==0.7.12
-anyio==2.1.0
+anyio==2.2.0
 apipkg==1.5
 appdirs==1.4.4
 aquirdturtle-collapsible-headings==3.0.1
 argon2-cffi==20.1.0
-astroid==2.5.0
+astroid==2.5.1
 async-generator==1.10
 attrs==20.3.0
 babel==2.9.0
@@ -25,7 +25,7 @@ chardet==4.0.0
 click==7.1.2
 colorama==0.4.4
 contextvars==2.4
-coverage==5.4
+coverage==5.5
 dataclasses==0.8
 decorator==4.4.2
 defusedxml==0.6.0
@@ -42,11 +42,11 @@ flake8-rst-docstrings==0.0.14
 flake8==3.8.4
 fuzzywuzzy==0.18.0
 gitdb==4.0.5
-gitpython==3.1.13
+gitpython==3.1.14
 gprof2dot==2021.2.21
 graphviz==0.16
 hepunits==2.1.0
-identify==1.5.14
+identify==1.6.1
 idna==2.10
 imagesize==1.2.0
 immutables==0.15
@@ -118,7 +118,7 @@ pydocstyle==5.1.1
 pydot==1.4.2
 pyflakes==2.2.0
 pygments==2.8.0
-pylint==2.7.1
+pylint==2.7.2
 pyparsing==2.4.7
 pyrsistent==0.17.3
 pytest-cov==2.11.1
@@ -144,7 +144,7 @@ sniffio==1.2.0
 snowballstemmer==2.1.0
 soupsieve==2.2
 sphinx-autobuild==2020.9.1
-sphinx-book-theme==0.0.39
+sphinx-book-theme==0.0.40
 sphinx-copybutton==0.3.1
 sphinx-panels==0.5.2
 sphinx-thebe==0.0.8
