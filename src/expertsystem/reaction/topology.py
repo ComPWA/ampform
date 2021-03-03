@@ -237,6 +237,35 @@ class Topology:
             temp_edge_list = new_temp_edge_list
         return edge_ids
 
+    def organize_edge_ids(self) -> "Topology":
+        """Create a new topology with edge IDs in range :code:`[-m, n+i]`.
+
+        where :code:`m` is the number of `.incoming_edge_ids`, :code:`n` is the
+        number of `.outgoing_edge_ids`, and :code:`i` is the number of
+        `.intermediate_edge_ids`.
+
+        In other words, relabel the edges so that:
+
+        - `.incoming_edge_ids` lies in the range :code:`[-1, -2, ...]`
+        - `.outgoing_edge_ids` lies in the range :code:`[0, 1, ..., n]`
+        - `.intermediate_edge_ids` lies in the range :code:`[n+1, n+2, ...]`
+        """
+        new_edges = dict()
+        # Relabel so that initial edge IDs are [-1, -2, ...]
+        for new_edge_id, edge_id in zip(
+            range(-1, -len(self.incoming_edge_ids) - 1, -1),
+            self.incoming_edge_ids,
+        ):
+            new_edges[new_edge_id] = self.edges[edge_id]
+        # Relabel so that
+        # outgoing edge IDs are [0, 1, 2, ..., n]
+        # intermediate edge IDs are [n+1, n+2, ...]
+        for new_edge_id, edge_id in enumerate(
+            tuple(self.outgoing_edge_ids) + tuple(self.intermediate_edge_ids)
+        ):
+            new_edges[new_edge_id] = self.edges[edge_id]
+        return attr.evolve(self, edges=new_edges)
+
     def swap_edges(self, edge_id1: int, edge_id2: int) -> "Topology":
         new_edges = dict(self.edges.items())
         new_edges.update(
@@ -425,10 +454,12 @@ class SimpleStateTransitionTopologyBuilder:
 
         logging.info("finished building topology graphs...")
         # strip the current open end edges list from the result graph tuples
-        topologies: Tuple[Topology, ...] = tuple()
+        topologies = list()
         for graph_tuple in graph_tuple_list:
-            topologies += (graph_tuple[0].freeze(),)
-        return topologies
+            topology = graph_tuple[0].freeze()
+            topology = topology.organize_edge_ids()
+            topologies.append(topology)
+        return tuple(topologies)
 
     def _extend_graph(
         self, pair: Tuple[_MutableTopology, Sequence[int]]

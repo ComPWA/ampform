@@ -101,7 +101,12 @@ class TestKinematicRepresentation:
     def test_from_topology(three_body_decay: Topology):
         pi0 = ("pi0", [0])
         gamma = ("gamma", [-1, 1])
-        edge_props = {0: ("J/psi", [-1, +1]), 2: pi0, 3: pi0, 4: gamma}
+        edge_props = {
+            -1: ("J/psi", [-1, +1]),
+            0: pi0,
+            1: pi0,
+            2: gamma,
+        }
         kinematic_representation1 = _get_kinematic_representation(
             three_body_decay, edge_props
         )
@@ -116,17 +121,22 @@ class TestKinematicRepresentation:
 
         kinematic_representation2 = _get_kinematic_representation(
             topology=three_body_decay,
-            initial_facts={0: ("J/psi", [-1, +1]), 2: pi0, 3: gamma, 4: pi0},
+            initial_facts={
+                -1: ("J/psi", [-1, +1]),
+                0: pi0,
+                1: gamma,
+                2: pi0,
+            },
         )
         assert kinematic_representation1 == kinematic_representation2
 
         kinematic_representation3 = _get_kinematic_representation(
             topology=three_body_decay,
             initial_facts={
-                0: ("J/psi", [-1, +1]),
-                2: pi0,
-                3: gamma,
-                4: gamma,
+                -1: ("J/psi", [-1, +1]),
+                0: pi0,
+                1: gamma,
+                2: gamma,
             },
         )
         assert kinematic_representation2 != kinematic_representation3
@@ -200,9 +210,9 @@ def test_generate_permutations(
         permutation0, particle_database
     )
     assert len(spin_permutations) == 4
+    assert spin_permutations[0][-1][1] == -1
     assert spin_permutations[0][0][1] == -1
-    assert spin_permutations[0][2][1] == -1
-    assert spin_permutations[1][0][1] == -1
-    assert spin_permutations[1][2][1] == +1
-    assert spin_permutations[2][0][1] == +1
-    assert spin_permutations[3][0][1] == +1
+    assert spin_permutations[1][-1][1] == -1
+    assert spin_permutations[1][0][1] == +1
+    assert spin_permutations[2][-1][1] == +1
+    assert spin_permutations[3][-1][1] == +1

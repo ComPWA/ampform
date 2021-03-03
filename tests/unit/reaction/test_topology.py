@@ -226,6 +226,13 @@ class TestTopology:
         assert two_to_three_decay.nodes == {0, 1, 2}
 
     @staticmethod
+    def test_organize_edge_ids(two_to_three_decay: Topology):
+        topology = two_to_three_decay.organize_edge_ids()
+        assert topology.incoming_edge_ids == frozenset({-1, -2})
+        assert topology.outgoing_edge_ids == frozenset({0, 1, 2})
+        assert topology.intermediate_edge_ids == frozenset({3, 4})
+
+    @staticmethod
     def test_swap_edges(two_to_three_decay: Topology):
         original_topology = two_to_three_decay
         topology = original_topology.swap_edges(0, 1)

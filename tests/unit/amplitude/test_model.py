@@ -63,10 +63,10 @@ class TestKinematics:
         kinematics = Kinematics.from_graph(graph)
         assert len(kinematics.initial_state) == 1
         assert len(kinematics.final_state) == 3
-        assert kinematics.id_to_particle[0].name == "J/psi(1S)"
-        assert kinematics.id_to_particle[2].name == "gamma"
-        assert kinematics.id_to_particle[3].name == "pi0"
-        assert kinematics.id_to_particle[4].name == "pi0"
+        assert kinematics.id_to_particle[-1].name == "J/psi(1S)"
+        assert kinematics.id_to_particle[0].name == "gamma"
+        assert kinematics.id_to_particle[1].name == "pi0"
+        assert kinematics.id_to_particle[2].name == "pi0"
         assert kinematics.type == KinematicsType.HELICITY
 
 

@@ -21,10 +21,10 @@ class TestResult:
         result = jpsi_to_gamma_pi_pi_helicity_solutions
         particle_graphs = result.get_particle_graphs()
         assert len(particle_graphs) == 2
-        assert particle_graphs[0].get_edge_props(1) == pdg["f(0)(980)"]
-        assert particle_graphs[1].get_edge_props(1) == pdg["f(0)(1500)"]
+        assert particle_graphs[0].get_edge_props(3) == pdg["f(0)(980)"]
+        assert particle_graphs[1].get_edge_props(3) == pdg["f(0)(1500)"]
         assert len(particle_graphs[0].topology.edges) == 5
-        for edge_id in (0, 2, 3, 4):
+        for edge_id in range(-1, 3):
             assert particle_graphs[0].get_edge_props(
                 edge_id
             ) is particle_graphs[1].get_edge_props(edge_id)

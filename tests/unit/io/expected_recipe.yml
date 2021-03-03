@@ -1,11 +1,11 @@
 kinematics:
   type: HELICITY
   initial_state:
-    0: J/psi(1S)
+    -1: J/psi(1S)
   final_state:
-    2: gamma
-    3: pi0
-    4: pi0
+    0: gamma
+    1: pi0
+    2: pi0
 
 parameters:
   - name: &par1 Magnitude_J/psi(1S)_to_f(0)(980)_0+gamma_1;f(0)(980)_to_pi0_0+pi0_0;
