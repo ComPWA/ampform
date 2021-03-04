@@ -1,13 +1,11 @@
 # [ADR-xxx] <!-- short title of solved problem and solution -->
 
 - **Status**:
-  <!--
-  proposed
-  rejected
-  accepted
-  deprecated
-  superseded by [ADR-xxx](./xxx.md)
-  -->
+  <!-- proposed -->
+  <!-- rejected -->
+  <!-- accepted -->
+  <!-- deprecated -->
+  <!-- superseded by [ADR-xxx](./xxx.md) -->
 - **Deciders**: <!-- @github-user -->
 
 ## Context and problem statement

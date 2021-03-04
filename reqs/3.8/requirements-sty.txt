@@ -17,14 +17,14 @@ docutils==0.16
 execnet==1.8.0
 filelock==3.0.12
 flake8-blind-except==0.2.0
-flake8-bugbear==20.11.1
+flake8-bugbear==21.3.1
 flake8-builtins==1.5.3
 flake8-polyfill==1.0.2
 flake8-rst-docstrings==0.0.14
 flake8==3.8.4
 gprof2dot==2021.2.21
 hepunits==2.1.0
-identify==1.6.1
+identify==2.1.0
 iniconfig==1.1.1
 ipython-genutils==0.2.0
 isort==5.7.0

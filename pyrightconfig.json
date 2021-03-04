@@ -1,6 +1,6 @@
 {
   "exclude": [".git", ".tox", "docs/_build"],
-  "include": ["docs", "src", "tests"],
+  "include": ["docs/conf.py", "src", "tests"],
   "reportGeneralTypeIssues": false,
   "reportUnboundVariable": false,
   "reportUnusedClass": true,

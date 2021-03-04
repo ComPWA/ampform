@@ -1,4 +1,4 @@
-# cspell:ignore noreply
+# cspell:ignore autoupdate noreply
 
 name: Requirements (scheduled)
 
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  upgrade:
+  upgrade-reqs:
     name: Upgrade requirement files
     runs-on: ubuntu-20.04
     strategy:
@@ -35,11 +35,33 @@ jobs:
           name: ${{ matrix.python-version }}
           path: reqs/${{ matrix.python-version }}
 
+  upgrade-pre-commit:
+    name: Upgrade pre-commit hooks
+    needs:
+      - upgrade-reqs
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r reqs/3.7/requirements-sty.txt
+      - name: Perform style checks
+        run: pre-commit autoupdate
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pre-commit
+          path: .pre-commit-config.yaml
+
   push:
     name: Create PR
     runs-on: ubuntu-20.04
     needs:
-      - upgrade
+      - upgrade-pre-commit
     steps:
       - uses: actions/checkout@v2
         with:
@@ -47,6 +69,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           path: reqs
+      - run: mv -f reqs/pre-commit/.pre-commit-config.yaml .
       - run: git status -s
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
