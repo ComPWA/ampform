@@ -12,7 +12,7 @@ pyrsistent==0.17.3
 python-constraint==1.4.0
 pyyaml==5.4.1
 six==1.15.0
-tqdm==4.58.0
+tqdm==4.59.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
