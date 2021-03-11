@@ -21,8 +21,9 @@ def test_simple(formalism_type, n_solutions, particle_database):
         number_of_threads=1,
     )
     assert len(result.transitions) == n_solutions
-    model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 9
+    model_builder = es.amplitude.get_builder(result)
+    model = model_builder.generate()
+    assert len(model.parameters) == 4
 
 
 @pytest.mark.slow
@@ -47,5 +48,6 @@ def test_full(formalism_type, n_solutions, particle_database):
     problem_sets = stm.create_problem_sets()
     result = stm.find_solutions(problem_sets)
     assert len(result.transitions) == n_solutions
-    model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 9
+    model_builder = es.amplitude.get_builder(result)
+    model = model_builder.generate()
+    assert len(model.parameters) == 4

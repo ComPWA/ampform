@@ -4,7 +4,10 @@ import logging
 import pytest
 
 import expertsystem as es
-from expertsystem.amplitude.model import AmplitudeModel
+from expertsystem.amplitude.dynamics.builder import (
+    create_relativistic_breit_wigner_with_ff,
+)
+from expertsystem.amplitude.helicity import HelicityModel
 from expertsystem.reaction import Result
 
 logging.basicConfig(level=logging.ERROR)
@@ -35,19 +38,21 @@ def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
     jpsi_to_gamma_pi_pi_canonical_solutions: Result,
-) -> AmplitudeModel:
+) -> HelicityModel:
     return __create_model(jpsi_to_gamma_pi_pi_canonical_solutions)
 
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
-) -> AmplitudeModel:
+) -> HelicityModel:
     return __create_model(jpsi_to_gamma_pi_pi_helicity_solutions)
 
 
-def __create_model(result: Result) -> AmplitudeModel:
-    model = es.amplitude.generate(result)
+def __create_model(result: Result) -> HelicityModel:
+    model_builder = es.amplitude.get_builder(result)
     for name in result.get_intermediate_particles().names:
-        model.dynamics.set_breit_wigner(name)
-    return model
+        model_builder.set_dynamics(
+            name, create_relativistic_breit_wigner_with_ff
+        )
+    return model_builder.generate()

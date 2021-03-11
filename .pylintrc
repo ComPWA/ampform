@@ -5,11 +5,14 @@
 [BASIC]
 good-names=
     _,
+    a,
     i,
     j,
     k,
     q,
     x,
+    y,
+    z,
 
 [VARIABLES]
 init-import=yes

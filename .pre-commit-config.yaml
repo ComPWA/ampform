@@ -19,7 +19,8 @@ repos:
         exclude: >
           (?x)^(
             cspell.json|
-            .*\.bib
+            .*\.bib|
+            .*\.svg
           )$
       - id: mixed-line-ending
       - id: name-tests-test

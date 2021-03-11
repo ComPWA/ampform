@@ -24,7 +24,7 @@ The `expertsystem` consists of three main components:
 
   `expertsystem.amplitude`
     ― a collection of tools to convert the `.StateTransitionGraph` solutions
-    found by `reaction` into an `.AmplitudeModel`. This module is specifically
+    found by `reaction` into an `.HelicityModel`. This module is specifically
     designed to create amplitude model templates for :doc:`PWA fitter packages
     <pwa:software>`.
 
@@ -41,7 +41,6 @@ __all__ = [
     "io",
     # Facade functions
     "generate_transitions",
-    "generate_amplitudes",
     "check_reaction_violations",
 ]
 
@@ -53,6 +52,3 @@ generate_transitions = reaction.generate
 
 check_reaction_violations = reaction.check_reaction_violations
 """An alias to `.reaction.check_reaction_violations`."""
-
-generate_amplitudes = amplitude.generate
-"""An alias to `.amplitude.generate`."""

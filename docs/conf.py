@@ -89,6 +89,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.doctest",
+    "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
@@ -97,6 +98,7 @@ extensions = [
     "sphinx_panels",
     "sphinx_thebe",
     "sphinx_togglebutton",
+    "sphinxcontrib.bibtex",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -118,6 +120,7 @@ autodoc_default_options = {
         ]
     ),
 }
+graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
 html_favicon = "_static/favicon.ico"
 html_show_copyright = False
@@ -155,12 +158,15 @@ nitpick_ignore = [
     ("py:class", "EdgeType"),
     ("py:class", "NoneType"),
     ("py:class", "StateTransitionGraph"),
-    ("py:class", "_EdgeType"),
-    ("py:class", "_T"),
+    ("py:class", "ValueType"),
     ("py:class", "a set-like object providing a view on D's items"),
     ("py:class", "a set-like object providing a view on D's keys"),
     ("py:class", "an object providing a view on D's values"),
+    ("py:class", "numpy.typing._array_like._SupportsArray"),
+    ("py:class", "numpy.typing._dtype_like._DTypeDict"),
+    ("py:class", "numpy.typing._dtype_like._SupportsDType"),
     ("py:class", "typing_extensions.Protocol"),
+    ("py:obj", "expertsystem.amplitude.helicity.ValueType"),
     ("py:obj", "expertsystem.reaction.topology._K"),
     ("py:obj", "expertsystem.reaction.topology._V"),
 ]
@@ -177,7 +183,10 @@ intersphinx_mapping = {
         "https://python-jsonschema.readthedocs.io/en/latest",
         None,
     ),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     "mypy": ("https://mypy.readthedocs.io/en/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
@@ -191,6 +200,12 @@ intersphinx_mapping = {
 
 # Settings for autosectionlabel
 autosectionlabel_prefix_document = True
+
+# Settings for bibtex
+bibtex_bibfiles = ["bibliography.bib"]
+suppress_warnings = [
+    "myst.domains",
+]
 
 # Settings for copybutton
 copybutton_prompt_is_regexp = True
@@ -240,3 +255,103 @@ thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
+
+
+# Specify bibliography style
+from pybtex.plugin import register_plugin
+from pybtex.richtext import Tag, Text
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.template import (
+    FieldIsMissing,
+    _format_list,
+    field,
+    href,
+    join,
+    node,
+    sentence,
+    words,
+)
+
+
+@node
+def et_al(children, data, sep="", sep2=None, last_sep=None):
+    if sep2 is None:
+        sep2 = sep
+    if last_sep is None:
+        last_sep = sep
+    parts = [part for part in _format_list(children, data) if part]
+    if len(parts) <= 1:
+        return Text(*parts)
+    elif len(parts) == 2:
+        return Text(sep2).join(parts)
+    elif len(parts) == 3:
+        return Text(last_sep).join([Text(sep).join(parts[:-1]), parts[-1]])
+    else:
+        return Text(parts[0], Tag("em", " et al"))
+
+
+@node
+def names(children, context, role, **kwargs):
+    """Return formatted names."""
+    assert not children
+    try:
+        persons = context["entry"].persons[role]
+    except KeyError:
+        raise FieldIsMissing(role, context["entry"])
+
+    style = context["style"]
+    formatted_names = [
+        style.format_name(person, style.abbreviate_names) for person in persons
+    ]
+    return et_al(**kwargs)[formatted_names].format_data(context)
+
+
+class MyStyle(UnsrtStyle):
+    def __init__(self):
+        super().__init__(abbreviate_names=True)
+
+    def format_names(self, role, as_sentence=True):
+        formatted_names = names(
+            role, sep=", ", sep2=" and ", last_sep=", and "
+        )
+        if as_sentence:
+            return sentence[formatted_names]
+        else:
+            return formatted_names
+
+    def format_url(self, e):
+        return words[
+            href[
+                field("url", raw=True),
+                field("url", raw=True, apply_func=remove_http),
+            ]
+        ]
+
+    def format_isbn(self, e):
+        return href[
+            join[
+                "https://isbnsearch.org/isbn/",
+                field("isbn", raw=True, apply_func=remove_dashes_and_spaces),
+            ],
+            join[
+                "ISBN:",
+                field("isbn", raw=True),
+            ],
+        ]
+
+
+def remove_dashes_and_spaces(isbn: str) -> str:
+    to_remove = ["-", " "]
+    for remove in to_remove:
+        isbn = isbn.replace(remove, "")
+    return isbn
+
+
+def remove_http(input: str) -> str:
+    to_remove = ["https://", "http://"]
+    for remove in to_remove:
+        input = input.replace(remove, "")
+    return input
+
+
+register_plugin("pybtex.style.formatting", "unsrt_et_al", MyStyle)

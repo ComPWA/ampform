@@ -1,7 +1,5 @@
 import attr
 
-from expertsystem.amplitude.model import Dynamics
-
 
 # the new FitParameter class would have this structure
 @attr.s
@@ -18,6 +16,10 @@ mapping = {
 
 
 # intensity nodes and dynamics classes contain immutable strings
+class Dynamics:
+    pass
+
+
 @attr.s
 class CustomDynamics(Dynamics):
     par: str = attr.ib(on_setattr=attr.setters.frozen, kw_only=True)

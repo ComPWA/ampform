@@ -49,11 +49,10 @@ For an overview of **upcoming releases and planned functionality**, see
   - [x] Helicity formalism
   - [x] Canonical formalism
   - [ ] Tensor formalisms
-- **Output**: Write transition graph to human-readable recipe file
-  - ~~XML (_old format for [ComPWA](https://compwa.github.io/)_)~~
-  - [x] JSON
-  - [x] YAML (_new format for
-        [tensorwaves](https://pwa.readthedocs.io/projects/tensorwaves)_)
+- **Amplitude model**: Convert the state transition graphs to an amplitude
+  model that is _mathematically expressed_ with [SymPy](https://docs.sympy.org)
+  and can be _converted to any backend_ (see
+  [`tensorwaves`](http://tensorwaves.rtfd.io)).
 
 ## Contribute
 

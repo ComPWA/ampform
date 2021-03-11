@@ -1100,7 +1100,7 @@ def generate(  # pylint: disable=too-many-arguments
 
         allowed_intermediate_particles (`list`, optional): A list of particle
             states that you want to allow as intermediate states. This helps
-            (1) filter out resonances in the eventual `.AmplitudeModel` and (2)
+            (1) filter out resonances in the eventual `.HelicityModel` and (2)
             speed up computation time.
 
         allowed_interaction_types (`str`, optional): Interaction types you want
@@ -1109,7 +1109,7 @@ def generate(  # pylint: disable=too-many-arguments
             `~.InteractionTypes.STRONG`.
 
         formalism_type (`str`, optional): Formalism that you intend to use in the
-            eventual `.AmplitudeModel`.
+            eventual `.HelicityModel`.
 
         particles (`.ParticleCollection`, optional): The particles that you
             want to be involved in the reaction. Uses `.load_default_particles`

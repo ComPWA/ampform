@@ -1,7 +1,7 @@
 import expertsystem as es
 
 
-def test_script(output_dir):
+def test_script():
     result = es.generate_transitions(
         initial_state="D0",
         final_state=["K~0", "K+", "K-"],
@@ -20,6 +20,6 @@ def test_script(output_dir):
         "a(2)(1320)-",
         "phi(1020)",
     }
-    model = es.generate_amplitudes(result)
-    assert len(model.parameters) == 11
-    es.io.write(model, output_dir + "D0_to_K0bar_Kp_Km.yml")
+    model_builder = es.amplitude.get_builder(result)
+    model = model_builder.generate()
+    assert len(model.parameters) == 5

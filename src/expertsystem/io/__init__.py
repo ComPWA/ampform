@@ -12,11 +12,6 @@ from pathlib import Path
 
 import yaml
 
-from expertsystem.amplitude.model import (
-    AmplitudeModel,
-    FitParameter,
-    FitParameters,
-)
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
@@ -24,16 +19,10 @@ from . import _dict, _dot, _pdg
 
 
 def asdict(instance: object) -> dict:
-    if isinstance(instance, FitParameter):
-        return _dict.dump.from_fit_parameter(instance)
-    if isinstance(instance, FitParameters):
-        return _dict.dump.from_fit_parameters(instance)
     if isinstance(instance, Particle):
         return _dict.dump.from_particle(instance)
     if isinstance(instance, ParticleCollection):
         return _dict.dump.from_particle_collection(instance)
-    if isinstance(instance, AmplitudeModel):
-        return _dict.dump.from_amplitude_model(instance)
     raise NotImplementedError(
         f"No conversion for dict available for class {instance.__class__.__name__}"
     )
@@ -41,10 +30,6 @@ def asdict(instance: object) -> dict:
 
 def fromdict(definition: dict) -> object:
     type_defined = _determine_type(definition)
-    if type_defined == AmplitudeModel:
-        return _dict.build.build_amplitude_model(definition)
-    if type_defined == FitParameters:
-        return _dict.build.build_fit_parameters(definition)
     if type_defined == ParticleCollection:
         return _dict.build.build_particle_collection(definition)
     raise NotImplementedError
@@ -52,8 +37,6 @@ def fromdict(definition: dict) -> object:
 
 def validate(instance: dict) -> None:
     type_defined = _determine_type(instance)
-    if type_defined == AmplitudeModel:
-        return _dict.validate.amplitude_model(instance)
     if type_defined == ParticleCollection:
         return _dict.validate.particle_collection(instance)
     raise NotImplementedError
@@ -159,16 +142,6 @@ def _get_file_extension(filename: str) -> str:
 
 def _determine_type(definition: dict) -> type:
     keys = set(definition.keys())
-    if keys == {
-        "dynamics",
-        "intensity",
-        "kinematics",
-        "parameters",
-        "particles",
-    }:
-        return AmplitudeModel
-    if keys == {"parameters"}:
-        return FitParameters
     if keys == {"particles"}:
         return ParticleCollection
     raise NotImplementedError(f"Could not determine type from keys {keys}")
