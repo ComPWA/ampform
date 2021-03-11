@@ -112,7 +112,7 @@ def __create_projections(
 def create_default_interaction_settings(
     formalism_type: str,
     nbody_topology: bool = False,
-    mass_conservation_factor: Optional[float] = 5.0,
+    mass_conservation_factor: Optional[float] = 3.0,
 ) -> Dict[InteractionTypes, Tuple[EdgeSettings, NodeSettings]]:
     """Create a container that holds the settings for the various interactions.
 

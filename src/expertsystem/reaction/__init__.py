@@ -411,7 +411,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
         number_of_threads: Optional[int] = None,
         solving_mode: SolvingMode = SolvingMode.FAST,
         reload_pdg: bool = False,
-        mass_conservation_factor: Optional[float] = 5.0,
+        mass_conservation_factor: Optional[float] = 3.0,
     ) -> None:
         if interaction_type_settings is None:
             interaction_type_settings = {}
@@ -874,7 +874,7 @@ def _convert_to_qn_problem_set(
 def check_reaction_violations(
     initial_state: Union[StateDefinition, Sequence[StateDefinition]],
     final_state: Sequence[StateDefinition],
-    mass_conservation_factor: Optional[float] = 5.0,
+    mass_conservation_factor: Optional[float] = 3.0,
 ) -> Set[FrozenSet[str]]:
     """Determine violated interaction rules for a given particle reaction.
 
@@ -889,7 +889,8 @@ def check_reaction_violations(
       final_state: Shortform description of the final state w/o spin
         projections.
       mass_conservation_factor: Factor with which the width is multiplied when
-        checking for `.MassConservation`.
+        checking for `.MassConservation`. Set to `None` in order to deactivate
+        mass conservation.
 
     Returns:
       Set of least violating rules. The set can have multiple entries, as
@@ -1078,6 +1079,7 @@ def generate(  # pylint: disable=too-many-arguments
     allowed_interaction_types: Optional[Union[str, List[str]]] = None,
     formalism_type: str = "helicity",
     particles: Optional[ParticleCollection] = None,
+    mass_conservation_factor: Optional[float] = 3.0,
     topology_building: str = "isobar",
     number_of_threads: Optional[int] = None,
 ) -> Result:
@@ -1115,6 +1117,9 @@ def generate(  # pylint: disable=too-many-arguments
             because of the computation times. This argument is especially
             useful when you want to use your own particle definitions (see
             :doc:`/usage/particles`).
+
+        mass_conservation_factor: Width factor that is taken into account for
+            for the `.MassConservation` rule.
 
         topology_building (str): Technique with which to build the `.Topology`
             instances. Allowed values are:
@@ -1154,6 +1159,7 @@ def generate(  # pylint: disable=too-many-arguments
         particles=particles,
         allowed_intermediate_particles=allowed_intermediate_particles,
         formalism_type=formalism_type,
+        mass_conservation_factor=mass_conservation_factor,
         topology_building=topology_building,
         number_of_threads=number_of_threads,
     )
