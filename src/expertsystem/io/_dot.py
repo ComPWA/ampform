@@ -3,7 +3,7 @@
 See :doc:`/usage/visualization` for more info.
 """
 
-from typing import Any, Callable, Iterable, Optional, Sequence, Union
+from typing import Callable, Iterable, Optional, Sequence, Union
 
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction.quantum_numbers import (
@@ -24,7 +24,7 @@ _DOT_DEFAULT_EDGE = '    "{}" -> "{}";\n'
 _DOT_LABEL_EDGE = '    "{}" -> "{}" [label="{}"];\n'
 
 
-def embed_dot(func: Callable[[Any], str]) -> Callable[[Any], str]:
+def embed_dot(func: Callable) -> Callable:
     """Add a DOT head and tail to some DOT content."""
 
     def wrapper(*args, **kwargs):  # type: ignore
@@ -37,20 +37,40 @@ def embed_dot(func: Callable[[Any], str]) -> Callable[[Any], str]:
 
 
 @embed_dot
-def graph_list_to_dot(graphs: Sequence[StateTransitionGraph]) -> str:
+def graph_list_to_dot(
+    graphs: Sequence[StateTransitionGraph],
+    render_edge_id: bool = True,
+    render_node: bool = True,
+) -> str:
     dot_source = ""
     for i, graph in enumerate(reversed(graphs)):
-        dot_source += __graph_to_dot_content(graph, prefix=f"g{i}_")
+        dot_source += __graph_to_dot_content(
+            graph,
+            prefix=f"g{i}_",
+            render_edge_id=render_edge_id,
+            render_node=render_node,
+        )
     return dot_source
 
 
 @embed_dot
-def graph_to_dot(graph: StateTransitionGraph) -> str:
-    return __graph_to_dot_content(graph)
+def graph_to_dot(
+    graph: StateTransitionGraph,
+    render_edge_id: bool = True,
+    render_node: bool = True,
+) -> str:
+    return __graph_to_dot_content(
+        graph,
+        render_edge_id=render_edge_id,
+        render_node=render_node,
+    )
 
 
-def __graph_to_dot_content(
-    graph: Union[StateTransitionGraph, Topology], prefix: str = ""
+def __graph_to_dot_content(  # pylint: disable=too-many-locals,too-many-branches
+    graph: Union[StateTransitionGraph, Topology],
+    prefix: str = "",
+    render_edge_id: bool = True,
+    render_node: bool = True,
 ) -> str:
     dot_source = ""
     if isinstance(graph, StateTransitionGraph):
@@ -63,7 +83,8 @@ def __graph_to_dot_content(
     outs = topology.outgoing_edge_ids
     for edge_id in top | outs:
         dot_source += _DOT_DEFAULT_NODE.format(
-            prefix + __node_name(edge_id), __get_edge_label(graph, edge_id)
+            prefix + __node_name(edge_id),
+            __get_edge_label(graph, edge_id, render_edge_id),
         )
     dot_source += __rank_string(top, prefix)
     dot_source += __rank_string(outs, prefix)
@@ -77,20 +98,25 @@ def __graph_to_dot_content(
             dot_source += _DOT_LABEL_EDGE.format(
                 prefix + __node_name(i, k),
                 prefix + __node_name(i, j),
-                __get_edge_label(graph, i),
+                __get_edge_label(graph, i, render_edge_id),
             )
     if isinstance(graph, StateTransitionGraph):
         for node_id in topology.nodes:
             node_prop = graph.get_node_props(node_id)
-            node_label = __node_label(node_prop)
+            node_label = ""
+            if render_node:
+                node_label = __node_label(node_prop)
             dot_source += _DOT_DEFAULT_NODE.format(
                 f"{prefix}node{node_id}", node_label
             )
     if isinstance(graph, Topology):
         if len(topology.nodes) > 1:
             for node_id in topology.nodes:
+                node_label = ""
+                if render_node:
+                    node_label = f"({node_id})"
                 dot_source += _DOT_DEFAULT_NODE.format(
-                    f"{prefix}node{node_id}", f"({node_id})"
+                    f"{prefix}node{node_id}", node_label
                 )
     return dot_source
 
@@ -108,13 +134,20 @@ def __rank_string(node_edge_ids: Iterable[int], prefix: str = "") -> str:
 
 
 def __get_edge_label(
-    graph: Union[StateTransitionGraph, Topology], edge_id: int
+    graph: Union[StateTransitionGraph, Topology],
+    edge_id: int,
+    render_edge_id: bool = True,
 ) -> str:
     if isinstance(graph, StateTransitionGraph):
         edge_prop = graph.get_edge_props(edge_id)
         if not edge_prop:
             return str(edge_id)
-        return __edge_label(edge_prop)
+        edge_label = __edge_label(edge_prop)
+        if not render_edge_id:
+            return edge_label
+        if "\n" in edge_label:
+            return f"{edge_id}:\n{edge_label}"
+        return f"{edge_id}: {edge_label}"
     if isinstance(graph, Topology):
         return str(edge_id)
     raise NotImplementedError

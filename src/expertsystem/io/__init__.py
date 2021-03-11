@@ -119,7 +119,11 @@ def write(instance: object, filename: str) -> None:
     )
 
 
-def convert_to_dot(instance: object) -> str:
+def convert_to_dot(
+    instance: object,
+    render_edge_id: bool = True,
+    render_node: bool = True,
+) -> str:
     """Convert a `object` to a DOT language `str`.
 
     Only works for objects that can be represented as a graph, particularly a
@@ -128,9 +132,17 @@ def convert_to_dot(instance: object) -> str:
     .. seealso:: :doc:`/usage/visualization`
     """
     if isinstance(instance, (StateTransitionGraph, Topology)):
-        return _dot.graph_to_dot(instance)
+        return _dot.graph_to_dot(
+            instance,
+            render_edge_id=render_edge_id,
+            render_node=render_node,
+        )
     if isinstance(instance, abc.Sequence):
-        return _dot.graph_list_to_dot(instance)
+        return _dot.graph_list_to_dot(
+            instance,
+            render_edge_id=render_edge_id,
+            render_node=render_node,
+        )
     raise NotImplementedError(
         f"Cannot convert a {instance.__class__.__name__} to DOT language"
     )
