@@ -18,7 +18,7 @@ chardet==4.0.0
 click==7.1.2
 colorama==0.4.4
 decorator==4.4.2
-defusedxml==0.7.0
+defusedxml==0.7.1
 docutils==0.16
 entrypoints==0.3
 fuzzywuzzy==0.18.0
@@ -82,7 +82,7 @@ six==1.15.0
 smmap==3.0.5
 snowballstemmer==2.1.0
 soupsieve==2.2
-sphinx-book-theme==0.0.40
+sphinx-book-theme==0.0.41
 sphinx-copybutton==0.3.1
 sphinx-panels==0.5.2
 sphinx-thebe==0.0.8

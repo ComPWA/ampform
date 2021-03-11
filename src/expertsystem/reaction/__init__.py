@@ -28,7 +28,7 @@ from typing import (
 )
 
 import attr
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from expertsystem import io
 from expertsystem.particle import Particle, ParticleCollection
