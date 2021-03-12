@@ -45,12 +45,8 @@
   "gitlens.advanced.telemetry.enabled": false,
   "json.schemas": [
     {
-      "fileMatch": ["*recipe*.json", "test_write_read_*.json"],
-      "url": "./src/expertsystem/schemas/amplitude-model.json"
-    },
-    {
       "fileMatch": ["*particle*.json"],
-      "url": "./src/expertsystem/schemas/particle-list.json"
+      "url": "./src/expertsystem/particle/validation.json"
     }
   ],
   "python.analysis.autoImportCompletions": false,
@@ -79,11 +75,7 @@
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./src/expertsystem/schemas/amplitude-model.json": [
-      "*recipe*.y*ml",
-      "test_write_read_*.yml"
-    ],
-    "./src/expertsystem/schemas/particle-list.json": ["*particle*.y*ml"],
+    "./src/expertsystem/particle/validation.json": ["*particle*.y*ml"],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }

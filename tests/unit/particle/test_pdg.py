@@ -2,13 +2,12 @@
 import particle
 import pytest
 
-from expertsystem import io
-from expertsystem.particle import ParticleCollection
+from expertsystem.particle import ParticleCollection, load_pdg
 
 
 @pytest.fixture(scope="session")
 def pdg() -> ParticleCollection:
-    return io.load_pdg()
+    return load_pdg()
 
 
 def test_maybe_qq():

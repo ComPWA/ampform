@@ -1,22 +1,8 @@
 # pylint: disable=redefined-outer-name
-from os.path import dirname, realpath
-
 import pytest
 
 from expertsystem import io
 from expertsystem.particle import ParticleCollection
-
-SCRIPT_PATH = dirname(realpath(__file__))
-
-
-@pytest.fixture(scope="session")
-def particle_selection(particle_database: ParticleCollection):
-    selection = ParticleCollection()
-    selection += particle_database.filter(lambda p: p.name.startswith("pi"))
-    selection += particle_database.filter(lambda p: p.name.startswith("K"))
-    selection += particle_database.filter(lambda p: p.name.startswith("D"))
-    selection += particle_database.filter(lambda p: p.name.startswith("J/psi"))
-    return selection
 
 
 def test_not_implemented_errors(

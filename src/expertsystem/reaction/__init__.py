@@ -31,7 +31,7 @@ import attr
 from tqdm.auto import tqdm
 
 from expertsystem import io
-from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.particle import Particle, ParticleCollection, load_pdg
 from expertsystem.reaction.conservation_rules import (
     BaryonNumberConservation,
     BottomnessConservation,
@@ -1061,10 +1061,10 @@ def load_default_particles() -> ParticleCollection:
     """Load the default particle list that comes with the `expertsystem`.
 
     Runs `.load_pdg` and supplements its output definitions from the file
-    :download:`additional_particle_definitions.yml
-    </../src/expertsystem/additional_particle_definitions.yml>`.
+    :download:`additional_definitions.yml
+    </../src/expertsystem/particle/additional_definitions.yml>`.
     """
-    particles = io.load_pdg()
+    particles = load_pdg()
     additional_particles = io.load(DEFAULT_PARTICLE_LIST_PATH)
     assert isinstance(additional_particles, ParticleCollection)
     particles.update(additional_particles)
@@ -1141,7 +1141,7 @@ def generate(  # pylint: disable=too-many-arguments
     ...     allowed_intermediate_particles=["a(0)(980)", "a(2)(1320)-"],
     ...     allowed_interaction_types="ew",
     ...     formalism_type="helicity",
-    ...     particles=es.io.load_pdg(),
+    ...     particles=es.particle.load_pdg(),
     ...     topology_building="isobar",
     ... )
     >>> len(result.transitions)

@@ -1,6 +1,6 @@
 """Generate dot sources.
 
-See :doc:`/usage/visualization` for more info.
+See :doc:`/usage/visualize` for more info.
 """
 
 from typing import Callable, Iterable, Optional, Sequence, Union

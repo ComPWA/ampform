@@ -1,5 +1,5 @@
 {
-  "$id": "particle-list.json",
+  "$id": "validation.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["particles"],

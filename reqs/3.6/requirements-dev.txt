@@ -47,7 +47,7 @@ gitpython==3.1.14
 gprof2dot==2021.2.21
 graphviz==0.16
 hepunits==2.1.0
-identify==2.1.1
+identify==2.1.2
 idna==2.10
 imagesize==1.2.0
 immutables==0.15

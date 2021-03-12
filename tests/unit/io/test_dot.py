@@ -11,24 +11,24 @@ from expertsystem.reaction.topology import (
 )
 
 
-def test_convert_to_dot(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
+def test_asdot(jpsi_to_gamma_pi_pi_helicity_solutions: Result):
     result = jpsi_to_gamma_pi_pi_helicity_solutions
     for transition in result.transitions:
-        dot_data = io.convert_to_dot(transition)
+        dot_data = io.asdot(transition)
         assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(result.transitions)
+    dot_data = io.asdot(result.transitions)
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(result.get_particle_graphs())
+    dot_data = io.asdot(result.get_particle_graphs())
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(result.collapse_graphs())
+    dot_data = io.asdot(result.collapse_graphs())
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(create_n_body_topology(3, 4))
+    dot_data = io.asdot(create_n_body_topology(3, 4))
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(create_isobar_topologies(2))
+    dot_data = io.asdot(create_isobar_topologies(2))
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(create_isobar_topologies(3))
+    dot_data = io.asdot(create_isobar_topologies(3))
     assert pydot.graph_from_dot_data(dot_data) is not None
-    dot_data = io.convert_to_dot(create_isobar_topologies(4))
+    dot_data = io.asdot(create_isobar_topologies(4))
     assert pydot.graph_from_dot_data(dot_data) is not None
 
 

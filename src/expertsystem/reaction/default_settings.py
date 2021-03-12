@@ -40,7 +40,7 @@ from expertsystem.reaction.quantum_numbers import (
 from expertsystem.reaction.solving import EdgeSettings, NodeSettings
 
 __EXPERT_SYSTEM_PATH = dirname(dirname(realpath(__file__)))
-__DEFAULT_PARTICLE_LIST_FILE = "additional_particle_definitions.yml"
+__DEFAULT_PARTICLE_LIST_FILE = "particle/additional_definitions.yml"
 DEFAULT_PARTICLE_LIST_PATH = join(
     __EXPERT_SYSTEM_PATH, __DEFAULT_PARTICLE_LIST_FILE
 )

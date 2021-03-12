@@ -24,7 +24,7 @@ flake8-rst-docstrings==0.0.14
 flake8==3.8.4
 gprof2dot==2021.2.21
 hepunits==2.1.0
-identify==2.1.1
+identify==2.1.2
 iniconfig==1.1.1
 ipython-genutils==0.2.0
 isort==5.7.0
