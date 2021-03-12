@@ -4,7 +4,7 @@ The `~expertsystem.particle` module is the starting point of the
 `expertsystem`. Its main interface is the `ParticleCollection`, which is a
 collection of immutable `Particle` instances that are uniquely defined by their
 properties. As such, it can be used stand-alone as a database of quantum
-numbers (see :doc:`/usage/particles`).
+numbers (see :doc:`/usage/particle`).
 
 The `.reaction` module uses the properties of `Particle` instances when it
 computes which `.StateTransitionGraph` s are allowed between an initial state
@@ -143,7 +143,7 @@ class Particle:  # pylint: disable=too-many-instance-attributes
 
     .. note:: As opposed to classes such as `.EdgeQuantumNumbers` and
         `.NodeQuantumNumbers`, the `Particle` class serves as an interface to
-        the user (see :doc:`/usage/particles`).
+        the user (see :doc:`/usage/particle`).
     """
 
     # Labels

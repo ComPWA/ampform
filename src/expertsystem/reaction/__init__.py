@@ -243,7 +243,7 @@ class Result:
         Extract a `list` of `.StateTransitionGraph` instances with only
         particles on the edges.
 
-        .. seealso:: :doc:`/usage/visualization`
+        .. seealso:: :doc:`/usage/visualize`
         """
         inventory: List[StateTransitionGraph[Particle]] = list()
         for transition in self.transitions:
@@ -394,7 +394,7 @@ def _group_by_strength(
 class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
     """Main handler for decay topologies.
 
-    .. seealso:: :doc:`/usage/transition` and `generate`
+    .. seealso:: :doc:`/usage/reaction` and `generate`
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-branches
@@ -1086,7 +1086,7 @@ def generate(  # pylint: disable=too-many-arguments
     """Generate allowed transitions between an initial and final state.
 
     Serves as a facade to the `.StateTransitionManager` (see
-    :doc:`/usage/transition`).
+    :doc:`/usage/reaction`).
 
     Arguments:
         initial_state (list): A list of particle names in the initial
@@ -1116,7 +1116,7 @@ def generate(  # pylint: disable=too-many-arguments
             by default. It's better to use a subset for larger reactions,
             because of the computation times. This argument is especially
             useful when you want to use your own particle definitions (see
-            :doc:`/usage/particles`).
+            :doc:`/usage/particle`).
 
         mass_conservation_factor: Width factor that is taken into account for
             for the `.MassConservation` rule.

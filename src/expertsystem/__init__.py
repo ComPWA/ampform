@@ -13,20 +13,21 @@ The `expertsystem` consists of three main components:
 
   `expertsystem.particle`
     ― a stand-alone submodule with which one can investigate specific quantum
-    properties of `.Particle` instances (see :doc:`/usage/particles`).
+    properties of `.Particle` instances (see :doc:`/usage/particle`).
 
   `expertsystem.reaction`
     ― the core of the `expertsystem` that computes which transitions
     (represented by a `.StateTransitionGraph`) are allowed between a certain
     initial and final state. Internally, the system propagates the quantum
     numbers defined by `particle` through the `.StateTransitionGraph`, while
-    satisfying the rules define by the :mod:`.conservation_rules` module.
+    satisfying the rules define by the :mod:`.conservation_rules` module. See
+    :doc:`/usage/reaction`.
 
   `expertsystem.amplitude`
     ― a collection of tools to convert the `.StateTransitionGraph` solutions
     found by `reaction` into an `.HelicityModel`. This module is specifically
     designed to create amplitude model templates for :doc:`PWA fitter packages
-    <pwa:software>`.
+    <pwa:software>`. See :doc:`/usage/amplitude`.
 
 Finally, the `.io` module provides tools that can read and write the objects of
 `particle`, `reaction`, and `amplitude`.
