@@ -129,6 +129,7 @@
         "evalf",
         "figsize",
         "flatte",
+        "fromdict",
         "gellmann",
         "genindex",
         "getsource",

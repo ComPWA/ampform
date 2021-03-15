@@ -107,6 +107,18 @@ NodeQuantumNumber = Union[
 ]
 
 
+def _to_optional_float(optional_float: Optional[float]) -> Optional[float]:
+    if optional_float is None:
+        return None
+    return float(optional_float)
+
+
+def _to_optional_int(optional_int: Optional[int]) -> Optional[int]:
+    if optional_int is None:
+        return None
+    return int(optional_int)
+
+
 @attr.s(frozen=True)
 class InteractionProperties:
     """Immutable data structure containing interaction properties.
@@ -115,10 +127,18 @@ class InteractionProperties:
         class serves as an interface to the user.
     """
 
-    l_magnitude: Optional[int] = attr.ib(
-        default=None
-    )  # L cannot be half integer
-    l_projection: Optional[int] = attr.ib(default=None)
-    s_magnitude: Optional[float] = attr.ib(default=None)
-    s_projection: Optional[float] = attr.ib(default=None)
-    parity_prefactor: Optional[float] = attr.ib(default=None)
+    l_magnitude: Optional[int] = attr.ib(  # L cannot be half integer
+        default=None, converter=_to_optional_int
+    )
+    l_projection: Optional[int] = attr.ib(
+        default=None, converter=_to_optional_int
+    )
+    s_magnitude: Optional[float] = attr.ib(
+        default=None, converter=_to_optional_float
+    )
+    s_projection: Optional[float] = attr.ib(
+        default=None, converter=_to_optional_float
+    )
+    parity_prefactor: Optional[float] = attr.ib(
+        default=None, converter=_to_optional_float
+    )

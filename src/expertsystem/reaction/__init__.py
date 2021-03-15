@@ -30,7 +30,6 @@ from typing import (
 import attr
 from tqdm.auto import tqdm
 
-from expertsystem import io
 from expertsystem.particle import Particle, ParticleCollection, load_pdg
 from expertsystem.reaction.conservation_rules import (
     BaryonNumberConservation,
@@ -72,7 +71,6 @@ from .combinatorics import (
     match_external_edges,
 )
 from .default_settings import (
-    DEFAULT_PARTICLE_LIST_PATH,
     InteractionTypes,
     create_default_interaction_settings,
 )
@@ -483,7 +481,7 @@ class StateTransitionManager:  # pylint: disable=too-many-instance-attributes
             )
 
         if reload_pdg or len(self.__particles) == 0:
-            self.__particles = load_default_particles()
+            self.__particles = load_pdg()
 
         self.__user_allowed_intermediate_particles = (
             allowed_intermediate_particles
@@ -990,7 +988,7 @@ def check_reaction_violations(
 
     initial_facts = create_initial_facts(
         topology=topology,
-        particles=load_default_particles(),
+        particles=load_pdg(),
         initial_state=initial_state,
         final_state=final_state,
     )
@@ -1057,21 +1055,6 @@ def check_reaction_violations(
     return violations
 
 
-def load_default_particles() -> ParticleCollection:
-    """Load the default particle list that comes with the `expertsystem`.
-
-    Runs `.load_pdg` and supplements its output definitions from the file
-    :download:`additional_definitions.yml
-    </../src/expertsystem/particle/additional_definitions.yml>`.
-    """
-    particles = load_pdg()
-    additional_particles = io.load(DEFAULT_PARTICLE_LIST_PATH)
-    assert isinstance(additional_particles, ParticleCollection)
-    particles.update(additional_particles)
-    logging.info(f"Loaded {len(particles)} particles!")
-    return particles
-
-
 def generate(  # pylint: disable=too-many-arguments
     initial_state: Union[StateDefinition, Sequence[StateDefinition]],
     final_state: Sequence[StateDefinition],
@@ -1112,10 +1095,10 @@ def generate(  # pylint: disable=too-many-arguments
             eventual `.HelicityModel`.
 
         particles (`.ParticleCollection`, optional): The particles that you
-            want to be involved in the reaction. Uses `.load_default_particles`
-            by default. It's better to use a subset for larger reactions,
-            because of the computation times. This argument is especially
-            useful when you want to use your own particle definitions (see
+            want to be involved in the reaction. Uses `.load_pdg` by default.
+            It's better to use a subset for larger reactions, because of
+            the computation times. This argument is especially useful when you
+            want to use your own particle definitions (see
             :doc:`/usage/particle`).
 
         mass_conservation_factor: Width factor that is taken into account for

@@ -14,7 +14,7 @@ import attr
 import yaml
 
 from expertsystem.particle import Particle, ParticleCollection
-from expertsystem.reaction.topology import StateTransitionGraph, Topology
+from expertsystem.reaction import Result, StateTransitionGraph, Topology
 
 from . import _dict, _dot
 
@@ -24,26 +24,29 @@ def asdict(instance: object) -> dict:
         return _dict.from_particle(instance)
     if isinstance(instance, ParticleCollection):
         return _dict.from_particle_collection(instance)
+    if isinstance(instance, Result):
+        return _dict.from_result(instance)
+    if isinstance(instance, StateTransitionGraph):
+        return _dict.from_stg(instance)
+    if isinstance(instance, Topology):
+        return _dict.from_topology(instance)
     raise NotImplementedError(
         f"No conversion for dict available for class {instance.__class__.__name__}"
     )
 
 
 def fromdict(definition: dict) -> object:
-    type_defined = __determine_type(definition)
-    if type_defined == Particle:
-        return _dict.build_particle(definition)
-    if type_defined == ParticleCollection:
-        return _dict.build_particle_collection(definition)
-    raise NotImplementedError
-
-
-def __determine_type(definition: dict) -> type:
     keys = set(definition.keys())
-    if keys == {"particles"}:
-        return ParticleCollection
     if __REQUIRED_PARTICLE_FIELDS <= keys:
-        return Particle
+        return _dict.build_particle(definition)
+    if keys == {"particles"}:
+        return _dict.build_particle_collection(definition)
+    if keys == {"transitions", "formalism_type"}:
+        return _dict.build_result(definition)
+    if keys == {"topology", "edge_props", "node_props"}:
+        return _dict.build_stg(definition)
+    if keys == __REQUIRED_TOPOLOGY_FIELDS:
+        return _dict.build_topology(definition)
     raise NotImplementedError(f"Could not determine type from keys {keys}")
 
 
@@ -51,6 +54,9 @@ __REQUIRED_PARTICLE_FIELDS = {
     field.name
     for field in attr.fields(Particle)
     if field.default == attr.NOTHING
+}
+__REQUIRED_TOPOLOGY_FIELDS = {
+    field.name for field in attr.fields(Topology) if field.init
 }
 
 

@@ -78,12 +78,22 @@ class FrozenDict(  # pylint: disable=too-many-ancestors
         return self.__mapping.values()
 
 
+def _to_optional_int(optional_int: Optional[int]) -> Optional[int]:
+    if optional_int is None:
+        return None
+    return int(optional_int)
+
+
 @attr.s(frozen=True)
 class Edge:
     """Struct-like definition of an edge, used in `Topology`."""
 
-    originating_node_id: Optional[int] = attr.ib(default=None)
-    ending_node_id: Optional[int] = attr.ib(default=None)
+    originating_node_id: Optional[int] = attr.ib(
+        default=None, converter=_to_optional_int
+    )
+    ending_node_id: Optional[int] = attr.ib(
+        default=None, converter=_to_optional_int
+    )
 
     def get_connected_nodes(self) -> Set[int]:
         connected_nodes = {self.ending_node_id, self.originating_node_id}
@@ -603,6 +613,23 @@ class StateTransitionGraph(Generic[EdgeType]):
     def __post_init__(self) -> None:
         _assert_over_defined(self.topology.nodes, self.__node_props)
         _assert_over_defined(self.topology.edges, self.__edge_props)
+
+    def __eq__(self, other: object) -> bool:
+        """Check if two `.StateTransitionGraph` instances are **identical**."""
+        if isinstance(other, StateTransitionGraph):
+            if self.topology != other.topology:
+                return False
+            for i in self.topology.edges:
+                if self.get_edge_props(i) != other.get_edge_props(i):
+                    return False
+            for i in self.topology.nodes:
+                if self.get_node_props(i) != other.get_node_props(i):
+                    return False
+            return True
+        raise NotImplementedError(
+            f"Cannot compare {self.__class__.__name__}"
+            f" with {other.__class__.__name__}"
+        )
 
     def get_node_props(self, node_id: int) -> InteractionProperties:
         return self.__node_props[node_id]

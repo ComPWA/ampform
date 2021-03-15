@@ -43,13 +43,29 @@ __all__ = [
     # Facade functions
     "generate_transitions",
     "check_reaction_violations",
+    "load_default_particles",
 ]
 
 
 from . import amplitude, io, particle, reaction
+from .reaction.default_settings import ADDITIONAL_PARTICLES_DEFINITIONS_PATH
 
 generate_transitions = reaction.generate
 """An alias to `.reaction.generate`."""
 
 check_reaction_violations = reaction.check_reaction_violations
 """An alias to `.reaction.check_reaction_violations`."""
+
+
+def load_default_particles() -> particle.ParticleCollection:
+    """Load the default particle list that comes with the `expertsystem`.
+
+    Runs `.load_pdg` and supplements its output definitions from the file
+    :download:`particle/additional_definitions.yml
+    </../src/expertsystem/particle/additional_definitions.yml>`.
+    """
+    particles = particle.load_pdg()
+    additional_particles = io.load(ADDITIONAL_PARTICLES_DEFINITIONS_PATH)
+    assert isinstance(additional_particles, particle.ParticleCollection)
+    particles.update(additional_particles)
+    return particles

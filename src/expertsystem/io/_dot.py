@@ -6,11 +6,12 @@ See :doc:`/usage/visualize` for more info.
 from typing import Callable, Iterable, Optional, Sequence, Union
 
 from expertsystem.particle import Particle, ParticleCollection
-from expertsystem.reaction.quantum_numbers import (
+from expertsystem.reaction import (
     InteractionProperties,
     ParticleWithSpin,
+    StateTransitionGraph,
+    Topology,
 )
-from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 _DOT_HEAD = """digraph {
     rankdir=LR;
