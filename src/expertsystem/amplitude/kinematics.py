@@ -66,7 +66,7 @@ class ReactionInfo:
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
 
-    The `.convert` method forms the bridge between four-momentum data for the
+    The `.transform` method forms the bridge between four-momentum data for the
     decay you are studying and the kinematic variables that are in the
     `.HelicityModel`. These are invariant mass and the :math:`\theta` and
     :math:`\phi` helicity angles.
@@ -122,7 +122,7 @@ class HelicityAdapter:
                 raise ValueError("Edge or node IDs of topology do not match")
         self.registered_topologies.add(topology)
 
-    def convert(self, events: EventCollection) -> DataSet:
+    def transform(self, events: EventCollection) -> DataSet:
         output: Dict[str, ScalarSequence] = dict()
         for topology in self.registered_topologies:
             output.update(_compute_helicity_angles(events, topology))
