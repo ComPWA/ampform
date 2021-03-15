@@ -3,7 +3,7 @@
 See :doc:`/usage/visualize` for more info.
 """
 
-from typing import Callable, Iterable, Optional, Sequence, Union
+from typing import Callable, Iterable, List, Optional, Sequence, Union
 
 from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction import (
@@ -29,10 +29,10 @@ def embed_dot(func: Callable) -> Callable:
     """Add a DOT head and tail to some DOT content."""
 
     def wrapper(*args, **kwargs):  # type: ignore
-        dot_source = _DOT_HEAD
-        dot_source += func(*args, **kwargs)
-        dot_source += _DOT_TAIL
-        return dot_source
+        dot = _DOT_HEAD
+        dot += func(*args, **kwargs)
+        dot += _DOT_TAIL
+        return dot
 
     return wrapper
 
@@ -42,16 +42,24 @@ def graph_list_to_dot(
     graphs: Sequence[StateTransitionGraph],
     render_edge_id: bool = True,
     render_node: bool = True,
+    strip_spin: bool = False,
+    collapse_graphs: bool = False,
 ) -> str:
-    dot_source = ""
+    if strip_spin and collapse_graphs:
+        raise ValueError("Cannot both strip spin and collapse graphs")
+    if collapse_graphs:
+        graphs = _collapse_graphs(graphs)
+    elif strip_spin:
+        graphs = _get_particle_graphs(graphs)
+    dot = ""
     for i, graph in enumerate(reversed(graphs)):
-        dot_source += __graph_to_dot_content(
+        dot += __graph_to_dot_content(
             graph,
             prefix=f"g{i}_",
             render_edge_id=render_edge_id,
             render_node=render_node,
         )
-    return dot_source
+    return dot
 
 
 @embed_dot
@@ -73,7 +81,7 @@ def __graph_to_dot_content(  # pylint: disable=too-many-locals,too-many-branches
     render_edge_id: bool = True,
     render_node: bool = True,
 ) -> str:
-    dot_source = ""
+    dot = ""
     if isinstance(graph, StateTransitionGraph):
         topology = graph.topology
     elif isinstance(graph, Topology):
@@ -83,20 +91,20 @@ def __graph_to_dot_content(  # pylint: disable=too-many-locals,too-many-branches
     top = topology.incoming_edge_ids
     outs = topology.outgoing_edge_ids
     for edge_id in top | outs:
-        dot_source += _DOT_DEFAULT_NODE.format(
+        dot += _DOT_DEFAULT_NODE.format(
             prefix + __node_name(edge_id),
             __get_edge_label(graph, edge_id, render_edge_id),
         )
-    dot_source += __rank_string(top, prefix)
-    dot_source += __rank_string(outs, prefix)
+    dot += __rank_string(top, prefix)
+    dot += __rank_string(outs, prefix)
     for i, edge in topology.edges.items():
         j, k = edge.ending_node_id, edge.originating_node_id
         if j is None or k is None:
-            dot_source += _DOT_DEFAULT_EDGE.format(
+            dot += _DOT_DEFAULT_EDGE.format(
                 prefix + __node_name(i, k), prefix + __node_name(i, j)
             )
         else:
-            dot_source += _DOT_LABEL_EDGE.format(
+            dot += _DOT_LABEL_EDGE.format(
                 prefix + __node_name(i, k),
                 prefix + __node_name(i, j),
                 __get_edge_label(graph, i, render_edge_id),
@@ -107,7 +115,7 @@ def __graph_to_dot_content(  # pylint: disable=too-many-locals,too-many-branches
             node_label = ""
             if render_node:
                 node_label = __node_label(node_prop)
-            dot_source += _DOT_DEFAULT_NODE.format(
+            dot += _DOT_DEFAULT_NODE.format(
                 f"{prefix}node{node_id}", node_label
             )
     if isinstance(graph, Topology):
@@ -116,10 +124,10 @@ def __graph_to_dot_content(  # pylint: disable=too-many-locals,too-many-branches
                 node_label = ""
                 if render_node:
                     node_label = f"({node_id})"
-                dot_source += _DOT_DEFAULT_NODE.format(
+                dot += _DOT_DEFAULT_NODE.format(
                     f"{prefix}node{node_id}", node_label
                 )
-    return dot_source
+    return dot
 
 
 def __node_name(edge_id: int, node_id: Optional[int] = None) -> str:
@@ -190,3 +198,117 @@ def __node_label(node_prop: Union[InteractionProperties]) -> str:
             output += f"P={node_prop.parity_prefactor}"
         return output
     raise NotImplementedError
+
+
+def _get_particle_graphs(
+    graphs: Iterable[StateTransitionGraph[ParticleWithSpin]],
+) -> List[StateTransitionGraph[Particle]]:
+    """Strip `list` of `.StateTransitionGraph` s of the spin projections.
+
+    Extract a `list` of `.StateTransitionGraph` instances with only
+    particles on the edges.
+
+    .. seealso:: :doc:`/usage/visualize`
+    """
+    inventory: List[StateTransitionGraph[Particle]] = list()
+    for transition in graphs:
+        if any(
+            transition.compare(
+                other, edge_comparator=lambda e1, e2: e1[0] == e2
+            )
+            for other in inventory
+        ):
+            continue
+        new_edge_props = dict()
+        for edge_id in transition.topology.edges:
+            edge_props = transition.get_edge_props(edge_id)
+            if edge_props:
+                new_edge_props[edge_id] = edge_props[0]
+        inventory.append(
+            StateTransitionGraph[Particle](
+                topology=transition.topology,
+                node_props={
+                    i: node_props
+                    for i, node_props in zip(
+                        transition.topology.nodes,
+                        map(
+                            transition.get_node_props,
+                            transition.topology.nodes,
+                        ),
+                    )
+                    if node_props
+                },
+                edge_props=new_edge_props,
+            )
+        )
+    inventory = sorted(
+        inventory,
+        key=lambda g: [
+            g.get_edge_props(i).mass for i in g.topology.intermediate_edge_ids
+        ],
+    )
+    return inventory
+
+
+def _collapse_graphs(
+    graphs: Iterable[StateTransitionGraph[ParticleWithSpin]],
+) -> List[StateTransitionGraph[ParticleCollection]]:
+    def merge_into(
+        graph: StateTransitionGraph[Particle],
+        merged_graph: StateTransitionGraph[ParticleCollection],
+    ) -> None:
+        if (
+            graph.topology.intermediate_edge_ids
+            != merged_graph.topology.intermediate_edge_ids
+        ):
+            raise ValueError(
+                "Cannot merge graphs that don't have the same edge IDs"
+            )
+        for i in graph.topology.edges:
+            particle = graph.get_edge_props(i)
+            other_particles = merged_graph.get_edge_props(i)
+            if particle not in other_particles:
+                other_particles += particle
+
+    def is_same_shape(
+        graph: StateTransitionGraph[Particle],
+        merged_graph: StateTransitionGraph[ParticleCollection],
+    ) -> bool:
+        if graph.topology.edges != merged_graph.topology.edges:
+            return False
+        for edge_id in (
+            graph.topology.incoming_edge_ids | graph.topology.outgoing_edge_ids
+        ):
+            edge_prop = merged_graph.get_edge_props(edge_id)
+            if len(edge_prop) != 1:
+                return False
+            other_particle = next(iter(edge_prop))
+            if other_particle != graph.get_edge_props(edge_id):
+                return False
+        return True
+
+    particle_graphs = _get_particle_graphs(graphs)
+    inventory: List[StateTransitionGraph[ParticleCollection]] = list()
+    for graph in particle_graphs:
+        append_to_inventory = True
+        for merged_graph in inventory:
+            if is_same_shape(graph, merged_graph):
+                merge_into(graph, merged_graph)
+                append_to_inventory = False
+                break
+        if append_to_inventory:
+            new_edge_props = {
+                edge_id: ParticleCollection({graph.get_edge_props(edge_id)})
+                for edge_id in graph.topology.edges
+            }
+            inventory.append(
+                StateTransitionGraph[ParticleCollection](
+                    topology=graph.topology,
+                    node_props={
+                        i: graph.get_node_props(i)
+                        for i in graph.topology.nodes
+                    },
+                    edge_props=new_edge_props,
+                )
+            )
+    return inventory

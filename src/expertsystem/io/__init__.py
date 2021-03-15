@@ -64,6 +64,8 @@ def asdot(
     instance: object,
     render_edge_id: bool = True,
     render_node: bool = True,
+    strip_spin: bool = False,
+    collapse_graphs: bool = False,
 ) -> str:
     """Convert a `object` to a DOT language `str`.
 
@@ -78,11 +80,15 @@ def asdot(
             render_edge_id=render_edge_id,
             render_node=render_node,
         )
-    if isinstance(instance, abc.Sequence):
+    if isinstance(instance, (Result, abc.Sequence)):
+        if isinstance(instance, Result):
+            instance = instance.transitions
         return _dot.graph_list_to_dot(
             instance,
             render_edge_id=render_edge_id,
             render_node=render_node,
+            strip_spin=strip_spin,
+            collapse_graphs=collapse_graphs,
         )
     raise NotImplementedError(
         f"Cannot convert a {instance.__class__.__name__} to DOT language"
@@ -131,7 +137,10 @@ def write(instance: object, filename: str) -> None:
             )
             return
         if file_extension == "gv":
-            output_str = asdot(instance)
+            if isinstance(instance, str):  # direct output of asdot
+                output_str = instance
+            else:
+                output_str = asdot(instance)
             with open(filename, "w") as stream:
                 stream.write(output_str)
             return
