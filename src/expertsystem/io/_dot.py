@@ -158,7 +158,9 @@ def __get_edge_label(
             return f"{edge_id}:\n{edge_label}"
         return f"{edge_id}: {edge_label}"
     if isinstance(graph, Topology):
-        return str(edge_id)
+        if render_edge_id:
+            return str(edge_id)
+        return ""
     raise NotImplementedError
 
 
