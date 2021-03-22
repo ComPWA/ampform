@@ -12,6 +12,14 @@ def main() -> None:
     install_requires = install_requires[1:]  # remove first line (empty)
     with open(f"{script_dir}/requirements.in", "w") as stream:
         stream.write(install_requires)
+    extras_require = "\n".join(
+        cfg.get("options.extras_require", str(section), raw=False)
+        for section in cfg["options.extras_require"]
+    )
+    extras_require = f"-r requirements.in\n{extras_require}"
+    extras_require = extras_require.replace("\n\n", "\n")
+    with open(f"{script_dir}/requirements-extras.in", "w") as stream:
+        stream.write(extras_require)
 
 
 if __name__ == "__main__":

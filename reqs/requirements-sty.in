@@ -1,4 +1,4 @@
--r requirements.in
+-r requirements-extras.in
 -r requirements-test.in  # for pytest type hints
 
 pre-commit >= 1.4.0

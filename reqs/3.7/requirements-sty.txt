@@ -23,6 +23,7 @@ flake8-polyfill==1.0.2
 flake8-rst-docstrings==0.0.14
 flake8==3.9.0
 gprof2dot==2021.2.21
+graphviz==0.16
 hepunits==2.1.0
 identify==2.2.0
 importlib-metadata==3.7.3
