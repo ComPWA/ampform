@@ -20,5 +20,5 @@ def test_generate(
     else:
         raise NotImplementedError
     sympy_model = get_builder(result).generate()
-    assert len(sympy_model.parameters) == 2
+    assert len(sympy_model.parameter_defaults) == 2
     assert len(sympy_model.components) == 4 + n_amplitudes

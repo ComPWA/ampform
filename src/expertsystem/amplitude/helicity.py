@@ -111,10 +111,10 @@ class HelicityModel:
     _expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameters: Dict[sp.Symbol, ParameterValue] = attr.ib(
+    _parameter_defaults: Dict[sp.Symbol, ParameterValue] = attr.ib(
         validator=attr.validators.instance_of(dict)
     )
-    components: Dict[str, sp.Expr] = attr.ib(
+    _components: Dict[str, sp.Expr] = attr.ib(
         validator=attr.validators.instance_of(dict)
     )
     _adapter: HelicityAdapter = attr.ib(
@@ -129,8 +129,12 @@ class HelicityModel:
         return self._expression
 
     @property
-    def parameters(self) -> Dict[str, ParameterValue]:
-        return self._parameters
+    def components(self) -> Dict[str, sp.Expr]:
+        return self._components
+
+    @property
+    def parameter_defaults(self) -> Dict[sp.Symbol, ParameterValue]:
+        return self._parameter_defaults
 
     @property
     def adapter(self) -> HelicityAdapter:
@@ -457,7 +461,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(self, reaction_result: Result) -> None:
         self.name_generator = _HelicityAmplitudeNameGenerator()
         self.__graphs = reaction_result.transitions
-        self.__parameters: Dict[sp.Symbol, ParameterValue] = dict()
+        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = dict()
         self.__components: Dict[str, sp.Expr] = dict()
         self.__dynamics_choices: Dict[
             _TwoBodyDecay, ResonanceDynamicsBuilder
@@ -488,11 +492,11 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def generate(self) -> HelicityModel:
         self.__components = dict()
-        self.__parameters = dict()
+        self.__parameter_defaults = dict()
         return HelicityModel(
             expression=self.__generate_intensity(),
             components=self.__components,
-            parameters=self.__parameters,
+            parameter_defaults=self.__parameter_defaults,
             adapter=self.__adapter,
             particles=self.__particles,
         )
@@ -522,14 +526,14 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 decay.parent.state.particle, variable_set
             )
             for par, value in parameters.items():
-                if par in self.__parameters:
-                    previous_value = self.__parameters[par]
+                if par in self.__parameter_defaults:
+                    previous_value = self.__parameter_defaults[par]
                     if value != previous_value:
                         logging.warning(
                             f"Default value for parameter {par.name}"
                             f" inconsistent {value} and {previous_value}"
                         )
-                self.__parameters[par] = value
+                self.__parameter_defaults[par] = value
 
             return expression
 
@@ -617,7 +621,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             graph
         )
         coefficient_symbol = sp.Symbol(f"C[{suffix}]")
-        self.__parameters[coefficient_symbol] = complex(1, 0)
+        self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
         return coefficient_symbol
 
     def __generate_amplitude_prefactor(

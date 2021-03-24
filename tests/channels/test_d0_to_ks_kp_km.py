@@ -22,4 +22,4 @@ def test_script():
     }
     model_builder = es.amplitude.get_builder(result)
     model = model_builder.generate()
-    assert len(model.parameters) == 5
+    assert len(model.parameter_defaults) == 5

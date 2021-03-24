@@ -131,4 +131,4 @@ def test_parity_amplitude_coupling(
 
     model_builder = es.amplitude.get_builder(result)
     amplitude_model = model_builder.generate()
-    assert len(amplitude_model.parameters) == parameter_count
+    assert len(amplitude_model.parameter_defaults) == parameter_count

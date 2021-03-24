@@ -23,7 +23,7 @@ def test_simple(formalism_type, n_solutions, particle_database):
     assert len(result.transitions) == n_solutions
     model_builder = es.amplitude.get_builder(result)
     model = model_builder.generate()
-    assert len(model.parameters) == 4
+    assert len(model.parameter_defaults) == 4
 
 
 @pytest.mark.slow
@@ -50,4 +50,4 @@ def test_full(formalism_type, n_solutions, particle_database):
     assert len(result.transitions) == n_solutions
     model_builder = es.amplitude.get_builder(result)
     model = model_builder.generate()
-    assert len(model.parameters) == 4
+    assert len(model.parameter_defaults) == 4
