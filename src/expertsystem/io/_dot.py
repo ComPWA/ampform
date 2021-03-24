@@ -170,14 +170,11 @@ def __edge_label(
     if isinstance(edge_prop, Particle):
         return edge_prop.name
     if isinstance(edge_prop, tuple):
-        particle, projection = edge_prop
-        spin_projection = float(projection)
+        particle, spin_projection = edge_prop
+        spin_projection = float(spin_projection)
         if spin_projection.is_integer():
             spin_projection = int(spin_projection)
-        label = particle.name
-        if spin_projection is not None:
-            label += f"[{projection}]"
-        return label
+        return f"{particle.name}[{spin_projection}]"
     if isinstance(edge_prop, ParticleCollection):
         return "\n".join(sorted(edge_prop.names))
     raise NotImplementedError
