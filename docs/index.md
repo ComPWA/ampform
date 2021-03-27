@@ -102,6 +102,7 @@ install
 usage
 references
 API <api/expertsystem>
+Changelog <https://github.com/ComPWA/expertsystem/releases>
 Develop <https://pwa.readthedocs.io/develop.html>
 ```
 

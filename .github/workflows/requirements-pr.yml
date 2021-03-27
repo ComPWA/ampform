@@ -45,7 +45,8 @@ jobs:
         if: steps.git-diff.outputs.dependency-changes != ''
         run: |
           python -m pip install --upgrade pip
-          pip install pip-tools
+          pip install pip-tools!=6.0.0
+        # https://github.com/jazzband/pip-tools/pull/1353
       - name: Upgrade dependencies
         if: steps.git-diff.outputs.dependency-changes != ''
         run: bash reqs/upgrade.sh
