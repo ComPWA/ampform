@@ -29,6 +29,11 @@ jobs:
           pip install .
       - name: Test with pytest-cov
         run: pytest -n auto --cov=expertsystem --cov-report=xml
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test_output_${{ matrix.os }}_${{ matrix.python-version }}
+          path: tests/output
       - uses: codecov/codecov-action@v1
         with:
           file: ./coverage.xml
@@ -65,6 +70,11 @@ jobs:
           pip install .
       - name: Test with pytest
         run: pytest -n auto
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test_output_${{ matrix.os }}_${{ matrix.python-version }}
+          path: tests/output
 
   documentation:
     name: Build documentation and run notebooks
