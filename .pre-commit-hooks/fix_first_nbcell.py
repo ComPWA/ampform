@@ -27,9 +27,15 @@ EXPECTED_CELL_CONTENT = f"""
 %config InlineBackend.figure_formats = ['svg']
 
 # Install on Google Colab
-import sys  # noqa: F401
+import subprocess
+import sys
 
-!{{sys.executable}} -m pip freeze | grep {PACKAGE_NAME} || {{sys.executable}} -m pip install {PACKAGE_NAME}
+install_packages = "google.colab" in str(get_ipython())
+if install_packages:
+    for package in ["{PACKAGE_NAME}", "graphviz"]:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", package]
+        )
 """
 
 EXPECTED_CELL_METADATA = {
@@ -60,11 +66,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument("filenames", nargs="*", help="Filenames to check.")
     parser.add_argument(
-        "--additional_packages",
-        type=str,
-        help="Additional packages to be installed through the first notebook cell",
-    )
-    parser.add_argument(
         "--replace",
         action="store_true",
         help="Replace first cell instead of prepending a new cell.",
@@ -72,10 +73,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     expected_cell_content = EXPECTED_CELL_CONTENT.strip("\n")
-    for package in args.additional_packages.split(","):
-        # pylint: disable=line-too-long
-        expected_cell_content += f"\n!{{sys.executable}} -m pip freeze | grep {package} || {{sys.executable}} -m pip install {package}"
-
     exit_code = 0
     for filename in args.filenames:
         fix_first_cell(
