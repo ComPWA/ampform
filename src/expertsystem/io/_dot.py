@@ -3,6 +3,7 @@
 See :doc:`/usage/visualize` for more info.
 """
 
+from fractions import Fraction
 from typing import Callable, Iterable, List, Optional, Sequence, Union
 
 from expertsystem.particle import Particle, ParticleCollection
@@ -171,10 +172,8 @@ def __edge_label(
         return edge_prop.name
     if isinstance(edge_prop, tuple):
         particle, spin_projection = edge_prop
-        spin_projection = float(spin_projection)
-        if spin_projection.is_integer():
-            spin_projection = int(spin_projection)
-        return f"{particle.name}[{spin_projection}]"
+        projection_label = _to_fraction(spin_projection, render_plus=True)
+        return f"{particle.name}[{projection_label}]"
     if isinstance(edge_prop, ParticleCollection):
         return "\n".join(sorted(edge_prop.names))
     raise NotImplementedError
@@ -184,17 +183,24 @@ def __node_label(node_prop: Union[InteractionProperties]) -> str:
     if isinstance(node_prop, InteractionProperties):
         output = ""
         if node_prop.l_magnitude is not None:
-            l_label = str(node_prop.l_magnitude)
-            if node_prop.l_projection is not None:
-                l_label = f"{(node_prop.l_magnitude, node_prop.l_projection)}"
+            l_magnitude = _to_fraction(node_prop.l_magnitude)
+            if node_prop.l_projection is None:
+                l_label = l_magnitude
+            else:
+                l_projection = _to_fraction(node_prop.l_projection)
+                l_label = f"({l_magnitude}, {l_projection})"
             output += f"l={l_label}\n"
         if node_prop.s_magnitude is not None:
-            s_label = str(node_prop.s_magnitude)
-            if node_prop.s_projection is not None:
-                s_label = f"{(node_prop.s_magnitude, node_prop.s_projection)}"
+            s_magnitude = _to_fraction(node_prop.s_magnitude)
+            if node_prop.s_projection is None:
+                s_label = s_magnitude
+            else:
+                s_projection = _to_fraction(node_prop.s_projection)
+                s_label = f"({s_magnitude}, {s_projection})"
             output += f"s={s_label}\n"
         if node_prop.parity_prefactor is not None:
-            output += f"P={node_prop.parity_prefactor}"
+            label = _to_fraction(node_prop.parity_prefactor, render_plus=True)
+            output += f"P={label}"
         return output
     raise NotImplementedError
 
@@ -311,3 +317,10 @@ def _collapse_graphs(
                 )
             )
     return inventory
+
+
+def _to_fraction(value: Union[float, int], render_plus: bool = False) -> str:
+    label = str(Fraction(value))
+    if render_plus and value > 0:
+        return f"+{label}"
+    return label
