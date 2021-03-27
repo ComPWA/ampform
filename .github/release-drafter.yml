@@ -15,13 +15,23 @@ categories:
   - title: 🖱️ Developer Experience
     label: 🖱️ DX
 
-change-template: "- $TITLE (#$NUMBER)"
+change-template: |
+  <details>
+  <summary>$TITLE (#$NUMBER)</summary>
+
+  $BODY
+
+  </details>
+
+replacers:
+  - search: /<summary>([a-z]+:\s*)(.*)</summary>/g
+    replace: <summary>$2</summary>
+
 sort-direction: ascending
+
 template: |
   # Release $NEXT_PATCH_VERSION
 
+  See all documentation for this version [here](https://expertsystem.rtfd.io/en/$NEXT_PATCH_VERSION).
+
   $CHANGES
-
-  ## Contributors since [$PREVIOUS_TAG](https://github.com/ComPWA/expertsystem/releases/tag/$PREVIOUS_TAG)
-
-  $CONTRIBUTORS
