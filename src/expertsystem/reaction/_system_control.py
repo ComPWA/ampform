@@ -41,7 +41,7 @@ def create_edge_properties(
     }  # Note using attr.fields does not work here because init=False
     property_map: GraphEdgePropertyMap = {}
     isospin = None
-    for qn_name, value in attr.asdict(particle).items():
+    for qn_name, value in attr.asdict(particle, recurse=False).items():
         if isinstance(value, Parity):
             value = value.value
         if qn_name in edge_qn_mapping:

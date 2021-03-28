@@ -24,29 +24,33 @@ from typing import (
     Iterator,
     Optional,
     Set,
+    SupportsFloat,
     Tuple,
     Union,
 )
 
 import attr
+from attr.validators import instance_of
 from particle import Particle as PdgDatabase
 from particle.particle import enums
 
 
 @total_ordering
-class Parity(abc.Hashable):
-    """Safe, immutable data container for parity."""
+@attr.s(frozen=True, repr=False, eq=False, hash=True)
+class Parity:
+    value: int = attr.ib(validator=instance_of(int))
 
-    def __init__(self, value: Union[float, int, str]) -> None:
-        value = float(value)
-        if value not in [-1.0, +1.0]:
+    @value.validator
+    def __check_plusminus(  # type: ignore  # pylint: disable=no-self-use,unused-argument
+        self, _: attr.Attribute, value: int
+    ) -> None:
+        if value not in [-1, +1]:
             raise ValueError(f"Parity can only be +1 or -1, not {value}")
-        self.__value: int = int(value)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Parity):
-            return self.__value == other.value
-        return self.__value == other
+            return self.value == other.value
+        return self.value == other
 
     def __gt__(self, other: Any) -> bool:
         return self.value > int(other)
@@ -57,78 +61,61 @@ class Parity(abc.Hashable):
     def __neg__(self) -> "Parity":
         return Parity(-self.value)
 
-    def __hash__(self) -> int:
-        return self.__value
-
     def __repr__(self) -> str:
-        return (
-            f'{self.__class__.__name__}({"+1" if self.__value > 0 else "-1"})'
-        )
-
-    @property
-    def value(self) -> int:
-        return self.__value
+        return f'{self.__class__.__name__}({"+1" if self.value > 0 else "-1"})'
 
 
-class Spin(abc.Hashable):
+def _to_float(value: SupportsFloat) -> float:
+    float_value = float(value)
+    if float_value == -0.0:
+        float_value = 0.0
+    return float_value
+
+
+@attr.s(frozen=True, eq=False, hash=True)
+class Spin:
     """Safe, immutable data container for spin **with projection**."""
 
-    def __init__(self, magnitude: float, projection: float) -> None:
-        magnitude = float(magnitude)
-        projection = float(projection)
-        if magnitude % 0.5 != 0.0:
+    magnitude: float = attr.ib(converter=_to_float)
+    projection: float = attr.ib(converter=_to_float)
+
+    def __attrs_post_init__(self) -> None:
+        if self.magnitude % 0.5 != 0.0:
             raise ValueError(
-                f"Spin magnitude {magnitude} has to be a multitude of 0.5"
+                f"Spin magnitude {self.magnitude} has to be a multitude of 0.5"
             )
-        if abs(projection) > magnitude:
-            if magnitude < 0.0:
+        if abs(self.projection) > self.magnitude:
+            if self.magnitude < 0.0:
                 raise ValueError(
-                    "Spin magnitude has to be positive:\n" f" {magnitude}"
+                    "Spin magnitude has to be positive:\n" f" {self.magnitude}"
                 )
             raise ValueError(
                 "Absolute value of spin projection cannot be larger than its "
                 "magnitude:\n"
-                f" abs({projection}) > {magnitude}"
+                f" abs({self.projection}) > {self.magnitude}"
             )
-        if not (projection - magnitude).is_integer():
+        if not (self.projection - self.magnitude).is_integer():
             raise ValueError(
-                f"{self.__class__.__name__}{(magnitude, projection)}: "
+                f"{self.__class__.__name__}{(self.magnitude, self.projection)}: "
                 "(projection - magnitude) should be integer! "
             )
-        if projection == -0.0:
-            projection = 0.0
-        self.__magnitude = magnitude
-        self.__projection = projection
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Spin):
             return (
-                self.__magnitude == other.magnitude
-                and self.__projection == other.projection
+                self.magnitude == other.magnitude
+                and self.projection == other.projection
             )
-        return self.__magnitude == other
+        return self.magnitude == other
 
     def __float__(self) -> float:
-        return self.__magnitude
+        return self.magnitude
 
     def __neg__(self) -> "Spin":
         return Spin(self.magnitude, -self.projection)
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}{(self.__magnitude, self.__projection)}"
-        )
-
-    @property
-    def magnitude(self) -> float:
-        return self.__magnitude
-
-    @property
-    def projection(self) -> float:
-        return self.__projection
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
+        return f"{self.__class__.__name__}{(self.magnitude, self.projection)}"
 
 
 @attr.s(frozen=True, repr=True, kw_only=True)
@@ -679,4 +666,4 @@ def __create_parity(parity_enum: enums.Parity) -> Optional[Parity]:
         return None
     if parity_enum == getattr(parity_enum, "o", None):  # particle < 0.14
         return None
-    return Parity(parity_enum)
+    return Parity(int(parity_enum))
