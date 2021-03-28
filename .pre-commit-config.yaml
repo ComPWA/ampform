@@ -28,6 +28,11 @@ repos:
         args: ["--django"]
       - id: trailing-whitespace
 
+  - repo: https://github.com/ComPWA/mirrors-cspell
+    rev: v5.3.9
+    hooks:
+      - id: cspell
+
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.27.1
     hooks:

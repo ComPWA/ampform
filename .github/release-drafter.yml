@@ -24,7 +24,7 @@ change-template: |
   </details>
 
 replacers:
-  - search: /<summary>([a-z]+:\s*)(.*)</summary>/g
+  - search: /<summary>([a-z]+!?:\s*)(.*)</summary>/g
     replace: <summary>$2</summary>
 
 sort-direction: ascending
