@@ -155,7 +155,7 @@ class TestParticle:
                 width=0.1,
                 spin=1,
                 charge=0,
-                isospin=Spin(1, 0),
+                isospin=(1, 0),
             )
             test_state.charge = 1  # type: ignore
         with pytest.raises(ValueError):
@@ -165,10 +165,10 @@ class TestParticle:
                 mass=0.0,
                 spin=1,
                 charge=0,
-                parity=Parity(-1),
-                c_parity=Parity(-1),
-                g_parity=Parity(-1),
-                isospin=Spin(0.0, 0.0),
+                parity=-1,
+                c_parity=-1,
+                g_parity=-1,
+                isospin=(0, 0),
                 charmness=1,
             )
 
@@ -180,7 +180,7 @@ class TestParticle:
             mass=1.2,
             spin=1,
             charge=0,
-            isospin=Spin(1, 0),
+            isospin=(1, 0),
         )
         assert particle != Particle(
             name="MyParticle", pid=123, mass=1.5, width=0.2, spin=1
@@ -195,7 +195,7 @@ class TestParticle:
             mass=1.2,
             spin=1,
             charge=0,
-            isospin=Spin(1, 0),
+            isospin=(1, 0),
         )
         assert particle == different_labels
         assert hash(particle) == hash(different_labels)
@@ -272,7 +272,7 @@ class TestParticleCollection:
     @staticmethod
     def test_exceptions(particle_database: ParticleCollection):
         gamma = particle_database["gamma"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             particle_database += create_particle(gamma, name="gamma_new")
         with pytest.raises(NotImplementedError):
             particle_database.find(3.14)  # type: ignore

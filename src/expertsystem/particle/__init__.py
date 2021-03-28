@@ -30,6 +30,7 @@ from typing import (
 )
 
 import attr
+from attr.converters import optional
 from attr.validators import instance_of
 from particle import Particle as PdgDatabase
 from particle.particle import enums
@@ -118,6 +119,16 @@ class Spin:
         return f"{self.__class__.__name__}{(self.magnitude, self.projection)}"
 
 
+def _to_parity(value: Union[Parity, int]) -> Parity:
+    return Parity(int(value))
+
+
+def _to_spin(value: Union[Spin, Tuple[float, float]]) -> Spin:
+    if isinstance(value, tuple):
+        return Spin(*value)
+    return value
+
+
 @attr.s(frozen=True, repr=True, kw_only=True)
 class Particle:  # pylint: disable=too-many-instance-attributes
     """Immutable container of data defining a physical particle.
@@ -143,22 +154,32 @@ class Particle:  # pylint: disable=too-many-instance-attributes
     pid: int = attr.ib(eq=False)
     latex: Optional[str] = attr.ib(eq=False, default=None)
     # Unique properties
-    spin: float = attr.ib()
-    mass: float = attr.ib()
-    width: float = attr.ib(default=0.0)
+    spin: float = attr.ib(converter=float)
+    mass: float = attr.ib(converter=float)
+    width: float = attr.ib(converter=float, default=0.0)
     charge: int = attr.ib(default=0)
-    isospin: Optional[Spin] = attr.ib(default=None)
-    strangeness: int = attr.ib(default=0)
-    charmness: int = attr.ib(default=0)
-    bottomness: int = attr.ib(default=0)
-    topness: int = attr.ib(default=0)
-    baryon_number: int = attr.ib(default=0)
-    electron_lepton_number: int = attr.ib(default=0)
-    muon_lepton_number: int = attr.ib(default=0)
-    tau_lepton_number: int = attr.ib(default=0)
-    parity: Optional[Parity] = attr.ib(default=None)
-    c_parity: Optional[Parity] = attr.ib(default=None)
-    g_parity: Optional[Parity] = attr.ib(default=None)
+    isospin: Optional[Spin] = attr.ib(
+        converter=optional(_to_spin), default=None
+    )
+    strangeness: int = attr.ib(default=0, validator=instance_of(int))
+    charmness: int = attr.ib(default=0, validator=instance_of(int))
+    bottomness: int = attr.ib(default=0, validator=instance_of(int))
+    topness: int = attr.ib(default=0, validator=instance_of(int))
+    baryon_number: int = attr.ib(default=0, validator=instance_of(int))
+    electron_lepton_number: int = attr.ib(
+        default=0, validator=instance_of(int)
+    )
+    muon_lepton_number: int = attr.ib(default=0, validator=instance_of(int))
+    tau_lepton_number: int = attr.ib(default=0, validator=instance_of(int))
+    parity: Optional[Parity] = attr.ib(
+        converter=optional(_to_parity), default=None
+    )
+    c_parity: Optional[Parity] = attr.ib(
+        converter=optional(_to_parity), default=None
+    )
+    g_parity: Optional[Parity] = attr.ib(
+        converter=optional(_to_parity), default=None
+    )
 
     @isospin.validator
     def __check_gellmann_nishijima(self, attribute, value) -> None:  # type: ignore  # pylint: disable=unused-argument
@@ -319,11 +340,9 @@ class ParticleCollection(abc.MutableSet):
         if value in self.__particles.values():
             equivalent_particles = {p for p in self if p == value}
             equivalent_particle = next(iter(equivalent_particles))
-            raise KeyError(
-                "While trying to add particle:",
-                value,
-                "An equivalent definition already exists:",
-                equivalent_particle,
+            raise ValueError(
+                f'Added particle "{value.name}" is equivalent to '
+                f'existing particle "{equivalent_particle.name}"',
             )
         if value.name in self.__particles:
             logging.warning(f'Overwriting particle with name "{value.name}"')
