@@ -14,6 +14,7 @@ and final state.
 import logging
 import re
 from collections import abc
+from difflib import get_close_matches
 from fractions import Fraction
 from functools import total_ordering
 from math import copysign
@@ -329,18 +330,19 @@ class ParticleCollection(abc.MutableSet):
         if particle_name in self.__particles:
             return self.__particles[particle_name]
         error_message = (
-            f'No particle with name "{particle_name} in the database"'
+            f"No particle with name '{particle_name}' in the database"
         )
-        candidates = self.filter(lambda p: particle_name in p.name)
-        if candidates:
-            sorted_by_mass = sorted(
-                (p for p in candidates), key=lambda p: p.mass
-            )
-            raise KeyError(
-                error_message,
-                "Did you mean one of these?",
-                [p.name for p in sorted_by_mass],
-            )
+        candidates = [
+            p.name
+            for p in sorted(self, key=lambda p: p.mass)
+            if p.name.startswith(particle_name)
+        ]
+        if not candidates:
+            candidates = get_close_matches(particle_name, self.names, n=5)
+        if len(candidates) == 1:
+            error_message += f". Did you mean '{candidates[0]}'?"
+        elif len(candidates) > 1:
+            error_message += f". Did you mean one of these? {candidates}"
         raise KeyError(error_message)
 
     def __iter__(self) -> Iterator[Particle]:

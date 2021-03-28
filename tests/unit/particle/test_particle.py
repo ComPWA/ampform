@@ -228,74 +228,12 @@ class TestParticleCollection:
             assert particle_database == 0
 
     @staticmethod
-    def test_find(particle_database: ParticleCollection):
-        f2_1950 = particle_database.find(9050225)
-        assert f2_1950.name == "f(2)(1950)"
-        assert f2_1950.mass == 1.936
-        phi = particle_database.find("phi(1020)")
-        assert phi.pid == 333
-        assert pytest.approx(phi.width) == 0.004249
-
-    @pytest.mark.parametrize("search_term", [666, "non-existing"])
-    def test_find_fail(
-        self, particle_database: ParticleCollection, search_term
-    ):
-        with pytest.raises(LookupError):
-            particle_database.find(search_term)
-
-    @staticmethod
-    def test_filter(particle_database: ParticleCollection):
-        search_result = particle_database.filter(lambda p: "f(0)" in p.name)
-        f0_1500_from_subset = search_result["f(0)(1500)"]
-        assert len(search_result) == 5
-        assert f0_1500_from_subset.mass == 1.506
-        assert f0_1500_from_subset is particle_database["f(0)(1500)"]
-        assert f0_1500_from_subset is not particle_database["f(0)(980)"]
-
-        search_result = particle_database.filter(lambda p: p.pid == 22)
-        gamma_from_subset = search_result["gamma"]
-        assert len(search_result) == 1
-        assert gamma_from_subset.pid == 22
-        assert gamma_from_subset is particle_database["gamma"]
-        filtered_result = particle_database.filter(
-            lambda p: p.mass > 1.8
-            and p.mass < 2.0
-            and p.spin == 2
-            and p.strangeness == 1
-        )
-        assert filtered_result.names == {
-            "K(2)(1820)0",
-            "K(2)(1820)+",
-        }
-
-    @staticmethod
     def test_repr(particle_database: ParticleCollection):
         instance = particle_database
         from_repr = eval(repr(instance))
         assert from_repr == instance
         from_repr = eval(pretty(instance))
         assert from_repr == instance
-
-    @staticmethod
-    def test_exceptions(particle_database: ParticleCollection):
-        gamma = particle_database["gamma"]
-        with pytest.raises(ValueError):
-            particle_database += create_particle(gamma, name="gamma_new")
-        with pytest.raises(NotImplementedError):
-            particle_database.find(3.14)  # type: ignore
-        with pytest.raises(NotImplementedError):
-            particle_database += 3.14  # type: ignore
-        with pytest.raises(NotImplementedError):
-            assert 3.14 in particle_database
-        with pytest.raises(AssertionError):
-            assert gamma == "gamma"
-
-    @pytest.mark.parametrize("name", ["gamma", "pi0", "K+"])
-    def test_contains(self, name: str, particle_database: ParticleCollection):
-        assert name in particle_database
-        particle = particle_database[name]
-        assert particle in particle_database
-        assert particle.pid in particle_database
 
     def test_add(self, particle_database: ParticleCollection):
         subset_copy = particle_database.filter(
@@ -329,6 +267,13 @@ class TestParticleCollection:
             pions.add(create_particle(pi_plus, width=1.0))
         assert "pi+" in caplog.text
 
+    @pytest.mark.parametrize("name", ["gamma", "pi0", "K+"])
+    def test_contains(self, name: str, particle_database: ParticleCollection):
+        assert name in particle_database
+        particle = particle_database[name]
+        assert particle in particle_database
+        assert particle.pid in particle_database
+
     def test_discard(self, particle_database: ParticleCollection):
         pions = particle_database.filter(lambda p: p.name.startswith("pi"))
         n_pions = len(pions)
@@ -349,16 +294,81 @@ class TestParticleCollection:
             pions.discard(111)  # type: ignore
 
     @staticmethod
-    def test_key_error(particle_database: ParticleCollection):
-        try:
-            assert particle_database["omega"]
-        except LookupError as error:
-            assert error.args[-1] == [
-                "omega(782)",
-                "omega(1420)",
-                "omega(3)(1670)",
-                "omega(1650)",
-            ]
+    def test_filter(particle_database: ParticleCollection):
+        search_result = particle_database.filter(lambda p: "f(0)" in p.name)
+        f0_1500_from_subset = search_result["f(0)(1500)"]
+        assert len(search_result) == 5
+        assert f0_1500_from_subset.mass == 1.506
+        assert f0_1500_from_subset is particle_database["f(0)(1500)"]
+        assert f0_1500_from_subset is not particle_database["f(0)(980)"]
+
+        search_result = particle_database.filter(lambda p: p.pid == 22)
+        gamma_from_subset = search_result["gamma"]
+        assert len(search_result) == 1
+        assert gamma_from_subset.pid == 22
+        assert gamma_from_subset is particle_database["gamma"]
+        filtered_result = particle_database.filter(
+            lambda p: p.mass > 1.8
+            and p.mass < 2.0
+            and p.spin == 2
+            and p.strangeness == 1
+        )
+        assert filtered_result.names == {
+            "K(2)(1820)0",
+            "K(2)(1820)+",
+        }
+
+    @staticmethod
+    def test_find(particle_database: ParticleCollection):
+        f2_1950 = particle_database.find(9050225)
+        assert f2_1950.name == "f(2)(1950)"
+        assert f2_1950.mass == 1.936
+        phi = particle_database.find("phi(1020)")
+        assert phi.pid == 333
+        assert pytest.approx(phi.width) == 0.004249
+
+    @pytest.mark.parametrize(
+        "search_term, expected",
+        [
+            (666, None),
+            ("non-existing", None),
+            # cspell:disable
+            ("gamm", "'gamma'"),
+            ("gama", "'gamma', 'Sigma0', 'Sigma-', 'Sigma+', 'Lambda'"),
+            (
+                "omega",
+                "'omega(782)', 'omega(1420)', 'omega(3)(1670)', 'omega(1650)'",
+            ),
+            ("p~~", "'p~'"),
+            ("~", "'p~', 'n~'"),
+            ("lambda", "'Lambda', 'Lambda~', 'Lambda(c)+', 'Lambda(b)0'"),
+            # cspell:enable
+        ],
+    )
+    def test_find_fail(
+        self, particle_database: ParticleCollection, search_term, expected
+    ):
+        with pytest.raises(LookupError) as exception:
+            particle_database.find(search_term)
+        if expected is not None:
+            message = str(exception.value.args[0])
+            message = message.strip("?")
+            message = message.strip("]")
+            assert message.endswith(expected)
+
+    @staticmethod
+    def test_exceptions(particle_database: ParticleCollection):
+        gamma = particle_database["gamma"]
+        with pytest.raises(ValueError):
+            particle_database += create_particle(gamma, name="gamma_new")
+        with pytest.raises(NotImplementedError):
+            particle_database.find(3.14)  # type: ignore
+        with pytest.raises(NotImplementedError):
+            particle_database += 3.14  # type: ignore
+        with pytest.raises(NotImplementedError):
+            assert 3.14 in particle_database
+        with pytest.raises(AssertionError):
+            assert gamma == "gamma"
 
 
 class TestSpin:
