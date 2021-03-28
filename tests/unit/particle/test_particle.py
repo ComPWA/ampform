@@ -1,10 +1,11 @@
-# pylint: disable=redefined-outer-name, no-self-use
+# pylint: disable=eval-used,redefined-outer-name, no-self-use
 import logging
 import typing
 from copy import deepcopy
 
 import pytest
 from attr.exceptions import FrozenInstanceError
+from IPython.lib.pretty import pretty
 
 from expertsystem.particle import (
     GellmannNishijima,
@@ -12,6 +13,7 @@ from expertsystem.particle import (
     Particle,
     ParticleCollection,
     Spin,
+    _to_fraction,
     create_antiparticle,
     create_particle,
 )
@@ -110,7 +112,7 @@ class TestParity:
     @pytest.mark.parametrize("value", [-1, +1])
     def test_repr(self, value):
         parity = Parity(value)
-        from_repr = eval(repr(parity))  # pylint: disable=eval-used
+        from_repr = eval(repr(parity))
         assert from_repr == parity
 
     @staticmethod
@@ -124,9 +126,11 @@ class TestParity:
 class TestParticle:
     @staticmethod
     def test_repr(particle_database: ParticleCollection):
-        for particle in particle_database:
-            from_repr = eval(repr(particle))  # pylint: disable=eval-used
-            assert from_repr == particle
+        for instance in particle_database:
+            from_repr = eval(repr(instance))
+            assert from_repr == instance
+            from_repr = eval(pretty(instance))
+            assert from_repr == instance
 
     @pytest.mark.parametrize(
         "name, is_lepton",
@@ -264,10 +268,13 @@ class TestParticleCollection:
             "K(2)(1820)+",
         }
 
-    # @staticmethod
-    # def test_repr(particle_database: ParticleCollection):
-    #     from_repr = eval(repr(particle_database))  # pylint: disable=eval-used
-    #     assert from_repr == particle_database
+    @staticmethod
+    def test_repr(particle_database: ParticleCollection):
+        instance = particle_database
+        from_repr = eval(repr(instance))
+        assert from_repr == instance
+        from_repr = eval(pretty(instance))
+        assert from_repr == instance
 
     @staticmethod
     def test_exceptions(particle_database: ParticleCollection):
@@ -384,10 +391,14 @@ class TestSpin:
         assert flipped_spin.magnitude == isospin.magnitude
         assert flipped_spin.projection == -isospin.projection
 
-    @pytest.mark.parametrize("spin", [Spin(2.5, -0.5), Spin(1, 0)])
-    def test_repr(self, spin):
-        from_repr = eval(repr(spin))  # pylint: disable=eval-used
-        assert from_repr == spin
+    @pytest.mark.parametrize(
+        "instance", [Spin(2.5, -0.5), Spin(1, 0), Spin(3, -1), Spin(0, 0)]
+    )
+    def test_repr(self, instance):
+        from_repr = eval(repr(instance))
+        assert from_repr == instance
+        from_repr = eval(pretty(instance))
+        assert from_repr == instance
 
     @pytest.mark.parametrize(
         "magnitude, projection",
@@ -475,3 +486,24 @@ def test_create_particle(
     assert new_particle.width == 0.5
     assert new_particle.baryon_number == template_particle.baryon_number
     assert new_particle.strangeness == template_particle.strangeness
+
+
+@pytest.mark.parametrize(
+    "value, render_plus, expected",
+    [
+        (0, False, "0"),
+        (0, True, "0"),
+        (-1, False, "-1"),
+        (-1, True, "-1"),
+        (1, False, "1"),
+        (1, True, "+1"),
+        (1.0, True, "+1"),
+        (0.5, True, "+1/2"),
+        (-0.5, True, "-1/2"),
+        (+1.5, False, "3/2"),
+        (+1.5, True, "+3/2"),
+        (-1.5, True, "-3/2"),
+    ],
+)
+def test_to_fraction(value, render_plus: bool, expected: str):
+    assert _to_fraction(value, render_plus) == expected

@@ -6,11 +6,11 @@
 #
 attrs==20.3.0
 hepunits==2.1.0
-importlib-metadata==3.7.3
+importlib-metadata==3.9.0
 jsonschema==3.2.0
 mpmath==1.2.1
-numpy==1.20.1
-particle==0.14.0
+numpy==1.20.2
+particle==0.14.1
 pyrsistent==0.17.3
 python-constraint==1.4.0
 pyyaml==5.4.1

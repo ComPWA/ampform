@@ -1,6 +1,7 @@
 -r requirements-extras.in
 
 # Requirements for running pytest
+ipython
 pydot
 pytest
 pytest-cov

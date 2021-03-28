@@ -14,6 +14,7 @@ and final state.
 import logging
 import re
 from collections import abc
+from fractions import Fraction
 from functools import total_ordering
 from math import copysign
 from typing import (
@@ -34,6 +35,11 @@ from attr.converters import optional
 from attr.validators import instance_of
 from particle import Particle as PdgDatabase
 from particle.particle import enums
+
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = Any
 
 
 @total_ordering
@@ -63,7 +69,7 @@ class Parity:
         return Parity(-self.value)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({"+1" if self.value > 0 else "-1"})'
+        return f"{self.__class__.__name__}({_to_fraction(self.value)})"
 
 
 def _to_float(value: SupportsFloat) -> float:
@@ -117,6 +123,12 @@ class Spin:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}{(self.magnitude, self.projection)}"
+
+    def _repr_pretty_(self, p: PrettyPrinter, _: bool) -> None:
+        class_name = type(self).__name__
+        magnitude = _to_fraction(self.magnitude)
+        projection = _to_fraction(self.projection, render_plus=True)
+        p.text(f"{class_name}({magnitude}, {projection})")
 
 
 def _to_parity(value: Union[Parity, int]) -> Parity:
@@ -209,6 +221,25 @@ class Particle:  # pylint: disable=too-many-instance-attributes
             or self.muon_lepton_number != 0
             or self.tau_lepton_number != 0
         )
+
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}("):
+                for field in attr.fields(type(self)):
+                    value = getattr(self, field.name)
+                    if value != field.default:
+                        p.breakable()
+                        p.text(f"{field.name}=")
+                        if isinstance(value, Parity):
+                            p.text(_to_fraction(int(value), render_plus=True))
+                        else:
+                            p.pretty(value)
+                        p.text(",")
+            p.breakable()
+            p.text(")")
 
 
 class GellmannNishijima:
@@ -330,11 +361,24 @@ class ParticleCollection(abc.MutableSet):
         return self
 
     def __repr__(self) -> str:
-        output = f"{self.__class__.__name__}("
+        output = f"{self.__class__.__name__}({{"
         for particle in self:
             output += f"\n    {particle},"
-        output += ")"
+        output += "})"
         return output
+
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}({{"):
+                for particle in self:
+                    p.breakable()
+                    p.pretty(particle)
+                    p.text(",")
+            p.breakable()
+            p.text("})")
 
     def add(self, value: Particle) -> None:
         if value in self.__particles.values():
@@ -686,3 +730,10 @@ def __create_parity(parity_enum: enums.Parity) -> Optional[Parity]:
     if parity_enum == getattr(parity_enum, "o", None):  # particle < 0.14
         return None
     return Parity(int(parity_enum))
+
+
+def _to_fraction(value: Union[float, int], render_plus: bool = False) -> str:
+    label = str(Fraction(value))
+    if render_plus and value > 0:
+        return f"+{label}"
+    return label

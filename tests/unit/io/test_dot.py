@@ -1,12 +1,7 @@
 import pydot
-import pytest
 
 from expertsystem import io
-from expertsystem.io._dot import (
-    _collapse_graphs,
-    _get_particle_graphs,
-    _to_fraction,
-)
+from expertsystem.io._dot import _collapse_graphs, _get_particle_graphs
 from expertsystem.particle import ParticleCollection
 from expertsystem.reaction import Result
 from expertsystem.reaction.topology import (
@@ -130,24 +125,3 @@ def test_get_particle_graphs(
         assert particle_graphs[0].get_edge_props(edge_id) is particle_graphs[
             1
         ].get_edge_props(edge_id)
-
-
-@pytest.mark.parametrize(
-    "value, render_plus, expected",
-    [
-        (0, False, "0"),
-        (0, True, "0"),
-        (-1, False, "-1"),
-        (-1, True, "-1"),
-        (1, False, "1"),
-        (1, True, "+1"),
-        (1.0, True, "+1"),
-        (0.5, True, "+1/2"),
-        (-0.5, True, "-1/2"),
-        (+1.5, False, "3/2"),
-        (+1.5, True, "+3/2"),
-        (-1.5, True, "-3/2"),
-    ],
-)
-def test_to_fraction(value, render_plus: bool, expected: str):
-    assert _to_fraction(value, render_plus) == expected

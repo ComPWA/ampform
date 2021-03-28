@@ -3,10 +3,9 @@
 See :doc:`/usage/visualize` for more info.
 """
 
-from fractions import Fraction
 from typing import Callable, Iterable, List, Optional, Sequence, Union
 
-from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.particle import Particle, ParticleCollection, _to_fraction
 from expertsystem.reaction import (
     InteractionProperties,
     ParticleWithSpin,
@@ -317,10 +316,3 @@ def _collapse_graphs(
                 )
             )
     return inventory
-
-
-def _to_fraction(value: Union[float, int], render_plus: bool = False) -> str:
-    label = str(Fraction(value))
-    if render_plus and value > 0:
-        return f"+{label}"
-    return label

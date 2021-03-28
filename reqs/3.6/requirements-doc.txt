@@ -24,13 +24,13 @@ defusedxml==0.7.1
 docutils==0.16
 entrypoints==0.3
 fuzzywuzzy==0.18.0
-gitdb==4.0.5
+gitdb==4.0.7
 gitpython==3.1.14
 graphviz==0.16
 hepunits==2.1.0
 idna==2.10
 imagesize==1.2.0
-importlib-metadata==3.7.3
+importlib-metadata==3.9.0
 importlib-resources==3.0.0
 ipykernel==5.5.0
 ipython-genutils==0.2.0
@@ -41,7 +41,7 @@ jinja2==2.11.3
 jsonschema==3.2.0
 jupyter-cache==0.4.2
 jupyter-client==6.1.12
-jupyter-console==6.3.0
+jupyter-console==6.4.0
 jupyter-core==4.7.1
 jupyter-sphinx==0.3.1
 jupyter==1.0.0
@@ -66,7 +66,7 @@ numpy==1.19.5
 packaging==20.9
 pandocfilters==1.4.3
 parso==0.8.1
-particle==0.14.0
+particle==0.14.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==8.1.2
@@ -90,7 +90,7 @@ qtpy==1.9.0
 requests==2.25.1
 send2trash==1.5.0
 six==1.15.0
-smmap==3.0.5
+smmap==4.0.0
 snowballstemmer==2.1.0
 soupsieve==2.2.1
 sphinx-book-theme==0.0.42
