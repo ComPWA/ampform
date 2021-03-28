@@ -62,8 +62,11 @@ __REQUIRED_TOPOLOGY_FIELDS = {
 
 def asdot(
     instance: object,
-    render_edge_id: bool = True,
+    *,
     render_node: bool = True,
+    render_final_state_id: bool = True,
+    render_resonance_id: bool = False,
+    render_initial_state_id: bool = False,
     strip_spin: bool = False,
     collapse_graphs: bool = False,
 ) -> str:
@@ -77,16 +80,20 @@ def asdot(
     if isinstance(instance, (StateTransitionGraph, Topology)):
         return _dot.graph_to_dot(
             instance,
-            render_edge_id=render_edge_id,
             render_node=render_node,
+            render_final_state_id=render_final_state_id,
+            render_resonance_id=render_resonance_id,
+            render_initial_state_id=render_initial_state_id,
         )
     if isinstance(instance, (Result, abc.Sequence)):
         if isinstance(instance, Result):
             instance = instance.transitions
         return _dot.graph_list_to_dot(
             instance,
-            render_edge_id=render_edge_id,
             render_node=render_node,
+            render_final_state_id=render_final_state_id,
+            render_resonance_id=render_resonance_id,
+            render_initial_state_id=render_initial_state_id,
             strip_spin=strip_spin,
             collapse_graphs=collapse_graphs,
         )
