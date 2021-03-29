@@ -10,7 +10,7 @@ apipkg==1.5
 appdirs==1.4.4
 aquirdturtle-collapsible-headings==3.0.1
 argon2-cffi==20.1.0
-astroid==2.5.1
+astroid==2.5.2
 async-generator==1.10
 attrs==20.3.0
 babel==2.9.0
@@ -47,7 +47,7 @@ gitpython==3.1.14
 gprof2dot==2021.2.21
 graphviz==0.16
 hepunits==2.1.0
-identify==2.2.1
+identify==2.2.2
 idna==2.10
 imagesize==1.2.0
 immutables==0.15
