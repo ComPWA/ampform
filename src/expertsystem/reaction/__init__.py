@@ -72,14 +72,13 @@ from .default_settings import (
     InteractionTypes,
     create_default_interaction_settings,
 )
-from .particle import Particle, ParticleCollection, load_pdg
+from .particle import Particle, ParticleCollection, ParticleWithSpin, load_pdg
 from .quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
     InteractionProperties,
     NodeQuantumNumber,
     NodeQuantumNumbers,
-    ParticleWithSpin,
 )
 from .solving import (
     CSPSolver,

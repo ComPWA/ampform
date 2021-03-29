@@ -52,8 +52,7 @@ from typing import Any, Callable, List, Optional, Set, Tuple, Union
 
 import attr
 
-from .combinatorics import arange
-from .quantum_numbers import EdgeQuantumNumbers, NodeQuantumNumbers
+from .quantum_numbers import EdgeQuantumNumbers, NodeQuantumNumbers, arange
 
 try:
     from typing import Protocol
@@ -855,7 +854,20 @@ class GellMannNishijimaInput:
 def gellmann_nishijima(edge_qns: GellMannNishijimaInput) -> bool:
     r"""Check the Gell-Mann–Nishijima formula.
 
-    :math:`Q=I_3+\frac{Y}{2}` for each particle.
+    `Gell-Mann–Nishijima formula
+    <https://en.wikipedia.org/wiki/Gell-Mann%E2%80%93Nishijima_formula>`_:
+
+    .. math::
+        Q = I_3 + \frac{1}{2}(B+S+C+B'+T)
+
+    where
+    :math:`Q` is charge (computed),
+    :math:`I_3` is `.Spin.projection` of `~.Particle.isospin`,
+    :math:`B` is `~.Particle.baryon_number`,
+    :math:`S` is `~.Particle.strangeness`,
+    :math:`C` is `~.Particle.charmness`,
+    :math:`B'` is `~.Particle.bottomness`, and
+    :math:`T` is `~.Particle.topness`.
     """
 
     def calculate_hypercharge(

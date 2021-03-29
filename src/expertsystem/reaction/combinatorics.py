@@ -7,7 +7,6 @@ or extract these edge and node properties.
 
 from collections import OrderedDict
 from copy import deepcopy
-from decimal import Decimal
 from itertools import permutations
 from typing import (
     Any,
@@ -29,7 +28,8 @@ import attr
 
 from expertsystem.reaction.particle import Particle, ParticleCollection
 
-from .quantum_numbers import InteractionProperties, ParticleWithSpin
+from .particle import ParticleWithSpin
+from .quantum_numbers import InteractionProperties, arange
 from .topology import StateTransitionGraph, Topology, get_originating_node_list
 
 StateWithSpins = Tuple[str, Sequence[float]]
@@ -350,15 +350,6 @@ def _safe_set_spin_projections(
         safe_set_spin_projections(state, particle_db)
         for state in list_of_states
     ]
-
-
-def arange(
-    x_1: float, x_2: float, delta: float
-) -> Generator[float, None, None]:
-    current = Decimal(x_1)
-    while current < x_2:
-        yield float(current)
-        current += Decimal(delta)
 
 
 def _generate_outer_edge_permutations(

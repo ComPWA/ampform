@@ -6,22 +6,17 @@ from typing import Callable, Dict, List, Optional, Set, Tuple, Type
 
 import attr
 
-from expertsystem.reaction.default_settings import InteractionTypes
-from expertsystem.reaction.particle import Parity, Particle, ParticleCollection
-from expertsystem.reaction.quantum_numbers import (
+from .default_settings import InteractionTypes
+from .particle import Parity, Particle, ParticleCollection, ParticleWithSpin
+from .quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
     InteractionProperties,
     NodeQuantumNumber,
     NodeQuantumNumbers,
-    ParticleWithSpin,
 )
-from expertsystem.reaction.solving import (
-    GraphEdgePropertyMap,
-    GraphNodePropertyMap,
-    GraphSettings,
-)
-from expertsystem.reaction.topology import StateTransitionGraph
+from .solving import GraphEdgePropertyMap, GraphNodePropertyMap, GraphSettings
+from .topology import StateTransitionGraph
 
 Strength = float
 

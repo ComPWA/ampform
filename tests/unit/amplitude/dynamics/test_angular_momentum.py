@@ -3,8 +3,7 @@ from typing import Optional
 import pytest
 
 from expertsystem.amplitude.helicity import _extract_angular_momentum
-from expertsystem.reaction.particle import Particle
-from expertsystem.reaction.quantum_numbers import ParticleWithSpin
+from expertsystem.reaction.particle import Particle, ParticleWithSpin
 from expertsystem.reaction.topology import (
     Edge,
     InteractionProperties,

@@ -1,10 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
+from expertsystem.reaction import InteractionProperties, ParticleWithSpin
 from expertsystem.reaction.particle import ParticleCollection, Spin
-from expertsystem.reaction.quantum_numbers import (
-    InteractionProperties,
-    ParticleWithSpin,
-)
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 

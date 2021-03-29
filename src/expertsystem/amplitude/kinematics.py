@@ -10,8 +10,7 @@ from attr.validators import instance_of
 
 from expertsystem.io import asdot
 from expertsystem.reaction import Topology, create_isobar_topologies
-from expertsystem.reaction.particle import Particle
-from expertsystem.reaction.quantum_numbers import ParticleWithSpin
+from expertsystem.reaction.particle import Particle, ParticleWithSpin
 from expertsystem.reaction.topology import FrozenDict, StateTransitionGraph
 
 from ._graph_info import assert_isobar_topology, determine_attached_final_state

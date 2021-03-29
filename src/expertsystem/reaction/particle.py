@@ -1,6 +1,6 @@
 """A collection of particle info containers.
 
-The `~expertsystem.reaction.particle` module is the starting point of the
+The `~.reaction.particle` module is the starting point of the
 `expertsystem`. Its main interface is the `ParticleCollection`, which is a
 collection of immutable `Particle` instances that are uniquely defined by their
 properties. As such, it can be used stand-alone as a database of quantum
@@ -15,8 +15,6 @@ import logging
 import re
 from collections import abc
 from difflib import get_close_matches
-from fractions import Fraction
-from functools import total_ordering
 from math import copysign
 from typing import (
     Any,
@@ -37,40 +35,13 @@ from attr.validators import instance_of
 from particle import Particle as PdgDatabase
 from particle.particle import enums
 
+from .conservation_rules import GellMannNishijimaInput, gellmann_nishijima
+from .quantum_numbers import EdgeQuantumNumbers, Parity, _to_fraction
+
 try:
     from IPython.lib.pretty import PrettyPrinter
 except ImportError:
     PrettyPrinter = Any
-
-
-@total_ordering
-@attr.s(frozen=True, repr=False, eq=False, hash=True)
-class Parity:
-    value: int = attr.ib(validator=instance_of(int))
-
-    @value.validator
-    def __check_plusminus(  # type: ignore  # pylint: disable=no-self-use,unused-argument
-        self, _: attr.Attribute, value: int
-    ) -> None:
-        if value not in [-1, +1]:
-            raise ValueError(f"Parity can only be +1 or -1, not {value}")
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, Parity):
-            return self.value == other.value
-        return self.value == other
-
-    def __gt__(self, other: Any) -> bool:
-        return self.value > int(other)
-
-    def __int__(self) -> int:
-        return self.value
-
-    def __neg__(self) -> "Parity":
-        return Parity(-self.value)
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({_to_fraction(self.value)})"
 
 
 def _to_float(value: SupportsFloat) -> float:
@@ -194,17 +165,38 @@ class Particle:  # pylint: disable=too-many-instance-attributes
         converter=optional(_to_parity), default=None
     )
 
-    @isospin.validator
-    def __check_gellmann_nishijima(self, attribute, value) -> None:  # type: ignore  # pylint: disable=unused-argument
-        if (
-            self.isospin is not None
-            and GellmannNishijima.compute_charge(self) != self.charge
+    def __attrs_post_init__(self) -> None:
+        if self.isospin is not None and not gellmann_nishijima(
+            GellMannNishijimaInput(
+                charge=EdgeQuantumNumbers.charge(self.charge),
+                isospin_proj=EdgeQuantumNumbers.isospin_projection(
+                    self.isospin.projection
+                )
+                if self.isospin
+                else None,
+                strangeness=EdgeQuantumNumbers.strangeness(self.strangeness),
+                charmness=EdgeQuantumNumbers.charmness(self.charmness),
+                bottomness=EdgeQuantumNumbers.bottomness(self.bottomness),
+                topness=EdgeQuantumNumbers.topness(self.topness),
+                baryon_number=EdgeQuantumNumbers.baryon_number(
+                    self.baryon_number
+                ),
+                electron_ln=EdgeQuantumNumbers.electron_lepton_number(
+                    self.electron_lepton_number
+                ),
+                muon_ln=EdgeQuantumNumbers.muon_lepton_number(
+                    self.muon_lepton_number
+                ),
+                tau_ln=EdgeQuantumNumbers.tau_lepton_number(
+                    self.tau_lepton_number
+                ),
+            )
         ):
             raise ValueError(
                 f"Cannot construct particle {self.name}, because its quantum"
                 " numbers don't agree with the Gell-Mann–Nishijima formula:\n"
                 f"  Q[{self.charge}] != "
-                f"Iz[{self.isospin.projection}] + 1/2 "
+                f"Iz[{self.isospin.projection if self.isospin else 0}] + 1/2 "
                 f"(B[{self.baryon_number}] + "
                 f" S[{self.strangeness}] + "
                 f" C[{self.charmness}] +"
@@ -243,60 +235,7 @@ class Particle:  # pylint: disable=too-many-instance-attributes
             p.text(")")
 
 
-class GellmannNishijima:
-    r"""Collection of conversion methods using Gell-Mann–Nishijima.
-
-    The methods in this class use the `Gell-Mann–Nishijima formula
-    <https://en.wikipedia.org/wiki/Gell-Mann%E2%80%93Nishijima_formula>`_:
-
-    .. math::
-        Q = I_3 + \frac{1}{2}(B+S+C+B'+T)
-
-    where
-    :math:`Q` is charge (computed),
-    :math:`I_3` is `.Spin.projection` of `~.Particle.isospin`,
-    :math:`B` is `~.Particle.baryon_number`,
-    :math:`S` is `~.Particle.strangeness`,
-    :math:`C` is `~.Particle.charmness`,
-    :math:`B'` is `~.Particle.bottomness`, and
-    :math:`T` is `~.Particle.topness`.
-    """
-
-    @staticmethod
-    def compute_charge(state: Particle) -> Optional[float]:
-        """Compute charge using the Gell-Mann–Nishijima formula.
-
-        If isospin is not `None`, returns the value :math:`Q`: computed with
-        the `Gell-Mann–Nishijima formula <.GellmannNishijima>`.
-        """
-        if state.isospin is None:
-            return None
-        computed_charge = state.isospin.projection + 0.5 * (
-            state.baryon_number
-            + state.strangeness
-            + state.charmness
-            + state.bottomness
-            + state.topness
-        )
-        return computed_charge
-
-    @staticmethod
-    def compute_isospin_projection(  # pylint: disable=too-many-arguments
-        charge: float,
-        baryon_number: float,
-        strangeness: float,
-        charmness: float,
-        bottomness: float,
-        topness: float,
-    ) -> float:
-        """Compute isospin projection using the Gell-Mann–Nishijima formula.
-
-        See `~.GellmannNishijima.compute_charge`, but then computed for
-        :math:`I_3`.
-        """
-        return charge - 0.5 * (
-            baryon_number + strangeness + charmness + bottomness + topness
-        )
+ParticleWithSpin = Tuple[Particle, float]
 
 
 class ParticleCollection(abc.MutableSet):
@@ -684,11 +623,11 @@ def __create_isospin(pdg_particle: PdgDatabase) -> Optional[Spin]:
     if pdg_particle.I is None:
         return None
     magnitude = pdg_particle.I
-    projection = __compute_isospin_projection(pdg_particle)
+    projection = __isospin_projection_from_pdg(pdg_particle)
     return Spin(magnitude, projection)
 
 
-def __compute_isospin_projection(pdg_particle: PdgDatabase) -> float:
+def __isospin_projection_from_pdg(pdg_particle: PdgDatabase) -> float:
     if pdg_particle.charge is None:
         raise ValueError(f"PDG instance has no charge:\n{pdg_particle}")
     if "qq" in pdg_particle.quarks.lower():
@@ -696,13 +635,8 @@ def __compute_isospin_projection(pdg_particle: PdgDatabase) -> float:
             pdg_particle
         )
         baryon_number = __compute_baryonnumber(pdg_particle)
-        projection = GellmannNishijima.compute_isospin_projection(
-            charge=pdg_particle.charge,
-            baryon_number=baryon_number,
-            strangeness=strangeness,
-            charmness=charmness,
-            bottomness=bottomness,
-            topness=topness,
+        projection = pdg_particle.charge - 0.5 * (
+            baryon_number + strangeness + charmness + bottomness + topness
         )
     else:
         projection = 0.0
@@ -732,10 +666,3 @@ def __create_parity(parity_enum: enums.Parity) -> Optional[Parity]:
     if parity_enum == getattr(parity_enum, "o", None):  # particle < 0.14
         return None
     return Parity(int(parity_enum))
-
-
-def _to_fraction(value: Union[float, int], render_plus: bool = False) -> str:
-    label = str(Fraction(value))
-    if render_plus and value > 0:
-        return f"+{label}"
-    return label
