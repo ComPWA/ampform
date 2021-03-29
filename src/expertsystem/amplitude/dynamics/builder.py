@@ -7,7 +7,7 @@ from typing import Callable, Dict, Optional, Tuple
 import attr
 import sympy as sp
 
-from expertsystem.particle import Particle
+from expertsystem.reaction.particle import Particle
 
 from .lineshape import (
     BlattWeisskopf,

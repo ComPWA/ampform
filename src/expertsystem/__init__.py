@@ -9,19 +9,16 @@ A further responsibility is to build amplitude models, if a reaction is valid.
 These models are based on the found solutions and represent the transition
 probability of the process.
 
-The `expertsystem` consists of three main components:
-
-  `expertsystem.particle`
-    ― a stand-alone submodule with which one can investigate specific quantum
-    properties of `.Particle` instances (see :doc:`/usage/particle`).
+The `expertsystem` consists of two main components:
 
   `expertsystem.reaction`
     ― the core of the `expertsystem` that computes which transitions
     (represented by a `.StateTransitionGraph`) are allowed between a certain
     initial and final state. Internally, the system propagates the quantum
-    numbers defined by `particle` through the `.StateTransitionGraph`, while
-    satisfying the rules define by the :mod:`.conservation_rules` module. See
-    :doc:`/usage/reaction`.
+    numbers defined by the `reaction.particle` module through the
+    `.StateTransitionGraph`, while satisfying the rules define by the
+    :mod:`.conservation_rules` module. See :doc:`/usage/reaction` and
+    :doc:`/usage/particle`.
 
   `expertsystem.amplitude`
     ― a collection of tools to convert the `.StateTransitionGraph` solutions
@@ -30,14 +27,13 @@ The `expertsystem` consists of three main components:
     <pwa:software>`. See :doc:`/usage/amplitude`.
 
 Finally, the `.io` module provides tools that can read and write the objects of
-`particle`, `reaction`, and `amplitude`.
+this framework.
 """
 
 
 __all__ = [
     # Main modules
     "amplitude",
-    "particle",
     "reaction",
     "io",
     # Facade functions
@@ -47,7 +43,7 @@ __all__ = [
 ]
 
 
-from . import amplitude, io, particle, reaction
+from . import amplitude, io, reaction
 from .reaction.default_settings import ADDITIONAL_PARTICLES_DEFINITIONS_PATH
 
 generate_transitions = reaction.generate
@@ -57,15 +53,15 @@ check_reaction_violations = reaction.check_reaction_violations
 """An alias to `.reaction.check_reaction_violations`."""
 
 
-def load_default_particles() -> particle.ParticleCollection:
+def load_default_particles() -> reaction.ParticleCollection:
     """Load the default particle list that comes with the `expertsystem`.
 
     Runs `.load_pdg` and supplements its output definitions from the file
-    :download:`particle/additional_definitions.yml
-    </../src/expertsystem/particle/additional_definitions.yml>`.
+    :download:`reaction/additional_definitions.yml
+    </../src/expertsystem/reaction/additional_definitions.yml>`.
     """
-    particles = particle.load_pdg()
+    particles = reaction.load_pdg()
     additional_particles = io.load(ADDITIONAL_PARTICLES_DEFINITIONS_PATH)
-    assert isinstance(additional_particles, particle.ParticleCollection)
+    assert isinstance(additional_particles, reaction.ParticleCollection)
     particles.update(additional_particles)
     return particles

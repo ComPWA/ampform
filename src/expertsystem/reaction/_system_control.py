@@ -6,8 +6,8 @@ from typing import Callable, Dict, List, Optional, Set, Tuple, Type
 
 import attr
 
-from expertsystem.particle import Parity, Particle, ParticleCollection
 from expertsystem.reaction.default_settings import InteractionTypes
+from expertsystem.reaction.particle import Parity, Particle, ParticleCollection
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,

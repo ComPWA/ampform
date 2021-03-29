@@ -30,8 +30,24 @@ from typing import (
 import attr
 from tqdm.auto import tqdm
 
-from expertsystem.particle import Particle, ParticleCollection, load_pdg
-from expertsystem.reaction.conservation_rules import (
+from ._system_control import (
+    GammaCheck,
+    InteractionDeterminator,
+    LeptonCheck,
+    create_edge_properties,
+    create_interaction_properties,
+    create_node_properties,
+    create_particle,
+    filter_interaction_types,
+    remove_duplicate_solutions,
+)
+from .combinatorics import (
+    InitialFacts,
+    StateDefinition,
+    create_initial_facts,
+    match_external_edges,
+)
+from .conservation_rules import (
     BaryonNumberConservation,
     BottomnessConservation,
     ChargeConservation,
@@ -52,28 +68,11 @@ from expertsystem.reaction.conservation_rules import (
     parity_conservation,
     spin_magnitude_conservation,
 )
-
-from ._system_control import (
-    GammaCheck,
-    InteractionDeterminator,
-    LeptonCheck,
-    create_edge_properties,
-    create_interaction_properties,
-    create_node_properties,
-    create_particle,
-    filter_interaction_types,
-    remove_duplicate_solutions,
-)
-from .combinatorics import (
-    InitialFacts,
-    StateDefinition,
-    create_initial_facts,
-    match_external_edges,
-)
 from .default_settings import (
     InteractionTypes,
     create_default_interaction_settings,
 )
+from .particle import Particle, ParticleCollection, load_pdg
 from .quantum_numbers import (
     EdgeQuantumNumber,
     EdgeQuantumNumbers,
@@ -1010,7 +1009,7 @@ def generate(  # pylint: disable=too-many-arguments
     ...     allowed_intermediate_particles=["a(0)(980)", "a(2)(1320)-"],
     ...     allowed_interaction_types="ew",
     ...     formalism_type="helicity",
-    ...     particles=es.particle.load_pdg(),
+    ...     particles=es.reaction.load_pdg(),
     ...     topology_building="isobar",
     ... )
     >>> len(result.transitions)

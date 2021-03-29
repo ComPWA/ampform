@@ -1,7 +1,7 @@
 """Serialization module for the `expertsystem`.
 
 The `.io` module provides tools to export or import objects from the
-:mod:`.particle`, :mod:`.reaction` and :mod:`.amplitude` modules to and from
+:mod:`.reaction.particle`, :mod:`.reaction` and :mod:`.amplitude` modules to and from
 disk, so that they can be used by external packages, or just to store (cache)
 the state of the system.
 """
@@ -13,8 +13,8 @@ from pathlib import Path
 import attr
 import yaml
 
-from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction import Result, StateTransitionGraph, Topology
+from expertsystem.reaction.particle import Particle, ParticleCollection
 
 from . import _dict, _dot
 

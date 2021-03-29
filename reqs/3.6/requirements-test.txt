@@ -13,7 +13,7 @@ execnet==1.8.0
 gprof2dot==2021.2.21
 graphviz==0.16
 hepunits==2.1.0
-importlib-metadata==3.9.0
+importlib-metadata==3.9.1
 importlib-resources==3.0.0
 iniconfig==1.1.1
 ipython-genutils==0.2.0

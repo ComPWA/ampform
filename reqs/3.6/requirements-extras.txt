@@ -7,7 +7,7 @@
 attrs==20.3.0
 graphviz==0.16
 hepunits==2.1.0
-importlib-metadata==3.9.0
+importlib-metadata==3.9.1
 importlib-resources==3.0.0
 jsonschema==3.2.0
 mpmath==1.2.1

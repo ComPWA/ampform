@@ -52,8 +52,3 @@ pyvenv*/
 !cspell.json
 !environment.yml
 !pyrightconfig.json
-
-!docs/_static/*
-!docs/usage/additional_particles.yml
-!src/expertsystem/particle/additional_definitions.yml
-!src/expertsystem/particle/validation.json

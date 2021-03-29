@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Union
 
-from expertsystem.particle import ParticleCollection, Spin
+from expertsystem.reaction.particle import ParticleCollection, Spin
 from expertsystem.reaction.quantum_numbers import (
     InteractionProperties,
     ParticleWithSpin,

@@ -46,7 +46,7 @@
   "json.schemas": [
     {
       "fileMatch": ["*particle*.json"],
-      "url": "./src/expertsystem/particle/validation.json"
+      "url": "./src/expertsystem/reaction/particle-validation.json"
     }
   ],
   "python.analysis.autoImportCompletions": false,
@@ -75,7 +75,9 @@
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./src/expertsystem/particle/validation.json": ["*particle*.y*ml"],
+    "./src/expertsystem/reaction/particle-validation.json": [
+      "*particle*.y*ml"
+    ],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }

@@ -1,7 +1,7 @@
 import pytest
 
 from expertsystem import load_default_particles
-from expertsystem.particle import ParticleCollection
+from expertsystem.reaction.particle import ParticleCollection
 
 
 @pytest.fixture(scope="session")

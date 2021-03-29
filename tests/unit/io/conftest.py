@@ -1,6 +1,6 @@
 import pytest
 
-from expertsystem.particle import ParticleCollection
+from expertsystem.reaction.particle import ParticleCollection
 
 
 @pytest.fixture(scope="session")

@@ -1,6 +1,6 @@
 """A collection of particle info containers.
 
-The `~expertsystem.particle` module is the starting point of the
+The `~expertsystem.reaction.particle` module is the starting point of the
 `expertsystem`. Its main interface is the `ParticleCollection`, which is a
 collection of immutable `Particle` instances that are uniquely defined by their
 properties. As such, it can be used stand-alone as a database of quantum
@@ -433,7 +433,7 @@ class ParticleCollection(abc.MutableSet):
 
         For example:
 
-        >>> from expertsystem.particle import load_pdg
+        >>> from expertsystem.reaction.particle import load_pdg
         >>> pdg = load_pdg()
         >>> subset = pdg.filter(
         ...     lambda p: p.mass > 1.8

@@ -2,12 +2,12 @@ from itertools import product
 
 import pytest
 
-from expertsystem.particle import Parity
 from expertsystem.reaction.conservation_rules import (
     HelicityParityEdgeInput,
     parity_conservation,
     parity_conservation_helicity,
 )
+from expertsystem.reaction.particle import Parity
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
     NodeQuantumNumbers,

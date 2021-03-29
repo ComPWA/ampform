@@ -7,7 +7,7 @@ import pytest
 from attr.exceptions import FrozenInstanceError
 from IPython.lib.pretty import pretty
 
-from expertsystem.particle import (
+from expertsystem.reaction.particle import (
     GellmannNishijima,
     Parity,
     Particle,

@@ -4,7 +4,6 @@ from math import factorial
 
 import pytest
 
-from expertsystem.particle import ParticleCollection
 from expertsystem.reaction.combinatorics import (
     _generate_kinematic_permutations,
     _generate_outer_edge_permutations,
@@ -14,6 +13,7 @@ from expertsystem.reaction.combinatorics import (
     _safe_set_spin_projections,
     create_initial_facts,
 )
+from expertsystem.reaction.particle import ParticleCollection
 from expertsystem.reaction.topology import Topology, create_isobar_topologies
 
 

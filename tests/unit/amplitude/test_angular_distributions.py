@@ -7,7 +7,7 @@ import pytest
 import sympy as sp
 
 import expertsystem as es
-from expertsystem.particle import ParticleCollection
+from expertsystem.reaction.particle import ParticleCollection
 
 
 def calculate_sympy_integral(
@@ -56,13 +56,13 @@ def normalize(
 class TestEpemToDmD0Pip:
     @pytest.fixture(scope="class")
     def sympy_model(self, particle_database: ParticleCollection) -> sp.Expr:
-        epem = es.particle.Particle(
+        epem = es.reaction.particle.Particle(
             name="EpEm",
             pid=12345678,
             mass=4.36,
             spin=1.0,
-            parity=es.particle.Parity(-1),
-            c_parity=es.particle.Parity(-1),
+            parity=es.reaction.particle.Parity(-1),
+            c_parity=es.reaction.particle.Parity(-1),
         )
         particles = ParticleCollection(particle_database)
         particles.add(epem)

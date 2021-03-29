@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 import pytest
 
-from expertsystem.particle import Spin
 from expertsystem.reaction.conservation_rules import (
     IsoSpinEdgeInput,
     SpinEdgeInput,
@@ -11,6 +10,7 @@ from expertsystem.reaction.conservation_rules import (
     isospin_conservation,
     spin_conservation,
 )
+from expertsystem.reaction.particle import Spin
 
 from .test_spin import __create_two_body_decay_spin_data
 

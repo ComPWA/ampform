@@ -2,7 +2,7 @@
 import pytest
 
 from expertsystem import io
-from expertsystem.particle import ParticleCollection
+from expertsystem.reaction.particle import ParticleCollection
 
 
 def test_not_implemented_errors(

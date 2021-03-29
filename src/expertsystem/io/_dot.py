@@ -5,12 +5,16 @@ See :doc:`/usage/visualize` for more info.
 
 from typing import Callable, Iterable, List, Optional, Sequence, Union
 
-from expertsystem.particle import Particle, ParticleCollection, _to_fraction
 from expertsystem.reaction import (
     InteractionProperties,
     ParticleWithSpin,
     StateTransitionGraph,
     Topology,
+)
+from expertsystem.reaction.particle import (
+    Particle,
+    ParticleCollection,
+    _to_fraction,
 )
 
 _DOT_HEAD = """digraph {

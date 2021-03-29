@@ -8,13 +8,18 @@ from typing import Any, Dict
 import attr
 import jsonschema
 
-from expertsystem.particle import Parity, Particle, ParticleCollection, Spin
 from expertsystem.reaction import (
     InteractionProperties,
     ParticleWithSpin,
     Result,
     StateTransitionGraph,
     Topology,
+)
+from expertsystem.reaction.particle import (
+    Parity,
+    Particle,
+    ParticleCollection,
+    Spin,
 )
 from expertsystem.reaction.topology import Edge
 
@@ -162,5 +167,7 @@ def validate_particle_collection(instance: dict) -> None:
 
 
 __EXPERTSYSTEM_PATH = dirname(dirname(realpath(__file__)))
-with open(f"{__EXPERTSYSTEM_PATH}/particle/validation.json") as __STREAM:
+with open(
+    f"{__EXPERTSYSTEM_PATH}/reaction/particle-validation.json"
+) as __STREAM:
     __SCHEMA_PARTICLES = json.load(__STREAM)

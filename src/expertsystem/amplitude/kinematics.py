@@ -9,8 +9,8 @@ import numpy as np
 from attr.validators import instance_of
 
 from expertsystem.io import asdot
-from expertsystem.particle import Particle
 from expertsystem.reaction import Topology, create_isobar_topologies
+from expertsystem.reaction.particle import Particle
 from expertsystem.reaction.quantum_numbers import ParticleWithSpin
 from expertsystem.reaction.topology import FrozenDict, StateTransitionGraph
 

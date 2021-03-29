@@ -4,7 +4,6 @@ from typing import List
 
 import pytest
 
-from expertsystem.particle import Particle
 from expertsystem.reaction import (
     InteractionTypes,
     ProblemSet,
@@ -22,6 +21,7 @@ from expertsystem.reaction.combinatorics import (
     match_external_edges,
     perform_external_edge_identical_particle_combinatorics,
 )
+from expertsystem.reaction.particle import Particle
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
     InteractionProperties,

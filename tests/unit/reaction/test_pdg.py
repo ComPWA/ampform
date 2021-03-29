@@ -2,7 +2,7 @@
 import particle
 import pytest
 
-from expertsystem.particle import ParticleCollection, load_pdg
+from expertsystem.reaction.particle import ParticleCollection, load_pdg
 
 
 @pytest.fixture(scope="session")

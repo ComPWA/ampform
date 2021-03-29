@@ -23,7 +23,7 @@ from typing import (
 
 import attr
 
-from expertsystem.particle import Parity
+from expertsystem.reaction.particle import Parity
 
 from .conservation_rules import (
     ConservationRule,

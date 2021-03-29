@@ -2,13 +2,13 @@ from typing import List, Optional, Tuple
 
 import pytest
 
-from expertsystem.particle import Spin
 from expertsystem.reaction.conservation_rules import (
     SpinEdgeInput,
     SpinNodeInput,
     spin_conservation,
     spin_magnitude_conservation,
 )
+from expertsystem.reaction.particle import Spin
 from expertsystem.reaction.quantum_numbers import (
     EdgeQuantumNumbers,
     NodeQuantumNumbers,

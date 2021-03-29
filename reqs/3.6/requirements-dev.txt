@@ -51,7 +51,7 @@ identify==2.2.2
 idna==2.10
 imagesize==1.2.0
 immutables==0.15
-importlib-metadata==3.9.0
+importlib-metadata==3.9.1
 importlib-resources==3.0.0
 iniconfig==1.1.1
 ipykernel==5.5.0

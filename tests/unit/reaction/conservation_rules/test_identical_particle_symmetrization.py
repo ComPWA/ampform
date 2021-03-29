@@ -1,10 +1,10 @@
 import pytest
 
-from expertsystem.particle import Parity
 from expertsystem.reaction.conservation_rules import (
     IdenticalParticleSymmetryOutEdgeInput,
     identical_particle_symmetrization,
 )
+from expertsystem.reaction.particle import Parity
 from expertsystem.reaction.quantum_numbers import EdgeQuantumNumbers
 
 # Currently need to cast to the proper Edge/NodeQuantumNumber type, see

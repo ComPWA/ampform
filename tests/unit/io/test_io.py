@@ -3,12 +3,12 @@ import json
 import pytest
 
 from expertsystem import io
-from expertsystem.particle import Particle, ParticleCollection
 from expertsystem.reaction import (
     Result,
     create_isobar_topologies,
     create_n_body_topology,
 )
+from expertsystem.reaction.particle import Particle, ParticleCollection
 from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 

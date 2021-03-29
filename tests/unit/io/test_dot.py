@@ -2,8 +2,8 @@ import pydot
 
 from expertsystem import io
 from expertsystem.io._dot import _collapse_graphs, _get_particle_graphs
-from expertsystem.particle import ParticleCollection
 from expertsystem.reaction import Result
+from expertsystem.reaction.particle import ParticleCollection
 from expertsystem.reaction.topology import (
     Edge,
     Topology,

@@ -12,11 +12,11 @@ from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
 from sympy.printing.latex import LatexPrinter
 
-from expertsystem.particle import Particle, ParticleCollection, Spin
 from expertsystem.reaction import Result
 from expertsystem.reaction.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
+from expertsystem.reaction.particle import Particle, ParticleCollection, Spin
 from expertsystem.reaction.quantum_numbers import ParticleWithSpin
 from expertsystem.reaction.topology import StateTransitionGraph
 

@@ -27,7 +27,7 @@ from typing import (
 
 import attr
 
-from expertsystem.particle import Particle, ParticleCollection
+from expertsystem.reaction.particle import Particle, ParticleCollection
 
 from .quantum_numbers import InteractionProperties, ParticleWithSpin
 from .topology import StateTransitionGraph, Topology, get_originating_node_list
