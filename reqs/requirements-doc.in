@@ -1,5 +1,7 @@
 -r requirements-extras.in
 
+docutils != 0.17  # causes problems for linkcheck
+
 # Requirements to build documentation
 ipywidgets
 jupyter

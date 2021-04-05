@@ -28,11 +28,13 @@ repos:
         args: ["--django"]
       - id: trailing-whitespace
 
-  - repo: https://github.com/ComPWA/meta
-    rev: 0.0.1
+  - repo: https://github.com/ComPWA/repo-maintenance
+    rev: 0.0.2
     hooks:
       - id: fix-first-nbcell
-        args: [--replace]
+        args:
+          - --colab
+          - --replace
         exclude: >
           (?x)^(
             docs/adr/.*
@@ -40,7 +42,7 @@ repos:
       - id: fix-nbformat-version
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.3.9
+    rev: v5.3.11
     hooks:
       - id: cspell
 
@@ -50,7 +52,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.5.9
+    rev: 0.6.0
     hooks:
       - id: nbqa-black
         args: [--nbqa-mutate]
