@@ -13,7 +13,7 @@ from expertsystem.reaction.topology import (
 
 
 def _create_graph_dummy(
-    l_mag: Optional[int], spin_mag: float
+    l_magnitude: Optional[int], spin_magnitude: float
 ) -> StateTransitionGraph[ParticleWithSpin]:
     topology = Topology(
         nodes={0},  # type: ignore
@@ -25,11 +25,11 @@ def _create_graph_dummy(
     )
     return StateTransitionGraph[ParticleWithSpin](
         topology,
-        node_props={0: InteractionProperties(l_magnitude=l_mag)},
+        node_props={0: InteractionProperties(l_magnitude=l_magnitude)},
         edge_props={
             0: (
-                Particle(name="dummy", pid=123, spin=spin_mag, mass=1.0),
-                spin_mag,
+                Particle(name="dummy", pid=123, spin=spin_magnitude, mass=1.0),
+                spin_magnitude,
             )
         },
     )

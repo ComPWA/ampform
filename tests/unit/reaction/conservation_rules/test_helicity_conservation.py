@@ -11,15 +11,15 @@ from expertsystem.reaction.quantum_numbers import EdgeQuantumNumbers
     [
         (
             [
-                EdgeQuantumNumbers.spin_magnitude(s_mag),
+                EdgeQuantumNumbers.spin_magnitude(s_magnitude),
             ],
             [
                 EdgeQuantumNumbers.spin_projection(lambda1),
                 EdgeQuantumNumbers.spin_projection(lambda2),
             ],
-            abs(lambda1 - lambda2) <= s_mag,
+            abs(lambda1 - lambda2) <= s_magnitude,
         )
-        for s_mag, lambda1, lambda2 in product(
+        for s_magnitude, lambda1, lambda2 in product(
             [0, 0.5, 1, 1.5, 2],
             [-2, -1.5, -1.0, -0.5, 0, 0.5, 1, 1.5, 2],
             [-1, 0, 1],

@@ -36,7 +36,7 @@ from particle import Particle as PdgDatabase
 from particle.particle import enums
 
 from .conservation_rules import GellMannNishijimaInput, gellmann_nishijima
-from .quantum_numbers import EdgeQuantumNumbers, Parity, _to_fraction
+from .quantum_numbers import Parity, _to_fraction
 
 try:
     from IPython.lib.pretty import PrettyPrinter
@@ -168,28 +168,18 @@ class Particle:  # pylint: disable=too-many-instance-attributes
     def __attrs_post_init__(self) -> None:
         if self.isospin is not None and not gellmann_nishijima(
             GellMannNishijimaInput(
-                charge=EdgeQuantumNumbers.charge(self.charge),
-                isospin_proj=EdgeQuantumNumbers.isospin_projection(
-                    self.isospin.projection
-                )
+                charge=self.charge,
+                isospin_projection=self.isospin.projection
                 if self.isospin
                 else None,
-                strangeness=EdgeQuantumNumbers.strangeness(self.strangeness),
-                charmness=EdgeQuantumNumbers.charmness(self.charmness),
-                bottomness=EdgeQuantumNumbers.bottomness(self.bottomness),
-                topness=EdgeQuantumNumbers.topness(self.topness),
-                baryon_number=EdgeQuantumNumbers.baryon_number(
-                    self.baryon_number
-                ),
-                electron_ln=EdgeQuantumNumbers.electron_lepton_number(
-                    self.electron_lepton_number
-                ),
-                muon_ln=EdgeQuantumNumbers.muon_lepton_number(
-                    self.muon_lepton_number
-                ),
-                tau_ln=EdgeQuantumNumbers.tau_lepton_number(
-                    self.tau_lepton_number
-                ),
+                strangeness=self.strangeness,
+                charmness=self.charmness,
+                bottomness=self.bottomness,
+                topness=self.topness,
+                baryon_number=self.baryon_number,
+                electron_lepton_number=self.electron_lepton_number,
+                muon_lepton_number=self.muon_lepton_number,
+                tau_lepton_number=self.tau_lepton_number,
             )
         ):
             raise ValueError(

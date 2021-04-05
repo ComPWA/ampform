@@ -4,7 +4,6 @@ from expertsystem.reaction.conservation_rules import (
     MassConservation,
     MassEdgeInput,
 )
-from expertsystem.reaction.quantum_numbers import EdgeQuantumNumbers
 
 # Currently need to cast to the proper Edge/NodeQuantumNumber type, see
 # https://github.com/ComPWA/expertsystem/issues/255
@@ -19,13 +18,13 @@ from expertsystem.reaction.quantum_numbers import EdgeQuantumNumbers
             (
                 [
                     MassEdgeInput(
-                        mass=EdgeQuantumNumbers.mass(energy[0]),
-                        width=EdgeQuantumNumbers.width(energy[1]),
+                        mass=energy[0],
+                        width=energy[1],
                     )
                 ],
                 [
-                    MassEdgeInput(EdgeQuantumNumbers.mass(0.139)),
-                    MassEdgeInput(EdgeQuantumNumbers.mass(0.139)),
+                    MassEdgeInput(0.139),
+                    MassEdgeInput(0.139),
                 ],
             ),
             expected,

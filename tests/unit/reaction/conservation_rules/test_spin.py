@@ -9,10 +9,6 @@ from expertsystem.reaction.conservation_rules import (
     spin_magnitude_conservation,
 )
 from expertsystem.reaction.particle import Spin
-from expertsystem.reaction.quantum_numbers import (
-    EdgeQuantumNumbers,
-    NodeQuantumNumbers,
-)
 
 _SpinRuleInputType = Tuple[
     List[SpinEdgeInput], List[SpinEdgeInput], SpinNodeInput
@@ -38,27 +34,16 @@ def __create_two_body_decay_spin_data(
     if coupled_spin is None:
         coupled_spin = spin_zero
     return (
+        [SpinEdgeInput(in_spin.magnitude, in_spin.projection)],
         [
-            SpinEdgeInput(
-                EdgeQuantumNumbers.spin_magnitude(in_spin.magnitude),
-                EdgeQuantumNumbers.spin_projection(in_spin.projection),
-            )
-        ],
-        [
-            SpinEdgeInput(
-                EdgeQuantumNumbers.spin_magnitude(out_spin1.magnitude),
-                EdgeQuantumNumbers.spin_projection(out_spin1.projection),
-            ),
-            SpinEdgeInput(
-                EdgeQuantumNumbers.spin_magnitude(out_spin2.magnitude),
-                EdgeQuantumNumbers.spin_projection(out_spin2.projection),
-            ),
+            SpinEdgeInput(out_spin1.magnitude, out_spin1.projection),
+            SpinEdgeInput(out_spin2.magnitude, out_spin2.projection),
         ],
         SpinNodeInput(
-            NodeQuantumNumbers.l_magnitude(angular_momentum.magnitude),
-            NodeQuantumNumbers.l_projection(angular_momentum.projection),
-            NodeQuantumNumbers.s_magnitude(coupled_spin.magnitude),
-            NodeQuantumNumbers.s_projection(coupled_spin.projection),
+            angular_momentum.magnitude,
+            angular_momentum.projection,
+            coupled_spin.magnitude,
+            coupled_spin.projection,
         ),
     )
 
@@ -82,24 +67,25 @@ def __create_two_body_decay_spin_data(
     + [
         (
             __create_two_body_decay_spin_data(
-                in_spin=Spin(spin_mag, 0), angular_momentum=Spin(spin_mag, 0)
+                in_spin=Spin(spin_magnitude, 0),
+                angular_momentum=Spin(spin_magnitude, 0),
             ),
             expected,
         )
-        for spin_mag, expected in zip([0, 1, 2], [True] * 3)
+        for spin_magnitude, expected in zip([0, 1, 2], [True] * 3)
     ]
     + [
         (
             __create_two_body_decay_spin_data(
-                in_spin=Spin(spin_mag, 0),
+                in_spin=Spin(spin_magnitude, 0),
                 out_spin1=Spin(1, -1),
                 out_spin2=Spin(1, 1),
                 angular_momentum=Spin(1, 0),
-                coupled_spin=Spin(spin_mag, 0),
+                coupled_spin=Spin(spin_magnitude, 0),
             ),
             expected,
         )
-        for spin_mag, expected in [
+        for spin_magnitude, expected in [
             (0, False),
             (1, False),
             (2, False),

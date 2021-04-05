@@ -883,8 +883,8 @@ def check_reaction_violations(
     # Create combinations of graphs for magnitudes of S and L, but only
     # if it is a two body reaction
     ls_combinations = [
-        InteractionProperties(l_magnitude=l_mag, s_magnitude=s_mag)
-        for l_mag, s_mag in product([0, 1], [0, 0.5, 1, 1.5, 2])
+        InteractionProperties(l_magnitude=l_magnitude, s_magnitude=s_magnitude)
+        for l_magnitude, s_magnitude in product([0, 1], [0, 0.5, 1, 1.5, 2])
     ]
 
     initial_facts_list = []

@@ -23,14 +23,12 @@ from typing import (
 
 import attr
 
-from expertsystem.reaction.particle import Parity
-
 from .conservation_rules import (
     ConservationRule,
     EdgeQNConservationRule,
     GraphElementRule,
 )
-from .quantum_numbers import EdgeQuantumNumber, NodeQuantumNumber
+from .quantum_numbers import EdgeQuantumNumber, NodeQuantumNumber, Parity
 
 Scalar = Union[int, float]
 

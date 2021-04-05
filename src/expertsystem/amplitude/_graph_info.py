@@ -108,19 +108,21 @@ def generate_particle_collection(
 
 
 def get_angular_momentum(node_props: InteractionProperties) -> Spin:
-    l_mag = node_props.l_magnitude
-    l_proj = node_props.l_projection
-    if l_mag is None or l_proj is None:
-        raise TypeError("Angular momentum L not defined!", l_mag, l_proj)
-    return Spin(l_mag, l_proj)
+    l_magnitude = node_props.l_magnitude
+    l_projection = node_props.l_projection
+    if l_magnitude is None or l_projection is None:
+        raise TypeError(
+            "Angular momentum L not defined!", l_magnitude, l_projection
+        )
+    return Spin(l_magnitude, l_projection)
 
 
 def get_coupled_spin(node_props: InteractionProperties) -> Spin:
-    s_mag = node_props.s_magnitude
-    s_proj = node_props.s_projection
-    if s_mag is None or s_proj is None:
+    s_magnitude = node_props.s_magnitude
+    s_projection = node_props.s_projection
+    if s_magnitude is None or s_projection is None:
         raise TypeError("Coupled spin S not defined!")
-    return Spin(s_mag, s_proj)
+    return Spin(s_magnitude, s_projection)
 
 
 def assert_isobar_topology(topology: Topology) -> None:

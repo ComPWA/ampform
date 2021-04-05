@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from expertsystem.reaction.particle import Parity, _to_fraction
+from expertsystem.reaction.quantum_numbers import Parity, _to_fraction
 
 
 class TestParity:
