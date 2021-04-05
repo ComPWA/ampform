@@ -65,6 +65,11 @@ repos:
       - id: prettier
         language_version: 12.18.2 # prettier does not specify node correctly
 
+  - repo: https://github.com/ComPWA/mirrors-pyright
+    rev: v1.1.126
+    hooks:
+      - id: pyright
+
   # The following tools have to be install locally, because they can also be
   # used by code editors (e.g. linting and format-on-save).
 
