@@ -10,11 +10,11 @@ This installs the
 [latest, stable release](https://pypi.org/project/expertsystem) that you can
 find on the [`stable`](https://github.com/ComPWA/expertsystem/tree/stable)
 branch. The latest version on the
-[`master`](https://github.com/ComPWA/expertsystem/tree/master) branch can be
+[`main`](https://github.com/ComPWA/expertsystem/tree/main) branch can be
 installed as follows:
 
 ```shell
-python3 -m pip install git+https://github.com/ComPWA/expertsystem@master
+python3 -m pip install git+https://github.com/ComPWA/expertsystem@main
 ```
 
 In that case, however, we highly recommend using the more dynamic,

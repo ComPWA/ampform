@@ -6,7 +6,7 @@
 
 [![PyPI package](https://badge.fury.io/py/expertsystem.svg)](https://pypi.org/project/expertsystem)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/expertsystem)](https://pypi.org/project/expertsystem)
-[![Test coverage](https://codecov.io/gh/ComPWA/expertsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/ComPWA/expertsystem)
+[![Test coverage](https://codecov.io/gh/ComPWA/expertsystem/branch/main/graph/badge.svg)](https://codecov.io/gh/ComPWA/expertsystem)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db355758fb0e4654818b85997f03e3b8)](https://www.codacy.com/gh/ComPWA/expertsystem)
 
 ````{margin}
