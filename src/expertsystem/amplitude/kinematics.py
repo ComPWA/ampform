@@ -9,9 +9,13 @@ import numpy as np
 from attr.validators import instance_of
 
 from expertsystem.io import asdot
-from expertsystem.reaction import Topology, create_isobar_topologies
 from expertsystem.reaction.particle import Particle, ParticleWithSpin
-from expertsystem.reaction.topology import FrozenDict, StateTransitionGraph
+from expertsystem.reaction.topology import (
+    FrozenDict,
+    StateTransitionGraph,
+    Topology,
+    create_isobar_topologies,
+)
 
 from ._graph_info import assert_isobar_topology, determine_attached_final_state
 from .data import (
@@ -135,7 +139,7 @@ def get_helicity_angle_label(
     """Generate labels that can be used to identify helicity angles.
 
     >>> from expertsystem.amplitude.kinematics import get_helicity_angle_label
-    >>> from expertsystem.reaction import create_isobar_topologies
+    >>> from expertsystem.reaction.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
     >>> topology = topologies[0]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:

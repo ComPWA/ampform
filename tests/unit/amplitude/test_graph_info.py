@@ -1,5 +1,5 @@
 from expertsystem.amplitude._graph_info import determine_attached_final_state
-from expertsystem.reaction import create_isobar_topologies
+from expertsystem.reaction.topology import create_isobar_topologies
 
 
 def test_determine_attached_final_state():

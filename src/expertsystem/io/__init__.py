@@ -13,8 +13,9 @@ from pathlib import Path
 import attr
 import yaml
 
-from expertsystem.reaction import Result, StateTransitionGraph, Topology
+from expertsystem.reaction import Result
 from expertsystem.reaction.particle import Particle, ParticleCollection
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 from . import _dict, _dot
 

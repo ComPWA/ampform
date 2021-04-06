@@ -5,17 +5,16 @@ See :doc:`/usage/visualize` for more info.
 
 from typing import Callable, Iterable, List, Optional, Sequence, Union
 
-from expertsystem.reaction import (
-    InteractionProperties,
-    ParticleWithSpin,
-    StateTransitionGraph,
-    Topology,
-)
 from expertsystem.reaction.particle import (
     Particle,
     ParticleCollection,
+    ParticleWithSpin,
+)
+from expertsystem.reaction.quantum_numbers import (
+    InteractionProperties,
     _to_fraction,
 )
+from expertsystem.reaction.topology import StateTransitionGraph, Topology
 
 _DOT_HEAD = """digraph {
     rankdir=LR;

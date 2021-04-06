@@ -8,20 +8,15 @@ from typing import Any, Dict
 import attr
 import jsonschema
 
-from expertsystem.reaction import (
-    InteractionProperties,
-    ParticleWithSpin,
-    Result,
-    StateTransitionGraph,
-    Topology,
-)
+from expertsystem.reaction import InteractionProperties, Result
 from expertsystem.reaction.particle import (
     Parity,
     Particle,
     ParticleCollection,
+    ParticleWithSpin,
     Spin,
 )
-from expertsystem.reaction.topology import Edge
+from expertsystem.reaction.topology import Edge, StateTransitionGraph, Topology
 
 
 def from_particle_collection(particles: ParticleCollection) -> dict:
