@@ -28,7 +28,7 @@ jobs:
           pip install -r reqs/${{ matrix.python-version }}/requirements-test.txt
           pip install .
       - name: Test with pytest-cov
-        run: pytest -n auto --cov=expertsystem --cov-report=xml
+        run: pytest -n auto --cov=ampform --cov-report=xml
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:

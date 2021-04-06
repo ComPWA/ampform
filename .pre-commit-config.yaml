@@ -35,10 +35,6 @@ repos:
         args:
           - --colab
           - --replace
-        exclude: >
-          (?x)^(
-            docs/adr/.*
-          )$
       - id: fix-nbformat-version
 
   - repo: https://github.com/ComPWA/mirrors-cspell

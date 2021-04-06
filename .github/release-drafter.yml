@@ -1,4 +1,4 @@
-name-template: PWA Expert System $NEXT_PATCH_VERSION
+name-template: AmpForm $NEXT_PATCH_VERSION
 tag-template: $NEXT_PATCH_VERSION
 
 categories:
@@ -32,6 +32,6 @@ sort-direction: ascending
 template: |
   # Release $NEXT_PATCH_VERSION
 
-  See all documentation for this version [here](https://expertsystem.rtfd.io/en/$NEXT_PATCH_VERSION).
+  See all documentation for this version [here](https://ampform.rtfd.io/en/$NEXT_PATCH_VERSION).
 
   $CHANGES

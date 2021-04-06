@@ -27,8 +27,8 @@ Summary of problems with the existing design, possibly with some snippets.
 If available, list and link related issues, PRs, or ADRs that led up to this
 ADR:
 
-- [#000](https://github.com/ComPWA/expertsystem/issues/000)
-- [#000](https://github.com/ComPWA/expertsystem/issues/000)
+- [#000](https://github.com/ComPWA/ampform/issues/000)
+- [#001](https://github.com/ComPWA/ampform/issues/001)
 -->
 
 ## Decision drivers

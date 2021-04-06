@@ -25,8 +25,6 @@ entrypoints==0.3
 fuzzywuzzy==0.18.0
 gitdb==4.0.7
 gitpython==3.1.14
-graphviz==0.16
-hepunits==2.1.0
 idna==2.10
 imagesize==1.2.0
 importlib-metadata==3.10.0
@@ -51,7 +49,6 @@ markupsafe==1.1.1
 matplotlib==3.4.1
 mdit-py-plugins==0.2.6
 mistune==0.8.4
-mpmath==1.2.1
 myst-nb==0.12.0
 myst-parser==0.13.5
 nbclient==0.5.3
@@ -64,7 +61,6 @@ numpy==1.20.2
 packaging==20.9
 pandocfilters==1.4.3
 parso==0.8.2
-particle==0.14.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==8.2.0
@@ -78,7 +74,6 @@ pydata-sphinx-theme==0.4.3
 pygments==2.8.1
 pyparsing==2.4.7
 pyrsistent==0.17.3
-python-constraint==1.4.0
 python-dateutil==2.8.1
 pytz==2021.1
 pyyaml==5.4.1
@@ -106,11 +101,9 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
 sphobjinv==2.0.1
 sqlalchemy==1.3.24
-sympy==1.7.1
 terminado==0.9.4
 testpath==0.4.4
 tornado==6.1
-tqdm==4.59.0
 traitlets==5.0.5
 urllib3==1.26.4
 wcwidth==0.2.5

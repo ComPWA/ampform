@@ -5,7 +5,7 @@ By default, the dynamic terms in an amplitude model are set to $1$ by the
 be used to set dynamics lineshapes for specific resonances.
 
 In the following pages, we show how to insert custom dynamics and illustrate
-some of the lineshapes provided by the {mod}`expertsystem`.
+some of the lineshapes provided by {mod}`ampform`.
 
 ```{toctree}
 dynamics/custom

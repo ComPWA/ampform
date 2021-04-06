@@ -1,4 +1,4 @@
-name: es
+name: ampform
 channels:
   - defaults
 dependencies:
