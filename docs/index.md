@@ -7,8 +7,7 @@
 [![PyPI package](https://badge.fury.io/py/ampform.svg)](https://pypi.org/project/ampform)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/ampform)](https://pypi.org/project/ampform)
 [![Test coverage](https://codecov.io/gh/ComPWA/ampform/branch/main/graph/badge.svg)](https://codecov.io/gh/ComPWA/ampform)
-
-<!-- [![Codacy Badge](https://api.codacy.com/project/badge/Grade/***](https://www.codacy.com/gh/ComPWA/ampform) -->
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/70fc5fb0f3954a9d82d142efeff4df31)](https://www.codacy.com/gh/ComPWA/ampform)
 
 ````{margin}
 ```{tip}
