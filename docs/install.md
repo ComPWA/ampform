@@ -3,18 +3,17 @@
 The fastest way of installing this package is through PyPI:
 
 ```shell
-python3 -m pip install expertsystem
+python3 -m pip install ampform
 ```
 
-This installs the
-[latest, stable release](https://pypi.org/project/expertsystem) that you can
-find on the [`stable`](https://github.com/ComPWA/expertsystem/tree/stable)
-branch. The latest version on the
-[`main`](https://github.com/ComPWA/expertsystem/tree/main) branch can be
-installed as follows:
+This installs the [latest, stable release](https://pypi.org/project/ampform)
+that you can find on the
+[`stable`](https://github.com/ComPWA/ampform/tree/stable) branch. The latest
+version on the [`main`](https://github.com/ComPWA/ampform/tree/main) branch can
+be installed as follows:
 
 ```shell
-python3 -m pip install git+https://github.com/ComPWA/expertsystem@main
+python3 -m pip install git+https://github.com/ComPWA/ampform@main
 ```
 
 In that case, however, we highly recommend using the more dynamic,
@@ -24,8 +23,8 @@ This goes as follows:
 1. Get the source code (see {doc}`pwa:software/git`):
 
    ```shell
-   git clone https://github.com/ComPWA/expertsystem.git
-   cd expertsystem
+   git clone https://github.com/ComPWA/ampform.git
+   cd ampform
    ```
 
 2. **[Recommended]** Create a virtual environment (see

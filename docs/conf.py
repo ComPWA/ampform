@@ -15,9 +15,9 @@ import sphobjinv as soi
 from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
-project = "ExpertSystem"
-package = "expertsystem"
-repo_name = "expertsystem"
+project = "AmpForm"
+package = "ampform"
+repo_name = "ampform"
 copyright = "2020, ComPWA"
 author = "Common Partial Wave Analysis"
 
@@ -145,7 +145,7 @@ html_theme_options = {
     },
     "theme_dev_mode": True,
 }
-html_title = "PWA Expert System"
+html_title = "AmpForm"
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
@@ -166,9 +166,7 @@ nitpick_ignore = [
     ("py:class", "numpy.typing._dtype_like._DTypeDict"),
     ("py:class", "numpy.typing._dtype_like._SupportsDType"),
     ("py:class", "typing_extensions.Protocol"),
-    ("py:obj", "expertsystem.amplitude.helicity.ValueType"),
-    ("py:obj", "expertsystem.reaction.topology._K"),
-    ("py:obj", "expertsystem.reaction.topology._V"),
+    ("py:obj", "ampform.amplitude.helicity.ValueType"),
 ]
 
 # Intersphinx settings
@@ -177,6 +175,10 @@ intersphinx_mapping = {
     "constraint": (
         "https://labix.org/doc/constraint/public",
         "constraint.inv",
+    ),
+    "expertsystem": (
+        "https://pwa.readthedocs.io/projects/expertsystem/en/stable",
+        None,
     ),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "jsonschema": (
@@ -190,6 +192,10 @@ intersphinx_mapping = {
     "pwa": ("https://pwa.readthedocs.io", None),
     "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
+    "qrules": (
+        "https://pwa.readthedocs.io/projects/qrules/en/stable",
+        None,
+    ),
     "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": (
         "https://pwa.readthedocs.io/projects/tensorwaves/en/stable",
@@ -215,10 +221,6 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 linkcheck_anchors = False
 
 # Settings for myst_nb
-execution_excludepatterns = [
-    "adr/001/*",
-    "adr/002/*",
-]
 execution_timeout = -1
 nb_output_stderr = "remove"
 nb_render_priority = {

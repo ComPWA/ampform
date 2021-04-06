@@ -43,12 +43,6 @@
   "git.rebaseWhenSync": true,
   "githubPullRequests.telemetry.enabled": false,
   "gitlens.advanced.telemetry.enabled": false,
-  "json.schemas": [
-    {
-      "fileMatch": ["*particle*.json"],
-      "url": "./src/expertsystem/reaction/particle-validation.json"
-    }
-  ],
   "python.analysis.autoImportCompletions": false,
   "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "black",
@@ -75,9 +69,6 @@
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,
   "yaml.schemas": {
-    "./src/expertsystem/reaction/particle-validation.json": [
-      "*particle*.y*ml"
-    ],
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }
