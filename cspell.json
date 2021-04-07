@@ -188,7 +188,6 @@
         "theano",
         "ticklabels",
         "tolist",
-        "tqdm",
         "unparse",
         "unsrt",
         "untracked",

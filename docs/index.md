@@ -18,8 +18,8 @@ For an overview of upcoming releases and planned functionality, see
 
 :::{dropdown} Original project: PWA Expert System
 
-The original project was the {doc}`expertsystem:index`. AmpForm originates from
-its {mod}`~expertsystem.amplitude` module.
+The original project was the {doc}`PWA Expert System <expertsystem:index>`.
+AmpForm originates from its {mod}`~expertsystem.amplitude` module.
 
 :::
 
