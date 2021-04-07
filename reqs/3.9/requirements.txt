@@ -5,6 +5,7 @@
 #    pip-compile --no-annotate --output-file=reqs/3.9/requirements.txt reqs/3.9/requirements.in
 #
 attrs==20.3.0
+graphviz==0.16
 hepunits==2.1.0
 jsonschema==3.2.0
 mpmath==1.2.1
@@ -13,9 +14,10 @@ particle==0.14.1
 pyrsistent==0.17.3
 python-constraint==1.4.0
 pyyaml==5.4.1
+qrules[viz]==0.8.0a1
 six==1.15.0
 sympy==1.7.1
-tqdm==4.59.0
+tqdm==4.60.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
