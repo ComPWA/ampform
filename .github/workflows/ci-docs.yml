@@ -1,0 +1,58 @@
+name: CI-docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  documentation:
+    name: Build documentation and run notebooks
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r reqs/3.7/requirements-doc.txt
+          pip install .
+          sudo apt-get -y install pandoc graphviz
+      - name: Build documentation and run notebooks
+        working-directory: docs
+        env:
+          EXECUTE_NB: YES
+        run: make html
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: html
+          path: docs/_build/html
+
+  doctest:
+    name: Run doctests
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r reqs/3.7/requirements-doc.txt
+          pip install .
+          sudo apt-get -y install pandoc
+      - name: Test doctests in docstrings
+        working-directory: docs
+        run: make ignore-warnings=1 doctest
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: doctest
+          path: docs/_build/html
