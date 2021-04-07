@@ -141,7 +141,7 @@ pytoml==0.1.21
 pytz==2021.1
 pyyaml==5.4.1
 pyzmq==22.0.3
-qrules[viz]==0.8.0a1
+qrules==0.8.0a1
 qtconsole==5.0.3
 qtpy==1.9.0
 regex==2021.4.4
