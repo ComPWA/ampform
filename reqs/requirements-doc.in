@@ -1,3 +1,5 @@
+-r requirements-extras.in  # for pytest type hints
+
 docutils != 0.17  # causes problems for linkcheck
 
 # Requirements to build documentation
