@@ -16,7 +16,7 @@ particle==0.14.1
 pyrsistent==0.17.3
 python-constraint==1.4.0
 pyyaml==5.4.1
-qrules==0.8.0a1
+qrules[viz]==0.8.0a1
 six==1.15.0
 sympy==1.7.1
 tqdm==4.60.0
