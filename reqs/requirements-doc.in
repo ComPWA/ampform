@@ -4,6 +4,7 @@
 docutils != 0.17  # causes problems for linkcheck
 
 # Requirements to build documentation
+dataclasses; python_version < '3.7'
 ipywidgets
 jupyter
 matplotlib
