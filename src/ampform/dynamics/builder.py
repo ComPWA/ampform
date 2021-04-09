@@ -64,14 +64,12 @@ def create_relativistic_breit_wigner(
     inv_mass = variable_pool.in_edge_inv_mass
     res_mass = sp.Symbol(f"m_{particle.name}")
     res_width = sp.Symbol(f"Gamma_{particle.name}")
-    return (
-        relativistic_breit_wigner(
-            inv_mass,
-            res_mass,
-            res_width,
-        ),
-        {res_mass: particle.mass, res_width: particle.width},
-    )
+    expression = relativistic_breit_wigner(inv_mass, res_mass, res_width)
+    parameter_defaults = {
+        res_mass: particle.mass,
+        res_width: particle.width,
+    }
+    return expression, parameter_defaults
 
 
 def create_relativistic_breit_wigner_with_ff(
@@ -90,18 +88,21 @@ def create_relativistic_breit_wigner_with_ff(
     angular_momentum = variable_pool.angular_momentum
     meson_radius = sp.Symbol(f"d_{particle.name}")
 
-    return (
-        relativistic_breit_wigner_with_ff(
-            inv_mass,
-            res_mass,
-            res_width,
-            product1_inv_mass,
-            product2_inv_mass,
-            angular_momentum,
-            meson_radius,
-        ),
-        {res_mass: particle.mass, res_width: particle.width, meson_radius: 1},
+    expression = relativistic_breit_wigner_with_ff(
+        inv_mass,
+        res_mass,
+        res_width,
+        product1_inv_mass,
+        product2_inv_mass,
+        angular_momentum,
+        meson_radius,
     )
+    parameter_defaults = {
+        res_mass: particle.mass,
+        res_width: particle.width,
+        meson_radius: 1,
+    }
+    return expression, parameter_defaults
 
 
 class ResonanceDynamicsBuilder(Protocol):
