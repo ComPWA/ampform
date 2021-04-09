@@ -63,7 +63,7 @@ def implement_expr(
 
 @implement_expr(n_args=3)
 class BlattWeisskopf(UnevaluatedExpression):
-    r"""Blatt-Weisskopf function :math:`B_L`, up to :math:`L \leq 8`.
+    r"""Blatt-Weisskopf function :math:`B_L(q)`, up to :math:`L \leq 8`.
 
     Args:
         q: Break-up momentum. Can be computed with `breakup_momentum`.
@@ -71,8 +71,13 @@ class BlattWeisskopf(UnevaluatedExpression):
             order 1 fm.
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
+    Function :math:`B_L(q)` is defined as:
+
     .. glue:math:: BlattWeisskopf
         :label: BlattWeisskopf
+
+    with :math:`z = (d q)^2`. The impact parameter :math:`d` is usually fixed,
+    so not shown as a function argument.
 
     Each of these cases has been taken from
     :cite:`chungPartialWaveAnalysis1995`, p. 415, and
