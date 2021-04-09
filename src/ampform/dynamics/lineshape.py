@@ -63,7 +63,7 @@ def implement_expr(
 
 @implement_expr(n_args=3)
 class BlattWeisskopf(UnevaluatedExpression):
-    r"""Blatt-Weisskopf function :math:`B_L`, up to :math:`L \leq 4`.
+    r"""Blatt-Weisskopf function :math:`B_L(q)`, up to :math:`L \leq 8`.
 
     Args:
         q: Break-up momentum. Can be computed with `breakup_momentum`.
@@ -71,12 +71,18 @@ class BlattWeisskopf(UnevaluatedExpression):
             order 1 fm.
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
+    Function :math:`B_L(q)` is defined as:
+
     .. glue:math:: BlattWeisskopf
         :label: BlattWeisskopf
 
+    with :math:`z = (d q)^2`. The impact parameter :math:`d` is usually fixed,
+    so not shown as a function argument.
+
     Each of these cases has been taken from
-    :cite:`chungPartialWaveAnalysis1995`, p. 415. For a good overview of where
-    to use these Blatt-Weisskopf functions, see
+    :cite:`chungPartialWaveAnalysis1995`, p. 415, and
+    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
+    where to use these Blatt-Weisskopf functions, see
     :cite:`asnerDalitzPlotAnalysis2006`.
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
@@ -134,6 +140,64 @@ class BlattWeisskopf(UnevaluatedExpression):
                         )
                     ),
                     sp.Eq(angular_momentum, 4),
+                ),
+                (
+                    998881
+                    * z ** 5
+                    / (
+                        z ** 5
+                        + 15 * z ** 4
+                        + 315 * z ** 3
+                        + 6300 * z ** 2
+                        + 99225 * z
+                        + 893025
+                    ),
+                    sp.Eq(angular_momentum, 5),
+                ),
+                (
+                    118394977
+                    * z ** 6
+                    / (
+                        z ** 6
+                        + 21 * z ** 5
+                        + 630 * z ** 4
+                        + 18900 * z ** 3
+                        + 496125 * z ** 2
+                        + 9823275 * z
+                        + 108056025
+                    ),
+                    sp.Eq(angular_momentum, 6),
+                ),
+                (
+                    19727003738
+                    * z ** 7
+                    / (
+                        z ** 7
+                        + 28 * z ** 6
+                        + 1134 * z ** 5
+                        + 47250 * z ** 4
+                        + 1819125 * z ** 3
+                        + 58939650 * z ** 2
+                        + 1404728325 * z
+                        + 18261468225
+                    ),
+                    sp.Eq(angular_momentum, 7),
+                ),
+                (
+                    4392846440677
+                    * z ** 8
+                    / (
+                        z ** 8
+                        + 36 * z ** 7
+                        + 1890 * z ** 6
+                        + 103950 * z ** 5
+                        + 5457375 * z ** 4
+                        + 255405150 * z ** 3
+                        + 9833098275 * z ** 2
+                        + 273922023375 * z
+                        + 4108830350625
+                    ),
+                    sp.Eq(angular_momentum, 8),
                 ),
             )
         )
