@@ -260,11 +260,13 @@ thebe_config = {
 
 
 # Specify bibliography style
+from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.template import (
     FieldIsMissing,
+    Node,
     _format_list,
     field,
     href,
@@ -312,7 +314,7 @@ class MyStyle(UnsrtStyle):
     def __init__(self):
         super().__init__(abbreviate_names=True)
 
-    def format_names(self, role, as_sentence=True):
+    def format_names(self, role, as_sentence=True) -> Node:
         formatted_names = names(
             role, sep=", ", sep2=" and ", last_sep=", and "
         )
@@ -321,7 +323,14 @@ class MyStyle(UnsrtStyle):
         else:
             return formatted_names
 
-    def format_url(self, e):
+    def format_eprint(self, e):
+        if "doi" in e.fields:
+            return ""
+        return super().format_eprint(e)
+
+    def format_url(self, e: Entry) -> Node:
+        if "doi" in e.fields or "eprint" in e.fields:
+            return ""
         return words[
             href[
                 field("url", raw=True),
@@ -329,7 +338,7 @@ class MyStyle(UnsrtStyle):
             ]
         ]
 
-    def format_isbn(self, e):
+    def format_isbn(self, e: Entry) -> Node:
         return href[
             join[
                 "https://isbnsearch.org/isbn/",
