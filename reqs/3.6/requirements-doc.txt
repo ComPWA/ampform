@@ -18,8 +18,8 @@ chardet==4.0.0
 click==7.1.2
 colorama==0.4.4
 cycler==0.10.0
-dataclasses==0.8
-decorator==5.0.5
+dataclasses==0.8 ; python_version < "3.7"
+decorator==5.0.6
 defusedxml==0.7.1
 docutils==0.16
 entrypoints==0.3
@@ -40,7 +40,7 @@ jedi==0.18.0
 jinja2==2.11.3
 jsonschema==3.2.0
 jupyter-cache==0.4.2
-jupyter-client==6.1.13
+jupyter-client==6.1.12
 jupyter-console==6.4.0
 jupyter-core==4.7.1
 jupyter-sphinx==0.3.1
@@ -70,7 +70,7 @@ particle==0.14.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==8.2.0
-prometheus-client==0.10.0
+prometheus-client==0.10.1
 prompt-toolkit==3.0.18
 ptyprocess==0.7.0
 pybtex-docutils==1.0.0

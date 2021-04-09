@@ -212,6 +212,7 @@ bibtex_bibfiles = ["bibliography.bib"]
 suppress_warnings = [
     "myst.domains",
 ]
+bibtex_reference_style = "author_year_no_comma"
 
 # Settings for copybutton
 copybutton_prompt_is_regexp = True
@@ -260,11 +261,17 @@ thebe_config = {
 
 
 # Specify bibliography style
+import dataclasses
+from typing import Union
+
+import sphinxcontrib.bibtex.plugin
+from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.template import (
     FieldIsMissing,
+    Node,
     _format_list,
     field,
     href,
@@ -272,6 +279,21 @@ from pybtex.style.template import (
     node,
     sentence,
     words,
+)
+from sphinxcontrib.bibtex.style.referencing.author_year import (
+    AuthorYearReferenceStyle,
+)
+
+
+@dataclasses.dataclass
+class NoCommaReferenceStyle(AuthorYearReferenceStyle):
+    author_year_sep: Union["BaseText", str] = " "
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    "sphinxcontrib.bibtex.style.referencing",
+    "author_year_no_comma",
+    NoCommaReferenceStyle,
 )
 
 
@@ -312,7 +334,7 @@ class MyStyle(UnsrtStyle):
     def __init__(self):
         super().__init__(abbreviate_names=True)
 
-    def format_names(self, role, as_sentence=True):
+    def format_names(self, role, as_sentence=True) -> Node:
         formatted_names = names(
             role, sep=", ", sep2=" and ", last_sep=", and "
         )
@@ -321,7 +343,14 @@ class MyStyle(UnsrtStyle):
         else:
             return formatted_names
 
-    def format_url(self, e):
+    def format_eprint(self, e):
+        if "doi" in e.fields:
+            return ""
+        return super().format_eprint(e)
+
+    def format_url(self, e: Entry) -> Node:
+        if "doi" in e.fields or "eprint" in e.fields:
+            return ""
         return words[
             href[
                 field("url", raw=True),
@@ -329,7 +358,7 @@ class MyStyle(UnsrtStyle):
             ]
         ]
 
-    def format_isbn(self, e):
+    def format_isbn(self, e: Entry) -> Node:
         return href[
             join[
                 "https://isbnsearch.org/isbn/",
