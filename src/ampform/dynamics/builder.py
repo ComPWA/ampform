@@ -32,14 +32,14 @@ class TwoBodyKinematicVariableSet:
 
 
 def create_non_dynamic(
-    particle: Particle, variable_pool: TwoBodyKinematicVariableSet
+    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
     # pylint: disable=unused-argument
     return (1, {})
 
 
 def create_non_dynamic_with_ff(
-    particle: Particle, variable_pool: TwoBodyKinematicVariableSet
+    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
     angular_momentum = variable_pool.angular_momentum
     if angular_momentum is None:
@@ -51,7 +51,7 @@ def create_non_dynamic_with_ff(
         variable_pool.out_edge_inv_mass1,
         variable_pool.out_edge_inv_mass2,
     )
-    meson_radius = sp.Symbol(f"d_{particle.name}")
+    meson_radius = sp.Symbol(f"d_{resonance.name}")
     return (
         BlattWeisskopf(q, meson_radius, angular_momentum),
         {meson_radius: 1},
@@ -59,21 +59,21 @@ def create_non_dynamic_with_ff(
 
 
 def create_relativistic_breit_wigner(
-    particle: Particle, variable_pool: TwoBodyKinematicVariableSet
+    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
     inv_mass = variable_pool.in_edge_inv_mass
-    res_mass = sp.Symbol(f"m_{particle.name}")
-    res_width = sp.Symbol(f"Gamma_{particle.name}")
+    res_mass = sp.Symbol(f"m_{resonance.name}")
+    res_width = sp.Symbol(f"Gamma_{resonance.name}")
     expression = relativistic_breit_wigner(inv_mass, res_mass, res_width)
     parameter_defaults = {
-        res_mass: particle.mass,
-        res_width: particle.width,
+        res_mass: resonance.mass,
+        res_width: resonance.width,
     }
     return expression, parameter_defaults
 
 
 def create_relativistic_breit_wigner_with_ff(
-    particle: Particle, variable_pool: TwoBodyKinematicVariableSet
+    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
     if variable_pool.angular_momentum is None:
         raise ValueError(
@@ -81,12 +81,12 @@ def create_relativistic_breit_wigner_with_ff(
         )
 
     inv_mass = variable_pool.in_edge_inv_mass
-    res_mass = sp.Symbol(f"m_{particle.name}")
-    res_width = sp.Symbol(f"Gamma_{particle.name}")
+    res_mass = sp.Symbol(f"m_{resonance.name}")
+    res_width = sp.Symbol(f"Gamma_{resonance.name}")
     product1_inv_mass = variable_pool.out_edge_inv_mass1
     product2_inv_mass = variable_pool.out_edge_inv_mass2
     angular_momentum = variable_pool.angular_momentum
-    meson_radius = sp.Symbol(f"d_{particle.name}")
+    meson_radius = sp.Symbol(f"d_{resonance.name}")
 
     expression = relativistic_breit_wigner_with_ff(
         inv_mass,
@@ -98,8 +98,8 @@ def create_relativistic_breit_wigner_with_ff(
         meson_radius,
     )
     parameter_defaults = {
-        res_mass: particle.mass,
-        res_width: particle.width,
+        res_mass: resonance.mass,
+        res_width: resonance.width,
         meson_radius: 1,
     }
     return expression, parameter_defaults
@@ -117,7 +117,7 @@ class ResonanceDynamicsBuilder(Protocol):
     """
 
     def __call__(
-        self, particle: Particle, variable_pool: TwoBodyKinematicVariableSet
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
         ...
 
