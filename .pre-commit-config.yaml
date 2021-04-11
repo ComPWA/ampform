@@ -29,8 +29,9 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.2
+    rev: 0.0.3
     hooks:
+      - id: check-dev-files
       - id: fix-first-nbcell
         args:
           - --colab
