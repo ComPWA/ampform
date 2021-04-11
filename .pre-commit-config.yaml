@@ -38,7 +38,7 @@ repos:
       - id: fix-nbformat-version
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.3.11
+    rev: v5.3.12
     hooks:
       - id: cspell
 
@@ -73,7 +73,7 @@ repos:
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.126
+    rev: v1.1.130
     hooks:
       - id: pyright
 
