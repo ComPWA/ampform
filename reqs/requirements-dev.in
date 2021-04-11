@@ -7,7 +7,6 @@
 aquirdturtle_collapsible_headings
 jupyterlab
 jupyterlab-code-formatter
-labels
 pip-tools != 6.0.0  # https://github.com/jazzband/pip-tools/issues/1352
 pydeps
 sphinx-autobuild
