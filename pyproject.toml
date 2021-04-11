@@ -19,14 +19,14 @@ include = '\.pyi?$'
 exclude = '''
 /(
     .*\.egg-info
-  | .*build
-  | \.eggs
-  | \.git
-  | \.pytest_cache
-  | \.tox
-  | \.venv
-  | \.vscode
-  | dist
+    | .*build
+    | \.eggs
+    | \.git
+    | \.pytest_cache
+    | \.tox
+    | \.venv
+    | \.vscode
+    | dist
 )/
 '''
 
