@@ -7,7 +7,6 @@ ipywidgets
 jupyter
 matplotlib
 myst-nb >= 0.11  # myst_enable_extensions
-myst-parser != 0.13.2 # https://github.com/executablebooks/MyST-Parser/issues/299
 Sphinx >= 3
 sphinx-book-theme
 sphinx-copybutton
