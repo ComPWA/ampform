@@ -24,16 +24,7 @@ def test_generate(
     model = get_builder(result).generate()
     assert len(model.parameter_defaults) == 2
     assert len(model.components) == 4 + n_amplitudes
-
-    free_symbol_names = {s.name for s in model.expression.free_symbols}
-    assert free_symbol_names == {
-        R"C[J/\psi(1S) \to f_{0}(1500)_{0} \gamma_{+1};f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}]",
-        R"C[J/\psi(1S) \to f_{0}(980)_{0} \gamma_{+1};f_{0}(980) \to \pi^{0}_{0} \pi^{0}_{0}]",
-        "phi_1+2",
-        "phi_1,1+2",
-        "theta_1+2",
-        "theta_1,1+2",
-    }
+    assert len(model.expression.free_symbols) == 6
 
     no_dynamics: sp.Expr = model.expression.doit()
     no_dynamics = no_dynamics.subs(model.parameter_defaults)
