@@ -2,9 +2,13 @@ name: CI-docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
 
 jobs:
   documentation:

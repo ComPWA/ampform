@@ -2,9 +2,13 @@ name: CI-style
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
 
 jobs:
   style:

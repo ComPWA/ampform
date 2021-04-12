@@ -1,6 +1,10 @@
 name-template: AmpForm $NEXT_PATCH_VERSION
 tag-template: $NEXT_PATCH_VERSION
 
+references:
+  - main
+  - epic/*
+
 categories:
   - title: 💡 New features
     label: 💡 Feature

@@ -4,7 +4,9 @@ name: Requirements (PR)
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
 
 jobs:
   upgrade:
