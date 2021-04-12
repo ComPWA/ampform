@@ -60,7 +60,7 @@ jinja2==2.11.3
 json5==0.9.5
 jsonschema==3.2.0
 jupyter-cache==0.4.2
-jupyter-client==6.1.12
+jupyter-client==6.2.0
 jupyter-console==6.4.0
 jupyter-core==4.7.1
 jupyter-packaging==0.7.12
