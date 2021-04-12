@@ -16,7 +16,7 @@ python-constraint==1.4.0
 pyyaml==5.4.1
 qrules==0.8.0a1
 six==1.15.0
-sympy==1.7.1
+sympy==1.8
 tqdm==4.60.0
 typing-extensions==3.7.4.3 ; python_version < "3.8.0"
 zipp==3.4.1
