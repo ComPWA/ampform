@@ -3,8 +3,6 @@
 
 # Requirements to build documentation
 dataclasses; python_version < '3.7'
-ipywidgets
-jupyter
 matplotlib
 myst-nb >= 0.11  # myst_enable_extensions
 Sphinx >= 3
