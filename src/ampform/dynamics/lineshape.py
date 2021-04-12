@@ -106,7 +106,7 @@ def implement_doit_method() -> Callable[
     return decorator
 
 
-@implement_expr(n_args=3)
+@implement_doit_method()
 class BlattWeisskopf(UnevaluatedExpression):
     r"""Blatt-Weisskopf function :math:`B_L(q)`, up to :math:`L \leq 8`.
 
@@ -132,6 +132,21 @@ class BlattWeisskopf(UnevaluatedExpression):
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
     """
+
+    def __new__(  # pylint: disable=arguments-differ
+        cls,
+        q: sp.Symbol,
+        d: sp.Symbol,
+        angular_momentum: sp.Symbol,
+        evaluate: bool = False,
+        **hints: Any,
+    ) -> "BlattWeisskopf":
+        args = (q, d, angular_momentum)
+        args = sp.sympify(args)
+        if evaluate:
+            # pylint: disable=no-member
+            return sp.Expr.__new__(cls, *args, **hints).evaluate()
+        return sp.Expr.__new__(cls, *args, **hints)
 
     @property
     def q(self) -> sp.Symbol:
