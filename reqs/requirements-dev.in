@@ -8,6 +8,5 @@ aquirdturtle_collapsible_headings
 jupyterlab
 jupyterlab-code-formatter
 pip-tools
-pydeps
 sphinx-autobuild
 tox >= 1.9  # for skip_install, use_develop
