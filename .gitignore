@@ -41,6 +41,7 @@ pyvenv*/
 **.code-workspace
 
 # Exceptions
+!.cspell.json
 !.github/*.yml
 !.github/*/*.yml
 !.gitpod.yml
@@ -49,6 +50,5 @@ pyvenv*/
 !.readthedocs.yml
 !.vscode/*.json
 !codecov.yml
-!cspell.json
 !environment.yml
 !pyrightconfig.json
