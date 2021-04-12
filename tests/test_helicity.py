@@ -1,5 +1,7 @@
 import pytest
+import sympy as sp
 from qrules import Result
+from sympy import cos, sin, sqrt
 
 from ampform import get_builder
 
@@ -19,6 +21,28 @@ def test_generate(
         result = jpsi_to_gamma_pi_pi_helicity_solutions
     else:
         raise NotImplementedError
-    sympy_model = get_builder(result).generate()
-    assert len(sympy_model.parameter_defaults) == 2
-    assert len(sympy_model.components) == 4 + n_amplitudes
+    model = get_builder(result).generate()
+    assert len(model.parameter_defaults) == 2
+    assert len(model.components) == 4 + n_amplitudes
+    assert len(model.expression.free_symbols) == 6
+
+    no_dynamics: sp.Expr = model.expression.doit()
+    no_dynamics = no_dynamics.subs(model.parameter_defaults)
+    assert len(no_dynamics.free_symbols) == 1
+
+    existing_theta = next(iter(no_dynamics.free_symbols))
+    theta = sp.Symbol("theta", real=True)
+    no_dynamics = no_dynamics.subs({existing_theta: theta})
+    no_dynamics = no_dynamics.trigsimp()
+    if formalism == "canonical":
+        assert (
+            no_dynamics
+            == 0.8 * sqrt(10) * cos(theta) ** 2
+            + 4.4 * cos(theta) ** 2
+            + 0.8 * sqrt(10)
+            + 4.4
+        )
+    elif formalism == "helicity":
+        assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
+    else:
+        raise NotImplementedError

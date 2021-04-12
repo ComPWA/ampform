@@ -12,7 +12,7 @@ from ampform.data import EventCollection
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
 from ampform.helicity import HelicityModel
 
-logging.basicConfig(level=logging.ERROR)
+logging.getLogger().setLevel(level=logging.ERROR)
 
 
 @pytest.fixture(scope="session")
