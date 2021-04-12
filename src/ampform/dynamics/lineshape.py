@@ -13,6 +13,14 @@ from sympy.printing.latex import LatexPrinter
 
 
 class UnevaluatedExpression(sp.Expr):
+    """Base class for classes that expressions with an ``evaluate`` method.
+
+    Derive from this class when decorating a class with `implement_expr` or
+    `implement_doit_method`. It is important to derive from
+    `UnevaluatedExpression`, because a `~UnevaluatedExpression.evaluate` method
+    has to be implemented.
+    """
+
     @abstractmethod
     def evaluate(self) -> sp.Expr:
         pass
@@ -26,16 +34,36 @@ class UnevaluatedExpression(sp.Expr):
 
 def implement_expr(
     n_args: int,
-) -> Callable[[Type[UnevaluatedExpression]], sp.Expr]:
+) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
     Implement a `~object.__new__` and `~sympy.core.basic.Basic.doit` method for
     a class that derives from `~sympy.core.expr.Expr` (via
-    `UnevaluatedExpression`). It is important to derive from
-    `~UnevaluatedExpression.evaluate` method has to be implemented
+    `UnevaluatedExpression`).
     """
 
-    def decorator(decorated_class: Type[UnevaluatedExpression]) -> sp.Expr:
+    def decorator(
+        decorated_class: Type[UnevaluatedExpression],
+    ) -> Type[UnevaluatedExpression]:
+        decorated_class = implement_new_method(n_args)(decorated_class)
+        decorated_class = implement_doit_method()(decorated_class)
+        return decorated_class
+
+    return decorator
+
+
+def implement_new_method(
+    n_args: int,
+) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+    """Implement ``__new__()`` method for an `UnevaluatedExpression` class.
+
+    Implement a `~object.__new__` method for a class that derives from
+    `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
+    """
+
+    def decorator(
+        decorated_class: Type[UnevaluatedExpression],
+    ) -> Type[UnevaluatedExpression]:
         def new_method(
             cls: Type,
             *args: sp.Symbol,
@@ -51,10 +79,27 @@ def implement_expr(
                 return sp.Expr.__new__(cls, *args).evaluate()  # type: ignore  # pylint: disable=no-member
             return sp.Expr.__new__(cls, *args)
 
+        decorated_class.__new__ = new_method  # type: ignore
+        return decorated_class
+
+    return decorator
+
+
+def implement_doit_method() -> Callable[
+    [Type[UnevaluatedExpression]], Type[UnevaluatedExpression]
+]:
+    """Implement ``doit()`` method for an `UnevaluatedExpression` class.
+
+    Implement a `~sympy.core.basic.Basic.doit` method for a class that derives
+    from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
+    """
+
+    def decorator(
+        decorated_class: Type[UnevaluatedExpression],
+    ) -> Type[UnevaluatedExpression]:
         def doit_method(self: Any, **hints: Any) -> sp.Expr:
             return type(self)(*self.args, **hints, evaluate=True)
 
-        decorated_class.__new__ = new_method  # type: ignore
         decorated_class.doit = doit_method
         return decorated_class
 
