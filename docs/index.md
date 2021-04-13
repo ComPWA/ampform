@@ -9,13 +9,6 @@
 [![Test coverage](https://codecov.io/gh/ComPWA/ampform/branch/main/graph/badge.svg)](https://codecov.io/gh/ComPWA/ampform)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/70fc5fb0f3954a9d82d142efeff4df31)](https://www.codacy.com/gh/ComPWA/ampform)
 
-````{margin}
-```{tip}
-For an overview of upcoming releases and planned functionality, see
-[here](https://github.com/ComPWA/ampform/milestones?direction=asc&sort=title&state=open).
-```
-````
-
 :::{dropdown} Original project: PWA Expert System
 
 The original project was the {doc}`PWA Expert System <expertsystem:index>`.
@@ -34,6 +27,7 @@ usage
 references
 API <api/ampform>
 Changelog <https://github.com/ComPWA/ampform/releases>
+Upcoming features <https://github.com/ComPWA/ampform/milestones?direction=asc&sort=title&state=open>
 Develop <https://pwa.readthedocs.io/develop.html>
 ```
 
