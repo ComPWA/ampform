@@ -186,6 +186,10 @@ intersphinx_mapping = {
         None,
     ),
     "matplotlib": ("https://matplotlib.org/stable/", None),
+    "mpl_interactions": (
+        "https://mpl-interactions.readthedocs.io/en/stable",
+        None,
+    ),
     "mypy": ("https://mypy.readthedocs.io/en/stable", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
