@@ -3,7 +3,9 @@
 
 # Requirements to build documentation
 dataclasses; python_version < '3.7'
+ipympl
 matplotlib
+mpl_interactions
 myst-nb >= 0.11  # myst_enable_extensions
 Sphinx >= 3
 sphinx-book-theme
