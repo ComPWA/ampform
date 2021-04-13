@@ -1,15 +1,12 @@
 -r requirements.in
 -r requirements-extras.in  # for pytest type hints
 
-docutils != 0.17  # causes problems for linkcheck
-
 # Requirements to build documentation
 dataclasses; python_version < '3.7'
-ipywidgets
-jupyter
+ipympl
 matplotlib
+mpl_interactions
 myst-nb >= 0.11  # myst_enable_extensions
-myst-parser != 0.13.2 # https://github.com/executablebooks/MyST-Parser/issues/299
 Sphinx >= 3
 sphinx-book-theme
 sphinx-copybutton
