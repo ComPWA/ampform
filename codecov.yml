@@ -10,7 +10,7 @@ coverage:
     project:
       default:
         # basic
-        target: 75% # can't go below this percentage
+        target: 80% # can't go below this percentage
         threshold: 1% # allow drops by this percentage
         base: auto
         # advanced
