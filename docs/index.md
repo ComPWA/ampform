@@ -9,7 +9,7 @@
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/stable)
 [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/stable?filepath=docs/usage)
 
-:::{dropdown} Original project: PWA Expert System
+:::{margin}
 
 The original project was the {doc}`PWA Expert System <expertsystem:index>`.
 AmpForm originates from its {mod}`~expertsystem.amplitude` module.
