@@ -176,15 +176,9 @@ intersphinx_mapping = {
         "https://labix.org/doc/constraint/public",
         "constraint.inv",
     ),
-    "expertsystem": (
-        "https://pwa.readthedocs.io/projects/expertsystem/en/stable",
-        None,
-    ),
+    "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
-    "jsonschema": (
-        "https://python-jsonschema.readthedocs.io/en/latest",
-        None,
-    ),
+    "jsonschema": ("https://python-jsonschema.readthedocs.io/en/latest", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
         "https://mpl-interactions.readthedocs.io/en/stable",
@@ -196,15 +190,9 @@ intersphinx_mapping = {
     "pwa": ("https://pwa.readthedocs.io", None),
     "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": (
-        "https://pwa.readthedocs.io/projects/qrules/en/stable",
-        None,
-    ),
+    "qrules": ("https://qrules.readthedocs.io/en/stable", None),
     "sympy": ("https://docs.sympy.org/latest", None),
-    "tensorwaves": (
-        "https://pwa.readthedocs.io/projects/tensorwaves/en/stable",
-        None,
-    ),
+    "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
     "tox": ("https://tox.readthedocs.io/en/stable", None),
 }
 
