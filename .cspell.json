@@ -25,6 +25,7 @@
         "*particle*.*ml",
         ".gitignore",
         ".gitpod.*",
+        ".mypy.ini",
         ".pre-commit-config.yaml",
         ".pylintrc",
         ".readthedocs.yml",
