@@ -38,6 +38,11 @@ repos:
           - --replace
       - id: fix-nbformat-version
 
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.10.0
+    hooks:
+      - id: blacken-docs
+
   - repo: https://github.com/ComPWA/mirrors-cspell
     rev: v5.3.12
     hooks:
