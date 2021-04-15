@@ -15,9 +15,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "off"
   },
-  "[pip-requirements]": {
-    "editor.wordWrap": "off"
-  },
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
@@ -63,7 +60,7 @@
   "search.exclude": {
     "**/tests/**/__init__.py": true,
     "*/tox.ini": true,
-    "reqs/3.*/*.txt": true
+    ".constraints/*.txt": true
   },
   "telemetry.enableCrashReporter": false,
   "telemetry.enableTelemetry": false,

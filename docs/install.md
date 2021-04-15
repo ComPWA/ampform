@@ -36,10 +36,21 @@ This goes as follows:
    the developer:
 
    ```shell
-   # pin dependencies first!
-   python3 -m pip install -r reqs/PYTHON_VERSION/requirements-dev.txt
-   python3 -m pip install -e .
+   python3 -m pip install -e .[dev]
    ```
+
+   :::{dropdown} Pinning dependencies
+
+   In order to install the _exact same versions_ of the dependencies with which
+   the framework has been tested, use the provided
+   [constraints files](https://pip.pypa.io/en/stable/user_guide/#constraints-files)
+   for the specific Python version `3.x` you are using:
+
+   ```shell
+   python3 -m pip install -c .constraints/py3.x.txt -e .[dev]
+   ```
+
+   :::
 
 That's all! Have a look at the {doc}`/usage` page to try out the package, and
 see {doc}`pwa:develop` for tips on how to work with this 'editable' developer

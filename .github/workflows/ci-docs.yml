@@ -23,8 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r reqs/3.7/requirements-doc.txt
-          pip install .
+          pip install -c .constraints/py3.7.txt .[doc]
           sudo apt-get -y install pandoc graphviz
       - name: Build documentation and run notebooks
         working-directory: docs
@@ -32,7 +31,7 @@ jobs:
           EXECUTE_NB: YES
         run: make html
       - uses: actions/upload-artifact@v2
-        if: ${{ failure() }}
+        if: ${{ always() }}
         with:
           name: html
           path: docs/_build/html
@@ -49,8 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r reqs/3.7/requirements-doc.txt
-          pip install .
+          pip install -c .constraints/py3.7.txt -e .[doc]
           sudo apt-get -y install pandoc
       - name: Test doctests in docstrings
         working-directory: docs
