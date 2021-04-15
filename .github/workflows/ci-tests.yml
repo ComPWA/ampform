@@ -28,7 +28,7 @@ jobs:
           pip install -c .constraints/py${{ matrix.python-version }}.txt -e .[test]
           pip install .
       - name: Test with pytest-cov
-        run: pytest -n auto --cov=qrules --cov-report=xml
+        run: pytest tests -n auto --cov=qrules --cov-report=xml
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
