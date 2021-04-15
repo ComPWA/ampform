@@ -10,7 +10,7 @@ on:
 
 jobs:
   upgrade:
-    name: Upgrade requirement files
+    name: Upgrade pinned requirements
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -26,11 +26,9 @@ jobs:
         id: git-diff
         run:
           echo "::set-output name=dependency-changes::$(git diff
-          origin/$GITHUB_BASE_REF --name-only -- reqs setup.cfg)"
-        # Also triggers on (unwanted) changes to requirements.txt files
+          origin/$GITHUB_BASE_REF --name-only -- .constraints/ setup.cfg)"
       - name: Show dependency changes changes
-        run:
-          git diff origin/$GITHUB_BASE_REF -- reqs/requirements*.in setup.cfg
+        run: git diff origin/$GITHUB_BASE_REF -- .constraints/ setup.cfg
       - name: Abort if fork PR and dependency changes
         if:
           github.event.pull_request.head.repo.full_name != github.repository &&
@@ -47,15 +45,13 @@ jobs:
         if: steps.git-diff.outputs.dependency-changes != ''
         run: |
           python -m pip install --upgrade pip
-          pip install pip-tools!=6.0.0
-        # https://github.com/jazzband/pip-tools/pull/1353
+          pip install pip-tools
       - name: Upgrade dependencies
         if: steps.git-diff.outputs.dependency-changes != ''
-        run: bash reqs/upgrade.sh
+        run: bash .constraints/upgrade.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.python-version }}
-          path: reqs/${{ matrix.python-version }}
+          path: .constraints/py${{ matrix.python-version }}.txt
 
   push:
     name: Push changes
@@ -68,17 +64,17 @@ jobs:
           token: ${{ secrets.PAT }}
       - uses: actions/download-artifact@v2
         with:
-          path: reqs
+          path: .constraints
+      - run: mv -f .constraints/artifact/* .constraints/
       - run: git status -s
       - name: Commit and push changes
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
-          git config --global user.name ${{ github.actor }}
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "GitHub Action"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b ${GITHUB_HEAD_REF}
-          FILES_TO_COMMIT="reqs/*/requirements*.txt"
-          if [[ $(git diff -- ${FILES_TO_COMMIT}) ]]; then
-            git add ${FILES_TO_COMMIT}
+          if [[ $(git status -s) ]]; then
+            git add -A
             git commit -m "ci: upgrade developer dependencies (automatic)"
             git config pull.rebase true
             git pull origin ${GITHUB_HEAD_REF}
