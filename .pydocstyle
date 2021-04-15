@@ -1,0 +1,11 @@
+[pydocstyle]
+convention = google
+add_ignore =
+    D101, # class docstring
+    D102, # method docstring
+    D103, # function docstring
+    D105, # magic method docstring
+    D107, # init docstring
+    D203, # conflicts with D211
+    D213, # multi-line docstring should start at the second line
+    D407, # missing dashed underline after section

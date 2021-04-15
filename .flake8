@@ -1,0 +1,36 @@
+[flake8]
+application-import-names =
+    ampform
+filename =
+    ./src/*.py
+    ./tests/*.py
+exclude =
+    __pycache__
+    docs/conf.py
+    typings/**
+ignore = # more info: https://www.flake8rules.com/
+    E203 # https://github.com/psf/black#slices
+    E231 # allowed by black
+    E501 # https://github.com/psf/black#line-length
+    RST299 # missing pygments
+    RST201 # block quote ends without a blank line (black formatting)
+    RST301 # unexpected indentation (related to google style docstring)
+    W503 # https://github.com/psf/black#line-breaks--binary-operators
+rst-roles =
+    attr,
+    cite,
+    class,
+    doc,
+    download,
+    file,
+    func,
+    meth,
+    mod,
+    ref,
+rst-directives =
+    deprecated,
+    envvar,
+    exception,
+    glue:figure,
+    glue:math,
+    seealso,

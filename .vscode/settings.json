@@ -59,7 +59,7 @@
   "rewrap.wrappingColumn": 79,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
-    "*/tox.ini": true,
+    "*/.pydocstyle": true,
     ".constraints/*.txt": true
   },
   "telemetry.enableCrashReporter": false,
