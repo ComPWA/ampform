@@ -32,8 +32,8 @@ This goes as follows:
 
 3. Install the project in
    {ref}`'editable installation' <pwa:develop:Editable installation>`, as well
-   as {ref}`additional dependencies <pwa:develop:Additional dependencies>` for
-   the developer:
+   as {ref}`optional dependencies <pwa:develop:Optional dependencies>` for the
+   developer:
 
    ```shell
    python3 -m pip install -e .[dev]
