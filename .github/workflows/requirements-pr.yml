@@ -10,7 +10,7 @@ on:
 
 jobs:
   upgrade:
-    name: Upgrade requirement files
+    name: Upgrade pinned requirements
     runs-on: ubuntu-20.04
     strategy:
       matrix:
