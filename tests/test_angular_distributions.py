@@ -73,7 +73,7 @@ class TestEpemToDmD0Pip:
             final_state=[("D0", [0]), ("D-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D(2)*(2460)+"],
             allowed_interaction_types="em",
-            particles=particles,
+            particle_db=particles,
         )
 
         amplitude_model = get_builder(result).generate()
