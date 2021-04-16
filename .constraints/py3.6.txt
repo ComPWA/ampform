@@ -40,8 +40,8 @@ flake8-blind-except==0.2.0
 flake8-bugbear==21.4.3
 flake8-builtins==1.5.3
 flake8-polyfill==1.0.2
-flake8-rst-docstrings==0.0.14
-flake8==3.9.0
+flake8-rst-docstrings==0.1.1
+flake8==3.9.1
 fuzzywuzzy==0.18.0
 gitdb==4.0.7
 gitpython==3.1.14
@@ -70,7 +70,7 @@ jupyter-client==6.1.12
 jupyter-core==4.7.1
 jupyter-packaging==0.9.1
 jupyter-server-mathjax==0.2.2
-jupyter-server==1.6.1
+jupyter-server==1.6.2
 jupyter-sphinx==0.3.1
 jupyterlab-code-formatter==1.4.10
 jupyterlab-server==2.4.0
@@ -140,7 +140,7 @@ python-dateutil==2.8.1
 pytz==2021.1
 pyyaml==5.4.1
 pyzmq==22.0.3
-qrules==0.8.0a1
+qrules==0.8.0
 regex==2021.4.4
 requests==2.25.1
 restructuredtext-lint==1.3.2
