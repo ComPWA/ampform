@@ -41,6 +41,7 @@
         "docs/conf.py",
         "pyproject.toml",
         "pyrightconfig.json",
+        "pytest.ini",
         "requirements*.txt",
         "setup.cfg",
         "setup.py",
