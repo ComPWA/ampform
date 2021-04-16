@@ -1,5 +1,5 @@
 tasks:
-  - init: pip install -c .constraints/py38.txt -e .
+  - init: pip install -c .constraints/py3.8.txt -e .
 
 github:
   prebuilds:
