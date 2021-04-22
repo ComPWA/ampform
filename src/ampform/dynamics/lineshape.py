@@ -1,5 +1,5 @@
 # cspell:ignore Asner Nakamura
-# pylint: disable=protected-access,unused-argument
+# pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics.
 
 .. seealso:: :doc:`/usage/dynamics/lineshapes`
@@ -45,24 +45,14 @@ class BlattWeisskopf(UnevaluatedExpression):
         evaluate: bool = False,
         **hints: Any,
     ) -> "BlattWeisskopf":
-        args = (angular_momentum, z)
-        args = sp.sympify(args)
+        args = sp.sympify((angular_momentum, z))
         if evaluate:
             # pylint: disable=no-member
             return sp.Expr.__new__(cls, *args, **hints).evaluate()
         return sp.Expr.__new__(cls, *args, **hints)
 
-    @property
-    def angular_momentum(self) -> sp.Symbol:
-        return self.args[0]
-
-    @property
-    def z(self) -> sp.Symbol:
-        return self.args[1]
-
     def evaluate(self) -> sp.Expr:
-        angular_momentum = self.angular_momentum
-        z = self.z
+        angular_momentum, z = self.args
         return sp.sqrt(
             sp.Piecewise(
                 (
@@ -161,8 +151,8 @@ class BlattWeisskopf(UnevaluatedExpression):
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        l, z = tuple(map(printer._print, (self.angular_momentum, self.z)))
-        return fR"B_{l}\left({z}\right)"
+        angular_momentum, z = tuple(map(printer._print, self.args))
+        return fR"B_{{{angular_momentum}}}\left({z}\right)"
 
 
 def relativistic_breit_wigner(
