@@ -84,6 +84,13 @@ exclude_patterns = [
 # General sphinx settings
 add_module_names = False
 autodoc_default_options = {
+    "exclude-members": ", ".join(
+        [
+            "default_assumptions",
+            "doit",
+            "evaluate",
+        ]
+    ),
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,

@@ -8,12 +8,12 @@ from sympy.printing.latex import LatexPrinter
 
 
 class UnevaluatedExpression(sp.Expr):
-    """Base class for classes that expressions with an ``evaluate`` method.
+    """Base class for classes that expressions with an ``evaluate()`` method.
 
     Derive from this class when decorating a class with `implement_expr` or
     `implement_doit_method`. It is important to derive from
-    `UnevaluatedExpression`, because a `~UnevaluatedExpression.evaluate` method
-    has to be implemented.
+    `UnevaluatedExpression`, because an :code:`evaluate()` method has to be
+    implemented.
     """
 
     @abstractmethod
