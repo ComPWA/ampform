@@ -206,6 +206,14 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
 def breakup_momentum(
     m_r: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
+    r"""Two-body breakup-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
+    absolute value of the momentum of both :math:`a` and :math:`b` in the rest
+    frame of :math:`R`.
+
+    See :pdg-review:`2020; Kinematics; p.3`.
+    """
     return sp.sqrt(
         (m_r ** 2 - (m_a + m_b) ** 2)
         * (m_r ** 2 - (m_a - m_b) ** 2)
