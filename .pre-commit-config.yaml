@@ -29,7 +29,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.12
+    rev: 0.0.14
     hooks:
       - id: check-dev-files
       - id: fix-first-nbcell
@@ -79,7 +79,7 @@ repos:
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.132
+    rev: v1.1.134
     hooks:
       - id: pyright
 

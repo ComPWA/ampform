@@ -1,5 +1,5 @@
 tasks:
-  - init: pip install -c .constraints/py3.8.txt -e .
+  - init: pip install -c .constraints/py3.8.txt -e .[dev]
 
 github:
   prebuilds:
@@ -10,3 +10,27 @@ github:
     addComment: false
     addBadge: false
     addLabel: false
+
+vscode:
+  extensions:
+    - bungcip.better-toml
+    - christian-kohler.path-intellisense
+    - codestream.codestream
+    - davidanson.vscode-markdownlint
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - esbenp.prettier-vscode
+    - executablebookproject.myst-highlight
+    - github.vscode-pull-request-github
+    - joaompinto.vscode-graphviz
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-vsliveshare.vsliveshare
+    - redhat.vscode-yaml
+    - ryanluker.vscode-coverage-gutters
+    - stkb.rewrap
+    - streetsidesoftware.code-spell-checker
+    - travisillig.vscode-json-stable-stringify
+    - trentrand.git-commit-helper-vscode
+    - tyriar.sort-lines
+    - yzhang.markdown-all-in-one
