@@ -1,6 +1,4 @@
-# cspell: disable srepr
-# pylint: disable=invalid-name,no-self-use
-
+# pylint: disable=no-self-use
 import operator
 from copy import deepcopy
 from functools import reduce
@@ -14,6 +12,7 @@ class TestFunction:
         f = sp.Function("h")
         g = sp.Function("h")
         assert f is g
+        # pylint: disable=not-callable
         assert f(x) is g(x)
         f = sp.Function("h")(x)
         g = sp.Function("h")(x)
@@ -34,8 +33,9 @@ class TestSymbol:
         # pylint: disable=no-member
         x = sp.Symbol("x; weird-spacing\t.,")
         f = sp.Function("  f.^")
-        g = sp.Function("g")(x)
+        g = sp.Function("g")(x)  # pylint: disable=not-callable
         assert x.name == "x; weird-spacing	.,"
+        # cspell:ignore srepr
         assert sp.srepr(x) == "Symbol('x; weird-spacing\\t.,')"
         assert f.name == "  f.^"
         assert g.name == "g"

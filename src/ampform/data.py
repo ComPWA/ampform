@@ -149,11 +149,11 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
     def p_z(self) -> ScalarSequence:
         return ScalarSequence(self[:, 3])
 
-    def p_norm(self) -> ScalarSequence:  # pylint: disable=invalid-name
+    def p_norm(self) -> ScalarSequence:
         """Norm of `.three_momentum`."""
         return ScalarSequence(np.sqrt(self.p_squared()))
 
-    def p_squared(self) -> ScalarSequence:  # pylint: disable=invalid-name
+    def p_squared(self) -> ScalarSequence:
         """Squared norm of `.three_momentum`."""
         return ScalarSequence(np.sum(self.three_momentum ** 2, axis=1))
 

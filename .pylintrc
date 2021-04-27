@@ -3,46 +3,29 @@
 # and compare the output
 
 [BASIC]
-good-names=
-    _,
-    a,
-    i,
-    j,
-    k,
-    p,
-    q,
-    x,
-    y,
-    z,
-
-[VARIABLES]
-init-import=yes
-
-[MESSAGES CONTROL]
-disable=
-    C0114,  # done by pydocstyle
-    C0115,  # done by pydocstyle
-    C0116,  # done by pydocstyle
-    C0330,  # https://github.com/psf/black/issues/48
-    RST203, # unexpected indentation
-    RST301, # related to google style docstring
-    R0801,  # similar lines # https://github.com/PyCQA/pylint/issues/214
-    logging-fstring-interpolation,
-    not-callable,
-    unused-import,  # https://www.flake8rules.com/rules/F401
+good-names-rgxs=
+    ^[a-z]\d*$,  # e.g. x, y, m1, m2 (physics symbols)
 
 [MASTER]
 ignore=
     conf.py,
-    sympy
+    sympy,
 ignore-patterns=
     .*\.pyi
 
-[DESIGN]
-# Minimum number of public methods for a class (see R0903). Default is 2.
-# We decrease this to 0, since some rules are "empty" but get decorated.
-# Note that some interface classes also just have a single method
-min-public-methods=0
+[MESSAGES CONTROL]
+disable=
+    duplicate-code, # https://github.com/PyCQA/pylint/issues/214
+    logging-fstring-interpolation,
+    missing-class-docstring,    # pydocstyle
+    missing-function-docstring, # pydocstyle
+    missing-module-docstring,   # pydocstyle
+    redefined-builtin, # flake8-built
+    too-few-public-methods, # data containers (attrs) and interface classes
+    unused-import, # https://www.flake8rules.com/rules/F401
 
 [SIMILARITIES]
 ignore-imports=yes # https://stackoverflow.com/a/30007053
+
+[VARIABLES]
+init-import=yes
