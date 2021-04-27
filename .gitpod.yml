@@ -22,7 +22,7 @@ vscode:
     - esbenp.prettier-vscode
     - executablebookproject.myst-highlight
     - github.vscode-pull-request-github
-    - joaompinto.vscode-graphviz
+    - littlefoxteam.vscode-python-test-adapter
     - ms-python.python
     - ms-python.vscode-pylance
     - ms-vsliveshare.vsliveshare
@@ -31,6 +31,5 @@ vscode:
     - stkb.rewrap
     - streetsidesoftware.code-spell-checker
     - travisillig.vscode-json-stable-stringify
-    - trentrand.git-commit-helper-vscode
     - tyriar.sort-lines
     - yzhang.markdown-all-in-one
