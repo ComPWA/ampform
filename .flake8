@@ -16,6 +16,7 @@ ignore = # more info: https://www.flake8rules.com/
     RST201 # block quote ends without a blank line (black formatting)
     RST301 # unexpected indentation (related to google style docstring)
     W503 # https://github.com/psf/black#line-breaks--binary-operators
+radon-max-cc = 8
 radon-no-assert = True
 rst-roles =
     attr,
