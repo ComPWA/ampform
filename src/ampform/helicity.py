@@ -725,8 +725,8 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 # https://github.com/sympy/sympy/issues/21001
 class _ClebschGordanLatexFix(CG):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        label = map(
+        j3, m3, j1, m1, j2, m2 = map(  # pylint: disable=invalid-name
             printer._print,  # pylint: disable=protected-access
             (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
         )
-        return r"{C^{%s,%s}_{%s,%s,%s,%s}}" % tuple(label)
+        return f"{{C^{j3,m3}_{j1, m1, j2, m2}}}"
