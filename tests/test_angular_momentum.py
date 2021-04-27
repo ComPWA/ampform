@@ -61,7 +61,5 @@ def test_extract_angular_momentum(
 def test_invalid_angular_momentum(
     graph: StateTransitionGraph[ParticleWithSpin],
 ) -> None:
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match="not integral"):
         _extract_angular_momentum(graph, 0)
-
-    assert "not integral" in err.value.args[0]
