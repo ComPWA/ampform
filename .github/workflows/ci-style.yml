@@ -1,4 +1,4 @@
-name: CI-style
+name: pre-commit
 
 on:
   push:

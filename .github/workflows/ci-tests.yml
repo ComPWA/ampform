@@ -1,12 +1,14 @@
-# cspell:ignore unittests
-
-name: CI-tests
+name: pytest
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - epic/*
 
 jobs:
   codecov:
@@ -37,6 +39,7 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: ./coverage.xml
+          # cspell:ignore unittests
           flags: unittests
 
   pytest:
