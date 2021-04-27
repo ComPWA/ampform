@@ -14,7 +14,7 @@ class Input(NamedTuple):
 
 
 @pytest.mark.parametrize(
-    "test_input, parameter_count",
+    ("test_input", "parameter_count"),
     [
         (
             Input(

@@ -86,7 +86,7 @@ class TestEpemToDmD0Pip:
         return sp.re(full_model)
 
     @pytest.mark.parametrize(
-        "angular_variables, expected_distribution_function",  # type: ignore
+        ("angular_variables", "expected_distribution_function"),
         [
             (  # cos(theta) distribution from epem decay
                 "theta_1+2",
@@ -177,7 +177,7 @@ class TestD1ToD0PiPi:
         return sp.re(full_model)
 
     @pytest.mark.parametrize(
-        "angular_variables, expected_distribution_function",  # type: ignore
+        ("angular_variables", "expected_distribution_function"),
         [
             (  # theta distribution from D1 decay
                 "theta_1+2",

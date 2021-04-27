@@ -36,7 +36,7 @@ def _create_graph_dummy(
 
 
 @pytest.mark.parametrize(
-    "graph,expected_l",
+    ("graph", "expected_l"),
     [
         (_create_graph_dummy(1, 0.5), 1),
         (_create_graph_dummy(0, 1.0), 0),
