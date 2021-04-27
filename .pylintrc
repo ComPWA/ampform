@@ -29,6 +29,7 @@ disable=
     R0801,  # similar lines # https://github.com/PyCQA/pylint/issues/214
     logging-fstring-interpolation,
     not-callable,
+    redefined-builtin,  # flake8-built
     unused-import,  # https://www.flake8rules.com/rules/F401
 
 [MASTER]
