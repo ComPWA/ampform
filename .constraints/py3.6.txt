@@ -42,6 +42,7 @@ flake8-builtins==1.5.3
 flake8-comprehensions==3.4.0
 flake8-polyfill==1.0.2
 flake8-rst-docstrings==0.2.1
+flake8-use-fstring==1.1
 flake8==3.9.1
 future==0.18.2
 gitdb==4.0.7
