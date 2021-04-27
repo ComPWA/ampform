@@ -1,5 +1,5 @@
 # cspell:ignore Asner Nakamura
-# pylint: disable=invalid-name,protected-access,unused-argument
+# pylint: disable=protected-access,unused-argument
 """Lineshape functions that describe the dynamics.
 
 .. seealso:: :doc:`/usage/dynamics/lineshapes`
@@ -302,11 +302,15 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """
     q = breakup_momentum(mass, m_a, m_b)
     q0 = breakup_momentum(mass0, m_a, m_b)
-    ff = BlattWeisskopf(q, meson_radius, angular_momentum)
-    ff0 = BlattWeisskopf(q0, meson_radius, angular_momentum)
-    mass_dependent_width = gamma0 * (mass0 / mass) * (ff ** 2 / ff0 ** 2)
-    mass_dependent_width = mass_dependent_width * (q / q0)
-    return (mass0 * gamma0 * ff) / (
+    form_factor = BlattWeisskopf(q, meson_radius, angular_momentum)
+    form_factor0 = BlattWeisskopf(q0, meson_radius, angular_momentum)
+    mass_dependent_width = (
+        gamma0
+        * (mass0 / mass)
+        * (form_factor ** 2 / form_factor0 ** 2)
+        * (q / q0)
+    )
+    return (mass0 * gamma0 * form_factor) / (
         mass0 ** 2 - mass ** 2 - mass_dependent_width * mass0 * sp.I
     )
 

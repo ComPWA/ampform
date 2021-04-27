@@ -50,8 +50,8 @@ def test_generate(
     assert len(expression.free_symbols) == 1
 
     existing_symbol = next(iter(expression.free_symbols))
-    m = sp.Symbol("m", real=True)  # pylint: disable=invalid-name
-    expression = expression.subs({existing_symbol: m})
+    mass = sp.Symbol("m", real=True)
+    expression = expression.subs({existing_symbol: mass})
 
     expression = round_nested(expression, n_decimals=2)
 
