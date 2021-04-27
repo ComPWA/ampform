@@ -36,7 +36,7 @@ def _create_graph_dummy(
 
 
 @pytest.mark.parametrize(
-    "graph,expected_l",
+    ("graph", "expected_l"),
     [
         (_create_graph_dummy(1, 0.5), 1),
         (_create_graph_dummy(0, 1.0), 0),
@@ -61,7 +61,5 @@ def test_extract_angular_momentum(
 def test_invalid_angular_momentum(
     graph: StateTransitionGraph[ParticleWithSpin],
 ) -> None:
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match="not integral"):
         _extract_angular_momentum(graph, 0)
-
-    assert "not integral" in err.value.args[0]

@@ -459,11 +459,11 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(self, reaction_result: Result) -> None:
         self.name_generator = _HelicityAmplitudeNameGenerator()
         self.__graphs = reaction_result.transitions
-        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = dict()
-        self.__components: Dict[str, sp.Expr] = dict()
+        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
+        self.__components: Dict[str, sp.Expr] = {}
         self.__dynamics_choices: Dict[
             _TwoBodyDecay, ResonanceDynamicsBuilder
-        ] = dict()
+        ] = {}
 
         if len(self.__graphs) < 1:
             raise ValueError(
@@ -489,8 +489,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     self.__dynamics_choices[decay] = dynamics_builder
 
     def generate(self) -> HelicityModel:
-        self.__components = dict()
-        self.__parameter_defaults = dict()
+        self.__components = {}
+        self.__parameter_defaults = {}
         return HelicityModel(
             expression=self.__generate_intensity(),
             components=self.__components,
@@ -549,7 +549,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         graph_group: List[StateTransitionGraph[ParticleWithSpin]],
     ) -> sp.Expr:
         graph_group_label = _get_graph_group_unique_label(graph_group)
-        expression: List[sp.Expr] = list()
+        expression: List[sp.Expr] = []
         for graph in graph_group:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(graph)
@@ -725,8 +725,8 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 # https://github.com/sympy/sympy/issues/21001
 class _ClebschGordanLatexFix(CG):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        label = map(
+        j3, m3, j1, m1, j2, m2 = map(  # pylint: disable=invalid-name
             printer._print,  # pylint: disable=protected-access
             (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
         )
-        return r"{C^{%s,%s}_{%s,%s,%s,%s}}" % tuple(label)
+        return f"{{C^{j3,m3}_{j1, m1, j2, m2}}}"

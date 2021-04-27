@@ -12,6 +12,7 @@ ignore = # more info: https://www.flake8rules.com/
     E203 # https://github.com/psf/black#slices
     E231 # allowed by black
     E501 # https://github.com/psf/black#line-length
+    FS003 # should be possible to use {} in latex strings
     RST299 # missing pygments
     RST201 # block quote ends without a blank line (black formatting)
     RST301 # unexpected indentation (related to google style docstring)

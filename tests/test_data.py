@@ -26,7 +26,7 @@ class TestFourMomentumSequence:
         assert sample.p_norm()[0] == [np.sqrt(1 ** 2 + 2 ** 2 + 3 ** 2)]
 
     @pytest.mark.parametrize(
-        "state_id, expected_mass",
+        ("state_id", "expected_mass"),
         [
             (0, 0.13498),
             (1, 0.00048 + 0.00032j),
