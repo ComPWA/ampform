@@ -11,7 +11,6 @@ import os
 import shutil
 import subprocess
 
-import sphobjinv as soi
 from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
@@ -41,34 +40,6 @@ subprocess.call(
     ),
     shell=True,
 )
-
-# -- Convert sphinx object inventory -----------------------------------------
-inv = soi.Inventory()
-inv.project = "constraint"
-
-constraint_object_names = [
-    "Constraint",
-    "Domain",
-    "Problem",
-    "Solver",
-    "Variable",
-]
-for object_name in constraint_object_names:
-    inv.objects.append(
-        soi.DataObjStr(
-            name=f"{inv.project}.{object_name}",
-            domain="py",
-            role="class",
-            priority="1",
-            uri=f"{inv.project}.{object_name}-class.html",
-            dispname="-",
-        )
-    )
-
-text = inv.data_file(contract=True)
-ztext = soi.compress(text)
-soi.writebytes("constraint.inv", ztext)
-
 
 # -- General configuration ---------------------------------------------------
 master_doc = "index.md"
@@ -172,28 +143,19 @@ nitpick_ignore = [
 # Intersphinx settings
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
-    "constraint": (
-        "https://labix.org/doc/constraint/public",
-        "constraint.inv",
-    ),
     "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
-    "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
-    "jsonschema": ("https://python-jsonschema.readthedocs.io/en/latest", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
         "https://mpl-interactions.readthedocs.io/en/stable",
         None,
     ),
-    "mypy": ("https://mypy.readthedocs.io/en/stable", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
-    "pycompwa": ("https://compwa.github.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": ("https://qrules.readthedocs.io/en/stable", None),
     "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
-    "tox": ("https://tox.readthedocs.io/en/stable", None),
 }
 
 # Settings for autosectionlabel
