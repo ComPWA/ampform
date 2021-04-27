@@ -125,7 +125,7 @@ class HelicityAdapter:
         self.registered_topologies.add(topology)
 
     def transform(self, events: EventCollection) -> DataSet:
-        output: Dict[str, ScalarSequence] = dict()
+        output: Dict[str, ScalarSequence] = {}
         for topology in self.registered_topologies:
             output.update(_compute_helicity_angles(events, topology))
             output.update(_compute_invariant_masses(events, topology))
@@ -352,7 +352,7 @@ def _compute_invariant_masses(
             f"Momentum IDs {set(events)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
-    invariant_masses = dict()
+    invariant_masses = {}
     for edge_id in topology.edges:
         attached_edge_ids = determine_attached_final_state(topology, edge_id)
         total_momentum = FourMomentumSequence(

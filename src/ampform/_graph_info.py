@@ -17,7 +17,7 @@ def group_graphs_same_initial_and_final(
     """
     graph_groups: Dict[
         Tuple[tuple, tuple], List[StateTransitionGraph[ParticleWithSpin]]
-    ] = dict()
+    ] = {}
     for graph in graphs:
         ise = graph.topology.outgoing_edge_ids
         fse = graph.topology.incoming_edge_ids
