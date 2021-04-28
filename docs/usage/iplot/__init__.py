@@ -191,3 +191,22 @@ def merge_args_kwargs(
         output_dict.update(arg)
     output_dict.update(kwargs)
     return output_dict
+
+
+def create_slider(symbol: sp.Symbol) -> Slider:
+    """Create an `int` or `float` slider, depending on Symbol assumptions.
+
+    The description for the slider is rendered as LaTeX from the
+    `~sympy.core.symbol.Symbol` name.
+
+    >>> import sympy as sp
+    >>> from symplot import create_slider
+    >>> create_slider(sp.Symbol("y"))
+    FloatSlider(value=0.0, description='$y$')
+    >>> create_slider(sp.Symbol("n", integer=True))
+    IntSlider(value=0, description='$n$')
+    """
+    description = f"${sp.latex(symbol)}$"
+    if symbol.is_integer:
+        return IntSlider(description=description)
+    return FloatSlider(description=description)

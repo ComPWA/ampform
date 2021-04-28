@@ -127,6 +127,7 @@
         "dotprint",
         "dtype",
         "dummified",
+        "dummifies",
         "einsum",
         "epem",
         "eval",
