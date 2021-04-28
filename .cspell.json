@@ -112,6 +112,7 @@
         "arange",
         "asdict",
         "asdot",
+        "automodule",
         "cano",
         "celltoolbar",
         "codacy",

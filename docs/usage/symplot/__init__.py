@@ -9,9 +9,19 @@ The module is only available here, under the documentation. If this feature
 turns out to be popular, it can be published as an independent package.
 """
 
+import inspect
 import logging
 from collections import abc
-from typing import Any, Dict, Iterator, Mapping, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    Mapping,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
@@ -127,7 +137,7 @@ class SliderKwargs(abc.Mapping):
         as the keywords (see `.SliderKwargs.__getitem__`). This façade method
         exists in particular for `.parameter_defaults`.
         """
-        value_mapping = merge_args_kwargs(*args, **kwargs)
+        value_mapping = _merge_args_kwargs(*args, **kwargs)
         for keyword, value in value_mapping.items():
             try:
                 self[keyword].value = value
@@ -141,7 +151,7 @@ class SliderKwargs(abc.Mapping):
         self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
         """Set min, max and (optionally) the number of steps for each slider."""
-        range_definitions = merge_args_kwargs(*args, **kwargs)
+        range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
                 raise TypeError(
@@ -174,14 +184,14 @@ class SliderKwargs(abc.Mapping):
 ValueType = TypeVar("ValueType")
 
 
-def merge_args_kwargs(
+def _merge_args_kwargs(
     *args: Dict[str, ValueType], **kwargs: ValueType
 ) -> Dict[str, ValueType]:
     r"""Merge positional `dict` arguments and keyword arguments into one `dict`.
 
-    >>> merge_args_kwargs(x="X", y="Y")
+    >>> _merge_args_kwargs(x="X", y="Y")
     {'x': 'X', 'y': 'Y'}
-    >>> merge_args_kwargs({R"\theta": 0}, a=1, b=2)
+    >>> _merge_args_kwargs({R"\theta": 0}, a=1, b=2)
     {'\\theta': 0, 'a': 1, 'b': 2}
     """
     output_dict = {}
@@ -191,6 +201,38 @@ def merge_args_kwargs(
         output_dict.update(arg)
     output_dict.update(kwargs)
     return output_dict
+
+
+def prepare_sliders(
+    expression: sp.Expr, plot_symbol: sp.Symbol
+) -> Tuple[Callable, SliderKwargs]:
+    # cspell:ignore lambdifygenerated
+    """Lambdify a `sympy` expression and create sliders for its arguments.
+
+    >>> import sympy as sp
+    >>> from symplot import prepare_sliders
+    >>> n = sp.Symbol("n", integer=True)
+    >>> x = sp.Symbol("x")
+    >>> expression, sliders = prepare_sliders(x ** n, plot_symbol=x)
+    >>> expression
+    <function _lambdifygenerated at ...>
+    >>> sliders
+    SliderKwargs(...)
+    """
+    slider_symbols = _extract_slider_symbols(expression, plot_symbol)
+    sliders_mapping = {
+        symbol.name: create_slider(symbol) for symbol in slider_symbols
+    }
+    lambdified_expression = sp.lambdify(
+        (plot_symbol, *slider_symbols),
+        expression,
+        "numpy",
+    )
+    symbols_names = list(map(lambda s: s.name, (plot_symbol, *slider_symbols)))
+    arg_names = list(inspect.signature(lambdified_expression).parameters)
+    arg_to_symbol = dict(zip(arg_names, symbols_names))
+    sliders = SliderKwargs(sliders_mapping, arg_to_symbol)
+    return lambdified_expression, sliders
 
 
 def create_slider(symbol: sp.Symbol) -> Slider:
@@ -210,3 +252,15 @@ def create_slider(symbol: sp.Symbol) -> Slider:
     if symbol.is_integer:
         return IntSlider(description=description)
     return FloatSlider(description=description)
+
+
+def _extract_slider_symbols(
+    expression: sp.Expr, plot_symbol: sp.Symbol
+) -> Tuple[sp.Symbol, ...]:
+    """Extract sorted, remaining free symbols of a `sympy` expression."""
+    if plot_symbol not in expression.free_symbols:
+        raise ValueError(
+            f"Expression does not contain a free symbol named {plot_symbol}"
+        )
+    ordered_symbols = sorted(expression.free_symbols, key=lambda s: s.name)
+    return tuple(s for s in ordered_symbols if s != plot_symbol)
