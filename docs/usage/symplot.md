@@ -1,7 +1,7 @@
 <!-- cspell:ignore automodule, undoc -->
 
-# iplot
+# symplot
 
 ```{eval-rst}
-.. automodule:: iplot
+.. automodule:: symplot
 ```

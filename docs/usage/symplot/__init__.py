@@ -1,5 +1,5 @@
 # pylint: disable=redefined-builtin
-"""Tools and wrappers for :doc:`mpl_interactions:index`.
+"""Create interactive plots for `sympy` expressions.
 
 The procedure to create interactive plots with for :mod:`sympy` expressions
 with :doc:`mpl-interactions <mpl_interactions:index>` has been extracted to
