@@ -110,7 +110,7 @@ class TestSliderKwargs:
             range_def = (min_, max_, n_steps)  # type: ignore
 
         sliders = deepcopy(slider_kwargs)
-        sliders.set_ranges(range_definitions={slider_name: range_def})
+        sliders.set_ranges({slider_name: range_def})
         slider = sliders[slider_name]
         assert slider.min == min_
         assert slider.max == max_

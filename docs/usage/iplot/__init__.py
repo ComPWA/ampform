@@ -11,7 +11,7 @@ turns out to be popular, it can be published as an independent package.
 
 import logging
 from collections import abc
-from typing import Any, Dict, Iterator, Mapping, Tuple, Union
+from typing import Any, Dict, Iterator, Mapping, Tuple, TypeVar, Union
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
@@ -22,6 +22,10 @@ except ImportError:
     PrettyPrinter = Any
 
 Slider = Union[FloatSlider, IntSlider]
+RangeDefinition = Union[
+    Tuple[float, float],
+    Tuple[float, float, int],
+]
 
 
 class SliderKwargs(abc.Mapping):
@@ -116,23 +120,15 @@ class SliderKwargs(abc.Mapping):
             p.breakable()
             p.text(")")
 
-    def set_values(
-        self, *args: Dict[Union[sp.Symbol, str], float], **kwargs: float
-    ) -> None:
+    def set_values(self, *args: Dict[str, float], **kwargs: float) -> None:
         """Set initial values for the sliders.
 
         Either use a `dict` as input, or use :code:`kwargs` with slider names
         as the keywords (see `.SliderKwargs.__getitem__`). This façade method
         exists in particular for `.parameter_defaults`.
         """
-        if len(args) != 0:
-            for arg in args:
-                if not isinstance(arg, dict):
-                    raise TypeError(
-                        "Positional arguments have to be of type dict"
-                    )
-                kwargs.update(arg)
-        for keyword, value in kwargs.items():
+        value_mapping = merge_args_kwargs(*args, **kwargs)
+        for keyword, value in value_mapping.items():
             try:
                 self[keyword].value = value
             except KeyError:
@@ -142,16 +138,10 @@ class SliderKwargs(abc.Mapping):
                 continue
 
     def set_ranges(
-        self,
-        range_definitions: Mapping[
-            str,
-            Union[
-                Tuple[float, float],
-                Tuple[float, float, int],
-            ],
-        ],
+        self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
         """Set min, max and (optionally) the number of steps for each slider."""
+        range_definitions = merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
                 raise TypeError(
@@ -179,3 +169,25 @@ class SliderKwargs(abc.Mapping):
                 slider.max = max_
             if isinstance(slider, FloatSlider):
                 slider.step = step_size
+
+
+ValueType = TypeVar("ValueType")
+
+
+def merge_args_kwargs(
+    *args: Dict[str, ValueType], **kwargs: ValueType
+) -> Dict[str, ValueType]:
+    r"""Merge positional `dict` arguments and keyword arguments into one `dict`.
+
+    >>> merge_args_kwargs(x="X", y="Y")
+    {'x': 'X', 'y': 'Y'}
+    >>> merge_args_kwargs({R"\theta": 0}, a=1, b=2)
+    {'\\theta': 0, 'a': 1, 'b': 2}
+    """
+    output_dict = {}
+    for arg in args:
+        if not isinstance(arg, dict):
+            raise TypeError("Positional arguments have to be of type dict")
+        output_dict.update(arg)
+    output_dict.update(kwargs)
+    return output_dict
