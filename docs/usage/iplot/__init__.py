@@ -11,10 +11,15 @@ turns out to be popular, it can be published as an independent package.
 
 import logging
 from collections import abc
-from typing import Dict, Iterator, Mapping, Tuple, Union
+from typing import Any, Dict, Iterator, Mapping, Tuple, Union
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
+
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = Any
 
 Slider = Union[FloatSlider, IntSlider]
 
@@ -86,6 +91,30 @@ class SliderKwargs(abc.Mapping):
 
     def __len__(self) -> int:
         return len(self.__sliders)
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"sliders={self.__sliders}, "
+            f"arg_to_symbol={self.__arg_to_symbol})"
+        )
+
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
+        class_name = self.__class__.__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}("):
+                p.breakable()
+                p.text("sliders=")
+                p.pretty(self.__sliders)
+                p.text(",")
+                p.breakable()
+                p.text("arg_to_symbol=")
+                p.pretty(self.__arg_to_symbol)
+                p.text(",")
+            p.breakable()
+            p.text(")")
 
     def set_values(
         self, *args: Dict[Union[sp.Symbol, str], float], **kwargs: float

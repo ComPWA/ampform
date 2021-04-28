@@ -1,10 +1,11 @@
-# pylint: disable=no-self-use, protected-access, redefined-outer-name
+# pylint: disable=eval-used, no-self-use, protected-access, redefined-outer-name
 import logging
 from copy import deepcopy
-from typing import Dict, Optional, Pattern, Type, no_type_check
+from typing import Any, Callable, Dict, Optional, Pattern, Type, no_type_check
 
 import pytest
 import sympy as sp
+from IPython.lib.pretty import pretty
 from ipywidgets.widgets.widget_float import FloatSlider
 from ipywidgets.widgets.widget_int import IntSlider
 
@@ -70,6 +71,20 @@ class TestSliderKwargs:
 
     def test_len(self, slider_kwargs: SliderKwargs) -> None:
         assert len(slider_kwargs) == 3
+
+    @pytest.mark.parametrize("repr_function", [repr, pretty])
+    def test_repr(
+        self, repr_function: Callable[[Any], str], slider_kwargs: SliderKwargs
+    ) -> None:
+        from_repr: SliderKwargs = eval(repr_function(slider_kwargs))
+        assert set(from_repr) == set(slider_kwargs)
+        for slider_name in slider_kwargs:
+            slider = slider_kwargs[slider_name]
+            slider_from_repr = from_repr[slider_name]
+            assert slider.description == slider_from_repr.description
+            assert slider.min == slider_from_repr.min
+            assert slider.max == slider_from_repr.max
+            assert slider.value == slider_from_repr.value
 
     @pytest.mark.parametrize(
         ("slider_name", "min_", "max_", "n_steps", "step_size"),
