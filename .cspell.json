@@ -211,6 +211,7 @@
         "xlim",
         "yaxis",
         "ylabel",
-        "ylim"
+        "ylim",
+        "yticks"
     ]
 }
