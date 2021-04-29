@@ -108,21 +108,19 @@ def implement_doit_method() -> Callable[
 
 @implement_doit_method()
 class BlattWeisskopf(UnevaluatedExpression):
-    r"""Blatt-Weisskopf function :math:`B_L(q)`, up to :math:`L \leq 8`.
+    r"""Blatt-Weisskopf function :math:`B_L(z)`, up to :math:`L \leq 8`.
 
     Args:
-        q: Break-up momentum. Can be computed with `breakup_momentum`.
-        d: impact parameter :math:`d`, also called meson radius. Usually of the
-            order 1 fm.
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
-    Function :math:`B_L(q)` is defined as:
+        z: Argument of the Blatt-Weisskopf function :math:`B_L(z)`. A usual
+            choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
+            and :math:`q` the `breakup_momentum`.
+
+    Function :math:`B_L(z)` is defined as:
 
     .. glue:math:: BlattWeisskopf
         :label: BlattWeisskopf
-
-    with :math:`z = (d q)^2`. The impact parameter :math:`d` is usually fixed,
-    so not shown as a function argument.
 
     Each of these cases has been taken from
     :cite:`chungPartialWaveAnalysis1995`, p. 415, and
@@ -135,13 +133,12 @@ class BlattWeisskopf(UnevaluatedExpression):
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
-        q: sp.Symbol,
-        d: sp.Symbol,
         angular_momentum: sp.Symbol,
+        z: sp.Symbol,
         evaluate: bool = False,
         **hints: Any,
     ) -> "BlattWeisskopf":
-        args = (q, d, angular_momentum)
+        args = (angular_momentum, z)
         args = sp.sympify(args)
         if evaluate:
             # pylint: disable=no-member
@@ -149,22 +146,16 @@ class BlattWeisskopf(UnevaluatedExpression):
         return sp.Expr.__new__(cls, *args, **hints)
 
     @property
-    def q(self) -> sp.Symbol:
-        """Break-up momentum."""
+    def angular_momentum(self) -> sp.Symbol:
         return self.args[0]
 
     @property
-    def d(self) -> sp.Symbol:
-        """Impact parameter, also called meson radius."""
+    def z(self) -> sp.Symbol:
         return self.args[1]
-
-    @property
-    def angular_momentum(self) -> sp.Symbol:
-        return self.args[2]
 
     def evaluate(self) -> sp.Expr:
         angular_momentum = self.angular_momentum
-        z = (self.q * self.d) ** 2
+        z = self.z
         return sp.sqrt(
             sp.Piecewise(
                 (
@@ -263,8 +254,8 @@ class BlattWeisskopf(UnevaluatedExpression):
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        l, q = tuple(map(printer._print, (self.angular_momentum, self.q)))
-        return fR"B_{l}\left({q}\right)"
+        l, z = tuple(map(printer._print, (self.angular_momentum, self.z)))
+        return fR"B_{l}\left({z}\right)"
 
 
 def relativistic_breit_wigner(
@@ -302,8 +293,8 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """
     q = breakup_momentum(mass, m_a, m_b)
     q0 = breakup_momentum(mass0, m_a, m_b)
-    form_factor = BlattWeisskopf(q, meson_radius, angular_momentum)
-    form_factor0 = BlattWeisskopf(q0, meson_radius, angular_momentum)
+    form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
+    form_factor0 = BlattWeisskopf(angular_momentum, z=(q0 * meson_radius) ** 2)
     mass_dependent_width = (
         gamma0
         * (mass0 / mass)
