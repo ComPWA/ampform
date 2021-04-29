@@ -111,11 +111,11 @@ class BlattWeisskopf(UnevaluatedExpression):
     r"""Blatt-Weisskopf function :math:`B_L(z)`, up to :math:`L \leq 8`.
 
     Args:
+        angular_momentum: Angular momentum :math:`L` of the decaying particle.
+
         z: Argument of the Blatt-Weisskopf function :math:`B_L(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
             and :math:`q` the `breakup_momentum`.
-
-        angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
     Function :math:`B_L(z)` is defined as:
 
@@ -133,12 +133,12 @@ class BlattWeisskopf(UnevaluatedExpression):
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
-        z: sp.Symbol,
         angular_momentum: sp.Symbol,
+        z: sp.Symbol,
         evaluate: bool = False,
         **hints: Any,
     ) -> "BlattWeisskopf":
-        args = (z, angular_momentum)
+        args = (angular_momentum, z)
         args = sp.sympify(args)
         if evaluate:
             # pylint: disable=no-member
@@ -146,11 +146,11 @@ class BlattWeisskopf(UnevaluatedExpression):
         return sp.Expr.__new__(cls, *args, **hints)
 
     @property
-    def z(self) -> sp.Symbol:
+    def angular_momentum(self) -> sp.Symbol:
         return self.args[0]
 
     @property
-    def angular_momentum(self) -> sp.Symbol:
+    def z(self) -> sp.Symbol:
         return self.args[1]
 
     def evaluate(self) -> sp.Expr:
@@ -293,14 +293,8 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """
     q = breakup_momentum(mass, m_a, m_b)
     q0 = breakup_momentum(mass0, m_a, m_b)
-    form_factor = BlattWeisskopf(
-        z=(q * meson_radius) ** 2,
-        angular_momentum=angular_momentum,
-    )
-    form_factor0 = BlattWeisskopf(
-        z=(q0 * meson_radius) ** 2,
-        angular_momentum=angular_momentum,
-    )
+    form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
+    form_factor0 = BlattWeisskopf(angular_momentum, z=(q0 * meson_radius) ** 2)
     mass_dependent_width = (
         gamma0
         * (mass0 / mass)

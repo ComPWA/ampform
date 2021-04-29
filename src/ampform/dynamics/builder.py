@@ -52,9 +52,8 @@ def create_non_dynamic_with_ff(
         variable_pool.out_edge_inv_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
-    z = (q * meson_radius) ** 2
     return (
-        BlattWeisskopf(z, angular_momentum),
+        BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2),
         {meson_radius: 1},
     )
 
