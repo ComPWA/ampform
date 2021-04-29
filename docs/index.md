@@ -63,7 +63,7 @@ top-right corner ;) Enjoy!
 
 ```{toctree}
 ---
-maxdepth: 2
+maxdepth: 3
 ---
 install
 usage
