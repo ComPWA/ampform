@@ -1,4 +1,4 @@
-"""Build :mod:`.lineshape` with correct variable names and values."""
+"""Build :mod:`.dynamics` with correct variable names and values."""
 
 import inspect
 from collections import OrderedDict
@@ -8,7 +8,7 @@ import attr
 import sympy as sp
 from qrules.particle import Particle
 
-from .lineshape import (
+from . import (
     BlattWeisskopf,
     breakup_momentum,
     relativistic_breit_wigner,
