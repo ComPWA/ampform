@@ -29,6 +29,7 @@ rst-roles =
     func,
     meth,
     mod,
+    pdg-review,
     ref,
     term,
 rst-directives =

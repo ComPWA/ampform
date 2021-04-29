@@ -73,6 +73,7 @@ extensions = [
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.hep.pdgref",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -84,6 +85,13 @@ exclude_patterns = [
 # General sphinx settings
 add_module_names = False
 autodoc_default_options = {
+    "exclude-members": ", ".join(
+        [
+            "default_assumptions",
+            "doit",
+            "evaluate",
+        ]
+    ),
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
