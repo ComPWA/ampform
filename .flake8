@@ -30,6 +30,7 @@ rst-roles =
     meth,
     mod,
     ref,
+    term,
 rst-directives =
     deprecated,
     envvar,
