@@ -42,7 +42,8 @@ class SliderKwargs(abc.Mapping):
     """Wrapper around a `dict` of sliders that can serve as keyword arguments.
 
     Sliders can be defined in `mpl_interactions.interactive_plot` through
-    :code:`kwargs`. This wrapper class can be used for that.
+    :term:`kwargs <python:keyword argument>`. This wrapper class can be used
+    for that.
     """
 
     def __init__(
@@ -133,9 +134,10 @@ class SliderKwargs(abc.Mapping):
     def set_values(self, *args: Dict[str, float], **kwargs: float) -> None:
         """Set initial values for the sliders.
 
-        Either use a `dict` as input, or use :code:`kwargs` with slider names
-        as the keywords (see `.SliderKwargs.__getitem__`). This façade method
-        exists in particular for `.parameter_defaults`.
+        Either use a `dict` as input, or use :term:`kwargs <python:keyword
+        argument>` with slider names as the keywords (see
+        `.SliderKwargs.__getitem__`). This façade method exists in particular
+        for `.parameter_defaults`.
         """
         value_mapping = _merge_args_kwargs(*args, **kwargs)
         for keyword, value in value_mapping.items():
