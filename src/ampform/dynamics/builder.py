@@ -23,6 +23,14 @@ except ImportError:
 
 @attr.s(frozen=True)
 class TwoBodyKinematicVariableSet:
+    """Data container for the essential variables of a two-body decay.
+
+    This data container is inserted into a `.ResonanceDynamicsBuilder`, so that
+    it can build some lineshape expression from the `.dynamics` module. It also
+    allows to insert :doc:`custom dynamics </usage/dynamics/custom>` into the
+    amplitude model.
+    """
+
     in_edge_inv_mass: sp.Symbol = attr.ib()
     out_edge_inv_mass1: sp.Symbol = attr.ib()
     out_edge_inv_mass2: sp.Symbol = attr.ib()
@@ -41,6 +49,7 @@ def create_non_dynamic(
 def create_non_dynamic_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+    """Generate a `.BlattWeisskopf` form factor for a two-body decay."""
     angular_momentum = variable_pool.angular_momentum
     if angular_momentum is None:
         raise ValueError(
@@ -61,6 +70,7 @@ def create_non_dynamic_with_ff(
 def create_relativistic_breit_wigner(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+    """Create a `.relativistic_breit_wigner` for a two-body decay."""
     inv_mass = variable_pool.in_edge_inv_mass
     res_mass = sp.Symbol(f"m_{resonance.name}")
     res_width = sp.Symbol(f"Gamma_{resonance.name}")
@@ -75,6 +85,7 @@ def create_relativistic_breit_wigner(
 def create_relativistic_breit_wigner_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+    """Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."""
     if variable_pool.angular_momentum is None:
         raise ValueError(
             "Angular momentum is not defined but is required in the form factor!"
@@ -127,7 +138,7 @@ def verify_signature(builder: Callable) -> None:
 
     Dynamically check whether a builder has the same signature as
     `.ResonanceDynamicsBuilder`. This function is needed because
-    `typing.runtime_checkable` does only checks members and methods, not the
+    `typing.runtime_checkable` only checks members and methods, not the
     signature of those methods.
     """
     signature = inspect.signature(builder)
