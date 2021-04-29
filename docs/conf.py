@@ -10,8 +10,11 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 import shutil
 import subprocess
+import sys
 
 from pkg_resources import get_distribution
+
+sys.path.insert(0, os.path.abspath("./usage"))  # for symplot
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
@@ -88,6 +91,7 @@ autodoc_default_options = {
         [
             "__call__",
             "__eq__",
+            "__getitem__",
         ]
     ),
 }
@@ -133,6 +137,9 @@ nitpick_ignore = [
     ("py:class", "a set-like object providing a view on D's items"),
     ("py:class", "a set-like object providing a view on D's keys"),
     ("py:class", "an object providing a view on D's values"),
+    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
+    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
+    ("py:class", "mpl_interactions.controller.Controls"),
     ("py:class", "numpy.typing._array_like._SupportsArray"),
     ("py:class", "numpy.typing._dtype_like._DTypeDict"),
     ("py:class", "numpy.typing._dtype_like._SupportsDType"),
@@ -144,6 +151,7 @@ nitpick_ignore = [
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
     "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
+    "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
         "https://mpl-interactions.readthedocs.io/en/stable",

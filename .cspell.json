@@ -82,6 +82,7 @@
         "isospin",
         "itertools",
         "jupyter",
+        "lambdified",
         "lambdify",
         "lineshape",
         "lineshapes",
@@ -111,6 +112,7 @@
         "arange",
         "asdict",
         "asdot",
+        "automodule",
         "cano",
         "celltoolbar",
         "codacy",
@@ -126,6 +128,7 @@
         "dotprint",
         "dtype",
         "dummified",
+        "dummifies",
         "einsum",
         "epem",
         "eval",
@@ -146,7 +149,9 @@
         "imag",
         "iplt",
         "ipyplot",
+        "ipywidgets",
         "isfunction",
+        "isidentifier",
         "isinstance",
         "jpsi",
         "jupyterlab",
@@ -192,6 +197,7 @@
         "startswith",
         "suptitle",
         "sympify",
+        "symplot",
         "theano",
         "ticklabels",
         "tolist",
@@ -205,6 +211,7 @@
         "xlim",
         "yaxis",
         "ylabel",
-        "ylim"
+        "ylim",
+        "yticks"
     ]
 }
