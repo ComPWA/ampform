@@ -67,26 +67,31 @@ rel_bw_with_ff = relativistic_breit_wigner_with_ff(
     gamma0=w0,
     m_a=ma,
     m_b=mb,
-    angular_momentum=0,
+    angular_momentum=L,
     meson_radius=d,
 )
 q = breakup_momentum(m, m_a, m_b)
 q0 = breakup_momentum(m0, m_a, m_b)
+ff = BlattWeisskopf(L, z=(q * d) ** 2)
+ff0 = BlattWeisskopf(L, z=(q0 * d) ** 2)
 rel_bw_with_ff = rel_bw_with_ff.subs(
     {
         2 * q: sp.Symbol("q^{2}(m)"),
         2 * q0: sp.Symbol("q^{2}(m_0)"),
+        ff: sp.Symbol("B_{L}(q)"),
+        ff0: sp.Symbol("B_{L}(q_{0})"),
     }
 )
 update_docstring(
     relativistic_breit_wigner_with_ff,
     f"""
-For :math:`L=0`, a relativistic Breit-Wigner with `.BlattWeisskopf` form factor
-has the following form:
+The general form of a relativistic Breit-Wigner with `.BlattWeisskopf` form
+factor is:
 
-.. math:: {sp.latex(rel_bw_with_ff.doit())}
-    :label: relativistic_breit_wigner_with_ff
+.. math:: {sp.latex(rel_bw_with_ff)}
+    :label: relativistic_breit_wigner_with_ff_general
 
-where :math:`q^2(m)` is defined by :eq:`breakup_momentum`.
+where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(m)` is
+defined by :eq:`breakup_momentum`.
 """,
 )
