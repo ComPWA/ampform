@@ -8,12 +8,11 @@ See also https://github.com/sphinx-doc/sphinx/issues/5868.
 
 # cspell:ignore docutils
 # pylint: disable=import-error
+# pyright: reportMissingImports=false
 import sphinx.domains.python
 from docutils import nodes
-from sphinx import addnodes  # pyright: reportMissingImports=False
-from sphinx.environment import (  # pyright: reportMissingImports=False
-    BuildEnvironment,
-)
+from sphinx import addnodes
+from sphinx.environment import BuildEnvironment
 
 
 def replace_link(text: str) -> str:
