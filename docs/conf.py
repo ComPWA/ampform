@@ -253,14 +253,21 @@ from pybtex.style.template import (
     sentence,
     words,
 )
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
 from sphinxcontrib.bibtex.style.referencing.author_year import (
     AuthorYearReferenceStyle,
+)
+
+no_brackets = BracketStyle(
+    left="",
+    right="",
 )
 
 
 @dataclasses.dataclass
 class NoCommaReferenceStyle(AuthorYearReferenceStyle):
     author_year_sep: Union["BaseText", str] = " "
+    bracket_parenthetical: BracketStyle = no_brackets
 
 
 sphinxcontrib.bibtex.plugin.register_plugin(
