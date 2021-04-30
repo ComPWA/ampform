@@ -88,6 +88,7 @@ exclude_patterns = [
 
 # General sphinx settings
 add_module_names = False
+autodoc_insert_signature_linebreaks = False
 autodoc_default_options = {
     "exclude-members": ", ".join(
         [
@@ -109,11 +110,15 @@ autodoc_default_options = {
 }
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
+html_css_files = []
+if autodoc_insert_signature_linebreaks:
+    html_css_files.append("linebreaks-api.css")
 html_favicon = "_static/favicon.ico"
 html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
 html_sourcelink_suffix = ""
+html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": f"https://github.com/ComPWA/{repo_name}",
