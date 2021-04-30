@@ -13,6 +13,7 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopf,
+    breakup_momentum,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -32,8 +33,17 @@ ff2 = BlattWeisskopf(L, z) ** 2
 update_docstring(
     BlattWeisskopf,
     f"""
-
 .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
+    :label: BlattWeisskopf
+""",
+)
+
+m, m_a, m_b = sp.symbols("m m_a m_b")
+q = breakup_momentum(m, m_a, m_b)
+update_docstring(
+    breakup_momentum,
+    f"""
+.. math:: q^2(m) = {sp.latex(q ** 2)}
 """,
 )
 
@@ -43,7 +53,6 @@ rel_bw = relativistic_breit_wigner(m, m0, w0)
 update_docstring(
     relativistic_breit_wigner,
     f"""
-
 .. math:: {sp.latex(rel_bw)}
 """,
 )
