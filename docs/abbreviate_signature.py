@@ -8,6 +8,7 @@ See also https://github.com/sphinx-doc/sphinx/issues/5868.
 
 # cspell:ignore docutils
 # pylint: disable=import-error
+# pyright: reportMissingImports=False
 import sphinx.domains.python
 from docutils import nodes
 from sphinx import addnodes
