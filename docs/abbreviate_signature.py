@@ -8,12 +8,12 @@ See also https://github.com/sphinx-doc/sphinx/issues/5868.
 
 # cspell:ignore docutils
 # pylint: disable=import-error
-# pyright: reportMissingImports=False
 import sphinx.domains.python
 from docutils import nodes
-from sphinx import addnodes
-from sphinx.addnodes import pending_xref
-from sphinx.environment import BuildEnvironment
+from sphinx import addnodes  # pyright: reportMissingImports=False
+from sphinx.environment import (  # pyright: reportMissingImports=False
+    BuildEnvironment,
+)
 
 
 def replace_link(text: str) -> str:
@@ -48,7 +48,8 @@ def new_type_to_xref(
 
     text = replace_link(text)
     short_text = text.split(".")[-1]
-    return pending_xref(
+
+    return addnodes.pending_xref(
         "",
         nodes.Text(short_text),
         refdomain="py",
