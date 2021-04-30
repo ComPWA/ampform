@@ -29,6 +29,7 @@ if os.path.exists(f"../src/{package}/version.py"):
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
+import abbreviate_signature
 import extend_docstrings
 
 shutil.rmtree("api", ignore_errors=True)
