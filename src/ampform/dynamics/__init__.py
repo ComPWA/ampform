@@ -24,12 +24,7 @@ class BlattWeisskopf(UnevaluatedExpression):
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
             and :math:`q` the `breakup_momentum`.
 
-    Function :math:`B_L(z)` is defined as:
-
-    .. glue:math:: BlattWeisskopf
-        :label: BlattWeisskopf
-
-    Each of these cases has been taken from
+    Each of these casesfor :math:`L` has been taken from
     :cite:`chungPartialWaveAnalysis1995`, p. 415, and
     :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
     where to use these Blatt-Weisskopf functions, see
@@ -160,9 +155,6 @@ def relativistic_breit_wigner(
 ) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
-    .. glue:math:: relativistic_breit_wigner
-        :label: relativistic_breit_wigner
-
     See :ref:`usage/dynamics/lineshapes:_Without_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
@@ -179,11 +171,6 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     meson_radius: sp.Symbol,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopf` factor.
-
-    For :math:`L=0`, this lineshape has the following form:
-
-    .. glue:math:: relativistic_breit_wigner_with_ff
-        :label: relativistic_breit_wigner_with_ff
 
     See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.

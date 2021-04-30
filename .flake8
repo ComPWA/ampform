@@ -36,6 +36,4 @@ rst-directives =
     deprecated,
     envvar,
     exception,
-    glue:figure,
-    glue:math,
     seealso,
