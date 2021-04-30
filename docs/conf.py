@@ -149,7 +149,6 @@ nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    ("py:class", "mpl_interactions.controller.Controls"),
 ]
 
 # Intersphinx settings
