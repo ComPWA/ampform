@@ -88,7 +88,6 @@ exclude_patterns = [
 
 # General sphinx settings
 add_module_names = False
-autodoc_insert_signature_linebreaks = False
 autodoc_default_options = {
     "exclude-members": ", ".join(
         [
@@ -108,6 +107,7 @@ autodoc_default_options = {
         ]
     ),
 }
+autodoc_insert_signature_linebreaks = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
 html_css_files = []
