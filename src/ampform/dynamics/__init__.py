@@ -176,14 +176,9 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
     q = breakup_momentum(mass, m_a, m_b)
-    q0 = breakup_momentum(mass0, m_a, m_b)
     form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
-    form_factor0 = BlattWeisskopf(angular_momentum, z=(q0 * meson_radius) ** 2)
-    mass_dependent_width = (
-        gamma0
-        * (mass0 / mass)
-        * (form_factor ** 2 / form_factor0 ** 2)
-        * (q / q0)
+    mass_dependent_width = coupled_width(
+        mass, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius
     )
     return (mass0 * gamma0 * form_factor) / (
         mass0 ** 2 - mass ** 2 - mass_dependent_width * mass0 * sp.I
@@ -205,4 +200,30 @@ def breakup_momentum(
         (m_r ** 2 - (m_a + m_b) ** 2)
         * (m_r ** 2 - (m_a - m_b) ** 2)
         / (4 * m_r ** 2)
+    )
+
+
+def coupled_width(  # pylint: disable=too-many-arguments
+    mass: sp.Symbol,
+    mass0: sp.Symbol,
+    gamma0: sp.Symbol,
+    m_a: sp.Symbol,
+    m_b: sp.Symbol,
+    angular_momentum: sp.Symbol,
+    meson_radius: sp.Symbol,
+) -> sp.Expr:
+    """Mass-dependent width, coupled to the pole position of the resonance.
+
+    See :pdg-review:`2020; Resonances; p.6` and
+    :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
+    """
+    q = breakup_momentum(mass, m_a, m_b)
+    q0 = breakup_momentum(mass0, m_a, m_b)
+    form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
+    form_factor0 = BlattWeisskopf(angular_momentum, z=(q0 * meson_radius) ** 2)
+    return (
+        gamma0
+        * (mass0 / mass)
+        * (form_factor ** 2 / form_factor0 ** 2)
+        * (q / q0)
     )
