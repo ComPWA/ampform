@@ -147,16 +147,12 @@ default_role = "py:obj"
 primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
-    ("py:class", "a set-like object providing a view on D's items"),
-    ("py:class", "a set-like object providing a view on D's keys"),
-    ("py:class", "an object providing a view on D's values"),
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
     ("py:class", "mpl_interactions.controller.Controls"),
     ("py:class", "numpy.typing._array_like._SupportsArray"),
     ("py:class", "numpy.typing._dtype_like._DTypeDict"),
     ("py:class", "numpy.typing._dtype_like._SupportsDType"),
-    ("py:class", "typing_extensions.Protocol"),
 ]
 
 # Intersphinx settings

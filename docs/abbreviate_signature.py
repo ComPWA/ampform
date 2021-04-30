@@ -16,6 +16,19 @@ from sphinx.addnodes import pending_xref
 from sphinx.environment import BuildEnvironment
 
 
+def replace_link(text: str) -> str:
+    replacements = {
+        "a set-like object providing a view on D's items": "typing.ItemsView",
+        "a set-like object providing a view on D's keys": "typing.KeysView",
+        "an object providing a view on D's values": "typing.ValuesView",
+        "typing_extensions.Protocol": "typing.Protocol",
+    }
+    for old, new in replacements.items():
+        if text == old:
+            return new
+    return text
+
+
 def new_type_to_xref(
     text: str, env: BuildEnvironment = None
 ) -> addnodes.pending_xref:
@@ -33,6 +46,7 @@ def new_type_to_xref(
     else:
         kwargs = {}
 
+    text = replace_link(text)
     short_text = text.split(".")[-1]
     return pending_xref(
         "",
