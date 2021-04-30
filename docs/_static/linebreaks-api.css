@@ -1,0 +1,6 @@
+/* cspell:ignore paren */
+/* https://github.com/sphinx-doc/sphinx/issues/5868 */
+span.sig-paren ~ em::before {
+  content: "\a        ";
+  white-space: pre;
+}
