@@ -147,10 +147,6 @@ default_role = "py:obj"
 primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
-    ("py:class", "EdgeType"),
-    ("py:class", "NoneType"),
-    ("py:class", "StateTransitionGraph"),
-    ("py:class", "ValueType"),
     ("py:class", "a set-like object providing a view on D's items"),
     ("py:class", "a set-like object providing a view on D's keys"),
     ("py:class", "an object providing a view on D's values"),
@@ -161,7 +157,6 @@ nitpick_ignore = [
     ("py:class", "numpy.typing._dtype_like._DTypeDict"),
     ("py:class", "numpy.typing._dtype_like._SupportsDType"),
     ("py:class", "typing_extensions.Protocol"),
-    ("py:obj", "ampform.amplitude.helicity.ValueType"),
 ]
 
 # Intersphinx settings
