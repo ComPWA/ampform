@@ -27,7 +27,10 @@ if os.path.exists(f"../src/{package}/version.py"):
     __release = get_distribution(package).version
     version = ".".join(__release.split(".")[:3])
 
-# -- Generate API skeleton ----------------------------------------------------
+# -- Generate API ------------------------------------------------------------
+sys.path.insert(0, os.path.abspath("."))
+import extend_docstrings
+
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
     " ".join(
