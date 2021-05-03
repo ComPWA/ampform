@@ -34,4 +34,3 @@ exclude = '''
 profile = "black"
 src_paths = ["src", "tests"]
 line_length = 79
-known_third_party = "THIRDPARTY,particle"
