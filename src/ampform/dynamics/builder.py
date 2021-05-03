@@ -1,4 +1,4 @@
-"""Build :mod:`.dynamics` with correct variable names and values."""
+"""Build `~ampform.dynamics` with correct variable names and values."""
 
 import inspect
 from collections import OrderedDict
