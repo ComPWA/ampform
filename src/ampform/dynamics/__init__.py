@@ -152,18 +152,18 @@ class BlattWeisskopf(UnevaluatedExpression):
 
 
 def relativistic_breit_wigner(
-    mass: sp.Symbol, mass0: sp.Symbol, gamma0: sp.Symbol
+    s: sp.Symbol, mass0: sp.Symbol, gamma0: sp.Symbol
 ) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
     See :ref:`usage/dynamics/lineshapes:_Without_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
-    return gamma0 * mass0 / (mass0 ** 2 - mass ** 2 - gamma0 * mass0 * sp.I)
+    return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
-    mass: sp.Symbol,
+    s: sp.Symbol,
     mass0: sp.Symbol,
     gamma0: sp.Symbol,
     m_a: sp.Symbol,
@@ -176,21 +176,21 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
-    q_squared = breakup_momentum_squared(mass, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
     form_factor = BlattWeisskopf(
         angular_momentum,
         z=q_squared * meson_radius ** 2,
     )
     mass_dependent_width = coupled_width(
-        mass, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius
     )
     return (mass0 * gamma0 * form_factor) / (
-        mass0 ** 2 - mass ** 2 - mass_dependent_width * mass0 * sp.I
+        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
     )
 
 
 def breakup_momentum_squared(
-    m_r: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
     r"""Squared value of the two-body breakup-up momentum.
 
@@ -198,17 +198,21 @@ def breakup_momentum_squared(
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
     frame of :math:`R`.
 
+    Args:
+        s: :ref:`Mandelstam variable <theory/introduction:Mandelstam variables>`
+            :math:`s`. Commonly, this is just :math:`s = m_R^2`,
+            with :math:`m_R` the invariant mass of decaying particle :math:`R`.
+
+        m_a: Mass of decay product :math:`a`.
+        m_b: Mass of decay product :math:`b`.
+
     See :pdg-review:`2020; Kinematics; p.3`.
     """
-    return (
-        (m_r ** 2 - (m_a + m_b) ** 2)
-        * (m_r ** 2 - (m_a - m_b) ** 2)
-        / (4 * m_r ** 2)
-    )
+    return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
 
 
 def coupled_width(  # pylint: disable=too-many-arguments
-    mass: sp.Symbol,
+    s: sp.Symbol,
     mass0: sp.Symbol,
     gamma0: sp.Symbol,
     m_a: sp.Symbol,
@@ -221,8 +225,8 @@ def coupled_width(  # pylint: disable=too-many-arguments
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
     """
-    q_squared = breakup_momentum_squared(mass, m_a, m_b)
-    q0_squared = breakup_momentum_squared(mass0, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
     form_factor = BlattWeisskopf(
         angular_momentum, z=q_squared * meson_radius ** 2
     )
@@ -233,7 +237,7 @@ def coupled_width(  # pylint: disable=too-many-arguments
     q0 = sp.sqrt(q0_squared)
     return (
         gamma0
-        * (mass0 / mass)
+        * (mass0 / sp.sqrt(s))
         * (form_factor ** 2 / form_factor0 ** 2)
         * (q / q0)
     )

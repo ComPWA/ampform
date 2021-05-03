@@ -41,12 +41,12 @@ def render_blatt_weisskopf() -> None:
 
 
 def render_breakup_momentum() -> None:
-    m, m_a, m_b = sp.symbols("m m_a m_b")
-    q_squared = breakup_momentum_squared(m, m_a, m_b)
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
     update_docstring(
         breakup_momentum_squared,
         f"""
-    .. math:: q^2(m) = {sp.latex(q_squared)}
+    .. math:: q^2(s) = {sp.latex(q_squared)}
         :label: breakup_momentum_squared
     """,
     )
@@ -54,9 +54,9 @@ def render_breakup_momentum() -> None:
 
 def render_coupled_width() -> None:
     L = sp.Symbol("L", integer=True)
-    m, m0, w0, m_a, m_b, d = sp.symbols("m m0 Gamma m_a m_b d")
+    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma m_a m_b d")
     running_width = coupled_width(
-        mass=m,
+        s=s,
         mass0=m0,
         gamma0=w0,
         m_a=m_a,
@@ -64,15 +64,15 @@ def render_coupled_width() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    q_squared = breakup_momentum_squared(m, m_a, m_b)
-    q0_squared = breakup_momentum_squared(m0, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    q0_squared = breakup_momentum_squared(m0 ** 2, m_a, m_b)
     q = sp.sqrt(q_squared)
     q0 = sp.sqrt(q0_squared)
     ff = BlattWeisskopf(L, z=q_squared * d ** 2)
     ff0 = BlattWeisskopf(L, z=q0_squared * d ** 2)
     running_width = running_width.subs(
         {
-            2 * q: sp.Symbol("q(m)"),
+            2 * q: sp.Symbol("q(s)"),
             2 * q0: sp.Symbol("q(m_0)"),
             ff: sp.Symbol("B_{L}(q)"),
             ff0: sp.Symbol("B_{L}(q_{0})"),
@@ -84,18 +84,18 @@ def render_coupled_width() -> None:
     AmpForm uses the following shape for the "mass-dependent" width in a
     `.relativistic_breit_wigner_with_ff`:
 
-    .. math:: \Gamma(m) = {sp.latex(running_width)}
+    .. math:: \Gamma(s) = {sp.latex(running_width)}
         :label: coupled_width
 
-    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(m)`
+    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(s)`
     is defined by :eq:`breakup_momentum_squared`.
     """,
     )
 
 
 def render_relativistic_breit_wigner() -> None:
-    m, m0, w0 = sp.symbols("m m0 Gamma")
-    rel_bw = relativistic_breit_wigner(m, m0, w0)
+    s, m0, w0 = sp.symbols("s m0 Gamma")
+    rel_bw = relativistic_breit_wigner(s, m0, w0)
     update_docstring(
         relativistic_breit_wigner,
         f"""
@@ -107,9 +107,9 @@ def render_relativistic_breit_wigner() -> None:
 
 def render_relativistic_breit_wigner_with_ff() -> None:
     L = sp.Symbol("L", integer=True)
-    m, m0, w0, m_a, m_b, d = sp.symbols("m m0 Gamma m_a m_b d")
+    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma m_a m_b d")
     rel_bw_with_ff = relativistic_breit_wigner_with_ff(
-        mass=m,
+        s=s,
         mass0=m0,
         gamma0=w0,
         m_a=m_a,
@@ -117,14 +117,14 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    q_squared = breakup_momentum_squared(m, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
     ff = BlattWeisskopf(L, z=q_squared * d ** 2)
-    mass_dependent_width = coupled_width(m, m0, w0, m_a, m_b, L, d)
+    mass_dependent_width = coupled_width(s, m0, w0, m_a, m_b, L, d)
     rel_bw_with_ff = rel_bw_with_ff.subs(
         {
-            2 * q_squared: sp.Symbol("q^{2}(m)"),
-            ff: sp.Symbol(R"B_{L}\left(q(m)\right)"),
-            mass_dependent_width: sp.Symbol(R"\Gamma(m)"),
+            2 * q_squared: sp.Symbol("q^{2}(s)"),
+            ff: sp.Symbol(R"B_{L}\left(q(s)\right)"),
+            mass_dependent_width: sp.Symbol(R"\Gamma(s)"),
         }
     )
     update_docstring(
@@ -136,8 +136,8 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff_general
 
-    where :math:`\Gamma(m)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
-    is defined by :eq:`BlattWeisskopf`, and :math:`q^2(m)` is defined by
+    where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
+    is defined by :eq:`BlattWeisskopf`, and :math:`q^2(s)` is defined by
     :eq:`breakup_momentum_squared`.
     """,
     )

@@ -76,13 +76,13 @@ def test_generate(
 
     if formalism == "canonical":
         assert tuple(map(str, expression.args)) == (
-            "0.08/(-m**2 + 0.98 - 0.06*I*sqrt(m**2 - 0.07)/m)",
-            "0.23/(-m**2 + 2.27 - 0.17*I*sqrt(m**2 - 0.07)/m)",
+            "0.08/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)",
+            "0.23/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)",
         )
     elif formalism == "helicity":
         assert tuple(map(str, expression.args)) == (
-            "0.17/(-m**2 + 2.27 - 0.17*I*sqrt(m**2 - 0.07)/m)",
-            "0.06/(-m**2 + 0.98 - 0.06*I*sqrt(m**2 - 0.07)/m)",
+            "0.17/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)",
+            "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)",
         )
     else:
         raise NotImplementedError
