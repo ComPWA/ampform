@@ -22,7 +22,8 @@ class BlattWeisskopf(UnevaluatedExpression):
 
         z: Argument of the Blatt-Weisskopf function :math:`B_L(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
-            and :math:`q` the `breakup_momentum`.
+            and :math:`q` the breakup-momentum (see
+            `breakup_momentum_squared`).
 
     Each of these casesfor :math:`L` has been taken from
     :cite:`chungPartialWaveAnalysis1995`, p. 415, and
@@ -175,8 +176,11 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
-    q = breakup_momentum(mass, m_a, m_b)
-    form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
+    q_squared = breakup_momentum_squared(mass, m_a, m_b)
+    form_factor = BlattWeisskopf(
+        angular_momentum,
+        z=q_squared * meson_radius ** 2,
+    )
     mass_dependent_width = coupled_width(
         mass, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius
     )
@@ -185,10 +189,10 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def breakup_momentum(
+def breakup_momentum_squared(
     m_r: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
-    r"""Two-body breakup-up momentum.
+    r"""Squared value of the two-body breakup-up momentum.
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
@@ -196,7 +200,7 @@ def breakup_momentum(
 
     See :pdg-review:`2020; Kinematics; p.3`.
     """
-    return sp.sqrt(
+    return (
         (m_r ** 2 - (m_a + m_b) ** 2)
         * (m_r ** 2 - (m_a - m_b) ** 2)
         / (4 * m_r ** 2)
@@ -217,10 +221,16 @@ def coupled_width(  # pylint: disable=too-many-arguments
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
     """
-    q = breakup_momentum(mass, m_a, m_b)
-    q0 = breakup_momentum(mass0, m_a, m_b)
-    form_factor = BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2)
-    form_factor0 = BlattWeisskopf(angular_momentum, z=(q0 * meson_radius) ** 2)
+    q_squared = breakup_momentum_squared(mass, m_a, m_b)
+    q0_squared = breakup_momentum_squared(mass0, m_a, m_b)
+    form_factor = BlattWeisskopf(
+        angular_momentum, z=q_squared * meson_radius ** 2
+    )
+    form_factor0 = BlattWeisskopf(
+        angular_momentum, z=q0_squared * meson_radius ** 2
+    )
+    q = sp.sqrt(q_squared)
+    q0 = sp.sqrt(q0_squared)
     return (
         gamma0
         * (mass0 / mass)
