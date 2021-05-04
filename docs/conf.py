@@ -30,6 +30,8 @@ sys.path.insert(0, os.path.abspath("."))
 import abbreviate_signature
 import extend_docstrings
 
+extend_docstrings.insert_math()
+
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
     " ".join(
