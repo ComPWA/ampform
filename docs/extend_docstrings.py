@@ -54,7 +54,7 @@ def render_breakup_momentum() -> None:
 
 def render_coupled_width() -> None:
     L = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma m_a m_b d")
+    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
     running_width = coupled_width(
         s=s,
         mass0=m0,
