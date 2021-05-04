@@ -101,7 +101,9 @@ class SliderKwargs(abc.Mapping):
     def __iter__(self) -> Iterator[str]:
         """Iterate over the arguments of the `.LambdifiedExpression`.
 
-        This"""
+        This is useful for unpacking an instance of `SliderKwargs` as
+        :term:`kwargs <python:keyword argument>`.
+        """
         return self.__arg_to_symbol.__iter__()
 
     def __len__(self) -> int:

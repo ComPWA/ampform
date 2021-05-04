@@ -9,7 +9,7 @@ from IPython.lib.pretty import pretty
 from ipywidgets.widgets.widget_float import FloatSlider
 from ipywidgets.widgets.widget_int import IntSlider
 
-from . import Slider, SliderKwargs
+from symplot import Slider, SliderKwargs
 
 
 class TestSliderKwargs:
