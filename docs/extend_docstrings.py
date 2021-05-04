@@ -76,7 +76,7 @@ def render_coupled_width() -> None:
     running_width = running_width.subs(
         {
             2 * q: sp.Symbol("q(s)"),
-            2 * q0: sp.Symbol("q(m_0)"),
+            2 * q0: sp.Symbol("q(m_{0})"),
             ff: sp.Symbol("B_{L}(q)"),
             ff0: sp.Symbol("B_{L}(q_{0})"),
         }
@@ -90,8 +90,8 @@ def render_coupled_width() -> None:
     .. math:: \Gamma(s) = {sp.latex(running_width)}
         :label: coupled_width
 
-    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(s)`
-    is defined by :eq:`breakup_momentum_squared`.
+    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q(s)` is
+    defined by :eq:`breakup_momentum_squared`.
     """,
     )
 
@@ -147,7 +147,7 @@ def render_phase_space_factor_ac() -> None:
 
 
 def render_relativistic_breit_wigner() -> None:
-    s, m0, w0 = sp.symbols("s m0 Gamma")
+    s, m0, w0 = sp.symbols("s m0 Gamma0")
     rel_bw = relativistic_breit_wigner(s, m0, w0)
     update_docstring(
         relativistic_breit_wigner,
@@ -160,7 +160,7 @@ def render_relativistic_breit_wigner() -> None:
 
 def render_relativistic_breit_wigner_with_ff() -> None:
     L = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma m_a m_b d")
+    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
     rel_bw_with_ff = relativistic_breit_wigner_with_ff(
         s=s,
         mass0=m0,
@@ -190,7 +190,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         :label: relativistic_breit_wigner_with_ff
 
     where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
-    is defined by :eq:`BlattWeisskopf`, and :math:`q^2(s)` is defined by
+    is defined by :eq:`BlattWeisskopf`, and :math:`q(s)` is defined by
     :eq:`breakup_momentum_squared`.
     """,
     )
