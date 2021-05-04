@@ -187,6 +187,9 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 
 # Settings for linkcheck
 linkcheck_anchors = False
+linkcheck_ignore = [
+    "https://doi.org/10.1093/ptep/ptaa104",
+]
 
 # Settings for myst_nb
 execution_timeout = -1
