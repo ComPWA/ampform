@@ -247,9 +247,12 @@ def coupled_width(  # pylint: disable=too-many-arguments
 def phase_space_factor(
     s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
-    """Standard phase-space factor, following :pdg-review:`2020; Resonances; p.4`."""
+    """Standard phase-space factor, using `complex_sqrt`.
+
+    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
+    """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
+    return complex_sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
 
 
 def phase_space_factor_ac(
