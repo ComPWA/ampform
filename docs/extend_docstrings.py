@@ -122,7 +122,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     mass_dependent_width = coupled_width(s, m0, w0, m_a, m_b, L, d)
     rel_bw_with_ff = rel_bw_with_ff.subs(
         {
-            2 * q_squared: sp.Symbol("q^{2}(s)"),
+            2 * q_squared: 2 * sp.Symbol("q^{2}(s)"),
             ff: sp.Symbol(R"B_{L}\left(q(s)\right)"),
             mass_dependent_width: sp.Symbol(R"\Gamma(s)"),
         }
@@ -134,7 +134,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     factor is:
 
     .. math:: {sp.latex(rel_bw_with_ff)}
-        :label: relativistic_breit_wigner_with_ff_general
+        :label: relativistic_breit_wigner_with_ff
 
     where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
     is defined by :eq:`BlattWeisskopf`, and :math:`q^2(s)` is defined by
