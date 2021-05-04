@@ -9,7 +9,7 @@ from IPython.lib.pretty import pretty
 from ipywidgets.widgets.widget_float import FloatSlider
 from ipywidgets.widgets.widget_int import IntSlider
 
-from . import Slider, SliderKwargs
+from symplot import Slider, SliderKwargs
 
 
 class TestSliderKwargs:
@@ -166,16 +166,16 @@ class TestSliderKwargs:
         ("sliders", "arg_to_symbol", "exception", "match"),
         [
             (
-                {"a": FloatSlider()},
-                {R"\alpha": "a"},
+                {"b": FloatSlider()},
+                {R"\alpha": "b"},
                 ValueError,
                 r'"\\alpha" in arg_to_symbol is not a valid identifier',
             ),
             (
-                {sp.Symbol("a"): FloatSlider()},
-                {"a": sp.Symbol("a")},
+                {sp.Symbol("b"): FloatSlider()},
+                {"b": sp.Symbol("b")},
                 TypeError,
-                r'Slider name "a" is not of type str',
+                r'Slider name "b" is not of type str',
             ),
             (
                 {R"\alpha": FloatSlider()},
