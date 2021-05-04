@@ -56,9 +56,9 @@ def create_non_dynamic_with_ff(
             "Angular momentum is not defined but is required in the form factor!"
         )
     q_squared = breakup_momentum_squared(
-        variable_pool.in_edge_inv_mass,
-        variable_pool.out_edge_inv_mass1,
-        variable_pool.out_edge_inv_mass2,
+        s=variable_pool.in_edge_inv_mass ** 2,
+        m_a=variable_pool.out_edge_inv_mass1,
+        m_b=variable_pool.out_edge_inv_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
     return (
@@ -74,7 +74,11 @@ def create_relativistic_breit_wigner(
     inv_mass = variable_pool.in_edge_inv_mass
     res_mass = sp.Symbol(f"m_{resonance.name}")
     res_width = sp.Symbol(f"Gamma_{resonance.name}")
-    expression = relativistic_breit_wigner(inv_mass, res_mass, res_width)
+    expression = relativistic_breit_wigner(
+        s=inv_mass ** 2,
+        mass0=res_mass,
+        gamma0=res_width,
+    )
     parameter_defaults = {
         res_mass: resonance.mass,
         res_width: resonance.width,
@@ -100,13 +104,13 @@ def create_relativistic_breit_wigner_with_ff(
     meson_radius = sp.Symbol(f"d_{resonance.name}")
 
     expression = relativistic_breit_wigner_with_ff(
-        inv_mass,
-        res_mass,
-        res_width,
-        product1_inv_mass,
-        product2_inv_mass,
-        angular_momentum,
-        meson_radius,
+        s=inv_mass ** 2,
+        mass0=res_mass,
+        gamma0=res_width,
+        m_a=product1_inv_mass,
+        m_b=product2_inv_mass,
+        angular_momentum=angular_momentum,
+        meson_radius=meson_radius,
     )
     parameter_defaults = {
         res_mass: resonance.mass,
