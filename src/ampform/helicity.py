@@ -480,7 +480,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        verify_signature(dynamics_builder)
+        verify_signature(dynamics_builder, ResonanceDynamicsBuilder)
         for transition in self.__graphs:
             for node_id in transition.topology.nodes:
                 decay = _TwoBodyDecay.from_graph(transition, node_id)

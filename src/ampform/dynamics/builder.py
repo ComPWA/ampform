@@ -1,8 +1,6 @@
 """Build `~ampform.dynamics` with correct variable names and values."""
 
-import inspect
-from collections import OrderedDict
-from typing import Callable, Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import attr
 import sympy as sp
@@ -14,6 +12,9 @@ from . import (
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
+
+# pyright: reportUnusedImport=false
+from .decorator import verify_signature  # noqa: F401
 
 try:
     from typing import Protocol
@@ -135,32 +136,3 @@ class ResonanceDynamicsBuilder(Protocol):
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
         ...
-
-
-def verify_signature(builder: Callable) -> None:
-    """Check signature of a builder function dynamically.
-
-    Dynamically check whether a builder has the same signature as
-    `.ResonanceDynamicsBuilder`. This function is needed because
-    `typing.runtime_checkable` only checks members and methods, not the
-    signature of those methods.
-    """
-    signature = inspect.signature(builder)
-    if signature.return_annotation != __EXPECTED.return_annotation:
-        raise ValueError(
-            f'Builder "{builder.__name__}" has return type {__EXPECTED.return_annotation};'
-            f" expected {signature.return_annotation}"
-        )
-    expected_parameters = OrderedDict(__EXPECTED.parameters.items())
-    del expected_parameters["self"]
-    assert signature.return_annotation == __EXPECTED.return_annotation
-    if signature.parameters != expected_parameters:
-        raise ValueError(
-            f'Builder "{builder.__name__}" has parameters\n'
-            f"  {list(signature.parameters.values())}\n"
-            "This should be\n"
-            f"  {list(expected_parameters.values())}"
-        )
-
-
-__EXPECTED = inspect.signature(ResonanceDynamicsBuilder.__call__)
