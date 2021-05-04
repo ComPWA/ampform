@@ -2,7 +2,8 @@
 # pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics/lineshapes`
+.. seealso:: :doc:`/usage/dynamics/lineshapes` and
+    :doc:`/usage/dynamics/analytic-continuation`
 """
 
 from typing import Any
@@ -240,4 +241,57 @@ def coupled_width(  # pylint: disable=too-many-arguments
         * (mass0 / sp.sqrt(s))
         * (form_factor ** 2 / form_factor0 ** 2)
         * (q / q0)
+    )
+
+
+def phase_space_factor(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    """Standard phase-space factor, following :pdg-review:`2020; Resonances; p.4`."""
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    return sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
+
+
+def phase_space_factor_ac(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    """Analytic continuation for the `phase_space_factor`.
+
+    See :pdg-review:`2014; Resonances; p.8`.
+
+    .. warning:: The PDG states that this formula applies to a two-body decay
+        **with equal masses** only.
+    """
+    rho = phase_space_factor(s, m_a, m_b)
+    s_threshold = (m_a + m_b) ** 2
+    return sp.Piecewise(
+        (
+            -rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))),
+            s < 0,
+        ),
+        (
+            (-rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))) + sp.I * rho)
+            / (sp.I * 16 * sp.pi * s),
+            s > s_threshold,
+        ),
+        (
+            (-2 * rho / sp.pi * sp.atan(1 / rho)) / (sp.I * 16 * sp.pi * s),
+            True,
+        ),
+    )
+
+
+def complex_sqrt(x: sp.Symbol) -> sp.Expr:
+    """Square root that follows the positive root if :math:`x < 0`.
+
+    >>> complex_sqrt(2)
+    sqrt(2)
+    >>> complex_sqrt(-2)
+    sqrt(2)*I
+    >>> complex_sqrt(-4)
+    2*I
+    """
+    return sp.Piecewise(
+        (sp.I * sp.sqrt(-x), x < 0),
+        (sp.sqrt(x), True),
     )

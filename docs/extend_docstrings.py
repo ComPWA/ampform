@@ -14,7 +14,10 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopf,
     breakup_momentum_squared,
+    complex_sqrt,
     coupled_width,
+    phase_space_factor,
+    phase_space_factor_ac,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -89,6 +92,56 @@ def render_coupled_width() -> None:
 
     where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(s)`
     is defined by :eq:`breakup_momentum_squared`.
+    """,
+    )
+
+
+def render_complex_sqrt() -> None:
+    x = sp.Symbol("x", real=True)
+    update_docstring(
+        complex_sqrt,
+        fR"""
+    .. math:: {sp.latex(complex_sqrt(x))}
+        :label: complex_sqrt
+    """,
+    )
+
+
+def render_phase_space_factor() -> None:
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    rho = phase_space_factor(s, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    rho = rho.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    update_docstring(
+        phase_space_factor,
+        f"""
+
+    .. math:: {sp.latex(rho)}
+        :label: phase_space_factor
+
+    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
+    """,
+    )
+
+
+def render_phase_space_factor_ac() -> None:
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    rho_analytic = phase_space_factor_ac(s, m_a, m_b)
+    rho = phase_space_factor(s, m_a, m_b)
+    rho_analytic = rho_analytic.subs(
+        {
+            rho: sp.Symbol(R"\hat{\rho}"),
+            1 / rho: sp.Symbol(R"\left(\hat{\rho}\right)^{-1}"),
+        }
+    )
+    update_docstring(
+        phase_space_factor_ac,
+        fR"""
+    .. math:: {sp.latex(rho_analytic)}
+        :label: phase_space_factor_ac
+
+    with :math:`\hat{{\rho}}` the `phase_space_factor` defined by
+    :eq:`phase_space_factor`.
     """,
     )
 
