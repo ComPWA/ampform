@@ -13,7 +13,7 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopf,
-    breakup_momentum,
+    breakup_momentum_squared,
     coupled_width,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
@@ -42,12 +42,12 @@ def render_blatt_weisskopf() -> None:
 
 def render_breakup_momentum() -> None:
     m, m_a, m_b = sp.symbols("m m_a m_b")
-    q = breakup_momentum(m, m_a, m_b)
+    q_squared = breakup_momentum_squared(m, m_a, m_b)
     update_docstring(
-        breakup_momentum,
+        breakup_momentum_squared,
         f"""
-    .. math:: q^2(m) = {sp.latex(q ** 2)}
-        :label: breakup_momentum
+    .. math:: q^2(m) = {sp.latex(q_squared)}
+        :label: breakup_momentum_squared
     """,
     )
 
@@ -64,14 +64,16 @@ def render_coupled_width() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    q = breakup_momentum(m, m_a, m_b)
-    q0 = breakup_momentum(m0, m_a, m_b)
-    ff = BlattWeisskopf(L, z=(q * d) ** 2)
-    ff0 = BlattWeisskopf(L, z=(q0 * d) ** 2)
+    q_squared = breakup_momentum_squared(m, m_a, m_b)
+    q0_squared = breakup_momentum_squared(m0, m_a, m_b)
+    q = sp.sqrt(q_squared)
+    q0 = sp.sqrt(q0_squared)
+    ff = BlattWeisskopf(L, z=q_squared * d ** 2)
+    ff0 = BlattWeisskopf(L, z=q0_squared * d ** 2)
     running_width = running_width.subs(
         {
-            2 * q: sp.Symbol("q^{2}(m)"),
-            2 * q0: sp.Symbol("q^{2}(m_0)"),
+            2 * q: sp.Symbol("q(m)"),
+            2 * q0: sp.Symbol("q(m_0)"),
             ff: sp.Symbol("B_{L}(q)"),
             ff0: sp.Symbol("B_{L}(q_{0})"),
         }
@@ -86,7 +88,7 @@ def render_coupled_width() -> None:
         :label: coupled_width
 
     where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q^2(m)`
-    is defined by :eq:`breakup_momentum`.
+    is defined by :eq:`breakup_momentum_squared`.
     """,
     )
 
@@ -115,12 +117,12 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    q = breakup_momentum(m, m_a, m_b)
-    ff = BlattWeisskopf(L, z=(q * d) ** 2)
+    q_squared = breakup_momentum_squared(m, m_a, m_b)
+    ff = BlattWeisskopf(L, z=q_squared * d ** 2)
     mass_dependent_width = coupled_width(m, m0, w0, m_a, m_b, L, d)
     rel_bw_with_ff = rel_bw_with_ff.subs(
         {
-            2 * q: sp.Symbol("q^{2}(m)"),
+            2 * q_squared: sp.Symbol("q^{2}(m)"),
             ff: sp.Symbol(R"B_{L}\left(q(m)\right)"),
             mass_dependent_width: sp.Symbol(R"\Gamma(m)"),
         }
@@ -136,7 +138,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
 
     where :math:`\Gamma(m)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
     is defined by :eq:`BlattWeisskopf`, and :math:`q^2(m)` is defined by
-    :eq:`breakup_momentum`.
+    :eq:`breakup_momentum_squared`.
     """,
     )
 

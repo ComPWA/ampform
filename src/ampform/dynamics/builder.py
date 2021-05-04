@@ -10,7 +10,7 @@ from qrules.particle import Particle
 
 from . import (
     BlattWeisskopf,
-    breakup_momentum,
+    breakup_momentum_squared,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -55,14 +55,14 @@ def create_non_dynamic_with_ff(
         raise ValueError(
             "Angular momentum is not defined but is required in the form factor!"
         )
-    q = breakup_momentum(
+    q_squared = breakup_momentum_squared(
         variable_pool.in_edge_inv_mass,
         variable_pool.out_edge_inv_mass1,
         variable_pool.out_edge_inv_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
     return (
-        BlattWeisskopf(angular_momentum, z=(q * meson_radius) ** 2),
+        BlattWeisskopf(angular_momentum, z=q_squared * meson_radius ** 2),
         {meson_radius: 1},
     )
 
