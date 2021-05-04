@@ -10,5 +10,6 @@ some of the lineshapes provided by {mod}`ampform`.
 ```{toctree}
 dynamics/custom
 dynamics/lineshapes
+dynamics/analytic-continuation
 dynamics/k-matrix
 ```
