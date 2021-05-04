@@ -199,9 +199,9 @@ def breakup_momentum_squared(
     frame of :math:`R`.
 
     Args:
-        s: :ref:`Mandelstam variable <theory/introduction:Mandelstam variables>`
-            :math:`s`. Commonly, this is just :math:`s = m_R^2`,
-            with :math:`m_R` the invariant mass of decaying particle :math:`R`.
+        s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
+            Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
+            invariant mass of decaying particle :math:`R`.
 
         m_a: Mass of decay product :math:`a`.
         m_b: Mass of decay product :math:`b`.
