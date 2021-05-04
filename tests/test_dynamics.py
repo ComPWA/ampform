@@ -54,8 +54,8 @@ def test_generate(
     assert len(expression.free_symbols) == 1
 
     existing_symbol = next(iter(expression.free_symbols))
-    mass = sp.Symbol("m", real=True)
-    expression = expression.subs({existing_symbol: mass})
+    m = sp.Symbol("m", real=True)
+    expression = expression.subs({existing_symbol: m})
 
     expression = round_nested(expression, n_decimals=2)
 
@@ -74,16 +74,18 @@ def test_generate(
     expression = round_nested(expression, n_decimals=2)
     expression = round_nested(expression, n_decimals=2)
 
+    expression = sp.piecewise_fold(expression)
+    assert isinstance(expression, sp.Piecewise)
+    expression, condition = expression.args[1].args
+    assert condition
+    assert isinstance(expression, sp.Add)
+    a1, a2 = tuple(map(str, expression.args))
     if formalism == "canonical":
-        assert tuple(map(str, expression.args)) == (
-            "0.08/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)",
-            "0.23/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)",
-        )
+        assert a1 == "0.08/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
+        assert a2 == "0.23/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
     elif formalism == "helicity":
-        assert tuple(map(str, expression.args)) == (
-            "0.17/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)",
-            "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)",
-        )
+        assert a1 == "0.17/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
+        assert a2 == "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
     else:
         raise NotImplementedError
 

@@ -69,16 +69,15 @@ def render_coupled_width() -> None:
     )
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(m0 ** 2, m_a, m_b)
-    q = sp.sqrt(q_squared)
-    q0 = sp.sqrt(q0_squared)
-    ff = BlattWeisskopf(L, z=q_squared * d ** 2)
-    ff0 = BlattWeisskopf(L, z=q0_squared * d ** 2)
+    form_factor = BlattWeisskopf(L, z=q_squared * d ** 2)
+    form_factor0 = BlattWeisskopf(L, z=q0_squared * d ** 2)
+    rho = phase_space_factor(s, m_a, m_b)
+    rho0 = phase_space_factor(m0 ** 2, m_a, m_b)
     running_width = running_width.subs(
         {
-            2 * q: sp.Symbol("q(s)"),
-            2 * q0: sp.Symbol("q(m_{0})"),
-            ff: sp.Symbol("B_{L}(q)"),
-            ff0: sp.Symbol("B_{L}(q_{0})"),
+            rho / rho0: sp.Symbol(R"\rho(s)") / sp.Symbol(R"\rho(m_{0})"),
+            form_factor: sp.Symbol("B_{L}(q)"),
+            form_factor0: sp.Symbol("B_{L}(q_{0})"),
         }
     )
     update_docstring(
@@ -90,8 +89,9 @@ def render_coupled_width() -> None:
     .. math:: \Gamma(s) = {sp.latex(running_width)}
         :label: coupled_width
 
-    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf` and :math:`q(s)` is
-    defined by :eq:`breakup_momentum_squared`.
+    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf`, :math:`q(s)` is
+    defined by :eq:`breakup_momentum_squared`, and :math:`\rho(s)` is defined
+    by :eq:`phase_space_factor`.
     """,
     )
 

@@ -234,14 +234,9 @@ def coupled_width(  # pylint: disable=too-many-arguments
     form_factor0 = BlattWeisskopf(
         angular_momentum, z=q0_squared * meson_radius ** 2
     )
-    q = sp.sqrt(q_squared)
-    q0 = sp.sqrt(q0_squared)
-    return (
-        gamma0
-        * (mass0 / sp.sqrt(s))
-        * (form_factor ** 2 / form_factor0 ** 2)
-        * (q / q0)
-    )
+    rho = phase_space_factor(s, m_a, m_b)
+    rho0 = phase_space_factor(mass0 ** 2, m_a, m_b)
+    return gamma0 * (form_factor ** 2 / form_factor0 ** 2) * (rho / rho0)
 
 
 def phase_space_factor(
