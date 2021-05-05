@@ -6,7 +6,7 @@
     :doc:`/usage/dynamics/analytic-continuation`
 """
 
-from typing import Any
+from typing import Any, Optional
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -234,7 +234,7 @@ def coupled_width(  # pylint: disable=too-many-arguments
     m_b: sp.Symbol,
     angular_momentum: sp.Symbol,
     meson_radius: sp.Symbol,
-    phsp_factor: PhaseSpaceFactor = phase_space_factor,
+    phsp_factor: Optional[PhaseSpaceFactor] = None,
 ) -> sp.Expr:
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
@@ -248,8 +248,10 @@ def coupled_width(  # pylint: disable=too-many-arguments
     that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
     in the definition for :math:`\Gamma(m)`.
     """
-    if phsp_factor is not phase_space_factor:
+    if phsp_factor is not None:
         verify_signature(phsp_factor, PhaseSpaceFactor)
+    else:
+        phsp_factor = phase_space_factor
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
     form_factor_sq = BlattWeisskopfSquared(
