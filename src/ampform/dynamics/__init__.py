@@ -11,7 +11,16 @@ from typing import Any
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 
-from .decorator import UnevaluatedExpression, implement_doit_method
+from .decorator import (
+    UnevaluatedExpression,
+    implement_doit_method,
+    verify_signature,
+)
+
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
 
 
 @implement_doit_method()
@@ -163,93 +172,29 @@ def relativistic_breit_wigner(
     return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
-) -> sp.Expr:
-    """Relativistic Breit-Wigner with `.BlattWeisskopf` factor.
+class PhaseSpaceFactor(Protocol):
+    """Protocol that is used by `.coupled_width`.
 
-    See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
-    :cite:`asnerDalitzPlotAnalysis2006`.
+    Use this `~typing.Protocol` when defining other implementations of a phase
+    space factor. Compare for instance :func:`.phase_space_factor` and
+    :func:`.phase_space_factor_ac`.
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    form_factor = BlattWeisskopf(
-        angular_momentum,
-        z=q_squared * meson_radius ** 2,
-    )
-    mass_dependent_width = coupled_width(
-        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius
-    )
-    return (mass0 * gamma0 * form_factor) / (
-        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
-    )
 
-
-def breakup_momentum_squared(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    r"""Squared value of the two-body breakup-up momentum.
-
-    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
-    absolute value of the momentum of both :math:`a` and :math:`b` in the rest
-    frame of :math:`R`.
-
-    Args:
-        s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
-            Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
-            invariant mass of decaying particle :math:`R`.
-
-        m_a: Mass of decay product :math:`a`.
-        m_b: Mass of decay product :math:`b`.
-
-    See :pdg-review:`2020; Kinematics; p.3`.
-    """
-    return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
-
-
-def coupled_width(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
-) -> sp.Expr:
-    """Mass-dependent width, coupled to the pole position of the resonance.
-
-    See :pdg-review:`2020; Resonances; p.6` and
-    :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
-    """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
-    form_factor = BlattWeisskopf(
-        angular_momentum, z=q_squared * meson_radius ** 2
-    )
-    form_factor0 = BlattWeisskopf(
-        angular_momentum, z=q0_squared * meson_radius ** 2
-    )
-    q = sp.sqrt(q_squared)
-    q0 = sp.sqrt(q0_squared)
-    return (
-        gamma0
-        * (mass0 / sp.sqrt(s))
-        * (form_factor ** 2 / form_factor0 ** 2)
-        * (q / q0)
-    )
+    def __call__(
+        self, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+    ) -> sp.Expr:
+        ...
 
 
 def phase_space_factor(
     s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
-    """Standard phase-space factor, following :pdg-review:`2020; Resonances; p.4`."""
+    """Standard phase-space factor, using `complex_sqrt`.
+
+    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
+    """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
+    return complex_sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
 
 
 def phase_space_factor_ac(
@@ -279,6 +224,86 @@ def phase_space_factor_ac(
             True,
         ),
     )
+
+
+def coupled_width(  # pylint: disable=too-many-arguments
+    s: sp.Symbol,
+    mass0: sp.Symbol,
+    gamma0: sp.Symbol,
+    m_a: sp.Symbol,
+    m_b: sp.Symbol,
+    angular_momentum: sp.Symbol,
+    meson_radius: sp.Symbol,
+    phsp_factor: PhaseSpaceFactor = phase_space_factor,
+) -> sp.Expr:
+    """Mass-dependent width, coupled to the pole position of the resonance.
+
+    See :pdg-review:`2020; Resonances; p.6` and
+    :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
+    """
+    if phsp_factor is not phase_space_factor:
+        verify_signature(phsp_factor, PhaseSpaceFactor)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
+    form_factor = BlattWeisskopf(
+        angular_momentum, z=q_squared * meson_radius ** 2
+    )
+    form_factor0 = BlattWeisskopf(
+        angular_momentum, z=q0_squared * meson_radius ** 2
+    )
+    rho = phsp_factor(s, m_a, m_b)
+    rho0 = phsp_factor(mass0 ** 2, m_a, m_b)
+    return gamma0 * (form_factor ** 2 / form_factor0 ** 2) * (rho / rho0)
+
+
+def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
+    s: sp.Symbol,
+    mass0: sp.Symbol,
+    gamma0: sp.Symbol,
+    m_a: sp.Symbol,
+    m_b: sp.Symbol,
+    angular_momentum: sp.Symbol,
+    meson_radius: sp.Symbol,
+    phsp_factor: PhaseSpaceFactor = phase_space_factor,
+) -> sp.Expr:
+    """Relativistic Breit-Wigner with `.BlattWeisskopf` factor.
+
+    See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
+    :cite:`asnerDalitzPlotAnalysis2006`.
+    """
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    form_factor = BlattWeisskopf(
+        angular_momentum,
+        z=q_squared * meson_radius ** 2,
+    )
+    mass_dependent_width = coupled_width(
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
+    )
+    return (mass0 * gamma0 * form_factor) / (
+        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
+    )
+
+
+def breakup_momentum_squared(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    r"""Squared value of the two-body breakup-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
+    absolute value of the momentum of both :math:`a` and :math:`b` in the rest
+    frame of :math:`R`.
+
+    Args:
+        s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
+            Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
+            invariant mass of decaying particle :math:`R`.
+
+        m_a: Mass of decay product :math:`a`.
+        m_b: Mass of decay product :math:`b`.
+
+    See :pdg-review:`2020; Kinematics; p.3`.
+    """
+    return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
 
 
 def complex_sqrt(x: sp.Symbol) -> sp.Expr:
