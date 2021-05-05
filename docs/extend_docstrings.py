@@ -13,6 +13,7 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
+    _analytic_continuation,
     breakup_momentum_squared,
     complex_sqrt,
     coupled_width,
@@ -125,15 +126,8 @@ def render_phase_space_factor() -> None:
 
 
 def render_phase_space_factor_ac() -> None:
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho_analytic = phase_space_factor_ac(s, m_a, m_b)
-    rho = phase_space_factor(s, m_a, m_b)
-    rho_analytic = rho_analytic.subs(
-        {
-            rho: sp.Symbol(R"\hat{\rho}"),
-            1 / rho: sp.Symbol(R"\left(\hat{\rho}\right)^{-1}"),
-        }
-    )
+    s, m_a, m_b, rho = sp.symbols(R"s, m_a, m_b, \hat{\rho}")
+    rho_analytic = _analytic_continuation(rho, s, s_threshold=(m_a + m_b) ** 2)
     update_docstring(
         phase_space_factor_ac,
         fR"""
