@@ -269,7 +269,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """Relativistic Breit-Wigner with `.BlattWeisskopf` factor.
 
     See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
-    :cite:`asnerDalitzPlotAnalysis2006`.
+    :pdg-review:`2020; Resonances; p.6`.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     form_factor = BlattWeisskopf(
