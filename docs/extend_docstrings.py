@@ -83,8 +83,8 @@ def render_coupled_width() -> None:
     update_docstring(
         coupled_width,
         fR"""
-    AmpForm uses the following shape for the "mass-dependent" width in a
-    `.relativistic_breit_wigner_with_ff`:
+    With that in mind, the "mass-dependent" width in a
+    `.relativistic_breit_wigner_with_ff` becomes:
 
     .. math:: \Gamma(s) = {sp.latex(running_width)}
         :label: coupled_width

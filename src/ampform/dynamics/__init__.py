@@ -35,10 +35,12 @@ class BlattWeisskopf(UnevaluatedExpression):
             and :math:`q` the breakup-momentum (see
             `breakup_momentum_squared`).
 
-    Each of these casesfor :math:`L` has been taken from
-    :cite:`chungPartialWaveAnalysis1995`, p. 415, and
-    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
-    where to use these Blatt-Weisskopf functions, see
+    This version of the Blatt-Weisskopf function can be used directly as a
+    barrier factor, because it is normalized in the sense that equal powers of
+    :math:`z` appear in the nominator and the denominator. Each of these cases
+    for :math:`L` has been taken from :cite:`chungPartialWaveAnalysis1995`, p.
+    415, and :cite:`chungFormulasAngularMomentumBarrier2015`. For a good
+    overview of where to use these Blatt-Weisskopf functions, see
     :cite:`asnerDalitzPlotAnalysis2006`.
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
@@ -236,10 +238,17 @@ def coupled_width(  # pylint: disable=too-many-arguments
     meson_radius: sp.Symbol,
     phsp_factor: PhaseSpaceFactor = phase_space_factor,
 ) -> sp.Expr:
-    """Mass-dependent width, coupled to the pole position of the resonance.
+    r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
+
+    Note that the `.BlattWeisskopf` of AmpForm is normalized in the sense that
+    equal powers of :math:`z` appear in the nominator and the denominator,
+    while the definition in the PDG (as well as some other sources), always
+    have :math:`1` in the nominator of the Blatt-Weisskopf. In that case,
+    one needs an additional factor :math:`\left(q/q_0\right)^{2L}` in the
+    definition for :math:`\Gamma(m)`.
     """
     if phsp_factor is not phase_space_factor:
         verify_signature(phsp_factor, PhaseSpaceFactor)
