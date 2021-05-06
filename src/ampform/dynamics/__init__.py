@@ -239,7 +239,8 @@ def coupled_width(  # pylint: disable=too-many-arguments
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See :pdg-review:`2020; Resonances; p.6` and
-    :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
+    :cite:`asnerDalitzPlotAnalysis2006`, equation (6). Default value for
+    :code:`phsp_factor` is :meth:`phase_space_factor`.
 
     Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the
     sense that equal powers of :math:`z` appear in the nominator and the
