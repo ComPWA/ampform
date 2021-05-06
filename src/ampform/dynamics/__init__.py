@@ -41,7 +41,8 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     before Equation (49.20).
 
     Each of these cases for :math:`L` has been taken from
-    :cite:`chungPartialWaveAnalysis1995`, p. 415, and
+    :cite:`pychyGekoppeltePartialwellenanalyseAnnihilationen2016`, p.59,
+    :cite:`chungPartialWaveAnalysis1995`, p.415, and
     :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
     where to use these Blatt-Weisskopf functions, see
     :cite:`asnerDalitzPlotAnalysis2006`.
