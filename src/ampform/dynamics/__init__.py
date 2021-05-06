@@ -210,7 +210,8 @@ def phase_space_factor_ac(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho = phase_space_factor(s, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    rho = sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
     s_threshold = (m_a + m_b) ** 2
     return _analytic_continuation(rho, s, s_threshold)
 
