@@ -199,6 +199,7 @@
         "savefig",
         "seealso",
         "sharex",
+        "sharey",
         "startswith",
         "suptitle",
         "sympify",

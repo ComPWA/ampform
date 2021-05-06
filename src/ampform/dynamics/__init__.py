@@ -184,6 +184,7 @@ class PhaseSpaceFactor(Protocol):
     def __call__(
         self, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
     ) -> sp.Expr:
+        """Expected `~inspect.signature`."""
         ...
 
 
@@ -203,25 +204,32 @@ def phase_space_factor_ac(
 ) -> sp.Expr:
     """Analytic continuation for the `phase_space_factor`.
 
-    See :pdg-review:`2014; Resonances; p.8`.
+    See :pdg-review:`2014; Resonances; p.8` and
+    :doc:`/usage/dynamics/analytic-continuation`.
 
-    .. warning:: The PDG states that this formula applies to a two-body decay
-        **with equal masses** only.
+    **Warning**: The PDG specifically derives this formula for a two-body decay
+    *with equal masses*.
     """
-    rho = phase_space_factor(s, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    rho = sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
     s_threshold = (m_a + m_b) ** 2
+    return _analytic_continuation(rho, s, s_threshold)
+
+
+def _analytic_continuation(
+    rho: sp.Symbol, s: sp.Symbol, s_threshold: sp.Symbol
+) -> sp.Expr:
     return sp.Piecewise(
         (
-            -rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))),
+            sp.I * rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))),
             s < 0,
         ),
         (
-            (-rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))) + sp.I * rho)
-            / (sp.I * 16 * sp.pi * s),
+            rho + sp.I * rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))),
             s > s_threshold,
         ),
         (
-            (-2 * rho / sp.pi * sp.atan(1 / rho)) / (sp.I * 16 * sp.pi * s),
+            2 * sp.I * rho / sp.pi * sp.atan(1 / rho),
             True,
         ),
     )
