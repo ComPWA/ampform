@@ -32,8 +32,8 @@ model with some formalism, like the helicity formalism.
 
 - **Narrow the gap between code and theory**<br> AmpForm amplitude models are
   formulated with {doc}`SymPy <sympy:index>`. For instance, have a look at
-  {doc}`/usage/dynamics/lineshapes` to see how easy it is to inspect and
-  understand the math as well as the code behind the model.
+  {doc}`/usage/dynamics` to see how easy it is to inspect and understand the
+  math as well as the code behind the model.
 
 - **Adjust and modify the model to your needs**<br> Need some additional
   background terms some specific dynamics functions for your decay channel? Use
