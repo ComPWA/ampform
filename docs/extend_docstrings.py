@@ -91,7 +91,7 @@ def render_coupled_width() -> None:
 
     where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
     :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
-    :math:`\rho(s)` is defined by :eq:`phase_space_factor`.
+    :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
     """,
     )
 
