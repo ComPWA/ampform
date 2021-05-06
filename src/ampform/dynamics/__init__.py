@@ -2,7 +2,7 @@
 # pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics/lineshapes` and
+.. seealso:: :doc:`/usage/dynamics` and
     :doc:`/usage/dynamics/analytic-continuation`
 """
 
