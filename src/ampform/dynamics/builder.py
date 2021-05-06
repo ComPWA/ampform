@@ -7,7 +7,7 @@ import sympy as sp
 from qrules.particle import Particle
 
 from . import (
-    BlattWeisskopf,
+    BlattWeisskopfSquared,
     breakup_momentum_squared,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
@@ -50,7 +50,11 @@ def create_non_dynamic(
 def create_non_dynamic_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
-    """Generate a `.BlattWeisskopf` form factor for a two-body decay."""
+    """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
+
+    Returns the `~sympy.functions.elementary.miscellaneous.sqrt` of a
+    `.BlattWeisskopfSquared`.
+    """
     angular_momentum = variable_pool.angular_momentum
     if angular_momentum is None:
         raise ValueError(
@@ -62,8 +66,12 @@ def create_non_dynamic_with_ff(
         m_b=variable_pool.out_edge_inv_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
+    form_factor_squared = BlattWeisskopfSquared(
+        angular_momentum,
+        z=q_squared * meson_radius ** 2,
+    )
     return (
-        BlattWeisskopf(angular_momentum, z=q_squared * meson_radius ** 2),
+        sp.sqrt(form_factor_squared),
         {meson_radius: 1},
     )
 

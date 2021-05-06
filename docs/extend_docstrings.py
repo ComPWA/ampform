@@ -12,7 +12,7 @@ from typing import Callable, Type, Union
 import sympy as sp
 
 from ampform.dynamics import (
-    BlattWeisskopf,
+    BlattWeisskopfSquared,
     breakup_momentum_squared,
     complex_sqrt,
     coupled_width,
@@ -33,12 +33,12 @@ def update_docstring(
 def render_blatt_weisskopf() -> None:
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
-    ff2 = BlattWeisskopf(L, z) ** 2
+    ff2 = BlattWeisskopfSquared(L, z)
     update_docstring(
-        BlattWeisskopf,
+        BlattWeisskopfSquared,
         f"""
     .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
-        :label: BlattWeisskopf
+        :label: BlattWeisskopfSquared
     """,
     )
 
@@ -69,29 +69,29 @@ def render_coupled_width() -> None:
     )
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(m0 ** 2, m_a, m_b)
-    form_factor = BlattWeisskopf(L, z=q_squared * d ** 2)
-    form_factor0 = BlattWeisskopf(L, z=q0_squared * d ** 2)
+    form_factor_sq = BlattWeisskopfSquared(L, z=q_squared * d ** 2)
+    form_factor0_sq = BlattWeisskopfSquared(L, z=q0_squared * d ** 2)
     rho = phase_space_factor(s, m_a, m_b)
     rho0 = phase_space_factor(m0 ** 2, m_a, m_b)
     running_width = running_width.subs(
         {
             rho / rho0: sp.Symbol(R"\rho(s)") / sp.Symbol(R"\rho(m_{0})"),
-            form_factor: sp.Symbol("B_{L}(q)"),
-            form_factor0: sp.Symbol("B_{L}(q_{0})"),
+            form_factor_sq: sp.Symbol("B_{L}^2(q)"),
+            form_factor0_sq: sp.Symbol("B_{L}^2(q_{0})"),
         }
     )
     update_docstring(
         coupled_width,
         fR"""
-    AmpForm uses the following shape for the "mass-dependent" width in a
-    `.relativistic_breit_wigner_with_ff`:
+    With that in mind, the "mass-dependent" width in a
+    `.relativistic_breit_wigner_with_ff` becomes:
 
     .. math:: \Gamma(s) = {sp.latex(running_width)}
         :label: coupled_width
 
-    where :math:`B_L(q)` is defined by :eq:`BlattWeisskopf`, :math:`q(s)` is
-    defined by :eq:`breakup_momentum_squared`, and :math:`\rho(s)` is defined
-    by :eq:`phase_space_factor`.
+    where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
+    :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
+    :math:`\rho(s)` is defined by :eq:`phase_space_factor`.
     """,
     )
 
@@ -171,26 +171,26 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         meson_radius=d,
     )
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    ff = BlattWeisskopf(L, z=q_squared * d ** 2)
+    ff_sq = BlattWeisskopfSquared(L, z=q_squared * d ** 2)
     mass_dependent_width = coupled_width(s, m0, w0, m_a, m_b, L, d)
     rel_bw_with_ff = rel_bw_with_ff.subs(
         {
             2 * q_squared: 2 * sp.Symbol("q^{2}(s)"),
-            ff: sp.Symbol(R"B_{L}\left(q(s)\right)"),
+            ff_sq: sp.Symbol(R"B_{L}^2\left(q(s)\right)"),
             mass_dependent_width: sp.Symbol(R"\Gamma(s)"),
         }
     )
     update_docstring(
         relativistic_breit_wigner_with_ff,
         fR"""
-    The general form of a relativistic Breit-Wigner with `.BlattWeisskopf` form
+    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
     factor is:
 
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
 
-    where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L(q)`
-    is defined by :eq:`BlattWeisskopf`, and :math:`q(s)` is defined by
+    where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L^2(q)`
+    is defined by :eq:`BlattWeisskopfSquared`, and :math:`q(s)` is defined by
     :eq:`breakup_momentum_squared`.
     """,
     )
