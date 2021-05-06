@@ -24,13 +24,13 @@ except ImportError:
 
 
 @implement_doit_method()
-class BlattWeisskopf(UnevaluatedExpression):
-    r"""Blatt-Weisskopf function :math:`B_L(z)`, up to :math:`L \leq 8`.
+class BlattWeisskopfSquared(UnevaluatedExpression):
+    r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
 
     Args:
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
-        z: Argument of the Blatt-Weisskopf function :math:`B_L(z)`. A usual
+        z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
             and :math:`q` the breakup-momentum (see
             `breakup_momentum_squared`).
@@ -52,7 +52,7 @@ class BlattWeisskopf(UnevaluatedExpression):
         z: sp.Symbol,
         evaluate: bool = False,
         **hints: Any,
-    ) -> "BlattWeisskopf":
+    ) -> "BlattWeisskopfSquared":
         args = sp.sympify((angular_momentum, z))
         if evaluate:
             # pylint: disable=no-member
@@ -61,106 +61,101 @@ class BlattWeisskopf(UnevaluatedExpression):
 
     def evaluate(self) -> sp.Expr:
         angular_momentum, z = self.args
-        return sp.sqrt(
-            sp.Piecewise(
+        return sp.Piecewise(
+            (
+                1,
+                sp.Eq(angular_momentum, 0),
+            ),
+            (
+                2 * z / (z + 1),
+                sp.Eq(angular_momentum, 1),
+            ),
+            (
+                13 * z ** 2 / ((z - 3) * (z - 3) + 9 * z),
+                sp.Eq(angular_momentum, 2),
+            ),
+            (
                 (
-                    1,
-                    sp.Eq(angular_momentum, 0),
+                    277
+                    * z ** 3
+                    / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
                 ),
+                sp.Eq(angular_momentum, 3),
+            ),
+            (
                 (
-                    2 * z / (z + 1),
-                    sp.Eq(angular_momentum, 1),
-                ),
-                (
-                    13 * z ** 2 / ((z - 3) * (z - 3) + 9 * z),
-                    sp.Eq(angular_momentum, 2),
-                ),
-                (
-                    (
-                        277
-                        * z ** 3
-                        / (
-                            z * (z - 15) * (z - 15)
-                            + 9 * (2 * z - 5) * (2 * z - 5)
-                        )
-                    ),
-                    sp.Eq(angular_momentum, 3),
-                ),
-                (
-                    (
-                        12746
-                        * z ** 4
-                        / (
-                            (z ** 2 - 45 * z + 105) * (z ** 2 - 45 * z + 105)
-                            + 25 * z * (2 * z - 21) * (2 * z - 21)
-                        )
-                    ),
-                    sp.Eq(angular_momentum, 4),
-                ),
-                (
-                    998881
-                    * z ** 5
+                    12746
+                    * z ** 4
                     / (
-                        z ** 5
-                        + 15 * z ** 4
-                        + 315 * z ** 3
-                        + 6300 * z ** 2
-                        + 99225 * z
-                        + 893025
-                    ),
-                    sp.Eq(angular_momentum, 5),
+                        (z ** 2 - 45 * z + 105) * (z ** 2 - 45 * z + 105)
+                        + 25 * z * (2 * z - 21) * (2 * z - 21)
+                    )
                 ),
-                (
-                    118394977
-                    * z ** 6
-                    / (
-                        z ** 6
-                        + 21 * z ** 5
-                        + 630 * z ** 4
-                        + 18900 * z ** 3
-                        + 496125 * z ** 2
-                        + 9823275 * z
-                        + 108056025
-                    ),
-                    sp.Eq(angular_momentum, 6),
+                sp.Eq(angular_momentum, 4),
+            ),
+            (
+                998881
+                * z ** 5
+                / (
+                    z ** 5
+                    + 15 * z ** 4
+                    + 315 * z ** 3
+                    + 6300 * z ** 2
+                    + 99225 * z
+                    + 893025
                 ),
-                (
-                    19727003738
-                    * z ** 7
-                    / (
-                        z ** 7
-                        + 28 * z ** 6
-                        + 1134 * z ** 5
-                        + 47250 * z ** 4
-                        + 1819125 * z ** 3
-                        + 58939650 * z ** 2
-                        + 1404728325 * z
-                        + 18261468225
-                    ),
-                    sp.Eq(angular_momentum, 7),
+                sp.Eq(angular_momentum, 5),
+            ),
+            (
+                118394977
+                * z ** 6
+                / (
+                    z ** 6
+                    + 21 * z ** 5
+                    + 630 * z ** 4
+                    + 18900 * z ** 3
+                    + 496125 * z ** 2
+                    + 9823275 * z
+                    + 108056025
                 ),
-                (
-                    4392846440677
-                    * z ** 8
-                    / (
-                        z ** 8
-                        + 36 * z ** 7
-                        + 1890 * z ** 6
-                        + 103950 * z ** 5
-                        + 5457375 * z ** 4
-                        + 255405150 * z ** 3
-                        + 9833098275 * z ** 2
-                        + 273922023375 * z
-                        + 4108830350625
-                    ),
-                    sp.Eq(angular_momentum, 8),
+                sp.Eq(angular_momentum, 6),
+            ),
+            (
+                19727003738
+                * z ** 7
+                / (
+                    z ** 7
+                    + 28 * z ** 6
+                    + 1134 * z ** 5
+                    + 47250 * z ** 4
+                    + 1819125 * z ** 3
+                    + 58939650 * z ** 2
+                    + 1404728325 * z
+                    + 18261468225
                 ),
-            )
+                sp.Eq(angular_momentum, 7),
+            ),
+            (
+                4392846440677
+                * z ** 8
+                / (
+                    z ** 8
+                    + 36 * z ** 7
+                    + 1890 * z ** 6
+                    + 103950 * z ** 5
+                    + 5457375 * z ** 4
+                    + 255405150 * z ** 3
+                    + 9833098275 * z ** 2
+                    + 273922023375 * z
+                    + 4108830350625
+                ),
+                sp.Eq(angular_momentum, 8),
+            ),
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
-        return fR"B_{{{angular_momentum}}}\left({z}\right)"
+        return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
 
 
 def relativistic_breit_wigner(
@@ -243,26 +238,26 @@ def coupled_width(  # pylint: disable=too-many-arguments
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6).
 
-    Note that the `.BlattWeisskopf` of AmpForm is normalized in the sense that
-    equal powers of :math:`z` appear in the nominator and the denominator,
-    while the definition in the PDG (as well as some other sources), always
-    have :math:`1` in the nominator of the Blatt-Weisskopf. In that case,
-    one needs an additional factor :math:`\left(q/q_0\right)^{2L}` in the
-    definition for :math:`\Gamma(m)`.
+    Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the
+    sense that equal powers of :math:`z` appear in the nominator and the
+    denominator, while the definition in the PDG (as well as some other
+    sources), always have :math:`1` in the nominator of the Blatt-Weisskopf. In
+    that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
+    in the definition for :math:`\Gamma(m)`.
     """
     if phsp_factor is not phase_space_factor:
         verify_signature(phsp_factor, PhaseSpaceFactor)
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
-    form_factor = BlattWeisskopf(
+    form_factor_sq = BlattWeisskopfSquared(
         angular_momentum, z=q_squared * meson_radius ** 2
     )
-    form_factor0 = BlattWeisskopf(
+    form_factor0_sq = BlattWeisskopfSquared(
         angular_momentum, z=q0_squared * meson_radius ** 2
     )
     rho = phsp_factor(s, m_a, m_b)
     rho0 = phsp_factor(mass0 ** 2, m_a, m_b)
-    return gamma0 * (form_factor ** 2 / form_factor0 ** 2) * (rho / rho0)
+    return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
@@ -275,15 +270,16 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     meson_radius: sp.Symbol,
     phsp_factor: PhaseSpaceFactor = phase_space_factor,
 ) -> sp.Expr:
-    """Relativistic Breit-Wigner with `.BlattWeisskopf` factor.
+    """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
     See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
     :pdg-review:`2020; Resonances; p.6`.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    form_factor = BlattWeisskopf(
-        angular_momentum,
-        z=q_squared * meson_radius ** 2,
+    form_factor = sp.sqrt(
+        BlattWeisskopfSquared(
+            angular_momentum, z=q_squared * meson_radius ** 2
+        )
     )
     mass_dependent_width = coupled_width(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
