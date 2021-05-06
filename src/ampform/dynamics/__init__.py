@@ -35,12 +35,15 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             and :math:`q` the breakup-momentum (see
             `breakup_momentum_squared`).
 
-    This version of the Blatt-Weisskopf function can be used directly as a
-    barrier factor, because it is normalized in the sense that equal powers of
-    :math:`z` appear in the nominator and the denominator. Each of these cases
-    for :math:`L` has been taken from :cite:`chungPartialWaveAnalysis1995`, p.
-    415, and :cite:`chungFormulasAngularMomentumBarrier2015`. For a good
-    overview of where to use these Blatt-Weisskopf functions, see
+    Note that equal powers of :math:`z` appear in the nominator and the
+    denominator, while some sources have nominator :math:`1`, instead of
+    :math:`z^L`. Compare for instance :pdg-review:`2020; Resonances; p.6`, just
+    before Equation (49.20).
+
+    Each of these cases for :math:`L` has been taken from
+    :cite:`chungPartialWaveAnalysis1995`, p. 415, and
+    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
+    where to use these Blatt-Weisskopf functions, see
     :cite:`asnerDalitzPlotAnalysis2006`.
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
