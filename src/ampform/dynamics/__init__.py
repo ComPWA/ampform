@@ -49,6 +49,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
     """
+    is_commutative = True
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
