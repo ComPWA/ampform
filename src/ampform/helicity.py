@@ -228,18 +228,19 @@ class _HelicityAmplitudeNameGenerator:
             nodelist = frozenset({node_id})
         else:
             nodelist = graph.topology.nodes
+        names: List[str] = []
         for node in nodelist:
             (in_hel_info, out_hel_info) = self._retrieve_helicity_info(
                 graph, node
             )
 
-            name += (
+            name = (
                 _generate_particles_string(in_hel_info)
                 + R" \to "
                 + _generate_particles_string(out_hel_info)
-                + ";"
             )
-        return name[:-1]
+            names.append(name)
+        return "; ".join(names)
 
     @staticmethod
     def _retrieve_helicity_info(
@@ -270,13 +271,13 @@ class _HelicityAmplitudeNameGenerator:
         self, graph: StateTransitionGraph[ParticleWithSpin]
     ) -> str:
         """Generate unique suffix for a sequential amplitude graph."""
-        output_suffix = ""
+        coefficient_names: List[str] = []
         for node_id in graph.topology.nodes:
             suffix = self.generate_amplitude_coefficient_name(graph, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
                 suffix = self.parity_partner_coefficient_mapping[suffix]
-            output_suffix += suffix + ";"
-        return output_suffix[:-1]
+            coefficient_names.append(suffix)
+        return "; ".join(coefficient_names)
 
 
 class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
@@ -285,20 +286,20 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
         graph: StateTransitionGraph[ParticleWithSpin],
         node_id: Optional[int] = None,
     ) -> str:
-        name = ""
         if isinstance(node_id, int):
             node_ids = frozenset({node_id})
         else:
             node_ids = graph.topology.nodes
+        names: List[str] = []
         for node in node_ids:
             helicity_name = super().generate_unique_amplitude_name(graph, node)
-            name += (
+            name = (
                 helicity_name[:-1]
                 + self._generate_clebsch_gordan_string(graph, node)
                 + helicity_name[-1]
-                + ";"
             )
-        return name
+            names.append(name)
+        return "; ".join(names)
 
     @staticmethod
     def _generate_clebsch_gordan_string(

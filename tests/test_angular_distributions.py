@@ -163,7 +163,7 @@ class TestD1ToD0PiPi:
 
         amplitude_model.parameter_defaults[
             sp.Symbol(
-                "C[D_{1}(2420)^{0} \\to D^{*}(2010)^{+}_{0} \\pi^{-}_{0};"
+                "C[D_{1}(2420)^{0} \\to D^{*}(2010)^{+}_{0} \\pi^{-}_{0}; "
                 "D^{*}(2010)^{+} \\to D^{0}_{0} \\pi^{+}_{0}]"
             )
         ] = 0.5
