@@ -22,7 +22,9 @@ disable=
     missing-module-docstring,   # pydocstyle
     redefined-builtin, # flake8-built
     too-few-public-methods, # data containers (attrs) and interface classes
+    ungrouped-imports,  # isort
     unused-import, # https://www.flake8rules.com/rules/F401
+    wrong-import-order,  # isort
 
 [SIMILARITIES]
 ignore-imports=yes # https://stackoverflow.com/a/30007053

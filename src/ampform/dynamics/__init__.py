@@ -1,4 +1,4 @@
-# cspell:ignore Asner
+# cspell:ignore asner Lambdifier
 # pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics of an interaction.
 
@@ -9,6 +9,7 @@
 from typing import Any, Optional
 
 import sympy as sp
+from sympy.plotting.experimental_lambdify import Lambdifier
 from sympy.printing.printer import Printer
 
 from .decorator import (
@@ -401,3 +402,7 @@ class ComplexSqrt(sp.Expr):
         printer.module_imports["cmath"].add("sqrt as csqrt")
         x = printer._print(self.args[0])
         return f"csqrt({x})"
+
+
+# Needed for sympy.plot
+Lambdifier.builtin_functions_different["ComplexSqrt"] = "sqrt"

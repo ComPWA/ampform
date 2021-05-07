@@ -6,6 +6,7 @@ import pytest
 import qrules as q
 import sympy as sp
 from sympy import preorder_traversal
+from sympy.plotting.experimental_lambdify import experimental_lambdify
 
 from ampform.dynamics import ComplexSqrt
 from ampform.helicity import HelicityModel
@@ -107,6 +108,19 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
 
 
 class TestComplexSqrt:
+    @pytest.mark.parametrize(
+        ("input_value", "expected"),
+        [
+            (1.0, 1.0),
+            (4, 2),
+        ],
+    )
+    def test_experimental_lambdify(self, input_value, expected):
+        x = sp.Symbol("x")
+        expr = ComplexSqrt(input_value)
+        lambdified = experimental_lambdify((x,), expr)
+        assert lambdified(input_value) == expected
+
     @pytest.mark.parametrize("module", ["math", "numpy"])
     @pytest.mark.parametrize(
         ("input_value", "expected"),
