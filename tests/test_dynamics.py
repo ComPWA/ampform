@@ -1,4 +1,7 @@
+# cspell:disable cmath
 # pylint: disable=no-self-use
+import cmath
+
 import pytest
 import qrules as q
 import sympy as sp
@@ -110,10 +113,11 @@ class TestComplexSqrt:
         [
             (4, 2),
             (-4, 2j),
+            (1j, cmath.sqrt(1j)),
         ],
     )
     def test_lambdify(self, module: str, input_value, expected):
         x = sp.Symbol("x")
         expr = ComplexSqrt(x)
         lambdified_expr = sp.lambdify((x,), expr, module)
-        assert lambdified_expr(input_value) == expected
+        assert pytest.approx(lambdified_expr(input_value)) == expected

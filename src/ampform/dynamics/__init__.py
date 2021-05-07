@@ -381,6 +381,8 @@ class ComplexSqrt(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         x = self.args[0]
+        if not x.is_real:
+            return sp.sqrt(x)
         return sp.Piecewise(
             (sp.I * sp.sqrt(-x), x < 0),
             (sp.sqrt(x), True),
