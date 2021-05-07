@@ -50,6 +50,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
     """
+    is_commutative = True
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
@@ -367,6 +368,7 @@ class ComplexSqrt(sp.Expr):
     This class is particularly important for lambdifying, because many
     computational backends have optimized 'complex square root' functions.
     """
+    is_commutative = True
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
