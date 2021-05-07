@@ -394,3 +394,8 @@ class ComplexSqrt(sp.Expr):
         printer.module_imports["numpy.lib.scimath"].add("sqrt as csqrt")
         x = printer._print(self.args[0])
         return f"csqrt({x})"
+
+    def _pythoncode(self, printer: Printer, *args: Any) -> str:
+        printer.module_imports["cmath"].add("sqrt as csqrt")
+        x = printer._print(self.args[0])
+        return f"csqrt({x})"

@@ -104,7 +104,7 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
 
 
 class TestComplexSqrt:
-    @pytest.mark.parametrize("module", ["numpy"])
+    @pytest.mark.parametrize("module", ["math", "numpy"])
     @pytest.mark.parametrize(
         ("input_value", "expected"),
         [
