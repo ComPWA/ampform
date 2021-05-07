@@ -283,7 +283,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     m_b: sp.Symbol,
     angular_momentum: sp.Symbol,
     meson_radius: sp.Symbol,
-    phsp_factor: PhaseSpaceFactor = phase_space_factor,
+    phsp_factor: Optional[PhaseSpaceFactor] = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
