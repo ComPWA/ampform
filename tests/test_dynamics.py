@@ -1,8 +1,10 @@
+# pylint: disable=no-self-use
 import pytest
 import qrules as q
 import sympy as sp
 from sympy import preorder_traversal
 
+from ampform.dynamics import ComplexSqrt
 from ampform.helicity import HelicityModel
 
 
@@ -99,3 +101,19 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
         if isinstance(node, sp.Pow) and node.args[1] == 1 / 2:
             expression = expression.subs(node, round(node.n(), n_decimals))
     return expression
+
+
+class TestComplexSqrt:
+    @pytest.mark.parametrize("module", ["numpy"])
+    @pytest.mark.parametrize(
+        ("input_value", "expected"),
+        [
+            (4, 2),
+            (-4, 2j),
+        ],
+    )
+    def test_lambdify(self, module: str, input_value, expected):
+        x = sp.Symbol("x")
+        expr = ComplexSqrt(x)
+        lambdified_expr = sp.lambdify((x,), expr, module)
+        assert lambdified_expr(input_value) == expected

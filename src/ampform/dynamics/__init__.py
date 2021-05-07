@@ -9,7 +9,7 @@
 from typing import Any, Optional
 
 import sympy as sp
-from sympy.printing.latex import LatexPrinter
+from sympy.printing.printer import Printer
 
 from .decorator import (
     UnevaluatedExpression,
@@ -157,7 +157,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             ),
         )
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: Printer, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
         return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
 
@@ -340,3 +340,57 @@ def complex_sqrt(x: sp.Symbol) -> sp.Expr:
         (sp.I * sp.sqrt(-x), x < 0),
         (sp.sqrt(x), True),
     )
+
+
+# cspell:ignore cmath csqrt numpycode
+class ComplexSqrt(sp.Expr):
+    r"""Normal square root that takes the positive root for negative arguments.
+
+    Square root function
+    (:func:`~sympy.functions.elementary.miscellaneous.sqrt`) that takes the
+    positive imaginary root :math:`i\sqrt{-x}` for negative arguments
+    :math:`x<0`.
+
+    >>> x = sp.Symbol("x")
+    >>> ComplexSqrt(x)
+    ComplexSqrt(x)
+    >>> sp.latex(ComplexSqrt(x))
+    '\\sqrt[\\mathrm{c}]{x}'
+    >>> ComplexSqrt(-2)
+    sqrt(2)*I
+    >>> ComplexSqrt(-4)
+    2*I
+    >>> ComplexSqrt(4)
+    2
+
+    This class is particularly important for lambdifying, because many
+    computational backends have optimized 'complex square root' functions.
+    """
+
+    def __new__(  # pylint: disable=arguments-differ
+        cls,
+        x: sp.Symbol,
+        *args: Any,
+        **kwargs: Any,
+    ) -> "ComplexSqrt":
+        x = sp.sympify(x)
+        expr = sp.Expr.__new__(cls, x, *args, **kwargs)
+        if hasattr(x, "free_symbols") and not x.free_symbols:
+            return expr.evaluate()  # pylint: disable=no-member
+        return expr
+
+    def evaluate(self) -> sp.Expr:
+        x = self.args[0]
+        return sp.Piecewise(
+            (sp.I * sp.sqrt(-x), x < 0),
+            (sp.sqrt(x), True),
+        )
+
+    def _latex(self, printer: Printer, *args: Any) -> str:
+        x = printer._print(self.args[0])
+        return fR"\sqrt[\mathrm{{c}}]{{{x}}}"
+
+    def _numpycode(self, printer: Printer, *args: Any) -> str:
+        printer.module_imports["numpy.lib.scimath"].add("sqrt as csqrt")
+        x = printer._print(self.args[0])
+        return f"csqrt({x})"

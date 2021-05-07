@@ -6,7 +6,7 @@ from collections import OrderedDict
 from typing import Any, Callable, Type
 
 import sympy as sp
-from sympy.printing.latex import LatexPrinter
+from sympy.printing.latex import Printer
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -23,7 +23,7 @@ class UnevaluatedExpression(sp.Expr):
         pass
 
     @abstractmethod
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: Printer, *args: Any) -> str:
         """Provide a mathematical Latex representation for notebooks."""
         args = tuple(map(printer._print, self.args))
         return f"{self.__class__.__name__}{args}"
