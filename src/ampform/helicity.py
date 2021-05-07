@@ -3,7 +3,7 @@
 import logging
 import operator
 from functools import reduce
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import attr
 import sympy as sp
@@ -703,7 +703,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
             daughter_spins[0].projection - daughter_spins[1].projection
         )
 
-        cg_ls = _ClebschGordanLatexFix(
+        cg_ls = CG(
             j1=sp.nsimplify(ang_mom.magnitude),
             m1=sp.nsimplify(ang_mom.projection),
             j2=sp.nsimplify(spin.magnitude),
@@ -711,7 +711,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
             j3=sp.nsimplify(parent_spin.magnitude),
             m3=sp.nsimplify(decay_particle_lambda),
         )
-        cg_ss = _ClebschGordanLatexFix(
+        cg_ss = CG(
             j1=sp.nsimplify(daughter_spins[0].magnitude),
             m1=sp.nsimplify(daughter_spins[0].projection),
             j2=sp.nsimplify(daughter_spins[1].magnitude),
@@ -723,10 +723,13 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
 
 # https://github.com/sympy/sympy/issues/21001
-class _ClebschGordanLatexFix(CG):
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        j3, m3, j1, m1, j2, m2 = map(  # pylint: disable=invalid-name
-            printer._print,  # pylint: disable=protected-access
-            (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
-        )
-        return f"{{C^{j3,m3}_{j1, m1, j2, m2}}}"
+# pylint: disable=protected-access, unused-argument
+def _latex_fix(self: Type[CG], printer: LatexPrinter, *args: Any) -> str:
+    j3, m3, j1, m1, j2, m2 = map(
+        printer._print,
+        (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
+    )
+    return f"{{C^{{{j3},{m3}}}_{{{j1},{m1},{j2},{m2}}}}}"
+
+
+CG._latex = _latex_fix
