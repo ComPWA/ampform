@@ -15,7 +15,6 @@ from ampform.dynamics import (
     BlattWeisskopfSquared,
     _analytic_continuation,
     breakup_momentum_squared,
-    complex_sqrt,
     coupled_width,
     phase_space_factor,
     phase_space_factor_ac,
@@ -93,17 +92,6 @@ def render_coupled_width() -> None:
     where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
     :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
     :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
-    """,
-    )
-
-
-def render_complex_sqrt() -> None:
-    x = sp.Symbol("x", real=True)
-    update_docstring(
-        complex_sqrt,
-        fR"""
-    .. math:: {sp.latex(complex_sqrt(x))}
-        :label: complex_sqrt
     """,
     )
 

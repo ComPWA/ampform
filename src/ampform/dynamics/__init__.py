@@ -49,6 +49,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     See also :ref:`usage/dynamics/lineshapes:Form factor`.
     """
+    is_commutative = True
 
     def __new__(  # pylint: disable=arguments-differ
         cls,
@@ -191,12 +192,16 @@ class PhaseSpaceFactor(Protocol):
 def phase_space_factor(
     s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
-    """Standard phase-space factor, using `complex_sqrt`.
+    """Standard phase-space factor, using `breakup_momentum_squared`.
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
+
+    .. warning:: This function uses a
+        {func}`~sympy.functions.elementary.miscellaneous.sqrt`. In order to
+        enable analytic continuation, input data needs to be complex valued.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return complex_sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
+    return sp.sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
 
 
 def phase_space_factor_ac(
@@ -324,19 +329,3 @@ def breakup_momentum_squared(
     See :pdg-review:`2020; Kinematics; p.3`.
     """
     return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
-
-
-def complex_sqrt(x: sp.Symbol) -> sp.Expr:
-    """Square root that follows the positive root if :math:`x < 0`.
-
-    >>> complex_sqrt(2)
-    sqrt(2)
-    >>> complex_sqrt(-2)
-    sqrt(2)*I
-    >>> complex_sqrt(-4)
-    2*I
-    """
-    return sp.Piecewise(
-        (sp.I * sp.sqrt(-x), x < 0),
-        (sp.sqrt(x), True),
-    )

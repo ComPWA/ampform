@@ -75,9 +75,6 @@ def test_generate(
     expression = round_nested(expression, n_decimals=2)
 
     expression = sp.piecewise_fold(expression)
-    assert isinstance(expression, sp.Piecewise)
-    expression, condition = expression.args[1].args
-    assert condition
     assert isinstance(expression, sp.Add)
     a1, a2 = tuple(map(str, expression.args))
     if formalism == "canonical":
