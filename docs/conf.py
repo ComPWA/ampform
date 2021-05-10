@@ -189,6 +189,7 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 linkcheck_anchors = False
 linkcheck_ignore = [
     "https://doi.org/10.1093/ptep/ptaa104",
+    "https://hss-opus.ub.ruhr-uni-bochum.de",
 ]
 
 # Settings for myst_nb
