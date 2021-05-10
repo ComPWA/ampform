@@ -13,9 +13,9 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
+    ComplexSqrt,
     _analytic_continuation,
     breakup_momentum_squared,
-    complex_sqrt,
     coupled_width,
     phase_space_factor,
     phase_space_factor_ac,
@@ -99,11 +99,12 @@ def render_coupled_width() -> None:
 
 def render_complex_sqrt() -> None:
     x = sp.Symbol("x", real=True)
+    complex_sqrt = ComplexSqrt(x)
     update_docstring(
-        complex_sqrt,
-        fR"""
-    .. math:: {sp.latex(complex_sqrt(x))}
-        :label: complex_sqrt
+        ComplexSqrt,
+        f"""
+    .. math:: {sp.latex(complex_sqrt)} == {complex_sqrt.evaluate()}
+        :label: ComplexSqrt
     """,
     )
 
