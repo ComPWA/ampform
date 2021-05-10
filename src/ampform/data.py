@@ -22,7 +22,6 @@ from typing import (
 
 import numpy as np
 from numpy.lib.mixins import NDArrayOperatorsMixin
-from numpy.lib.scimath import sqrt as complex_sqrt
 
 try:
     from numpy.typing import ArrayLike, DTypeLike
@@ -164,13 +163,15 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
         return ScalarSequence(np.arccos(self.p_z / self.p_norm()))
 
     def mass(self) -> ScalarSequence:
-        mass_squared = self.mass_squared()
-        if np.min(mass_squared) < 0:
-            return ScalarSequence(complex_sqrt(mass_squared))
+        mass_squared = self.mass_squared(dtype=np.complex64)
         return ScalarSequence(np.sqrt(mass_squared))
 
-    def mass_squared(self) -> ScalarSequence:
-        return ScalarSequence(self.energy ** 2 - self.p_norm() ** 2)
+    def mass_squared(
+        self, dtype: Optional[DTypeLike] = None
+    ) -> ScalarSequence:
+        return ScalarSequence(
+            self.energy ** 2 - self.p_norm() ** 2, dtype=dtype
+        )
 
 
 class MatrixSequence(NDArrayOperatorsMixin, abc.Sequence):

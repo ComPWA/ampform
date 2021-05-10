@@ -126,7 +126,7 @@ class TestComplexSqrt:
         ("input_value", "expected"),
         [
             (4, 2),
-            (-4, 2j),
+            ((-4 + 0j), 2j),
             (1j, cmath.sqrt(1j)),
         ],
     )
