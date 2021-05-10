@@ -194,6 +194,10 @@ def phase_space_factor(
     """Standard phase-space factor, using `breakup_momentum_squared`.
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
+
+    .. warning:: This function uses a
+        {func}`~sympy.functions.elementary.miscellaneous.sqrt`. In order to
+        enable analytic continuation, input data needs to be complex valued.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     return sp.sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
