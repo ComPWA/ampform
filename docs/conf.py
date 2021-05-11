@@ -226,13 +226,10 @@ myst_enable_extensions = [
 BINDER_LINK = (
     f"https://mybinder.org/v2/gh/ComPWA/{repo_name}/stable?filepath=docs/usage"
 )
-COLAB_LINK = (
-    f"https://colab.research.google.com/github/ComPWA/{repo_name}/blob/stable"
-)
 myst_substitutions = {
     "run_interactive": f"""
 ```{{margin}}
-Run this notebook in [Google Colab]({COLAB_LINK}), [Binder]({BINDER_LINK}), or
+Run this notebook [on Binder]({BINDER_LINK}) or
 {{ref}}`locally on Jupyter Lab <pwa:develop:Jupyter Notebooks>` to
 interactively modify the parameters.
 ```
