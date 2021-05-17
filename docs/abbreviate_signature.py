@@ -17,6 +17,7 @@ from sphinx.environment import BuildEnvironment
 
 def replace_link(text: str) -> str:
     replacements = {
+        "SupportsIndex": "typing.SupportsIndex",
         "a set-like object providing a view on D's items": "typing.ItemsView",
         "a set-like object providing a view on D's keys": "typing.KeysView",
         "an object providing a view on D's values": "typing.ValuesView",
