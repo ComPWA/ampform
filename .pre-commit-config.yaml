@@ -47,7 +47,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.4.1
+    rev: v5.5.1
     hooks:
       - id: cspell
 
@@ -66,7 +66,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.9.0
+    rev: 0.10.0
     hooks:
       - id: nbqa-black
         args: [--nbqa-mutate]
@@ -87,7 +87,7 @@ repos:
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.142
+    rev: v1.1.144
     hooks:
       - id: pyright
 
