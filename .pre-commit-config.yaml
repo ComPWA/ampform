@@ -29,7 +29,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.21
+    rev: 0.0.22
     hooks:
       - id: check-dev-files
         args:
@@ -47,7 +47,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.5.1
+    rev: v5.5.2
     hooks:
       - id: cspell
 
@@ -87,7 +87,7 @@ repos:
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.144
+    rev: v1.1.145
     hooks:
       - id: pyright
 
