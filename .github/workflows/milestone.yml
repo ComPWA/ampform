@@ -1,0 +1,14 @@
+name: Close Milestone on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      # cspell:ignore mhutchie
+      - uses: mhutchie/update-milestone-on-release@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
