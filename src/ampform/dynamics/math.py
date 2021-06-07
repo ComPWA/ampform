@@ -1,10 +1,11 @@
 """A collection of basic mathematical operations, used in `ampform.dynamics`."""
-# cspell:ignore cmath compwa csqrt
+# cspell:ignore cmath compwa csqrt lambdifier
 # pylint: disable=no-member, protected-access, unused-argument
 
 from typing import Any
 
 import sympy as sp
+from sympy.plotting.experimental_lambdify import Lambdifier
 from sympy.printing.printer import Printer
 
 
@@ -60,3 +61,6 @@ class ComplexSqrt(sp.Expr):
         x = self.args[0]
         expr = self._evaluate_complex(x)
         return printer._print(expr)
+
+
+Lambdifier.builtin_functions_different["ComplexSqrt"] = "sqrt"
