@@ -21,6 +21,7 @@ from ampform.dynamics import (
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
+from ampform.dynamics.math import ComplexSqrt
 
 
 def update_docstring(
@@ -51,6 +52,18 @@ def render_breakup_momentum() -> None:
         f"""
     .. math:: q^2(s) = {sp.latex(q_squared)}
         :label: breakup_momentum_squared
+    """,
+    )
+
+
+def render_complex_sqrt() -> None:
+    x = sp.Symbol("x", real=True)
+    complex_sqrt = ComplexSqrt(x)
+    update_docstring(
+        ComplexSqrt,
+        fR"""
+    .. math:: {sp.latex(complex_sqrt)} = {sp.latex(complex_sqrt.evaluate())}
+        :label: ComplexSqrt
     """,
     )
 

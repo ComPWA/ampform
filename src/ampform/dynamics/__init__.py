@@ -16,6 +16,7 @@ from .decorator import (
     implement_doit_method,
     verify_signature,
 )
+from .math import ComplexSqrt
 
 try:
     from typing import Protocol
@@ -194,14 +195,12 @@ def phase_space_factor(
 ) -> sp.Expr:
     """Standard phase-space factor, using `breakup_momentum_squared`.
 
-    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
-
-    .. warning:: This function uses a
-        :func:`~sympy.functions.elementary.miscellaneous.sqrt`. In order to
-        enable analytic continuation, input data needs to be complex valued.
+    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8), with a slight
+    adaptation: instead of a normal square root, this phase space factor make
+    use of :eq:`ComplexSqrt` (`.ComplexSqrt`).
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return sp.sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
+    return ComplexSqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
 
 
 def phase_space_factor_ac(
@@ -215,8 +214,7 @@ def phase_space_factor_ac(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho = sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
+    rho = phase_space_factor(s, m_a, m_b)
     s_threshold = (m_a + m_b) ** 2
     return _analytic_continuation(rho, s, s_threshold)
 
