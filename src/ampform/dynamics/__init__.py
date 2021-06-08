@@ -294,11 +294,10 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     :pdg-review:`2020; Resonances; p.6`.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    form_factor = sp.sqrt(
-        BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius ** 2
-        )
+    ff_squared = BlattWeisskopfSquared(
+        angular_momentum, z=q_squared * meson_radius ** 2
     )
+    form_factor = sp.sqrt(ff_squared)
     mass_dependent_width = coupled_width(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
