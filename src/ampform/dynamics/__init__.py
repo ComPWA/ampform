@@ -200,7 +200,8 @@ def phase_space_factor(
     use of :eq:`ComplexSqrt` (`.ComplexSqrt`).
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return ComplexSqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
+    denominator = _phase_space_factor_denominator(s)
+    return ComplexSqrt(q_squared) / denominator
 
 
 def phase_space_factor_ac(
@@ -214,9 +215,22 @@ def phase_space_factor_ac(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho = phase_space_factor(s, m_a, m_b)
+    rho_hat = _phase_space_factor_hat(s, m_a, m_b)
     s_threshold = (m_a + m_b) ** 2
-    return _analytic_continuation(rho, s, s_threshold)
+    return _analytic_continuation(rho_hat, s, s_threshold)
+
+
+def _phase_space_factor_hat(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    """Phase space factor used in the analytic continuation."""
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    denominator = _phase_space_factor_denominator(s)
+    return sp.sqrt(sp.Abs(q_squared)) / denominator
+
+
+def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
+    return 8 * sp.pi * sp.sqrt(s)
 
 
 def _analytic_continuation(
