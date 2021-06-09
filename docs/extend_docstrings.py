@@ -135,7 +135,7 @@ def render_phase_space_factor_ac() -> None:
     .. math:: {sp.latex(rho_analytic)}
         :label: phase_space_factor_ac
 
-    with :math:`\hat{{\rho}}` the `phase_space_factor` defined by
+    with :math:`\hat{{\rho}}` the :func:`phase_space_factor` defined by
     :eq:`phase_space_factor`.
     """,
     )
