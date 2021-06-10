@@ -1,4 +1,4 @@
-# cspell:ignore ndmin ufunc vstack
+# cspell:ignore csqrt ndmin ufunc vstack
 # pylint: disable=too-many-ancestors
 """Data containers for working with four-momenta.
 
@@ -22,6 +22,7 @@ from typing import (
 
 import numpy as np
 from numpy.lib.mixins import NDArrayOperatorsMixin
+from numpy.lib.scimath import sqrt as csqrt
 
 try:
     # pyright: reportMissingImports=false
@@ -164,8 +165,8 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
         return ScalarSequence(np.arccos(self.p_z / self.p_norm()))
 
     def mass(self) -> ScalarSequence:
-        mass_squared = self.mass_squared(dtype=np.complex64)
-        return ScalarSequence(np.sqrt(mass_squared))
+        mass_squared = self.mass_squared(dtype=np.float64)
+        return ScalarSequence(csqrt(mass_squared))
 
     def mass_squared(
         self, dtype: Optional[DTypeLike] = None
