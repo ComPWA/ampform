@@ -8,7 +8,10 @@ from qrules.particle import Particle
 
 from . import (
     BlattWeisskopfSquared,
+    PhaseSpaceFactor,
     breakup_momentum_squared,
+    phase_space_factor,
+    phase_space_factor_ac,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -116,35 +119,58 @@ def create_relativistic_breit_wigner(
     return expression, parameter_defaults
 
 
-def create_relativistic_breit_wigner_with_ff(
-    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> BuilderReturnType:
-    """Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."""
-    if variable_pool.angular_momentum is None:
-        raise ValueError(
-            "Angular momentum is not defined but is required in the form factor!"
+def _make_relativistic_breit_wigner_with_ff(
+    phsp_factor: PhaseSpaceFactor,
+    docstring: str,
+) -> ResonanceDynamicsBuilder:
+    """Factory for a `.ResonanceDynamicsBuilder` that uses `.relativistic_breit_wigner_with_ff`."""
+
+    def dynamics_builder(
+        resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+    ) -> BuilderReturnType:
+        if variable_pool.angular_momentum is None:
+            raise ValueError(
+                "Angular momentum is not defined but is required in the form factor!"
+            )
+
+        inv_mass = variable_pool.in_edge_inv_mass
+        res_mass = sp.Symbol(f"m_{resonance.name}")
+        res_width = sp.Symbol(f"Gamma_{resonance.name}")
+        product1_inv_mass = variable_pool.out_edge_inv_mass1
+        product2_inv_mass = variable_pool.out_edge_inv_mass2
+        angular_momentum = variable_pool.angular_momentum
+        meson_radius = sp.Symbol(f"d_{resonance.name}")
+
+        expression = relativistic_breit_wigner_with_ff(
+            s=inv_mass ** 2,
+            mass0=res_mass,
+            gamma0=res_width,
+            m_a=product1_inv_mass,
+            m_b=product2_inv_mass,
+            angular_momentum=angular_momentum,
+            meson_radius=meson_radius,
+            phsp_factor=phsp_factor,
         )
+        parameter_defaults = {
+            res_mass: resonance.mass,
+            res_width: resonance.width,
+            meson_radius: 1,
+        }
+        return expression, parameter_defaults
 
-    inv_mass = variable_pool.in_edge_inv_mass
-    res_mass = sp.Symbol(f"m_{resonance.name}")
-    res_width = sp.Symbol(f"Gamma_{resonance.name}")
-    product1_inv_mass = variable_pool.out_edge_inv_mass1
-    product2_inv_mass = variable_pool.out_edge_inv_mass2
-    angular_momentum = variable_pool.angular_momentum
-    meson_radius = sp.Symbol(f"d_{resonance.name}")
+    dynamics_builder.__doc__ = docstring
+    return dynamics_builder
 
-    expression = relativistic_breit_wigner_with_ff(
-        s=inv_mass ** 2,
-        mass0=res_mass,
-        gamma0=res_width,
-        m_a=product1_inv_mass,
-        m_b=product2_inv_mass,
-        angular_momentum=angular_momentum,
-        meson_radius=meson_radius,
-    )
-    parameter_defaults = {
-        res_mass: resonance.mass,
-        res_width: resonance.width,
-        meson_radius: 1,
-    }
-    return expression, parameter_defaults
+
+create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
+    phsp_factor=phase_space_factor,
+    docstring="Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.",
+)
+create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
+    phsp_factor=phase_space_factor_ac,
+    docstring="""
+Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
+
+.. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
+""",
+)
