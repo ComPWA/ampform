@@ -317,7 +317,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
     s_threshold = (m_a + m_b) ** 2
     form_factor = sp.Piecewise(
-        (0, s < s_threshold),
+        (0, sp.And(s < s_threshold, sp.Ne(angular_momentum, 0))),
         (sp.sqrt(ff_squared), True),
     )
     mass_dependent_width = coupled_width(
