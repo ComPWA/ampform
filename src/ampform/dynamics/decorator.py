@@ -12,8 +12,8 @@ from sympy.printing.latex import LatexPrinter
 class UnevaluatedExpression(sp.Expr):
     """Base class for classes that expressions with an ``evaluate()`` method.
 
-    Derive from this class when decorating a class with `implement_expr` or
-    `implement_doit_method`. It is important to derive from
+    Derive from this class when decorating a class with :func:`implement_expr`
+    or :func:`implement_doit_method`. It is important to derive from
     `UnevaluatedExpression`, because an :code:`evaluate()` method has to be
     implemented.
     """
@@ -108,7 +108,7 @@ def verify_signature(builder: Callable, protocol: Type[Callable]) -> None:
 
     Dynamically check whether a builder has the same signature as that of the
     given `~typing.Protocol` (a `~typing.Callable`). This function is needed
-    because `typing.runtime_checkable` only checks members and methods, not the
+    because :func:`typing.runtime_checkable` only checks members and methods, not the
     signature of those methods.
     """
     expected_signature = inspect.signature(protocol.__call__)
