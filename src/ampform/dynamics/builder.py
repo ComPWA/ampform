@@ -40,16 +40,37 @@ class TwoBodyKinematicVariableSet:
     angular_momentum: Optional[int] = attr.ib(default=None)
 
 
+BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
+"""Type that a `.ResonanceDynamicsBuilder` should return."""
+
+
+class ResonanceDynamicsBuilder(Protocol):
+    """Protocol that is used by `.set_dynamics`.
+
+    Follow this `~typing.Protocol` when defining a builder function that is to
+    be used by `.set_dynamics`. For an example, see the source code
+    `.create_relativistic_breit_wigner`, which creates a
+    `.relativistic_breit_wigner`.
+
+    .. seealso:: :doc:`/usage/dynamics/custom`
+    """
+
+    def __call__(
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+    ) -> BuilderReturnType:
+        ...
+
+
 def create_non_dynamic(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+) -> BuilderReturnType:
     # pylint: disable=unused-argument
     return (1, {})
 
 
 def create_non_dynamic_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+) -> BuilderReturnType:
     """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
 
     Returns the `~sympy.functions.elementary.miscellaneous.sqrt` of a
@@ -78,7 +99,7 @@ def create_non_dynamic_with_ff(
 
 def create_relativistic_breit_wigner(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+) -> BuilderReturnType:
     """Create a `.relativistic_breit_wigner` for a two-body decay."""
     inv_mass = variable_pool.in_edge_inv_mass
     res_mass = sp.Symbol(f"m_{resonance.name}")
@@ -97,7 +118,7 @@ def create_relativistic_breit_wigner(
 
 def create_relativistic_breit_wigner_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
+) -> BuilderReturnType:
     """Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."""
     if variable_pool.angular_momentum is None:
         raise ValueError(
@@ -127,20 +148,3 @@ def create_relativistic_breit_wigner_with_ff(
         meson_radius: 1,
     }
     return expression, parameter_defaults
-
-
-class ResonanceDynamicsBuilder(Protocol):
-    """Protocol that is used by `.set_dynamics`.
-
-    Follow this `~typing.Protocol` when defining a builder function that is to
-    be used by `.set_dynamics`. For an example, see the source code
-    `.create_relativistic_breit_wigner`, which creates a
-    `.relativistic_breit_wigner`.
-
-    .. seealso:: :doc:`/usage/dynamics/custom`
-    """
-
-    def __call__(
-        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> Tuple[sp.Expr, Dict[sp.Symbol, float]]:
-        ...
