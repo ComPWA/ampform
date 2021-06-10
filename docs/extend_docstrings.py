@@ -128,9 +128,15 @@ def render_phase_space_factor() -> None:
 
 
 def render_phase_space_factor_ac() -> None:
-    s, m_a, m_b, rho = sp.symbols(R"s, m_a, m_b, \hat{\rho}")
-    rho_analytic = _analytic_continuation(rho, s, s_threshold=(m_a + m_b) ** 2)
+    s, m_a, m_b, rho_hat_symbol, q_squared_symbol = sp.symbols(
+        R"s, m_a, m_b, \hat{\rho}, q^{2}(s)"
+    )
+    rho_analytic = _analytic_continuation(
+        rho_hat_symbol, s, s_threshold=(m_a + m_b) ** 2
+    )
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
     rho_hat = _phase_space_factor_hat(s, m_a, m_b)
+    rho_hat_subs = rho_hat.subs(4 * q_squared, 4 * q_squared_symbol)
     update_docstring(
         phase_space_factor_ac,
         fR"""
@@ -140,7 +146,7 @@ def render_phase_space_factor_ac() -> None:
     with :math:`\hat{{\rho}}` a slightly adapted :func:`phase_space_factor`
     that takes the absolute value of :func:`.breakup_momentum_squared`:
 
-    .. math:: {sp.latex(rho_hat)}
+    .. math:: {sp.latex(rho_hat_subs)}
         :label: rho_hat
     """,
     )
