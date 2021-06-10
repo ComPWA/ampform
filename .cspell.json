@@ -157,6 +157,7 @@
         "isinstance",
         "jpsi",
         "jupyterlab",
+        "katex",
         "kernelspec",
         "kmatrix",
         "kwargs",
