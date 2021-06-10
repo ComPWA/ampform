@@ -16,6 +16,7 @@ from .decorator import (
     implement_doit_method,
     verify_signature,
 )
+from .math import ComplexSqrt
 
 try:
     from typing import Protocol
@@ -194,14 +195,12 @@ def phase_space_factor(
 ) -> sp.Expr:
     """Standard phase-space factor, using `breakup_momentum_squared`.
 
-    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
-
-    .. warning:: This function uses a
-        :func:`~sympy.functions.elementary.miscellaneous.sqrt`. In order to
-        enable analytic continuation, input data needs to be complex valued.
+    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8), with a slight
+    adaptation: instead of a normal square root, this phase space factor make
+    use of :eq:`ComplexSqrt` (`.ComplexSqrt`).
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    return sp.sqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
+    return ComplexSqrt(q_squared) / (8 * sp.pi * sp.sqrt(s))
 
 
 def phase_space_factor_ac(
@@ -215,8 +214,7 @@ def phase_space_factor_ac(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho = sp.sqrt(sp.Abs(q_squared)) / (8 * sp.pi * sp.sqrt(s))
+    rho = phase_space_factor(s, m_a, m_b)
     s_threshold = (m_a + m_b) ** 2
     return _analytic_continuation(rho, s, s_threshold)
 
@@ -296,11 +294,10 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     :pdg-review:`2020; Resonances; p.6`.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
-    form_factor = sp.sqrt(
-        BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius ** 2
-        )
+    ff_squared = BlattWeisskopfSquared(
+        angular_momentum, z=q_squared * meson_radius ** 2
     )
+    form_factor = sp.sqrt(ff_squared)
     mass_dependent_width = coupled_width(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )

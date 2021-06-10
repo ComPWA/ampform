@@ -180,6 +180,7 @@
         "noqa",
         "nrows",
         "nsimplify",
+        "numpycode",
         "pandoc",
         "permalinks",
         "phsp",

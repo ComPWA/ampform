@@ -25,6 +25,7 @@ rst-roles =
     class,
     doc,
     download,
+    eq,
     file,
     func,
     meth,
