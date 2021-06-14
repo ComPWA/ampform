@@ -12,7 +12,7 @@ from ampform.helicity import HelicityModel
 @pytest.mark.parametrize(
     ("formalism", "n_amplitudes", "n_parameters"),
     [
-        ("canonical", 16, 14),
+        ("canonical", 16, 10),
         ("helicity", 8, 8),
     ],
 )

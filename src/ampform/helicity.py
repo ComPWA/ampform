@@ -284,14 +284,14 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
     def generate_amplitude_coefficient_name(
         self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> str:
-        helicity_name = super().generate_amplitude_coefficient_name(
+        in_hel_info, out_hel_info = self._retrieve_helicity_info(
             graph, node_id
         )
-        canonical_name = helicity_name.replace(
-            R" \to ",
-            self.__generate_ls_arrow(graph, node_id),
+        return (
+            _generate_particles_string(in_hel_info, use_helicity=False)
+            + self.__generate_ls_arrow(graph, node_id)
+            + _generate_particles_string(out_hel_info, use_helicity=False)
         )
-        return canonical_name
 
     def generate_unique_amplitude_name(
         self,

@@ -9,7 +9,7 @@ from ampform import get_builder
 @pytest.mark.parametrize(
     ("formalism", "n_amplitudes", "n_parameters"),
     [
-        ("canonical", 16, 8),
+        ("canonical", 16, 4),
         ("helicity", 8, 2),
     ],
 )
