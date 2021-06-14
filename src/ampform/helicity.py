@@ -262,7 +262,7 @@ class _HelicityAmplitudeNameGenerator:
             graph, node_id
         )
         return (
-            _generate_particles_string(in_hel_info, False)
+            _generate_particles_string(in_hel_info, use_helicity=False)
             + R" \to "
             + _generate_particles_string(out_hel_info)
         )
