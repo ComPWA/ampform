@@ -559,7 +559,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 expression.append(self.__generate_sequential_decay(seq_graph))
         amplitude_sum = sum(expression)
         coh_intensity = abs(amplitude_sum) ** 2
-        self.__components[fR"I[{graph_group_label}]"] = coh_intensity
+        self.__components[fR"I_{{{graph_group_label}}}"] = coh_intensity
         return coh_intensity
 
     def __generate_sequential_decay(
@@ -577,7 +577,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         if prefactor is not None:
             expression = prefactor * expression
         self.__components[
-            f"A[{self.name_generator.generate_unique_amplitude_name(graph)}]"
+            f"A_{{{self.name_generator.generate_unique_amplitude_name(graph)}}}"
         ] = expression
         return expression
 
@@ -619,7 +619,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         suffix = self.name_generator.generate_sequential_amplitude_suffix(
             graph
         )
-        coefficient_symbol = sp.Symbol(f"C[{suffix}]")
+        coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
         self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
         return coefficient_symbol
 
