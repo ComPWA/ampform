@@ -281,6 +281,18 @@ class _HelicityAmplitudeNameGenerator:
 
 
 class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
+    def generate_amplitude_coefficient_name(
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    ) -> str:
+        helicity_name = super().generate_amplitude_coefficient_name(
+            graph, node_id
+        )
+        canonical_name = helicity_name.replace(
+            R" \to ",
+            self.__generate_ls_arrow(graph, node_id),
+        )
+        return canonical_name
+
     def generate_unique_amplitude_name(
         self,
         graph: StateTransitionGraph[ParticleWithSpin],
@@ -293,22 +305,27 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
         names: List[str] = []
         for node in node_ids:
             helicity_name = super().generate_unique_amplitude_name(graph, node)
-            name = (
-                helicity_name[:-1]
-                + self._generate_clebsch_gordan_string(graph, node)
-                + helicity_name[-1]
+            canonical_name = helicity_name.replace(
+                R" \to ",
+                self.__generate_ls_arrow(graph, node),
             )
-            names.append(name)
+            names.append(canonical_name)
         return "; ".join(names)
 
-    @staticmethod
-    def _generate_clebsch_gordan_string(
-        graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    def __generate_ls_arrow(
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> str:
+        angular_momentum, spin = self.__get_ls_coupling(graph, node_id)
+        return fR" \xrightarrow[S={spin}]{{L={angular_momentum}}} "
+
+    @staticmethod
+    def __get_ls_coupling(
+        graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    ) -> Tuple[sp.Rational, sp.Rational]:
         node_props = graph.get_node_props(node_id)
         ang_orb_mom = sp.Rational(get_angular_momentum(node_props).magnitude)
         spin = sp.Rational(get_coupled_spin(node_props).magnitude)
-        return f",L={ang_orb_mom},S={spin}"
+        return ang_orb_mom, spin
 
 
 def _get_graph_group_unique_label(
