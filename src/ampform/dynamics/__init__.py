@@ -195,13 +195,30 @@ def phase_space_factor(
 ) -> sp.Expr:
     """Standard phase-space factor, using :func:`breakup_momentum_squared`.
 
-    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8), with a slight
-    adaptation: instead of a normal square root, this phase space factor make
-    use of :eq:`ComplexSqrt` (`.ComplexSqrt`).
+    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     denominator = _phase_space_factor_denominator(s)
-    return ComplexSqrt(q_squared) / denominator
+    return sp.sqrt(q_squared) / denominator
+
+
+def phase_space_factor_abs(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    r"""Phase space factor square root over the absolute value.
+
+    As opposed to :func:`.phase_space_factor`, this takes the
+    `~sympy.functions.elementary.complexes.Abs` value of
+    :func:`.breakup_momentum_squared`, then the
+    :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+
+    This version of the phase space factor is often denoted as
+    :math:`\hat{\rho}` and is used in analytic continuation
+    (:func:`.phase_space_factor_analytic`).
+    """
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    denominator = _phase_space_factor_denominator(s)
+    return sp.sqrt(sp.Abs(q_squared)) / denominator
 
 
 def phase_space_factor_analytic(
@@ -215,22 +232,9 @@ def phase_space_factor_analytic(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho_hat = _phase_space_factor_hat(s, m_a, m_b)
+    rho_hat = phase_space_factor_abs(s, m_a, m_b)
     s_threshold = (m_a + m_b) ** 2
     return _analytic_continuation(rho_hat, s, s_threshold)
-
-
-def _phase_space_factor_hat(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Phase space factor used in the analytic continuation."""
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return sp.sqrt(sp.Abs(q_squared)) / denominator
-
-
-def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
-    return 8 * sp.pi * sp.sqrt(s)
 
 
 def _analytic_continuation(
@@ -250,6 +254,23 @@ def _analytic_continuation(
             True,
         ),
     )
+
+
+def phase_space_factor_complex(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    """Phase-space factor with `.ComplexSqrt`.
+
+    Same as :func:`phase_space_factor`, but using a `.ComplexSqrt` that does
+    have defined behavior for defined for negative input values.
+    """
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    denominator = _phase_space_factor_denominator(s)
+    return ComplexSqrt(q_squared) / denominator
+
+
+def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
+    return 8 * sp.pi * sp.sqrt(s)
 
 
 def coupled_width(  # pylint: disable=too-many-arguments
