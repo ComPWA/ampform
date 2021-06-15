@@ -18,7 +18,7 @@ from ampform.dynamics import (
     breakup_momentum_squared,
     coupled_width,
     phase_space_factor,
-    phase_space_factor_ac,
+    phase_space_factor_analytic,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -127,7 +127,7 @@ def render_phase_space_factor() -> None:
     )
 
 
-def render_phase_space_factor_ac() -> None:
+def render_phase_space_factor_analytic() -> None:
     s, m_a, m_b, rho_hat_symbol, q_squared_symbol = sp.symbols(
         R"s, m_a, m_b, \hat{\rho}, q^{2}(s)"
     )
@@ -138,10 +138,10 @@ def render_phase_space_factor_ac() -> None:
     rho_hat = _phase_space_factor_hat(s, m_a, m_b)
     rho_hat_subs = rho_hat.subs(4 * q_squared, 4 * q_squared_symbol)
     update_docstring(
-        phase_space_factor_ac,
+        phase_space_factor_analytic,
         fR"""
     .. math:: {sp.latex(rho_analytic)}
-        :label: phase_space_factor_ac
+        :label: phase_space_factor_analytic
 
     with :math:`\hat{{\rho}}` a slightly adapted :func:`phase_space_factor`
     that takes the absolute value of :func:`.breakup_momentum_squared`:

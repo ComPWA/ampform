@@ -180,7 +180,7 @@ class PhaseSpaceFactor(Protocol):
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance :func:`.phase_space_factor` and
-    :func:`.phase_space_factor_ac`.
+    :func:`.phase_space_factor_analytic`.
     """
 
     def __call__(
@@ -204,7 +204,7 @@ def phase_space_factor(
     return ComplexSqrt(q_squared) / denominator
 
 
-def phase_space_factor_ac(
+def phase_space_factor_analytic(
     s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
     """Analytic continuation for the :func:`phase_space_factor`.

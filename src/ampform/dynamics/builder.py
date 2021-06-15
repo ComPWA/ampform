@@ -11,7 +11,7 @@ from . import (
     PhaseSpaceFactor,
     breakup_momentum_squared,
     phase_space_factor,
-    phase_space_factor_ac,
+    phase_space_factor_analytic,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -167,7 +167,7 @@ create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_
     docstring="Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.",
 )
 create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
-    phsp_factor=phase_space_factor_ac,
+    phsp_factor=phase_space_factor_analytic,
     docstring="""
 Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
