@@ -80,14 +80,12 @@ def test_generate(
     expression = sp.piecewise_fold(expression)
     assert isinstance(expression, sp.Add)
     a1, a2 = tuple(map(str, expression.args))
-    a1 = a1.replace("ComplexSqrt", "sqrt")
-    a2 = a2.replace("ComplexSqrt", "sqrt")
     if formalism == "canonical":
-        assert a1 == "0.08/(-m**2 + 0.98 - 0.12*I*sqrt(m**2/4 - 0.02)/Abs(m))"
-        assert a2 == "0.23/(-m**2 + 2.27 - 0.34*I*sqrt(m**2/4 - 0.02)/Abs(m))"
+        assert a1 == "0.08/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
+        assert a2 == "0.23/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
     elif formalism == "helicity":
-        assert a1 == "0.17/(-m**2 + 2.27 - 0.34*I*sqrt(m**2/4 - 0.02)/Abs(m))"
-        assert a2 == "0.06/(-m**2 + 0.98 - 0.12*I*sqrt(m**2/4 - 0.02)/Abs(m))"
+        assert a1 == "0.17/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
+        assert a2 == "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
     else:
         raise NotImplementedError
 

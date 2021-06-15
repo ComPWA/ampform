@@ -14,11 +14,12 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     _analytic_continuation,
-    _phase_space_factor_hat,
     breakup_momentum_squared,
     coupled_width,
     phase_space_factor,
-    phase_space_factor_ac,
+    phase_space_factor_abs,
+    phase_space_factor_analytic,
+    phase_space_factor_complex,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -127,27 +128,53 @@ def render_phase_space_factor() -> None:
     )
 
 
-def render_phase_space_factor_ac() -> None:
-    s, m_a, m_b, rho_hat_symbol, q_squared_symbol = sp.symbols(
-        R"s, m_a, m_b, \hat{\rho}, q^{2}(s)"
+def render_phase_space_factor_abs() -> None:
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    rho_hat = phase_space_factor_abs(s, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    rho_hat = rho_hat.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    update_docstring(
+        phase_space_factor_abs,
+        fR"""
+
+    .. math:: \hat{{\rho}} = {sp.latex(rho_hat)}
+        :label: phase_space_factor_abs
+
+    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
+    """,
     )
+
+
+def render_phase_space_factor_analytic() -> None:
+    s, m_a, m_b, rho_hat_symbol = sp.symbols(R"s, m_a, m_b, \hat{\rho}")
     rho_analytic = _analytic_continuation(
         rho_hat_symbol, s, s_threshold=(m_a + m_b) ** 2
     )
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho_hat = _phase_space_factor_hat(s, m_a, m_b)
-    rho_hat_subs = rho_hat.subs(4 * q_squared, 4 * q_squared_symbol)
     update_docstring(
-        phase_space_factor_ac,
+        phase_space_factor_analytic,
         fR"""
     .. math:: {sp.latex(rho_analytic)}
-        :label: phase_space_factor_ac
+        :label: phase_space_factor_analytic
 
-    with :math:`\hat{{\rho}}` a slightly adapted :func:`phase_space_factor`
-    that takes the absolute value of :func:`.breakup_momentum_squared`:
+    with :math:`\hat{{\rho}}` defined by :func:`.phase_space_factor_abs`
+    :eq:`phase_space_factor_abs`.
+    """,
+    )
 
-    .. math:: {sp.latex(rho_hat_subs)}
-        :label: rho_hat
+
+def render_phase_space_factor_complex() -> None:
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    rho = phase_space_factor_complex(s, m_a, m_b)
+    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    rho = rho.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    update_docstring(
+        phase_space_factor_complex,
+        fR"""
+
+    .. math:: \hat{{\rho}} = {sp.latex(rho)}
+        :label: phase_space_factor_complex
+
+    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
     """,
     )
 
