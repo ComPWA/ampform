@@ -262,7 +262,7 @@ class _HelicityAmplitudeNameGenerator:
             graph, node_id
         )
         return (
-            _generate_particles_string(in_hel_info, False)
+            _generate_particles_string(in_hel_info, use_helicity=False)
             + R" \to "
             + _generate_particles_string(out_hel_info)
         )
@@ -281,6 +281,18 @@ class _HelicityAmplitudeNameGenerator:
 
 
 class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
+    def generate_amplitude_coefficient_name(
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    ) -> str:
+        in_hel_info, out_hel_info = self._retrieve_helicity_info(
+            graph, node_id
+        )
+        return (
+            _generate_particles_string(in_hel_info, use_helicity=False)
+            + self.__generate_ls_arrow(graph, node_id)
+            + _generate_particles_string(out_hel_info, use_helicity=False)
+        )
+
     def generate_unique_amplitude_name(
         self,
         graph: StateTransitionGraph[ParticleWithSpin],
@@ -293,22 +305,27 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
         names: List[str] = []
         for node in node_ids:
             helicity_name = super().generate_unique_amplitude_name(graph, node)
-            name = (
-                helicity_name[:-1]
-                + self._generate_clebsch_gordan_string(graph, node)
-                + helicity_name[-1]
+            canonical_name = helicity_name.replace(
+                R" \to ",
+                self.__generate_ls_arrow(graph, node),
             )
-            names.append(name)
+            names.append(canonical_name)
         return "; ".join(names)
 
-    @staticmethod
-    def _generate_clebsch_gordan_string(
-        graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    def __generate_ls_arrow(
+        self, graph: StateTransitionGraph[ParticleWithSpin], node_id: int
     ) -> str:
+        angular_momentum, spin = self.__get_ls_coupling(graph, node_id)
+        return fR" \xrightarrow[S={spin}]{{L={angular_momentum}}} "
+
+    @staticmethod
+    def __get_ls_coupling(
+        graph: StateTransitionGraph[ParticleWithSpin], node_id: int
+    ) -> Tuple[sp.Rational, sp.Rational]:
         node_props = graph.get_node_props(node_id)
         ang_orb_mom = sp.Rational(get_angular_momentum(node_props).magnitude)
         spin = sp.Rational(get_coupled_spin(node_props).magnitude)
-        return f",L={ang_orb_mom},S={spin}"
+        return ang_orb_mom, spin
 
 
 def _get_graph_group_unique_label(
@@ -559,7 +576,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 expression.append(self.__generate_sequential_decay(seq_graph))
         amplitude_sum = sum(expression)
         coh_intensity = abs(amplitude_sum) ** 2
-        self.__components[fR"I[{graph_group_label}]"] = coh_intensity
+        self.__components[fR"I_{{{graph_group_label}}}"] = coh_intensity
         return coh_intensity
 
     def __generate_sequential_decay(
@@ -577,7 +594,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         if prefactor is not None:
             expression = prefactor * expression
         self.__components[
-            f"A[{self.name_generator.generate_unique_amplitude_name(graph)}]"
+            f"A_{{{self.name_generator.generate_unique_amplitude_name(graph)}}}"
         ] = expression
         return expression
 
@@ -619,7 +636,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         suffix = self.name_generator.generate_sequential_amplitude_suffix(
             graph
         )
-        coefficient_symbol = sp.Symbol(f"C[{suffix}]")
+        coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
         self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
         return coefficient_symbol
 

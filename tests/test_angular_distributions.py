@@ -161,12 +161,13 @@ class TestD1ToD0PiPi:
         )
         amplitude_model = get_builder(result).generate()
 
-        amplitude_model.parameter_defaults[
-            sp.Symbol(
-                "C[D_{1}(2420)^{0} \\to D^{*}(2010)^{+}_{0} \\pi^{-}_{0}; "
-                "D^{*}(2010)^{+} \\to D^{0}_{0} \\pi^{+}_{0}]"
-            )
-        ] = 0.5
+        coefficient = sp.Symbol(
+            R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "
+            R"D^{*}(2010)^{+} \to D^{0}_{0} \pi^{+}_{0}}"
+        )
+        if coefficient not in amplitude_model.parameter_defaults:
+            raise KeyError
+        amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(
             amplitude_model.expression.subs(amplitude_model.parameter_defaults)

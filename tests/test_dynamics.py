@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use
+# pylint: disable=no-self-use, too-many-arguments
 import numpy as np
 import pytest
 import qrules as q
@@ -10,15 +10,16 @@ from ampform.helicity import HelicityModel
 
 
 @pytest.mark.parametrize(
-    ("formalism", "n_amplitudes"),
+    ("formalism", "n_amplitudes", "n_parameters"),
     [
-        ("canonical", 16),
-        ("helicity", 8),
+        ("canonical", 16, 10),
+        ("helicity", 8, 8),
     ],
 )
 def test_generate(
     formalism: str,
     n_amplitudes: int,
+    n_parameters: int,
     jpsi_to_gamma_pi_pi_canonical_amplitude_model: HelicityModel,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: HelicityModel,
     particle_database: q.ParticleCollection,
@@ -29,9 +30,9 @@ def test_generate(
         model = jpsi_to_gamma_pi_pi_helicity_amplitude_model
     else:
         raise NotImplementedError
-    assert len(model.parameter_defaults) == 8
+    assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
-    assert len(model.expression.free_symbols) == 15
+    assert len(model.expression.free_symbols) == 7 + n_parameters
 
     expression: sp.Expr = model.expression.doit()
     expression = expression.subs(model.parameter_defaults)

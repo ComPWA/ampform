@@ -7,15 +7,16 @@ from ampform import get_builder
 
 
 @pytest.mark.parametrize(
-    ("formalism", "n_amplitudes"),
+    ("formalism", "n_amplitudes", "n_parameters"),
     [
-        ("canonical", 16),
-        ("helicity", 8),
+        ("canonical", 16, 4),
+        ("helicity", 8, 2),
     ],
 )
 def test_generate(
     formalism: str,
     n_amplitudes: int,
+    n_parameters: int,
     jpsi_to_gamma_pi_pi_canonical_solutions: Result,
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ):
@@ -26,9 +27,9 @@ def test_generate(
     else:
         raise NotImplementedError
     model = get_builder(result).generate()
-    assert len(model.parameter_defaults) == 2
+    assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
-    assert len(model.expression.free_symbols) == 6
+    assert len(model.expression.free_symbols) == 4 + n_parameters
 
     no_dynamics: sp.Expr = model.expression.doit()
     no_dynamics = no_dynamics.subs(model.parameter_defaults)
