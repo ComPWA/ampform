@@ -155,8 +155,7 @@ nitpick_ignore = [
 # Intersphinx settings
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
-    "compwa-org": ("https://compwa-org.readthedocs.io", None),
-    "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
+    "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
     "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (

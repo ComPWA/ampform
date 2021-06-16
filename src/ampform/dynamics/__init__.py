@@ -48,7 +48,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     where to use these Blatt-Weisskopf functions, see
     :cite:`asnerDalitzPlotAnalysis2006`.
 
-    See also :ref:`usage/dynamics/lineshapes:Form factor`.
+    See also :ref:`usage/dynamics:Form factor`.
     """
     is_commutative = True
 
@@ -169,7 +169,7 @@ def relativistic_breit_wigner(
 ) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
-    See :ref:`usage/dynamics/lineshapes:_Without_ form factor` and
+    See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
     return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
@@ -226,7 +226,7 @@ def phase_space_factor_analytic(
 ) -> sp.Expr:
     """Analytic continuation for the :func:`phase_space_factor`.
 
-    See :pdg-review:`2014; Resonances; p.8` and
+    See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
 
     **Warning**: The PDG specifically derives this formula for a two-body decay
@@ -329,7 +329,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     continuation of the `.BlattWeisskopfSquared` damping factor behavior at
     :math:`s = (m_a + m_b)^2`.
 
-    See :ref:`usage/dynamics/lineshapes:_With_ form factor` and
+    See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2020; Resonances; p.6`.
     """
     q_squared = breakup_momentum_squared(s, m_a, m_b)
