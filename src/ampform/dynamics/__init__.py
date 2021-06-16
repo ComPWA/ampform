@@ -226,7 +226,7 @@ def phase_space_factor_analytic(
 ) -> sp.Expr:
     """Analytic continuation for the :func:`phase_space_factor`.
 
-    See :pdg-review:`2014; Resonances; p.8` and
+    See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
 
     **Warning**: The PDG specifically derives this formula for a two-body decay
