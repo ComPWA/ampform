@@ -13,19 +13,19 @@ import qrules as q
 from .helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
 
 
-def get_builder(result: q.Result) -> HelicityAmplitudeBuilder:
+def get_builder(reaction: q.Result) -> HelicityAmplitudeBuilder:
     """Get the correct `.HelicityAmplitudeBuilder`.
 
     For instance, get `.CanonicalAmplitudeBuilder` if the
     `~qrules.transition.Result.formalism_type` is :code:`"canonical-helicity"`.
     """
-    formalism_type = result.formalism_type
+    formalism_type = reaction.formalism_type
     if formalism_type is None:
-        raise ValueError(f"Result does not have a formalism type:\n{result}")
+        raise ValueError(f"Result does not have a formalism type:\n{reaction}")
     if formalism_type == "helicity":
-        amplitude_builder = HelicityAmplitudeBuilder(result)
+        amplitude_builder = HelicityAmplitudeBuilder(reaction)
     elif formalism_type in ["canonical-helicity", "canonical"]:
-        amplitude_builder = CanonicalAmplitudeBuilder(result)
+        amplitude_builder = CanonicalAmplitudeBuilder(reaction)
     else:
         raise NotImplementedError(
             f'No amplitude generator for formalism type "{formalism_type}"'

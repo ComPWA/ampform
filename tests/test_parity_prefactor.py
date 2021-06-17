@@ -56,8 +56,8 @@ def test_parity_amplitude_coupling(
         number_of_threads=1,
     )
     problem_sets = stm.create_problem_sets()
-    result = stm.find_solutions(problem_sets)
+    reaction = stm.find_solutions(problem_sets)
 
-    model_builder = get_builder(result)
+    model_builder = get_builder(reaction)
     amplitude_model = model_builder.generate()
     assert len(amplitude_model.parameter_defaults) == parameter_count
