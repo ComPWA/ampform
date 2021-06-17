@@ -1,6 +1,6 @@
 import pytest
 import sympy as sp
-from qrules import Result
+from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
@@ -17,8 +17,8 @@ def test_generate(
     formalism: str,
     n_amplitudes: int,
     n_parameters: int,
-    jpsi_to_gamma_pi_pi_canonical_solutions: Result,
-    jpsi_to_gamma_pi_pi_helicity_solutions: Result,
+    jpsi_to_gamma_pi_pi_canonical_solutions: ReactionInfo,
+    jpsi_to_gamma_pi_pi_helicity_solutions: ReactionInfo,
 ):
     if formalism == "canonical":
         reaction = jpsi_to_gamma_pi_pi_canonical_solutions

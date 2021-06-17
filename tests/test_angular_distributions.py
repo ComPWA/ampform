@@ -158,6 +158,7 @@ class TestD1ToD0PiPi:
             final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D*"],
             allowed_interaction_types="strong",
+            formalism="helicity",
         )
         amplitude_model = get_builder(reaction).generate()
 
@@ -166,7 +167,10 @@ class TestD1ToD0PiPi:
             R"D^{*}(2010)^{+} \to D^{0}_{0} \pi^{+}_{0}}"
         )
         if coefficient not in amplitude_model.parameter_defaults:
-            raise KeyError
+            raise KeyError(
+                f"Coefficient {coefficient} does not exist in parameter defaults."
+                f" Choose any of {list(amplitude_model.parameter_defaults)}"
+            )
         amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(

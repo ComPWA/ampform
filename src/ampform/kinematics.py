@@ -8,15 +8,13 @@ import attr
 import numpy as np
 from attr.validators import instance_of
 from qrules.io import asdot
-from qrules.particle import Particle, ParticleWithSpin
-from qrules.topology import (
-    FrozenDict,
-    StateTransitionGraph,
-    Topology,
-    create_isobar_topologies,
-)
+from qrules.topology import Topology, create_isobar_topologies
+from qrules.transition import ReactionInfo, StateTransition
 
-from ._graph_info import assert_isobar_topology, determine_attached_final_state
+from ._transition_info import (
+    assert_isobar_topology,
+    determine_attached_final_state,
+)
 from .data import (
     DataSet,
     EventCollection,
@@ -24,44 +22,6 @@ from .data import (
     MatrixSequence,
     ScalarSequence,
 )
-
-
-@attr.s(frozen=True)
-class ReactionInfo:
-    initial_state: FrozenDict[int, Particle] = attr.ib(converter=FrozenDict)
-    final_state: FrozenDict[int, Particle] = attr.ib(converter=FrozenDict)
-
-    def __attrs_post_init__(self) -> None:
-        initial_state_ids = set(self.initial_state)
-        final_state_ids = set(self.final_state)
-        if initial_state_ids & final_state_ids:
-            raise ValueError(
-                f"Initial state IDs {initial_state_ids} overlap"
-                f" with final state IDs {final_state_ids}"
-            )
-        particles = {
-            *self.initial_state.values(),
-            *self.final_state.values(),
-        }
-        if not all(map(lambda p: isinstance(p, Particle), particles)):
-            raise ValueError(
-                f"Not all items in state ID mappings are {Particle.__name__}"
-            )
-
-    @staticmethod
-    def from_graph(
-        graph: StateTransitionGraph[ParticleWithSpin],
-    ) -> "ReactionInfo":
-        return ReactionInfo(
-            initial_state={
-                i: graph.get_edge_props(i)[0]
-                for i in graph.topology.incoming_edge_ids
-            },
-            final_state={
-                i: graph.get_edge_props(i)[0]
-                for i in graph.topology.outgoing_edge_ids
-            },
-        )
 
 
 @attr.s(on_setattr=attr.setters.frozen)
@@ -79,16 +39,22 @@ class HelicityAdapter:
         factory=set, init=False, repr=False
     )
 
-    def register_transition(
-        self, transition: StateTransitionGraph[ParticleWithSpin]
-    ) -> None:
-        reaction_info = ReactionInfo.from_graph(transition)
-        if reaction_info != self.reaction_info:
-            raise ValueError(
-                "Transition has different initial and final states",
-                reaction_info,
-                self.reaction_info,
-            )
+    def register_transition(self, transition: StateTransition) -> None:
+        if set(self.reaction_info.initial_state) != set(
+            transition.initial_states
+        ):
+            raise ValueError("Transition has mismatching initial state IDs")
+        if set(self.reaction_info.final_state) != set(transition.final_states):
+            raise ValueError("Transition has mismatching final state IDs")
+        for state_id in self.reaction_info.final_state:
+            particle = self.reaction_info.initial_state[state_id]
+            state = transition.initial_states[state_id]
+            if particle != state.particle:
+                raise ValueError(
+                    f"Transition has different initial particle at {state_id}.",
+                    f" Expecting: {particle.name}"
+                    f" In added transition: {state.particle.name}",
+                )
         self.register_topology(transition.topology)
 
     def register_topology(self, topology: Topology) -> None:
@@ -133,7 +99,7 @@ class HelicityAdapter:
 
 
 def get_helicity_angle_label(
-    topology: Topology, edge_id: int
+    topology: Topology, state_id: int
 ) -> Tuple[str, str]:
     """Generate labels that can be used to identify helicity angles.
 
@@ -167,25 +133,25 @@ def get_helicity_angle_label(
     """
     assert_isobar_topology(topology)
 
-    def recursive_label(topology: Topology, edge_id: int) -> str:
-        edge = topology.edges[edge_id]
+    def recursive_label(topology: Topology, state_id: int) -> str:
+        edge = topology.edges[state_id]
         if edge.ending_node_id is None:
-            label = f"{edge_id}"
+            label = f"{state_id}"
         else:
             attached_final_state_ids = determine_attached_final_state(
-                topology, edge_id
+                topology, state_id
             )
             label = "+".join(map(str, attached_final_state_ids))
         if edge.originating_node_id is not None:
-            in_edges = topology.get_edge_ids_ingoing_to_node(
+            incoming_state_ids = topology.get_edge_ids_ingoing_to_node(
                 edge.originating_node_id
             )
-            in_edge_id = next(iter(in_edges))
-            if in_edge_id not in topology.incoming_edge_ids:
-                label += f",{recursive_label(topology, in_edge_id)}"
+            state_id = next(iter(incoming_state_ids))
+            if state_id not in topology.incoming_edge_ids:
+                label += f",{recursive_label(topology, state_id)}"
         return label
 
-    label = recursive_label(topology, edge_id)
+    label = recursive_label(topology, state_id)
     return f"phi_{label}", f"theta_{label}"
 
 
@@ -211,8 +177,8 @@ get_helicity_angle_label.__doc__ += f"""
 """
 
 
-def get_invariant_mass_label(topology: Topology, edge_id: int) -> str:
-    final_state_ids = determine_attached_final_state(topology, edge_id)
+def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
+    final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
 
 
@@ -229,25 +195,25 @@ def _compute_helicity_angles(  # pylint: disable=too-many-locals
         events: EventCollection, node_id: int
     ) -> DataSet:
         helicity_angles: Dict[str, ScalarSequence] = {}
-        child_edge_ids = sorted(
+        child_state_ids = sorted(
             topology.get_edge_ids_outgoing_from_node(node_id)
         )
         if all(
-            topology.edges[i].ending_node_id is None for i in child_edge_ids
+            topology.edges[i].ending_node_id is None for i in child_state_ids
         ):
-            edge_id = child_edge_ids[0]
-            four_momentum = events[edge_id]
+            state_id = child_state_ids[0]
+            four_momentum = events[state_id]
             phi_label, theta_label = get_helicity_angle_label(
-                topology, edge_id
+                topology, state_id
             )
             helicity_angles[phi_label] = four_momentum.phi()
             helicity_angles[theta_label] = four_momentum.theta()
-        for edge_id in child_edge_ids:
-            edge = topology.edges[edge_id]
+        for state_id in child_state_ids:
+            edge = topology.edges[state_id]
             if edge.ending_node_id is not None:
                 # recursively determine all momenta ids in the list
                 sub_momenta_ids = determine_attached_final_state(
-                    topology, edge_id
+                    topology, state_id
                 )
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
@@ -272,7 +238,7 @@ def _compute_helicity_angles(  # pylint: disable=too-many-locals
 
                     # register current angle variables
                     phi_label, theta_label = get_helicity_angle_label(
-                        topology, edge_id
+                        topology, state_id
                     )
                     helicity_angles[phi_label] = four_momentum.phi()
                     helicity_angles[theta_label] = four_momentum.theta()
@@ -353,12 +319,12 @@ def _compute_invariant_masses(
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
     invariant_masses = {}
-    for edge_id in topology.edges:
-        attached_edge_ids = determine_attached_final_state(topology, edge_id)
+    for state_id in topology.edges:
+        attached_state_ids = determine_attached_final_state(topology, state_id)
         total_momentum = FourMomentumSequence(
-            sum(events[i] for i in attached_edge_ids)  # type: ignore
+            sum(events[i] for i in attached_state_ids)  # type: ignore
         )
         values = total_momentum.mass()
-        name = get_invariant_mass_label(topology, edge_id)
+        name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = values
     return DataSet(invariant_masses)

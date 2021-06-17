@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 import pytest
 import qrules as q
-from qrules import ParticleCollection, Result, load_default_particles
+from qrules import ParticleCollection, ReactionInfo, load_default_particles
 
 from ampform import get_builder
 from ampform.data import EventCollection
@@ -26,42 +26,42 @@ def output_dir(pytestconfig) -> str:
 
 
 @pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_canonical_solutions() -> Result:
+def jpsi_to_gamma_pi_pi_canonical_solutions() -> ReactionInfo:
     return q.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
         allowed_interaction_types="strong only",
-        formalism_type="canonical-helicity",
+        formalism="canonical-helicity",
     )
 
 
 @pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_helicity_solutions() -> Result:
+def jpsi_to_gamma_pi_pi_helicity_solutions() -> ReactionInfo:
     return q.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
         allowed_interaction_types="strong only",
-        formalism_type="helicity",
+        formalism="helicity",
     )
 
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
-    jpsi_to_gamma_pi_pi_canonical_solutions: Result,
+    jpsi_to_gamma_pi_pi_canonical_solutions: ReactionInfo,
 ) -> HelicityModel:
     return __create_model(jpsi_to_gamma_pi_pi_canonical_solutions)
 
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
-    jpsi_to_gamma_pi_pi_helicity_solutions: Result,
+    jpsi_to_gamma_pi_pi_helicity_solutions: ReactionInfo,
 ) -> HelicityModel:
     return __create_model(jpsi_to_gamma_pi_pi_helicity_solutions)
 
 
-def __create_model(reaction: Result) -> HelicityModel:
+def __create_model(reaction: ReactionInfo) -> HelicityModel:
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:
         model_builder.set_dynamics(
