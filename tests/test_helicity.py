@@ -21,12 +21,12 @@ def test_generate(
     jpsi_to_gamma_pi_pi_helicity_solutions: Result,
 ):
     if formalism == "canonical":
-        result = jpsi_to_gamma_pi_pi_canonical_solutions
+        reaction = jpsi_to_gamma_pi_pi_canonical_solutions
     elif formalism == "helicity":
-        result = jpsi_to_gamma_pi_pi_helicity_solutions
+        reaction = jpsi_to_gamma_pi_pi_helicity_solutions
     else:
         raise NotImplementedError
-    model = get_builder(result).generate()
+    model = get_builder(reaction).generate()
     assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
     assert len(model.expression.free_symbols) == 4 + n_parameters

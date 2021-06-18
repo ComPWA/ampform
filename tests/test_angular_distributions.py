@@ -68,7 +68,7 @@ class TestEpemToDmD0Pip:
         particles = ParticleCollection(particle_database)
         particles.add(epem)
 
-        result = q.generate_transitions(
+        reaction = q.generate_transitions(
             initial_state=[("EpEm", [-1])],
             final_state=[("D0", [0]), ("D-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D(2)*(2460)+"],
@@ -76,7 +76,7 @@ class TestEpemToDmD0Pip:
             particle_db=particles,
         )
 
-        amplitude_model = get_builder(result).generate()
+        amplitude_model = get_builder(reaction).generate()
         full_model = sp.simplify(
             amplitude_model.expression.subs(amplitude_model.parameter_defaults)
             .doit()
@@ -153,13 +153,13 @@ class TestEpemToDmD0Pip:
 class TestD1ToD0PiPi:
     @pytest.fixture(scope="class")
     def sympy_model(self) -> sp.Expr:
-        result = q.generate_transitions(
+        reaction = q.generate_transitions(
             initial_state=[("D(1)(2420)0", [-1])],
             final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D*"],
             allowed_interaction_types="strong",
         )
-        amplitude_model = get_builder(result).generate()
+        amplitude_model = get_builder(reaction).generate()
 
         coefficient = sp.Symbol(
             R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "

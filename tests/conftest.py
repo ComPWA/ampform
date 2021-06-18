@@ -61,9 +61,9 @@ def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
     return __create_model(jpsi_to_gamma_pi_pi_helicity_solutions)
 
 
-def __create_model(result: Result) -> HelicityModel:
-    model_builder = get_builder(result)
-    for name in result.get_intermediate_particles().names:
+def __create_model(reaction: Result) -> HelicityModel:
+    model_builder = get_builder(reaction)
+    for name in reaction.get_intermediate_particles().names:
         model_builder.set_dynamics(
             name, create_relativistic_breit_wigner_with_ff
         )
