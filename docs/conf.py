@@ -153,6 +153,21 @@ nitpick_ignore = [
 ]
 
 # Intersphinx settings
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
+CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
+with open(CONSTRAINTS_PATH) as stream:
+    CONSTRAINTS = stream.read()
+RELEASES = dict()
+for line in CONSTRAINTS.split("\n"):
+    line = line.split("#")[0]  # remove comments
+    line = line.strip()
+    if not line:
+        continue
+    package, version = tuple(line.split("=="))
+    package = package.strip()
+    version = version.strip()
+    RELEASES[package] = version
+
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
     "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
@@ -166,7 +181,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": ("https://qrules.readthedocs.io/en/stable", None),
+    "qrules": (f"https://qrules.readthedocs.io/en/{RELEASES['qrules']}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
 }
