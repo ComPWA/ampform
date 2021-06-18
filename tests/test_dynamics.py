@@ -1,7 +1,7 @@
 # pylint: disable=no-self-use, too-many-arguments
 import numpy as np
 import pytest
-import qrules as q
+import qrules
 import sympy as sp
 from sympy import preorder_traversal
 
@@ -22,7 +22,7 @@ def test_generate(
     n_parameters: int,
     jpsi_to_gamma_pi_pi_canonical_amplitude_model: HelicityModel,
     jpsi_to_gamma_pi_pi_helicity_amplitude_model: HelicityModel,
-    particle_database: q.ParticleCollection,
+    particle_database: qrules.ParticleCollection,
 ):
     if formalism == "canonical":
         model = jpsi_to_gamma_pi_pi_canonical_amplitude_model

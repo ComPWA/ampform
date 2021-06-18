@@ -4,7 +4,7 @@
 from typing import Any, List, Optional, Sequence, Union
 
 import pytest
-import qrules as q
+import qrules
 import sympy as sp
 from qrules import ParticleCollection
 
@@ -57,18 +57,18 @@ def normalize(
 class TestEpemToDmD0Pip:
     @pytest.fixture(scope="class")
     def sympy_model(self, particle_database: ParticleCollection) -> sp.Expr:
-        epem = q.particle.Particle(
+        epem = qrules.particle.Particle(
             name="EpEm",
             pid=12345678,
             mass=4.36,
             spin=1.0,
-            parity=q.particle.Parity(-1),
-            c_parity=q.particle.Parity(-1),
+            parity=qrules.particle.Parity(-1),
+            c_parity=qrules.particle.Parity(-1),
         )
         particles = ParticleCollection(particle_database)
         particles.add(epem)
 
-        reaction = q.generate_transitions(
+        reaction = qrules.generate_transitions(
             initial_state=[("EpEm", [-1])],
             final_state=[("D0", [0]), ("D-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D(2)*(2460)+"],
@@ -153,7 +153,7 @@ class TestEpemToDmD0Pip:
 class TestD1ToD0PiPi:
     @pytest.fixture(scope="class")
     def sympy_model(self) -> sp.Expr:
-        reaction = q.generate_transitions(
+        reaction = qrules.generate_transitions(
             initial_state=[("D(1)(2420)0", [-1])],
             final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
             allowed_intermediate_particles=["D*"],

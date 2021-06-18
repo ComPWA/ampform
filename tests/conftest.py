@@ -4,7 +4,7 @@ from typing import Dict
 
 import numpy as np
 import pytest
-import qrules as q
+import qrules
 from qrules import ParticleCollection, ReactionInfo, load_default_particles
 
 from ampform import get_builder
@@ -27,7 +27,7 @@ def output_dir(pytestconfig) -> str:
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_canonical_solutions() -> ReactionInfo:
-    return q.generate_transitions(
+    return qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
@@ -38,7 +38,7 @@ def jpsi_to_gamma_pi_pi_canonical_solutions() -> ReactionInfo:
 
 @pytest.fixture(scope="session")
 def jpsi_to_gamma_pi_pi_helicity_solutions() -> ReactionInfo:
-    return q.generate_transitions(
+    return qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],

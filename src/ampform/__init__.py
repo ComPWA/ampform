@@ -8,12 +8,12 @@ Carlo) for this specific reaction process, or to optimize ('fit') its
 parameters so that they resemble the data set as good as possible.
 """
 
-import qrules as q
+from qrules import ReactionInfo
 
 from .helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
 
 
-def get_builder(reaction: q.ReactionInfo) -> HelicityAmplitudeBuilder:
+def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
     """Get the correct `.HelicityAmplitudeBuilder`.
 
     For instance, get `.CanonicalAmplitudeBuilder` if the
@@ -22,7 +22,7 @@ def get_builder(reaction: q.ReactionInfo) -> HelicityAmplitudeBuilder:
     formalism = reaction.formalism
     if formalism is None:
         raise ValueError(
-            f"ReactionInfo does not have a formalism type:\n{reaction}"
+            f"{ReactionInfo.__name__} does not have a formalism type:\n{reaction}"
         )
     if formalism == "helicity":
         amplitude_builder = HelicityAmplitudeBuilder(reaction)
