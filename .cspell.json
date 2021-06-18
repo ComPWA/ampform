@@ -13,7 +13,9 @@
         "hte",
         "optimise",
         "paramater",
-        "parmater"
+        "parmater",
+        "transision",
+        "transisions"
     ],
     "ignorePaths": [
         "**/.cspell.json",
