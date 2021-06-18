@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple
 
 import attr
 import sympy as sp
+from attr.validators import instance_of
 from qrules.particle import Particle
 
 from . import (
@@ -35,11 +36,11 @@ class TwoBodyKinematicVariableSet:
     amplitude model.
     """
 
-    in_edge_inv_mass: sp.Symbol = attr.ib()
-    out_edge_inv_mass1: sp.Symbol = attr.ib()
-    out_edge_inv_mass2: sp.Symbol = attr.ib()
-    helicity_theta: sp.Symbol = attr.ib()
-    helicity_phi: sp.Symbol = attr.ib()
+    incoming_state_mass: sp.Symbol = attr.ib(instance_of(sp.Symbol))
+    outgoing_state_mass1: sp.Symbol = attr.ib(instance_of(sp.Symbol))
+    outgoing_state_mass2: sp.Symbol = attr.ib(instance_of(sp.Symbol))
+    helicity_theta: sp.Symbol = attr.ib(instance_of(sp.Symbol))
+    helicity_phi: sp.Symbol = attr.ib(instance_of(sp.Symbol))
     angular_momentum: Optional[int] = attr.ib(default=None)
 
 
@@ -85,9 +86,9 @@ def create_non_dynamic_with_ff(
             "Angular momentum is not defined but is required in the form factor!"
         )
     q_squared = breakup_momentum_squared(
-        s=variable_pool.in_edge_inv_mass ** 2,
-        m_a=variable_pool.out_edge_inv_mass1,
-        m_b=variable_pool.out_edge_inv_mass2,
+        s=variable_pool.incoming_state_mass ** 2,
+        m_a=variable_pool.outgoing_state_mass1,
+        m_b=variable_pool.outgoing_state_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
     form_factor_squared = BlattWeisskopfSquared(
@@ -104,7 +105,7 @@ def create_relativistic_breit_wigner(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> BuilderReturnType:
     """Create a `.relativistic_breit_wigner` for a two-body decay."""
-    inv_mass = variable_pool.in_edge_inv_mass
+    inv_mass = variable_pool.incoming_state_mass
     res_mass = sp.Symbol(f"m_{resonance.name}")
     res_width = sp.Symbol(f"Gamma_{resonance.name}")
     expression = relativistic_breit_wigner(
@@ -133,11 +134,11 @@ def _make_relativistic_breit_wigner_with_ff(
                 "Angular momentum is not defined but is required in the form factor!"
             )
 
-        inv_mass = variable_pool.in_edge_inv_mass
+        inv_mass = variable_pool.incoming_state_mass
         res_mass = sp.Symbol(f"m_{resonance.name}")
         res_width = sp.Symbol(f"Gamma_{resonance.name}")
-        product1_inv_mass = variable_pool.out_edge_inv_mass1
-        product2_inv_mass = variable_pool.out_edge_inv_mass2
+        product1_inv_mass = variable_pool.outgoing_state_mass1
+        product2_inv_mass = variable_pool.outgoing_state_mass2
         angular_momentum = variable_pool.angular_momentum
         meson_radius = sp.Symbol(f"d_{resonance.name}")
 
