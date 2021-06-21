@@ -18,28 +18,28 @@ class Input(NamedTuple):
     [
         (
             Input(
-                [("Lambda(c)+", [0.5])],
-                ["p", "K-", "pi+"],
-                ["Lambda(1405)"],
-                [],
+                initial_state=[("Lambda(c)+", [0.5])],
+                final_state=["p", "K-", "pi+"],
+                intermediate_states=["Lambda(1405)"],
+                final_state_grouping=[],
             ),
             2,
         ),
         (
             Input(
-                [("Lambda(c)+", [0.5])],
-                ["p", "K-", "pi+"],
-                ["Delta(1232)++"],
-                [],
+                initial_state=[("Lambda(c)+", [0.5])],
+                final_state=["p", "K-", "pi+"],
+                intermediate_states=["Delta(1232)++"],
+                final_state_grouping=[],
             ),
             2,
         ),
         (
             Input(
-                [("Lambda(c)+", [0.5])],
-                ["p", "K-", "pi+"],
-                ["K*(892)0"],
-                [],
+                initial_state=[("Lambda(c)+", [0.5])],
+                final_state=["p", "K-", "pi+"],
+                intermediate_states=["K*(892)0"],
+                final_state_grouping=[],
             ),
             4,
         ),
