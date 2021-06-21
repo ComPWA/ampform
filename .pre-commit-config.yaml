@@ -47,7 +47,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.6.4
+    rev: v5.6.6
     hooks:
       - id: cspell
 
@@ -87,7 +87,7 @@ repos:
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.149
+    rev: v1.1.150
     hooks:
       - id: pyright
 
