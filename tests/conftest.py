@@ -1,6 +1,6 @@
 # pylint: disable=redefined-outer-name
 import logging
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 import pytest
@@ -26,73 +26,27 @@ def output_dir(pytestconfig) -> str:
     return f"{pytestconfig.rootpath}/tests/output/"
 
 
-@pytest.fixture(scope="session")
-def reaction_canonical() -> ReactionInfo:
+@pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
+def reaction(request: SubRequest) -> ReactionInfo:
+    formalism: str = request.param
     return qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
         allowed_interaction_types="strong",
-        formalism="canonical-helicity",
+        formalism=formalism,
     )
 
 
 @pytest.fixture(scope="session")
-def reaction_helicity() -> ReactionInfo:
-    return qrules.generate_transitions(
-        initial_state=[("J/psi(1S)", [-1, 1])],
-        final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
-        allowed_interaction_types="strong",
-        formalism="helicity",
-    )
-
-
-@pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
-def reaction(
-    reaction_canonical: ReactionInfo,
-    reaction_helicity: ReactionInfo,
-    request: SubRequest,
-) -> ReactionInfo:
-    formalism: str = request.param
-    if formalism == "canonical-helicity":
-        return reaction_canonical
-    return reaction_helicity
-
-
-@pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
-    reaction_canonical: ReactionInfo,
-) -> HelicityModel:
-    return __create_model(reaction_canonical)
-
-
-@pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
-    reaction_helicity: ReactionInfo,
-) -> HelicityModel:
-    return __create_model(reaction_helicity)
-
-
-@pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
-def amplitude_model(
-    jpsi_to_gamma_pi_pi_canonical_amplitude_model: HelicityModel,
-    jpsi_to_gamma_pi_pi_helicity_amplitude_model: HelicityModel,
-    request: SubRequest,
-) -> HelicityModel:
-    formalism: str = request.param
-    if formalism == "canonical-helicity":
-        return jpsi_to_gamma_pi_pi_canonical_amplitude_model
-    return jpsi_to_gamma_pi_pi_helicity_amplitude_model
-
-
-def __create_model(reaction: ReactionInfo) -> HelicityModel:
+def amplitude_model(reaction: ReactionInfo) -> Tuple[str, HelicityModel]:
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:
         model_builder.set_dynamics(
             name, create_relativistic_breit_wigner_with_ff
         )
-    return model_builder.generate()
+    model = model_builder.generate()
+    return reaction.formalism, model
 
 
 # https://github.com/ComPWA/tensorwaves/blob/3d0ec44/tests/physics/helicity_formalism/test_helicity_angles.py#L61-L98
