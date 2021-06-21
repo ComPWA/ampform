@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 import numpy as np
 import pytest
 import qrules
+from _pytest.config import Config
 from _pytest.fixtures import SubRequest
 from qrules import ParticleCollection, ReactionInfo, load_default_particles
 
@@ -22,7 +23,7 @@ def particle_database() -> ParticleCollection:
 
 
 @pytest.fixture(scope="session")
-def output_dir(pytestconfig) -> str:
+def output_dir(pytestconfig: Config) -> str:
     return f"{pytestconfig.rootpath}/tests/output/"
 
 
