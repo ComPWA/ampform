@@ -1,10 +1,12 @@
 # pylint: disable=redefined-outer-name
 import logging
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 import pytest
 import qrules
+from _pytest.config import Config
+from _pytest.fixtures import SubRequest
 from qrules import ParticleCollection, ReactionInfo, load_default_particles
 
 from ampform import get_builder
@@ -21,53 +23,31 @@ def particle_database() -> ParticleCollection:
 
 
 @pytest.fixture(scope="session")
-def output_dir(pytestconfig) -> str:
+def output_dir(pytestconfig: Config) -> str:
     return f"{pytestconfig.rootpath}/tests/output/"
 
 
-@pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_canonical_solutions() -> ReactionInfo:
+@pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
+def reaction(request: SubRequest) -> ReactionInfo:
+    formalism: str = request.param
     return qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
-        allowed_interaction_types="strong only",
-        formalism="canonical-helicity",
+        allowed_interaction_types="strong",
+        formalism=formalism,
     )
 
 
 @pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_helicity_solutions() -> ReactionInfo:
-    return qrules.generate_transitions(
-        initial_state=[("J/psi(1S)", [-1, 1])],
-        final_state=["gamma", "pi0", "pi0"],
-        allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
-        allowed_interaction_types="strong only",
-        formalism="helicity",
-    )
-
-
-@pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_canonical_amplitude_model(
-    jpsi_to_gamma_pi_pi_canonical_solutions: ReactionInfo,
-) -> HelicityModel:
-    return __create_model(jpsi_to_gamma_pi_pi_canonical_solutions)
-
-
-@pytest.fixture(scope="session")
-def jpsi_to_gamma_pi_pi_helicity_amplitude_model(
-    jpsi_to_gamma_pi_pi_helicity_solutions: ReactionInfo,
-) -> HelicityModel:
-    return __create_model(jpsi_to_gamma_pi_pi_helicity_solutions)
-
-
-def __create_model(reaction: ReactionInfo) -> HelicityModel:
+def amplitude_model(reaction: ReactionInfo) -> Tuple[str, HelicityModel]:
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:
         model_builder.set_dynamics(
             name, create_relativistic_breit_wigner_with_ff
         )
-    return model_builder.generate()
+    model = model_builder.generate()
+    return reaction.formalism, model
 
 
 # https://github.com/ComPWA/tensorwaves/blob/3d0ec44/tests/physics/helicity_formalism/test_helicity_angles.py#L61-L98

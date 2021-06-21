@@ -1,4 +1,3 @@
-import pytest
 import sympy as sp
 from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
@@ -6,26 +5,14 @@ from sympy import cos, sin, sqrt
 from ampform import get_builder
 
 
-@pytest.mark.parametrize(
-    ("formalism", "n_amplitudes", "n_parameters"),
-    [
-        ("canonical", 16, 4),
-        ("helicity", 8, 2),
-    ],
-)
-def test_generate(
-    formalism: str,
-    n_amplitudes: int,
-    n_parameters: int,
-    jpsi_to_gamma_pi_pi_canonical_solutions: ReactionInfo,
-    jpsi_to_gamma_pi_pi_helicity_solutions: ReactionInfo,
-):
-    if formalism == "canonical":
-        reaction = jpsi_to_gamma_pi_pi_canonical_solutions
-    elif formalism == "helicity":
-        reaction = jpsi_to_gamma_pi_pi_helicity_solutions
+def test_generate(reaction: ReactionInfo):
+    if reaction.formalism == "canonical-helicity":
+        n_amplitudes = 16
+        n_parameters = 4
     else:
-        raise NotImplementedError
+        n_amplitudes = 8
+        n_parameters = 2
+
     model = get_builder(reaction).generate()
     assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
@@ -39,7 +26,8 @@ def test_generate(
     theta = sp.Symbol("theta", real=True)
     no_dynamics = no_dynamics.subs({existing_theta: theta})
     no_dynamics = no_dynamics.trigsimp()
-    if formalism == "canonical":
+
+    if reaction.formalism == "canonical-helicity":
         assert (
             no_dynamics
             == 0.8 * sqrt(10) * cos(theta) ** 2
@@ -47,7 +35,5 @@ def test_generate(
             + 0.8 * sqrt(10)
             + 4.4
         )
-    elif formalism == "helicity":
-        assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
     else:
-        raise NotImplementedError
+        assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2

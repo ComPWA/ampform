@@ -1,35 +1,27 @@
 # pylint: disable=no-self-use, too-many-arguments
+from typing import Tuple
+
 import numpy as np
 import pytest
-import qrules
 import sympy as sp
+from qrules import ParticleCollection
 from sympy import preorder_traversal
 
 from ampform.dynamics import ComplexSqrt
 from ampform.helicity import HelicityModel
 
 
-@pytest.mark.parametrize(
-    ("formalism", "n_amplitudes", "n_parameters"),
-    [
-        ("canonical", 16, 10),
-        ("helicity", 8, 8),
-    ],
-)
 def test_generate(
-    formalism: str,
-    n_amplitudes: int,
-    n_parameters: int,
-    jpsi_to_gamma_pi_pi_canonical_amplitude_model: HelicityModel,
-    jpsi_to_gamma_pi_pi_helicity_amplitude_model: HelicityModel,
-    particle_database: qrules.ParticleCollection,
+    amplitude_model: Tuple[str, HelicityModel],
+    particle_database: ParticleCollection,
 ):
-    if formalism == "canonical":
-        model = jpsi_to_gamma_pi_pi_canonical_amplitude_model
-    elif formalism == "helicity":
-        model = jpsi_to_gamma_pi_pi_helicity_amplitude_model
+    formalism, model = amplitude_model
+    if formalism == "canonical-helicity":
+        n_amplitudes = 16
+        n_parameters = 10
     else:
-        raise NotImplementedError
+        n_amplitudes = 8
+        n_parameters = 8
     assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
     assert len(model.expression.free_symbols) == 7 + n_parameters
@@ -81,14 +73,12 @@ def test_generate(
     expression = sp.piecewise_fold(expression)
     assert isinstance(expression, sp.Add)
     a1, a2 = tuple(map(str, expression.args))
-    if formalism == "canonical":
+    if formalism == "canonical-helicity":
         assert a1 == "0.08/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
         assert a2 == "0.23/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
-    elif formalism == "helicity":
+    else:
         assert a1 == "0.17/(-m**2 - 0.17*I*sqrt(m**2 - 0.07)/Abs(m) + 2.27)"
         assert a2 == "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
-    else:
-        raise NotImplementedError
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
