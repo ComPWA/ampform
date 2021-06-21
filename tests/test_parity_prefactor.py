@@ -14,7 +14,7 @@ class Input(NamedTuple):
 
 
 @pytest.mark.parametrize(
-    ("test_input", "parameter_count"),
+    ("test_input", "n_parameters"),
     [
         (
             Input(
@@ -45,13 +45,10 @@ class Input(NamedTuple):
         ),
     ],
 )
-def test_parity_amplitude_coupling(
-    test_input: Input,
-    parameter_count: int,
-) -> None:
+def test_parity_amplitude_coupling(test_input: Input, n_parameters: int):
     stm = qrules.StateTransitionManager(
-        test_input.initial_state,
-        test_input.final_state,
+        initial_state=test_input.initial_state,
+        final_state=test_input.final_state,
         allowed_intermediate_particles=test_input.intermediate_states,
         number_of_threads=1,
     )
@@ -60,4 +57,4 @@ def test_parity_amplitude_coupling(
 
     model_builder = get_builder(reaction)
     amplitude_model = model_builder.generate()
-    assert len(amplitude_model.parameter_defaults) == parameter_count
+    assert len(amplitude_model.parameter_defaults) == n_parameters
