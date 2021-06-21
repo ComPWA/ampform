@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 import pytest
-import qrules
+from qrules import StateTransitionManager
 
 from ampform import get_builder
 
@@ -46,7 +46,7 @@ class Input(NamedTuple):
     ],
 )
 def test_parity_amplitude_coupling(test_input: Input, n_parameters: int):
-    stm = qrules.StateTransitionManager(
+    stm = StateTransitionManager(
         initial_state=test_input.initial_state,
         final_state=test_input.final_state,
         allowed_intermediate_particles=test_input.intermediate_states,

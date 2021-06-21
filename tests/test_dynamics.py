@@ -3,8 +3,8 @@ from typing import Tuple
 
 import numpy as np
 import pytest
-import qrules
 import sympy as sp
+from qrules import ParticleCollection
 from sympy import preorder_traversal
 
 from ampform.dynamics import ComplexSqrt
@@ -13,7 +13,7 @@ from ampform.helicity import HelicityModel
 
 def test_generate(
     amplitude_model: Tuple[str, HelicityModel],
-    particle_database: qrules.ParticleCollection,
+    particle_database: ParticleCollection,
 ):
     formalism, model = amplitude_model
     if formalism == "canonical-helicity":

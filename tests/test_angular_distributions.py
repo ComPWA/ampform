@@ -7,6 +7,7 @@ import pytest
 import qrules
 import sympy as sp
 from qrules import ParticleCollection
+from qrules.particle import Particle
 
 from ampform import get_builder
 
@@ -57,13 +58,13 @@ def normalize(
 class TestEpemToDmD0Pip:
     @pytest.fixture(scope="class")
     def sympy_model(self, particle_database: ParticleCollection) -> sp.Expr:
-        epem = qrules.particle.Particle(
+        epem = Particle(
             name="EpEm",
             pid=12345678,
             mass=4.36,
             spin=1.0,
-            parity=qrules.particle.Parity(-1),
-            c_parity=qrules.particle.Parity(-1),
+            parity=-1,
+            c_parity=-1,
         )
         particles = ParticleCollection(particle_database)
         particles.add(epem)
