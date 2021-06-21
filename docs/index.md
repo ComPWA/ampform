@@ -13,7 +13,7 @@
 
 The original project was the [PWA Expert System](https://expertsystem.rtfd.io).
 AmpForm originates from its
-[`~expertsystem.amplitude`](https://expertsystem.readthedocs.io/en/stable/api/expertsystem.amplitude.html)
+[`amplitude`](https://expertsystem.readthedocs.io/en/stable/api/expertsystem.amplitude.html)
 module.
 
 :::
