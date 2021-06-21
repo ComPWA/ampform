@@ -296,10 +296,11 @@ def coupled_width(  # pylint: disable=too-many-arguments
     that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
     in the definition for :math:`\Gamma(m)`.
     """
-    if phsp_factor is not None:
-        verify_signature(phsp_factor, PhaseSpaceFactor)
-    else:
+    if phsp_factor is None:
         phsp_factor = phase_space_factor
+    else:
+        verify_signature(phsp_factor, PhaseSpaceFactor)
+    assert phsp_factor is not None  # pyright v1.1.151
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
     form_factor_sq = BlattWeisskopfSquared(

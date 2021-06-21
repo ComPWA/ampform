@@ -5,7 +5,7 @@
 #    pip-compile --extra=dev --no-annotate --output-file=.constraints/py3.9.txt
 #
 alabaster==0.7.12
-anyio==3.1.0
+anyio==3.2.0
 appdirs==1.4.4
 aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==20.1.0
@@ -59,7 +59,7 @@ ipympl==0.7.0
 ipython-genutils==0.2.0
 ipython==7.24.1
 ipywidgets==7.6.3
-isort==5.8.0
+isort==5.9.0
 jedi==0.18.0
 jinja2==3.0.1
 json5==0.9.5
