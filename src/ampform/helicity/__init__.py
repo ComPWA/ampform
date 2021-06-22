@@ -122,25 +122,20 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__components = {}
         self.__parameter_defaults = {}
         return HelicityModel(
-            expression=self.__generate_intensity(),
+            expression=self.__generate_top_expression(),
             components=self.__components,
             parameter_defaults=self.__parameter_defaults,
             adapter=self.__adapter,
             particles=self.__particles,
         )
 
-    def __generate_intensity(self) -> sp.Expr:
+    def __generate_top_expression(self) -> sp.Expr:
         transition_groups = group_transitions(self.__reaction.transitions)
-        logging.debug("There are %d transition groups", len(transition_groups))
-
         self.__create_parameter_couplings(transition_groups)
-        coherent_intensities = []
-        for group in transition_groups:
-            coherent_intensities.append(
-                self.__generate_coherent_intensity(group)
-            )
-        if len(coherent_intensities) == 0:
-            raise ValueError("List of coherent intensities cannot be empty")
+        coherent_intensities = [
+            self.__generate_coherent_intensity(group)
+            for group in transition_groups
+        ]
         return sum(coherent_intensities)
 
     def __create_parameter_couplings(
