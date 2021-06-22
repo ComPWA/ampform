@@ -2,8 +2,19 @@
 
 import logging
 import operator
+from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import attr
 import sympy as sp
@@ -756,41 +767,34 @@ def group_transitions(
     """Match final and initial states in groups.
 
     Each `~qrules.transition.StateTransition` corresponds to a specific state
-    transition amplitude. This function groups together transitions, which have the
-    same initial and final state (including spin). This is needed to determine
-    the coherency of the individual amplitude parts.
+    transition amplitude. This function groups together transitions, which have
+    the same initial and final state (including spin). This is needed to
+    determine the coherency of the individual amplitude parts.
     """
-    transition_groups: Dict[Tuple[tuple, tuple], List[StateTransition]] = {}
+    transition_groups: DefaultDict[
+        Tuple[
+            Tuple[Tuple[str, float], ...],
+            Tuple[Tuple[str, float], ...],
+        ],
+        List[StateTransition],
+    ] = defaultdict(list)
     for transition in transitions:
-        initial_state_ids = transition.topology.outgoing_edge_ids
-        final_state_ids = transition.topology.incoming_edge_ids
-        transition_group = (
-            tuple(
-                sorted(
-                    [
-                        (
-                            transition.states[i].particle.name,
-                            transition.states[i].spin_projection,
-                        )
-                        for i in initial_state_ids
-                    ]
-                )
-            ),
-            tuple(
-                sorted(
-                    [
-                        (
-                            transition.states[i].particle.name,
-                            transition.states[i].spin_projection,
-                        )
-                        for i in final_state_ids
-                    ]
-                )
-            ),
+        initial_state = sorted(
+            (
+                transition.states[i].particle.name,
+                transition.states[i].spin_projection,
+            )
+            for i in transition.topology.incoming_edge_ids
         )
-        if transition_group not in transition_groups:
-            transition_groups[transition_group] = []
-        transition_groups[transition_group].append(transition)
+        final_state = sorted(
+            (
+                transition.states[i].particle.name,
+                transition.states[i].spin_projection,
+            )
+            for i in transition.topology.outgoing_edge_ids
+        )
+        group_key = (tuple(initial_state), tuple(final_state))
+        transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
 
