@@ -8,6 +8,7 @@ from ampform.data import EventCollection
 from ampform.kinematics import (
     _compute_helicity_angles,
     _compute_invariant_masses,
+    determine_attached_final_state,
 )
 
 
@@ -137,3 +138,22 @@ def test_compute_invariant_masses(data_sample: EventCollection):
         pytest.approx(invariant_masses["m_23"])
         == data_sample.sum([2, 3]).mass()
     )
+
+
+def test_determine_attached_final_state():
+    topologies = create_isobar_topologies(4)
+    # outer states
+    for topology in topologies:
+        for i in topology.outgoing_edge_ids:
+            assert determine_attached_final_state(topology, state_id=i) == [i]
+        for i in topology.incoming_edge_ids:
+            assert determine_attached_final_state(
+                topology, state_id=i
+            ) == list(topology.outgoing_edge_ids)
+    # intermediate states
+    topology = topologies[0]
+    assert determine_attached_final_state(topology, state_id=4) == [0, 1]
+    assert determine_attached_final_state(topology, state_id=5) == [2, 3]
+    topology = topologies[1]
+    assert determine_attached_final_state(topology, state_id=4) == [1, 2, 3]
+    assert determine_attached_final_state(topology, state_id=5) == [2, 3]

@@ -1,6 +1,4 @@
-# cspell:ignore nsimplify
 # pylint: disable=redefined-outer-name,no-self-use
-
 from typing import Any, List, Optional, Sequence, Union
 
 import pytest
@@ -23,19 +21,16 @@ def calculate_sympy_integral(
                 intensity *= sp.sin(int_var)
     else:
         intensity *= jacobi_determinant
+    integral = sp.integrate(
+        intensity,
+        *(
+            (x, -sp.pi, sp.pi) if "phi" in x.name else (x, 0, sp.pi)
+            for x in integration_variables
+        ),
+    )
     return sp.trigsimp(
         sp.nsimplify(
-            sp.re(
-                sp.integrate(
-                    intensity,
-                    *(
-                        (x, -sp.pi, sp.pi)
-                        if "phi" in x.name
-                        else (x, 0, sp.pi)
-                        for x in integration_variables
-                    ),
-                )
-            ).doit(),
+            sp.re(integral).doit(),
             rational=True,
         )
     )
@@ -77,7 +72,7 @@ class TestEpemToDmD0Pip:
             particle_db=particles,
         )
 
-        amplitude_model = get_builder(reaction).generate()
+        amplitude_model = get_builder(reaction).formulate()
         full_model = sp.simplify(
             amplitude_model.expression.subs(amplitude_model.parameter_defaults)
             .doit()
@@ -161,7 +156,7 @@ class TestD1ToD0PiPi:
             allowed_interaction_types="strong",
             formalism="helicity",
         )
-        amplitude_model = get_builder(reaction).generate()
+        amplitude_model = get_builder(reaction).formulate()
 
         coefficient = sp.Symbol(
             R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "
