@@ -46,7 +46,7 @@ def amplitude_model(reaction: ReactionInfo) -> Tuple[str, HelicityModel]:
         model_builder.set_dynamics(
             name, create_relativistic_breit_wigner_with_ff
         )
-    model = model_builder.generate()
+    model = model_builder.formulate()
     return reaction.formalism, model
 
 

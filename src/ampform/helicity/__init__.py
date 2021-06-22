@@ -1,4 +1,3 @@
-# cspell:ignore gordans
 """Generate an amplitude model with the helicity formalism."""
 
 import logging
@@ -118,22 +117,22 @@ class HelicityAmplitudeBuilder:
                 if decay_particle.name == particle_name:
                     self.__dynamics_choices[decay] = dynamics_builder
 
-    def generate(self) -> HelicityModel:
+    def formulate(self) -> HelicityModel:
         self.__components = {}
         self.__parameter_defaults = {}
         return HelicityModel(
-            expression=self.__generate_top_expression(),
+            expression=self.__formulate_top_expression(),
             components=self.__components,
             parameter_defaults=self.__parameter_defaults,
             adapter=self.__adapter,
             particles=self.__particles,
         )
 
-    def __generate_top_expression(self) -> sp.Expr:
+    def __formulate_top_expression(self) -> sp.Expr:
         transition_groups = group_transitions(self.__reaction.transitions)
         self.__register_parameter_couplings(transition_groups)
         coherent_intensities = [
-            self.__generate_coherent_intensity(group)
+            self.__formulate_coherent_intensity(group)
             for group in transition_groups
         ]
         return sum(coherent_intensities)
@@ -147,7 +146,7 @@ class HelicityAmplitudeBuilder:
                     transition
                 )
 
-    def __generate_coherent_intensity(
+    def __formulate_coherent_intensity(
         self, transition_group: List[StateTransition]
     ) -> sp.Expr:
         graph_group_label = generate_transition_label(transition_group[0])
@@ -160,18 +159,18 @@ class HelicityAmplitudeBuilder:
             )
             for graph in sequential_graphs:
                 transition = StateTransition.from_graph(graph)
-                expression = self.__generate_sequential_decay(transition)
+                expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
         amplitude_sum = sum(sequential_expressions)
         coherent_intensity = abs(amplitude_sum) ** 2
         self.__components[fR"I_{{{graph_group_label}}}"] = coherent_intensity
         return coherent_intensity
 
-    def __generate_sequential_decay(
+    def __formulate_sequential_decay(
         self, transition: StateTransition
     ) -> sp.Expr:
         partial_decays: List[sp.Symbol] = [
-            self._generate_partial_decay(transition, node_id)
+            self._formulate_partial_decay(transition, node_id)
             for node_id in transition.topology.nodes
         ]
         sequential_amplitudes = reduce(operator.mul, partial_decays)
@@ -186,14 +185,14 @@ class HelicityAmplitudeBuilder:
         ] = expression
         return expression
 
-    def _generate_partial_decay(
+    def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
-        wigner_d = generate_wigner_d(transition, node_id)
-        dynamics_symbol = self.__create_dynamics(transition, node_id)
-        return wigner_d * dynamics_symbol
+        wigner_d = formulate_wigner_d(transition, node_id)
+        dynamics = self.__formulate_dynamics(transition, node_id)
+        return wigner_d * dynamics
 
-    def __create_dynamics(
+    def __formulate_dynamics(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         decay = TwoBodyDecay.from_transition(transition, node_id)
@@ -276,11 +275,13 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         super().__init__(reaction_result)
         self._name_generator = CanonicalAmplitudeNameGenerator()
 
-    def _generate_partial_decay(
+    def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
-    ) -> sp.Symbol:
-        amplitude = super()._generate_partial_decay(transition, node_id)
-        cg_coefficients = generate_clebsch_gordans(transition, node_id)
+    ) -> sp.Expr:
+        amplitude = super()._formulate_partial_decay(transition, node_id)
+        cg_coefficients = formulate_clebsch_gordan_coefficients(
+            transition, node_id
+        )
         return cg_coefficients * amplitude
 
 
@@ -296,7 +297,7 @@ def extract_particle_collection(
     return particles
 
 
-def generate_clebsch_gordans(
+def formulate_clebsch_gordan_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
     decay = TwoBodyDecay.from_transition(transition, node_id)
@@ -330,7 +331,7 @@ def generate_clebsch_gordans(
     return sp.Mul(cg_ls, cg_ss, evaluate=False)
 
 
-def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
+def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
     return Wigner.D(

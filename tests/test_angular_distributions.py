@@ -72,7 +72,7 @@ class TestEpemToDmD0Pip:
             particle_db=particles,
         )
 
-        amplitude_model = get_builder(reaction).generate()
+        amplitude_model = get_builder(reaction).formulate()
         full_model = sp.simplify(
             amplitude_model.expression.subs(amplitude_model.parameter_defaults)
             .doit()
@@ -156,7 +156,7 @@ class TestD1ToD0PiPi:
             allowed_interaction_types="strong",
             formalism="helicity",
         )
-        amplitude_model = get_builder(reaction).generate()
+        amplitude_model = get_builder(reaction).formulate()
 
         coefficient = sp.Symbol(
             R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "

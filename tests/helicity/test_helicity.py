@@ -5,11 +5,11 @@ from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
-from ampform.helicity import _generate_kinematic_variables, generate_wigner_d
+from ampform.helicity import _generate_kinematic_variables, formulate_wigner_d
 
 
 class TestAmplitudeBuilder:
-    def test_generate(self, reaction: ReactionInfo):
+    def test_formulate(self, reaction: ReactionInfo):
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
             n_parameters = 4
@@ -18,7 +18,7 @@ class TestAmplitudeBuilder:
             n_parameters = 2
 
         model_builder = get_builder(reaction)
-        model = model_builder.generate()
+        model = model_builder.formulate()
         assert len(model.parameter_defaults) == n_parameters
         assert len(model.components) == 4 + n_amplitudes
         assert len(model.expression.free_symbols) == 4 + n_parameters
@@ -76,7 +76,7 @@ def test_generate_kinematic_variables(
         (2, 1, "WignerD(0, 0, 0, -phi_1,1+2, theta_1,1+2, 0)"),
     ],
 )
-def test_generate_wigner_d(
+def test_formulate_wigner_d(
     reaction: ReactionInfo, transition: int, node_id: int, expected: str
 ):
     if reaction.formalism == "canonical-helicity":
@@ -87,5 +87,5 @@ def test_generate_wigner_d(
         if t.states[3].particle.name == "f(0)(980)"
     ]
     some_transition = transitions[transition]
-    wigner_d = generate_wigner_d(some_transition, node_id)
+    wigner_d = formulate_wigner_d(some_transition, node_id)
     assert str(wigner_d) == expected
