@@ -12,7 +12,7 @@ from qrules import ParticleCollection, ReactionInfo
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
-from qrules.particle import Spin
+from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import State, StateTransition
 from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
@@ -56,6 +56,7 @@ class _EdgeWithState:
 class _TwoBodyDecay:
     parent: _EdgeWithState
     children: Tuple[_EdgeWithState, _EdgeWithState]
+    interaction: InteractionProperties
 
     @classmethod
     def from_transition(
@@ -88,6 +89,7 @@ class _TwoBodyDecay:
                 _EdgeWithState.from_transition(transition, out_state_id1),
                 _EdgeWithState.from_transition(transition, out_state_id2),
             ),
+            interaction=transition.interactions[node_id],
         )
 
 
@@ -681,55 +683,42 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         self, transition: StateTransition, node_id: int
     ) -> sp.Symbol:
         amplitude = super()._generate_partial_decay(transition, node_id)
+        cg_coefficients = generate_clebsch_gordan(transition, node_id)
+        return cg_coefficients * amplitude
 
-        interaction = transition.interactions[node_id]
-        ang_mom = get_angular_momentum(interaction)
-        spin = get_coupled_spin(interaction)
-        if ang_mom.projection != 0.0:
-            raise ValueError(f"Projection of L is non-zero!: {ang_mom}")
 
-        topology = transition.topology
-        in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
-        out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
+def generate_clebsch_gordan(
+    transition: StateTransition, node_id: int
+) -> sp.Expr:
+    decay = _TwoBodyDecay.from_transition(transition, node_id)
 
-        incoming_state_id = next(iter(in_state_ids))
-        incoming_state = transition.states[incoming_state_id]
-        parent_spin = Spin(
-            incoming_state.particle.spin,
-            incoming_state.spin_projection,
-        )
+    angular_momentum = get_angular_momentum(decay.interaction)
+    coupled_spin = get_coupled_spin(decay.interaction)
+    if angular_momentum.projection != 0.0:
+        raise ValueError(f"Projection of L is non-zero!: {angular_momentum}")
 
-        daughter_spins: List[Spin] = []
-        for state_id in out_state_ids:
-            state = transition.states[state_id]
-            daughter_spin = Spin(
-                state.particle.spin,
-                state.spin_projection,
-            )
-            if daughter_spin is not None and isinstance(daughter_spin, Spin):
-                daughter_spins.append(daughter_spin)
+    parent = decay.parent.state
+    child1 = decay.children[0].state
+    child2 = decay.children[1].state
 
-        decay_particle_lambda = (
-            daughter_spins[0].projection - daughter_spins[1].projection
-        )
-
-        cg_ls = CG(
-            j1=sp.nsimplify(ang_mom.magnitude),
-            m1=sp.nsimplify(ang_mom.projection),
-            j2=sp.nsimplify(spin.magnitude),
-            m2=sp.nsimplify(decay_particle_lambda),
-            j3=sp.nsimplify(parent_spin.magnitude),
-            m3=sp.nsimplify(decay_particle_lambda),
-        )
-        cg_ss = CG(
-            j1=sp.nsimplify(daughter_spins[0].magnitude),
-            m1=sp.nsimplify(daughter_spins[0].projection),
-            j2=sp.nsimplify(daughter_spins[1].magnitude),
-            m2=sp.nsimplify(-daughter_spins[1].projection),
-            j3=sp.nsimplify(spin.magnitude),
-            m3=sp.nsimplify(decay_particle_lambda),
-        )
-        return cg_ls * cg_ss * amplitude
+    decay_particle_lambda = child1.spin_projection - child2.spin_projection
+    cg_ls = CG(
+        j1=sp.nsimplify(angular_momentum.magnitude),
+        m1=sp.nsimplify(angular_momentum.projection),
+        j2=sp.nsimplify(coupled_spin.magnitude),
+        m2=sp.nsimplify(decay_particle_lambda),
+        j3=sp.nsimplify(parent.particle.spin),
+        m3=sp.nsimplify(decay_particle_lambda),
+    )
+    cg_ss = CG(
+        j1=sp.nsimplify(child1.particle.spin),
+        m1=sp.nsimplify(child1.spin_projection),
+        j2=sp.nsimplify(child2.particle.spin),
+        m2=sp.nsimplify(-child2.spin_projection),
+        j3=sp.nsimplify(coupled_spin.magnitude),
+        m3=sp.nsimplify(decay_particle_lambda),
+    )
+    return sp.Mul(cg_ls, cg_ss, evaluate=False)
 
 
 # https://github.com/sympy/sympy/issues/21001
