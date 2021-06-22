@@ -1,11 +1,13 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
-from typing import Tuple
+from typing import Iterable, List, Tuple
 
 import attr
 from qrules.particle import Spin
 from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import State, StateTransition
+
+from ampform.kinematics import assert_two_body_decay
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -91,3 +93,31 @@ def get_coupled_spin(interaction: InteractionProperties) -> Spin:
     if s_magnitude is None or s_projection is None:
         raise TypeError("Coupled spin S not defined!")
     return Spin(s_magnitude, s_projection)
+
+
+def get_helicity_info(
+    transition: StateTransition, node_id: int
+) -> Tuple[State, Tuple[State, State]]:
+    assert_two_body_decay(transition.topology, node_id)
+    in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
+    out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(node_id)
+    in_helicity_list = get_sorted_states(transition, in_edge_ids)
+    out_helicity_list = get_sorted_states(transition, out_edge_ids)
+    return (
+        in_helicity_list[0],
+        (out_helicity_list[0], out_helicity_list[1]),
+    )
+
+
+def get_sorted_states(
+    transition: StateTransition, state_ids: Iterable[int]
+) -> List[State]:
+    """Get a sorted list of `~qrules.transition.State` instances.
+
+    In order to ensure correct naming of amplitude coefficients the list has to
+    be sorted by name. The same coefficient names have to be created for two
+    transitions that only differ from a kinematic standpoint (swapped external
+    edges).
+    """
+    states = [transition.states[i] for i in state_ids]
+    return sorted(states, key=lambda s: s.particle.name)

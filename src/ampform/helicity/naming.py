@@ -1,11 +1,16 @@
 """Generate descriptions used in the `~ampform.helicity` formalism."""
 
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import sympy as sp
 from qrules.transition import State, StateTransition
 
-from .decay import get_angular_momentum, get_coupled_spin
+from .decay import (
+    get_angular_momentum,
+    get_coupled_spin,
+    get_helicity_info,
+    get_sorted_states,
+)
 
 
 class HelicityAmplitudeNameGenerator:
@@ -15,7 +20,7 @@ class HelicityAmplitudeNameGenerator:
     def _generate_amplitude_coefficient_couple(
         self, transition: StateTransition, node_id: int
     ) -> Tuple[str, str, str]:
-        incoming_state, outgoing_states = self._retrieve_helicity_info(
+        incoming_state, outgoing_states = get_helicity_info(
             transition, node_id
         )
         par_name_suffix = self.generate_coefficient_name(transition, node_id)
@@ -82,7 +87,7 @@ class HelicityAmplitudeNameGenerator:
                         coefficient_suffix
                     ] = coefficient_suffix
 
-    def generate_amplitude_name(
+    def generate_amplitude_name(  # pylint: disable=no-self-use
         self,
         transition: StateTransition,
         node_id: Optional[int] = None,
@@ -101,9 +106,7 @@ class HelicityAmplitudeNameGenerator:
             node_ids = frozenset({node_id})
         names: List[str] = []
         for i in node_ids:
-            incoming_state, outgoing_states = self._retrieve_helicity_info(
-                transition, i
-            )
+            incoming_state, outgoing_states = get_helicity_info(transition, i)
             name = (
                 _state_to_str(incoming_state)
                 + R" \to "
@@ -112,30 +115,11 @@ class HelicityAmplitudeNameGenerator:
             names.append(name)
         return "; ".join(names)
 
-    @staticmethod
-    def _retrieve_helicity_info(
-        transition: StateTransition, node_id: int
-    ) -> Tuple[State, Tuple[State, State]]:
-        in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
-        out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(
-            node_id
-        )
-        in_helicity_list = _get_sorted_states(transition, in_edge_ids)
-        out_helicity_list = _get_sorted_states(transition, out_edge_ids)
-        if len(in_helicity_list) != 1 or len(out_helicity_list) != 2:
-            raise ValueError(f"Node {node_id} it not a 1-to-2 decay")
-        return (
-            in_helicity_list[0],
-            (out_helicity_list[0], out_helicity_list[1]),
-        )
-
-    def generate_coefficient_name(
+    def generate_coefficient_name(  # pylint: disable=no-self-use
         self, transition: StateTransition, node_id: int
     ) -> str:
         """Generate partial amplitude coefficient name suffix."""
-        in_hel_info, out_hel_info = self._retrieve_helicity_info(
-            transition, node_id
-        )
+        in_hel_info, out_hel_info = get_helicity_info(transition, node_id)
         return (
             _state_to_str(in_hel_info, use_helicity=False)
             + R" \to "
@@ -159,7 +143,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     def generate_coefficient_name(
         self, transition: StateTransition, node_id: int
     ) -> str:
-        incoming_state, outgoing_states = self._retrieve_helicity_info(
+        incoming_state, outgoing_states = get_helicity_info(
             transition, node_id
         )
         return (
@@ -208,27 +192,13 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 def generate_transition_label(transition: StateTransition) -> str:
     initial_state_ids = transition.topology.incoming_edge_ids
     final_state_ids = transition.topology.outgoing_edge_ids
-    initial_states = _get_sorted_states(transition, initial_state_ids)
-    final_states = _get_sorted_states(transition, final_state_ids)
+    initial_states = get_sorted_states(transition, initial_state_ids)
+    final_states = get_sorted_states(transition, final_state_ids)
     return (
         _state_to_str(initial_states[0])
         + R" \to "
         + " ".join(_state_to_str(s) for s in final_states)
     )
-
-
-def _get_sorted_states(
-    transition: StateTransition, state_ids: Iterable[int]
-) -> List[State]:
-    """Get a sorted list of `~qrules.transition.State` instances.
-
-    In order to ensure correct naming of amplitude coefficients the list has to
-    be sorted by name. The same coefficient names have to be created for two
-    transitions that only differ from a kinematic standpoint (swapped external
-    edges).
-    """
-    states = [transition.states[i] for i in state_ids]
-    return sorted(states, key=lambda s: s.particle.name)
 
 
 def _state_to_str(
