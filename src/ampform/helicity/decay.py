@@ -12,6 +12,8 @@ from ampform.kinematics import assert_two_body_decay
 
 @attr.s(auto_attribs=True, frozen=True)
 class StateWithID(State):
+    """Extension of `~qrules.transition.State` that embeds the state ID."""
+
     id: int  # noqa: A003
 
     @classmethod
@@ -28,6 +30,21 @@ class StateWithID(State):
 
 @attr.s(auto_attribs=True, frozen=True)
 class TwoBodyDecay:
+    """Two-body sub-decay in a `~qrules.transition.StateTransition`.
+
+    This container class ensures that:
+
+    1. a selected node in a `~qrules.transition.StateTransition` is indeed a
+       1-to-2 body decay
+
+    2. its two `.children` are sorted by whether they decay further or not (see
+       `.get_helicity_angle_label`, `.formulate_wigner_d`, and
+       `.formulate_clebsch_gordan_coefficients`).
+
+    3. the `.TwoBodyDecay` is hashable, so that it can be used as a key (see
+       `.set_dynamics`.)
+    """
+
     parent: StateWithID
     children: Tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
