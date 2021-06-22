@@ -1,9 +1,11 @@
-# pylint: disable=no-self-use
+# pylint: disable=no-member, no-self-use
+import pytest
 import sympy as sp
 from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
+from ampform.helicity import generate_kinematic_variables
 
 
 class TestAmplitudeBuilder:
@@ -40,3 +42,24 @@ class TestAmplitudeBuilder:
             )
         else:
             assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
+
+
+@pytest.mark.parametrize(
+    ("node_id", "mass", "phi", "theta"),
+    [
+        (0, "m_012", "phi_1+2", "theta_1+2"),
+        (1, "m_12", "phi_1,1+2", "theta_1,1+2"),
+    ],
+)
+def test_generate_kinematic_variables(
+    reaction: ReactionInfo,
+    node_id: int,
+    mass: str,
+    phi: str,
+    theta: str,
+):
+    for transition in reaction.transitions:
+        variables = generate_kinematic_variables(transition, node_id)
+        assert variables[0].name == mass
+        assert variables[1].name == phi
+        assert variables[2].name == theta

@@ -388,7 +388,7 @@ def _generate_kinematic_variable_set(
     transition: StateTransition, node_id: int
 ) -> TwoBodyKinematicVariableSet:
     decay = _TwoBodyDecay.from_transition(transition, node_id)
-    inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
+    inv_mass, phi, theta = generate_kinematic_variables(transition, node_id)
     child1_mass = sp.Symbol(
         get_invariant_mass_label(
             transition.topology, decay.children[0].state_id
@@ -442,7 +442,7 @@ def _extract_angular_momentum(
     )
 
 
-def _generate_kinematic_variables(
+def generate_kinematic_variables(
     transition: StateTransition, node_id: int
 ) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
     """Generate symbol for invariant mass, phi angle, and theta angle."""
@@ -605,7 +605,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         transition: StateTransition, node_id: int
     ) -> sp.Symbol:
         decay = _TwoBodyDecay.from_transition(transition, node_id)
-        _, phi, theta = _generate_kinematic_variables(transition, node_id)
+        _, phi, theta = generate_kinematic_variables(transition, node_id)
 
         return Wigner.D(
             j=sp.nsimplify(decay.parent.state.particle.spin),
