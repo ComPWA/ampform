@@ -328,18 +328,22 @@ def _compute_invariant_masses(
 
 def assert_isobar_topology(topology: Topology) -> None:
     for node_id in topology.nodes:
-        parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
-        if len(parent_state_ids) != 1:
-            raise ValueError(
-                f"Node {node_id} has {len(parent_state_ids)} parent edges,"
-                " so this is not an isobar decay"
-            )
-        child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-        if len(child_state_ids) != 2:
-            raise ValueError(
-                f"Node {node_id} decays to {len(child_state_ids)} edges,"
-                " so this is not an isobar decay"
-            )
+        assert_two_body_decay(topology, node_id)
+
+
+def assert_two_body_decay(topology: Topology, node_id: int) -> None:
+    parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
+    if len(parent_state_ids) != 1:
+        raise ValueError(
+            f"Node {node_id} has {len(parent_state_ids)} parent states,"
+            " so this is not an isobar decay"
+        )
+    child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
+    if len(child_state_ids) != 2:
+        raise ValueError(
+            f"Node {node_id} decays to {len(child_state_ids)} states,"
+            " so this is not an isobar decay"
+        )
 
 
 def determine_attached_final_state(
