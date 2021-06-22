@@ -86,6 +86,18 @@ class TwoBodyDecay:
             interaction=transition.interactions[node_id],
         )
 
+    def extract_angular_momentum(self) -> int:
+        angular_momentum = self.interaction.l_magnitude
+        if angular_momentum is not None:
+            return angular_momentum
+        spin_magnitude = self.parent.particle.spin
+        if spin_magnitude.is_integer():
+            return int(spin_magnitude)
+        raise ValueError(
+            f"Spin magnitude ({spin_magnitude}) of single particle state cannot be"
+            f" used as the angular momentum as it is not integral!"
+        )
+
 
 @attr.s(frozen=True)
 class HelicityModel:
@@ -399,38 +411,7 @@ def _generate_kinematic_variable_set(
         outgoing_state_mass2=child2_mass,
         helicity_theta=theta,
         helicity_phi=phi,
-        angular_momentum=_extract_angular_momentum(transition, node_id),
-    )
-
-
-def _extract_angular_momentum(
-    transition: StateTransition, node_id: int
-) -> int:
-    interaction = transition.interactions[node_id]
-    if interaction.l_magnitude is not None:
-        return interaction.l_magnitude
-
-    incoming_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
-    outgoing_ids = transition.topology.get_edge_ids_outgoing_from_node(node_id)
-    state_id = None
-    if len(incoming_ids) == 1:
-        state_id = next(iter(incoming_ids))
-    elif len(outgoing_ids) == 1:
-        state_id = next(iter(outgoing_ids))
-
-    if state_id is None:
-        raise ValueError(
-            f"StateTransition does not have one to two body structure"
-            f" at node with id={node_id}"
-        )
-
-    spin_magnitude = transition.states[state_id].particle.spin
-    if spin_magnitude.is_integer():
-        return int(spin_magnitude)
-
-    raise ValueError(
-        f"Spin magnitude ({spin_magnitude}) of single particle state cannot be"
-        f" used as the angular momentum as it is not integral!"
+        angular_momentum=decay.extract_angular_momentum(),
     )
 
 
