@@ -393,7 +393,7 @@ def _generate_particles_string(
                 helicity = -1 * state.spin_projection
             else:
                 helicity = state.spin_projection
-            helicity = __attempt_int_cast(helicity)
+            helicity = sp.Rational(helicity)
             if helicity > 0:
                 helicity_str = f"+{helicity}"
             else:
@@ -793,11 +793,3 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
-
-
-def __attempt_int_cast(value: float) -> Union[float, int]:
-    if isinstance(value, int):
-        return value
-    if value.is_integer():
-        return int(value)
-    return value
