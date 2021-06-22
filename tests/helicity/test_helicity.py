@@ -5,7 +5,11 @@ from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
-from ampform.helicity import _generate_kinematic_variables, formulate_wigner_d
+from ampform.helicity import (
+    _generate_kinematic_variables,
+    formulate_wigner_d,
+    group_transitions,
+)
 
 
 class TestAmplitudeBuilder:
@@ -89,3 +93,14 @@ def test_formulate_wigner_d(
     some_transition = transitions[transition]
     wigner_d = formulate_wigner_d(some_transition, node_id)
     assert str(wigner_d) == expected
+
+
+def test_group_transitions(reaction: ReactionInfo):
+    transition_groups = group_transitions(reaction.transitions)
+    assert len(transition_groups) == 4
+    for group in transition_groups:
+        transition_iter = iter(group)
+        first_transition = next(transition_iter)
+        for transition in transition_iter:
+            assert transition.initial_states == first_transition.initial_states
+            assert transition.final_states == first_transition.final_states
