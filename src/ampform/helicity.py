@@ -155,9 +155,7 @@ class _HelicityAmplitudeNameGenerator:
         incoming_state, outgoing_states = self._retrieve_helicity_info(
             transition, node_id
         )
-        par_name_suffix = self.generate_amplitude_coefficient_name(
-            transition, node_id
-        )
+        par_name_suffix = self.generate_coefficient_name(transition, node_id)
 
         pp_par_name_suffix = (
             _state_to_str(incoming_state, use_helicity=False)
@@ -268,7 +266,7 @@ class _HelicityAmplitudeNameGenerator:
             (out_helicity_list[0], out_helicity_list[1]),
         )
 
-    def generate_amplitude_coefficient_name(
+    def generate_coefficient_name(
         self, transition: StateTransition, node_id: int
     ) -> str:
         """Generate partial amplitude coefficient name suffix."""
@@ -287,9 +285,7 @@ class _HelicityAmplitudeNameGenerator:
         """Generate unique suffix for a sequential amplitude transition."""
         coefficient_names: List[str] = []
         for node_id in transition.topology.nodes:
-            suffix = self.generate_amplitude_coefficient_name(
-                transition, node_id
-            )
+            suffix = self.generate_coefficient_name(transition, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
                 suffix = self.parity_partner_coefficient_mapping[suffix]
             coefficient_names.append(suffix)
@@ -297,7 +293,7 @@ class _HelicityAmplitudeNameGenerator:
 
 
 class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
-    def generate_amplitude_coefficient_name(
+    def generate_coefficient_name(
         self, transition: StateTransition, node_id: int
     ) -> str:
         incoming_state, outgoing_states = self._retrieve_helicity_info(
@@ -574,10 +570,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
-                raw_suffix = (
-                    self.name_generator.generate_amplitude_coefficient_name(
-                        transition, node_id
-                    )
+                raw_suffix = self.name_generator.generate_coefficient_name(
+                    transition, node_id
                 )
                 if (
                     raw_suffix
