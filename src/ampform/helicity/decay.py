@@ -115,6 +115,7 @@ def get_coupled_spin(interaction: InteractionProperties) -> Spin:
 def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> Tuple[State, Tuple[State, State]]:
+    """Extract in- and outgoing states for a two-body decay node."""
     assert_two_body_decay(transition.topology, node_id)
     in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
     out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(node_id)

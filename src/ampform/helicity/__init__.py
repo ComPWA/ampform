@@ -296,6 +296,19 @@ def extract_particle_collection(
 def formulate_clebsch_gordan_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
+    """Compute two Clebsch-Gordan coefficients for a state transition node.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state=[("J/psi(1S)", [+1])],
+    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ... )
+    >>> transition = reaction.transitions[0]
+    >>> formulate_clebsch_gordan_coefficients(transition, node_id=0)
+    CG(0, 0, 1, 1, 1, 1)*CG(1, 1, 0, 0, 1, 1)
+
+    .. seealso:: :doc:`sympy:modules/physics/quantum/cg`
+    """
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
     angular_momentum = get_angular_momentum(decay.interaction)
@@ -328,6 +341,17 @@ def formulate_clebsch_gordan_coefficients(
 
 
 def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
+    """Compute `~sympy.physics.quantum.spin.WignerD` for a state transition node.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state=[("J/psi(1S)", [+1])],
+    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ... )
+    >>> transition = reaction.transitions[0]
+    >>> formulate_wigner_d(transition, node_id=0)
+    WignerD(1, 1, 1, -phi_0, theta_0, 0)
+    """
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
     return Wigner.D(
