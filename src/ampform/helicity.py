@@ -39,7 +39,7 @@ from .kinematics import (
 ParameterValue = Union[float, complex, int]
 
 
-@attr.s(frozen=True, auto_attribs=True)
+@attr.s(auto_attribs=True, frozen=True)
 class StateWithID(State):
     id: int  # noqa: A003
 
@@ -55,7 +55,7 @@ class StateWithID(State):
         )
 
 
-@attr.s(frozen=True, auto_attribs=True)
+@attr.s(auto_attribs=True, frozen=True)
 class _TwoBodyDecay:
     parent: StateWithID
     children: Tuple[StateWithID, StateWithID]
