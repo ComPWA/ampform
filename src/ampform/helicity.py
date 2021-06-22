@@ -221,7 +221,7 @@ class _HelicityAmplitudeNameGenerator:
                         coefficient_suffix
                     ] = coefficient_suffix
 
-    def generate_unique_amplitude_name(
+    def generate_amplitude_name(
         self,
         transition: StateTransition,
         node_id: Optional[int] = None,
@@ -311,7 +311,7 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
             )
         )
 
-    def generate_unique_amplitude_name(
+    def generate_amplitude_name(
         self,
         transition: StateTransition,
         node_id: Optional[int] = None,
@@ -322,9 +322,7 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
             node_ids = transition.topology.nodes
         names: List[str] = []
         for node in node_ids:
-            helicity_name = super().generate_unique_amplitude_name(
-                transition, node
-            )
+            helicity_name = super().generate_amplitude_name(transition, node)
             canonical_name = helicity_name.replace(
                 R" \to ",
                 self.__generate_ls_arrow(transition, node),
@@ -543,7 +541,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         if prefactor is not None:
             expression = prefactor * expression
         self.__components[
-            f"A_{{{self.name_generator.generate_unique_amplitude_name(transition)}}}"
+            f"A_{{{self.name_generator.generate_amplitude_name(transition)}}}"
         ] = expression
         return expression
 
