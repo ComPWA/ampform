@@ -596,28 +596,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def _generate_partial_decay(  # pylint: disable=too-many-locals
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
-        wigner_d = self._generate_wigner_d(transition, node_id)
+        wigner_d = generate_wigner_d(transition, node_id)
         dynamics_symbol = self.__create_dynamics(transition, node_id)
         return wigner_d * dynamics_symbol
-
-    @staticmethod
-    def _generate_wigner_d(
-        transition: StateTransition, node_id: int
-    ) -> sp.Symbol:
-        decay = _TwoBodyDecay.from_transition(transition, node_id)
-        _, phi, theta = generate_kinematic_variables(transition, node_id)
-
-        return Wigner.D(
-            j=sp.nsimplify(decay.parent.state.particle.spin),
-            m=sp.nsimplify(decay.parent.state.spin_projection),
-            mp=sp.nsimplify(
-                decay.children[0].state.spin_projection
-                - decay.children[1].state.spin_projection
-            ),
-            alpha=-phi,
-            beta=theta,
-            gamma=0,
-        )
 
     def __generate_amplitude_coefficient(
         self, transition: StateTransition
@@ -658,6 +639,22 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     if coefficient_suffix != raw_suffix:
                         return prefactor
         return None
+
+
+def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
+    decay = _TwoBodyDecay.from_transition(transition, node_id)
+    _, phi, theta = generate_kinematic_variables(transition, node_id)
+    return Wigner.D(
+        j=sp.nsimplify(decay.parent.state.particle.spin),
+        m=sp.nsimplify(decay.parent.state.spin_projection),
+        mp=sp.nsimplify(
+            decay.children[0].state.spin_projection
+            - decay.children[1].state.spin_projection
+        ),
+        alpha=-phi,
+        beta=theta,
+        gamma=0,
+    )
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
