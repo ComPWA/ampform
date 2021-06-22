@@ -40,22 +40,25 @@ ParameterValue = Union[float, complex, int]
 
 
 @attr.s(frozen=True, auto_attribs=True)
-class _EdgeWithState:
-    state_id: int
-    state: State
+class StateWithID(State):
+    id: int  # noqa: A003
 
     @classmethod
     def from_transition(
         cls, transition: StateTransition, state_id: int
-    ) -> "_EdgeWithState":
+    ) -> "StateWithID":
         state = transition.states[state_id]
-        return cls(state_id, state)
+        return cls(
+            id=state_id,
+            particle=state.particle,
+            spin_projection=state.spin_projection,
+        )
 
 
 @attr.s(frozen=True, auto_attribs=True)
 class _TwoBodyDecay:
-    parent: _EdgeWithState
-    children: Tuple[_EdgeWithState, _EdgeWithState]
+    parent: StateWithID
+    children: Tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
 
     @classmethod
@@ -82,12 +85,10 @@ class _TwoBodyDecay:
         out_state_id1, out_state_id2, *_ = tuple(sorted_by_ending)
 
         return cls(
-            parent=_EdgeWithState.from_transition(
-                transition, ingoing_state_id
-            ),
+            parent=StateWithID.from_transition(transition, ingoing_state_id),
             children=(
-                _EdgeWithState.from_transition(transition, out_state_id1),
-                _EdgeWithState.from_transition(transition, out_state_id2),
+                StateWithID.from_transition(transition, out_state_id1),
+                StateWithID.from_transition(transition, out_state_id2),
             ),
             interaction=transition.interactions[node_id],
         )
@@ -392,15 +393,11 @@ def _generate_kinematic_variable_set(
     decay = _TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = generate_kinematic_variables(transition, node_id)
     child1_mass = sp.Symbol(
-        get_invariant_mass_label(
-            transition.topology, decay.children[0].state_id
-        ),
+        get_invariant_mass_label(transition.topology, decay.children[0].id),
         real=True,
     )
     child2_mass = sp.Symbol(
-        get_invariant_mass_label(
-            transition.topology, decay.children[1].state_id
-        ),
+        get_invariant_mass_label(transition.topology, decay.children[1].id),
         real=True,
     )
     return TwoBodyKinematicVariableSet(
@@ -450,10 +447,10 @@ def generate_kinematic_variables(
     """Generate symbol for invariant mass, phi angle, and theta angle."""
     decay = _TwoBodyDecay.from_transition(transition, node_id)
     phi_label, theta_label = get_helicity_angle_label(
-        transition.topology, decay.children[0].state_id
+        transition.topology, decay.children[0].id
     )
     inv_mass_label = get_invariant_mass_label(
-        transition.topology, decay.parent.state_id
+        transition.topology, decay.parent.id
     )
     return (
         sp.Symbol(inv_mass_label, real=True),
@@ -491,7 +488,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         for transition in self.__reaction.transitions:
             for node_id in transition.topology.nodes:
                 decay = _TwoBodyDecay.from_transition(transition, node_id)
-                decay_particle = decay.parent.state.particle
+                decay_particle = decay.parent.particle
                 if decay_particle.name == particle_name:
                     self.__dynamics_choices[decay] = dynamics_builder
 
@@ -530,7 +527,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 transition, node_id
             )
             expression, parameters = builder(
-                decay.parent.state.particle, variable_set
+                decay.parent.particle, variable_set
             )
             for par, value in parameters.items():
                 if par in self.__parameter_defaults:
@@ -647,11 +644,11 @@ def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
     decay = _TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = generate_kinematic_variables(transition, node_id)
     return Wigner.D(
-        j=sp.nsimplify(decay.parent.state.particle.spin),
-        m=sp.nsimplify(decay.parent.state.spin_projection),
+        j=sp.nsimplify(decay.parent.particle.spin),
+        m=sp.nsimplify(decay.parent.spin_projection),
         mp=sp.nsimplify(
-            decay.children[0].state.spin_projection
-            - decay.children[1].state.spin_projection
+            decay.children[0].spin_projection
+            - decay.children[1].spin_projection
         ),
         alpha=-phi,
         beta=theta,
@@ -697,9 +694,9 @@ def generate_clebsch_gordan(
     if angular_momentum.projection != 0.0:
         raise ValueError(f"Projection of L is non-zero!: {angular_momentum}")
 
-    parent = decay.parent.state
-    child1 = decay.children[0].state
-    child2 = decay.children[1].state
+    parent = decay.parent
+    child1 = decay.children[0]
+    child2 = decay.children[1]
 
     decay_particle_lambda = child1.spin_projection - child2.spin_projection
     cg_ls = CG(
