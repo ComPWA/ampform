@@ -1,3 +1,4 @@
+# cspell:ignore gordans
 """Generate an amplitude model with the helicity formalism."""
 
 import logging
@@ -84,47 +85,6 @@ class HelicityModel:
         return self._adapter
 
 
-def _generate_kinematic_variable_set(
-    transition: StateTransition, node_id: int
-) -> TwoBodyKinematicVariableSet:
-    decay = TwoBodyDecay.from_transition(transition, node_id)
-    inv_mass, phi, theta = generate_kinematic_variables(transition, node_id)
-    child1_mass = sp.Symbol(
-        get_invariant_mass_label(transition.topology, decay.children[0].id),
-        real=True,
-    )
-    child2_mass = sp.Symbol(
-        get_invariant_mass_label(transition.topology, decay.children[1].id),
-        real=True,
-    )
-    return TwoBodyKinematicVariableSet(
-        incoming_state_mass=inv_mass,
-        outgoing_state_mass1=child1_mass,
-        outgoing_state_mass2=child2_mass,
-        helicity_theta=theta,
-        helicity_phi=phi,
-        angular_momentum=decay.extract_angular_momentum(),
-    )
-
-
-def generate_kinematic_variables(
-    transition: StateTransition, node_id: int
-) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
-    """Generate symbol for invariant mass, phi angle, and theta angle."""
-    decay = TwoBodyDecay.from_transition(transition, node_id)
-    phi_label, theta_label = get_helicity_angle_label(
-        transition.topology, decay.children[0].id
-    )
-    inv_mass_label = get_invariant_mass_label(
-        transition.topology, decay.parent.id
-    )
-    return (
-        sp.Symbol(inv_mass_label, real=True),
-        sp.Symbol(phi_label, real=True),
-        sp.Symbol(theta_label, real=True),
-    )
-
-
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     """Amplitude model generator for the helicity formalism."""
 
@@ -183,32 +143,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             raise ValueError("List of coherent intensities cannot be empty")
         return sum(coherent_intensities)
 
-    def __create_dynamics(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Expr:
-        decay = TwoBodyDecay.from_transition(transition, node_id)
-        if decay in self.__dynamics_choices:
-            builder = self.__dynamics_choices[decay]
-            variable_set = _generate_kinematic_variable_set(
-                transition, node_id
-            )
-            expression, parameters = builder(
-                decay.parent.particle, variable_set
-            )
-            for par, value in parameters.items():
-                if par in self.__parameter_defaults:
-                    previous_value = self.__parameter_defaults[par]
-                    if value != previous_value:
-                        logging.warning(
-                            f"Default value for parameter {par.name}"
-                            f" inconsistent {value} and {previous_value}"
-                        )
-                self.__parameter_defaults[par] = value
-
-            return expression
-
-        return 1
-
     def __create_parameter_couplings(
         self, transition_groups: List[List[StateTransition]]
     ) -> None:
@@ -263,6 +197,32 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         wigner_d = generate_wigner_d(transition, node_id)
         dynamics_symbol = self.__create_dynamics(transition, node_id)
         return wigner_d * dynamics_symbol
+
+    def __create_dynamics(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Expr:
+        decay = TwoBodyDecay.from_transition(transition, node_id)
+        if decay in self.__dynamics_choices:
+            builder = self.__dynamics_choices[decay]
+            variable_set = _generate_kinematic_variable_set(
+                transition, node_id
+            )
+            expression, parameters = builder(
+                decay.parent.particle, variable_set
+            )
+            for par, value in parameters.items():
+                if par in self.__parameter_defaults:
+                    previous_value = self.__parameter_defaults[par]
+                    if value != previous_value:
+                        logging.warning(
+                            f"Default value for parameter {par.name}"
+                            f" inconsistent {value} and {previous_value}"
+                        )
+                self.__parameter_defaults[par] = value
+
+            return expression
+
+        return 1
 
     def __generate_amplitude_coefficient(
         self, transition: StateTransition
@@ -327,27 +287,23 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         self, transition: StateTransition, node_id: int
     ) -> sp.Symbol:
         amplitude = super()._generate_partial_decay(transition, node_id)
-        cg_coefficients = generate_clebsch_gordan(transition, node_id)
+        cg_coefficients = generate_clebsch_gordans(transition, node_id)
         return cg_coefficients * amplitude
 
 
-def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
-    decay = TwoBodyDecay.from_transition(transition, node_id)
-    _, phi, theta = generate_kinematic_variables(transition, node_id)
-    return Wigner.D(
-        j=sp.Rational(decay.parent.particle.spin),
-        m=sp.Rational(decay.parent.spin_projection),
-        mp=sp.Rational(
-            decay.children[0].spin_projection
-            - decay.children[1].spin_projection
-        ),
-        alpha=-phi,
-        beta=theta,
-        gamma=0,
-    )
+def extract_particle_collection(
+    transitions: Iterable[StateTransition],
+) -> ParticleCollection:
+    """Collect all particles from a collection of state transitions."""
+    particles = ParticleCollection()
+    for transition in transitions:
+        for state in transition.states.values():
+            if state.particle not in particles:
+                particles.add(state.particle)
+    return particles
 
 
-def generate_clebsch_gordan(
+def generate_clebsch_gordans(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
     decay = TwoBodyDecay.from_transition(transition, node_id)
@@ -381,29 +337,20 @@ def generate_clebsch_gordan(
     return sp.Mul(cg_ls, cg_ss, evaluate=False)
 
 
-# https://github.com/sympy/sympy/issues/21001
-# pylint: disable=protected-access, unused-argument
-def _latex_fix(self: Type[CG], printer: LatexPrinter, *args: Any) -> str:
-    j3, m3, j1, m1, j2, m2 = map(
-        printer._print,
-        (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
+def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
+    decay = TwoBodyDecay.from_transition(transition, node_id)
+    _, phi, theta = _generate_kinematic_variables(transition, node_id)
+    return Wigner.D(
+        j=sp.Rational(decay.parent.particle.spin),
+        m=sp.Rational(decay.parent.spin_projection),
+        mp=sp.Rational(
+            decay.children[0].spin_projection
+            - decay.children[1].spin_projection
+        ),
+        alpha=-phi,
+        beta=theta,
+        gamma=0,
     )
-    return f"{{C^{{{j3},{m3}}}_{{{j1},{m1},{j2},{m2}}}}}"
-
-
-CG._latex = _latex_fix
-
-
-def extract_particle_collection(
-    transitions: Iterable[StateTransition],
-) -> ParticleCollection:
-    """Collect all particles from a collection of state transitions."""
-    particles = ParticleCollection()
-    for transition in transitions:
-        for state in transition.states.values():
-            if state.particle not in particles:
-                particles.add(state.particle)
-    return particles
 
 
 def get_prefactor(transition: StateTransition) -> float:
@@ -452,3 +399,57 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def _generate_kinematic_variable_set(
+    transition: StateTransition, node_id: int
+) -> TwoBodyKinematicVariableSet:
+    decay = TwoBodyDecay.from_transition(transition, node_id)
+    inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
+    child1_mass = sp.Symbol(
+        get_invariant_mass_label(transition.topology, decay.children[0].id),
+        real=True,
+    )
+    child2_mass = sp.Symbol(
+        get_invariant_mass_label(transition.topology, decay.children[1].id),
+        real=True,
+    )
+    return TwoBodyKinematicVariableSet(
+        incoming_state_mass=inv_mass,
+        outgoing_state_mass1=child1_mass,
+        outgoing_state_mass2=child2_mass,
+        helicity_theta=theta,
+        helicity_phi=phi,
+        angular_momentum=decay.extract_angular_momentum(),
+    )
+
+
+def _generate_kinematic_variables(
+    transition: StateTransition, node_id: int
+) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
+    """Generate symbol for invariant mass, phi angle, and theta angle."""
+    decay = TwoBodyDecay.from_transition(transition, node_id)
+    phi_label, theta_label = get_helicity_angle_label(
+        transition.topology, decay.children[0].id
+    )
+    inv_mass_label = get_invariant_mass_label(
+        transition.topology, decay.parent.id
+    )
+    return (
+        sp.Symbol(inv_mass_label, real=True),
+        sp.Symbol(phi_label, real=True),
+        sp.Symbol(theta_label, real=True),
+    )
+
+
+# https://github.com/sympy/sympy/issues/21001
+# pylint: disable=protected-access, unused-argument
+def _latex_fix(self: Type[CG], printer: LatexPrinter, *args: Any) -> str:
+    j3, m3, j1, m1, j2, m2 = map(
+        printer._print,
+        (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
+    )
+    return f"{{C^{{{j3},{m3}}}_{{{j1},{m1},{j2},{m2}}}}}"
+
+
+CG._latex = _latex_fix

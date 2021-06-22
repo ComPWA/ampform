@@ -5,7 +5,7 @@ from qrules import ReactionInfo
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
-from ampform.helicity import generate_kinematic_variables, generate_wigner_d
+from ampform.helicity import _generate_kinematic_variables, generate_wigner_d
 
 
 class TestAmplitudeBuilder:
@@ -59,7 +59,7 @@ def test_generate_kinematic_variables(
     theta: str,
 ):
     for transition in reaction.transitions:
-        variables = generate_kinematic_variables(transition, node_id)
+        variables = _generate_kinematic_variables(transition, node_id)
         assert variables[0].name == mass
         assert variables[1].name == phi
         assert variables[2].name == theta
