@@ -56,7 +56,7 @@ class StateWithID(State):
 
 
 @attr.s(auto_attribs=True, frozen=True)
-class _TwoBodyDecay:
+class TwoBodyDecay:
     parent: StateWithID
     children: Tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
@@ -64,7 +64,7 @@ class _TwoBodyDecay:
     @classmethod
     def from_transition(
         cls, transition: StateTransition, node_id: int
-    ) -> "_TwoBodyDecay":
+    ) -> "TwoBodyDecay":
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
@@ -72,18 +72,18 @@ class _TwoBodyDecay:
             raise ValueError(
                 f"Node {node_id} does not represent a 1-to-2 body decay!"
             )
-        ingoing_state_id = next(iter(in_state_ids))
 
         sorted_by_id = sorted(out_state_ids)
-        final__state_ids = [
+        final_state_ids = [
             i for i in sorted_by_id if i in topology.outgoing_edge_ids
         ]
         intermediate_state_ids = [
             i for i in sorted_by_id if i in topology.intermediate_edge_ids
         ]
-        sorted_by_ending = tuple(intermediate_state_ids + final__state_ids)
-        out_state_id1, out_state_id2, *_ = tuple(sorted_by_ending)
+        sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
 
+        ingoing_state_id = next(iter(in_state_ids))
+        out_state_id1, out_state_id2, *_ = sorted_by_ending
         return cls(
             parent=StateWithID.from_transition(transition, ingoing_state_id),
             children=(
@@ -390,7 +390,7 @@ def _generate_particles_string(
 def _generate_kinematic_variable_set(
     transition: StateTransition, node_id: int
 ) -> TwoBodyKinematicVariableSet:
-    decay = _TwoBodyDecay.from_transition(transition, node_id)
+    decay = TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = generate_kinematic_variables(transition, node_id)
     child1_mass = sp.Symbol(
         get_invariant_mass_label(transition.topology, decay.children[0].id),
@@ -445,7 +445,7 @@ def generate_kinematic_variables(
     transition: StateTransition, node_id: int
 ) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
     """Generate symbol for invariant mass, phi angle, and theta angle."""
-    decay = _TwoBodyDecay.from_transition(transition, node_id)
+    decay = TwoBodyDecay.from_transition(transition, node_id)
     phi_label, theta_label = get_helicity_angle_label(
         transition.topology, decay.children[0].id
     )
@@ -468,7 +468,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
         self.__components: Dict[str, sp.Expr] = {}
         self.__dynamics_choices: Dict[
-            _TwoBodyDecay, ResonanceDynamicsBuilder
+            TwoBodyDecay, ResonanceDynamicsBuilder
         ] = {}
 
         if len(reaction.transitions) < 1:
@@ -487,7 +487,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         verify_signature(dynamics_builder, ResonanceDynamicsBuilder)
         for transition in self.__reaction.transitions:
             for node_id in transition.topology.nodes:
-                decay = _TwoBodyDecay.from_transition(transition, node_id)
+                decay = TwoBodyDecay.from_transition(transition, node_id)
                 decay_particle = decay.parent.particle
                 if decay_particle.name == particle_name:
                     self.__dynamics_choices[decay] = dynamics_builder
@@ -520,7 +520,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __create_dynamics(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
-        decay = _TwoBodyDecay.from_transition(transition, node_id)
+        decay = TwoBodyDecay.from_transition(transition, node_id)
         if decay in self.__dynamics_choices:
             builder = self.__dynamics_choices[decay]
             variable_set = _generate_kinematic_variable_set(
@@ -641,7 +641,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
 
 def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
-    decay = _TwoBodyDecay.from_transition(transition, node_id)
+    decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = generate_kinematic_variables(transition, node_id)
     return Wigner.D(
         j=sp.nsimplify(decay.parent.particle.spin),
@@ -687,7 +687,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 def generate_clebsch_gordan(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    decay = _TwoBodyDecay.from_transition(transition, node_id)
+    decay = TwoBodyDecay.from_transition(transition, node_id)
 
     angular_momentum = get_angular_momentum(decay.interaction)
     coupled_spin = get_coupled_spin(decay.interaction)
