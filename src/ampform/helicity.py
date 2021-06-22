@@ -258,8 +258,8 @@ class _HelicityAmplitudeNameGenerator:
         out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(
             node_id
         )
-        in_helicity_list = _get_helicity_particles(transition, in_edge_ids)
-        out_helicity_list = _get_helicity_particles(transition, out_edge_ids)
+        in_helicity_list = _get_sorted_states(transition, in_edge_ids)
+        out_helicity_list = _get_sorted_states(transition, out_edge_ids)
         if len(in_helicity_list) != 1 or len(out_helicity_list) != 2:
             raise ValueError(f"Node {node_id} it not a 1-to-2 decay")
         return (
@@ -345,25 +345,19 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
         return ang_orb_mom, spin
 
 
-def _get_transition_group_label(
-    transition_group: List[StateTransition],
-) -> str:
-    label = ""
-    if transition_group:
-        first_transition = next(iter(transition_group))
-        ise = first_transition.topology.incoming_edge_ids
-        fse = first_transition.topology.outgoing_edge_ids
-        is_names = _get_helicity_particles(first_transition, ise)
-        fs_names = _get_helicity_particles(first_transition, fse)
-        label += (
-            _generate_particles_string(is_names)
-            + R" \to "
-            + _generate_particles_string(fs_names)
-        )
-    return label
+def generate_transition_label(transition: StateTransition) -> str:
+    initial_state_ids = transition.topology.incoming_edge_ids
+    final_state_ids = transition.topology.outgoing_edge_ids
+    initial_states = _get_sorted_states(transition, initial_state_ids)
+    final_states = _get_sorted_states(transition, final_state_ids)
+    return (
+        _generate_particles_string(initial_states)
+        + R" \to "
+        + _generate_particles_string(final_states)
+    )
 
 
-def _get_helicity_particles(
+def _get_sorted_states(
     transition: StateTransition, state_ids: Iterable[int]
 ) -> List[State]:
     """Get a sorted list of `~qrules.transition.State` instances.
@@ -373,8 +367,8 @@ def _get_helicity_particles(
     transitions that only differ from a kinematic standpoint (swapped external
     edges).
     """
-    helicity_list = [transition.states[i] for i in state_ids]
-    return sorted(helicity_list, key=lambda s: s.particle.name)
+    states = [transition.states[i] for i in state_ids]
+    return sorted(states, key=lambda s: s.particle.name)
 
 
 def _generate_particles_string(
@@ -393,11 +387,7 @@ def _generate_particles_string(
                 helicity = -1 * state.spin_projection
             else:
                 helicity = state.spin_projection
-            helicity = sp.Rational(helicity)
-            if helicity > 0:
-                helicity_str = f"+{helicity}"
-            else:
-                helicity_str = str(helicity)
+            helicity_str = _render_float(helicity)
             output_string += f"_{{{helicity_str}}}"
         output_string += " "
     return output_string[:-1]
@@ -538,10 +528,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 )
 
     def __generate_coherent_intensity(
-        self,
-        transition_group: List[StateTransition],
+        self, transition_group: List[StateTransition]
     ) -> sp.Expr:
-        graph_group_label = _get_transition_group_label(transition_group)
+        graph_group_label = generate_transition_label(transition_group[0])
         sequential_expressions: List[sp.Expr] = []
         for transition in transition_group:
             sequential_graphs = (
@@ -554,9 +543,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 expression = self.__generate_sequential_decay(transition)
                 sequential_expressions.append(expression)
         amplitude_sum = sum(sequential_expressions)
-        coh_intensity = abs(amplitude_sum) ** 2
-        self.__components[fR"I_{{{graph_group_label}}}"] = coh_intensity
-        return coh_intensity
+        coherent_intensity = abs(amplitude_sum) ** 2
+        self.__components[fR"I_{{{graph_group_label}}}"] = coherent_intensity
+        return coherent_intensity
 
     def __generate_sequential_decay(
         self, transition: StateTransition
@@ -719,6 +708,7 @@ CG._latex = _latex_fix
 def extract_particle_collection(
     transitions: Iterable[StateTransition],
 ) -> ParticleCollection:
+    """Collect all particles from a collection of state transitions."""
     particles = ParticleCollection()
     for transition in transitions:
         for state in transition.states.values():
@@ -793,3 +783,17 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def _render_float(value: float) -> str:
+    """Render a `float` nicely as a string.
+
+    >>> _render_float(-0.5)
+    '-1/2'
+    >>> _render_float(1)
+    '+1'
+    """
+    rational = sp.Rational(value)
+    if value > 0:
+        return f"+{rational}"
+    return str(rational)
