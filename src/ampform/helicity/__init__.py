@@ -85,7 +85,7 @@ class HelicityModel:
         return self._adapter
 
 
-class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+class HelicityAmplitudeBuilder:
     """Amplitude model generator for the helicity formalism."""
 
     def __init__(self, reaction: ReactionInfo) -> None:
@@ -186,7 +186,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         ] = expression
         return expression
 
-    def _generate_partial_decay(  # pylint: disable=too-many-locals
+    def _generate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         wigner_d = generate_wigner_d(transition, node_id)
@@ -276,7 +276,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         super().__init__(reaction_result)
         self._name_generator = CanonicalAmplitudeNameGenerator()
 
-    def _generate_partial_decay(  # pylint: disable=too-many-locals
+    def _generate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Symbol:
         amplitude = super()._generate_partial_decay(transition, node_id)
