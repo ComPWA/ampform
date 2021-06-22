@@ -89,7 +89,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     """Amplitude model generator for the helicity formalism."""
 
     def __init__(self, reaction: ReactionInfo) -> None:
-        self.name_generator = HelicityAmplitudeNameGenerator()
+        self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
         self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
         self.__components: Dict[str, sp.Expr] = {}
@@ -148,7 +148,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         for graph_group in transition_groups:
             for transition in graph_group:
-                self.name_generator.register_amplitude_coefficient_name(
+                self._name_generator.register_amplitude_coefficient_name(
                     transition
                 )
 
@@ -187,7 +187,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         if prefactor is not None:
             expression = prefactor * expression
         self.__components[
-            f"A_{{{self.name_generator.generate_amplitude_name(transition)}}}"
+            f"A_{{{self._name_generator.generate_amplitude_name(transition)}}}"
         ] = expression
         return expression
 
@@ -233,7 +233,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         should check itself if it or a parity partner is already defined. If so
         a coupled coefficient is introduced.
         """
-        suffix = self.name_generator.generate_sequential_amplitude_suffix(
+        suffix = self._name_generator.generate_sequential_amplitude_suffix(
             transition
         )
         coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
@@ -246,18 +246,16 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
-                raw_suffix = self.name_generator.generate_coefficient_name(
+                raw_suffix = self._name_generator.generate_coefficient_name(
                     transition, node_id
                 )
                 if (
                     raw_suffix
-                    in self.name_generator.parity_partner_coefficient_mapping
+                    in self._name_generator.parity_partner_coefficient_mapping
                 ):
-                    coefficient_suffix = (
-                        self.name_generator.parity_partner_coefficient_mapping[
-                            raw_suffix
-                        ]
-                    )
+                    coefficient_suffix = self._name_generator.parity_partner_coefficient_mapping[
+                        raw_suffix
+                    ]
                     if coefficient_suffix != raw_suffix:
                         return prefactor
         return None
@@ -281,7 +279,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
     def __init__(self, reaction_result: ReactionInfo) -> None:
         super().__init__(reaction_result)
-        self.name_generator = CanonicalAmplitudeNameGenerator()
+        self._name_generator = CanonicalAmplitudeNameGenerator()
 
     def _generate_partial_decay(  # pylint: disable=too-many-locals
         self, transition: StateTransition, node_id: int
