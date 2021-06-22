@@ -131,14 +131,14 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __generate_top_expression(self) -> sp.Expr:
         transition_groups = group_transitions(self.__reaction.transitions)
-        self.__create_parameter_couplings(transition_groups)
+        self.__register_parameter_couplings(transition_groups)
         coherent_intensities = [
             self.__generate_coherent_intensity(group)
             for group in transition_groups
         ]
         return sum(coherent_intensities)
 
-    def __create_parameter_couplings(
+    def __register_parameter_couplings(
         self, transition_groups: List[List[StateTransition]]
     ) -> None:
         for graph_group in transition_groups:
