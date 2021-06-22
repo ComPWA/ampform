@@ -17,32 +17,6 @@ class HelicityAmplitudeNameGenerator:
     def __init__(self) -> None:
         self.parity_partner_coefficient_mapping: Dict[str, str] = {}
 
-    def _generate_amplitude_coefficient_couple(
-        self, transition: StateTransition, node_id: int
-    ) -> Tuple[str, str, str]:
-        incoming_state, outgoing_states = get_helicity_info(
-            transition, node_id
-        )
-        par_name_suffix = self.generate_coefficient_name(transition, node_id)
-
-        pp_par_name_suffix = (
-            _state_to_str(incoming_state, use_helicity=False)
-            + R" \to "
-            + " ".join(
-                _state_to_str(s, make_parity_partner=True)
-                for s in outgoing_states
-            )
-        )
-
-        priority_name_suffix = par_name_suffix
-        if outgoing_states[0].spin_projection < 0 or (
-            outgoing_states[0].spin_projection == 0
-            and outgoing_states[1].spin_projection < 0
-        ):
-            priority_name_suffix = pp_par_name_suffix
-
-        return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
-
     def register_amplitude_coefficient_name(
         self, transition: StateTransition
     ) -> None:
@@ -51,7 +25,7 @@ class HelicityAmplitudeNameGenerator:
                 coefficient_suffix,
                 parity_partner_coefficient_suffix,
                 priority_partner_coefficient_suffix,
-            ) = self._generate_amplitude_coefficient_couple(
+            ) = self.__generate_amplitude_coefficient_couple(
                 transition, node_id
             )
 
@@ -86,6 +60,32 @@ class HelicityAmplitudeNameGenerator:
                     self.parity_partner_coefficient_mapping[
                         coefficient_suffix
                     ] = coefficient_suffix
+
+    def __generate_amplitude_coefficient_couple(
+        self, transition: StateTransition, node_id: int
+    ) -> Tuple[str, str, str]:
+        incoming_state, outgoing_states = get_helicity_info(
+            transition, node_id
+        )
+        par_name_suffix = self.generate_coefficient_name(transition, node_id)
+
+        pp_par_name_suffix = (
+            _state_to_str(incoming_state, use_helicity=False)
+            + R" \to "
+            + " ".join(
+                _state_to_str(s, make_parity_partner=True)
+                for s in outgoing_states
+            )
+        )
+
+        priority_name_suffix = par_name_suffix
+        if outgoing_states[0].spin_projection < 0 or (
+            outgoing_states[0].spin_projection == 0
+            and outgoing_states[1].spin_projection < 0
+        ):
+            priority_name_suffix = pp_par_name_suffix
+
+        return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
 
     def generate_amplitude_name(  # pylint: disable=no-self-use
         self,
@@ -140,20 +140,6 @@ class HelicityAmplitudeNameGenerator:
 
 
 class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
-    def generate_coefficient_name(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        incoming_state, outgoing_states = get_helicity_info(
-            transition, node_id
-        )
-        return (
-            _state_to_str(incoming_state, use_helicity=False)
-            + self.__generate_ls_arrow(transition, node_id)
-            + " ".join(
-                _state_to_str(s, use_helicity=False) for s in outgoing_states
-            )
-        )
-
     def generate_amplitude_name(
         self,
         transition: StateTransition,
@@ -172,6 +158,20 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             )
             names.append(canonical_name)
         return "; ".join(names)
+
+    def generate_coefficient_name(
+        self, transition: StateTransition, node_id: int
+    ) -> str:
+        incoming_state, outgoing_states = get_helicity_info(
+            transition, node_id
+        )
+        return (
+            _state_to_str(incoming_state, use_helicity=False)
+            + self.__generate_ls_arrow(transition, node_id)
+            + " ".join(
+                _state_to_str(s, use_helicity=False) for s in outgoing_states
+            )
+        )
 
     def __generate_ls_arrow(
         self, transition: StateTransition, node_id: int
