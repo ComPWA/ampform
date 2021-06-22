@@ -1,22 +1,11 @@
 # pylint: disable=no-member, no-self-use
-from typing import Optional
-
 import pytest
 import sympy as sp
 from qrules import ReactionInfo
-from qrules.particle import Particle
-from qrules.quantum_numbers import InteractionProperties
 from sympy import cos, sin, sqrt
 
 from ampform import get_builder
-from ampform.helicity import (
-    StateWithID,
-    TwoBodyDecay,
-    _render_float,
-    generate_kinematic_variables,
-    generate_transition_label,
-    generate_wigner_d,
-)
+from ampform.helicity import generate_kinematic_variables, generate_wigner_d
 
 
 class TestAmplitudeBuilder:
@@ -55,50 +44,6 @@ class TestAmplitudeBuilder:
             assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
 
 
-def _create_dummy_decay(
-    l_magnitude: Optional[int], spin_magnitude: float
-) -> TwoBodyDecay:
-    dummy = Particle(name="dummy", pid=123, spin=spin_magnitude, mass=1.0)
-    return TwoBodyDecay(
-        parent=StateWithID(
-            id=0, particle=dummy, spin_projection=spin_magnitude
-        ),
-        children=(
-            StateWithID(id=1, particle=dummy, spin_projection=0.0),
-            StateWithID(id=2, particle=dummy, spin_projection=0.0),
-        ),
-        interaction=InteractionProperties(l_magnitude=l_magnitude),
-    )
-
-
-class TestTwoBodyDecay:
-    @pytest.mark.parametrize(
-        ("decay", "expected_l"),
-        [
-            (_create_dummy_decay(1, 0.5), 1),
-            (_create_dummy_decay(0, 1.0), 0),
-            (_create_dummy_decay(2, 1.0), 2),
-            (_create_dummy_decay(None, 0.0), 0),
-            (_create_dummy_decay(None, 1.0), 1),
-        ],
-    )
-    def test_extract_angular_momentum(
-        self, decay: TwoBodyDecay, expected_l: int
-    ):
-        assert expected_l == decay.extract_angular_momentum()
-
-    @pytest.mark.parametrize(
-        "decay",
-        [
-            _create_dummy_decay(None, 0.5),
-            _create_dummy_decay(None, 1.5),
-        ],
-    )
-    def test_invalid_angular_momentum(self, decay: TwoBodyDecay):
-        with pytest.raises(ValueError, match="not integral"):
-            decay.extract_angular_momentum()
-
-
 @pytest.mark.parametrize(
     ("node_id", "mass", "phi", "theta"),
     [
@@ -118,17 +63,6 @@ def test_generate_kinematic_variables(
         assert variables[0].name == mass
         assert variables[1].name == phi
         assert variables[2].name == theta
-
-
-def test_generate_transition_label(reaction: ReactionInfo):
-    for transition in reaction.transitions:
-        label = generate_transition_label(transition)
-        jpsi_spin = _render_float(transition.states[-1].spin_projection)
-        gamma_spin = _render_float(transition.states[0].spin_projection)
-        assert label == (
-            fR"J/\psi(1S)_{{{jpsi_spin}}} \to \gamma_{{{gamma_spin}}}"
-            R" \pi^{0}_{0} \pi^{0}_{0}"
-        )
 
 
 @pytest.mark.parametrize(

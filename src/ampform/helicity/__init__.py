@@ -22,92 +22,31 @@ from attr.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
-from qrules.particle import ParticleCollection, Spin
-from qrules.quantum_numbers import InteractionProperties
-from qrules.transition import ReactionInfo, State, StateTransition
+from qrules.particle import ParticleCollection
+from qrules.transition import ReactionInfo, StateTransition
 from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
 from sympy.printing.latex import LatexPrinter
 
-from .dynamics.builder import (
+from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
     verify_signature,
 )
-from .kinematics import (
+from ampform.kinematics import (
     HelicityAdapter,
     get_helicity_angle_label,
     get_invariant_mass_label,
 )
 
+from .decay import TwoBodyDecay, get_angular_momentum, get_coupled_spin
+from .naming import (
+    CanonicalAmplitudeNameGenerator,
+    HelicityAmplitudeNameGenerator,
+    generate_transition_label,
+)
+
 ParameterValue = Union[float, complex, int]
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class StateWithID(State):
-    id: int  # noqa: A003
-
-    @classmethod
-    def from_transition(
-        cls, transition: StateTransition, state_id: int
-    ) -> "StateWithID":
-        state = transition.states[state_id]
-        return cls(
-            id=state_id,
-            particle=state.particle,
-            spin_projection=state.spin_projection,
-        )
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class TwoBodyDecay:
-    parent: StateWithID
-    children: Tuple[StateWithID, StateWithID]
-    interaction: InteractionProperties
-
-    @classmethod
-    def from_transition(
-        cls, transition: StateTransition, node_id: int
-    ) -> "TwoBodyDecay":
-        topology = transition.topology
-        in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
-        out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-        if len(in_state_ids) != 1 or len(out_state_ids) != 2:
-            raise ValueError(
-                f"Node {node_id} does not represent a 1-to-2 body decay!"
-            )
-
-        sorted_by_id = sorted(out_state_ids)
-        final_state_ids = [
-            i for i in sorted_by_id if i in topology.outgoing_edge_ids
-        ]
-        intermediate_state_ids = [
-            i for i in sorted_by_id if i in topology.intermediate_edge_ids
-        ]
-        sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
-
-        ingoing_state_id = next(iter(in_state_ids))
-        out_state_id1, out_state_id2, *_ = sorted_by_ending
-        return cls(
-            parent=StateWithID.from_transition(transition, ingoing_state_id),
-            children=(
-                StateWithID.from_transition(transition, out_state_id1),
-                StateWithID.from_transition(transition, out_state_id2),
-            ),
-            interaction=transition.interactions[node_id],
-        )
-
-    def extract_angular_momentum(self) -> int:
-        angular_momentum = self.interaction.l_magnitude
-        if angular_momentum is not None:
-            return angular_momentum
-        spin_magnitude = self.parent.particle.spin
-        if spin_magnitude.is_integer():
-            return int(spin_magnitude)
-        raise ValueError(
-            f"Spin magnitude ({spin_magnitude}) of single particle state cannot be"
-            f" used as the angular momentum as it is not integral!"
-        )
 
 
 @attr.s(frozen=True)
@@ -143,229 +82,6 @@ class HelicityModel:
     @property
     def adapter(self) -> HelicityAdapter:
         return self._adapter
-
-
-class _HelicityAmplitudeNameGenerator:
-    def __init__(self) -> None:
-        self.parity_partner_coefficient_mapping: Dict[str, str] = {}
-
-    def _generate_amplitude_coefficient_couple(
-        self, transition: StateTransition, node_id: int
-    ) -> Tuple[str, str, str]:
-        incoming_state, outgoing_states = self._retrieve_helicity_info(
-            transition, node_id
-        )
-        par_name_suffix = self.generate_coefficient_name(transition, node_id)
-
-        pp_par_name_suffix = (
-            _state_to_str(incoming_state, use_helicity=False)
-            + R" \to "
-            + " ".join(
-                _state_to_str(s, make_parity_partner=True)
-                for s in outgoing_states
-            )
-        )
-
-        priority_name_suffix = par_name_suffix
-        if outgoing_states[0].spin_projection < 0 or (
-            outgoing_states[0].spin_projection == 0
-            and outgoing_states[1].spin_projection < 0
-        ):
-            priority_name_suffix = pp_par_name_suffix
-
-        return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
-
-    def register_amplitude_coefficient_name(
-        self, transition: StateTransition
-    ) -> None:
-        for node_id in transition.topology.nodes:
-            (
-                coefficient_suffix,
-                parity_partner_coefficient_suffix,
-                priority_partner_coefficient_suffix,
-            ) = self._generate_amplitude_coefficient_couple(
-                transition, node_id
-            )
-
-            if transition.interactions[node_id].parity_prefactor is None:
-                continue
-
-            if (
-                coefficient_suffix
-                not in self.parity_partner_coefficient_mapping
-            ):
-                if (
-                    parity_partner_coefficient_suffix
-                    in self.parity_partner_coefficient_mapping
-                ):
-                    if (
-                        parity_partner_coefficient_suffix
-                        == priority_partner_coefficient_suffix
-                    ):
-                        self.parity_partner_coefficient_mapping[
-                            coefficient_suffix
-                        ] = parity_partner_coefficient_suffix
-                    else:
-                        self.parity_partner_coefficient_mapping[
-                            parity_partner_coefficient_suffix
-                        ] = coefficient_suffix
-                        self.parity_partner_coefficient_mapping[
-                            coefficient_suffix
-                        ] = coefficient_suffix
-
-                else:
-                    # if neither this coefficient nor its partner are registered just add it
-                    self.parity_partner_coefficient_mapping[
-                        coefficient_suffix
-                    ] = coefficient_suffix
-
-    def generate_amplitude_name(
-        self,
-        transition: StateTransition,
-        node_id: Optional[int] = None,
-    ) -> str:
-        """Generates a unique name for the amplitude corresponding.
-
-        That is, corresponging to the given :class:`StateTransition`. If
-        ``node_id`` is given, it generates a unique name for the partial
-        amplitude corresponding to the interaction node of the given
-        :class:`StateTransition`.
-        """
-        name = ""
-        if node_id is None:
-            node_ids = transition.topology.nodes
-        else:
-            node_ids = frozenset({node_id})
-        names: List[str] = []
-        for i in node_ids:
-            incoming_state, outgoing_states = self._retrieve_helicity_info(
-                transition, i
-            )
-            name = (
-                _state_to_str(incoming_state)
-                + R" \to "
-                + " ".join(_state_to_str(s) for s in outgoing_states)
-            )
-            names.append(name)
-        return "; ".join(names)
-
-    @staticmethod
-    def _retrieve_helicity_info(
-        transition: StateTransition, node_id: int
-    ) -> Tuple[State, Tuple[State, State]]:
-        in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
-        out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(
-            node_id
-        )
-        in_helicity_list = _get_sorted_states(transition, in_edge_ids)
-        out_helicity_list = _get_sorted_states(transition, out_edge_ids)
-        if len(in_helicity_list) != 1 or len(out_helicity_list) != 2:
-            raise ValueError(f"Node {node_id} it not a 1-to-2 decay")
-        return (
-            in_helicity_list[0],
-            (out_helicity_list[0], out_helicity_list[1]),
-        )
-
-    def generate_coefficient_name(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        """Generate partial amplitude coefficient name suffix."""
-        in_hel_info, out_hel_info = self._retrieve_helicity_info(
-            transition, node_id
-        )
-        return (
-            _state_to_str(in_hel_info, use_helicity=False)
-            + R" \to "
-            + " ".join(_state_to_str(s) for s in out_hel_info)
-        )
-
-    def generate_sequential_amplitude_suffix(
-        self, transition: StateTransition
-    ) -> str:
-        """Generate unique suffix for a sequential amplitude transition."""
-        coefficient_names: List[str] = []
-        for node_id in transition.topology.nodes:
-            suffix = self.generate_coefficient_name(transition, node_id)
-            if suffix in self.parity_partner_coefficient_mapping:
-                suffix = self.parity_partner_coefficient_mapping[suffix]
-            coefficient_names.append(suffix)
-        return "; ".join(coefficient_names)
-
-
-class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
-    def generate_coefficient_name(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        incoming_state, outgoing_states = self._retrieve_helicity_info(
-            transition, node_id
-        )
-        return (
-            _state_to_str(incoming_state, use_helicity=False)
-            + self.__generate_ls_arrow(transition, node_id)
-            + " ".join(
-                _state_to_str(s, use_helicity=False) for s in outgoing_states
-            )
-        )
-
-    def generate_amplitude_name(
-        self,
-        transition: StateTransition,
-        node_id: Optional[int] = None,
-    ) -> str:
-        if isinstance(node_id, int):
-            node_ids = frozenset({node_id})
-        else:
-            node_ids = transition.topology.nodes
-        names: List[str] = []
-        for node in node_ids:
-            helicity_name = super().generate_amplitude_name(transition, node)
-            canonical_name = helicity_name.replace(
-                R" \to ",
-                self.__generate_ls_arrow(transition, node),
-            )
-            names.append(canonical_name)
-        return "; ".join(names)
-
-    def __generate_ls_arrow(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        angular_momentum, spin = self.__get_ls_coupling(transition, node_id)
-        return fR" \xrightarrow[S={spin}]{{L={angular_momentum}}} "
-
-    @staticmethod
-    def __get_ls_coupling(
-        transition: StateTransition, node_id: int
-    ) -> Tuple[sp.Rational, sp.Rational]:
-        interaction = transition.interactions[node_id]
-        ang_orb_mom = sp.Rational(get_angular_momentum(interaction).magnitude)
-        spin = sp.Rational(get_coupled_spin(interaction).magnitude)
-        return ang_orb_mom, spin
-
-
-def generate_transition_label(transition: StateTransition) -> str:
-    initial_state_ids = transition.topology.incoming_edge_ids
-    final_state_ids = transition.topology.outgoing_edge_ids
-    initial_states = _get_sorted_states(transition, initial_state_ids)
-    final_states = _get_sorted_states(transition, final_state_ids)
-    return (
-        _state_to_str(initial_states[0])
-        + R" \to "
-        + " ".join(_state_to_str(s) for s in final_states)
-    )
-
-
-def _get_sorted_states(
-    transition: StateTransition, state_ids: Iterable[int]
-) -> List[State]:
-    """Get a sorted list of `~qrules.transition.State` instances.
-
-    In order to ensure correct naming of amplitude coefficients the list has to
-    be sorted by name. The same coefficient names have to be created for two
-    transitions that only differ from a kinematic standpoint (swapped external
-    edges).
-    """
-    states = [transition.states[i] for i in state_ids]
-    return sorted(states, key=lambda s: s.particle.name)
 
 
 def _generate_kinematic_variable_set(
@@ -413,7 +129,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     """Amplitude model generator for the helicity formalism."""
 
     def __init__(self, reaction: ReactionInfo) -> None:
-        self.name_generator = _HelicityAmplitudeNameGenerator()
+        self.name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
         self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
         self.__components: Dict[str, sp.Expr] = {}
@@ -587,22 +303,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return None
 
 
-def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
-    decay = TwoBodyDecay.from_transition(transition, node_id)
-    _, phi, theta = generate_kinematic_variables(transition, node_id)
-    return Wigner.D(
-        j=sp.Rational(decay.parent.particle.spin),
-        m=sp.Rational(decay.parent.spin_projection),
-        mp=sp.Rational(
-            decay.children[0].spin_projection
-            - decay.children[1].spin_projection
-        ),
-        alpha=-phi,
-        beta=theta,
-        gamma=0,
-    )
-
-
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     r"""Amplitude model generator for the canonical helicity formalism.
 
@@ -621,7 +321,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
     def __init__(self, reaction_result: ReactionInfo) -> None:
         super().__init__(reaction_result)
-        self.name_generator = _CanonicalAmplitudeNameGenerator()
+        self.name_generator = CanonicalAmplitudeNameGenerator()
 
     def _generate_partial_decay(  # pylint: disable=too-many-locals
         self, transition: StateTransition, node_id: int
@@ -629,6 +329,22 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         amplitude = super()._generate_partial_decay(transition, node_id)
         cg_coefficients = generate_clebsch_gordan(transition, node_id)
         return cg_coefficients * amplitude
+
+
+def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
+    decay = TwoBodyDecay.from_transition(transition, node_id)
+    _, phi, theta = generate_kinematic_variables(transition, node_id)
+    return Wigner.D(
+        j=sp.Rational(decay.parent.particle.spin),
+        m=sp.Rational(decay.parent.spin_projection),
+        mp=sp.Rational(
+            decay.children[0].spin_projection
+            - decay.children[1].spin_projection
+        ),
+        alpha=-phi,
+        beta=theta,
+        gamma=0,
+    )
 
 
 def generate_clebsch_gordan(
@@ -690,27 +406,7 @@ def extract_particle_collection(
     return particles
 
 
-def get_angular_momentum(interaction: InteractionProperties) -> Spin:
-    l_magnitude = interaction.l_magnitude
-    l_projection = interaction.l_projection
-    if l_magnitude is None or l_projection is None:
-        raise TypeError(
-            "Angular momentum L not defined!", l_magnitude, l_projection
-        )
-    return Spin(l_magnitude, l_projection)
-
-
-def get_coupled_spin(interaction: InteractionProperties) -> Spin:
-    s_magnitude = interaction.s_magnitude
-    s_projection = interaction.s_projection
-    if s_magnitude is None or s_projection is None:
-        raise TypeError("Coupled spin S not defined!")
-    return Spin(s_magnitude, s_projection)
-
-
-def get_prefactor(
-    transition: StateTransition,
-) -> float:
+def get_prefactor(transition: StateTransition) -> float:
     """Calculate the product of all prefactors defined in this transition."""
     prefactor = 1.0
     for node_id in transition.topology.nodes:
@@ -756,36 +452,3 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
-
-
-def _state_to_str(
-    state: State,
-    use_helicity: bool = True,
-    make_parity_partner: bool = False,
-) -> str:
-    if state.particle.latex is not None:
-        output_string = state.particle.latex
-    else:
-        output_string = state.particle.name
-    if use_helicity:
-        if make_parity_partner:
-            helicity = -1 * state.spin_projection
-        else:
-            helicity = state.spin_projection
-        helicity_str = _render_float(helicity)
-        output_string += f"_{{{helicity_str}}}"
-    return output_string
-
-
-def _render_float(value: float) -> str:
-    """Render a `float` nicely as a string.
-
-    >>> _render_float(-0.5)
-    '-1/2'
-    >>> _render_float(1)
-    '+1'
-    """
-    rational = sp.Rational(value)
-    if value > 0:
-        return f"+{rational}"
-    return str(rational)
