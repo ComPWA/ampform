@@ -1,6 +1,4 @@
-# cspell:ignore nsimplify
 # pylint: disable=redefined-outer-name,no-self-use
-
 from typing import Any, List, Optional, Sequence, Union
 
 import pytest
@@ -23,19 +21,16 @@ def calculate_sympy_integral(
                 intensity *= sp.sin(int_var)
     else:
         intensity *= jacobi_determinant
+    integral = sp.integrate(
+        intensity,
+        *(
+            (x, -sp.pi, sp.pi) if "phi" in x.name else (x, 0, sp.pi)
+            for x in integration_variables
+        ),
+    )
     return sp.trigsimp(
         sp.nsimplify(
-            sp.re(
-                sp.integrate(
-                    intensity,
-                    *(
-                        (x, -sp.pi, sp.pi)
-                        if "phi" in x.name
-                        else (x, 0, sp.pi)
-                        for x in integration_variables
-                    ),
-                )
-            ).doit(),
+            sp.re(integral).doit(),
             rational=True,
         )
     )

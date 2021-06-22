@@ -629,9 +629,9 @@ def generate_wigner_d(transition: StateTransition, node_id: int) -> sp.Symbol:
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = generate_kinematic_variables(transition, node_id)
     return Wigner.D(
-        j=sp.nsimplify(decay.parent.particle.spin),
-        m=sp.nsimplify(decay.parent.spin_projection),
-        mp=sp.nsimplify(
+        j=sp.Rational(decay.parent.particle.spin),
+        m=sp.Rational(decay.parent.spin_projection),
+        mp=sp.Rational(
             decay.children[0].spin_projection
             - decay.children[1].spin_projection
         ),
@@ -685,20 +685,20 @@ def generate_clebsch_gordan(
 
     decay_particle_lambda = child1.spin_projection - child2.spin_projection
     cg_ls = CG(
-        j1=sp.nsimplify(angular_momentum.magnitude),
-        m1=sp.nsimplify(angular_momentum.projection),
-        j2=sp.nsimplify(coupled_spin.magnitude),
-        m2=sp.nsimplify(decay_particle_lambda),
-        j3=sp.nsimplify(parent.particle.spin),
-        m3=sp.nsimplify(decay_particle_lambda),
+        j1=sp.Rational(angular_momentum.magnitude),
+        m1=sp.Rational(angular_momentum.projection),
+        j2=sp.Rational(coupled_spin.magnitude),
+        m2=sp.Rational(decay_particle_lambda),
+        j3=sp.Rational(parent.particle.spin),
+        m3=sp.Rational(decay_particle_lambda),
     )
     cg_ss = CG(
-        j1=sp.nsimplify(child1.particle.spin),
-        m1=sp.nsimplify(child1.spin_projection),
-        j2=sp.nsimplify(child2.particle.spin),
-        m2=sp.nsimplify(-child2.spin_projection),
-        j3=sp.nsimplify(coupled_spin.magnitude),
-        m3=sp.nsimplify(decay_particle_lambda),
+        j1=sp.Rational(child1.particle.spin),
+        m1=sp.Rational(child1.spin_projection),
+        j2=sp.Rational(child2.particle.spin),
+        m2=sp.Rational(-child2.spin_projection),
+        j3=sp.Rational(coupled_spin.magnitude),
+        m3=sp.Rational(decay_particle_lambda),
     )
     return sp.Mul(cg_ls, cg_ss, evaluate=False)
 
