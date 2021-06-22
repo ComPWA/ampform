@@ -113,8 +113,8 @@ class HelicityAmplitudeBuilder:
         for transition in self.__reaction.transitions:
             for node_id in transition.topology.nodes:
                 decay = TwoBodyDecay.from_transition(transition, node_id)
-                decay_particle = decay.parent.particle
-                if decay_particle.name == particle_name:
+                decaying_particle = decay.parent.particle
+                if decaying_particle.name == particle_name:
                     self.__dynamics_choices[decay] = dynamics_builder
 
     def formulate(self) -> HelicityModel:
@@ -196,27 +196,23 @@ class HelicityAmplitudeBuilder:
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         decay = TwoBodyDecay.from_transition(transition, node_id)
-        if decay in self.__dynamics_choices:
-            builder = self.__dynamics_choices[decay]
-            variable_set = _generate_kinematic_variable_set(
-                transition, node_id
-            )
-            expression, parameters = builder(
-                decay.parent.particle, variable_set
-            )
-            for par, value in parameters.items():
-                if par in self.__parameter_defaults:
-                    previous_value = self.__parameter_defaults[par]
-                    if value != previous_value:
-                        logging.warning(
-                            f"Default value for parameter {par.name}"
-                            f" inconsistent {value} and {previous_value}"
-                        )
-                self.__parameter_defaults[par] = value
+        if decay not in self.__dynamics_choices:
+            return 1
 
-            return expression
+        builder = self.__dynamics_choices[decay]
+        variable_set = _generate_kinematic_variable_set(transition, node_id)
+        expression, parameters = builder(decay.parent.particle, variable_set)
+        for par, value in parameters.items():
+            if par in self.__parameter_defaults:
+                previous_value = self.__parameter_defaults[par]
+                if value != previous_value:
+                    logging.warning(
+                        f'New default value {value} for parameter "{par.name}"'
+                        f" is inconsistent with existing value {previous_value}"
+                    )
+            self.__parameter_defaults[par] = value
 
-        return 1
+        return expression
 
     def __generate_amplitude_coefficient(
         self, transition: StateTransition
