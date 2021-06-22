@@ -752,12 +752,8 @@ def get_prefactor(
     prefactor = 1.0
     for node_id in transition.topology.nodes:
         interaction = transition.interactions[node_id]
-        if interaction:
-            temp_prefactor = __validate_float_type(
-                interaction.parity_prefactor
-            )
-            if temp_prefactor is not None:
-                prefactor *= temp_prefactor
+        if interaction and interaction.parity_prefactor is not None:
+            prefactor *= interaction.parity_prefactor
     return prefactor
 
 
@@ -805,15 +801,3 @@ def __attempt_int_cast(value: float) -> Union[float, int]:
     if value.is_integer():
         return int(value)
     return value
-
-
-def __validate_float_type(
-    interaction_property: Optional[Union[Spin, float]]
-) -> Optional[float]:
-    if interaction_property is not None and not isinstance(
-        interaction_property, (float, int)
-    ):
-        raise TypeError(
-            f"{interaction_property.__class__.__name__} is not of type {float.__name__}"
-        )
-    return interaction_property
