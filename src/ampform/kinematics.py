@@ -2,7 +2,7 @@
 """Kinematics of an amplitude model in the helicity formalism."""
 
 import textwrap
-from typing import Dict, Mapping, Set, Tuple
+from typing import Dict, List, Mapping, Set, Tuple
 
 import attr
 import numpy as np
@@ -11,10 +11,6 @@ from qrules.io import asdot
 from qrules.topology import Topology, create_isobar_topologies
 from qrules.transition import ReactionInfo, StateTransition
 
-from ._transition_info import (
-    assert_isobar_topology,
-    determine_attached_final_state,
-)
 from .data import (
     DataSet,
     EventCollection,
@@ -328,3 +324,35 @@ def _compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = values
     return DataSet(invariant_masses)
+
+
+def assert_isobar_topology(topology: Topology) -> None:
+    for node_id in topology.nodes:
+        parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
+        if len(parent_state_ids) != 1:
+            raise ValueError(
+                f"Node {node_id} has {len(parent_state_ids)} parent edges,"
+                " so this is not an isobar decay"
+            )
+        child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
+        if len(child_state_ids) != 2:
+            raise ValueError(
+                f"Node {node_id} decays to {len(child_state_ids)} edges,"
+                " so this is not an isobar decay"
+            )
+
+
+def determine_attached_final_state(
+    topology: Topology, state_id: int
+) -> List[int]:
+    """Determine all final state particles of a transition.
+
+    These are attached downward (forward in time) for a given edge (resembling
+    the root).
+    """
+    edge = topology.edges[state_id]
+    if edge.ending_node_id is None:
+        return [state_id]
+    return sorted(
+        topology.get_originating_final_state_edge_ids(edge.ending_node_id)
+    )
