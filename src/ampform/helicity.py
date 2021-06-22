@@ -160,10 +160,11 @@ class _HelicityAmplitudeNameGenerator:
         )
 
         pp_par_name_suffix = (
-            _generate_particles_string([incoming_state], use_helicity=False)
+            _state_to_str(incoming_state, use_helicity=False)
             + R" \to "
-            + _generate_particles_string(
-                outgoing_states, make_parity_partner=True
+            + " ".join(
+                _state_to_str(s, make_parity_partner=True)
+                for s in outgoing_states
             )
         )
 
@@ -243,9 +244,9 @@ class _HelicityAmplitudeNameGenerator:
                 transition, i
             )
             name = (
-                _generate_particles_string([incoming_state])
+                _state_to_str(incoming_state)
                 + R" \to "
-                + _generate_particles_string(outgoing_states)
+                + " ".join(_state_to_str(s) for s in outgoing_states)
             )
             names.append(name)
         return "; ".join(names)
@@ -275,9 +276,9 @@ class _HelicityAmplitudeNameGenerator:
             transition, node_id
         )
         return (
-            _generate_particles_string([in_hel_info], use_helicity=False)
+            _state_to_str(in_hel_info, use_helicity=False)
             + R" \to "
-            + _generate_particles_string(out_hel_info)
+            + " ".join(_state_to_str(s) for s in out_hel_info)
         )
 
     def generate_sequential_amplitude_suffix(
@@ -303,9 +304,11 @@ class _CanonicalAmplitudeNameGenerator(_HelicityAmplitudeNameGenerator):
             transition, node_id
         )
         return (
-            _generate_particles_string([incoming_state], use_helicity=False)
+            _state_to_str(incoming_state, use_helicity=False)
             + self.__generate_ls_arrow(transition, node_id)
-            + _generate_particles_string(outgoing_states, use_helicity=False)
+            + " ".join(
+                _state_to_str(s, use_helicity=False) for s in outgoing_states
+            )
         )
 
     def generate_unique_amplitude_name(
@@ -351,9 +354,9 @@ def generate_transition_label(transition: StateTransition) -> str:
     initial_states = _get_sorted_states(transition, initial_state_ids)
     final_states = _get_sorted_states(transition, final_state_ids)
     return (
-        _generate_particles_string(initial_states)
+        _state_to_str(initial_states[0])
         + R" \to "
-        + _generate_particles_string(final_states)
+        + " ".join(_state_to_str(s) for s in final_states)
     )
 
 
@@ -369,28 +372,6 @@ def _get_sorted_states(
     """
     states = [transition.states[i] for i in state_ids]
     return sorted(states, key=lambda s: s.particle.name)
-
-
-def _generate_particles_string(
-    helicity_list: Iterable[State],
-    use_helicity: bool = True,
-    make_parity_partner: bool = False,
-) -> str:
-    output_string = ""
-    for state in helicity_list:
-        if state.particle.latex is not None:
-            output_string += state.particle.latex
-        else:
-            output_string += state.particle.name
-        if use_helicity:
-            if make_parity_partner:
-                helicity = -1 * state.spin_projection
-            else:
-                helicity = state.spin_projection
-            helicity_str = _render_float(helicity)
-            output_string += f"_{{{helicity_str}}}"
-        output_string += " "
-    return output_string[:-1]
 
 
 def _generate_kinematic_variable_set(
@@ -783,6 +764,25 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def _state_to_str(
+    state: State,
+    use_helicity: bool = True,
+    make_parity_partner: bool = False,
+) -> str:
+    if state.particle.latex is not None:
+        output_string = state.particle.latex
+    else:
+        output_string = state.particle.name
+    if use_helicity:
+        if make_parity_partner:
+            helicity = -1 * state.spin_projection
+        else:
+            helicity = state.spin_projection
+        helicity_str = _render_float(helicity)
+        output_string += f"_{{{helicity_str}}}"
+    return output_string
 
 
 def _render_float(value: float) -> str:
