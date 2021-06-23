@@ -22,7 +22,6 @@ vscode:
     - esbenp.prettier-vscode
     - executablebookproject.myst-highlight
     - github.vscode-pull-request-github
-    - littlefoxteam.vscode-python-test-adapter
     - ms-python.python
     - ms-python.vscode-pylance
     - ms-vsliveshare.vsliveshare
