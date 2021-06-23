@@ -9,6 +9,7 @@ top-right corner.
 maxdepth: 2
 ---
 usage/amplitude
+usage/modify
 usage/interactive
 usage/dynamics
 ```
