@@ -3,6 +3,7 @@
 import logging
 import operator
 from collections import defaultdict
+from difflib import get_close_matches
 from functools import reduce
 from typing import (
     Any,
@@ -82,6 +83,46 @@ class HelicityModel:
     @property
     def adapter(self) -> HelicityAdapter:
         return self._adapter
+
+    def sum_components(  # noqa: R701
+        self, components: Iterable[str]
+    ) -> sp.Expr:
+        """Coherently or incoherently add components of a helicity model."""
+        components = list(components)  # copy
+        for component in components:
+            if component not in self.components:
+                first_letter = component[0]
+                candidates = get_close_matches(
+                    component,
+                    filter(
+                        lambda c: c.startswith(
+                            first_letter  # pylint: disable=cell-var-from-loop
+                        ),
+                        self.components,
+                    ),
+                )
+                raise KeyError(
+                    f'Component "{component}" not in model components. '
+                    f"Did you mean any of these?",
+                    candidates,
+                )
+        if any(map(lambda c: c.startswith("I"), components)) and any(
+            map(lambda c: c.startswith("A"), components)
+        ):
+            intensity_sum = self.sum_components(
+                components=filter(lambda c: c.startswith("I"), components),
+            )
+            amplitude_sum = self.sum_components(
+                components=filter(lambda c: c.startswith("A"), components),
+            )
+            return intensity_sum + amplitude_sum
+        if all(map(lambda c: c.startswith("I"), components)):
+            return sum(self.components[c] for c in components)
+        if all(map(lambda c: c.startswith("A"), components)):
+            return abs(sum(self.components[c] for c in components)) ** 2
+        raise ValueError(
+            'Not all component names started with either "A" or "I"'
+        )
 
 
 class HelicityAmplitudeBuilder:

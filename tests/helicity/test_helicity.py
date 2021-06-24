@@ -1,4 +1,6 @@
 # pylint: disable=no-member, no-self-use
+from typing import Tuple
+
 import pytest
 import sympy as sp
 from qrules import ReactionInfo
@@ -6,6 +8,7 @@ from sympy import cos, sin, sqrt
 
 from ampform import get_builder
 from ampform.helicity import (
+    HelicityModel,
     _generate_kinematic_variables,
     formulate_wigner_d,
     group_transitions,
@@ -46,6 +49,36 @@ class TestAmplitudeBuilder:
             )
         else:
             assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
+
+
+class TestHelicityModel:
+    def test_sum_components(self, amplitude_model: Tuple[str, HelicityModel]):
+        # pylint: disable=cell-var-from-loop, line-too-long
+        _, model = amplitude_model
+        from_intensities = model.sum_components(
+            components=filter(lambda c: c.startswith("I"), model.components),
+        )
+        assert from_intensities == model.expression
+        for spin_jpsi in ["-1", "+1"]:
+            for spin_gamma in ["-1", "+1"]:
+                jpsi_with_spin = fR"J/\psi(1S)_{{{spin_jpsi}}}"
+                gamma_with_spin = fR"\gamma_{{{spin_gamma}}}"
+                from_amplitudes = model.sum_components(
+                    components=filter(
+                        lambda c: c.startswith("A")
+                        and jpsi_with_spin in c
+                        and gamma_with_spin in c,
+                        model.components,
+                    )
+                )
+                selected_intensities = filter(
+                    lambda c: c.startswith("I")
+                    and jpsi_with_spin in c
+                    and gamma_with_spin in c,
+                    model.components,
+                )
+                selected_intensity = next(selected_intensities)
+                assert from_amplitudes == model.components[selected_intensity]
 
 
 @pytest.mark.parametrize(
