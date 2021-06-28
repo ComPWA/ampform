@@ -66,7 +66,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.13.0
+    rev: 0.13.1
     hooks:
       - id: nbqa-black
         args: [--nbqa-mutate]
@@ -81,13 +81,13 @@ repos:
       - id: nbstripout
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.3.1
+    rev: v2.3.2
     hooks:
       - id: prettier
         language_version: 12.18.2 # prettier does not specify node correctly
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.150
+    rev: v1.1.153
     hooks:
       - id: pyright
 
