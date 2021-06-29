@@ -18,9 +18,12 @@ from sphinx.environment import BuildEnvironment
 def replace_link(text: str) -> str:
     replacements = {
         "SupportsIndex": "typing.SupportsIndex",
+        "_SupportsDType": "numpy.typing.DTypeLike",
         "a set-like object providing a view on D's items": "typing.ItemsView",
         "a set-like object providing a view on D's keys": "typing.KeysView",
         "an object providing a view on D's values": "typing.ValuesView",
+        "dtype": "numpy.dtype",
+        "np.dtype": "numpy.dtype",
         "numpy.typing._array_like._SupportsArray": "numpy.typing.ArrayLike",
         "numpy.typing._dtype_like._DTypeDict": "numpy.typing.DTypeLike",
         "numpy.typing._dtype_like._SupportsDType": "numpy.typing.DTypeLike",
