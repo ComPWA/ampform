@@ -38,21 +38,21 @@ class ScalarSequence(NDArrayOperatorsMixin, abc.Sequence):
     def __init__(
         self, data: ArrayLike, dtype: Optional[DTypeLike] = None
     ) -> None:
-        self._data = np.array(data, dtype)
-        if len(self._data.shape) != 1:
+        self.__data = np.array(data, dtype)
+        if len(self.__data.shape) != 1:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of rank 1,"
-                f" but input data is of rank {len(self._data.shape)}"
+                f" but input data is of rank {len(self.__data.shape)}"
             )
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
-        return self._data
+        return self.__data
 
     def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
-        return self._data[i]
+        return self.__data[i]
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({np.array(self)}"
@@ -62,29 +62,29 @@ class ThreeMomentum(NDArrayOperatorsMixin, abc.Sequence):
     def __init__(
         self, data: ArrayLike, dtype: Optional[DTypeLike] = None
     ) -> None:
-        self._data = np.array(data, dtype=dtype, ndmin=2)
-        if len(self._data.shape) != 2:
+        self.__data = np.array(data, dtype=dtype, ndmin=2)
+        if len(self.__data.shape) != 2:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of rank 2,"
-                f" but this data is of rank {len(self._data.shape)}"
+                f" but this data is of rank {len(self.__data.shape)}"
             )
-        if self._data.shape[1] != 3:
+        if self.__data.shape[1] != 3:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of shape (N, 3),"
-                f" but this data sample is of shape {self._data.shape}"
+                f" but this data sample is of shape {self.__data.shape}"
             )
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
-        return self._data
+        return self.__data
 
     def __getitem__(  # type: ignore
         self,
         i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice],
     ) -> np.ndarray:
-        return self._data[i]
+        return self.__data[i]
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({np.array(self)})"
@@ -98,16 +98,16 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
     """
 
     def __init__(self, data: ArrayLike) -> None:
-        self._data = np.array(data)
-        if len(self._data.shape) != 2:
+        self.__data = np.array(data)
+        if len(self.__data.shape) != 2:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of rank 2,"
-                f" but this data is of rank {len(self._data.shape)}"
+                f" but this data is of rank {len(self.__data.shape)}"
             )
-        if self._data.shape[1] != 4:
+        if self.__data.shape[1] != 4:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of shape (N, 4),"
-                f" but this data sample is of shape {self._data.shape}"
+                f" but this data sample is of shape {self.__data.shape}"
             )
         if np.min(self.energy) < 0:
             raise ValueError(
@@ -116,16 +116,16 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
             )
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
-        return self._data
+        return self.__data
 
     def __getitem__(  # type: ignore
         self,
         i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice],
     ) -> np.ndarray:
-        return self._data[i]
+        return self.__data[i]
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({np.array(self)})"
@@ -180,26 +180,26 @@ class MatrixSequence(NDArrayOperatorsMixin, abc.Sequence):
     """Safe data container for a sequence of 4x4-matrices."""
 
     def __init__(self, data: ArrayLike) -> None:
-        self._data = np.array(data)
-        if len(self._data.shape) != 3:
+        self.__data = np.array(data)
+        if len(self.__data.shape) != 3:
             raise ValueError(
                 f"{self.__class__.__name__} has to be of rank 3,"
-                f" but this data is of rank {len(self._data.shape)}"
+                f" but this data is of rank {len(self.__data.shape)}"
             )
-        if self._data.shape[1:] != (4, 4):
+        if self.__data.shape[1:] != (4, 4):
             raise ValueError(
                 f"{self.__class__.__name__} has to be of shape (N, 4, 4),"
-                f" but this data sample is of shape {self._data.shape}"
+                f" but this data sample is of shape {self.__data.shape}"
             )
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
-        return self._data
+        return self.__data
 
     def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
-        return self._data[i]
+        return self.__data[i]
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({np.array(self)})"
@@ -222,7 +222,7 @@ class EventCollection(abc.Mapping):
     """
 
     def __init__(self, data: Mapping[int, ArrayLike]) -> None:
-        self._data = {i: FourMomentumSequence(v) for i, v in data.items()}
+        self.__data = {i: FourMomentumSequence(v) for i, v in data.items()}
         n_events = self.n_events
         if any(map(lambda v: len(v) != n_events, self.values())):
             raise ValueError(
@@ -231,16 +231,16 @@ class EventCollection(abc.Mapping):
             )
 
     def __getitem__(self, i: int) -> FourMomentumSequence:
-        return self._data[i]
+        return self.__data[i]
 
     def __iter__(self) -> Iterator[int]:
-        return iter(self._data)
+        return iter(self.__data)
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self._data})"
+        return f"{self.__class__.__name__}({self.__data})"
 
     @property
     def n_events(self) -> int:
@@ -251,16 +251,16 @@ class EventCollection(abc.Mapping):
     def sum(  # noqa: A003
         self, indices: Iterable[int]
     ) -> FourMomentumSequence:
-        return FourMomentumSequence(sum(self._data[i] for i in indices))  # type: ignore
+        return FourMomentumSequence(sum(self.__data[i] for i in indices))  # type: ignore
 
     def keys(self) -> KeysView[int]:
-        return self._data.keys()
+        return self.__data.keys()
 
     def items(self) -> ItemsView[int, FourMomentumSequence]:
-        return self._data.items()
+        return self.__data.items()
 
     def values(self) -> ValuesView[FourMomentumSequence]:
-        return self._data.values()
+        return self.__data.values()
 
     def append(self, other: Mapping[int, ArrayLike]) -> None:
         if not isinstance(other, EventCollection):
@@ -270,7 +270,7 @@ class EventCollection(abc.Mapping):
                 f"Trying to append a momentum pool with state IDs {set(other)}"
                 f" to a momentum pool with state IDs {set(self)}"
             )
-        self._data = {
+        self.__data = {
             i: FourMomentumSequence(np.vstack((values, other[i])))
             for i, values in self.items()
         }
@@ -308,10 +308,10 @@ class DataSet(abc.Mapping):
     def __init__(
         self, data: Mapping[str, ArrayLike], dtype: Optional[DTypeLike] = None
     ) -> None:
-        self._data = {
+        self.__data = {
             name: ScalarSequence(v, dtype=dtype) for name, v in data.items()
         }
-        if not all(map(lambda k: isinstance(k, str), self._data)):
+        if not all(map(lambda k: isinstance(k, str), self.__data)):
             raise TypeError(f"Not all keys {set(data)} are strings")
         n_events = self.n_events
         if any(map(lambda v: len(v) != n_events, self.values())):
@@ -321,16 +321,16 @@ class DataSet(abc.Mapping):
             )
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self._data})"
+        return f"{self.__class__.__name__}({self.__data})"
 
     def __getitem__(self, i: str) -> ScalarSequence:
-        return self._data[i]
+        return self.__data[i]
 
     def __iter__(self) -> Iterator[str]:
-        return iter(self._data)
+        return iter(self.__data)
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.__data)
 
     @property
     def n_events(self) -> int:
@@ -339,13 +339,13 @@ class DataSet(abc.Mapping):
         return len(next(iter(self.values())))
 
     def keys(self) -> KeysView[str]:
-        return self._data.keys()
+        return self.__data.keys()
 
     def items(self) -> ItemsView[str, ScalarSequence]:
-        return self._data.items()
+        return self.__data.items()
 
     def values(self) -> ValuesView[ScalarSequence]:
-        return self._data.values()
+        return self.__data.values()
 
     def append(self, other: Mapping[str, ArrayLike]) -> None:
         if not isinstance(other, DataSet):
@@ -355,7 +355,7 @@ class DataSet(abc.Mapping):
                 f"Trying to append a data set with state IDs {set(other)}"
                 f" to a data set with state IDs {set(self)}"
             )
-        self._data = {
+        self.__data = {
             i: ScalarSequence(np.vstack((values, other[i])))
             for i, values in self.items()
         }
