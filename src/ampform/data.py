@@ -5,11 +5,8 @@
 .. seealso:: :doc:`numpy:user/basics.dispatch`
 """
 
-import numbers
 from collections import abc
 from typing import (
-    Any,
-    Callable,
     Dict,
     ItemsView,
     Iterable,
@@ -34,8 +31,6 @@ except ImportError:
     ArrayLike = Union[Sequence, np.ndarray]  # type: ignore
     DTypeLike = object  # type: ignore
 
-_HANDLED_TYPES = (np.ndarray, numbers.Number)
-
 
 class ScalarSequence(NDArrayOperatorsMixin, abc.Sequence):
     """`numpy.array` data container of rank 1."""
@@ -52,36 +47,6 @@ class ScalarSequence(NDArrayOperatorsMixin, abc.Sequence):
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self._data
-
-    def __array_ufunc__(  # noqa: R701
-        self,
-        ufunc: Callable[[ArrayLike], ArrayLike],
-        method: str,
-        *inputs: Any,
-        **kwargs: Any,
-    ) -> Optional[Union["ScalarSequence", Tuple["ScalarSequence", ...]]]:
-        # pylint: disable=protected-access
-        # https://numpy.org/doc/stable/reference/generated/numpy.lib.mixins.NDArrayOperatorsMixin.html
-        self_type = type(self)
-        out = kwargs.get("out", ())
-        for x in inputs + out:
-            if not isinstance(x, _HANDLED_TYPES + (self_type,)):
-                return NotImplemented
-
-        inputs = tuple(
-            x._data if isinstance(x, self_type) else x for x in inputs
-        )
-        if out:
-            kwargs["out"] = tuple(
-                x._data if isinstance(x, self_type) else x for x in out
-            )
-        result = getattr(ufunc, method)(*inputs, **kwargs)
-
-        if isinstance(result, tuple):
-            return tuple(self_type(x) for x in result)
-        if method == "at":
-            return None
-        return self_type(result)
 
     def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
         return self._data[i]
@@ -111,36 +76,6 @@ class ThreeMomentum(NDArrayOperatorsMixin, abc.Sequence):
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self._data
-
-    def __array_ufunc__(  # noqa: R701
-        self,
-        ufunc: Callable[[ArrayLike], ArrayLike],
-        method: str,
-        *inputs: Any,
-        **kwargs: Any,
-    ) -> Optional[Union["ThreeMomentum", Tuple["ThreeMomentum", ...]]]:
-        # pylint: disable=protected-access
-        # https://numpy.org/doc/stable/reference/generated/numpy.lib.mixins.NDArrayOperatorsMixin.html
-        self_type = type(self)
-        out = kwargs.get("out", ())
-        for x in inputs + out:
-            if not isinstance(x, _HANDLED_TYPES + (self_type,)):
-                return NotImplemented
-
-        inputs = tuple(
-            x._data if isinstance(x, self_type) else x for x in inputs
-        )
-        if out:
-            kwargs["out"] = tuple(
-                x._data if isinstance(x, self_type) else x for x in out
-            )
-        result = getattr(ufunc, method)(*inputs, **kwargs)
-
-        if isinstance(result, tuple):
-            return tuple(self_type(x) for x in result)
-        if method == "at":
-            return None
-        return self_type(result)
 
     def __getitem__(  # type: ignore
         self,
@@ -182,38 +117,6 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self._data
-
-    def __array_ufunc__(  # noqa: R701
-        self,
-        ufunc: Callable[[ArrayLike], ArrayLike],
-        method: str,
-        *inputs: Any,
-        **kwargs: Any,
-    ) -> Optional[
-        Union["FourMomentumSequence", Tuple["FourMomentumSequence", ...]]
-    ]:
-        # pylint: disable=protected-access
-        # https://numpy.org/doc/stable/reference/generated/numpy.lib.mixins.NDArrayOperatorsMixin.html
-        self_type = type(self)
-        out = kwargs.get("out", ())
-        for x in inputs + out:
-            if not isinstance(x, _HANDLED_TYPES + (self_type,)):
-                return NotImplemented
-
-        inputs = tuple(
-            x._data if isinstance(x, self_type) else x for x in inputs
-        )
-        if out:
-            kwargs["out"] = tuple(
-                x._data if isinstance(x, self_type) else x for x in out
-            )
-        result = getattr(ufunc, method)(*inputs, **kwargs)
-
-        if isinstance(result, tuple):
-            return tuple(self_type(x) for x in result)
-        if method == "at":
-            return None
-        return self_type(result)
 
     def __getitem__(  # type: ignore
         self,
@@ -291,36 +194,6 @@ class MatrixSequence(NDArrayOperatorsMixin, abc.Sequence):
 
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self._data
-
-    def __array_ufunc__(  # noqa: R701
-        self,
-        ufunc: Callable[[ArrayLike], ArrayLike],
-        method: str,
-        *inputs: Any,
-        **kwargs: Any,
-    ) -> Optional[Union["MatrixSequence", Tuple["MatrixSequence", ...]]]:
-        # pylint: disable=protected-access
-        # https://numpy.org/doc/stable/reference/generated/numpy.lib.mixins.NDArrayOperatorsMixin.html
-        self_type = type(self)
-        out = kwargs.get("out", ())
-        for x in inputs + out:
-            if not isinstance(x, _HANDLED_TYPES + (self_type,)):
-                return NotImplemented
-
-        inputs = tuple(
-            x._data if isinstance(x, self_type) else x for x in inputs
-        )
-        if out:
-            kwargs["out"] = tuple(
-                x._data if isinstance(x, self_type) else x for x in out
-            )
-        result = getattr(ufunc, method)(*inputs, **kwargs)
-
-        if isinstance(result, tuple):
-            return tuple(self_type(x) for x in result)
-        if method == "at":
-            return None
-        return self_type(result)
 
     def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
         return self._data[i]
