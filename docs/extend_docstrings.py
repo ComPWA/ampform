@@ -229,7 +229,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     )
 
 
-SCRIPT_NAME = __file__.split("/")[-1]
+SCRIPT_NAME = __file__.rsplit("/", maxsplit=1)[-1]
 SCRIPT_NAME = ".".join(SCRIPT_NAME.split(".")[:-1])
 
 
