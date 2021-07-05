@@ -99,6 +99,7 @@
         "pyplot",
         "pytest",
         "qrules",
+        "rsplit",
         "setuptools",
         "spflueger",
         "struct",
