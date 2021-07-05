@@ -41,6 +41,7 @@
         "docs/_templates/*",
         "docs/adr/*/*",
         "docs/conf.py",
+        "labels.toml",
         "pyproject.toml",
         "pyrightconfig.json",
         "pytest.ini",
