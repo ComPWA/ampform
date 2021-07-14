@@ -19,10 +19,9 @@ class TestAmplitudeBuilder:
     def test_formulate(self, reaction: ReactionInfo):
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
-            n_parameters = 4
         else:
             n_amplitudes = 8
-            n_parameters = 2
+        n_parameters = 2
 
         model_builder = get_builder(reaction)
         model = model_builder.formulate()

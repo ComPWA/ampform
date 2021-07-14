@@ -18,10 +18,9 @@ def test_generate(
     formalism, model = amplitude_model
     if formalism == "canonical-helicity":
         n_amplitudes = 16
-        n_parameters = 10
     else:
         n_amplitudes = 8
-        n_parameters = 8
+    n_parameters = 8
     assert len(model.parameter_defaults) == n_parameters
     assert len(model.components) == 4 + n_amplitudes
     assert len(model.expression.free_symbols) == 7 + n_parameters
