@@ -11,5 +11,6 @@ maxdepth: 2
 usage/amplitude
 usage/modify
 usage/interactive
+usage/formalism
 usage/dynamics
 ```
