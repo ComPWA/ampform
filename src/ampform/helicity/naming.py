@@ -159,20 +159,6 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             names.append(canonical_name)
         return "; ".join(names)
 
-    def generate_coefficient_name(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        incoming_state, outgoing_states = get_helicity_info(
-            transition, node_id
-        )
-        return (
-            _state_to_str(incoming_state, use_helicity=False)
-            + self.__generate_ls_arrow(transition, node_id)
-            + " ".join(
-                _state_to_str(s, use_helicity=False) for s in outgoing_states
-            )
-        )
-
     def __generate_ls_arrow(
         self, transition: StateTransition, node_id: int
     ) -> str:
