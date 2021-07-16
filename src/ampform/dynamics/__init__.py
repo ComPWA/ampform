@@ -197,9 +197,7 @@ def phase_space_factor(
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return sp.sqrt(q_squared) / denominator
+    return breakup_momentum(s, m_a, m_b) / _phase_space_factor_denominator(s)
 
 
 def phase_space_factor_abs(
@@ -350,10 +348,8 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def breakup_momentum_squared(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    r"""Squared value of the two-body breakup-up momentum.
+def breakup_momentum(s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol) -> sp.Expr:
+    r"""Two-body breakup-up momentum.
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
@@ -368,5 +364,17 @@ def breakup_momentum_squared(
         m_b: Mass of decay product :math:`b`.
 
     See :pdg-review:`2020; Kinematics; p.3`.
+    """
+    return sp.sqrt(breakup_momentum_squared(s, m_a, m_b))
+
+
+def breakup_momentum_squared(
+    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
+) -> sp.Expr:
+    """Squared value of the two-body `.breakup_momentum`.
+
+    This version of the break-up momentum is useful if you do not want to take
+    a simple square root. See :func:`.breakup_momentum` and
+    :doc:`usage/analytic-continuation`.
     """
     return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
