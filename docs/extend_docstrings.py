@@ -14,6 +14,7 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     _analytic_continuation,
+    breakup_momentum,
     breakup_momentum_squared,
     coupled_width,
     phase_space_factor,
@@ -47,6 +48,18 @@ def render_blatt_weisskopf() -> None:
 
 
 def render_breakup_momentum() -> None:
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    q = breakup_momentum(s, m_a, m_b)
+    update_docstring(
+        breakup_momentum,
+        f"""
+    .. math:: q(s) = {sp.latex(q)}
+        :label: breakup_momentum
+    """,
+    )
+
+
+def render_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     update_docstring(
