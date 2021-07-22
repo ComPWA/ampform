@@ -258,7 +258,7 @@ class HelicityAmplitudeBuilder:
     def __generate_amplitude_coefficient(
         self, transition: StateTransition
     ) -> sp.Symbol:
-        """Generate coefficient parameter for a sequential amplitude transition.
+        """Generate coefficient parameter for a sequential amplitude.
 
         Generally, each partial amplitude of a sequential amplitude transition
         should check itself if it or a parity partner is already defined. If so
@@ -382,7 +382,7 @@ def formulate_clebsch_gordan_coefficients(
 
 
 def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
-    """Compute `~sympy.physics.quantum.spin.WignerD` for a state transition node.
+    """Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
 
     >>> import qrules
     >>> reaction = qrules.generate_transitions(

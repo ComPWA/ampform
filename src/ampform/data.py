@@ -301,8 +301,7 @@ class DataSet(abc.Mapping):
     """A mapping of variable names to their `ScalarSequence`.
 
     The `~.DataSet.keys` of `DataSet` represent variable names in a
-    `.HelicityModel`, while its `~.DataSet.values` are inserted in their
-    place.
+    `.HelicityModel`, while its `~.DataSet.values` are inserted in their place.
     """
 
     def __init__(

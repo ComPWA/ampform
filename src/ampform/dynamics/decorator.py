@@ -108,8 +108,8 @@ def verify_signature(builder: Callable, protocol: Type[Callable]) -> None:
 
     Dynamically check whether a builder has the same signature as that of the
     given `~typing.Protocol` (a `~typing.Callable`). This function is needed
-    because :func:`typing.runtime_checkable` only checks members and methods, not the
-    signature of those methods.
+    because :func:`typing.runtime_checkable` only checks members and methods,
+    not the signature of those methods.
     """
     expected_signature = inspect.signature(protocol.__call__)
     signature = inspect.signature(builder)

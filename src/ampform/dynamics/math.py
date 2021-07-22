@@ -1,4 +1,4 @@
-"""A collection of basic mathematical operations, used in `ampform.dynamics`."""
+"""A collection of basic math operations, used in `ampform.dynamics`."""
 # cspell:ignore cmath compwa csqrt lambdifier
 # pylint: disable=no-member, protected-access, unused-argument
 

@@ -124,7 +124,7 @@ def _make_relativistic_breit_wigner_with_ff(
     phsp_factor: PhaseSpaceFactor,
     docstring: str,
 ) -> ResonanceDynamicsBuilder:
-    """Factory for a `.ResonanceDynamicsBuilder` that uses `.relativistic_breit_wigner_with_ff`."""
+    """Factory for `.relativistic_breit_wigner_with_ff`."""
 
     def dynamics_builder(
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet

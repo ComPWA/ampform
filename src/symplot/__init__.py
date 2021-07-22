@@ -154,7 +154,7 @@ class SliderKwargs(abc.Mapping):
     def set_ranges(
         self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
-        """Set min, max and (optionally) the number of steps for each slider."""
+        """Set min, max and (optionally) the nr of steps for each slider."""
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
