@@ -409,7 +409,10 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
 
 
 def get_prefactor(transition: StateTransition) -> float:
-    """Calculate the product of all prefactors defined in this transition."""
+    """Calculate the product of all prefactors defined in this transition.
+
+    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
+    """
     prefactor = 1.0
     for node_id in transition.topology.nodes:
         interaction = transition.interactions[node_id]
