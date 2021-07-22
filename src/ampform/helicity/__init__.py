@@ -337,18 +337,55 @@ def extract_particle_collection(
 def formulate_clebsch_gordan_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    """Compute two Clebsch-Gordan coefficients for a state transition node.
+    r"""Compute the two Clebsch-Gordan coefficients for a state transition node.
 
+    In the **canonical basis** (also called **partial wave basis**),
+    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>`
+    ensure that the projection of angular momentum is conserved
+    (:cite:`kutschkeAngularDistributionCookbook1996`, p. 4). When calling
+    :func:`~qrules.generate_transitions` with
+    :code:`formalism="canonical-helicity"`, AmpForm formulates the amplitude in
+    the canonical basis from amplitudes in the helicity basis using the
+    transformation in :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). See
+    also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
+
+    This function produces the two Clebsch-Gordan coefficients in
+    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay
+    :math:`1 \to 2, 3`, we get:
+
+    .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
+        :label: formulate_clebsch_gordan_coefficients
+
+    with:
+
+    - :math:`s_i` the intrinsic `Spin.magnitude
+      <qrules.particle.Spin.magnitude>` of each state :math:`i`,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products
+      (can be taken to be their `~qrules.transition.State.spin_projection` when
+      following a constistent boosting procedure),
+    - :math:`\lambda=\lambda_{2}-\lambda_{3}`,
+    - :math:`L` the *total* angular momentum of the final state pair
+      (`~qrules.quantum_numbers.InteractionProperties.l_magnitude`),
+    - :math:`S` the coupled spin magnitude of the final state pair
+      (`~qrules.quantum_numbers.InteractionProperties.s_magnitude`),
+    - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle
+      j1,m1;j2,m2|j3,m3\rangle`, as in :doc:`sympy:modules/physics/quantum/cg`.
+
+    Example
+    -------
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
-    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
-    >>> transition = reaction.transitions[0]
+    >>> transition = reaction.transitions[1]  # angular momentum 2
     >>> formulate_clebsch_gordan_coefficients(transition, node_id=0)
-    CG(0, 0, 1, 1, 1, 1)*CG(1, 1, 0, 0, 1, 1)
+    CG(1, -1, 0, 0, 1, -1)*CG(2, 0, 1, -1, 1, -1)
 
-    .. seealso:: :doc:`sympy:modules/physics/quantum/cg`
+    .. math::
+        C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
+        = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
+        = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
 

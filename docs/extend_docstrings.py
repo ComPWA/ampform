@@ -11,6 +11,7 @@ import logging
 import textwrap
 from typing import Callable, Type, Union
 
+import attr
 import qrules
 import sympy as sp
 
@@ -28,7 +29,10 @@ from ampform.dynamics import (
     relativistic_breit_wigner_with_ff,
 )
 from ampform.dynamics.math import ComplexSqrt
-from ampform.helicity import formulate_wigner_d
+from ampform.helicity import (
+    formulate_clebsch_gordan_coefficients,
+    formulate_wigner_d,
+)
 from ampform.kinematics import get_helicity_angle_label
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -132,27 +136,53 @@ def render_coupled_width() -> None:
 
 
 def render_formulate_wigner_d() -> None:
+    update_docstring(
+        formulate_wigner_d,
+        __get_graphviz_state_transition_example("helicity"),
+    )
+
+
+def render_formulate_clebsch_gordan_coefficients() -> None:
+    update_docstring(
+        formulate_clebsch_gordan_coefficients,
+        __get_graphviz_state_transition_example(
+            formalism="canonical-helicity", transition_number=1, gamma_spin=-1
+        ),
+    )
+
+
+def __get_graphviz_state_transition_example(
+    formalism: str, transition_number: int = 0, gamma_spin: int = +1
+) -> str:
     reaction = qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [+1])],
-        final_state=[("gamma", [+1]), "f(0)(980)"],
+        final_state=[("gamma", [gamma_spin]), "f(0)(980)"],
+        formalism=formalism,
     )
-    transition = reaction.transitions[0]
-    dot = qrules.io.asdot(transition, render_initial_state_id=True)
+    transition = reaction.transitions[transition_number]
+    new_interaction = attr.evolve(
+        transition.interactions[0],
+        parity_prefactor=None,
+    )
+    interactions = dict(transition.interactions)
+    interactions[0] = new_interaction
+    transition = attr.evolve(transition, interactions=interactions)
+    dot = qrules.io.asdot(
+        transition,
+        render_initial_state_id=True,
+        render_node=True,
+    )
     for state_id in [0, 1, -1]:
         dot = dot.replace(
             f'label="{state_id}: ',
             f'label="{state_id+2}: ',
         )
-
-    update_docstring(
-        formulate_wigner_d,
-        f"""
+    return f"""
     .. graphviz::
       :align: center
 
 {textwrap.indent(dot, 6 * ' ')}
-    """,
-    )
+    """
 
 
 def render_get_helicity_angle_label() -> None:
