@@ -24,8 +24,9 @@ class HelicityAdapter:
 
     The `.transform` method forms the bridge between four-momentum data for the
     decay you are studying and the kinematic variables that are in the
-    `.HelicityModel`. These are invariant mass and the :math:`\theta` and
-    :math:`\phi` helicity angles.
+    `.HelicityModel`. These are invariant mass (see
+    :func:`.get_invariant_mass_label`) and the :math:`\theta` and :math:`\phi`
+    helicity angles (see :func:`.get_helicity_angle_label`).
     """
 
     reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
