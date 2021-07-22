@@ -9,3 +9,4 @@ add_ignore =
     D203, # conflicts with D211
     D213, # multi-line docstring should start at the second line
     D407, # missing dashed underline after section
+    D416, # section name does not have to end with a colon

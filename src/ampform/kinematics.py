@@ -1,14 +1,12 @@
 # cspell:ignore einsum
 """Kinematics of an amplitude model in the helicity formalism."""
 
-import textwrap
 from typing import Dict, List, Mapping, Set, Tuple
 
 import attr
 import numpy as np
 from attr.validators import instance_of
-from qrules.io import asdot
-from qrules.topology import Topology, create_isobar_topologies
+from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from .data import (
@@ -99,7 +97,19 @@ def get_helicity_angle_label(
 ) -> Tuple[str, str]:
     """Generate labels that can be used to identify helicity angles.
 
-    >>> from ampform.kinematics import get_helicity_angle_label
+    The generated subscripts describe the decay sequence from the right to the
+    left, separated by commas. Resonance edge IDs are expressed as a sum of the
+    final state IDs that lie below them (see
+    :func:`.determine_attached_final_state`). The generated label does not
+    state the top-most edge (the initial state).
+
+    Example
+    -------
+    The following two allowed isobar topologies for a **1-to-5-body** decay
+    illustrates how the naming scheme results in a unique label for each of the
+    **eight edges** in the decay topology. Note that label only uses final
+    state IDs, but still reflects the internal decay topology.
+
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
     >>> topology = topologies[0]
@@ -126,6 +136,22 @@ def get_helicity_angle_label(
     5: 'phi_0+1'
     6: 'phi_2+3+4'
     7: 'phi_3+4,2+3+4'
+
+    Some labels explained:
+
+    - :code:`phi_1+2`: **edge 6** on the *left* topology, because for this
+      topology, we have :math:`p_6=p_1+p_2`.
+    - :code:`phi_2+3+4`: **edge 6** *right*, because for this topology,
+      :math:`p_6=p_2+p_3+p_4`.
+    - :code:`phi_1,1+2`: **edge 1** *left*, because 1 decays from
+      :math:`p_6=p_1+p_2`.
+    - :code:`phi_1,0+1`: **edge 1** *right*, because it decays from
+      :math:`p_5=p_0+p_1`.
+    - :code:`phi_4,3+4,2+3+4`: **edge 4** *right*, because it decays from edge
+      7 (:math:`p_7=p_3+p_4`), which comes from edge 6
+      (:math:`p_7=p_2+p_3+p_4`).
+
+    As noted, the top-most parent (initial state) is not listed in the label.
     """
     assert_isobar_topology(topology)
 
@@ -149,28 +175,6 @@ def get_helicity_angle_label(
 
     label = recursive_label(topology, state_id)
     return f"phi_{label}", f"theta_{label}"
-
-
-assert get_helicity_angle_label.__doc__ is not None
-get_helicity_angle_label.__doc__ += f"""
-
-.. panels::
-  :body: text-center
-
-  .. graphviz::
-
-    {textwrap.indent(asdot(create_isobar_topologies(5)[0]), '    ')}
-
-  :code:`topologies[0]`
-
-  ---
-
-  .. graphviz::
-
-    {textwrap.indent(asdot(create_isobar_topologies(5)[1]), '    ')}
-
-  :code:`topologies[1]`
-"""
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:

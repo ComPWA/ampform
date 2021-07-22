@@ -7,8 +7,10 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 
 import inspect
+import textwrap
 from typing import Callable, Type, Union
 
+import qrules
 import sympy as sp
 
 from ampform.dynamics import (
@@ -25,6 +27,7 @@ from ampform.dynamics import (
     relativistic_breit_wigner_with_ff,
 )
 from ampform.dynamics.math import ComplexSqrt
+from ampform.kinematics import get_helicity_angle_label
 
 
 def update_docstring(
@@ -120,6 +123,36 @@ def render_coupled_width() -> None:
     where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
     :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
     :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
+    """,
+    )
+
+
+def render_get_helicity_angle_label() -> None:
+    topologies = qrules.topology.create_isobar_topologies(5)
+    dot1, dot2, *_ = tuple(
+        map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
+    )
+    assert len
+    update_docstring(
+        get_helicity_angle_label,
+        f"""
+
+    .. panels::
+      :body: text-center
+
+      .. graphviz::
+        :name: one-to-five-topology-0
+        :caption: :code:`topologies[0]`
+
+{textwrap.indent(dot1, 8 * ' ')}
+
+      ---
+
+      .. graphviz::
+        :name: one-to-five-topology-1
+        :caption: :code:`topologies[1]`
+
+{textwrap.indent(dot2, 8 * ' ')}
     """,
     )
 
