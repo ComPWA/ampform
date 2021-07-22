@@ -52,7 +52,7 @@ class HelicityAdapter:
         self.register_topology(transition.topology)
 
     def register_topology(self, topology: Topology) -> None:
-        assert_isobar_topology(topology)
+        _assert_isobar_topology(topology)
         if len(self.registered_topologies) == 0:
             object.__setattr__(
                 self,
@@ -153,7 +153,7 @@ def get_helicity_angle_label(
 
     As noted, the top-most parent (initial state) is not listed in the label.
     """
-    assert_isobar_topology(topology)
+    _assert_isobar_topology(topology)
 
     def recursive_label(topology: Topology, state_id: int) -> str:
         edge = topology.edges[state_id]
@@ -349,12 +349,12 @@ def _compute_invariant_masses(
     return DataSet(invariant_masses)
 
 
-def assert_isobar_topology(topology: Topology) -> None:
+def _assert_isobar_topology(topology: Topology) -> None:
     for node_id in topology.nodes:
-        assert_two_body_decay(topology, node_id)
+        _assert_two_body_decay(topology, node_id)
 
 
-def assert_two_body_decay(topology: Topology, node_id: int) -> None:
+def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
     parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
     if len(parent_state_ids) != 1:
         raise ValueError(

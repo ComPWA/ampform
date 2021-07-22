@@ -7,7 +7,7 @@ from qrules.particle import Spin
 from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import State, StateTransition
 
-from ampform.kinematics import assert_two_body_decay
+from ampform.kinematics import _assert_two_body_decay
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -116,7 +116,7 @@ def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> Tuple[State, Tuple[State, State]]:
     """Extract in- and outgoing states for a two-body decay node."""
-    assert_two_body_decay(transition.topology, node_id)
+    _assert_two_body_decay(transition.topology, node_id)
     in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
     out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(node_id)
     in_helicity_list = get_sorted_states(transition, in_edge_ids)
