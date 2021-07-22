@@ -7,6 +7,7 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 
 import inspect
+import logging
 import textwrap
 from typing import Callable, Type, Union
 
@@ -27,7 +28,10 @@ from ampform.dynamics import (
     relativistic_breit_wigner_with_ff,
 )
 from ampform.dynamics.math import ComplexSqrt
+from ampform.helicity import formulate_wigner_d
 from ampform.kinematics import get_helicity_angle_label
+
+logging.getLogger().setLevel(logging.ERROR)
 
 
 def update_docstring(
@@ -123,6 +127,30 @@ def render_coupled_width() -> None:
     where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
     :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
     :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
+    """,
+    )
+
+
+def render_formulate_wigner_d() -> None:
+    reaction = qrules.generate_transitions(
+        initial_state=[("J/psi(1S)", [+1])],
+        final_state=[("gamma", [+1]), "f(0)(980)"],
+    )
+    transition = reaction.transitions[0]
+    dot = qrules.io.asdot(transition, render_initial_state_id=True)
+    for state_id in [0, 1, -1]:
+        dot = dot.replace(
+            f'label="{state_id}: ',
+            f'label="{state_id+2}: ',
+        )
+
+    update_docstring(
+        formulate_wigner_d,
+        f"""
+    .. graphviz::
+      :align: center
+
+{textwrap.indent(dot, 6 * ' ')}
     """,
     )
 

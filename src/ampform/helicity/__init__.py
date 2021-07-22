@@ -382,8 +382,35 @@ def formulate_clebsch_gordan_coefficients(
 
 
 def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
-    """Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
+    r"""Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
 
+    Following :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (10). For a
+    two-body decay :math:`1 \to 2, 3`, we get
+
+    .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
+        :label: formulate_wigner_d
+
+    with:
+
+    - :math:`s_1` the `Spin.magnitude <qrules.particle.Spin.magnitude>` of the
+      decaying state,
+    - :math:`m_1` the `~qrules.transition.State.spin_projection` of the
+      decaying state,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products in
+      in the restframe of :math:`1` (can be taken to be their intrinsic
+      `~qrules.transition.State.spin_projection` when following a constistent
+      boosting procedure),
+    - and :math:`\phi` and :math:`\theta` the helicity angles (see also
+      :func:`.get_helicity_angle_label`).
+
+    Note that :math:`\lambda_2, \lambda_3` are ordered by their number of
+    children, then by their state ID (see :class:`.TwoBodyDecay`).
+
+    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an
+    example of Wigner-:math:`D` functions in a *sequential* two-body decay.
+
+    Example
+    -------
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
@@ -392,6 +419,11 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     >>> transition = reaction.transitions[0]
     >>> formulate_wigner_d(transition, node_id=0)
     WignerD(1, 1, 1, -phi_0, theta_0, 0)
+
+    .. math::
+        D^{s_1}_{m_1,\lambda_2-\lambda_3}\left(-\phi,\theta,0\right)
+        = D^{1}_{+1,(+1-0)}\left(-\phi_0,\theta_0,0\right)
+        = D^{1}_{1,1}\left(-\phi_0,\theta_0,0\right)
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
