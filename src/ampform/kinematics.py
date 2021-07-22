@@ -376,6 +376,15 @@ def determine_attached_final_state(
 
     These are attached downward (forward in time) for a given edge (resembling
     the root).
+
+    Example
+    -------
+    For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> determine_attached_final_state(topologies[0], state_id=5)
+    [0, 3, 4]
     """
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:
