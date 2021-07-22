@@ -178,6 +178,25 @@ def get_helicity_angle_label(
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
+    """Generate an invariant mass label for a state (edge on a topology).
+
+    Example
+    -------
+    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant
+    mass of state :math:`5` is :math:`m_{034}`, because
+    :math:`p_5=p_0+p_3+p_4`:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> get_invariant_mass_label(topologies[0], state_id=5)
+    'm_034'
+
+    Naturally, the 'invariant' mass label for a final state is just the mass of the
+    state itself:
+
+    >>> get_invariant_mass_label(topologies[0], state_id=1)
+    'm_1'
+    """
     final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
 
