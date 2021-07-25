@@ -451,16 +451,16 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
-    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
     >>> transition = reaction.transitions[0]
     >>> formulate_wigner_d(transition, node_id=0)
-    WignerD(1, 1, 1, -phi_0, theta_0, 0)
+    WignerD(1, 1, -1, -phi_0, theta_0, 0)
 
     .. math::
         D^{s_1}_{m_1,\lambda_2-\lambda_3}\left(-\phi,\theta,0\right)
-        = D^{1}_{+1,(+1-0)}\left(-\phi_0,\theta_0,0\right)
-        = D^{1}_{1,1}\left(-\phi_0,\theta_0,0\right)
+        = D^{1}_{+1,(-1-0)}\left(-\phi_0,\theta_0,0\right)
+        = D^{1}_{1,-1}\left(-\phi_0,\theta_0,0\right)
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)

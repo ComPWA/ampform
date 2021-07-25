@@ -146,17 +146,17 @@ def render_formulate_clebsch_gordan_coefficients() -> None:
     update_docstring(
         formulate_clebsch_gordan_coefficients,
         __get_graphviz_state_transition_example(
-            formalism="canonical-helicity", transition_number=1, gamma_spin=-1
+            formalism="canonical-helicity", transition_number=1
         ),
     )
 
 
 def __get_graphviz_state_transition_example(
-    formalism: str, transition_number: int = 0, gamma_spin: int = +1
+    formalism: str, transition_number: int = 0
 ) -> str:
     reaction = qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [+1])],
-        final_state=[("gamma", [gamma_spin]), "f(0)(980)"],
+        final_state=[("gamma", [-1]), "f(0)(980)"],
         formalism=formalism,
     )
     transition = reaction.transitions[transition_number]
