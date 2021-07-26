@@ -78,11 +78,8 @@ repos:
     rev: 1.0.0
     hooks:
       - id: nbqa-black
-        args: [--nbqa-mutate]
       - id: nbqa-flake8
-        args: ["--extend-ignore=E402,F821"]
       - id: nbqa-isort
-        args: [--nbqa-mutate]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0

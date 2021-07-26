@@ -11,9 +11,9 @@ write_to = "src/ampform/version.py"
 [tool.black]
 line-length = 79
 target-version = [
-    'py36',
-    'py37',
-    'py38',
+    "py36",
+    "py37",
+    "py38",
 ]
 include = '\.pyi?$'
 exclude = '''
@@ -32,5 +32,20 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-src_paths = ["src", "tests"]
+src_paths = [
+    "src",
+    "tests",
+]
 line_length = 79
+
+[tool.nbqa.addopts]
+# smaller line length for sphinx-book-theme
+black = [
+    "--line-length=73",
+]
+flake8 = [
+    "--extend-ignore=E402,F821",
+]
+isort = [
+    "--line-length=73",
+]
