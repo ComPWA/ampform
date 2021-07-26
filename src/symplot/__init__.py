@@ -41,9 +41,9 @@ RangeDefinition = Union[
 class SliderKwargs(abc.Mapping):
     """Wrapper around a `dict` of sliders that can serve as keyword arguments.
 
-    Sliders can be defined in :func:`mpl_interactions.interactive_plot` through
-    :term:`kwargs <python:keyword argument>`. This wrapper class can be used
-    for that.
+    Sliders can be defined in :func:`~mpl_interactions.pyplot.interactive_plot`
+    through :term:`kwargs <python:keyword argument>`. This wrapper class can be
+    used for that.
     """
 
     def __init__(
