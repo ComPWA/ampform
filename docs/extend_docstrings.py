@@ -54,6 +54,7 @@ def render_blatt_weisskopf() -> None:
         f"""
     .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
         :label: BlattWeisskopfSquared
+        :class: full-width
     """,
     )
 
