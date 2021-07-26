@@ -39,7 +39,7 @@ from ampform.kinematics import (
     get_invariant_mass_label,
 )
 
-from .decay import TwoBodyDecay, get_angular_momentum, get_coupled_spin
+from .decay import TwoBodyDecay
 from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
@@ -387,8 +387,8 @@ def formulate_clebsch_gordan_coefficients(
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
-    angular_momentum = get_angular_momentum(decay.interaction)
-    coupled_spin = get_coupled_spin(decay.interaction)
+    angular_momentum = decay.interaction.l_magnitude
+    coupled_spin = decay.interaction.s_magnitude
 
     parent = decay.parent
     child1 = decay.children[0]
@@ -396,9 +396,9 @@ def formulate_clebsch_gordan_coefficients(
 
     decay_particle_lambda = child1.spin_projection - child2.spin_projection
     cg_ls = CG(
-        j1=sp.Rational(angular_momentum.magnitude),
+        j1=sp.Rational(angular_momentum),
         m1=0,
-        j2=sp.Rational(coupled_spin.magnitude),
+        j2=sp.Rational(coupled_spin),
         m2=sp.Rational(decay_particle_lambda),
         j3=sp.Rational(parent.particle.spin),
         m3=sp.Rational(decay_particle_lambda),
@@ -408,7 +408,7 @@ def formulate_clebsch_gordan_coefficients(
         m1=sp.Rational(child1.spin_projection),
         j2=sp.Rational(child2.particle.spin),
         m2=sp.Rational(-child2.spin_projection),
-        j3=sp.Rational(coupled_spin.magnitude),
+        j3=sp.Rational(coupled_spin),
         m3=sp.Rational(decay_particle_lambda),
     )
     return sp.Mul(cg_ls, cg_ss, evaluate=False)

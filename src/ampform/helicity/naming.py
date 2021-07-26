@@ -5,12 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import sympy as sp
 from qrules.transition import State, StateTransition
 
-from .decay import (
-    get_angular_momentum,
-    get_coupled_spin,
-    get_helicity_info,
-    get_sorted_states,
-)
+from .decay import get_helicity_info, get_sorted_states
 
 
 class HelicityAmplitudeNameGenerator:
@@ -184,8 +179,8 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         transition: StateTransition, node_id: int
     ) -> Tuple[sp.Rational, sp.Rational]:
         interaction = transition.interactions[node_id]
-        ang_orb_mom = sp.Rational(get_angular_momentum(interaction).magnitude)
-        spin = sp.Rational(get_coupled_spin(interaction).magnitude)
+        ang_orb_mom = sp.Rational(interaction.l_magnitude)
+        spin = sp.Rational(interaction.s_magnitude)
         return ang_orb_mom, spin
 
 
