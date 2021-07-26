@@ -389,8 +389,6 @@ def formulate_clebsch_gordan_coefficients(
 
     angular_momentum = get_angular_momentum(decay.interaction)
     coupled_spin = get_coupled_spin(decay.interaction)
-    if angular_momentum.projection != 0.0:
-        raise ValueError(f"Projection of L is non-zero!: {angular_momentum}")
 
     parent = decay.parent
     child1 = decay.children[0]
@@ -399,7 +397,7 @@ def formulate_clebsch_gordan_coefficients(
     decay_particle_lambda = child1.spin_projection - child2.spin_projection
     cg_ls = CG(
         j1=sp.Rational(angular_momentum.magnitude),
-        m1=sp.Rational(angular_momentum.projection),
+        m1=0,
         j2=sp.Rational(coupled_spin.magnitude),
         m2=sp.Rational(decay_particle_lambda),
         j3=sp.Rational(parent.particle.spin),
