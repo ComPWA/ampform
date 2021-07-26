@@ -168,20 +168,12 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             )
         )
 
-    def __generate_ls_arrow(
-        self, transition: StateTransition, node_id: int
-    ) -> str:
-        angular_momentum, spin = self.__get_ls_coupling(transition, node_id)
-        return fR" \xrightarrow[S={spin}]{{L={angular_momentum}}} "
-
     @staticmethod
-    def __get_ls_coupling(
-        transition: StateTransition, node_id: int
-    ) -> Tuple[sp.Rational, sp.Rational]:
+    def __generate_ls_arrow(transition: StateTransition, node_id: int) -> str:
         interaction = transition.interactions[node_id]
-        ang_orb_mom = sp.Rational(interaction.l_magnitude)
-        spin = sp.Rational(interaction.s_magnitude)
-        return ang_orb_mom, spin
+        angular_momentum = sp.Rational(interaction.l_magnitude)
+        coupled_spin = sp.Rational(interaction.s_magnitude)
+        return fR" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
 
 
 def generate_transition_label(transition: StateTransition) -> str:
