@@ -174,7 +174,7 @@ intersphinx_mapping = {
     "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
-        "https://mpl-interactions.readthedocs.io/en/stable",
+        f"https://mpl-interactions.readthedocs.io/en/{RELEASES['mpl-interactions']}",
         None,
     ),
     "numpy": ("https://numpy.org/doc/stable", None),
