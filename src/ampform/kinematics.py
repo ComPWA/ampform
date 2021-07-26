@@ -1,14 +1,12 @@
 # cspell:ignore einsum
 """Kinematics of an amplitude model in the helicity formalism."""
 
-import textwrap
 from typing import Dict, List, Mapping, Set, Tuple
 
 import attr
 import numpy as np
 from attr.validators import instance_of
-from qrules.io import asdot
-from qrules.topology import Topology, create_isobar_topologies
+from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from .data import (
@@ -26,8 +24,9 @@ class HelicityAdapter:
 
     The `.transform` method forms the bridge between four-momentum data for the
     decay you are studying and the kinematic variables that are in the
-    `.HelicityModel`. These are invariant mass and the :math:`\theta` and
-    :math:`\phi` helicity angles.
+    `.HelicityModel`. These are invariant mass (see
+    :func:`.get_invariant_mass_label`) and the :math:`\theta` and :math:`\phi`
+    helicity angles (see :func:`.get_helicity_angle_label`).
     """
 
     reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
@@ -54,7 +53,7 @@ class HelicityAdapter:
         self.register_topology(transition.topology)
 
     def register_topology(self, topology: Topology) -> None:
-        assert_isobar_topology(topology)
+        _assert_isobar_topology(topology)
         if len(self.registered_topologies) == 0:
             object.__setattr__(
                 self,
@@ -99,7 +98,19 @@ def get_helicity_angle_label(
 ) -> Tuple[str, str]:
     """Generate labels that can be used to identify helicity angles.
 
-    >>> from ampform.kinematics import get_helicity_angle_label
+    The generated subscripts describe the decay sequence from the right to the
+    left, separated by commas. Resonance edge IDs are expressed as a sum of the
+    final state IDs that lie below them (see
+    :func:`.determine_attached_final_state`). The generated label does not
+    state the top-most edge (the initial state).
+
+    Example
+    -------
+    The following two allowed isobar topologies for a **1-to-5-body** decay
+    illustrates how the naming scheme results in a unique label for each of the
+    **eight edges** in the decay topology. Note that label only uses final
+    state IDs, but still reflects the internal decay topology.
+
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
     >>> topology = topologies[0]
@@ -126,8 +137,24 @@ def get_helicity_angle_label(
     5: 'phi_0+1'
     6: 'phi_2+3+4'
     7: 'phi_3+4,2+3+4'
+
+    Some labels explained:
+
+    - :code:`phi_1+2`: **edge 6** on the *left* topology, because for this
+      topology, we have :math:`p_6=p_1+p_2`.
+    - :code:`phi_2+3+4`: **edge 6** *right*, because for this topology,
+      :math:`p_6=p_2+p_3+p_4`.
+    - :code:`phi_1,1+2`: **edge 1** *left*, because 1 decays from
+      :math:`p_6=p_1+p_2`.
+    - :code:`phi_1,0+1`: **edge 1** *right*, because it decays from
+      :math:`p_5=p_0+p_1`.
+    - :code:`phi_4,3+4,2+3+4`: **edge 4** *right*, because it decays from edge
+      7 (:math:`p_7=p_3+p_4`), which comes from edge 6
+      (:math:`p_7=p_2+p_3+p_4`).
+
+    As noted, the top-most parent (initial state) is not listed in the label.
     """
-    assert_isobar_topology(topology)
+    _assert_isobar_topology(topology)
 
     def recursive_label(topology: Topology, state_id: int) -> str:
         edge = topology.edges[state_id]
@@ -151,29 +178,26 @@ def get_helicity_angle_label(
     return f"phi_{label}", f"theta_{label}"
 
 
-assert get_helicity_angle_label.__doc__ is not None
-get_helicity_angle_label.__doc__ += f"""
-
-.. panels::
-  :body: text-center
-
-  .. graphviz::
-
-    {textwrap.indent(asdot(create_isobar_topologies(5)[0]), '    ')}
-
-  :code:`topologies[0]`
-
-  ---
-
-  .. graphviz::
-
-    {textwrap.indent(asdot(create_isobar_topologies(5)[1]), '    ')}
-
-  :code:`topologies[1]`
-"""
-
-
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
+    """Generate an invariant mass label for a state (edge on a topology).
+
+    Example
+    -------
+    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant
+    mass of state :math:`5` is :math:`m_{034}`, because
+    :math:`p_5=p_0+p_3+p_4`:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> get_invariant_mass_label(topologies[0], state_id=5)
+    'm_034'
+
+    Naturally, the 'invariant' mass label for a final state is just the mass of the
+    state itself:
+
+    >>> get_invariant_mass_label(topologies[0], state_id=1)
+    'm_1'
+    """
     final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
 
@@ -326,12 +350,12 @@ def _compute_invariant_masses(
     return DataSet(invariant_masses)
 
 
-def assert_isobar_topology(topology: Topology) -> None:
+def _assert_isobar_topology(topology: Topology) -> None:
     for node_id in topology.nodes:
-        assert_two_body_decay(topology, node_id)
+        _assert_two_body_decay(topology, node_id)
 
 
-def assert_two_body_decay(topology: Topology, node_id: int) -> None:
+def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
     parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
     if len(parent_state_ids) != 1:
         raise ValueError(
@@ -353,6 +377,15 @@ def determine_attached_final_state(
 
     These are attached downward (forward in time) for a given edge (resembling
     the root).
+
+    Example
+    -------
+    For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> determine_attached_final_state(topologies[0], state_id=5)
+    [0, 3, 4]
     """
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:

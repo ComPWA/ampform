@@ -337,18 +337,55 @@ def extract_particle_collection(
 def formulate_clebsch_gordan_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    """Compute two Clebsch-Gordan coefficients for a state transition node.
+    r"""Compute the two Clebsch-Gordan coefficients for a state transition node.
 
+    In the **canonical basis** (also called **partial wave basis**),
+    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>`
+    ensure that the projection of angular momentum is conserved
+    (:cite:`kutschkeAngularDistributionCookbook1996`, p. 4). When calling
+    :func:`~qrules.generate_transitions` with
+    :code:`formalism="canonical-helicity"`, AmpForm formulates the amplitude in
+    the canonical basis from amplitudes in the helicity basis using the
+    transformation in :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). See
+    also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
+
+    This function produces the two Clebsch-Gordan coefficients in
+    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay
+    :math:`1 \to 2, 3`, we get:
+
+    .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
+        :label: formulate_clebsch_gordan_coefficients
+
+    with:
+
+    - :math:`s_i` the intrinsic `Spin.magnitude
+      <qrules.particle.Spin.magnitude>` of each state :math:`i`,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products
+      (can be taken to be their `~qrules.transition.State.spin_projection` when
+      following a constistent boosting procedure),
+    - :math:`\lambda=\lambda_{2}-\lambda_{3}`,
+    - :math:`L` the *total* angular momentum of the final state pair
+      (`~qrules.quantum_numbers.InteractionProperties.l_magnitude`),
+    - :math:`S` the coupled spin magnitude of the final state pair
+      (`~qrules.quantum_numbers.InteractionProperties.s_magnitude`),
+    - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle
+      j1,m1;j2,m2|j3,m3\rangle`, as in :doc:`sympy:modules/physics/quantum/cg`.
+
+    Example
+    -------
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
-    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
-    >>> transition = reaction.transitions[0]
+    >>> transition = reaction.transitions[1]  # angular momentum 2
     >>> formulate_clebsch_gordan_coefficients(transition, node_id=0)
-    CG(0, 0, 1, 1, 1, 1)*CG(1, 1, 0, 0, 1, 1)
+    CG(1, -1, 0, 0, 1, -1)*CG(2, 0, 1, -1, 1, -1)
 
-    .. seealso:: :doc:`sympy:modules/physics/quantum/cg`
+    .. math::
+        C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
+        = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
+        = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
@@ -382,16 +419,48 @@ def formulate_clebsch_gordan_coefficients(
 
 
 def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
-    """Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
+    r"""Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
 
+    Following :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (10). For a
+    two-body decay :math:`1 \to 2, 3`, we get
+
+    .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
+        :label: formulate_wigner_d
+
+    with:
+
+    - :math:`s_1` the `Spin.magnitude <qrules.particle.Spin.magnitude>` of the
+      decaying state,
+    - :math:`m_1` the `~qrules.transition.State.spin_projection` of the
+      decaying state,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products in
+      in the restframe of :math:`1` (can be taken to be their intrinsic
+      `~qrules.transition.State.spin_projection` when following a constistent
+      boosting procedure),
+    - and :math:`\phi` and :math:`\theta` the helicity angles (see also
+      :func:`.get_helicity_angle_label`).
+
+    Note that :math:`\lambda_2, \lambda_3` are ordered by their number of
+    children, then by their state ID (see :class:`.TwoBodyDecay`).
+
+    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an
+    example of Wigner-:math:`D` functions in a *sequential* two-body decay.
+
+    Example
+    -------
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
-    ...     final_state=[("gamma", [+1]), "f(0)(980)"],
+    ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
     >>> transition = reaction.transitions[0]
     >>> formulate_wigner_d(transition, node_id=0)
-    WignerD(1, 1, 1, -phi_0, theta_0, 0)
+    WignerD(1, 1, -1, -phi_0, theta_0, 0)
+
+    .. math::
+        D^{s_1}_{m_1,\lambda_2-\lambda_3}\left(-\phi,\theta,0\right)
+        = D^{1}_{+1,(-1-0)}\left(-\phi_0,\theta_0,0\right)
+        = D^{1}_{1,-1}\left(-\phi_0,\theta_0,0\right)
     """
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
@@ -409,7 +478,10 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
 
 
 def get_prefactor(transition: StateTransition) -> float:
-    """Calculate the product of all prefactors defined in this transition."""
+    """Calculate the product of all prefactors defined in this transition.
+
+    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
+    """
     prefactor = 1.0
     for node_id in transition.topology.nodes:
         interaction = transition.interactions[node_id]

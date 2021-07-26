@@ -7,8 +7,12 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 
 import inspect
+import logging
+import textwrap
 from typing import Callable, Type, Union
 
+import attr
+import qrules
 import sympy as sp
 
 from ampform.dynamics import (
@@ -25,6 +29,13 @@ from ampform.dynamics import (
     relativistic_breit_wigner_with_ff,
 )
 from ampform.dynamics.math import ComplexSqrt
+from ampform.helicity import (
+    formulate_clebsch_gordan_coefficients,
+    formulate_wigner_d,
+)
+from ampform.kinematics import get_helicity_angle_label
+
+logging.getLogger().setLevel(logging.ERROR)
 
 
 def update_docstring(
@@ -120,6 +131,86 @@ def render_coupled_width() -> None:
     where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
     :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
     :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
+    """,
+    )
+
+
+def render_formulate_wigner_d() -> None:
+    update_docstring(
+        formulate_wigner_d,
+        __get_graphviz_state_transition_example("helicity"),
+    )
+
+
+def render_formulate_clebsch_gordan_coefficients() -> None:
+    update_docstring(
+        formulate_clebsch_gordan_coefficients,
+        __get_graphviz_state_transition_example(
+            formalism="canonical-helicity", transition_number=1
+        ),
+    )
+
+
+def __get_graphviz_state_transition_example(
+    formalism: str, transition_number: int = 0
+) -> str:
+    reaction = qrules.generate_transitions(
+        initial_state=[("J/psi(1S)", [+1])],
+        final_state=[("gamma", [-1]), "f(0)(980)"],
+        formalism=formalism,
+    )
+    transition = reaction.transitions[transition_number]
+    new_interaction = attr.evolve(
+        transition.interactions[0],
+        parity_prefactor=None,
+    )
+    interactions = dict(transition.interactions)
+    interactions[0] = new_interaction
+    transition = attr.evolve(transition, interactions=interactions)
+    dot = qrules.io.asdot(
+        transition,
+        render_initial_state_id=True,
+        render_node=True,
+    )
+    for state_id in [0, 1, -1]:
+        dot = dot.replace(
+            f'label="{state_id}: ',
+            f'label="{state_id+2}: ',
+        )
+    return f"""
+    .. graphviz::
+      :align: center
+
+{textwrap.indent(dot, 6 * ' ')}
+    """
+
+
+def render_get_helicity_angle_label() -> None:
+    topologies = qrules.topology.create_isobar_topologies(5)
+    dot1, dot2, *_ = tuple(
+        map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
+    )
+    assert len
+    update_docstring(
+        get_helicity_angle_label,
+        f"""
+
+    .. panels::
+      :body: text-center
+
+      .. graphviz::
+        :name: one-to-five-topology-0
+        :caption: :code:`topologies[0]`
+
+{textwrap.indent(dot1, 8 * ' ')}
+
+      ---
+
+      .. graphviz::
+        :name: one-to-five-topology-1
+        :caption: :code:`topologies[1]`
+
+{textwrap.indent(dot2, 8 * ' ')}
     """,
     )
 
