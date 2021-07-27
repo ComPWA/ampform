@@ -8,5 +8,10 @@ sphinx:
 formats:
   - htmlzip
 
-conda:
-  environment: environment.yml
+python:
+  version: 3.7
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - doc
