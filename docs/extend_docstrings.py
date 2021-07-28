@@ -9,9 +9,10 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 import inspect
 import logging
 import textwrap
-from typing import Callable, Type, Union
+from typing import Callable, Dict, Optional, Type, Union
 
 import attr
+import graphviz  # sphinx.ext.graphviz does not work well on RTD
 import qrules
 import sympy as sp
 
@@ -178,40 +179,36 @@ def __get_graphviz_state_transition_example(
             f'label="{state_id}: ',
             f'label="{state_id+2}: ',
         )
-    return f"""
-    .. graphviz::
-      :align: center
-
-{textwrap.indent(dot, 6 * ' ')}
-    """
+    return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
 
 def render_get_helicity_angle_label() -> None:
     topologies = qrules.topology.create_isobar_topologies(5)
-    dot1, dot2, *_ = tuple(
+    dot0, dot1, *_ = tuple(
         map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
     )
-    assert len
+    graphviz0 = _graphviz_to_image(
+        dot0,
+        indent=6,
+        caption=":code:`topologies[0]`",
+        label="one-to-five-topology-0",
+    )
+    graphviz1 = _graphviz_to_image(
+        dot1,
+        indent=6,
+        caption=":code:`topologies[1]`",
+        label="one-to-five-topology-1",
+    )
     update_docstring(
         get_helicity_angle_label,
         f"""
 
     .. panels::
       :body: text-center
-
-      .. graphviz::
-        :name: one-to-five-topology-0
-        :caption: :code:`topologies[0]`
-
-{textwrap.indent(dot1, 8 * ' ')}
+      {graphviz0}
 
       ---
-
-      .. graphviz::
-        :name: one-to-five-topology-1
-        :caption: :code:`topologies[1]`
-
-{textwrap.indent(dot2, 8 * ' ')}
+      {graphviz1}
     """,
     )
 
@@ -356,3 +353,32 @@ def insert_math() -> None:
                 f"Local function {name} should not have a signature"
             )
         definition()
+
+
+_GRAPHVIZ_COUNTER = 0
+_IMAGE_DIR = "_images"
+
+
+def _graphviz_to_image(  # pylint: disable=too-many-arguments
+    dot: str,
+    options: Optional[Dict[str, str]] = None,
+    format: str = "svg",
+    indent: int = 0,
+    caption: str = "",
+    label: str = "",
+) -> str:
+    if options is None:
+        options = {}
+    global _GRAPHVIZ_COUNTER  # pylint: disable=global-statement
+    output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
+    _GRAPHVIZ_COUNTER += 1
+    graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)
+    restructuredtext = "\n"
+    if label:
+        restructuredtext += f".. _{label}:\n"
+    restructuredtext += f".. figure:: /{_IMAGE_DIR}/{output_file}.{format}\n"
+    for option, value in options.items():
+        restructuredtext += f"  :{option}: {value}\n"
+    if caption:
+        restructuredtext += f"\n  {caption}\n"
+    return textwrap.indent(restructuredtext, indent * " ")

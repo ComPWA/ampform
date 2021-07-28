@@ -1,6 +1,7 @@
 *.doctree
 *.inv
 *build/
+_images/*
 api/
 
 !_static/*
