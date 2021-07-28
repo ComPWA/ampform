@@ -8,6 +8,10 @@ sphinx:
 formats:
   - htmlzip
 
+build:
+  apt_packages:
+    - graphviz
+
 python:
   version: 3.7
   install:
