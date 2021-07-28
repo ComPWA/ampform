@@ -1,0 +1,12 @@
+# Environment for Read the Docs
+# Using Conda instead of pip, because Conda allows for pip constraints
+name: ampform-rtd
+channels:
+  - defaults
+dependencies:
+  - python==3.8.*
+  - pip
+  - pip:
+      - |
+        -c ../.constraints/py3.8.txt
+        -e ..[doc]
