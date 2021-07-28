@@ -1,5 +1,6 @@
 # flake8: noqa
-# pylint: disable=invalid-name
+# pylint: disable=import-error,invalid-name
+# pyright: reportMissingImports=False
 
 """Extend docstrings of the API.
 
@@ -12,7 +13,9 @@ import textwrap
 from typing import Callable, Dict, Optional, Type, Union
 
 import attr
-import graphviz  # sphinx.ext.graphviz does not work well on RTD
+
+# sphinx.ext.graphviz does not work well on RTD
+import graphviz  # type: ignore
 import qrules
 import sympy as sp
 
