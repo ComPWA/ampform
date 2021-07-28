@@ -1,3 +1,15 @@
+ci:
+  autoupdate_commit_msg: "ci: autoupdate pre-commit hooks"
+  autoupdate_schedule: quarterly # already done by requirements-cron.yml
+  skip:
+    # local hooks
+    - flake8
+    - mypy
+    - pylint
+    # hooks that don't work on pre-commit.ci
+    - editorconfig-checker
+    - pyright
+
 repos:
   - repo: meta
     hooks:
