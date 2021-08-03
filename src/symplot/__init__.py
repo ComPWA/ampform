@@ -34,7 +34,7 @@ except ImportError:
 Slider = Union[FloatSlider, IntSlider]
 RangeDefinition = Union[
     Tuple[float, float],
-    Tuple[float, float, int],
+    Tuple[float, float, Union[float, int]],
 ]
 
 
@@ -151,10 +151,15 @@ class SliderKwargs(abc.Mapping):
                 )
                 continue
 
-    def set_ranges(
+    def set_ranges(  # noqa: R701
         self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
-        """Set min, max and (optionally) the nr of steps for each slider."""
+        """Set min, max and (optionally) the nr of steps for each slider.
+
+        .. tip::
+            :code:`n_steps` becomes the step **size** if its value is
+            `float`.
+        """
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
@@ -169,7 +174,10 @@ class SliderKwargs(abc.Mapping):
                 min_, max_, n_steps = range_def  # type: ignore
                 if n_steps <= 0:
                     raise ValueError("Number of steps has to be positive")
-                step_size = (max_ - min_) / n_steps
+                if isinstance(n_steps, float):
+                    step_size = n_steps
+                else:
+                    step_size = (max_ - min_) / n_steps
             else:
                 raise ValueError(
                     f'Range definition {range_def} for slider "{slider_name}"'
