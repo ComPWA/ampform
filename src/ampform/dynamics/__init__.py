@@ -11,7 +11,11 @@ from typing import Any, Optional
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 
-from .decorator import UnevaluatedExpression, implement_doit_method
+from .decorator import (
+    UnevaluatedExpression,
+    create_expression,
+    implement_doit_method,
+)
 from .math import ComplexSqrt
 
 try:
@@ -56,10 +60,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         **hints: Any,
     ) -> "BlattWeisskopfSquared":
         args = sp.sympify((angular_momentum, z))
-        if evaluate:
-            # pylint: disable=no-member
-            return sp.Expr.__new__(cls, *args, **hints).evaluate()
-        return sp.Expr.__new__(cls, *args, **hints)
+        return create_expression(cls, evaluate, *args, **hints)
 
     def evaluate(self) -> sp.Expr:
         angular_momentum, z = self.args
