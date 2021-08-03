@@ -24,6 +24,7 @@ from typing import (
     Iterator,
     Mapping,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -282,6 +283,28 @@ def _extract_slider_symbols(
         )
     ordered_symbols = sorted(expression.free_symbols, key=lambda s: s.name)
     return tuple(s for s in ordered_symbols if s != plot_symbol)
+
+
+def partial_doit(
+    expression: sp.Expr,
+    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic]]],
+) -> sp.Expr:
+    """Perform :meth:`~sympy.core.basic.Basic.doit` up to a certain level.
+
+    Arguments
+    ---------
+    expression: the `~sympy.core.expr.Expr` on which you want to perform a
+        :meth:`~sympy.core.basic.Basic.doit`.
+    doit_classes: types on which the :meth:`~sympy.core.basic.Basic.doit`
+        should be performed.
+    """
+    new_expression = expression
+    for node in sp.preorder_traversal(expression):
+        if isinstance(node, doit_classes):
+            new_expression = new_expression.xreplace(
+                {node: node.doit(deep=False)}
+            )
+    return new_expression
 
 
 def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
