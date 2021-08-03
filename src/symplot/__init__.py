@@ -1,3 +1,4 @@
+# cspell:ignore rpartition
 # pylint: disable=redefined-builtin
 """Create interactive plots for `sympy` expressions.
 
@@ -7,6 +8,10 @@ this module.
 
 The module is only available here, under the documentation. If this feature
 turns out to be popular, it can be published as an independent package.
+
+The package also provides other helpful functions, like
+:func:`substitute_indexed_symbols`, that are useful when visualizing
+`sympy` expressions.
 """
 
 import inspect
@@ -25,6 +30,7 @@ from typing import (
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
+from sympy.printing.latex import translate
 
 try:
     from IPython.lib.pretty import PrettyPrinter
@@ -276,3 +282,26 @@ def _extract_slider_symbols(
         )
     ordered_symbols = sorted(expression.free_symbols, key=lambda s: s.name)
     return tuple(s for s in ordered_symbols if s != plot_symbol)
+
+
+def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
+    base_name, _, _ = str(idx).rpartition("[")
+    subscript = ",".join(map(str, idx.indices))
+    if len(idx.indices) > 1:
+        base_name = translate(base_name)
+        subscript = "_{" + subscript + "}"
+    return sp.Symbol(f"{base_name}{subscript}")
+
+
+def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
+    """Substitute `~sympy.tensor.indexed.IndexedBase` with symbols.
+
+    See :doc:`compwa-org:report/008` for more info.
+    """
+    return expression.subs(
+        {
+            s: _indexed_to_symbol(s)
+            for s in expression.free_symbols
+            if isinstance(s, sp.Indexed)
+        }
+    )
