@@ -3,7 +3,6 @@
 from typing import Iterable, List, Tuple
 
 import attr
-from qrules.particle import Spin
 from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import State, StateTransition
 
@@ -92,24 +91,6 @@ class TwoBodyDecay:
             f"Spin magnitude ({spin_magnitude}) of single particle state cannot be"
             f" used as the angular momentum as it is not integral!"
         )
-
-
-def get_angular_momentum(interaction: InteractionProperties) -> Spin:
-    l_magnitude = interaction.l_magnitude
-    l_projection = interaction.l_projection
-    if l_magnitude is None or l_projection is None:
-        raise TypeError(
-            "Angular momentum L not defined!", l_magnitude, l_projection
-        )
-    return Spin(l_magnitude, l_projection)
-
-
-def get_coupled_spin(interaction: InteractionProperties) -> Spin:
-    s_magnitude = interaction.s_magnitude
-    s_projection = interaction.s_projection
-    if s_magnitude is None or s_projection is None:
-        raise TypeError("Coupled spin S not defined!")
-    return Spin(s_magnitude, s_projection)
 
 
 def get_helicity_info(
