@@ -34,7 +34,7 @@ except ImportError:
 Slider = Union[FloatSlider, IntSlider]
 RangeDefinition = Union[
     Tuple[float, float],
-    Tuple[float, float, int],
+    Tuple[float, float, Union[float, int]],
 ]
 
 
@@ -52,11 +52,11 @@ class SliderKwargs(abc.Mapping):
         arg_to_symbol: Mapping[str, str],
     ) -> None:
         self._verify_arguments(sliders, arg_to_symbol)
-        self.__sliders = dict(sliders)
-        self.__arg_to_symbol = {
+        self._sliders = dict(sliders)
+        self._arg_to_symbol = {
             arg: symbol
             for arg, symbol in arg_to_symbol.items()
-            if symbol in self.__sliders
+            if symbol in self._sliders
         }
 
     @staticmethod
@@ -90,13 +90,13 @@ class SliderKwargs(abc.Mapping):
         """Get slider by symbol, symbol name, or argument name."""
         if isinstance(key, sp.Symbol):
             key = key.name
-        if key in self.__arg_to_symbol:
-            slider_name = self.__arg_to_symbol[key]
+        if key in self._arg_to_symbol:
+            slider_name = self._arg_to_symbol[key]
         else:
             slider_name = key
-        if slider_name not in self.__sliders:
+        if slider_name not in self._sliders:
             raise KeyError(f'"{key}" is neither an argument nor a symbol name')
-        return self.__sliders[slider_name]
+        return self._sliders[slider_name]
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over the arguments of the `.LambdifiedExpression`.
@@ -104,16 +104,16 @@ class SliderKwargs(abc.Mapping):
         This is useful for unpacking an instance of `SliderKwargs` as
         :term:`kwargs <python:keyword argument>`.
         """
-        return self.__arg_to_symbol.__iter__()
+        return self._arg_to_symbol.__iter__()
 
     def __len__(self) -> int:
-        return len(self.__sliders)
+        return len(self._sliders)
 
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
-            f"sliders={self.__sliders}, "
-            f"arg_to_symbol={self.__arg_to_symbol})"
+            f"sliders={self._sliders}, "
+            f"arg_to_symbol={self._arg_to_symbol})"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -124,11 +124,11 @@ class SliderKwargs(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}("):
                 p.breakable()
                 p.text("sliders=")
-                p.pretty(self.__sliders)
+                p.pretty(self._sliders)
                 p.text(",")
                 p.breakable()
                 p.text("arg_to_symbol=")
-                p.pretty(self.__arg_to_symbol)
+                p.pretty(self._arg_to_symbol)
                 p.text(",")
             p.breakable()
             p.text(")")
@@ -151,10 +151,15 @@ class SliderKwargs(abc.Mapping):
                 )
                 continue
 
-    def set_ranges(
+    def set_ranges(  # noqa: R701
         self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
-        """Set min, max and (optionally) the nr of steps for each slider."""
+        """Set min, max and (optionally) the nr of steps for each slider.
+
+        .. tip::
+            :code:`n_steps` becomes the step **size** if its value is
+            `float`.
+        """
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
@@ -169,7 +174,10 @@ class SliderKwargs(abc.Mapping):
                 min_, max_, n_steps = range_def  # type: ignore
                 if n_steps <= 0:
                     raise ValueError("Number of steps has to be positive")
-                step_size = (max_ - min_) / n_steps
+                if isinstance(n_steps, float):
+                    step_size = n_steps
+                else:
+                    step_size = (max_ - min_) / n_steps
             else:
                 raise ValueError(
                     f'Range definition {range_def} for slider "{slider_name}"'
@@ -224,16 +232,16 @@ def prepare_sliders(
     SliderKwargs(...)
     """
     slider_symbols = _extract_slider_symbols(expression, plot_symbol)
-    sliders_mapping = {
-        symbol.name: create_slider(symbol) for symbol in slider_symbols
-    }
     lambdified_expression = sp.lambdify(
         (plot_symbol, *slider_symbols),
         expression,
-        "numpy",
+        modules="numpy",
     )
-    symbols_names = list(map(lambda s: s.name, (plot_symbol, *slider_symbols)))
-    arg_names = list(inspect.signature(lambdified_expression).parameters)
+    sliders_mapping = {
+        symbol.name: create_slider(symbol) for symbol in slider_symbols
+    }
+    symbols_names = map(lambda s: s.name, (plot_symbol, *slider_symbols))
+    arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names))
     sliders = SliderKwargs(sliders_mapping, arg_to_symbol)
     return lambdified_expression, sliders

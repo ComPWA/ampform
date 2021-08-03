@@ -1,7 +1,16 @@
 # pylint: disable=eval-used, no-self-use, protected-access, redefined-outer-name
 import logging
 from copy import deepcopy
-from typing import Any, Callable, Dict, Optional, Pattern, Type, no_type_check
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    Pattern,
+    Type,
+    Union,
+    no_type_check,
+)
 
 import pytest
 import sympy as sp
@@ -93,6 +102,7 @@ class TestSliderKwargs:
             ("n", 10, 20, 20, 1),
             ("alpha", -1.5, 0.7, None, 0.1),
             ("alpha", 8, 10, 4, 0.5),
+            ("alpha", 8, 10, 0.5, 0.5),
         ],
     )
     def test_set_ranges(  # pylint: disable=too-many-arguments
@@ -100,7 +110,7 @@ class TestSliderKwargs:
         slider_name: str,
         min_: float,
         max_: float,
-        n_steps: Optional[int],
+        n_steps: Optional[Union[float, int]],
         step_size: float,
         slider_kwargs: SliderKwargs,
     ) -> None:
