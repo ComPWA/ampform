@@ -1,8 +1,6 @@
 """Tools for defining lineshapes with `sympy`."""
 
-import inspect
 from abc import abstractmethod
-from collections import OrderedDict
 from typing import Any, Callable, Type
 
 import sympy as sp
@@ -101,30 +99,3 @@ def implement_doit_method() -> Callable[
         return decorated_class
 
     return decorator
-
-
-def verify_signature(builder: Callable, protocol: Type[Callable]) -> None:
-    """Check signature of a builder function dynamically.
-
-    Dynamically check whether a builder has the same signature as that of the
-    given `~typing.Protocol` (a `~typing.Callable`). This function is needed
-    because :func:`typing.runtime_checkable` only checks members and methods,
-    not the signature of those methods.
-    """
-    expected_signature = inspect.signature(protocol.__call__)
-    signature = inspect.signature(builder)
-    if signature.return_annotation != expected_signature.return_annotation:
-        raise ValueError(
-            f'Builder "{builder.__name__}" has return type {expected_signature.return_annotation};'
-            f" expected {signature.return_annotation}"
-        )
-    expected_parameters = OrderedDict(expected_signature.parameters.items())
-    del expected_parameters["self"]
-    assert signature.return_annotation == expected_signature.return_annotation
-    if signature.parameters != expected_parameters:
-        raise ValueError(
-            f'Builder "{builder.__name__}" has parameters\n'
-            f"  {list(signature.parameters.values())}\n"
-            "This should be\n"
-            f"  {list(expected_parameters.values())}"
-        )

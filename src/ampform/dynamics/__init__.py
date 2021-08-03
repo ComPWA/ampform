@@ -11,11 +11,7 @@ from typing import Any, Optional
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 
-from .decorator import (
-    UnevaluatedExpression,
-    implement_doit_method,
-    verify_signature,
-)
+from .decorator import UnevaluatedExpression, implement_doit_method
 from .math import ComplexSqrt
 
 try:
@@ -296,8 +292,6 @@ def coupled_width(  # pylint: disable=too-many-arguments
     """
     if phsp_factor is None:
         phsp_factor = phase_space_factor
-    else:
-        verify_signature(phsp_factor, PhaseSpaceFactor)
     assert phsp_factor is not None  # pyright v1.1.151
     q_squared = breakup_momentum_squared(s, m_a, m_b)
     q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
