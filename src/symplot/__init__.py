@@ -52,11 +52,11 @@ class SliderKwargs(abc.Mapping):
         arg_to_symbol: Mapping[str, str],
     ) -> None:
         self._verify_arguments(sliders, arg_to_symbol)
-        self.__sliders = dict(sliders)
-        self.__arg_to_symbol = {
+        self._sliders = dict(sliders)
+        self._arg_to_symbol = {
             arg: symbol
             for arg, symbol in arg_to_symbol.items()
-            if symbol in self.__sliders
+            if symbol in self._sliders
         }
 
     @staticmethod
@@ -90,13 +90,13 @@ class SliderKwargs(abc.Mapping):
         """Get slider by symbol, symbol name, or argument name."""
         if isinstance(key, sp.Symbol):
             key = key.name
-        if key in self.__arg_to_symbol:
-            slider_name = self.__arg_to_symbol[key]
+        if key in self._arg_to_symbol:
+            slider_name = self._arg_to_symbol[key]
         else:
             slider_name = key
-        if slider_name not in self.__sliders:
+        if slider_name not in self._sliders:
             raise KeyError(f'"{key}" is neither an argument nor a symbol name')
-        return self.__sliders[slider_name]
+        return self._sliders[slider_name]
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over the arguments of the `.LambdifiedExpression`.
@@ -104,16 +104,16 @@ class SliderKwargs(abc.Mapping):
         This is useful for unpacking an instance of `SliderKwargs` as
         :term:`kwargs <python:keyword argument>`.
         """
-        return self.__arg_to_symbol.__iter__()
+        return self._arg_to_symbol.__iter__()
 
     def __len__(self) -> int:
-        return len(self.__sliders)
+        return len(self._sliders)
 
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
-            f"sliders={self.__sliders}, "
-            f"arg_to_symbol={self.__arg_to_symbol})"
+            f"sliders={self._sliders}, "
+            f"arg_to_symbol={self._arg_to_symbol})"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -124,11 +124,11 @@ class SliderKwargs(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}("):
                 p.breakable()
                 p.text("sliders=")
-                p.pretty(self.__sliders)
+                p.pretty(self._sliders)
                 p.text(",")
                 p.breakable()
                 p.text("arg_to_symbol=")
-                p.pretty(self.__arg_to_symbol)
+                p.pretty(self._arg_to_symbol)
                 p.text(",")
             p.breakable()
             p.text(")")
