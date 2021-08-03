@@ -230,6 +230,7 @@
         "xaxis",
         "xlabel",
         "xlim",
+        "xreplace",
         "yaxis",
         "ylabel",
         "ylim",
