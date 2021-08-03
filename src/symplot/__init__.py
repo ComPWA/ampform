@@ -224,16 +224,16 @@ def prepare_sliders(
     SliderKwargs(...)
     """
     slider_symbols = _extract_slider_symbols(expression, plot_symbol)
-    sliders_mapping = {
-        symbol.name: create_slider(symbol) for symbol in slider_symbols
-    }
     lambdified_expression = sp.lambdify(
         (plot_symbol, *slider_symbols),
         expression,
-        "numpy",
+        modules="numpy",
     )
-    symbols_names = list(map(lambda s: s.name, (plot_symbol, *slider_symbols)))
-    arg_names = list(inspect.signature(lambdified_expression).parameters)
+    sliders_mapping = {
+        symbol.name: create_slider(symbol) for symbol in slider_symbols
+    }
+    symbols_names = map(lambda s: s.name, (plot_symbol, *slider_symbols))
+    arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names))
     sliders = SliderKwargs(sliders_mapping, arg_to_symbol)
     return lambdified_expression, sliders
