@@ -17,9 +17,6 @@ from . import (
     relativistic_breit_wigner_with_ff,
 )
 
-# pyright: reportUnusedImport=false
-from .decorator import verify_signature  # noqa: F401
-
 try:
     from typing import Protocol
 except ImportError:

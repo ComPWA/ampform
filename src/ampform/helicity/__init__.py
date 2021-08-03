@@ -32,7 +32,6 @@ from sympy.printing.latex import LatexPrinter
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
-    verify_signature,
 )
 from ampform.kinematics import (
     HelicityAdapter,
@@ -150,7 +149,6 @@ class HelicityAmplitudeBuilder:
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        verify_signature(dynamics_builder, ResonanceDynamicsBuilder)
         for transition in self.__reaction.transitions:
             for node_id in transition.topology.nodes:
                 decay = TwoBodyDecay.from_transition(transition, node_id)
