@@ -93,6 +93,7 @@ autodoc_default_options = {
             "default_assumptions",
             "doit",
             "evaluate",
+            "is_commutative",
         ]
     ),
     "members": True,
