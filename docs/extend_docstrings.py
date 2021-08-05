@@ -24,8 +24,8 @@ from ampform.dynamics import (
     BreakupMomentumSquared,
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,
+    PhaseSpaceFactorAnalytic,
     coupled_width,
-    phase_space_factor_analytic,
     phase_space_factor_complex,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
@@ -235,13 +235,17 @@ def render_phase_space_factor_abs() -> None:
 
 def render_phase_space_factor_analytic() -> None:
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
-    rho = phase_space_factor_analytic(s, m_a, m_b)
+    rho = PhaseSpaceFactorAnalytic(s, m_a, m_b)
     rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor_analytic,
+        PhaseSpaceFactorAnalytic,
         fR"""
-    .. math:: {sp.latex(rho)}
-        :label: phase_space_factor_analytic
+    .. math::
+        :label: PhaseSpaceFactorAnalytic
+
+        {latex}
 
     with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
     :eq:`PhaseSpaceFactorAbs`.

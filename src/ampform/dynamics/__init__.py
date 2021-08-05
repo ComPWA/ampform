@@ -173,7 +173,7 @@ class PhaseSpaceFactorProtocol(Protocol):
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance `.PhaseSpaceFactor` and
-    :func:`.phase_space_factor_analytic`.
+    `.PhaseSpaceFactorAnalytic`.
     """
 
     def __call__(
@@ -219,7 +219,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     This version of the phase space factor is often denoted as
     :math:`\hat{\rho}` and is used in analytic continuation
-    (:func:`.phase_space_factor_analytic`).
+    (`.PhaseSpaceFactorAnalytic`).
     """
 
     is_commutative = True
@@ -240,9 +240,8 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return fR"\hat{{\rho}}\left({s}\right)"
 
 
-def phase_space_factor_analytic(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
+@implement_doit_method()
+class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
@@ -251,9 +250,23 @@ def phase_space_factor_analytic(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    s_threshold = (m_a + m_b) ** 2
-    return _analytic_continuation(rho_hat, s, s_threshold)
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorAnalytic":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
+        s_threshold = (m_a + m_b) ** 2
+        return _analytic_continuation(rho_hat, s, s_threshold)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho_\mathrm{{ac}}\!\left({s}\right)"
 
 
 def _analytic_continuation(
