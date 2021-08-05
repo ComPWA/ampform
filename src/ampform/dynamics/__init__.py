@@ -12,11 +12,12 @@ from typing import Any, Optional
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 
-from .decorator import (
+from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
     implement_doit_method,
 )
+
 from .math import ComplexSqrt
 
 try:
