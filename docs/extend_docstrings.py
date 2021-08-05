@@ -21,14 +21,12 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
-    _analytic_continuation,
-    breakup_momentum,
-    breakup_momentum_squared,
-    coupled_width,
-    phase_space_factor,
-    phase_space_factor_abs,
-    phase_space_factor_analytic,
-    phase_space_factor_complex,
+    BreakupMomentumSquared,
+    CoupledWidth,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,
+    PhaseSpaceFactorAnalytic,
+    PhaseSpaceFactorComplex,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -63,26 +61,20 @@ def render_blatt_weisskopf() -> None:
     )
 
 
-def render_breakup_momentum() -> None:
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    q = breakup_momentum(s, m_a, m_b)
-    update_docstring(
-        breakup_momentum,
-        f"""
-    .. math:: q(s) = {sp.latex(q)}
-        :label: breakup_momentum
-    """,
-    )
-
-
 def render_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    q_squared = BreakupMomentumSquared(s, m_a, m_b)
+    latex = sp.multiline_latex(
+        q_squared, q_squared.doit(), environment="eqnarray"
+    )
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        breakup_momentum_squared,
+        BreakupMomentumSquared,
         f"""
-    .. math:: q^2(s) = {sp.latex(q_squared)}
-        :label: breakup_momentum_squared
+    .. math::
+        :label: BreakupMomentumSquared
+
+        {latex}
     """,
     )
 
@@ -101,41 +93,32 @@ def render_complex_sqrt() -> None:
 
 def render_coupled_width() -> None:
     L = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
-    running_width = coupled_width(
+    s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
+    width = CoupledWidth(
         s=s,
         mass0=m0,
         gamma0=w0,
         m_a=m_a,
         m_b=m_b,
         angular_momentum=L,
-        meson_radius=d,
+        meson_radius=1,
     )
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    q0_squared = breakup_momentum_squared(m0 ** 2, m_a, m_b)
-    form_factor_sq = BlattWeisskopfSquared(L, z=q_squared * d ** 2)
-    form_factor0_sq = BlattWeisskopfSquared(L, z=q0_squared * d ** 2)
-    rho = phase_space_factor(s, m_a, m_b)
-    rho0 = phase_space_factor(m0 ** 2, m_a, m_b)
-    running_width = running_width.subs(
-        {
-            rho / rho0: sp.Symbol(R"\rho(s)") / sp.Symbol(R"\rho(m_{0})"),
-            form_factor_sq: sp.Symbol("B_{L}^2(q)"),
-            form_factor0_sq: sp.Symbol("B_{L}^2(q_{0})"),
-        }
-    )
+    latex = sp.multiline_latex(width, width.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        coupled_width,
+        CoupledWidth,
         fR"""
     With that in mind, the "mass-dependent" width in a
     `.relativistic_breit_wigner_with_ff` becomes:
 
-    .. math:: \Gamma(s) = {sp.latex(running_width)}
-        :label: coupled_width
+    .. math::
+        :label: CoupledWidth
 
-    where :math:`B_L^2(q)` is defined by :eq:`BlattWeisskopfSquared`,
-    :math:`q(s)` is defined by :eq:`breakup_momentum_squared`, and
-    :math:`\rho(s)` is (by default) defined by :eq:`phase_space_factor`.
+        {latex}
+
+    where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
+    defined by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default)
+    defined by :eq:`PhaseSpaceFactor`.
     """,
     )
 
@@ -218,68 +201,77 @@ def render_get_helicity_angle_label() -> None:
 
 def render_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = phase_space_factor(s, m_a, m_b)
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho = rho.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    rho = PhaseSpaceFactor(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor,
+        PhaseSpaceFactor,
         f"""
 
-    .. math:: {sp.latex(rho)}
-        :label: phase_space_factor
+    .. math::
+        :label: PhaseSpaceFactor
 
-    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
+        {latex}
+
+    with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
 
 
 def render_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho_hat = phase_space_factor_abs(s, m_a, m_b)
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho_hat = rho_hat.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    rho = PhaseSpaceFactorAbs(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor_abs,
+        PhaseSpaceFactorAbs,
         fR"""
 
-    .. math:: \hat{{\rho}} = {sp.latex(rho_hat)}
-        :label: phase_space_factor_abs
+    .. math::
+        :label: PhaseSpaceFactorAbs
 
-    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
+        {latex}
+
+    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
 
 
 def render_phase_space_factor_analytic() -> None:
-    s, m_a, m_b, rho_hat_symbol = sp.symbols(R"s, m_a, m_b, \hat{\rho}")
-    rho_analytic = _analytic_continuation(
-        rho_hat_symbol, s, s_threshold=(m_a + m_b) ** 2
-    )
+    s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
+    rho = PhaseSpaceFactorAnalytic(s, m_a, m_b)
+    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor_analytic,
+        PhaseSpaceFactorAnalytic,
         fR"""
-    .. math:: {sp.latex(rho_analytic)}
-        :label: phase_space_factor_analytic
+    .. math::
+        :label: PhaseSpaceFactorAnalytic
 
-    with :math:`\hat{{\rho}}` defined by :func:`.phase_space_factor_abs`
-    :eq:`phase_space_factor_abs`.
+        {latex}
+
+    with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
+    :eq:`PhaseSpaceFactorAbs`.
     """,
     )
 
 
 def render_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = phase_space_factor_complex(s, m_a, m_b)
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    rho = rho.subs({4 * q_squared: 4 * sp.Symbol("q^{2}(s)")})
+    rho = PhaseSpaceFactorComplex(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor_complex,
+        PhaseSpaceFactorComplex,
         fR"""
 
-    .. math:: \hat{{\rho}} = {sp.latex(rho)}
-        :label: phase_space_factor_complex
+    .. math::
+        :label: PhaseSpaceFactorComplex
 
-    with :math:`q^2(s)` defined as :eq:`breakup_momentum_squared`.
+        {latex}
+
+    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
 
@@ -308,16 +300,6 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    ff_sq = BlattWeisskopfSquared(L, z=q_squared * d ** 2)
-    mass_dependent_width = coupled_width(s, m0, w0, m_a, m_b, L, d)
-    rel_bw_with_ff = rel_bw_with_ff.subs(
-        {
-            2 * q_squared: 2 * sp.Symbol("q^{2}(s)"),
-            ff_sq: sp.Symbol(R"B_{L}^2\left(q(s)\right)"),
-            mass_dependent_width: sp.Symbol(R"\Gamma(s)"),
-        }
-    )
     update_docstring(
         relativistic_breit_wigner_with_ff,
         fR"""
@@ -327,9 +309,9 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
 
-    where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L^2(q)`
-    is defined by :eq:`BlattWeisskopfSquared`, and :math:`q(s)` is defined by
-    :eq:`breakup_momentum_squared`.
+    where :math:`\Gamma(s)` is defined by :eq:`CoupledWidth`, :math:`B_L^2` is
+    defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
+    :eq:`BreakupMomentumSquared`.
     """,
     )
 

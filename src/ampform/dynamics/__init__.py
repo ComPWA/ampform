@@ -1,4 +1,5 @@
-# cspell:ignore Asner
+# cspell:ignore Asner mhash
+# pylint: disable=arguments-differ
 # pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics of an interaction.
 
@@ -34,7 +35,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
             and :math:`q` the breakup-momentum (see
-            :func:`breakup_momentum_squared`).
+            :func:`BreakupMomentumSquared`).
 
     Note that equal powers of :math:`z` appear in the nominator and the
     denominator, while some sources have nominator :math:`1`, instead of
@@ -52,11 +53,8 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     """
     is_commutative = True
 
-    def __new__(  # pylint: disable=arguments-differ
-        cls,
-        angular_momentum: sp.Symbol,
-        z: sp.Symbol,
-        **hints: Any,
+    def __new__(
+        cls, angular_momentum: sp.Symbol, z: sp.Symbol, **hints: Any
     ) -> "BlattWeisskopfSquared":
         return create_expression(cls, angular_momentum, z, **hints)
 
@@ -156,7 +154,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
-        return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
+        return fR"B_{{{angular_momentum}}}^2\!\left({z}\right)"
 
 
 def relativistic_breit_wigner(
@@ -170,12 +168,12 @@ def relativistic_breit_wigner(
     return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
 
 
-class PhaseSpaceFactor(Protocol):
-    """Protocol that is used by :func:`.coupled_width`.
+class PhaseSpaceFactorProtocol(Protocol):
+    """Protocol that is used by `.CoupledWidth`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
-    space factor. Compare for instance :func:`.phase_space_factor` and
-    :func:`.phase_space_factor_analytic`.
+    space factor. Compare for instance `.PhaseSpaceFactor` and
+    `.PhaseSpaceFactorAnalytic`.
     """
 
     def __call__(
@@ -185,39 +183,66 @@ class PhaseSpaceFactor(Protocol):
         ...
 
 
-def phase_space_factor(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Standard phase-space factor, using :func:`breakup_momentum_squared`.
+@implement_doit_method()
+class PhaseSpaceFactor(UnevaluatedExpression):
+    """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
     """
-    return breakup_momentum(s, m_a, m_b) / _phase_space_factor_denominator(s)
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactor":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return sp.sqrt(q_squared) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho\!\left({s}\right)"
 
 
-def phase_space_factor_abs(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
+@implement_doit_method()
+class PhaseSpaceFactorAbs(UnevaluatedExpression):
     r"""Phase space factor square root over the absolute value.
 
-    As opposed to :func:`.phase_space_factor`, this takes the
+    As opposed to `.PhaseSpaceFactor`, this takes the
     `~sympy.functions.elementary.complexes.Abs` value of
-    :func:`.breakup_momentum_squared`, then the
+    `.BreakupMomentumSquared`, then the
     :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
 
     This version of the phase space factor is often denoted as
     :math:`\hat{\rho}` and is used in analytic continuation
-    (:func:`.phase_space_factor_analytic`).
+    (`.PhaseSpaceFactorAnalytic`).
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return sp.sqrt(sp.Abs(q_squared)) / denominator
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorAbs":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return sp.sqrt(sp.Abs(q_squared)) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\hat{{\rho}}\left({s}\right)"
 
 
-def phase_space_factor_analytic(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Analytic continuation for the :func:`phase_space_factor`.
+@implement_doit_method()
+class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
+    """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
@@ -225,9 +250,49 @@ def phase_space_factor_analytic(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho_hat = phase_space_factor_abs(s, m_a, m_b)
-    s_threshold = (m_a + m_b) ** 2
-    return _analytic_continuation(rho_hat, s, s_threshold)
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorAnalytic":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
+        s_threshold = (m_a + m_b) ** 2
+        return _analytic_continuation(rho_hat, s, s_threshold)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho_\mathrm{{ac}}\!\left({s}\right)"
+
+
+@implement_doit_method()
+class PhaseSpaceFactorComplex(UnevaluatedExpression):
+    """Phase-space factor with `.ComplexSqrt`.
+
+    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
+    """
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorComplex":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return ComplexSqrt(q_squared) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho_\mathrm{{c}}\!\left({s}\right)"
 
 
 def _analytic_continuation(
@@ -249,38 +314,17 @@ def _analytic_continuation(
     )
 
 
-def phase_space_factor_complex(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Phase-space factor with `.ComplexSqrt`.
-
-    Same as :func:`phase_space_factor`, but using a `.ComplexSqrt` that does
-    have defined behavior for defined for negative input values.
-    """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return ComplexSqrt(q_squared) / denominator
-
-
 def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
     return 8 * sp.pi * sp.sqrt(s)
 
 
-def coupled_width(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactor] = None,
-) -> sp.Expr:
+@implement_doit_method()
+class CoupledWidth(UnevaluatedExpression):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6). Default value for
-    :code:`phsp_factor` is :meth:`phase_space_factor`.
+    :code:`phsp_factor` is :meth:`PhaseSpaceFactor`.
 
     Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the
     sense that equal powers of :math:`z` appear in the nominator and the
@@ -289,20 +333,61 @@ def coupled_width(  # pylint: disable=too-many-arguments
     that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
     in the definition for :math:`\Gamma(m)`.
     """
-    if phsp_factor is None:
-        phsp_factor = phase_space_factor
-    assert phsp_factor is not None  # pyright v1.1.151
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
-    q0_squared = breakup_momentum_squared(mass0 ** 2, m_a, m_b)
-    form_factor_sq = BlattWeisskopfSquared(
-        angular_momentum, z=q_squared * meson_radius ** 2
-    )
-    form_factor0_sq = BlattWeisskopfSquared(
-        angular_momentum, z=q0_squared * meson_radius ** 2
-    )
-    rho = phsp_factor(s, m_a, m_b)
-    rho0 = phsp_factor(mass0 ** 2, m_a, m_b)
-    return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
+
+    # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
+    __slots__ = ("phsp_factor",)
+    is_commutative = True
+
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        s: sp.Symbol,
+        mass0: sp.Symbol,
+        gamma0: sp.Symbol,
+        m_a: sp.Symbol,
+        m_b: sp.Symbol,
+        angular_momentum: sp.Symbol,
+        meson_radius: sp.Symbol,
+        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+        evaluate: bool = False,
+    ) -> "CoupledWidth":
+        args = sp.sympify(
+            (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
+        )
+        if phsp_factor is None:
+            phsp_factor = PhaseSpaceFactor
+        # Overwritting Basic.__new__ to store phase space factor type
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        expr = object.__new__(cls)
+        expr._assumptions = cls.default_assumptions
+        expr._mhash = None
+        expr._args = args
+        expr.phsp_factor = PhaseSpaceFactor
+        if evaluate:
+            return expr.evaluate()  # pylint: disable=no-member
+        return expr
+
+    def __getnewargs__(self) -> tuple:
+        # Pickling support, see
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        return (*self.args, self.phsp_factor)
+
+    def evaluate(self) -> sp.Expr:
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
+        form_factor_sq = BlattWeisskopfSquared(
+            angular_momentum, z=q_squared * meson_radius ** 2
+        )
+        form_factor0_sq = BlattWeisskopfSquared(
+            angular_momentum, z=q0_squared * meson_radius ** 2
+        )
+        rho = self.phsp_factor(s, m_a, m_b)
+        rho0 = self.phsp_factor(mass0 ** 2, m_a, m_b)
+        return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\Gamma\!\left({s}\right)"
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
@@ -313,7 +398,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     m_b: sp.Symbol,
     angular_momentum: sp.Symbol,
     meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactor] = None,
+    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
@@ -324,12 +409,12 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2020; Resonances; p.6`.
     """
-    q_squared = breakup_momentum_squared(s, m_a, m_b)
+    q_squared = BreakupMomentumSquared(s, m_a, m_b)
     ff_squared = BlattWeisskopfSquared(
         angular_momentum, z=q_squared * meson_radius ** 2
     )
     form_factor = sp.sqrt(ff_squared)
-    mass_dependent_width = coupled_width(
+    mass_dependent_width = CoupledWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return (mass0 * gamma0 * form_factor) / (
@@ -337,8 +422,9 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def breakup_momentum(s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol) -> sp.Expr:
-    r"""Two-body breakup-up momentum.
+@implement_doit_method()
+class BreakupMomentumSquared(UnevaluatedExpression):
+    r"""Squared value of the two-body break-up momentum.
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
@@ -352,18 +438,21 @@ def breakup_momentum(s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol) -> sp.Expr:
         m_a: Mass of decay product :math:`a`.
         m_b: Mass of decay product :math:`b`.
 
-    See :pdg-review:`2020; Kinematics; p.3`.
+    It's up to the caller in which way to take the square root of this break-up
+    momentum.See :doc:`usage/analytic-continuation` and `.ComplexSqrt`.
     """
-    return sp.sqrt(breakup_momentum_squared(s, m_a, m_b))
 
+    is_commutative = True
 
-def breakup_momentum_squared(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Squared value of the two-body `.breakup_momentum`.
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "BreakupMomentumSquared":
+        return create_expression(cls, s, m_a, m_b, **hints)
 
-    This version of the break-up momentum is useful if you do not want to take
-    a simple square root. See :func:`.breakup_momentum` and
-    :doc:`usage/analytic-continuation`.
-    """
-    return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"q^2\!\left({s}\right)"

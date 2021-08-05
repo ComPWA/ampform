@@ -9,10 +9,10 @@ from qrules.particle import Particle
 
 from . import (
     BlattWeisskopfSquared,
+    BreakupMomentumSquared,
     PhaseSpaceFactor,
-    breakup_momentum_squared,
-    phase_space_factor,
-    phase_space_factor_analytic,
+    PhaseSpaceFactorAnalytic,
+    PhaseSpaceFactorProtocol,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -82,7 +82,7 @@ def create_non_dynamic_with_ff(
         raise ValueError(
             "Angular momentum is not defined but is required in the form factor!"
         )
-    q_squared = breakup_momentum_squared(
+    q_squared = BreakupMomentumSquared(
         s=variable_pool.incoming_state_mass ** 2,
         m_a=variable_pool.outgoing_state_mass1,
         m_b=variable_pool.outgoing_state_mass2,
@@ -118,7 +118,7 @@ def create_relativistic_breit_wigner(
 
 
 def _make_relativistic_breit_wigner_with_ff(
-    phsp_factor: PhaseSpaceFactor,
+    phsp_factor: PhaseSpaceFactorProtocol,
     docstring: str,
 ) -> ResonanceDynamicsBuilder:
     """Factory for `.relativistic_breit_wigner_with_ff`."""
@@ -161,11 +161,11 @@ def _make_relativistic_breit_wigner_with_ff(
 
 
 create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
-    phsp_factor=phase_space_factor,
+    phsp_factor=PhaseSpaceFactor,
     docstring="Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.",
 )
 create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
-    phsp_factor=phase_space_factor_analytic,
+    phsp_factor=PhaseSpaceFactorAnalytic,
     docstring="""
 Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
