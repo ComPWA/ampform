@@ -366,6 +366,11 @@ class CoupledWidth(UnevaluatedExpression):
             return expr.evaluate()  # pylint: disable=no-member
         return expr
 
+    def __getnewargs__(self) -> tuple:
+        # Pickling support, see
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        return (*self.args, self.phsp_factor)
+
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
         q_squared = BreakupMomentumSquared(s, m_a, m_b)
