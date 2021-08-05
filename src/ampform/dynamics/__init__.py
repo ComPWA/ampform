@@ -154,7 +154,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
-        return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
+        return fR"B_{{{angular_momentum}}}^2\!\left({z}\right)"
 
 
 def relativistic_breit_wigner(
@@ -377,4 +377,4 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"q^2\left({s}\right)"
+        return fR"q^2\!\left({s}\right)"
