@@ -9,7 +9,7 @@ from qrules.particle import Particle
 
 from . import (
     BlattWeisskopfSquared,
-    PhaseSpaceFactor,
+    PhaseSpaceFactorProtocol,
     breakup_momentum_squared,
     phase_space_factor,
     phase_space_factor_analytic,
@@ -118,7 +118,7 @@ def create_relativistic_breit_wigner(
 
 
 def _make_relativistic_breit_wigner_with_ff(
-    phsp_factor: PhaseSpaceFactor,
+    phsp_factor: PhaseSpaceFactorProtocol,
     docstring: str,
 ) -> ResonanceDynamicsBuilder:
     """Factory for `.relativistic_breit_wigner_with_ff`."""

@@ -170,7 +170,7 @@ def relativistic_breit_wigner(
     return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
 
 
-class PhaseSpaceFactor(Protocol):
+class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by :func:`.coupled_width`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
@@ -274,7 +274,7 @@ def coupled_width(  # pylint: disable=too-many-arguments
     m_b: sp.Symbol,
     angular_momentum: sp.Symbol,
     meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactor] = None,
+    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
 ) -> sp.Expr:
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
@@ -313,7 +313,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     m_b: sp.Symbol,
     angular_momentum: sp.Symbol,
     meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactor] = None,
+    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
