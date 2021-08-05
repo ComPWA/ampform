@@ -56,11 +56,9 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         cls,
         angular_momentum: sp.Symbol,
         z: sp.Symbol,
-        evaluate: bool = False,
         **hints: Any,
     ) -> "BlattWeisskopfSquared":
-        args = sp.sympify((angular_momentum, z))
-        return create_expression(cls, evaluate, *args, **hints)
+        return create_expression(cls, angular_momentum, z, **hints)
 
     def evaluate(self) -> sp.Expr:
         angular_momentum, z = self.args

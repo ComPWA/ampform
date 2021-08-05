@@ -107,12 +107,16 @@ def implement_doit_method() -> Callable[
 
 
 def create_expression(
-    cls: Type[UnevaluatedExpression], evaluate: bool, *args: Any, **kwargs: Any
+    cls: Type[UnevaluatedExpression],
+    *args: Any,
+    evaluate: bool = False,
+    **kwargs: Any,
 ) -> sp.Expr:
     """Helper function for implementing :code:`Expr.__new__`.
 
     See e.g. source code of `.BlattWeisskopfSquared`.
     """
+    args = sp.sympify(args)
     expr = sp.Expr.__new__(cls, *args, **kwargs)
     if evaluate:
         return expr.evaluate()  # pylint: disable=no-member
