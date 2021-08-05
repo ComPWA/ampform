@@ -9,8 +9,8 @@ from qrules.particle import Particle
 
 from . import (
     BlattWeisskopfSquared,
+    BreakupMomentumSquared,
     PhaseSpaceFactorProtocol,
-    breakup_momentum_squared,
     phase_space_factor,
     phase_space_factor_analytic,
     relativistic_breit_wigner,
@@ -82,7 +82,7 @@ def create_non_dynamic_with_ff(
         raise ValueError(
             "Angular momentum is not defined but is required in the form factor!"
         )
-    q_squared = breakup_momentum_squared(
+    q_squared = BreakupMomentumSquared(
         s=variable_pool.incoming_state_mass ** 2,
         m_a=variable_pool.outgoing_state_mass1,
         m_b=variable_pool.outgoing_state_mass2,
