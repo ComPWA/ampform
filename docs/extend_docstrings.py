@@ -22,9 +22,9 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
+    PhaseSpaceFactor,
     _analytic_continuation,
     coupled_width,
-    phase_space_factor,
     phase_space_factor_abs,
     phase_space_factor_analytic,
     phase_space_factor_complex,
@@ -104,12 +104,6 @@ def render_coupled_width() -> None:
         angular_momentum=L,
         meson_radius=1,
     )
-    rho = phase_space_factor(s, m_a, m_b)
-    rho0 = phase_space_factor(m0 ** 2, m_a, m_b)
-    running_width = running_width.subs(
-        rho / rho0,
-        sp.Symbol(R"\rho(s)") / sp.Symbol(R"\rho(m_{0})"),
-    )
     update_docstring(
         coupled_width,
         fR"""
@@ -120,8 +114,8 @@ def render_coupled_width() -> None:
         :label: coupled_width
 
     where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
-    defined by :eq:`BreakupMomentumSquared`, and :math:`\rho(s)` is (by
-    default) defined by :eq:`phase_space_factor`.
+    defined by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default)
+    defined by :eq:`PhaseSpaceFactor`.
     """,
     )
 
@@ -204,13 +198,17 @@ def render_get_helicity_angle_label() -> None:
 
 def render_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = phase_space_factor(s, m_a, m_b)
+    rho = PhaseSpaceFactor(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor,
+        PhaseSpaceFactor,
         f"""
 
-    .. math:: {sp.latex(rho)}
-        :label: phase_space_factor
+    .. math::
+        :label: PhaseSpaceFactor
+
+        {latex}
 
     with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
     """,

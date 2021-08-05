@@ -10,8 +10,8 @@ from qrules.particle import Particle
 from . import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
+    PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
-    phase_space_factor,
     phase_space_factor_analytic,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
@@ -161,7 +161,7 @@ def _make_relativistic_breit_wigner_with_ff(
 
 
 create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
-    phsp_factor=phase_space_factor,
+    phsp_factor=PhaseSpaceFactor,
     docstring="Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.",
 )
 create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(

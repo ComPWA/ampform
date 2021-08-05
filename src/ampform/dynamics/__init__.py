@@ -172,7 +172,7 @@ class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by :func:`.coupled_width`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
-    space factor. Compare for instance :func:`.phase_space_factor` and
+    space factor. Compare for instance `.PhaseSpaceFactor` and
     :func:`.phase_space_factor_analytic`.
     """
 
@@ -183,16 +183,29 @@ class PhaseSpaceFactorProtocol(Protocol):
         ...
 
 
-def phase_space_factor(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
+@implement_doit_method()
+class PhaseSpaceFactor(UnevaluatedExpression):
     """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
     """
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return sp.sqrt(q_squared) / denominator
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactor":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return sp.sqrt(q_squared) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho\!\left({s}\right)"
 
 
 def phase_space_factor_abs(
@@ -200,7 +213,7 @@ def phase_space_factor_abs(
 ) -> sp.Expr:
     r"""Phase space factor square root over the absolute value.
 
-    As opposed to :func:`.phase_space_factor`, this takes the
+    As opposed to `.PhaseSpaceFactor`, this takes the
     `~sympy.functions.elementary.complexes.Abs` value of
     `.BreakupMomentumSquared`, then the
     :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
@@ -217,7 +230,7 @@ def phase_space_factor_abs(
 def phase_space_factor_analytic(
     s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
 ) -> sp.Expr:
-    """Analytic continuation for the :func:`phase_space_factor`.
+    """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
@@ -254,8 +267,8 @@ def phase_space_factor_complex(
 ) -> sp.Expr:
     """Phase-space factor with `.ComplexSqrt`.
 
-    Same as :func:`phase_space_factor`, but using a `.ComplexSqrt` that does
-    have defined behavior for defined for negative input values.
+    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     denominator = _phase_space_factor_denominator(s)
@@ -280,7 +293,7 @@ def coupled_width(  # pylint: disable=too-many-arguments
 
     See :pdg-review:`2020; Resonances; p.6` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6). Default value for
-    :code:`phsp_factor` is :meth:`phase_space_factor`.
+    :code:`phsp_factor` is :meth:`PhaseSpaceFactor`.
 
     Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the
     sense that equal powers of :math:`z` appear in the nominator and the
@@ -290,7 +303,7 @@ def coupled_width(  # pylint: disable=too-many-arguments
     in the definition for :math:`\Gamma(m)`.
     """
     if phsp_factor is None:
-        phsp_factor = phase_space_factor
+        phsp_factor = PhaseSpaceFactor
     assert phsp_factor is not None  # pyright v1.1.151
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
