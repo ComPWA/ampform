@@ -326,6 +326,7 @@ class CoupledWidth(UnevaluatedExpression):
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
     __slots__ = ("phsp_factor",)
+    phsp_factor: PhaseSpaceFactorProtocol
     is_commutative = True
 
     def __new__(  # pylint: disable=too-many-arguments
@@ -353,7 +354,7 @@ class CoupledWidth(UnevaluatedExpression):
         expr._args = args
         expr.phsp_factor = PhaseSpaceFactor
         if evaluate:
-            return expr.evaluate()  # pylint: disable=no-member
+            return expr.evaluate()
         return expr
 
     def __getnewargs__(self) -> tuple:
