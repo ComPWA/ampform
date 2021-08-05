@@ -367,7 +367,6 @@ class CoupledWidth(UnevaluatedExpression):
         return expr
 
     def evaluate(self) -> sp.Expr:
-        # pylint: disable=no-member
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
         q_squared = BreakupMomentumSquared(s, m_a, m_b)
         q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
