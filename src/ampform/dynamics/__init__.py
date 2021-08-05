@@ -158,17 +158,6 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         return fR"B_{{{angular_momentum}}}^2\!\left({z}\right)"
 
 
-def relativistic_breit_wigner(
-    s: sp.Symbol, mass0: sp.Symbol, gamma0: sp.Symbol
-) -> sp.Expr:
-    """Relativistic Breit-Wigner lineshape.
-
-    See :ref:`usage/dynamics:_Without_ form factor` and
-    :cite:`asnerDalitzPlotAnalysis2006`.
-    """
-    return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
-
-
 class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by `.CoupledWidth`.
 
@@ -391,38 +380,6 @@ class CoupledWidth(UnevaluatedExpression):
         return fR"\Gamma\!\left({s}\right)"
 
 
-def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
-) -> sp.Expr:
-    """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
-
-    Note that this lineshape is set to zero for :math:`s < (m_a + m_b)^2` as a
-    continuation of the `.BlattWeisskopfSquared` damping factor behavior at
-    :math:`s = (m_a + m_b)^2`.
-
-    See :ref:`usage/dynamics:_With_ form factor` and
-    :pdg-review:`2020; Resonances; p.6`.
-    """
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    ff_squared = BlattWeisskopfSquared(
-        angular_momentum, z=q_squared * meson_radius ** 2
-    )
-    form_factor = sp.sqrt(ff_squared)
-    mass_dependent_width = CoupledWidth(
-        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
-    )
-    return (mass0 * gamma0 * form_factor) / (
-        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
-    )
-
-
 @implement_doit_method()
 class BreakupMomentumSquared(UnevaluatedExpression):
     r"""Squared value of the two-body break-up momentum.
@@ -457,3 +414,46 @@ class BreakupMomentumSquared(UnevaluatedExpression):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
         return fR"q^2\!\left({s}\right)"
+
+
+def relativistic_breit_wigner(
+    s: sp.Symbol, mass0: sp.Symbol, gamma0: sp.Symbol
+) -> sp.Expr:
+    """Relativistic Breit-Wigner lineshape.
+
+    See :ref:`usage/dynamics:_Without_ form factor` and
+    :cite:`asnerDalitzPlotAnalysis2006`.
+    """
+    return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
+
+
+def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
+    s: sp.Symbol,
+    mass0: sp.Symbol,
+    gamma0: sp.Symbol,
+    m_a: sp.Symbol,
+    m_b: sp.Symbol,
+    angular_momentum: sp.Symbol,
+    meson_radius: sp.Symbol,
+    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+) -> sp.Expr:
+    """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
+
+    Note that this lineshape is set to zero for :math:`s < (m_a + m_b)^2` as a
+    continuation of the `.BlattWeisskopfSquared` damping factor behavior at
+    :math:`s = (m_a + m_b)^2`.
+
+    See :ref:`usage/dynamics:_With_ form factor` and
+    :pdg-review:`2020; Resonances; p.6`.
+    """
+    q_squared = BreakupMomentumSquared(s, m_a, m_b)
+    ff_squared = BlattWeisskopfSquared(
+        angular_momentum, z=q_squared * meson_radius ** 2
+    )
+    form_factor = sp.sqrt(ff_squared)
+    mass_dependent_width = CoupledWidth(
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
+    )
+    return (mass0 * gamma0 * form_factor) / (
+        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
+    )
