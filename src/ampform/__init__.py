@@ -17,8 +17,8 @@ def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
     """Get the correct `.HelicityAmplitudeBuilder`.
 
     For instance, get `.CanonicalAmplitudeBuilder` if the
-    `~qrules.transition.ReactionInfo.formalism` is :code:`"canonical-
-    helicity"`.
+    `~qrules.transition.ReactionInfo.formalism` is
+    :code:`"canonical-helicity"`.
     """
     formalism = reaction.formalism
     if formalism is None:

@@ -1,7 +1,8 @@
 """Tools for defining lineshapes with `sympy`."""
 
+import functools
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Type
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -92,8 +93,12 @@ def implement_doit_method() -> Callable[
     def decorator(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
-        def doit_method(self: Any, **hints: Any) -> sp.Expr:
-            return type(self)(*self.args, **hints, evaluate=True)
+        @functools.wraps(decorated_class.doit)
+        def doit_method(self: Any, deep: bool = True, **hints: Any) -> sp.Expr:
+            expr = type(self)(*self.args, **hints, evaluate=True)
+            if deep:
+                return expr.doit()
+            return expr
 
         decorated_class.doit = doit_method
         return decorated_class
@@ -102,17 +107,17 @@ def implement_doit_method() -> Callable[
 
 
 def create_expression(
-    cls: Type[UnevaluatedExpression], evaluate: bool, *args: Any, **kwargs: Any
+    cls: Type[UnevaluatedExpression],
+    *args: Any,
+    evaluate: bool = False,
+    **kwargs: Any,
 ) -> sp.Expr:
     """Helper function for implementing :code:`Expr.__new__`.
 
     See e.g. source code of `.BlattWeisskopfSquared`.
     """
-    # pylint: disable=no-member
-    deep: Optional[bool] = kwargs.pop("deep", None)
+    args = sp.sympify(args)
     expr = sp.Expr.__new__(cls, *args, **kwargs)
     if evaluate:
-        expr = expr.evaluate()
-    if deep:
-        expr = expr.doit(deep=deep)
+        return expr.evaluate()  # pylint: disable=no-member
     return expr
