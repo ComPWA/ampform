@@ -1,7 +1,7 @@
 """Tools for defining lineshapes with `sympy`."""
 
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Type
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -92,8 +92,11 @@ def implement_doit_method() -> Callable[
     def decorator(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
-        def doit_method(self: Any, **hints: Any) -> sp.Expr:
-            return type(self)(*self.args, **hints, evaluate=True)
+        def doit_method(self: Any, deep: bool = True, **hints: Any) -> sp.Expr:
+            expr = type(self)(*self.args, **hints, evaluate=True)
+            if deep:
+                return expr.doit()
+            return expr
 
         decorated_class.doit = doit_method
         return decorated_class
@@ -108,11 +111,7 @@ def create_expression(
 
     See e.g. source code of `.BlattWeisskopfSquared`.
     """
-    # pylint: disable=no-member
-    deep: Optional[bool] = kwargs.pop("deep", None)
     expr = sp.Expr.__new__(cls, *args, **kwargs)
     if evaluate:
-        expr = expr.evaluate()
-    if deep:
-        expr = expr.doit(deep=deep)
+        return expr.evaluate()  # pylint: disable=no-member
     return expr
