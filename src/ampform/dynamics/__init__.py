@@ -195,7 +195,8 @@ class PhaseSpaceFactor(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"\rho\!\left({s}\right)"
+        name = R"\rho" if self.name is None else self.name
+        return fR"{name}\!\left({s}\right)"
 
 
 @implement_doit_method()
@@ -227,7 +228,8 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"\hat{{\rho}}\left({s}\right)"
+        name = R"\hat{\rho}" if self.name is None else self.name
+        return fR"{name}\left({s}\right)"
 
 
 @implement_doit_method()
@@ -256,7 +258,8 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"\rho_\mathrm{{ac}}\!\left({s}\right)"
+        name = R"\rho_\mathrm{ac}" if self.name is None else self.name
+        return fR"{name}\!\left({s}\right)"
 
 
 @implement_doit_method()
@@ -282,7 +285,8 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"\rho_\mathrm{{c}}\!\left({s}\right)"
+        name = R"\rho_\mathrm{c}" if self.name is None else self.name
+        return fR"{name}\!\left({s}\right)"
 
 
 def _analytic_continuation(
@@ -379,7 +383,8 @@ class CoupledWidth(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"\Gamma\!\left({s}\right)"
+        name = R"\Gamma" if self.name is None else self.name
+        return fR"{name}\!\left({s}\right)"
 
 
 @implement_doit_method()
@@ -415,7 +420,8 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s = printer._print(self.args[0])
-        return fR"q^2\!\left({s}\right)"
+        name = "q^2" if self.name is None else self.name
+        return fR"{name}\!\left({s}\right)"
 
 
 def relativistic_breit_wigner(
