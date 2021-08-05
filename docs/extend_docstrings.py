@@ -23,7 +23,6 @@ from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
     _analytic_continuation,
-    breakup_momentum,
     coupled_width,
     phase_space_factor,
     phase_space_factor_abs,
@@ -59,20 +58,6 @@ def render_blatt_weisskopf() -> None:
     .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
         :label: BlattWeisskopfSquared
         :class: full-width
-    """,
-    )
-
-
-def render_breakup_momentum() -> None:
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    q = breakup_momentum(s, m_a, m_b)
-    update_docstring(
-        breakup_momentum,
-        f"""
-    .. math:: q(s) = {sp.latex(q)}
-        :label: breakup_momentum
-
-    with :math:`q^2` defined by :eq:`BreakupMomentumSquared`.
     """,
     )
 

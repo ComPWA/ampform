@@ -190,7 +190,9 @@ def phase_space_factor(
 
     See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
     """
-    return breakup_momentum(s, m_a, m_b) / _phase_space_factor_denominator(s)
+    q_squared = BreakupMomentumSquared(s, m_a, m_b)
+    denominator = _phase_space_factor_denominator(s)
+    return sp.sqrt(q_squared) / denominator
 
 
 def phase_space_factor_abs(
@@ -200,7 +202,7 @@ def phase_space_factor_abs(
 
     As opposed to :func:`.phase_space_factor`, this takes the
     `~sympy.functions.elementary.complexes.Abs` value of
-    :class:`.BreakupMomentumSquared`, then the
+    `.BreakupMomentumSquared`, then the
     :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
 
     This version of the phase space factor is often denoted as
@@ -335,8 +337,9 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def breakup_momentum(s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol) -> sp.Expr:
-    r"""Two-body breakup-up momentum.
+@implement_doit_method()
+class BreakupMomentumSquared(UnevaluatedExpression):
+    r"""Squared value of the two-body break-up momentum.
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
@@ -350,18 +353,8 @@ def breakup_momentum(s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol) -> sp.Expr:
         m_a: Mass of decay product :math:`a`.
         m_b: Mass of decay product :math:`b`.
 
-    See :pdg-review:`2020; Kinematics; p.3`.
-    """
-    return sp.sqrt(BreakupMomentumSquared(s, m_a, m_b))
-
-
-@implement_doit_method()
-class BreakupMomentumSquared(UnevaluatedExpression):
-    """Squared value of the two-body `.breakup_momentum`.
-
-    This version of the break-up momentum is useful if you do not want to take
-    a simple square root. See :func:`.breakup_momentum` and
-    :doc:`usage/analytic-continuation`.
+    It's up to the caller in which way to take the square root of this break-up
+    momentum.See :doc:`usage/analytic-continuation` and `.ComplexSqrt`.
     """
 
     is_commutative = True
