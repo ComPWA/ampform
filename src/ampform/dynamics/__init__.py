@@ -1,4 +1,4 @@
-# cspell:ignore Asner
+# cspell:ignore Asner mhash
 # pylint: disable=arguments-differ
 # pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
 """Lineshape functions that describe the dynamics of an interaction.
@@ -169,7 +169,7 @@ def relativistic_breit_wigner(
 
 
 class PhaseSpaceFactorProtocol(Protocol):
-    """Protocol that is used by :func:`.coupled_width`.
+    """Protocol that is used by `.CoupledWidth`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance `.PhaseSpaceFactor` and
@@ -318,16 +318,8 @@ def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
     return 8 * sp.pi * sp.sqrt(s)
 
 
-def coupled_width(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
-    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
-) -> sp.Expr:
+@implement_doit_method()
+class CoupledWidth(UnevaluatedExpression):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See :pdg-review:`2020; Resonances; p.6` and
@@ -341,20 +333,57 @@ def coupled_width(  # pylint: disable=too-many-arguments
     that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
     in the definition for :math:`\Gamma(m)`.
     """
-    if phsp_factor is None:
-        phsp_factor = PhaseSpaceFactor
-    assert phsp_factor is not None  # pyright v1.1.151
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
-    form_factor_sq = BlattWeisskopfSquared(
-        angular_momentum, z=q_squared * meson_radius ** 2
-    )
-    form_factor0_sq = BlattWeisskopfSquared(
-        angular_momentum, z=q0_squared * meson_radius ** 2
-    )
-    rho = phsp_factor(s, m_a, m_b)
-    rho0 = phsp_factor(mass0 ** 2, m_a, m_b)
-    return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
+
+    # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
+    __slots__ = ("phsp_factor",)
+    is_commutative = True
+
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        s: sp.Symbol,
+        mass0: sp.Symbol,
+        gamma0: sp.Symbol,
+        m_a: sp.Symbol,
+        m_b: sp.Symbol,
+        angular_momentum: sp.Symbol,
+        meson_radius: sp.Symbol,
+        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+        evaluate: bool = False,
+    ) -> "CoupledWidth":
+        args = sp.sympify(
+            (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
+        )
+        if phsp_factor is None:
+            phsp_factor = PhaseSpaceFactor
+        # Overwritting Basic.__new__ to store phase space factor type
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        expr = object.__new__(cls)
+        expr._assumptions = cls.default_assumptions
+        expr._mhash = None
+        expr._args = args
+        expr.phsp_factor = PhaseSpaceFactor
+        if evaluate:
+            return expr.evaluate()  # pylint: disable=no-member
+        return expr
+
+    def evaluate(self) -> sp.Expr:
+        # pylint: disable=no-member
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
+        form_factor_sq = BlattWeisskopfSquared(
+            angular_momentum, z=q_squared * meson_radius ** 2
+        )
+        form_factor0_sq = BlattWeisskopfSquared(
+            angular_momentum, z=q0_squared * meson_radius ** 2
+        )
+        rho = self.phsp_factor(s, m_a, m_b)
+        rho0 = self.phsp_factor(mass0 ** 2, m_a, m_b)
+        return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\Gamma\!\left({s}\right)"
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
@@ -381,7 +410,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
         angular_momentum, z=q_squared * meson_radius ** 2
     )
     form_factor = sp.sqrt(ff_squared)
-    mass_dependent_width = coupled_width(
+    mass_dependent_width = CoupledWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return (mass0 * gamma0 * form_factor) / (

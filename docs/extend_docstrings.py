@@ -22,11 +22,11 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
+    CoupledWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,
     PhaseSpaceFactorAnalytic,
     PhaseSpaceFactorComplex,
-    coupled_width,
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
@@ -94,7 +94,7 @@ def render_complex_sqrt() -> None:
 def render_coupled_width() -> None:
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
-    running_width = coupled_width(
+    width = CoupledWidth(
         s=s,
         mass0=m0,
         gamma0=w0,
@@ -103,14 +103,18 @@ def render_coupled_width() -> None:
         angular_momentum=L,
         meson_radius=1,
     )
+    latex = sp.multiline_latex(width, width.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        coupled_width,
+        CoupledWidth,
         fR"""
     With that in mind, the "mass-dependent" width in a
     `.relativistic_breit_wigner_with_ff` becomes:
 
-    .. math:: \Gamma(s) = {sp.latex(running_width)}
-        :label: coupled_width
+    .. math::
+        :label: CoupledWidth
+
+        {latex}
 
     where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
     defined by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default)
@@ -296,10 +300,6 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    mass_dependent_width = coupled_width(s, m0, w0, m_a, m_b, L, d)
-    rel_bw_with_ff = rel_bw_with_ff.subs(
-        mass_dependent_width, sp.Symbol(R"\Gamma(s)")
-    )
     update_docstring(
         relativistic_breit_wigner_with_ff,
         fR"""
@@ -309,8 +309,8 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
 
-    where :math:`\Gamma(s)` is defined by :eq:`coupled_width`, :math:`B_L^2(q)`
-    is defined by :eq:`BlattWeisskopfSquared`, and :math:`q(s)` is defined by
+    where :math:`\Gamma(s)` is defined by :eq:`CoupledWidth`, :math:`B_L^2` is
+    defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
     :eq:`BreakupMomentumSquared`.
     """,
     )
