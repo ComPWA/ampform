@@ -1,5 +1,6 @@
 """Tools for defining lineshapes with `sympy`."""
 
+import functools
 from abc import abstractmethod
 from typing import Any, Callable, Type
 
@@ -92,6 +93,7 @@ def implement_doit_method() -> Callable[
     def decorator(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
+        @functools.wraps(decorated_class.doit)
         def doit_method(self: Any, deep: bool = True, **hints: Any) -> sp.Expr:
             expr = type(self)(*self.args, **hints, evaluate=True)
             if deep:
