@@ -23,9 +23,8 @@ from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
     PhaseSpaceFactor,
-    _analytic_continuation,
+    PhaseSpaceFactorAbs,
     coupled_width,
-    phase_space_factor_abs,
     phase_space_factor_analytic,
     phase_space_factor_complex,
     relativistic_breit_wigner,
@@ -217,13 +216,17 @@ def render_phase_space_factor() -> None:
 
 def render_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho_hat = phase_space_factor_abs(s, m_a, m_b)
+    rho = PhaseSpaceFactorAbs(s, m_a, m_b)
+    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
+    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        phase_space_factor_abs,
+        PhaseSpaceFactorAbs,
         fR"""
 
-    .. math:: \hat{{\rho}} = {sp.latex(rho_hat)}
-        :label: phase_space_factor_abs
+    .. math::
+        :label: PhaseSpaceFactorAbs
+
+        {latex}
 
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
@@ -231,18 +234,17 @@ def render_phase_space_factor_abs() -> None:
 
 
 def render_phase_space_factor_analytic() -> None:
-    s, m_a, m_b, rho_hat_symbol = sp.symbols(R"s, m_a, m_b, \hat{\rho}")
-    rho_analytic = _analytic_continuation(
-        rho_hat_symbol, s, s_threshold=(m_a + m_b) ** 2
-    )
+    s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
+    rho = phase_space_factor_analytic(s, m_a, m_b)
+    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
     update_docstring(
         phase_space_factor_analytic,
         fR"""
-    .. math:: {sp.latex(rho_analytic)}
+    .. math:: {sp.latex(rho)}
         :label: phase_space_factor_analytic
 
-    with :math:`\hat{{\rho}}` defined by :func:`.phase_space_factor_abs`
-    :eq:`phase_space_factor_abs`.
+    with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
+    :eq:`PhaseSpaceFactorAbs`.
     """,
     )
 
@@ -254,7 +256,7 @@ def render_phase_space_factor_complex() -> None:
         phase_space_factor_complex,
         fR"""
 
-    .. math:: \hat{{\rho}} = {sp.latex(rho)}
+    .. math:: \rho_\mathrm{{c}}(s) = {sp.latex(rho)}
         :label: phase_space_factor_complex
 
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.

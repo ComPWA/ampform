@@ -208,9 +208,8 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return fR"\rho\!\left({s}\right)"
 
 
-def phase_space_factor_abs(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
+@implement_doit_method()
+class PhaseSpaceFactorAbs(UnevaluatedExpression):
     r"""Phase space factor square root over the absolute value.
 
     As opposed to `.PhaseSpaceFactor`, this takes the
@@ -222,9 +221,23 @@ def phase_space_factor_abs(
     :math:`\hat{\rho}` and is used in analytic continuation
     (:func:`.phase_space_factor_analytic`).
     """
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return sp.sqrt(sp.Abs(q_squared)) / denominator
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorAbs":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return sp.sqrt(sp.Abs(q_squared)) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\hat{{\rho}}\left({s}\right)"
 
 
 def phase_space_factor_analytic(
@@ -238,7 +251,7 @@ def phase_space_factor_analytic(
     **Warning**: The PDG specifically derives this formula for a two-body decay
     *with equal masses*.
     """
-    rho_hat = phase_space_factor_abs(s, m_a, m_b)
+    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
     s_threshold = (m_a + m_b) ** 2
     return _analytic_continuation(rho_hat, s, s_threshold)
 
