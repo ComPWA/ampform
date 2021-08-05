@@ -269,6 +269,32 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         return fR"\rho_\mathrm{{ac}}\!\left({s}\right)"
 
 
+@implement_doit_method()
+class PhaseSpaceFactorComplex(UnevaluatedExpression):
+    """Phase-space factor with `.ComplexSqrt`.
+
+    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
+    """
+
+    is_commutative = True
+
+    def __new__(
+        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
+    ) -> "PhaseSpaceFactorComplex":
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return ComplexSqrt(q_squared) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        s = printer._print(self.args[0])
+        return fR"\rho_\mathrm{{c}}\!\left({s}\right)"
+
+
 def _analytic_continuation(
     rho: sp.Symbol, s: sp.Symbol, s_threshold: sp.Symbol
 ) -> sp.Expr:
@@ -286,19 +312,6 @@ def _analytic_continuation(
             True,
         ),
     )
-
-
-def phase_space_factor_complex(
-    s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-) -> sp.Expr:
-    """Phase-space factor with `.ComplexSqrt`.
-
-    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
-    defined behavior for defined for negative input values.
-    """
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    denominator = _phase_space_factor_denominator(s)
-    return ComplexSqrt(q_squared) / denominator
 
 
 def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
