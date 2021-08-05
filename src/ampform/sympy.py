@@ -1,3 +1,4 @@
+# cspell:ignore mhash
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
@@ -16,6 +17,16 @@ class UnevaluatedExpression(sp.Expr):
     `UnevaluatedExpression`, because an :code:`evaluate()` method has to be
     implemented.
     """
+
+    def __new__(  # pylint: disable=unused-argument
+        cls, *args: Any, **hints: Any
+    ) -> "UnevaluatedExpression":
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        obj = object.__new__(cls)
+        obj._args = args
+        obj._assumptions = cls.default_assumptions
+        obj._mhash = None
+        return obj
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
@@ -60,9 +71,10 @@ def implement_new_method(
     def decorator(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
-        def new_method(
+        def new_method(  # pylint: disable=unused-argument
             cls: Type,
             *args: sp.Symbol,
+            evaluate: bool = False,
             **hints: Any,
         ) -> bool:
             if len(args) != n_args:
@@ -70,10 +82,10 @@ def implement_new_method(
                     f"{n_args} parameters expected, got {len(args)}"
                 )
             args = sp.sympify(args)
-            evaluate = hints.get("evaluate", False)
+            expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return sp.Expr.__new__(cls, *args).evaluate()  # type: ignore  # pylint: disable=no-member
-            return sp.Expr.__new__(cls, *args)
+                return expr.evaluate()
+            return expr
 
         decorated_class.__new__ = new_method  # type: ignore
         return decorated_class
@@ -117,9 +129,9 @@ def create_expression(
     See e.g. source code of `.BlattWeisskopfSquared`.
     """
     args = sp.sympify(args)
-    expr = sp.Expr.__new__(cls, *args, **kwargs)
+    expr = UnevaluatedExpression.__new__(cls, *args, **kwargs)
     if evaluate:
-        return expr.evaluate()  # pylint: disable=no-member
+        return expr.evaluate()
     return expr
 
 
