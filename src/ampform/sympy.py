@@ -121,3 +121,24 @@ def create_expression(
     if evaluate:
         return expr.evaluate()  # pylint: disable=no-member
     return expr
+
+
+def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
+    """Create a `~sympy.matrices.dense.Matrix` with symbols as elements.
+
+    The `~sympy.matrices.expressions.MatrixSymbol` has some issues when one is
+    interested in the elements of the matrix. This function instead creates a
+    `~sympy.matrices.dense.Matrix` where the elements are
+    `~sympy.tensor.indexed.Indexed` instances.
+
+    To convert these `~sympy.tensor.indexed.Indexed` instances to a
+    `~sympy.core.symbol.Symbol`, use
+    :func:`symplot.substitute_indexed_symbols`.
+
+    >>> create_symbol_matrix("A", m=2, n=3)
+    Matrix([
+    [A[0, 0], A[0, 1], A[0, 2]],
+    [A[1, 0], A[1, 1], A[1, 2]]])
+    """
+    symbol = sp.IndexedBase(name, shape=(m, n))
+    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
