@@ -8,7 +8,7 @@
 """
 
 import re
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Optional, Sequence, Union
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -157,7 +157,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
-        return fR"B_{{{angular_momentum}}}^2\!\left({z}\right)"
+        return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
 
 
 class PhaseSpaceFactorProtocol(Protocol):
@@ -200,7 +200,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(m_a))
         name = R"\rho" + subscript if self.name is None else self.name
-        return fR"{name}\!\left({s}\right)"
+        return fR"{name}\left({s}\right)"
 
 
 @implement_doit_method()
@@ -269,7 +269,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         name = (
             R"\rho^\mathrm{ac}" + subscript if self.name is None else self.name
         )
-        return fR"{name}\!\left({s}\right)"
+        return fR"{name}\left({s}\right)"
 
 
 @implement_doit_method()
@@ -300,7 +300,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         name = (
             R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
         )
-        return fR"{name}\!\left({s}\right)"
+        return fR"{name}\left({s}\right)"
 
 
 def _analytic_continuation(
@@ -400,7 +400,7 @@ class CoupledWidth(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(width))
         name = fR"\Gamma{subscript}" if self.name is None else self.name
-        return fR"{name}\!\left({s}\right)"
+        return fR"{name}\left({s}\right)"
 
 
 @implement_doit_method()
@@ -439,7 +439,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(m_a))
         name = "q^2" + subscript if self.name is None else self.name
-        return fR"{name}\!\left({s}\right)"
+        return fR"{name}\left({s}\right)"
 
 
 def relativistic_breit_wigner(
@@ -501,7 +501,7 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
     return "_{" + subscript + "}"
 
 
-def _determine_indices(symbol: sp.Symbol) -> List[int]:
+def _determine_indices(symbol: Union[sp.Indexed, sp.Symbol]) -> List[int]:
     r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
 
     >>> _determine_indices(sp.Symbol("m1"))
@@ -512,11 +512,16 @@ def _determine_indices(symbol: sp.Symbol) -> List[int]:
     [2, 5]
     >>> _determine_indices(sp.Symbol("m"))
     []
+
+    `~sympy.tensor.indexed.Indexed` instances can also be handled:
+    >>> m_a = sp.IndexedBase("m_a")
+    >>> _determine_indices(m_a[0])
+    [0]
     """
     _, _, subscripts = split_super_sub(sp.latex(symbol))
     if not subscripts:
         return []
-    subscript: str = subscripts[0]
+    subscript: str = subscripts[-1]
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
