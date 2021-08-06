@@ -1,4 +1,4 @@
-"""Tools for defining lineshapes with `sympy`."""
+"""Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
 from abc import abstractmethod
