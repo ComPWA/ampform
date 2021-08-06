@@ -316,12 +316,54 @@ def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
     return sp.Symbol(f"{base_name}{subscript}")
 
 
+def rename_symbols(
+    expression: sp.Expr, renames: Union[Callable[[str], str], Dict[str, str]]
+) -> sp.Expr:
+    r"""Rename symbols in an expression.
+
+    >>> a, b, x = sp.symbols(R"a \beta x")
+    >>> expr = a + b * x
+    >>> rename_symbols(expr, renames={"a": "A", R"\beta": "B"})
+    A + B*x
+    >>> rename_symbols(expr, renames=lambda s: s.replace("\\", ""))
+    a + beta*x
+    >>> rename_symbols(expr, renames={"non-existent": "c"})
+    Traceback (most recent call last):
+        ...
+    KeyError: "No symbol with name 'non-existent' in expression"
+    """
+    substitutions: Dict[sp.Symbol, sp.Symbol] = {}
+    if callable(renames):
+        for old_symbol in expression.free_symbols:
+            new_name = renames(old_symbol.name)
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    elif isinstance(renames, dict):
+        for old_name, new_name in renames.items():
+            # pylint: disable=cell-var-from-loop
+            matches = filter(
+                lambda s: s.name == old_name, expression.free_symbols
+            )
+            try:
+                old_symbol = next(matches)
+            except StopIteration:
+                # pylint: disable=raise-missing-from
+                raise KeyError(
+                    f"No symbol with name '{old_name}' in expression"
+                )
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    else:
+        raise TypeError(f"Cannot rename from type {type(renames).__name__}")
+    return expression.xreplace(substitutions)
+
+
 def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
     """Substitute `~sympy.tensor.indexed.IndexedBase` with symbols.
 
     See :doc:`compwa-org:report/008` for more info.
     """
-    return expression.subs(
+    return expression.xreplace(
         {
             s: _indexed_to_symbol(s)
             for s in expression.free_symbols
