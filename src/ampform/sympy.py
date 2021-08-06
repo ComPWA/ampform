@@ -1,8 +1,9 @@
+# cspell:ignore mhash
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
 from abc import abstractmethod
-from typing import Any, Callable, Type
+from typing import Any, Callable, Optional, Tuple, Type
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -17,6 +18,26 @@ class UnevaluatedExpression(sp.Expr):
     implemented.
     """
 
+    # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
+    __slots__: Tuple[str] = ("name",)
+    name: Optional[str]
+
+    def __new__(  # pylint: disable=unused-argument
+        cls, *args: Any, name: Optional[str] = None, **hints: Any
+    ) -> "UnevaluatedExpression":
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        obj = object.__new__(cls)
+        obj._args = args
+        obj._assumptions = cls.default_assumptions
+        obj._mhash = None
+        obj.name = name
+        return obj
+
+    def __getnewargs__(self) -> tuple:
+        # Pickling support, see
+        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        return (*self.args, self.name)
+
     @abstractmethod
     def evaluate(self) -> sp.Expr:
         pass
@@ -25,7 +46,10 @@ class UnevaluatedExpression(sp.Expr):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         """Provide a mathematical Latex representation for notebooks."""
         args = tuple(map(printer._print, self.args))
-        return f"{self.__class__.__name__}{args}"
+        name = self.__class__.__name__
+        if self.name is not None:
+            name = self.name
+        return f"{name}{args}"
 
 
 def implement_expr(
@@ -60,9 +84,10 @@ def implement_new_method(
     def decorator(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
-        def new_method(
+        def new_method(  # pylint: disable=unused-argument
             cls: Type,
             *args: sp.Symbol,
+            evaluate: bool = False,
             **hints: Any,
         ) -> bool:
             if len(args) != n_args:
@@ -70,10 +95,10 @@ def implement_new_method(
                     f"{n_args} parameters expected, got {len(args)}"
                 )
             args = sp.sympify(args)
-            evaluate = hints.get("evaluate", False)
+            expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return sp.Expr.__new__(cls, *args).evaluate()  # type: ignore  # pylint: disable=no-member
-            return sp.Expr.__new__(cls, *args)
+                return expr.evaluate()
+            return expr
 
         decorated_class.__new__ = new_method  # type: ignore
         return decorated_class
@@ -110,6 +135,7 @@ def create_expression(
     cls: Type[UnevaluatedExpression],
     *args: Any,
     evaluate: bool = False,
+    name: Optional[str] = None,
     **kwargs: Any,
 ) -> sp.Expr:
     """Helper function for implementing :code:`Expr.__new__`.
@@ -117,9 +143,9 @@ def create_expression(
     See e.g. source code of `.BlattWeisskopfSquared`.
     """
     args = sp.sympify(args)
-    expr = sp.Expr.__new__(cls, *args, **kwargs)
+    expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
     if evaluate:
-        return expr.evaluate()  # pylint: disable=no-member
+        return expr.evaluate()
     return expr
 
 
