@@ -7,9 +7,11 @@
     :doc:`/usage/dynamics/analytic-continuation`
 """
 
-from typing import Any, Optional
+import re
+from typing import Any, List, Optional, Sequence
 
 import sympy as sp
+from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 
 from ampform.sympy import (
@@ -194,8 +196,10 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return sp.sqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = R"\rho" if self.name is None else self.name
+        s, m_a, _ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(m_a))
+        name = R"\rho" + subscript if self.name is None else self.name
         return fR"{name}\!\left({s}\right)"
 
 
@@ -227,8 +231,10 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = R"\hat{\rho}" if self.name is None else self.name
+        s, m_a, _ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(m_a))
+        name = R"\hat{\rho}" + subscript if self.name is None else self.name
         return fR"{name}\left({s}\right)"
 
 
@@ -257,8 +263,12 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = R"\rho_\mathrm{ac}" if self.name is None else self.name
+        s, m_a, _ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(m_a))
+        name = (
+            R"\rho^\mathrm{ac}" + subscript if self.name is None else self.name
+        )
         return fR"{name}\!\left({s}\right)"
 
 
@@ -284,8 +294,12 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         return ComplexSqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = R"\rho_\mathrm{c}" if self.name is None else self.name
+        s, m_a, _ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(m_a))
+        name = (
+            R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
+        )
         return fR"{name}\!\left({s}\right)"
 
 
@@ -382,8 +396,10 @@ class CoupledWidth(UnevaluatedExpression):
         return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = R"\Gamma" if self.name is None else self.name
+        s, _, width, *_ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(width))
+        name = fR"\Gamma{subscript}" if self.name is None else self.name
         return fR"{name}\!\left({s}\right)"
 
 
@@ -419,8 +435,10 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s = printer._print(self.args[0])
-        name = "q^2" if self.name is None else self.name
+        s, m_a, _ = self.args
+        s = printer._print(s)
+        subscript = _indices_to_subscript(_determine_indices(m_a))
+        name = "q^2" + subscript if self.name is None else self.name
         return fR"{name}\!\left({s}\right)"
 
 
@@ -465,3 +483,44 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     return (mass0 * gamma0 * form_factor) / (
         mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
     )
+
+
+def _indices_to_subscript(indices: Sequence[int]) -> str:
+    """Create a LaTeX subscript from a list of indices.
+
+    >>> _indices_to_subscript([])
+    ''
+    >>> _indices_to_subscript([1])
+    '_{1}'
+    >>> _indices_to_subscript([1, 2])
+    '_{1,2}'
+    """
+    if len(indices) == 0:
+        return ""
+    subscript = ",".join(map(str, indices))
+    return "_{" + subscript + "}"
+
+
+def _determine_indices(symbol: sp.Symbol) -> List[int]:
+    r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
+
+    >>> _determine_indices(sp.Symbol("m1"))
+    [1]
+    >>> _determine_indices(sp.Symbol("m_a2"))
+    [2]
+    >>> _determine_indices(sp.Symbol(R"\alpha_{i2, 5}"))
+    [2, 5]
+    >>> _determine_indices(sp.Symbol("m"))
+    []
+    """
+    _, _, subscripts = split_super_sub(sp.latex(symbol))
+    if not subscripts:
+        return []
+    subscript: str = subscripts[0]
+    subscript = re.sub(r"[^0-9^\,]", "", subscript)
+    subscript = f"[{subscript}]"
+    try:
+        indices = eval(subscript)  # pylint: disable=eval-used
+    except SyntaxError:
+        return []
+    return list(indices)
