@@ -8,7 +8,7 @@
 """
 
 import re
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Optional, Sequence, Union
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -501,7 +501,7 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
     return "_{" + subscript + "}"
 
 
-def _determine_indices(symbol: sp.Symbol) -> List[int]:
+def _determine_indices(symbol: Union[sp.Indexed, sp.Symbol]) -> List[int]:
     r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
 
     >>> _determine_indices(sp.Symbol("m1"))
@@ -512,11 +512,16 @@ def _determine_indices(symbol: sp.Symbol) -> List[int]:
     [2, 5]
     >>> _determine_indices(sp.Symbol("m"))
     []
+
+    `~sympy.tensor.indexed.Indexed` instances can also be handled:
+    >>> m_a = sp.IndexedBase("m_a")
+    >>> _determine_indices(m_a[0])
+    [0]
     """
     _, _, subscripts = split_super_sub(sp.latex(symbol))
     if not subscripts:
         return []
-    subscript: str = subscripts[0]
+    subscript: str = subscripts[-1]
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
