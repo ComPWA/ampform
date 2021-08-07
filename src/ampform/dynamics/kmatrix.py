@@ -23,7 +23,7 @@ from ampform.dynamics import (
 from ampform.sympy import create_symbol_matrix
 
 
-class KMatrix(ABC):
+class TMatrix(ABC):
     @classmethod
     @abstractmethod
     def formulate(
@@ -36,7 +36,7 @@ class KMatrix(ABC):
         """Formulate :math:`K`-matrix with its own parametrization."""
 
 
-class RelativisticKMatrix(KMatrix):
+class RelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
@@ -136,7 +136,7 @@ class RelativisticKMatrix(KMatrix):
         return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
 
 
-class NonRelativisticKMatrix(KMatrix):
+class NonRelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(n_channels: int) -> Tuple[sp.Matrix, sp.Matrix]:
