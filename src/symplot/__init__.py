@@ -66,6 +66,16 @@ class SliderKwargs(abc.Mapping):
             if symbol in self._sliders
         }
 
+    @property
+    def arg_to_symbol(self) -> Dict[str, str]:
+        """**Copy** of the internal translation `dict` for argument names."""
+        return dict(self._arg_to_symbol)
+
+    @property
+    def symbol_to_arg(self) -> Dict[str, str]:
+        """Inverted `dict` of `arg_to_symbol`."""
+        return {symbol: arg for arg, symbol in self._arg_to_symbol.items()}
+
     @staticmethod
     def _verify_arguments(
         sliders: Mapping[str, Slider], arg_to_symbol: Mapping[str, str]
