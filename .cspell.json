@@ -238,6 +238,7 @@
         "unparse",
         "unsrt",
         "untracked",
+        "vectorize",
         "virtualenv",
         "virtualenvwrapper",
         "vmax",
