@@ -202,8 +202,8 @@ class NonRelativisticPVector(TMatrix):
     def _create_matrices(
         n_channels: int,
     ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
-        k_matrix = create_symbol_matrix("K", m=n_channels, n=1)
-        p_vector = create_symbol_matrix("P", m=n_channels, n=n_channels)
+        k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
+        p_vector = create_symbol_matrix("P", m=n_channels, n=1)
         t_matrix = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
         return t_matrix, k_matrix, p_vector
 
