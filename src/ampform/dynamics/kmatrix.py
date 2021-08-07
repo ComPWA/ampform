@@ -204,8 +204,8 @@ class NonRelativisticPVector(TMatrix):
     ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
-        t_matrix = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
-        return t_matrix, k_matrix, p_vector
+        f_vector = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
+        return f_vector, k_matrix, p_vector
 
     @classmethod
     def formulate(
@@ -215,15 +215,15 @@ class NonRelativisticPVector(TMatrix):
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
-        t_matrix, k_matrix, p_vector = cls._create_matrices(n_channels)
+        f_vector, k_matrix, p_vector = cls._create_matrices(n_channels)
         if not parametrize:
-            return t_matrix
+            return f_vector
         s = sp.Symbol("s")
         resonance_mass = sp.IndexedBase("m")
         resonance_width = sp.IndexedBase("Gamma")
         residue_constant = sp.IndexedBase("gamma")
         resonance_idx = sp.Symbol("R", integer=True, positive=True)
-        return t_matrix.xreplace(
+        return f_vector.xreplace(
             {
                 k_matrix[i, j]: NonRelativisticKMatrix.parametrization(
                     i=i,
