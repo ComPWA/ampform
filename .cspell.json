@@ -243,6 +243,7 @@
         "vmax",
         "vmin",
         "wigners",
+        "wspace",
         "xaxis",
         "xdata",
         "xlabel",
