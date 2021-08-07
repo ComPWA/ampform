@@ -115,6 +115,7 @@
     ],
     "ignoreWords": [
         "adrs",
+        "aitchison",
         "arange",
         "asdict",
         "asdot",

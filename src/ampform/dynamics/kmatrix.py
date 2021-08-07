@@ -23,7 +23,7 @@ from ampform.dynamics import (
 from ampform.sympy import create_symbol_matrix
 
 
-class KMatrix(ABC):
+class TMatrix(ABC):
     @classmethod
     @abstractmethod
     def formulate(
@@ -36,7 +36,7 @@ class KMatrix(ABC):
         """Formulate :math:`K`-matrix with its own parametrization."""
 
 
-class RelativisticKMatrix(KMatrix):
+class RelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
@@ -136,7 +136,7 @@ class RelativisticKMatrix(KMatrix):
         return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
 
 
-class NonRelativisticKMatrix(KMatrix):
+class NonRelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(n_channels: int) -> Tuple[sp.Matrix, sp.Matrix]:
@@ -193,4 +193,81 @@ class NonRelativisticKMatrix(KMatrix):
         parametrization = (g_i * g_j) / (
             resonance_mass[resonance_idx] ** 2 - s
         )
+        return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
+
+
+class NonRelativisticPVector(TMatrix):
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def _create_matrices(
+        n_channels: int,
+    ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
+        k_matrix = create_symbol_matrix("K", m=n_channels, n=1)
+        p_vector = create_symbol_matrix("P", m=n_channels, n=n_channels)
+        t_matrix = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
+        return t_matrix, k_matrix, p_vector
+
+    @classmethod
+    def formulate(
+        cls,
+        n_channels: int,
+        n_resonances: int,
+        parametrize: bool = True,
+        **kwargs: Any,
+    ) -> sp.Matrix:
+        t_matrix, k_matrix, p_vector = cls._create_matrices(n_channels)
+        if not parametrize:
+            return t_matrix
+        s = sp.Symbol("s")
+        resonance_mass = sp.IndexedBase("m")
+        resonance_width = sp.IndexedBase("Gamma")
+        residue_constant = sp.IndexedBase("gamma")
+        resonance_idx = sp.Symbol("R", integer=True, positive=True)
+        return t_matrix.xreplace(
+            {
+                k_matrix[i, j]: NonRelativisticKMatrix.parametrization(
+                    i=i,
+                    j=j,
+                    s=s,
+                    resonance_mass=resonance_mass,
+                    resonance_width=resonance_width,
+                    residue_constant=residue_constant,
+                    n_resonances=n_resonances,
+                    resonance_idx=resonance_idx,
+                )
+                for i in range(n_channels)
+                for j in range(n_channels)
+            }
+        ).xreplace(
+            {
+                p_vector[i]: cls.parametrization(
+                    i=i,
+                    s=sp.Symbol("s"),
+                    resonance_mass=resonance_mass,
+                    resonance_width=resonance_width,
+                    residue_constant=residue_constant,
+                    beta_constant=sp.IndexedBase("beta"),
+                    n_resonances=n_resonances,
+                    resonance_idx=resonance_idx,
+                )
+                for i in range(n_channels)
+            }
+        )
+
+    @staticmethod
+    def parametrization(  # pylint: disable=too-many-arguments
+        i: int,
+        s: sp.Symbol,
+        resonance_mass: sp.IndexedBase,
+        resonance_width: sp.IndexedBase,
+        residue_constant: sp.IndexedBase,
+        beta_constant: sp.IndexedBase,
+        n_resonances: Union[int, sp.Symbol],
+        resonance_idx: Union[int, sp.Symbol],
+    ) -> sp.Expr:
+        beta = beta_constant[resonance_idx]
+        gamma = residue_constant[resonance_idx, i]
+        mass = resonance_mass[resonance_idx]
+        width = resonance_width[resonance_idx]
+        parametrization = beta * gamma * mass * width / (mass ** 2 - s)
         return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
