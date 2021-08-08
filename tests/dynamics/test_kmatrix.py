@@ -15,7 +15,7 @@ class TestNonRelativisticKMatrix:
     )
     def test_breit_wigner(self, n_channels: int):
         k_matrix = NonRelativisticKMatrix.formulate(
-            n_resonances=1, n_channels=n_channels
+            n_poles=1, n_channels=n_channels
         )
         breit_wigner = k_matrix[0, 0].doit().simplify()
         breit_wigner = substitute_indexed_symbols(breit_wigner)
@@ -28,9 +28,7 @@ class TestNonRelativisticKMatrix:
         assert str(breit_wigner) == fR"-m1*w1/(-m1**2 + {factor}I*m1*w1 + s)"
 
     def test_interference_single_channel(self):
-        k_matrix = NonRelativisticKMatrix.formulate(
-            n_resonances=2, n_channels=1
-        )
+        k_matrix = NonRelativisticKMatrix.formulate(n_poles=2, n_channels=1)
         expr = k_matrix[0, 0].doit()
         expr = substitute_indexed_symbols(expr)
         expr = _remove_residue_constants(expr)

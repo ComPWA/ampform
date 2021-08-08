@@ -29,7 +29,7 @@ class TMatrix(ABC):
     def formulate(
         cls,
         n_channels: int,
-        n_resonances: Union[int, sp.Symbol],
+        n_poles: Union[int, sp.Symbol],
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
@@ -57,7 +57,7 @@ class RelativisticKMatrix(TMatrix):
     def formulate(
         cls,
         n_channels: int,
-        n_resonances: int,
+        n_poles: int,
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
@@ -65,7 +65,7 @@ class RelativisticKMatrix(TMatrix):
 
         Args:
             n_channels: Number of coupled channels.
-            n_resonances: Number of poles.
+            n_poles: Number of poles.
             parametrize: Set to `False` if don't want to parametrize and
                 only get symbols for the matrix multiplication of
                 :math:`\boldsymbol{K}` and :math:`\boldsymbol{\rho}`.
@@ -96,7 +96,7 @@ class RelativisticKMatrix(TMatrix):
                     m_a=m_a,
                     m_b=m_b,
                     residue_constant=sp.IndexedBase("gamma"),
-                    n_resonances=n_resonances,
+                    n_poles=n_poles,
                     pole_id=sp.Symbol("R", integer=True, positive=True),
                     angular_momentum=kwargs.get("angular_momentum", 0),
                     meson_radius=kwargs.get("meson_radius", 1),
@@ -122,7 +122,7 @@ class RelativisticKMatrix(TMatrix):
         m_a: sp.IndexedBase,
         m_b: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
-        n_resonances: Union[int, sp.Symbol],
+        n_poles: Union[int, sp.Symbol],
         pole_id: Union[int, sp.Symbol],
         angular_momentum: Union[int, sp.Symbol] = 0,
         meson_radius: Union[int, sp.Symbol] = 1,
@@ -146,7 +146,7 @@ class RelativisticKMatrix(TMatrix):
         g_i = residue_function(pole_id, i)
         g_j = residue_function(pole_id, j)
         parametrization = (g_i * g_j) / (pole_position[pole_id] ** 2 - s)
-        return sp.Sum(parametrization, (pole_id, 1, n_resonances))
+        return sp.Sum(parametrization, (pole_id, 1, n_poles))
 
 
 class NonRelativisticKMatrix(TMatrix):
@@ -161,7 +161,7 @@ class NonRelativisticKMatrix(TMatrix):
     def formulate(
         cls,
         n_channels: int,
-        n_resonances: int,
+        n_poles: int,
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
@@ -177,7 +177,7 @@ class NonRelativisticKMatrix(TMatrix):
                     pole_position=sp.IndexedBase("m"),
                     pole_width=sp.IndexedBase("Gamma"),
                     residue_constant=sp.IndexedBase("gamma"),
-                    n_resonances=n_resonances,
+                    n_poles=n_poles,
                     pole_id=sp.Symbol("R", integer=True, positive=True),
                 )
                 for i in range(n_channels)
@@ -193,7 +193,7 @@ class NonRelativisticKMatrix(TMatrix):
         pole_position: sp.IndexedBase,
         pole_width: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
-        n_resonances: Union[int, sp.Symbol],
+        n_poles: Union[int, sp.Symbol],
         pole_id: Union[int, sp.Symbol],
     ) -> sp.Expr:
         def residue_function(pole_id: int, i: int) -> sp.Expr:
@@ -204,7 +204,7 @@ class NonRelativisticKMatrix(TMatrix):
         g_i = residue_function(pole_id, i)
         g_j = residue_function(pole_id, j)
         parametrization = (g_i * g_j) / (pole_position[pole_id] ** 2 - s)
-        return sp.Sum(parametrization, (pole_id, 1, n_resonances))
+        return sp.Sum(parametrization, (pole_id, 1, n_poles))
 
 
 class NonRelativisticPVector(TMatrix):
@@ -222,7 +222,7 @@ class NonRelativisticPVector(TMatrix):
     def formulate(
         cls,
         n_channels: int,
-        n_resonances: int,
+        n_poles: int,
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
@@ -243,7 +243,7 @@ class NonRelativisticPVector(TMatrix):
                     pole_position=pole_position,
                     pole_width=pole_width,
                     residue_constant=residue_constant,
-                    n_resonances=n_resonances,
+                    n_poles=n_poles,
                     pole_id=pole_id,
                 )
                 for i in range(n_channels)
@@ -258,7 +258,7 @@ class NonRelativisticPVector(TMatrix):
                     pole_width=pole_width,
                     residue_constant=residue_constant,
                     beta_constant=sp.IndexedBase("beta"),
-                    n_resonances=n_resonances,
+                    n_poles=n_poles,
                     pole_id=pole_id,
                 )
                 for i in range(n_channels)
@@ -273,7 +273,7 @@ class NonRelativisticPVector(TMatrix):
         pole_width: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
         beta_constant: sp.IndexedBase,
-        n_resonances: Union[int, sp.Symbol],
+        n_poles: Union[int, sp.Symbol],
         pole_id: Union[int, sp.Symbol],
     ) -> sp.Expr:
         beta = beta_constant[pole_id]
@@ -281,7 +281,7 @@ class NonRelativisticPVector(TMatrix):
         mass = pole_position[pole_id]
         width = pole_width[pole_id, i]
         parametrization = beta * gamma * mass * width / (mass ** 2 - s)
-        return sp.Sum(parametrization, (pole_id, 1, n_resonances))
+        return sp.Sum(parametrization, (pole_id, 1, n_poles))
 
 
 def _create_rho_matrix(n_channels: int) -> sp.Matrix:
