@@ -40,7 +40,7 @@ class RelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
-        n_channels: int,
+        n_channels: int, return_t_hat: bool = False
     ) -> Tuple[sp.Matrix, sp.Matrix]:
         # pylint: disable=no-member
         rho = _create_rho_matrix(n_channels)
@@ -48,6 +48,8 @@ class RelativisticKMatrix(TMatrix):
         sqrt_rho_conj = sp.conjugate(sqrt_rho)
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         t_hat = k_matrix * (sp.eye(n_channels) - sp.I * rho * k_matrix).inv()
+        if return_t_hat:
+            return t_hat, k_matrix
         t_matrix = sqrt_rho_conj * t_hat * sqrt_rho
         return t_matrix, k_matrix
 
@@ -59,7 +61,22 @@ class RelativisticKMatrix(TMatrix):
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
-        t_matrix, k_matrix = cls._create_matrices(n_channels)
+        r"""Implementation of :eq:`T-hat in terms of K-hat`.
+
+        Args:
+            n_channels: Number of coupled channels.
+            n_resonances: Number of poles.
+            parametrize: Set to `False` if don't want to parametrize and
+                only get symbols for the matrix multiplication of
+                :math:`\boldsymbol{K}` and :math:`\boldsymbol{\rho}`.
+
+            return_t_hat: Set to `True` if you want to get the
+                Lorentz-invariant :math:`\boldsymbol{\hat{T}}`-matrix instead
+                of the :math:`\boldsymbol{T}`-matrix from
+                Eq. :eq:`K-hat and T-hat`.
+        """
+        return_t_hat: bool = kwargs.pop("return_t_hat", False)
+        t_matrix, k_matrix = cls._create_matrices(n_channels, return_t_hat)
         if not parametrize:
             return t_matrix
         phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
