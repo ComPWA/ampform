@@ -129,7 +129,9 @@ autodoc_default_options = {
 autodoc_insert_signature_linebreaks = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
-html_css_files = []
+html_css_files = [
+    "custom.css",
+]
 if autodoc_insert_signature_linebreaks:
     html_css_files.append("linebreaks-api.css")
 html_favicon = "_static/favicon.ico"
