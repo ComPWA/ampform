@@ -16,6 +16,8 @@ from typing import Any, Optional, Tuple, Union
 import sympy as sp
 
 from ampform.dynamics import (
+    BlattWeisskopfSquared,
+    BreakupMomentumSquared,
     CoupledWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
@@ -282,6 +284,142 @@ class NonRelativisticPVector(TMatrix):
         width = pole_width[pole_id, i]
         parametrization = beta * gamma * mass * width / (mass ** 2 - s)
         return sp.Sum(parametrization, (pole_id, 1, n_poles))
+
+
+class RelativisticPVector(TMatrix):
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def _create_matrices(
+        n_channels: int, return_f_hat: bool = False
+    ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
+        # pylint: disable=no-member
+        k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
+        rho = _create_rho_matrix(n_channels)
+        sqrt_rho: sp.Matrix = sp.sqrt(rho).doit()
+        sqrt_rho_conj: sp.Matrix = sp.conjugate(sqrt_rho)
+        k_matrix = create_symbol_matrix("K", n_channels, n_channels)
+        k_hat = sqrt_rho_conj.inv() * k_matrix * sqrt_rho.inv()
+        p_vector = create_symbol_matrix("P", m=n_channels, n=1)
+        f_hat = (sp.eye(n_channels) - sp.I * k_hat * rho).inv() * p_vector
+        if return_f_hat:
+            return f_hat, k_matrix, p_vector
+        f_vector = sqrt_rho * f_hat
+        return f_vector, k_matrix, p_vector
+
+    @classmethod
+    def formulate(  # pylint: disable=too-many-locals
+        cls,
+        n_channels: int,
+        n_poles: int,
+        parametrize: bool = True,
+        **kwargs: Any,
+    ) -> sp.Matrix:
+        r"""Implementation of :eq:`F in terms of P`.
+
+        Args:
+            n_channels: Number of coupled channels.
+            n_poles: Number of poles.
+            parametrize: Set to `False` if don't want to parametrize and
+                only get symbols for the matrix multiplication of
+                :math:`\boldsymbol{K}` and :math:`\boldsymbol{\rho}`.
+
+            return_f_hat: Set to `True` if you want to get the
+                Lorentz-invariant :math:`\hat{F}`-vector instead of the
+                :math:`T`-vector from Eq. :eq:`invariant vectors`.
+        """
+        return_f_hat: bool = kwargs.pop("return_f_hat", False)
+        f_vector, k_matrix, p_vector = cls._create_matrices(
+            n_channels, return_f_hat
+        )
+        if not parametrize:
+            return f_vector
+        phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
+            "phsp_factor", PhaseSpaceFactor
+        )
+        s = sp.Symbol("s")
+        pole_position = sp.IndexedBase("m")
+        pole_width = sp.IndexedBase("Gamma")
+        residue_constant = sp.IndexedBase("gamma")
+        m_a = sp.IndexedBase("m_a")
+        m_b = sp.IndexedBase("m_b")
+        pole_id = sp.Symbol("R", integer=True, positive=True)
+        angular_momentum = kwargs.get("angular_momentum", 0)
+        meson_radius = kwargs.get("meson_radius", 1)
+        return (
+            f_vector.xreplace(
+                {
+                    k_matrix[i, j]: RelativisticKMatrix.parametrization(
+                        i=i,
+                        j=j,
+                        s=s,
+                        pole_position=pole_position,
+                        pole_width=pole_width,
+                        m_a=m_a,
+                        m_b=m_b,
+                        residue_constant=residue_constant,
+                        n_poles=n_poles,
+                        pole_id=pole_id,
+                        angular_momentum=angular_momentum,
+                        meson_radius=meson_radius,
+                    )
+                    for i in range(n_channels)
+                    for j in range(n_channels)
+                }
+            )
+            .xreplace(
+                {
+                    p_vector[i]: cls.parametrization(
+                        i=i,
+                        s=s,
+                        pole_position=pole_position,
+                        pole_width=pole_width,
+                        m_a=m_a,
+                        m_b=m_b,
+                        beta_constant=sp.IndexedBase("beta"),
+                        residue_constant=residue_constant,
+                        n_poles=n_poles,
+                        pole_id=pole_id,
+                        angular_momentum=angular_momentum,
+                        meson_radius=meson_radius,
+                    )
+                    for i in range(n_channels)
+                }
+            )
+            .xreplace(
+                {
+                    sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
+                    for i in range(n_channels)
+                }
+            )
+        )
+
+    @staticmethod
+    def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
+        i: int,
+        s: sp.Symbol,
+        pole_position: sp.IndexedBase,
+        pole_width: sp.IndexedBase,
+        m_a: sp.IndexedBase,
+        m_b: sp.IndexedBase,
+        beta_constant: sp.IndexedBase,
+        residue_constant: sp.IndexedBase,
+        n_poles: Union[int, sp.Symbol],
+        pole_id: Union[int, sp.Symbol],
+        angular_momentum: Union[int, sp.Symbol] = 0,
+        meson_radius: Union[int, sp.Symbol] = 1,
+    ) -> sp.Expr:
+        beta = beta_constant[pole_id]
+        gamma = residue_constant[pole_id, i]
+        mass0 = pole_position[pole_id]
+        width = pole_width[pole_id, i]
+        q_squared = BreakupMomentumSquared(s, m_a[i], m_b[i])
+        form_factor = BlattWeisskopfSquared(
+            angular_momentum, z=q_squared * meson_radius ** 2
+        )
+        return sp.Sum(
+            beta * gamma * mass0 * width * form_factor / (mass0 ** 2 - s),
+            (pole_id, 1, n_poles),
+        )
 
 
 def _create_rho_matrix(n_channels: int) -> sp.Matrix:
