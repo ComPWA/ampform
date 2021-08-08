@@ -42,15 +42,13 @@ class RelativisticKMatrix(TMatrix):
     def _create_matrices(
         n_channels: int,
     ) -> Tuple[sp.Matrix, sp.Matrix]:
-        sqrt_rho = sp.zeros(n_channels, n_channels)
-        sqrt_rho_dagger = sp.zeros(n_channels, n_channels)
-        for i in range(n_channels):
-            rho = sp.Symbol(f"rho{i}")
-            sqrt_rho[i, i] = sp.sqrt(rho)
-            sqrt_rho_dagger[i, i] = 1 / sp.conjugate(sp.sqrt(rho))
+        # pylint: disable=no-member
+        rho = _create_rho_matrix(n_channels)
+        sqrt_rho: sp.Matrix = sp.sqrt(rho).doit()
+        sqrt_rho_conj = sp.conjugate(sqrt_rho)
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         t_hat = k_matrix * (sp.eye(n_channels) - sp.I * rho * k_matrix).inv()
-        t_matrix = sqrt_rho_dagger * t_hat * sqrt_rho
+        t_matrix = sqrt_rho_conj * t_hat * sqrt_rho
         return t_matrix, k_matrix
 
     @classmethod
@@ -202,10 +200,10 @@ class NonRelativisticPVector(TMatrix):
     def _create_matrices(
         n_channels: int,
     ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
-        k_matrix = create_symbol_matrix("K", m=n_channels, n=1)
-        p_vector = create_symbol_matrix("P", m=n_channels, n=n_channels)
-        t_matrix = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
-        return t_matrix, k_matrix, p_vector
+        k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
+        p_vector = create_symbol_matrix("P", m=n_channels, n=1)
+        f_vector = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
+        return f_vector, k_matrix, p_vector
 
     @classmethod
     def formulate(
@@ -215,15 +213,15 @@ class NonRelativisticPVector(TMatrix):
         parametrize: bool = True,
         **kwargs: Any,
     ) -> sp.Matrix:
-        t_matrix, k_matrix, p_vector = cls._create_matrices(n_channels)
+        f_vector, k_matrix, p_vector = cls._create_matrices(n_channels)
         if not parametrize:
-            return t_matrix
+            return f_vector
         s = sp.Symbol("s")
         resonance_mass = sp.IndexedBase("m")
         resonance_width = sp.IndexedBase("Gamma")
         residue_constant = sp.IndexedBase("gamma")
         resonance_idx = sp.Symbol("R", integer=True, positive=True)
-        return t_matrix.xreplace(
+        return f_vector.xreplace(
             {
                 k_matrix[i, j]: NonRelativisticKMatrix.parametrization(
                     i=i,
@@ -271,3 +269,17 @@ class NonRelativisticPVector(TMatrix):
         width = resonance_width[resonance_idx]
         parametrization = beta * gamma * mass * width / (mass ** 2 - s)
         return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
+
+
+def _create_rho_matrix(n_channels: int) -> sp.Matrix:
+    """Create a phase space matrix with :code:`n_channels`.
+
+    >>> _create_rho_matrix(n_channels=2)
+    Matrix([
+    [rho0,    0],
+    [   0, rho1]])
+    """
+    rho_matrix: sp.Matrix = sp.zeros(n_channels, n_channels)
+    for i in range(n_channels):
+        rho_matrix[i, i] = sp.Symbol(f"rho{i}")
+    return rho_matrix
