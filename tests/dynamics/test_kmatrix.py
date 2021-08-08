@@ -1,9 +1,11 @@
 # pylint: disable=no-self-use, protected-access
+import re
+
 import pytest
 import sympy as sp
 
 from ampform.dynamics.kmatrix import NonRelativisticKMatrix
-from symplot import substitute_indexed_symbols
+from symplot import rename_symbols, substitute_indexed_symbols
 
 
 class TestNonRelativisticKMatrix:
@@ -48,9 +50,7 @@ def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
 
 def _rename_widths(expression: sp.Expr) -> sp.Expr:
     """Use 'w' instead of 'Gamma' to signify widths."""
-    widths = filter(
-        lambda s: s.name.startswith("Gamma"), expression.free_symbols
-    )
-    return expression.xreplace(
-        {width: sp.Symbol("w" + width.name[5:]) for width in widths}
+    return rename_symbols(
+        expression,
+        lambda s: re.sub(r"\\Gamma_{([0-9]),[0-9]}", r"w\1", s),
     )
