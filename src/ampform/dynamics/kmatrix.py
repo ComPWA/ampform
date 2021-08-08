@@ -200,7 +200,8 @@ class NonRelativisticKMatrix(TMatrix):
     ) -> sp.Expr:
         def residue_function(resonance_idx: int, i: int) -> sp.Expr:
             return residue_constant[resonance_idx, i] * sp.sqrt(
-                resonance_mass[resonance_idx] * resonance_width[resonance_idx]
+                resonance_mass[resonance_idx]
+                * resonance_width[resonance_idx, i]
             )
 
         g_i = residue_function(resonance_idx, i)
@@ -283,7 +284,7 @@ class NonRelativisticPVector(TMatrix):
         beta = beta_constant[resonance_idx]
         gamma = residue_constant[resonance_idx, i]
         mass = resonance_mass[resonance_idx]
-        width = resonance_width[resonance_idx]
+        width = resonance_width[resonance_idx, i]
         parametrization = beta * gamma * mass * width / (mass ** 2 - s)
         return sp.Sum(parametrization, (resonance_idx, 1, n_resonances))
 
