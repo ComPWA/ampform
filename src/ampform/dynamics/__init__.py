@@ -8,7 +8,7 @@
 """
 
 import re
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -55,6 +55,12 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     See also :ref:`usage/dynamics:Form factor`.
     """
     is_commutative = True
+    max_angular_momentum: Optional[int] = None
+    """Limit the maximum allowed angular momentum :math:`L`.
+
+    This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol`
+    and you are note interested in higher angular momenta.
+    """
 
     def __new__(
         cls, angular_momentum: sp.Symbol, z: sp.Symbol, **hints: Any
@@ -63,96 +69,77 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     def evaluate(self) -> sp.Expr:
         angular_momentum, z = self.args
+        cases: Dict[int, sp.Expr] = {
+            0: 1,
+            1: 2 * z / (z + 1),
+            2: 13 * z ** 2 / ((z - 3) * (z - 3) + 9 * z),
+            3: (
+                277
+                * z ** 3
+                / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
+            ),
+            4: (
+                12746
+                * z ** 4
+                / (
+                    (z ** 2 - 45 * z + 105) * (z ** 2 - 45 * z + 105)
+                    + 25 * z * (2 * z - 21) * (2 * z - 21)
+                )
+            ),
+            5: 998881
+            * z ** 5
+            / (
+                z ** 5
+                + 15 * z ** 4
+                + 315 * z ** 3
+                + 6300 * z ** 2
+                + 99225 * z
+                + 893025
+            ),
+            6: 118394977
+            * z ** 6
+            / (
+                z ** 6
+                + 21 * z ** 5
+                + 630 * z ** 4
+                + 18900 * z ** 3
+                + 496125 * z ** 2
+                + 9823275 * z
+                + 108056025
+            ),
+            7: 19727003738
+            * z ** 7
+            / (
+                z ** 7
+                + 28 * z ** 6
+                + 1134 * z ** 5
+                + 47250 * z ** 4
+                + 1819125 * z ** 3
+                + 58939650 * z ** 2
+                + 1404728325 * z
+                + 18261468225
+            ),
+            8: 4392846440677
+            * z ** 8
+            / (
+                z ** 8
+                + 36 * z ** 7
+                + 1890 * z ** 6
+                + 103950 * z ** 5
+                + 5457375 * z ** 4
+                + 255405150 * z ** 3
+                + 9833098275 * z ** 2
+                + 273922023375 * z
+                + 4108830350625
+            ),
+        }
         return sp.Piecewise(
-            (
-                1,
-                sp.Eq(angular_momentum, 0),
-            ),
-            (
-                2 * z / (z + 1),
-                sp.Eq(angular_momentum, 1),
-            ),
-            (
-                13 * z ** 2 / ((z - 3) * (z - 3) + 9 * z),
-                sp.Eq(angular_momentum, 2),
-            ),
-            (
-                (
-                    277
-                    * z ** 3
-                    / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
-                ),
-                sp.Eq(angular_momentum, 3),
-            ),
-            (
-                (
-                    12746
-                    * z ** 4
-                    / (
-                        (z ** 2 - 45 * z + 105) * (z ** 2 - 45 * z + 105)
-                        + 25 * z * (2 * z - 21) * (2 * z - 21)
-                    )
-                ),
-                sp.Eq(angular_momentum, 4),
-            ),
-            (
-                998881
-                * z ** 5
-                / (
-                    z ** 5
-                    + 15 * z ** 4
-                    + 315 * z ** 3
-                    + 6300 * z ** 2
-                    + 99225 * z
-                    + 893025
-                ),
-                sp.Eq(angular_momentum, 5),
-            ),
-            (
-                118394977
-                * z ** 6
-                / (
-                    z ** 6
-                    + 21 * z ** 5
-                    + 630 * z ** 4
-                    + 18900 * z ** 3
-                    + 496125 * z ** 2
-                    + 9823275 * z
-                    + 108056025
-                ),
-                sp.Eq(angular_momentum, 6),
-            ),
-            (
-                19727003738
-                * z ** 7
-                / (
-                    z ** 7
-                    + 28 * z ** 6
-                    + 1134 * z ** 5
-                    + 47250 * z ** 4
-                    + 1819125 * z ** 3
-                    + 58939650 * z ** 2
-                    + 1404728325 * z
-                    + 18261468225
-                ),
-                sp.Eq(angular_momentum, 7),
-            ),
-            (
-                4392846440677
-                * z ** 8
-                / (
-                    z ** 8
-                    + 36 * z ** 7
-                    + 1890 * z ** 6
-                    + 103950 * z ** 5
-                    + 5457375 * z ** 4
-                    + 255405150 * z ** 3
-                    + 9833098275 * z ** 2
-                    + 273922023375 * z
-                    + 4108830350625
-                ),
-                sp.Eq(angular_momentum, 8),
-            ),
+            *[
+                (expression, sp.Eq(angular_momentum, value))
+                for value, expression in cases.items()
+                if self.max_angular_momentum is None
+                or value <= self.max_angular_momentum
+            ]
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:

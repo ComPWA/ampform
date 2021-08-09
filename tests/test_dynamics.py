@@ -7,8 +7,25 @@ import sympy as sp
 from qrules import ParticleCollection
 from sympy import preorder_traversal
 
-from ampform.dynamics import ComplexSqrt
+from ampform.dynamics import BlattWeisskopfSquared, ComplexSqrt
 from ampform.helicity import HelicityModel
+
+
+class TestBlattWeisskopfSquared:
+    def test_max_angular_momentum(self):
+        z = sp.Symbol("z")
+        angular_momentum = sp.Symbol("L", integer=True)
+        form_factor = BlattWeisskopfSquared(angular_momentum, z=z)
+        form_factor_9 = form_factor.subs(angular_momentum, 8).evaluate()
+        factor, z_power, _ = form_factor_9.args
+        assert factor == 4392846440677
+        assert z_power == z ** 8
+        assert BlattWeisskopfSquared.max_angular_momentum is None
+        BlattWeisskopfSquared.max_angular_momentum = 1
+        assert form_factor.evaluate() == sp.Piecewise(
+            (1, sp.Eq(angular_momentum, 0)),
+            (2 * z / (z + 1), sp.Eq(angular_momentum, 1)),
+        )
 
 
 def test_generate(
