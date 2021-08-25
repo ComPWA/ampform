@@ -22,6 +22,7 @@ disable=
     missing-module-docstring,   # pydocstyle
     redefined-builtin, # flake8-built
     too-few-public-methods, # data containers (attrs) and interface classes
+    unspecified-encoding, # http://pylint.pycqa.org/en/latest/whatsnew/2.10.html
     unused-import, # https://www.flake8rules.com/rules/F401
 
 [SIMILARITIES]
