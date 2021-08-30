@@ -73,7 +73,7 @@ references
 API <api/ampform>
 Changelog <https://github.com/ComPWA/ampform/releases>
 Upcoming features <https://github.com/ComPWA/ampform/milestones?direction=asc&sort=title&state=open>
-Develop <https://pwa.readthedocs.io/develop.html>
+Help developing <https://compwa-org.rtfd.io/en/stable/develop.html>
 ```
 
 - {ref}`Python API <modindex>`
