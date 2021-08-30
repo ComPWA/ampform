@@ -19,8 +19,9 @@ class UnevaluatedExpression(sp.Expr):
     """
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
-    __slots__: Tuple[str] = ("name",)
-    name: Optional[str]
+    __slots__: Tuple[str] = ("_name",)
+    _name: Optional[str]
+    """Optional instance attribute that can be used in LaTeX representations."""
 
     def __new__(  # pylint: disable=unused-argument
         cls, *args: Any, name: Optional[str] = None, **hints: Any
@@ -30,13 +31,13 @@ class UnevaluatedExpression(sp.Expr):
         obj._args = args
         obj._assumptions = cls.default_assumptions
         obj._mhash = None
-        obj.name = name
+        obj._name = name
         return obj
 
     def __getnewargs__(self) -> tuple:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
-        return (*self.args, self.name)
+        return (*self.args, self._name)
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
@@ -47,8 +48,8 @@ class UnevaluatedExpression(sp.Expr):
         """Provide a mathematical Latex representation for notebooks."""
         args = tuple(map(printer._print, self.args))
         name = self.__class__.__name__
-        if self.name is not None:
-            name = self.name
+        if self._name is not None:
+            name = self._name
         return f"{name}{args}"
 
 
