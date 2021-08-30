@@ -121,8 +121,8 @@ def implement_doit_method() -> Callable[
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
         @functools.wraps(decorated_class.doit)
-        def doit_method(self: Any, deep: bool = True, **hints: Any) -> sp.Expr:
-            expr = type(self)(*self.args, **hints, evaluate=True)
+        def doit_method(self: Any, deep: bool = True) -> sp.Expr:
+            expr = self.evaluate()
             if deep:
                 return expr.doit()
             return expr
