@@ -1,4 +1,5 @@
 # cspell:ignore mhash
+# pylint: disable=invalid-getnewargs-ex-returned
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
@@ -34,10 +35,10 @@ class UnevaluatedExpression(sp.Expr):
         obj._name = name
         return obj
 
-    def __getnewargs__(self) -> tuple:
+    def __getnewargs_ex__(self) -> Tuple[tuple, dict]:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
-        return (*self.args, self._name)
+        return (self.args, {"name": self._name})
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
