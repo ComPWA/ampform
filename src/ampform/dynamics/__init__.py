@@ -362,7 +362,7 @@ class CoupledWidth(UnevaluatedExpression):
         expr._mhash = None
         expr._args = args
         expr._name = None
-        expr.phsp_factor = PhaseSpaceFactor
+        expr.phsp_factor = phsp_factor
         if evaluate:
             return expr.evaluate()
         return expr

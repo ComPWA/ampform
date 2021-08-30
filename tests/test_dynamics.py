@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, too-many-arguments
+# pylint: disable=no-self-use, protected-access, too-many-arguments
 from typing import Tuple
 
 import numpy as np
@@ -7,7 +7,13 @@ import sympy as sp
 from qrules import ParticleCollection
 from sympy import preorder_traversal
 
-from ampform.dynamics import BlattWeisskopfSquared, ComplexSqrt
+from ampform.dynamics import (
+    BlattWeisskopfSquared,
+    ComplexSqrt,
+    CoupledWidth,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAnalytic,
+)
 from ampform.helicity import HelicityModel
 
 
@@ -26,6 +32,39 @@ class TestBlattWeisskopfSquared:
             (1, sp.Eq(angular_momentum, 0)),
             (2 * z / (z + 1), sp.Eq(angular_momentum, 1)),
         )
+
+
+class TestCoupledWidth:
+    @staticmethod
+    def test_init():
+        angular_momentum = sp.Symbol("L", integer=True)
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", real=True)
+        width = CoupledWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m_a,
+            m_b=m_a,
+            angular_momentum=0,
+            meson_radius=1,
+        )
+        assert width.doit() == w0 * sp.sqrt(-(m_a ** 2) + s / 4) * sp.sqrt(
+            m0 ** 2
+        ) / (sp.sqrt(s) * sp.sqrt(m0 ** 2 / 4 - m_a ** 2))
+        assert width.phsp_factor is PhaseSpaceFactor
+        assert width._name is None
+
+        width = CoupledWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m_a,
+            m_b=m_b,
+            angular_momentum=angular_momentum,
+            meson_radius=d,
+            phsp_factor=PhaseSpaceFactorAnalytic,
+        )
+        assert width.phsp_factor is PhaseSpaceFactorAnalytic
 
 
 def test_generate(
