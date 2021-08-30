@@ -183,9 +183,9 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return sp.sqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s, m_a, _ = self.args
+        s, *_ = self.args
         s = printer._print(s)
-        subscript = _indices_to_subscript(_determine_indices(m_a))
+        subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\rho" + subscript if self._name is None else self._name
         return fR"{name}\left({s}\right)"
 
@@ -218,9 +218,9 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s, m_a, _ = self.args
+        s, *_ = self.args
         s = printer._print(s)
-        subscript = _indices_to_subscript(_determine_indices(m_a))
+        subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\hat{\rho}" + subscript if self._name is None else self._name
         return fR"{name}\left({s}\right)"
 
@@ -250,9 +250,9 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s, m_a, _ = self.args
+        s, *_ = self.args
         s = printer._print(s)
-        subscript = _indices_to_subscript(_determine_indices(m_a))
+        subscript = _indices_to_subscript(_determine_indices(s))
         name = (
             R"\rho^\mathrm{ac}" + subscript
             if self._name is None
@@ -283,9 +283,9 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         return ComplexSqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s, m_a, _ = self.args
+        s, *_ = self.args
         s = printer._print(s)
-        subscript = _indices_to_subscript(_determine_indices(m_a))
+        subscript = _indices_to_subscript(_determine_indices(s))
         name = (
             R"\rho^\mathrm{c}" + subscript
             if self._name is None
@@ -428,9 +428,9 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        s, m_a, _ = self.args
+        s, *_ = self.args
         s = printer._print(s)
-        subscript = _indices_to_subscript(_determine_indices(m_a))
+        subscript = _indices_to_subscript(_determine_indices(s))
         name = "q^2" + subscript if self._name is None else self._name
         return fR"{name}\left({s}\right)"
 
