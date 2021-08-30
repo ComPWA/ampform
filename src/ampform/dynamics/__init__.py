@@ -348,6 +348,7 @@ class CoupledWidth(UnevaluatedExpression):
         angular_momentum: sp.Symbol,
         meson_radius: sp.Symbol,
         phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+        name: Optional[str] = None,
         evaluate: bool = False,
     ) -> "CoupledWidth":
         args = sp.sympify(
@@ -361,7 +362,7 @@ class CoupledWidth(UnevaluatedExpression):
         expr._assumptions = cls.default_assumptions
         expr._mhash = None
         expr._args = args
-        expr._name = None
+        expr._name = name
         expr.phsp_factor = phsp_factor
         if evaluate:
             return expr.evaluate()
@@ -370,7 +371,7 @@ class CoupledWidth(UnevaluatedExpression):
     def __getnewargs__(self) -> tuple:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
-        return (*self.args, self.phsp_factor)
+        return (*self.args, self.phsp_factor, self._name)
 
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args

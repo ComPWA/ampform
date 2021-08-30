@@ -63,8 +63,10 @@ class TestCoupledWidth:
             angular_momentum=angular_momentum,
             meson_radius=d,
             phsp_factor=PhaseSpaceFactorAnalytic,
+            name="Gamma_1",
         )
         assert width.phsp_factor is PhaseSpaceFactorAnalytic
+        assert width._name == "Gamma_1"
 
 
 def test_generate(
