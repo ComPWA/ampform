@@ -15,7 +15,7 @@ CONSTRAINTS_DIR = ".constraints"
 OUTPUT_FILE = f"{CONSTRAINTS_DIR}/py{PYTHON_VERSION}.txt"
 
 
-def upgrade_constraints_file() -> None:
+def upgrade_constraints_file() -> int:
     os.makedirs(CONSTRAINTS_DIR, exist_ok=True)
     pip_compile_command = " ".join(
         [
@@ -28,7 +28,7 @@ def upgrade_constraints_file() -> None:
     )
     print("Running the following command:")
     print(f"   {pip_compile_command}")
-    subprocess.call(pip_compile_command, shell=True)
+    return subprocess.call(pip_compile_command, shell=True)
 
 
 def remove_extras_syntax() -> None:
@@ -68,5 +68,6 @@ def remove_extras_syntax() -> None:
 
 
 if "__main__" in __name__:
-    upgrade_constraints_file()
+    if upgrade_constraints_file():
+        raise RuntimeError("There were issues running pip-compile")
     remove_extras_syntax()
