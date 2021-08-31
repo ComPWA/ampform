@@ -23,6 +23,7 @@ from typing import (
     Dict,
     Iterator,
     Mapping,
+    Sequence,
     Tuple,
     Type,
     TypeVar,
@@ -233,7 +234,7 @@ def _merge_args_kwargs(
 
 
 def prepare_sliders(
-    expression: sp.Expr, plot_symbol: sp.Symbol
+    expression: sp.Expr, plot_symbol: Union[sp.Symbol, Tuple[sp.Symbol, ...]]
 ) -> Tuple[Callable, SliderKwargs]:
     # cspell:ignore lambdifygenerated
     """Lambdify a `sympy` expression and create sliders for its arguments.
@@ -248,16 +249,17 @@ def prepare_sliders(
     >>> sliders
     SliderKwargs(...)
     """
-    slider_symbols = _extract_slider_symbols(expression, plot_symbol)
+    plot_symbols = __safe_wrap_symbols(plot_symbol)
+    slider_symbols = _extract_slider_symbols(expression, plot_symbols)
     lambdified_expression = sp.lambdify(
-        (plot_symbol, *slider_symbols),
+        (*plot_symbols, *slider_symbols),
         expression,
         modules="numpy",
     )
     sliders_mapping = {
         symbol.name: create_slider(symbol) for symbol in slider_symbols
     }
-    symbols_names = map(lambda s: s.name, (plot_symbol, *slider_symbols))
+    symbols_names = map(lambda s: s.name, (*plot_symbols, *slider_symbols))
     arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names))
     sliders = SliderKwargs(sliders_mapping, arg_to_symbol)
@@ -284,15 +286,32 @@ def create_slider(symbol: sp.Symbol) -> Slider:
 
 
 def _extract_slider_symbols(
-    expression: sp.Expr, plot_symbol: sp.Symbol
+    expression: sp.Expr,
+    plot_symbol: Union[sp.Symbol, Sequence[sp.Symbol]],
 ) -> Tuple[sp.Symbol, ...]:
     """Extract sorted, remaining free symbols of a `sympy` expression."""
-    if plot_symbol not in expression.free_symbols:
-        raise ValueError(
-            f"Expression does not contain a free symbol named {plot_symbol}"
-        )
-    ordered_symbols = sorted(expression.free_symbols, key=lambda s: s.name)
-    return tuple(s for s in ordered_symbols if s != plot_symbol)
+    plot_symbols = __safe_wrap_symbols(plot_symbol)
+    free_symbols = set(expression.free_symbols)
+    for symbol in plot_symbols:
+        if symbol not in free_symbols:
+            raise ValueError(
+                f"Expression does not contain a free symbol named {symbol}"
+            )
+        free_symbols.remove(symbol)
+    ordered_symbols = sorted(free_symbols, key=lambda s: s.name)
+    return tuple(ordered_symbols)
+
+
+def __safe_wrap_symbols(
+    plot_symbol: Union[sp.Symbol, Sequence[sp.Symbol]]
+) -> Tuple[sp.Symbol, ...]:
+    if isinstance(plot_symbol, abc.Sequence):
+        return tuple(plot_symbol)
+    if isinstance(plot_symbol, sp.Symbol):
+        return (plot_symbol,)
+    raise TypeError(
+        f"Wrong plot_symbol input type {type(plot_symbol).__name__}"
+    )
 
 
 def partial_doit(
