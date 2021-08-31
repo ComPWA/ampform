@@ -412,7 +412,8 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         m_b: Mass of decay product :math:`b`.
 
     It's up to the caller in which way to take the square root of this break-up
-    momentum.See :doc:`usage/analytic-continuation` and `.ComplexSqrt`.
+    momentum.See :doc:`/usage/dynamics/analytic-continuation` and
+    `.ComplexSqrt`.
     """
 
     is_commutative = True
@@ -456,10 +457,6 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
-
-    Note that this lineshape is set to zero for :math:`s < (m_a + m_b)^2` as a
-    continuation of the `.BlattWeisskopfSquared` damping factor behavior at
-    :math:`s = (m_a + m_b)^2`.
 
     See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2020; Resonances; p.6`.
