@@ -457,10 +457,6 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
-    Note that this lineshape is set to zero for :math:`s < (m_a + m_b)^2` as a
-    continuation of the `.BlattWeisskopfSquared` damping factor behavior at
-    :math:`s = (m_a + m_b)^2`.
-
     See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2020; Resonances; p.6`.
     """
