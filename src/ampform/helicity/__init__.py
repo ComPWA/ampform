@@ -112,16 +112,34 @@ class HelicityModel:
 
     @property
     def components(self) -> typing.OrderedDict[str, sp.Expr]:
+        """A mapping for identifying main components in the :attr:`expression`.
+
+        Keys are the component names (`str`), formatted as LaTeX, and values
+        are sub-expressions in the main :attr:`expression`. The mapping is an
+        `~collections.OrderedDict` that orders the component names
+        alphabetically with `natural sort order
+        <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+        """
         return self._components
 
     @property
     def parameter_defaults(
         self,
     ) -> typing.OrderedDict[sp.Symbol, ParameterValue]:
+        """A mapping of suggested parameter values.
+
+        Keys are `~sympy.core.symbol.Symbol` instances from the main
+        :attr:`expression` that should be interpreted as parameters (as opposed
+        to variables). The symbols are ordered alphabetically by name with
+        `natural sort order
+        <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values have been
+        extracted from the input `~qrules.transition.ReactionInfo`.
+        """
         return self._parameter_defaults
 
     @property
     def adapter(self) -> HelicityAdapter:
+        """Adapter for converting four-momenta to kinematic variables."""
         return self._adapter
 
     def sum_components(  # noqa: R701
