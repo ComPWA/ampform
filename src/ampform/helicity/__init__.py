@@ -2,7 +2,9 @@
 
 import logging
 import operator
-from collections import defaultdict
+import re
+import typing
+from collections import OrderedDict, defaultdict
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
@@ -11,6 +13,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Mapping,
     Optional,
     Tuple,
     Type,
@@ -49,16 +52,52 @@ from .naming import (
 ParameterValue = Union[float, complex, int]
 
 
+def _order_component_mapping(
+    mapping: Mapping[str, ParameterValue]
+) -> typing.OrderedDict[str, ParameterValue]:
+    return OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
+    )
+
+
+def _order_symbol_mapping(
+    mapping: Mapping[sp.Symbol, sp.Expr]
+) -> typing.OrderedDict[sp.Symbol, sp.Expr]:
+    return OrderedDict(
+        [
+            (symbol, mapping[symbol])
+            for symbol in sorted(
+                mapping, key=lambda s: _natural_sorting(s.name)
+            )
+        ]
+    )
+
+
+def _natural_sorting(text: str) -> List[Union[float, str]]:
+    # https://stackoverflow.com/a/5967539/13219025
+    return [
+        __attempt_number_cast(c)
+        for c in re.split(r"[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)", text)
+    ]
+
+
+def __attempt_number_cast(text: str) -> Union[float, str]:
+    try:
+        return float(text)
+    except ValueError:
+        return text
+
+
 @attr.s(frozen=True)
 class HelicityModel:
     _expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: Dict[sp.Symbol, ParameterValue] = attr.ib(
-        validator=attr.validators.instance_of(dict)
-    )
-    _components: Dict[str, sp.Expr] = attr.ib(
-        validator=attr.validators.instance_of(dict)
+    _parameter_defaults: typing.OrderedDict[
+        sp.Symbol, ParameterValue
+    ] = attr.ib(converter=_order_symbol_mapping)
+    _components: typing.OrderedDict[str, sp.Expr] = attr.ib(
+        converter=_order_component_mapping
     )
     _adapter: HelicityAdapter = attr.ib(
         validator=attr.validators.instance_of(HelicityAdapter)
@@ -72,11 +111,13 @@ class HelicityModel:
         return self._expression
 
     @property
-    def components(self) -> Dict[str, sp.Expr]:
+    def components(self) -> typing.OrderedDict[str, sp.Expr]:
         return self._components
 
     @property
-    def parameter_defaults(self) -> Dict[sp.Symbol, ParameterValue]:
+    def parameter_defaults(
+        self,
+    ) -> typing.OrderedDict[sp.Symbol, ParameterValue]:
         return self._parameter_defaults
 
     @property
