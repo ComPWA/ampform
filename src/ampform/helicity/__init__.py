@@ -1,10 +1,9 @@
 """Generate an amplitude model with the helicity formalism."""
 
+import collections
 import logging
 import operator
 import re
-import typing
-from collections import OrderedDict, defaultdict
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
@@ -49,21 +48,26 @@ from .naming import (
     generate_transition_label,
 )
 
+try:
+    from typing import OrderedDict
+except ImportError:
+    from typing_extensions import OrderedDict  # type: ignore
+
 ParameterValue = Union[float, complex, int]
 
 
 def _order_component_mapping(
     mapping: Mapping[str, ParameterValue]
-) -> typing.OrderedDict[str, ParameterValue]:
-    return OrderedDict(
+) -> OrderedDict[str, ParameterValue]:
+    return collections.OrderedDict(
         [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
     )
 
 
 def _order_symbol_mapping(
     mapping: Mapping[sp.Symbol, sp.Expr]
-) -> typing.OrderedDict[sp.Symbol, sp.Expr]:
-    return OrderedDict(
+) -> OrderedDict[sp.Symbol, sp.Expr]:
+    return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
             for symbol in sorted(
@@ -93,10 +97,10 @@ class HelicityModel:
     _expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: typing.OrderedDict[
-        sp.Symbol, ParameterValue
-    ] = attr.ib(converter=_order_symbol_mapping)
-    _components: typing.OrderedDict[str, sp.Expr] = attr.ib(
+    _parameter_defaults: OrderedDict[sp.Symbol, ParameterValue] = attr.ib(
+        converter=_order_symbol_mapping
+    )
+    _components: OrderedDict[str, sp.Expr] = attr.ib(
         converter=_order_component_mapping
     )
     _adapter: HelicityAdapter = attr.ib(
@@ -111,7 +115,7 @@ class HelicityModel:
         return self._expression
 
     @property
-    def components(self) -> typing.OrderedDict[str, sp.Expr]:
+    def components(self) -> OrderedDict[str, sp.Expr]:
         """A mapping for identifying main components in the :attr:`expression`.
 
         Keys are the component names (`str`), formatted as LaTeX, and values
@@ -123,9 +127,7 @@ class HelicityModel:
         return self._components
 
     @property
-    def parameter_defaults(
-        self,
-    ) -> typing.OrderedDict[sp.Symbol, ParameterValue]:
+    def parameter_defaults(self) -> OrderedDict[sp.Symbol, ParameterValue]:
         """A mapping of suggested parameter values.
 
         Keys are `~sympy.core.symbol.Symbol` instances from the main
@@ -561,7 +563,7 @@ def group_transitions(
             Tuple[Tuple[str, float], ...],
         ],
         List[StateTransition],
-    ] = defaultdict(list)
+    ] = collections.defaultdict(list)
     for transition in transitions:
         initial_state = sorted(
             (
