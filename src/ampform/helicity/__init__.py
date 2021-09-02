@@ -210,12 +210,18 @@ class HelicityAmplitudeBuilder:
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
+        found_particle = False
         for transition in self.__reaction.transitions:
             for node_id in transition.topology.nodes:
                 decay = TwoBodyDecay.from_transition(transition, node_id)
                 decaying_particle = decay.parent.particle
                 if decaying_particle.name == particle_name:
                     self.__dynamics_choices[decay] = dynamics_builder
+                    found_particle = True
+        if not found_particle:
+            logging.warning(
+                f'Model contains no resonance with name "{particle_name}"'
+            )
 
     def formulate(self) -> HelicityModel:
         self.__components = {}
