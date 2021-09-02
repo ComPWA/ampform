@@ -1,8 +1,9 @@
 """Generate an amplitude model with the helicity formalism."""
 
+import collections
 import logging
 import operator
-from collections import defaultdict
+import re
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
@@ -11,6 +12,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Mapping,
     Optional,
     Tuple,
     Type,
@@ -46,7 +48,48 @@ from .naming import (
     generate_transition_label,
 )
 
+try:
+    from typing import OrderedDict
+except ImportError:
+    from typing_extensions import OrderedDict  # type: ignore
+
 ParameterValue = Union[float, complex, int]
+
+
+def _order_component_mapping(
+    mapping: Mapping[str, ParameterValue]
+) -> OrderedDict[str, ParameterValue]:
+    return collections.OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
+    )
+
+
+def _order_symbol_mapping(
+    mapping: Mapping[sp.Symbol, sp.Expr]
+) -> OrderedDict[sp.Symbol, sp.Expr]:
+    return collections.OrderedDict(
+        [
+            (symbol, mapping[symbol])
+            for symbol in sorted(
+                mapping, key=lambda s: _natural_sorting(s.name)
+            )
+        ]
+    )
+
+
+def _natural_sorting(text: str) -> List[Union[float, str]]:
+    # https://stackoverflow.com/a/5967539/13219025
+    return [
+        __attempt_number_cast(c)
+        for c in re.split(r"[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)", text)
+    ]
+
+
+def __attempt_number_cast(text: str) -> Union[float, str]:
+    try:
+        return float(text)
+    except ValueError:
+        return text
 
 
 @attr.s(frozen=True)
@@ -54,11 +97,11 @@ class HelicityModel:
     _expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: Dict[sp.Symbol, ParameterValue] = attr.ib(
-        validator=attr.validators.instance_of(dict)
+    _parameter_defaults: OrderedDict[sp.Symbol, ParameterValue] = attr.ib(
+        converter=_order_symbol_mapping
     )
-    _components: Dict[str, sp.Expr] = attr.ib(
-        validator=attr.validators.instance_of(dict)
+    _components: OrderedDict[str, sp.Expr] = attr.ib(
+        converter=_order_component_mapping
     )
     _adapter: HelicityAdapter = attr.ib(
         validator=attr.validators.instance_of(HelicityAdapter)
@@ -72,15 +115,33 @@ class HelicityModel:
         return self._expression
 
     @property
-    def components(self) -> Dict[str, sp.Expr]:
+    def components(self) -> OrderedDict[str, sp.Expr]:
+        """A mapping for identifying main components in the :attr:`expression`.
+
+        Keys are the component names (`str`), formatted as LaTeX, and values
+        are sub-expressions in the main :attr:`expression`. The mapping is an
+        `~collections.OrderedDict` that orders the component names
+        alphabetically with `natural sort order
+        <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+        """
         return self._components
 
     @property
-    def parameter_defaults(self) -> Dict[sp.Symbol, ParameterValue]:
+    def parameter_defaults(self) -> OrderedDict[sp.Symbol, ParameterValue]:
+        """A mapping of suggested parameter values.
+
+        Keys are `~sympy.core.symbol.Symbol` instances from the main
+        :attr:`expression` that should be interpreted as parameters (as opposed
+        to variables). The symbols are ordered alphabetically by name with
+        `natural sort order
+        <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values have been
+        extracted from the input `~qrules.transition.ReactionInfo`.
+        """
         return self._parameter_defaults
 
     @property
     def adapter(self) -> HelicityAdapter:
+        """Adapter for converting four-momenta to kinematic variables."""
         return self._adapter
 
     def sum_components(  # noqa: R701
@@ -502,7 +563,7 @@ def group_transitions(
             Tuple[Tuple[str, float], ...],
         ],
         List[StateTransition],
-    ] = defaultdict(list)
+    ] = collections.defaultdict(list)
     for transition in transitions:
         initial_state = sorted(
             (
