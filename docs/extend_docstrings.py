@@ -22,7 +22,7 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
-    CoupledWidth,
+    EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,
     PhaseSpaceFactorAnalytic,
@@ -91,10 +91,10 @@ def render_complex_sqrt() -> None:
     )
 
 
-def render_coupled_width() -> None:
+def render_energy_dependent_width() -> None:
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
-    width = CoupledWidth(
+    width = EnergyDependentWidth(
         s=s,
         mass0=m0,
         gamma0=w0,
@@ -106,13 +106,13 @@ def render_coupled_width() -> None:
     latex = sp.multiline_latex(width, width.evaluate(), environment="eqnarray")
     latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
-        CoupledWidth,
+        EnergyDependentWidth,
         fR"""
     With that in mind, the "mass-dependent" width in a
     `.relativistic_breit_wigner_with_ff` becomes:
 
     .. math::
-        :label: CoupledWidth
+        :label: EnergyDependentWidth
 
         {latex}
 
@@ -309,7 +309,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
 
-    where :math:`\Gamma(s)` is defined by :eq:`CoupledWidth`, :math:`B_L^2` is
+    where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
     defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
     :eq:`BreakupMomentumSquared`.
     """,

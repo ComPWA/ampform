@@ -4,7 +4,7 @@ import sympy as sp
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
-    CoupledWidth,
+    EnergyDependentWidth,
     PhaseSpaceFactorAnalytic,
 )
 from ampform.sympy import UnevaluatedExpression
@@ -33,7 +33,7 @@ class TestUnevaluatedExpression:
         imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr
 
-        expr = CoupledWidth(
+        expr = EnergyDependentWidth(
             s=s,
             mass0=m0,
             gamma0=w0,
