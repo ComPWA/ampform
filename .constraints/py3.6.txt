@@ -5,7 +5,7 @@
 #    pip-compile --extra=dev --no-annotate --output-file=.constraints/py3.6.txt
 #
 alabaster==0.7.12
-anyio==3.3.0
+anyio==3.3.1
 aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==21.1.0
 astroid==2.7.3
@@ -14,7 +14,7 @@ attrs==20.3.0
 babel==2.9.1
 backcall==0.2.0
 backports.entry-points-selectable==1.1.0
-beautifulsoup4==4.9.3
+beautifulsoup4==4.10.0
 black==21.8b0
 bleach==4.1.0
 certifi==2021.5.30
@@ -28,7 +28,7 @@ contextvars==2.4
 coverage==5.5
 cycler==0.10.0
 dataclasses==0.8 ; python_version < "3.7"
-decorator==5.0.9
+decorator==5.1.0
 defusedxml==0.7.1
 deprecated==1.2.13
 distlib==0.3.2
@@ -38,7 +38,7 @@ execnet==1.9.0
 filelock==3.0.12
 flake8==3.9.2
 flake8-blind-except==0.2.0
-flake8-bugbear==21.4.3
+flake8-bugbear==21.9.1
 flake8-builtins==1.5.3
 flake8-comprehensions==3.6.1
 flake8-plugin-utils==1.3.2
@@ -53,7 +53,7 @@ gprof2dot==2021.2.21
 graphviz==0.17
 greenlet==1.1.1
 hepunits==2.1.1
-identify==2.2.13
+identify==2.2.14
 idna==3.2
 imagesize==1.2.0
 immutables==0.16
@@ -73,12 +73,12 @@ jsonschema==3.2.0
 jupyter-cache==0.4.3
 jupyter-client==7.0.2
 jupyter-core==4.7.1
-jupyter-server==1.10.2
+jupyter-server==1.11.0
 jupyter-server-mathjax==0.2.3
 jupyter-sphinx==0.3.2
-jupyterlab==3.1.10
+jupyterlab==3.1.11
 jupyterlab-code-formatter==1.4.10
-jupyterlab-server==2.7.2
+jupyterlab-server==2.8.1
 jupyterlab-widgets==1.0.1
 kiwisolver==1.3.1
 latexcodec==2.0.1
@@ -91,7 +91,7 @@ matplotlib==3.3.4
 mccabe==0.6.1
 mdit-py-plugins==0.2.8
 mistune==0.8.4
-mpl-interactions==0.18.0
+mpl-interactions==0.18.1
 mpmath==1.2.1
 mypy==0.910
 mypy-extensions==0.4.3
@@ -109,7 +109,7 @@ numpy==1.19.5
 packaging==21.0
 pandocfilters==1.4.3
 parso==0.8.2
-particle==0.16.0
+particle==0.16.1
 pathspec==0.9.0
 pep517==0.11.0
 pep8-naming==0.12.1
@@ -167,7 +167,7 @@ sphinx-panels==0.6.0
 sphinx-thebe==0.0.10
 sphinx-togglebutton==0.2.3
 sphinxcontrib-applehelp==1.0.2
-sphinxcontrib-bibtex==2.3.0
+sphinxcontrib-bibtex==2.4.1
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-hep-pdgref==0.1.3
 sphinxcontrib-htmlhelp==2.0.0
@@ -176,7 +176,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 sqlalchemy==1.4.23
 sympy==1.8
-terminado==0.11.1
+terminado==0.12.1
 testpath==0.5.0
 toml==0.10.2
 tomli==1.2.1
