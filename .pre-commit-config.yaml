@@ -97,7 +97,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.1.0
+    rev: 1.1.1
     hooks:
       - id: nbqa-black
       - id: nbqa-flake8
@@ -109,7 +109,7 @@ repos:
       - id: nbstripout
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.3.2
+    rev: v2.4.0
     hooks:
       - id: prettier
 
@@ -119,7 +119,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.165
+    rev: v1.1.167
     hooks:
       - id: pyright
 
