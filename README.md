@@ -40,13 +40,12 @@ see
   _converted to any backend_ (see
   [`tensorwaves`](https://tensorwaves.rtfd.io)).
 - **Dynamics**
-  - [x] Relativistic Breit-Wigner, optionally with form factors
-  - [x] Symbolic _K_-matrix for an arbitrary number of poles and channels
-  - [x] Symbolic _P_-vector for an arbitrary number of poles and channels
+  - Relativistic Breit-Wigner, optionally with form factors
+  - Symbolic _K_-matrix for an arbitrary number of poles and channels
+  - Symbolic _P_-vector for an arbitrary number of poles and channels
 - **Spin formalisms (for amplitude model generation)**
-  - [x] Helicity formalism
-  - [x] Canonical formalism
-  - [ ] Tensor formalisms
+  - Helicity formalism
+  - Canonical formalism
 
 ## Contribute
 
