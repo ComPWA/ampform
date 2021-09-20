@@ -54,7 +54,7 @@ repos:
       - id: format-setup-cfg
 
   - repo: https://github.com/psf/black
-    rev: 21.8b0
+    rev: 21.9b0
     hooks:
       - id: black
 
@@ -64,7 +64,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.9.0
+    rev: v5.10.1
     hooks:
       - id: cspell
 
@@ -109,7 +109,7 @@ repos:
       - id: nbstripout
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.4.0
+    rev: v2.4.1
     hooks:
       - id: prettier
 
@@ -119,7 +119,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.167
+    rev: v1.1.169
     hooks:
       - id: pyright
 
