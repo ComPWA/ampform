@@ -2,6 +2,7 @@
   "exclude": [".git", ".tox", "docs/_build", "docs/adr"],
   "include": ["docs", "src", "tests"],
   "reportGeneralTypeIssues": false,
+  "reportPrivateImportUsage": false,
   "reportUnboundVariable": false,
   "reportUnusedClass": true,
   "reportUnusedFunction": true,
