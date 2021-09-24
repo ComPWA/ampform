@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.35
+    rev: 0.0.38
     hooks:
       - id: check-dev-files
         args:
@@ -119,7 +119,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.169
+    rev: v1.1.170
     hooks:
       - id: pyright
 
