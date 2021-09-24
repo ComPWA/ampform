@@ -1,5 +1,5 @@
 {
-    "version": "0.1",
+    "version": "0.2",
     "enableFiletypes": [
         "git-commit",
         "jupyter"
@@ -36,12 +36,12 @@
         ".readthedocs.yml",
         ".vscode/*",
         ".vscode/.gitignore",
-        "Makefile",
         "codecov.yml",
         "docs/_templates/*",
         "docs/adr/*/*",
         "docs/conf.py",
         "labels.toml",
+        "Makefile",
         "pyproject.toml",
         "pyrightconfig.json",
         "pytest.ini",
@@ -113,7 +113,8 @@
         "topness",
         "unitarity",
         "venv",
-        "weisskopf"
+        "weisskopf",
+        "Zenodo"
     ],
     "ignoreWords": [
         "adrs",
