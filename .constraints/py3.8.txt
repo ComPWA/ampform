@@ -29,7 +29,7 @@ debugpy==1.4.3
 decorator==5.1.0
 defusedxml==0.7.1
 deprecated==1.2.13
-distlib==0.3.2
+distlib==0.3.3
 docutils==0.16
 entrypoints==0.3
 execnet==1.9.0
@@ -58,7 +58,7 @@ importlib-metadata==4.8.1
 importlib-resources==5.2.2
 iniconfig==1.1.1
 ipykernel==6.4.1
-ipympl==0.7.0
+ipympl==0.8.0
 ipython==7.27.0
 ipython-genutils==0.2.0
 ipywidgets==7.6.5
@@ -73,7 +73,7 @@ jupyter-core==4.8.1
 jupyter-server==1.11.0
 jupyter-server-mathjax==0.2.3
 jupyter-sphinx==0.3.2
-jupyterlab==3.1.12
+jupyterlab==3.1.13
 jupyterlab-code-formatter==1.4.10
 jupyterlab-server==2.8.1
 jupyterlab-widgets==1.0.2
@@ -114,7 +114,7 @@ pep8-naming==0.12.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==8.3.2
-pip-tools==6.2.0
+pip-tools==6.3.0
 platformdirs==2.3.0
 pluggy==1.0.0
 pre-commit==2.15.0
@@ -150,7 +150,7 @@ regex==2021.8.28
 requests==2.26.0
 requests-unixsocket==0.2.0
 restructuredtext-lint==1.3.2
-rich==10.10.0
+rich==10.11.0
 send2trash==1.8.0
 six==1.16.0
 smmap==4.0.0
@@ -159,7 +159,7 @@ snowballstemmer==2.1.0
 soupsieve==2.2.1
 sphinx==4.2.0
 sphinx-autobuild==2021.3.14
-sphinx-book-theme==0.1.4
+sphinx-book-theme==0.1.5
 sphinx-copybutton==0.4.0
 sphinx-panels==0.6.0
 sphinx-thebe==0.0.10
@@ -172,7 +172,7 @@ sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-sqlalchemy==1.4.23
+sqlalchemy==1.4.25
 sympy==1.8
 terminado==0.12.1
 testpath==0.5.0
@@ -184,8 +184,8 @@ tqdm==4.62.3
 traitlets==5.1.0
 types-docutils==0.17.0
 typing-extensions==3.10.0.2
-urllib3==1.26.6
-virtualenv==20.8.0
+urllib3==1.26.7
+virtualenv==20.8.1
 wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.1
