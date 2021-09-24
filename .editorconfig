@@ -21,4 +21,3 @@ indent_size = 2
 # when adding words through vscode, this is the resulting output format
 [.cspell.json]
 indent_size = 4
-insert_final_newline = false
