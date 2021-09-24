@@ -63,8 +63,8 @@ repos:
     hooks:
       - id: blacken-docs
 
-  - repo: https://github.com/ComPWA/mirrors-cspell
-    rev: v5.10.1
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v5.6.9
     hooks:
       - id: cspell
 
