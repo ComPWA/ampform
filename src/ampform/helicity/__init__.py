@@ -4,6 +4,7 @@ import collections
 import logging
 import operator
 import re
+from collections import OrderedDict
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
@@ -48,17 +49,12 @@ from .naming import (
     generate_transition_label,
 )
 
-try:
-    from typing import OrderedDict
-except ImportError:
-    from typing_extensions import OrderedDict  # type: ignore
-
 ParameterValue = Union[float, complex, int]
 
 
 def _order_component_mapping(
     mapping: Mapping[str, ParameterValue]
-) -> OrderedDict[str, ParameterValue]:
+) -> "OrderedDict[str, ParameterValue]":
     return collections.OrderedDict(
         [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
     )
@@ -66,7 +62,7 @@ def _order_component_mapping(
 
 def _order_symbol_mapping(
     mapping: Mapping[sp.Symbol, sp.Expr]
-) -> OrderedDict[sp.Symbol, sp.Expr]:
+) -> "OrderedDict[sp.Symbol, sp.Expr]":
     return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
@@ -97,10 +93,10 @@ class HelicityModel:
     _expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: OrderedDict[sp.Symbol, ParameterValue] = attr.ib(
+    _parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
         converter=_order_symbol_mapping
     )
-    _components: OrderedDict[str, sp.Expr] = attr.ib(
+    _components: "OrderedDict[str, sp.Expr]" = attr.ib(
         converter=_order_component_mapping
     )
     _adapter: HelicityAdapter = attr.ib(
@@ -115,7 +111,7 @@ class HelicityModel:
         return self._expression
 
     @property
-    def components(self) -> OrderedDict[str, sp.Expr]:
+    def components(self) -> "OrderedDict[str, sp.Expr]":
         """A mapping for identifying main components in the :attr:`expression`.
 
         Keys are the component names (`str`), formatted as LaTeX, and values
@@ -127,7 +123,7 @@ class HelicityModel:
         return self._components
 
     @property
-    def parameter_defaults(self) -> OrderedDict[sp.Symbol, ParameterValue]:
+    def parameter_defaults(self) -> "OrderedDict[sp.Symbol, ParameterValue]":
         """A mapping of suggested parameter values.
 
         Keys are `~sympy.core.symbol.Symbol` instances from the main
