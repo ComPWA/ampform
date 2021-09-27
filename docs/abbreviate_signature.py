@@ -28,6 +28,10 @@ def replace_link(text: str) -> str:
         "numpy.typing._dtype_like._DTypeDict": "numpy.typing.DTypeLike",
         "numpy.typing._dtype_like._SupportsDType": "numpy.typing.DTypeLike",
         "typing_extensions.Protocol": "typing.Protocol",
+        # OrderedDict typing from collections,
+        # see https://readthedocs.org/projects/ampform/builds/14828756
+        "sp.Expr": "sympy.core.expr.Expr",
+        "sp.Symbol": "sympy.core.symbol.Symbol",
     }
     for old, new in replacements.items():
         if text == old:
