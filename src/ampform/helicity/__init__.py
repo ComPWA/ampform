@@ -50,6 +50,7 @@ from .naming import (
 )
 
 ParameterValue = Union[float, complex, int]
+"""Allowed value types for parameters."""
 
 
 def _order_component_mapping(
