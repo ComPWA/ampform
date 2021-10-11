@@ -36,6 +36,7 @@
         ".readthedocs.yml",
         ".vscode/*",
         ".vscode/.gitignore",
+        ".zenodo.json",
         "codecov.yml",
         "docs/_templates/*",
         "docs/adr/*/*",

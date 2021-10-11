@@ -39,6 +39,12 @@
   "git.rebaseWhenSync": true,
   "githubPullRequests.telemetry.enabled": false,
   "gitlens.advanced.telemetry.enabled": false,
+  "json.schemas": [
+    {
+      "fileMatch": [".zenodo.json"],
+      "url": "https://zenodo.org/schemas/deposits/records/legacyrecord.json"
+    }
+  ],
   "python.analysis.autoImportCompletions": false,
   "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "black",
