@@ -38,7 +38,9 @@ class UnevaluatedExpression(sp.Expr):
     def __getnewargs_ex__(self) -> Tuple[tuple, dict]:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
-        return (self.args, {"name": self._name})
+        args = tuple(self.args)
+        kwargs = {"name": self._name}
+        return args, kwargs
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
