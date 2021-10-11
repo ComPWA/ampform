@@ -1,0 +1,62 @@
+{
+  "access_right": "open",
+  "creators": [
+    {
+      "affiliation": "Ruhr University Bochum",
+      "name": "Pfl\u00fcger, Stefan"
+    },
+    {
+      "affiliation": "Ruhr University Bochum",
+      "name": "de Boer, Remco"
+    },
+    {
+      "affiliation": "Ruhr University Bochum",
+      "name": "Fritsch, Miriam"
+    },
+    {
+      "affiliation": "Johannes Gutenberg University Mainz",
+      "name": "Gradl, Wolfgang"
+    },
+    {
+      "affiliation": "Ruhr University Bochum",
+      "name": "Wollenberg, Leonard"
+    },
+    {
+      "affiliation": "Ruhr University Bochum",
+      "name": "J\u00e4ger, Sebastian"
+    }
+  ],
+  "description": "<p>AmpForm is a Python library of spin formalisms and dynamics with which you can automatically formulate symbolic amplitude models for Partial Wave Analysis. The resulting amplitude models are formulated with&nbsp;<a href=\"https://www.sympy.org/en/index.html\">SymPy</a>&nbsp;(a Computer Algebra System). This not&nbsp;only makes it easy to inspect and visualize the resulting amplitude models, but also means the amplitude models can be used as templates for faster computational back-ends (see&nbsp;<a href=\"https://github.com/ComPWA/tensorwaves\">TensorWaves</a>).</p>",
+  "keywords": [
+    "particle physics",
+    "amplitude analysis",
+    "partial wave analysis",
+    "sympy",
+    "computer algebra system"
+  ],
+  "language": "eng",
+  "license": "GPL-3.0-or-later",
+  "references": [
+    "Pfl\u00fcger, de Boer et al. (2021). \"ComPWA/qrules: Rule-based particle reaction problem solver on a quantum number level\". https://doi.org/10.5281/zenodo.5526360.",
+    "Pfl\u00fcger, de Boer et al. (2021). \"ComPWA/tensorwaves: Python fitter package for multiple computational back-ends\". https://doi.org/10.5281/zenodo.5526361."
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.5526648",
+      "relation": "continues"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.5526360",
+      "relation": "references"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.5526361",
+      "relation": "references"
+    }
+  ],
+  "title": "ComPWA/ampform: Automatically generate symbolic amplitude models for Partial Wave Analysis",
+  "upload_type": "software"
+}
