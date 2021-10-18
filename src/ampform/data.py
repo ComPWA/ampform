@@ -25,11 +25,12 @@ from numpy.lib.mixins import NDArrayOperatorsMixin
 from numpy.lib.scimath import sqrt as csqrt
 
 try:
+    # https://numpy.org/devdocs/reference/typing.html
     # pyright: reportMissingImports=false
     from numpy.typing import ArrayLike, DTypeLike
 except ImportError:
-    ArrayLike = Union[Sequence, np.ndarray]  # type: ignore
-    DTypeLike = object  # type: ignore
+    ArrayLike = Union[Sequence, np.ndarray]  # type: ignore[misc]
+    DTypeLike = object  # type: ignore[misc]
 
 
 class ScalarSequence(NDArrayOperatorsMixin, abc.Sequence):
@@ -48,7 +49,7 @@ class ScalarSequence(NDArrayOperatorsMixin, abc.Sequence):
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self.__data
 
-    def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
+    def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore[override]
         return self.__data[i]
 
     def __len__(self) -> int:
@@ -77,9 +78,8 @@ class ThreeMomentum(NDArrayOperatorsMixin, abc.Sequence):
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self.__data
 
-    def __getitem__(  # type: ignore
-        self,
-        i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice],
+    def __getitem__(  # type: ignore[override]
+        self, i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice]
     ) -> np.ndarray:
         return self.__data[i]
 
@@ -118,9 +118,8 @@ class FourMomentumSequence(NDArrayOperatorsMixin, abc.Sequence):
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self.__data
 
-    def __getitem__(  # type: ignore
-        self,
-        i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice],
+    def __getitem__(  # type: ignore[override]
+        self, i: Union[Tuple[Union[int, slice], Union[int, slice]], int, slice]
     ) -> np.ndarray:
         return self.__data[i]
 
@@ -195,7 +194,7 @@ class MatrixSequence(NDArrayOperatorsMixin, abc.Sequence):
     def __array__(self, _: Optional[DTypeLike] = None) -> np.ndarray:
         return self.__data
 
-    def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore
+    def __getitem__(self, i: Union[int, slice]) -> np.ndarray:  # type: ignore[override]
         return self.__data[i]
 
     def __len__(self) -> int:

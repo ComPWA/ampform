@@ -106,7 +106,7 @@ class SliderKwargs(abc.Mapping):
                     "arg_to_symbol"
                 )
         for name, slider in sliders.items():
-            if not isinstance(slider, Slider.__args__):  # type: ignore
+            if not isinstance(slider, Slider.__args__):  # type: ignore[attr-defined]
                 raise TypeError(
                     f'Slider "{name}" is not a valid ipywidgets slider'
                 )

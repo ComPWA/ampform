@@ -104,7 +104,7 @@ def implement_new_method(
                 return expr.evaluate()
             return expr
 
-        decorated_class.__new__ = new_method  # type: ignore
+        decorated_class.__new__ = new_method  # type: ignore[assignment]
         return decorated_class
 
     return decorator

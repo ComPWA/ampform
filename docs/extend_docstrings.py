@@ -15,7 +15,7 @@ from typing import Callable, Dict, Optional, Type, Union
 import attr
 
 # sphinx.ext.graphviz does not work well on RTD
-import graphviz  # type: ignore
+import graphviz
 import qrules
 import sympy as sp
 
