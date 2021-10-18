@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 
+# pyright: reportMissingImports=false
 from pkg_resources import get_distribution
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin

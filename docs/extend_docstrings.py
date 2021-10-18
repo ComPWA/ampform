@@ -1,6 +1,6 @@
 # flake8: noqa
 # pylint: disable=import-error,invalid-name
-# pyright: reportMissingImports=False
+# pyright: reportMissingImports=false
 
 """Extend docstrings of the API.
 
