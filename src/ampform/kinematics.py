@@ -342,7 +342,7 @@ def _compute_invariant_masses(
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
         total_momentum = FourMomentumSequence(
-            sum(events[i] for i in attached_state_ids)  # type: ignore
+            sum(events[i] for i in attached_state_ids)
         )
         values = total_momentum.mass()
         name = get_invariant_mass_label(topology, state_id)

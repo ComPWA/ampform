@@ -1,5 +1,3 @@
-# type: ignore
-
 """Configuration file for the Sphinx documentation builder.
 
 This file only contains a selection of the most common options. For a full
@@ -7,14 +5,12 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import dataclasses
 import os
 import shutil
 import subprocess
 import sys
-from typing import Union
 
-import sphinxcontrib.bibtex.plugin
+# pyright: reportMissingImports=false
 from pkg_resources import get_distribution
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
@@ -31,7 +27,6 @@ from pybtex.style.template import (
     sentence,
     words,
 )
-from sphinxcontrib.bibtex.style.referencing import BracketStyle
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
@@ -46,9 +41,10 @@ if os.path.exists(f"../src/{package}/version.py"):
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-import abbreviate_signature
 import extend_docstrings
+from abbreviate_signature import abbreviate_signature
 
+abbreviate_signature()
 extend_docstrings.insert_math()
 
 shutil.rmtree("api", ignore_errors=True)
@@ -281,7 +277,7 @@ thebe_config = {
 
 # Specify bibliography style
 @node
-def et_al(children, data, sep="", sep2=None, last_sep=None):
+def et_al(children, data, sep="", sep2=None, last_sep=None):  # type: ignore[no-untyped-def]
     if sep2 is None:
         sep2 = sep
     if last_sep is None:
@@ -298,7 +294,7 @@ def et_al(children, data, sep="", sep2=None, last_sep=None):
 
 
 @node
-def names(children, context, role, **kwargs):
+def names(children, context, role, **kwargs):  # type: ignore[no-untyped-def]
     """Return formatted names."""
     assert not children
     try:
@@ -314,10 +310,10 @@ def names(children, context, role, **kwargs):
 
 
 class MyStyle(UnsrtStyle):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(abbreviate_names=True)
 
-    def format_names(self, role, as_sentence=True) -> Node:
+    def format_names(self, role: Entry, as_sentence: bool = True) -> Node:
         formatted_names = names(
             role, sep=", ", sep2=" and ", last_sep=", and "
         )
@@ -326,7 +322,7 @@ class MyStyle(UnsrtStyle):
         else:
             return formatted_names
 
-    def format_eprint(self, e):
+    def format_eprint(self, e: Entry) -> Node:
         if "doi" in e.fields:
             return ""
         return super().format_eprint(e)

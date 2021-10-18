@@ -18,7 +18,7 @@ from IPython.lib.pretty import pretty
 from ipywidgets.widgets.widget_float import FloatSlider
 from ipywidgets.widgets.widget_int import IntSlider
 
-from symplot import Slider, SliderKwargs
+from symplot import RangeDefinition, Slider, SliderKwargs
 
 
 class TestSliderKwargs:
@@ -115,9 +115,9 @@ class TestSliderKwargs:
         slider_kwargs: SliderKwargs,
     ) -> None:
         if n_steps is None:
-            range_def = (min_, max_)
+            range_def: RangeDefinition = (min_, max_)
         else:
-            range_def = (min_, max_, n_steps)  # type: ignore
+            range_def = (min_, max_, n_steps)
 
         sliders = deepcopy(slider_kwargs)
         sliders.set_ranges({slider_name: range_def})
