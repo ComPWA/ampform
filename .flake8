@@ -18,6 +18,8 @@ ignore = # more info: https://www.flake8rules.com/
     RST301 # unexpected indentation (related to google style docstring)
     RST307 # false-positive error in math directive
     W503 # https://github.com/psf/black#line-breaks--binary-operators
+    ; enforce type ignore with mypy error codes (TI100)
+    TI101, TI102, TI103, TI104, TI105, TI106, TI107, TI108, TI109, TI11, TI12, TI13
 radon-max-cc = 8
 radon-no-assert = True
 rst-roles =
