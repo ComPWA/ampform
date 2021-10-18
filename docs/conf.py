@@ -7,14 +7,11 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import dataclasses
 import os
 import shutil
 import subprocess
 import sys
-from typing import Union
 
-import sphinxcontrib.bibtex.plugin
 from pkg_resources import get_distribution
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
@@ -31,7 +28,6 @@ from pybtex.style.template import (
     sentence,
     words,
 )
-from sphinxcontrib.bibtex.style.referencing import BracketStyle
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
@@ -46,9 +42,10 @@ if os.path.exists(f"../src/{package}/version.py"):
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-import abbreviate_signature
 import extend_docstrings
+from abbreviate_signature import abbreviate_signature
 
+abbreviate_signature()
 extend_docstrings.insert_math()
 
 shutil.rmtree("api", ignore_errors=True)
