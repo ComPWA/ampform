@@ -1,5 +1,9 @@
 # Installation
 
+[![PyPI package](https://badge.fury.io/py/ampform.svg)](https://pypi.org/project/ampform)
+[![Conda package](https://anaconda.org/conda-forge/ampform/badges/version.svg)](https://anaconda.org/conda-forge/ampform)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/ampform)](https://pypi.org/project/ampform)
+
 The fastest way of installing this package is through PyPI or Conda:
 
 :::{tabbed} PyPI
