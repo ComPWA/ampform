@@ -1,5 +1,6 @@
 """Build `~ampform.dynamics` with correct variable names and values."""
 
+import sys
 from typing import Dict, Optional, Tuple
 
 import attr
@@ -17,10 +18,10 @@ from . import (
     relativistic_breit_wigner_with_ff,
 )
 
-try:
+if sys.version_info >= (3, 8):
     from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
+else:
+    from typing_extensions import Protocol
 
 
 @attr.s(frozen=True)

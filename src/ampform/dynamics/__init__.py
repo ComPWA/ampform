@@ -8,6 +8,7 @@
 """
 
 import re
+import sys
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 import sympy as sp
@@ -22,10 +23,10 @@ from ampform.sympy import (
 
 from .math import ComplexSqrt
 
-try:
+if sys.version_info >= (3, 8):
     from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
+else:
+    from typing_extensions import Protocol
 
 
 @implement_doit_method()

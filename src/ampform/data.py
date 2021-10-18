@@ -251,7 +251,7 @@ class EventCollection(abc.Mapping):
     def sum(  # noqa: A003
         self, indices: Iterable[int]
     ) -> FourMomentumSequence:
-        return FourMomentumSequence(sum(self.__data[i] for i in indices))  # type: ignore
+        return FourMomentumSequence(sum(self.__data[i] for i in indices))
 
     def keys(self) -> KeysView[int]:
         return self.__data.keys()

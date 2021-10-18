@@ -16,6 +16,7 @@ The package also provides other helpful functions, like
 
 import inspect
 import logging
+import sys
 from collections import abc
 from typing import (
     Any,
@@ -38,6 +39,12 @@ try:
     from IPython.lib.pretty import PrettyPrinter
 except ImportError:
     PrettyPrinter = Any
+
+if sys.version_info >= (3, 10):
+    from typing import TypeGuard
+else:
+    from typing_extensions import TypeGuard
+
 
 Slider = Union[FloatSlider, IntSlider]
 RangeDefinition = Union[
@@ -185,11 +192,11 @@ class SliderKwargs(abc.Mapping):
                     f'Range definition for slider "{slider_name}" is not a tuple'
                 )
             slider = self[slider_name]
-            if len(range_def) == 2:
-                min_, max_ = range_def  # type: ignore
+            if _is_min_max(range_def):
+                min_, max_ = range_def
                 step_size = slider.step
-            elif len(range_def) == 3:
-                min_, max_, n_steps = range_def  # type: ignore
+            elif _is_min_max_step(range_def):
+                min_, max_, n_steps = range_def
                 if n_steps <= 0:
                     raise ValueError("Number of steps has to be positive")
                 if isinstance(n_steps, float):
@@ -209,6 +216,20 @@ class SliderKwargs(abc.Mapping):
                 slider.max = max_
             if isinstance(slider, FloatSlider):
                 slider.step = step_size
+
+
+def _is_min_max(range_def: RangeDefinition) -> TypeGuard[Tuple[float, float]]:
+    if len(range_def) == 2:
+        return True
+    return False
+
+
+def _is_min_max_step(
+    range_def: RangeDefinition,
+) -> TypeGuard[Tuple[float, float, Union[float, int]]]:
+    if len(range_def) == 3:
+        return True
+    return False
 
 
 ValueType = TypeVar("ValueType")

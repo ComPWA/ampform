@@ -108,7 +108,7 @@ class TestEpemToDmD0Pip:
                 * (sp.cos(sp.Symbol("theta_1,1+2", real=True)) ** 2)
                 * (2 + sp.cos(2 * sp.Symbol("phi_1,1+2", real=True))),
             ),
-        ],  # type: ignore
+        ],
     )
     def test_angular_distributions(
         self,
@@ -198,7 +198,7 @@ class TestD1ToD0PiPi:
                 - sp.Rational(4, 9)
                 * sp.cos(2 * sp.Symbol("phi_1,1+2", real=True)),
             ),
-        ],  # type: ignore
+        ],
     )
     def test_angular_distributions(
         self,

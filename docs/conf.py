@@ -311,10 +311,10 @@ def names(children, context, role, **kwargs):
 
 
 class MyStyle(UnsrtStyle):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(abbreviate_names=True)
 
-    def format_names(self, role, as_sentence=True) -> Node:
+    def format_names(self, role: Entry, as_sentence: bool = True) -> Node:
         formatted_names = names(
             role, sep=", ", sep2=" and ", last_sep=", and "
         )
@@ -323,7 +323,7 @@ class MyStyle(UnsrtStyle):
         else:
             return formatted_names
 
-    def format_eprint(self, e):
+    def format_eprint(self, e: Entry) -> Node:
         if "doi" in e.fields:
             return ""
         return super().format_eprint(e)
