@@ -1,14 +1,27 @@
 # Installation
 
-The fastest way of installing this package is through PyPI:
+The fastest way of installing this package is through PyPI or Conda:
+
+:::{tabbed} PyPI
 
 ```shell
 python3 -m pip install ampform
 ```
 
-This installs the [latest, stable release](https://pypi.org/project/ampform)
-that you can find on the
-[`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
+::::
+
+:::{tabbed} Conda
+
+```shell
+conda install -c conda-forge ampform
+```
+
+:::
+
+This installs the
+[latest, stable release](https://github.com/ComPWA/ampform/releases) that you
+can find on the [`stable`](https://github.com/ComPWA/ampform/tree/stable)
+branch.
 
 The latest version on the [`main`](https://github.com/ComPWA/ampform/tree/main)
 branch can be installed as follows:
