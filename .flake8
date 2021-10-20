@@ -9,17 +9,26 @@ exclude =
     **/__pycache__
     **/_build
     /typings/**
-ignore = # more info: https://www.flake8rules.com/
-    E203 # https://github.com/psf/black#slices
-    E231 # allowed by black
-    E501 # https://github.com/psf/black#line-length
-    FS003 # should be possible to use {} in latex strings
-    RST299 # missing pygments
-    RST201 # block quote ends without a blank line (black formatting)
-    RST301 # unexpected indentation (related to google style docstring)
-    RST307 # false-positive error in math directive
-    W503 # https://github.com/psf/black#line-breaks--binary-operators
-    ; enforce type ignore with mypy error codes (TI100)
+ignore =
+    # https://github.com/psf/black#slices
+    E203
+    # allowed by black
+    E231
+    # https://github.com/psf/black#line-length
+    E501
+    # should be possible to use {} in latex strings
+    FS003
+    # missing pygments
+    RST299
+    # block quote ends without a blank line (black formatting)
+    RST201
+    # unexpected indentation (related to google style docstring)
+    RST301
+    # false-positive error in math directive
+    RST307
+    # https://github.com/psf/black#line-breaks--binary-operators
+    W503
+    # enforce type ignore with mypy error codes (TI100)
     TI101, TI102, TI103, TI104, TI105, TI106, TI107, TI108, TI109, TI11, TI12, TI13
 radon-max-cc = 8
 radon-no-assert = True
