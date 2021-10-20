@@ -2,12 +2,13 @@
 application-import-names =
     ampform
 filename =
+    ./docs/*.py
     ./src/*.py
     ./tests/*.py
 exclude =
-    __pycache__
-    docs/conf.py
-    typings/**
+    **/__pycache__
+    **/_build
+    /typings/**
 ignore = # more info: https://www.flake8rules.com/
     E203 # https://github.com/psf/black#slices
     E231 # allowed by black
