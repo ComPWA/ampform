@@ -9,7 +9,7 @@ exclude =
     **/__pycache__
     **/_build
     /typings/**
-extend-ignore =
+ignore =
     # https://github.com/psf/black#slices
     E203
     # allowed by black
