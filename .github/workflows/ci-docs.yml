@@ -35,3 +35,15 @@ jobs:
         with:
           name: html
           path: docs/_build/html
+      - name: Print error logs with color
+        if: ${{ failure() }}
+        # cspell:ignore printf
+        run: |
+          for log_file in $(ls docs/_build/html/reports/*); do
+            for i in $(seq 6); do echo; done
+            printf '%45s\n' | tr ' ' =
+            echo "$log_file"
+            printf '%45s\n' | tr ' ' =
+            echo
+            cat "$log_file"
+          done
