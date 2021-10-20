@@ -9,7 +9,7 @@ exclude =
     **/__pycache__
     **/_build
     /typings/**
-ignore =
+extend-ignore =
     # https://github.com/psf/black#slices
     E203
     # allowed by black
@@ -26,10 +26,12 @@ ignore =
     RST301
     # false-positive error in math directive
     RST307
+    # enforce type ignore with mypy error codes (combined --extend-select=TI100)
+    TI1
     # https://github.com/psf/black#line-breaks--binary-operators
     W503
-    # enforce type ignore with mypy error codes (TI100)
-    TI101 TI102 TI103 TI104 TI105 TI106 TI107 TI108 TI109 TI11 TI12 TI13
+extend-select =
+    TI100
 radon-max-cc = 8
 radon-no-assert = True
 rst-roles =
