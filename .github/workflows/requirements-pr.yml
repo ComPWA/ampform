@@ -1,5 +1,3 @@
-# cspell:ignore noreply
-
 name: Requirements (PR)
 
 on:
@@ -15,10 +13,11 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - 3.6
-          - 3.7
-          - 3.8
-          - 3.9
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
     steps:
       - uses: actions/checkout@v2
       - run: git fetch origin
