@@ -59,7 +59,7 @@ importlib-metadata==4.8.1
 importlib-resources==5.3.0
 iniconfig==1.1.1
 ipykernel==6.4.2
-ipympl==0.8.0
+ipympl==0.8.2
 ipython==7.28.0
 ipython-genutils==0.2.0
 ipywidgets==7.6.5
@@ -178,7 +178,7 @@ sympy==1.9
 terminado==0.12.1
 testpath==0.5.0
 toml==0.10.2
-tomli==1.2.1
+tomli==1.2.2
 tornado==6.1
 tox==3.24.4
 tqdm==4.62.3
