@@ -67,7 +67,11 @@ def remove_extras_syntax() -> None:
         stream.write(new_content)
 
 
-if "__main__" in __name__:
+def main() -> None:
     if upgrade_constraints_file():
         raise RuntimeError("There were issues running pip-compile")
     remove_extras_syntax()
+
+
+if "__main__" in __name__:
+    main()
