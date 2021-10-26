@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import sys
 
+import requests
+
 # pyright: reportMissingImports=false
 from pkg_resources import get_distribution
 from pybtex.database import Entry
@@ -38,6 +40,27 @@ author = "Common Partial Wave Analysis"
 if os.path.exists(f"../src/{package}/version.py"):
     __release = get_distribution(package).version
     version = ".".join(__release.split(".")[:3])
+
+
+# -- Fetch logo --------------------------------------------------------------
+def fetch_logo(url: str, output_path: str) -> None:
+    if os.path.exists(output_path):
+        return
+    online_content = requests.get(url, allow_redirects=True)
+    with open(output_path, "wb") as stream:
+        stream.write(online_content.content)
+
+
+logo_path = "_static/logo.svg"
+try:
+    fetch_logo(
+        url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
+        output_path=logo_path,
+    )
+except requests.exceptions.ConnectionError:
+    pass
+if os.path.exists(logo_path):
+    html_logo = logo_path
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
