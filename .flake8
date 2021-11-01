@@ -18,10 +18,10 @@ ignore =
     E501
     # should be possible to use {} in latex strings
     FS003
-    # missing pygments
-    RST299
     # block quote ends without a blank line (black formatting)
     RST201
+    # missing pygments
+    RST299
     # unexpected indentation (related to google style docstring)
     RST301
     # false-positive error in math directive
