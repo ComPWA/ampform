@@ -38,6 +38,7 @@
         ".vscode/.gitignore",
         ".zenodo.json",
         "codecov.yml",
+        "Dockerfile",
         "docs/_templates/*",
         "docs/adr/*/*",
         "docs/conf.py",
