@@ -8,7 +8,6 @@ from collections import OrderedDict
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
-    Any,
     DefaultDict,
     Dict,
     Iterable,
@@ -16,7 +15,6 @@ from typing import (
     Mapping,
     Optional,
     Tuple,
-    Type,
     Union,
 )
 
@@ -30,7 +28,6 @@ from qrules.particle import ParticleCollection
 from qrules.transition import ReactionInfo, StateTransition
 from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
-from sympy.printing.latex import LatexPrinter
 
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
@@ -627,16 +624,3 @@ def _generate_kinematic_variables(
         sp.Symbol(phi_label, real=True),
         sp.Symbol(theta_label, real=True),
     )
-
-
-# https://github.com/sympy/sympy/issues/21001
-# pylint: disable=protected-access, unused-argument
-def _latex_fix(self: Type[CG], printer: LatexPrinter, *args: Any) -> str:
-    j3, m3, j1, m1, j2, m2 = map(
-        printer._print,
-        (self.j3, self.m3, self.j1, self.m1, self.j2, self.m2),
-    )
-    return f"{{C^{{{j3},{m3}}}_{{{j1},{m1},{j2},{m2}}}}}"
-
-
-CG._latex = _latex_fix
