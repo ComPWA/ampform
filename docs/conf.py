@@ -105,7 +105,7 @@ html_sourcelink_suffix = ""
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": f"https://github.com/ComPWA/{repo_name}",
-    "repository_branch": "stable",
+    "repository_branch": "0.8.x",
     "path_to_docs": "docs",
     "use_download_button": True,
     "use_edit_page_button": True,
@@ -148,20 +148,39 @@ nitpick_ignore = [
 ]
 
 # Intersphinx settings
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
+CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
+with open(CONSTRAINTS_PATH) as stream:
+    CONSTRAINTS = stream.read()
+RELEASES = {}
+for line in CONSTRAINTS.split("\n"):
+    line = line.split("#")[0]  # remove comments
+    line = line.strip()
+    if not line:
+        continue
+    package_version_pair = tuple(line.split("=="))
+    if len(package_version_pair) != 2:
+        continue
+    package, version = package_version_pair
+    package = package.strip()
+    version = version.strip()
+    RELEASES[package] = version
+
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
+    "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
     "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
     "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
-        "https://mpl-interactions.readthedocs.io/en/stable",
+        f"https://mpl-interactions.readthedocs.io/en/{RELEASES['mpl-interactions']}",
         None,
     ),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": ("https://qrules.readthedocs.io/en/stable", None),
+    "qrules": (f"https://qrules.readthedocs.io/en/{RELEASES['qrules']}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
 }
