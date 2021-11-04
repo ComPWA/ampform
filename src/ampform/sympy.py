@@ -6,9 +6,8 @@ import functools
 from abc import abstractmethod
 from typing import Any, Callable, Optional, Tuple, Type
 
-from sympy.printing.latex import LatexPrinter
-
 import sympy as sp
+from sympy.printing.latex import LatexPrinter
 
 
 class UnevaluatedExpression(sp.Expr):

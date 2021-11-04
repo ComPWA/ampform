@@ -11,10 +11,10 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Sequence, Union
 
+import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 
-import sympy as sp
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
