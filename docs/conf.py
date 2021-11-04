@@ -6,6 +6,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -41,6 +42,8 @@ author = "Common Partial Wave Analysis"
 BRANCH = os.environ.get("READTHEDOCS_VERSION", default="stable")
 if BRANCH == "latest":
     BRANCH = "main"
+if re.match(r"^\d+$", BRANCH):  # PR preview
+    BRANCH = "stable"
 
 if os.path.exists(f"../src/{PACKAGE}/version.py"):
     __RELEASE = get_distribution(PACKAGE).version
