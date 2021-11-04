@@ -364,6 +364,6 @@ def breakup_momentum_squared(
 
     This version of the break-up momentum is useful if you do not want to take
     a simple square root. See :func:`.breakup_momentum` and
-    :doc:`usage/analytic-continuation`.
+    :doc:`/usage/dynamics/analytic-continuation`.
     """
     return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
