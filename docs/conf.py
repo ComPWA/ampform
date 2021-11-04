@@ -193,21 +193,25 @@ nitpick_ignore = [
     ("py:class", "typing_extensions.Protocol"),
 ]
 
+
 # Intersphinx settings
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
-CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
-with open(CONSTRAINTS_PATH) as stream:
-    CONSTRAINTS = stream.read()
-RELEASES = {}
-for LINE in CONSTRAINTS.split("\n"):
-    LINE = LINE.split("#")[0]  # remove comments
-    LINE = LINE.strip()
-    if not LINE:
-        continue
-    PACKAGE, VERSION = tuple(LINE.split("=="))
-    PACKAGE = PACKAGE.strip()
-    VERSION = VERSION.strip()
-    RELEASES[PACKAGE] = VERSION
+def get_version(package_name: str) -> str:
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    constraints_path = f"../.constraints/py{python_version}.txt"
+    with open(constraints_path) as stream:
+        constraints = stream.read()
+    for line in constraints.split("\n"):
+        line = line.split("#")[0]  # remove comments
+        line = line.strip()
+        if not line.startswith(package_name):
+            continue
+        if not line:
+            continue
+        _, installed_version, *_ = tuple(line.split("=="))
+        installed_version = installed_version.strip()
+        return installed_version
+    return "stable"
+
 
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
@@ -215,14 +219,17 @@ intersphinx_mapping = {
     "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{RELEASES['mpl-interactions']}",
+        f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
         None,
     ),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": (f"https://qrules.readthedocs.io/en/{RELEASES['qrules']}", None),
+    "qrules": (
+        f"https://qrules.readthedocs.io/en/{get_version('qrules')}",
+        None,
+    ),
     "sympy": ("https://docs.sympy.org/latest", None),
     "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
 }
