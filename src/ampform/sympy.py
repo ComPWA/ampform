@@ -6,8 +6,9 @@ import functools
 from abc import abstractmethod
 from typing import Any, Callable, Optional, Tuple, Type
 
-import sympy as sp
 from sympy.printing.latex import LatexPrinter
+
+import sympy as sp
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -70,7 +71,7 @@ def implement_expr(
         decorated_class: Type[UnevaluatedExpression],
     ) -> Type[UnevaluatedExpression]:
         decorated_class = implement_new_method(n_args)(decorated_class)
-        decorated_class = implement_doit_method()(decorated_class)
+        decorated_class = implement_doit_method(decorated_class)
         return decorated_class
 
     return decorator
@@ -110,29 +111,24 @@ def implement_new_method(
     return decorator
 
 
-def implement_doit_method() -> Callable[
-    [Type[UnevaluatedExpression]], Type[UnevaluatedExpression]
-]:
+def implement_doit_method(
+    decorated_class: Type[UnevaluatedExpression],
+) -> Type[UnevaluatedExpression]:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
     Implement a `~sympy.core.basic.Basic.doit` method for a class that derives
     from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
-    def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
-        @functools.wraps(decorated_class.doit)
-        def doit_method(self: Any, deep: bool = True) -> sp.Expr:
-            expr = self.evaluate()
-            if deep:
-                return expr.doit()
-            return expr
+    @functools.wraps(decorated_class.doit)
+    def doit_method(self: UnevaluatedExpression, deep: bool = True) -> sp.Expr:
+        expr = self.evaluate()
+        if deep:
+            return expr.doit()
+        return expr
 
-        decorated_class.doit = doit_method
-        return decorated_class
-
-    return decorator
+    decorated_class.doit = doit_method
+    return decorated_class
 
 
 def create_expression(

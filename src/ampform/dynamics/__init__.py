@@ -11,10 +11,10 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 
+import sympy as sp
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
@@ -29,7 +29,7 @@ else:
     from typing_extensions import Protocol
 
 
-@implement_doit_method()
+@implement_doit_method
 class BlattWeisskopfSquared(UnevaluatedExpression):
     r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
 
@@ -163,7 +163,7 @@ class PhaseSpaceFactorProtocol(Protocol):
         ...
 
 
-@implement_doit_method()
+@implement_doit_method
 class PhaseSpaceFactor(UnevaluatedExpression):
     """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
@@ -191,7 +191,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return fR"{name}\left({s}\right)"
 
 
-@implement_doit_method()
+@implement_doit_method
 class PhaseSpaceFactorAbs(UnevaluatedExpression):
     r"""Phase space factor square root over the absolute value.
 
@@ -226,7 +226,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return fR"{name}\left({s}\right)"
 
 
-@implement_doit_method()
+@implement_doit_method
 class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
@@ -262,7 +262,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         return fR"{name}\left({s}\right)"
 
 
-@implement_doit_method()
+@implement_doit_method
 class PhaseSpaceFactorComplex(UnevaluatedExpression):
     """Phase-space factor with `.ComplexSqrt`.
 
@@ -318,7 +318,7 @@ def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
     return 8 * sp.pi * sp.sqrt(s)
 
 
-@implement_doit_method()
+@implement_doit_method
 class CoupledWidth(UnevaluatedExpression):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
@@ -396,7 +396,7 @@ class CoupledWidth(UnevaluatedExpression):
         return fR"{name}\left({s}\right)"
 
 
-@implement_doit_method()
+@implement_doit_method
 class BreakupMomentumSquared(UnevaluatedExpression):
     r"""Squared value of the two-body break-up momentum.
 
