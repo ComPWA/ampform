@@ -38,6 +38,7 @@ subprocess.call(
         [
             "sphinx-apidoc",
             f"../src/{package}/",
+            f"../src/{package}/version.py",
             "-o api/",
             "--force",
             "--no-toc",
@@ -121,7 +122,7 @@ html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": f"https://github.com/ComPWA/{repo_name}",
-    "repository_branch": "stable",
+    "repository_branch": "0.10.x",
     "path_to_docs": "docs",
     "use_download_button": True,
     "use_edit_page_button": True,
@@ -157,13 +158,16 @@ PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
 with open(CONSTRAINTS_PATH) as stream:
     CONSTRAINTS = stream.read()
-RELEASES = dict()
+RELEASES = {}
 for line in CONSTRAINTS.split("\n"):
     line = line.split("#")[0]  # remove comments
     line = line.strip()
     if not line:
         continue
-    package, version = tuple(line.split("=="))
+    package_version_pair = tuple(line.split("=="))
+    if len(package_version_pair) != 2:
+        continue
+    package, version = package_version_pair
     package = package.strip()
     version = version.strip()
     RELEASES[package] = version
@@ -245,7 +249,7 @@ myst_substitutions = {
     "run_interactive": f"""
 ```{{margin}}
 Run this notebook [on Binder]({BINDER_LINK}) or
-{{ref}}`locally on Jupyter Lab <pwa:develop:Jupyter Notebooks>` to
+{{ref}}`locally on Jupyter Lab <compwa-org:develop:Jupyter Notebooks>` to
 interactively modify the parameters.
 ```
 """
