@@ -8,6 +8,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -18,14 +19,21 @@ sys.path.insert(0, os.path.abspath("./usage"))  # for symplot
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
-package = "ampform"
-repo_name = "ampform"
-copyright = "2020, ComPWA"
+PACKAGE = "ampform"
+REPO_NAME = "ampform"
+copyright = "2020, ComPWA"  # noqa: A001
 author = "Common Partial Wave Analysis"
 
-if os.path.exists(f"../src/{package}/version.py"):
-    __release = get_distribution(package).version
-    version = ".".join(__release.split(".")[:3])
+# https://docs.readthedocs.io/en/stable/builds.html
+BRANCH = os.environ.get("READTHEDOCS_VERSION", default="stable")
+if BRANCH == "latest":
+    BRANCH = "main"
+if re.match(r"^\d+$", BRANCH):  # PR preview
+    BRANCH = "stable"
+
+if os.path.exists(f"../src/{PACKAGE}/version.py"):
+    __RELEASE = get_distribution(PACKAGE).version
+    version = ".".join(__RELEASE.split(".")[:3])
 
 # -- Generate API skeleton ----------------------------------------------------
 shutil.rmtree("api", ignore_errors=True)
@@ -33,8 +41,8 @@ subprocess.call(
     " ".join(
         [
             "sphinx-apidoc",
-            f"../src/{package}/",
-            f"../src/{package}/version.py",
+            f"../src/{PACKAGE}/",
+            f"../src/{PACKAGE}/version.py",
             "-o api/",
             "--force",
             "--no-toc",
@@ -56,7 +64,7 @@ source_suffix = {
 # The master toctree document.
 master_doc = "index"
 modindex_common_prefix = [
-    f"{package}.",
+    f"{PACKAGE}.",
 ]
 
 extensions = [
@@ -105,8 +113,8 @@ html_show_sphinx = False
 html_sourcelink_suffix = ""
 html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "repository_url": f"https://github.com/ComPWA/{repo_name}",
-    "repository_branch": "0.8.x",
+    "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
+    "repository_branch": BRANCH,
     "path_to_docs": "docs",
     "use_download_button": True,
     "use_edit_page_button": True,
@@ -122,6 +130,7 @@ html_theme_options = {
     "theme_dev_mode": True,
 }
 html_title = "AmpForm"
+panels_add_bootstrap_css = False  # remove panels css to get wider main content
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
@@ -148,42 +157,54 @@ nitpick_ignore = [
     ("py:obj", "ampform.amplitude.helicity.ValueType"),
 ]
 
+
 # Intersphinx settings
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
-CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
-with open(CONSTRAINTS_PATH) as stream:
-    CONSTRAINTS = stream.read()
-RELEASES = {}
-for line in CONSTRAINTS.split("\n"):
-    line = line.split("#")[0]  # remove comments
-    line = line.strip()
-    if not line:
-        continue
-    package_version_pair = tuple(line.split("=="))
-    if len(package_version_pair) != 2:
-        continue
-    package, version = package_version_pair
-    package = package.strip()
-    version = version.strip()
-    RELEASES[package] = version
+def get_version(package_name: str) -> str:
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    constraints_path = f"../.constraints/py{python_version}.txt"
+    with open(constraints_path) as stream:
+        constraints = stream.read()
+    for line in constraints.split("\n"):
+        line = line.split("#")[0]  # remove comments
+        line = line.strip()
+        if not line.startswith(package_name):
+            continue
+        if not line:
+            continue
+        _, installed_version, *_ = tuple(line.split("=="))
+        installed_version = installed_version.strip()
+        return installed_version
+    return "stable"
+
 
 intersphinx_mapping = {
-    "attrs": ("https://www.attrs.org/en/stable", None),
+    "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
     "expertsystem": ("https://expertsystem.readthedocs.io/en/stable", None),
-    "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "ipywidgets": (
+        f"https://ipywidgets.readthedocs.io/en/{get_version('ipywidgets')}",
+        None,
+    ),
+    "matplotlib": (
+        f"https://matplotlib.org/{get_version('matplotlib')}",
+        None,
+    ),
     "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{RELEASES['mpl-interactions']}",
+        f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
         None,
     ),
     "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "pandas": (
+        f"https://pandas.pydata.org/pandas-docs/{get_version('pandas')}",
+        None,
+    ),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": (f"https://qrules.readthedocs.io/en/{RELEASES['qrules']}", None),
+    "qrules": (
+        f"https://qrules.readthedocs.io/en/{get_version('qrules')}",
+        None,
+    ),
     "sympy": ("https://docs.sympy.org/latest", None),
-    "tensorwaves": ("https://tensorwaves.readthedocs.io/en/stable", None),
 }
 
 # Settings for autosectionlabel
@@ -232,8 +253,19 @@ myst_enable_extensions = [
     "colon_fence",
     "dollarmath",
     "smartquotes",
+    "substitution",
 ]
-myst_update_mathjax = False
+BINDER_LINK = f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+myst_substitutions = {
+    "branch": BRANCH,
+    "run_interactive": f"""
+```{{margin}}
+Run this notebook [on Binder]({BINDER_LINK}) or
+{{ref}}`locally on Jupyter Lab <compwa-org:develop:Jupyter Notebooks>` to
+interactively modify the parameters.
+```
+""",
+}
 
 # Settings for Thebe cell output
 thebe_config = {
