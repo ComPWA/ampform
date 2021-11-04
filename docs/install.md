@@ -18,8 +18,8 @@ python3 -m pip install git+https://github.com/ComPWA/ampform@main
 ```
 
 In that case, however, we highly recommend using the more dynamic
-{ref}`'editable installation' <pwa:develop:Editable installation>` instead.
-This goes as follows:
+{ref}`'editable installation' <compwa-org:develop:Editable installation>`
+instead. This goes as follows:
 
 :::{margin}
 
@@ -39,11 +39,12 @@ This goes as follows:
    ```
 
 2. **[Recommended]** Create a virtual environment (see
-   {ref}`here <pwa:develop:Virtual environment>`).
+   {ref}`here <compwa-org:develop:Virtual environment>`).
 
 3. Install the project as an
-   {ref}`'editable installation' <pwa:develop:Editable installation>` and
-   install {ref}`additional packages <pwa:develop:Optional dependencies>` for
+   {ref}`'editable installation' <compwa-org:develop:Editable installation>`
+   and install
+   {ref}`additional packages <compwa-org:develop:Optional dependencies>` for
    the developer:
 
    ```shell
@@ -70,5 +71,5 @@ This goes as follows:
    :::
 
 That's all! Have a look at the {doc}`/usage` page to try out the package. You
-can also have a look at the {doc}`pwa:develop` page for tips on how to work
-with this 'editable' developer setup!
+can also have a look at the {doc}`compwa-org:develop` page for tips on how to
+work with this 'editable' developer setup!
