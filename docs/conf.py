@@ -214,16 +214,25 @@ def get_version(package_name: str) -> str:
 
 
 intersphinx_mapping = {
-    "attrs": ("https://www.attrs.org/en/stable", None),
+    "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
-    "ipywidgets": ("https://ipywidgets.readthedocs.io/en/stable", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "ipywidgets": (
+        f"https://ipywidgets.readthedocs.io/en/{get_version('ipywidgets')}",
+        None,
+    ),
+    "matplotlib": (
+        f"https://matplotlib.org/{get_version('matplotlib')}",
+        None,
+    ),
     "mpl_interactions": (
         f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
         None,
     ),
     "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "pandas": (
+        f"https://pandas.pydata.org/pandas-docs/{get_version('pandas')}",
+        None,
+    ),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (
