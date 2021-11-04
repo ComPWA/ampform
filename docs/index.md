@@ -45,9 +45,9 @@ model with some formalism, like the helicity formalism.
 - **Convert to several computational back-ends**<br> The amplitude models can
   easily be converted to computational back-ends like
   [JAX](https://jax.readthedocs.io), [TensorFlow](https://www.tensorflow.org),
-  and [NumPy](https://numpy.org). The {doc}`TensorWaves <tensorwaves:index>`
-  package facilitates this and also provides tools to generate toy Monte Carlo
-  data samples.
+  and [NumPy](https://numpy.org). The
+  [TensorWaves](https://tensorwaves.rtfd.io) package facilitates this and also
+  provides tools to generate toy Monte Carlo data samples.
 
 - **Use your favorite Python packages**<br> All this functionality is offered
   in an open and transparent style (see {doc}`API </api/ampform>`), so that you
