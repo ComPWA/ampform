@@ -32,14 +32,14 @@ from pybtex.style.template import (
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
-package = "ampform"
-repo_name = "ampform"
+PACKAGE = "ampform"
+REPO_NAME = "ampform"
 copyright = "2020, ComPWA"  # noqa: A001
 author = "Common Partial Wave Analysis"
 
-if os.path.exists(f"../src/{package}/version.py"):
-    __release = get_distribution(package).version
-    version = ".".join(__release.split(".")[:3])
+if os.path.exists(f"../src/{PACKAGE}/version.py"):
+    __RELEASE = get_distribution(PACKAGE).version
+    version = ".".join(__RELEASE.split(".")[:3])
 
 
 # -- Fetch logo --------------------------------------------------------------
@@ -51,16 +51,16 @@ def fetch_logo(url: str, output_path: str) -> None:
         stream.write(online_content.content)
 
 
-logo_path = "_static/logo.svg"
+LOGO_PATH = "_static/logo.svg"
 try:
     fetch_logo(
         url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
-        output_path=logo_path,
+        output_path=LOGO_PATH,
     )
 except requests.exceptions.ConnectionError:
     pass
-if os.path.exists(logo_path):
-    html_logo = logo_path
+if os.path.exists(LOGO_PATH):
+    html_logo = LOGO_PATH
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
@@ -75,8 +75,8 @@ subprocess.call(
     " ".join(
         [
             "sphinx-apidoc",
-            f"../src/{package}/",
-            f"../src/{package}/version.py",
+            f"../src/{PACKAGE}/",
+            f"../src/{PACKAGE}/version.py",
             "-o api/",
             "--force",
             "--no-toc",
@@ -98,7 +98,7 @@ source_suffix = {
 # The master toctree document.
 master_doc = "index"
 modindex_common_prefix = [
-    f"{package}.",
+    f"{PACKAGE}.",
 ]
 
 extensions = [
@@ -145,13 +145,13 @@ autodoc_default_options = {
         ]
     ),
 }
-autodoc_insert_signature_linebreaks = False
+AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
 html_css_files = [
     "custom.css",
 ]
-if autodoc_insert_signature_linebreaks:
+if AUTODOC_INSERT_SIGNATURE_LINEBREAKS:
     html_css_files.append("linebreaks-api.css")
 html_favicon = "_static/favicon.ico"
 html_show_copyright = False
@@ -161,7 +161,7 @@ html_sourcelink_suffix = ""
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "repository_url": f"https://github.com/ComPWA/{repo_name}",
+    "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
     "repository_branch": "stable",
     "path_to_docs": "docs",
     "use_download_button": True,
@@ -178,10 +178,10 @@ html_theme_options = {
     "theme_dev_mode": True,
 }
 html_title = "AmpForm"
+panels_add_bootstrap_css = False  # remove panels css to get wider main content
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
-panels_add_bootstrap_css = False  # remove panels css to get wider main content
 
 # Cross-referencing configuration
 default_role = "py:obj"
@@ -199,15 +199,15 @@ CONSTRAINTS_PATH = f"../.constraints/py{PYTHON_VERSION}.txt"
 with open(CONSTRAINTS_PATH) as stream:
     CONSTRAINTS = stream.read()
 RELEASES = {}
-for line in CONSTRAINTS.split("\n"):
-    line = line.split("#")[0]  # remove comments
-    line = line.strip()
-    if not line:
+for LINE in CONSTRAINTS.split("\n"):
+    LINE = LINE.split("#")[0]  # remove comments
+    LINE = LINE.strip()
+    if not LINE:
         continue
-    package, version = tuple(line.split("=="))
-    package = package.strip()
-    version = version.strip()
-    RELEASES[package] = version
+    PACKAGE, VERSION = tuple(LINE.split("=="))
+    PACKAGE = PACKAGE.strip()
+    VERSION = VERSION.strip()
+    RELEASES[PACKAGE] = VERSION
 
 intersphinx_mapping = {
     "attrs": ("https://www.attrs.org/en/stable", None),
@@ -279,7 +279,7 @@ myst_enable_extensions = [
     "substitution",
 ]
 BINDER_LINK = (
-    f"https://mybinder.org/v2/gh/ComPWA/{repo_name}/stable?filepath=docs/usage"
+    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/stable?filepath=docs/usage"
 )
 myst_substitutions = {
     "run_interactive": f"""
