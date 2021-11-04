@@ -37,6 +37,11 @@ REPO_NAME = "ampform"
 copyright = "2020, ComPWA"  # noqa: A001
 author = "Common Partial Wave Analysis"
 
+# https://docs.readthedocs.io/en/stable/builds.html
+BRANCH = os.environ.get("READTHEDOCS_VERSION", default="stable")
+if BRANCH == "latest":
+    BRANCH = "main"
+
 if os.path.exists(f"../src/{PACKAGE}/version.py"):
     __RELEASE = get_distribution(PACKAGE).version
     version = ".".join(__RELEASE.split(".")[:3])
@@ -162,7 +167,7 @@ html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
-    "repository_branch": "stable",
+    "repository_branch": BRANCH,
     "path_to_docs": "docs",
     "use_download_button": True,
     "use_edit_page_button": True,
@@ -293,17 +298,16 @@ myst_enable_extensions = [
     "smartquotes",
     "substitution",
 ]
-BINDER_LINK = (
-    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/stable?filepath=docs/usage"
-)
+BINDER_LINK = f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
 myst_substitutions = {
+    "branch": BRANCH,
     "run_interactive": f"""
 ```{{margin}}
 Run this notebook [on Binder]({BINDER_LINK}) or
 {{ref}}`locally on Jupyter Lab <compwa-org:develop:Jupyter Notebooks>` to
 interactively modify the parameters.
 ```
-"""
+""",
 }
 myst_update_mathjax = False
 
