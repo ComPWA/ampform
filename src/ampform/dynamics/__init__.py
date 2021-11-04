@@ -149,7 +149,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
 
 class PhaseSpaceFactorProtocol(Protocol):
-    """Protocol that is used by `.CoupledWidth`.
+    """Protocol that is used by `.EnergyDependentWidth`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance `.PhaseSpaceFactor` and
@@ -319,7 +319,7 @@ def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
 
 
 @implement_doit_method
-class CoupledWidth(UnevaluatedExpression):
+class EnergyDependentWidth(UnevaluatedExpression):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See :pdg-review:`2020; Resonances; p.6` and
@@ -351,7 +351,7 @@ class CoupledWidth(UnevaluatedExpression):
         phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
         name: Optional[str] = None,
         evaluate: bool = False,
-    ) -> "CoupledWidth":
+    ) -> "EnergyDependentWidth":
         args = sp.sympify(
             (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
         )
@@ -467,7 +467,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
         angular_momentum, z=q_squared * meson_radius ** 2
     )
     form_factor = sp.sqrt(ff_squared)
-    mass_dependent_width = CoupledWidth(
+    mass_dependent_width = EnergyDependentWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return (mass0 * gamma0 * form_factor) / (

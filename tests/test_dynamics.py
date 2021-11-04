@@ -10,7 +10,7 @@ from sympy import preorder_traversal
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     ComplexSqrt,
-    CoupledWidth,
+    EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorAnalytic,
 )
@@ -34,12 +34,12 @@ class TestBlattWeisskopfSquared:
         )
 
 
-class TestCoupledWidth:
+class TestEnergyDependentWidth:
     @staticmethod
     def test_init():
         angular_momentum = sp.Symbol("L", integer=True)
         s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", real=True)
-        width = CoupledWidth(
+        width = EnergyDependentWidth(
             s=s,
             mass0=m0,
             gamma0=w0,
@@ -54,7 +54,7 @@ class TestCoupledWidth:
         assert width.phsp_factor is PhaseSpaceFactor
         assert width._name is None
 
-        width = CoupledWidth(
+        width = EnergyDependentWidth(
             s=s,
             mass0=m0,
             gamma0=w0,

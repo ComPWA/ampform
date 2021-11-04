@@ -18,7 +18,7 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
-    CoupledWidth,
+    EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
 )
@@ -133,7 +133,7 @@ class RelativisticKMatrix(TMatrix):
         def residue_function(pole_id: int, i: int) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
                 pole_position[pole_id]
-                * CoupledWidth(
+                * EnergyDependentWidth(
                     s=s,
                     mass0=pole_position[pole_id],
                     gamma0=pole_width[pole_id, i],
