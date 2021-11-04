@@ -4,10 +4,14 @@
 
 ```
 
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
 [![PyPI package](https://badge.fury.io/py/ampform.svg)](https://pypi.org/project/ampform)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/ampform)](https://pypi.org/project/ampform)
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/0.9.x)
-[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/0.9.x?filepath=docs/usage)
+{{ '[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/{})'.format(branch) }}
+{{ '[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/{}?filepath=docs/usage)'.format(branch) }}
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
 
 :::{margin}
 
@@ -43,9 +47,9 @@ model with some formalism, like the helicity formalism.
 - **Convert to several computational back-ends**<br> The amplitude models can
   easily be converted to computational back-ends like
   [JAX](https://jax.readthedocs.io), [TensorFlow](https://www.tensorflow.org),
-  and [NumPy](https://numpy.org). The {doc}`TensorWaves <tensorwaves:index>`
-  package facilitates this and also provides tools to generate toy Monte Carlo
-  data samples.
+  and [NumPy](https://numpy.org). The
+  [TensorWaves](https://tensorwaves.rtfd.io) package facilitates this and also
+  provides tools to generate toy Monte Carlo data samples.
 
 - **Use your favorite Python packages**<br> All this functionality is offered
   in an open and transparent style (see {doc}`API </api/ampform>`), so that you
