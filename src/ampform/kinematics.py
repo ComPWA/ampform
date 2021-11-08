@@ -54,9 +54,9 @@ ArraySlice = make_commutative()(ArraySlice)  # type: ignore[misc]
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
 
-    The `.transform` method forms the bridge between four-momentum data for the
-    decay you are studying and the kinematic variables that are in the
-    `.HelicityModel`. These are invariant mass (see
+    The `.create_expressions` method forms the bridge between four-momentum
+    data for the decay you are studying and the kinematic variables that are in
+    the `.HelicityModel`. These are invariant mass (see
     :func:`.get_invariant_mass_label`) and the :math:`\theta` and :math:`\phi`
     helicity angles (see :func:`.get_helicity_angle_label`).
     """
@@ -118,9 +118,10 @@ class HelicityAdapter:
                 raise ValueError("Edge or node IDs of topology do not match")
         self.registered_topologies.add(topology)
 
-    def transform(self, four_momenta: FourMomentumSymbols) -> Dict[str, Expr]:
+    def create_expressions(self) -> Dict[str, Expr]:
         output = {}
         for topology in self.registered_topologies:
+            four_momenta = create_four_momentum_symbols(topology)
             output.update(compute_helicity_angles(four_momenta, topology))
             output.update(compute_invariant_masses(four_momenta, topology))
         return output

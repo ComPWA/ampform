@@ -113,10 +113,10 @@ class HelicityModel:  # noqa: R701
     with `natural sort order
     <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
     """
-    adapter: HelicityAdapter = attr.ib(
-        validator=attr.validators.instance_of(HelicityAdapter)
+    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = attr.ib(
+        converter=_order_symbol_mapping
     )
-    """Adapter for converting four-momenta to kinematic variables."""
+    """Expressions for converting four-momenta to kinematic variables."""
     particles: ParticleCollection = attr.ib(
         validator=instance_of(ParticleCollection)
     )
@@ -203,11 +203,16 @@ class HelicityAmplitudeBuilder:
     def formulate(self) -> HelicityModel:
         self.__components = {}
         self.__parameter_defaults = {}
+        top_expression = self.__formulate_top_expression()
+        kinematic_variables = {
+            sp.Symbol(var_name, real=True): expr
+            for var_name, expr in self.__adapter.create_expressions().items()
+        }
         return HelicityModel(
-            expression=self.__formulate_top_expression(),
+            expression=top_expression,
             components=self.__components,
             parameter_defaults=self.__parameter_defaults,
-            adapter=self.__adapter,
+            kinematic_variables=kinematic_variables,
             particles=self.__particles,
         )
 
