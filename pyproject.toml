@@ -9,14 +9,6 @@ requires = [
 write_to = "src/ampform/version.py"
 
 [tool.black]
-line-length = 79
-target-version = [
-    "py36",
-    "py37",
-    "py38",
-    "py39",
-]
-include = '\.pyi?$'
 exclude = '''
 /(
     .*\.egg-info
@@ -30,6 +22,15 @@ exclude = '''
     | dist
 )/
 '''
+experimental-string-processing = true
+include = '\.pyi?$'
+line-length = 79
+target-version = [
+    "py36",
+    "py37",
+    "py38",
+    "py39",
+]
 
 [tool.isort]
 line_length = 79

@@ -88,8 +88,8 @@ class TwoBodyDecay:
         if spin_magnitude.is_integer():
             return int(spin_magnitude)
         raise ValueError(
-            f"Spin magnitude ({spin_magnitude}) of single particle state cannot be"
-            f" used as the angular momentum as it is not integral!"
+            f"Spin magnitude ({spin_magnitude}) of single particle state"
+            " cannot be used as the angular momentum as it is not integral!"
         )
 
 

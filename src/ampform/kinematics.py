@@ -46,7 +46,8 @@ class HelicityAdapter:
             state = transition.initial_states[state_id]
             if particle != state.particle:
                 raise ValueError(
-                    f"Transition has different initial particle at {state_id}.",
+                    "Transition has different initial particle at"
+                    f" {state_id}.",
                     f" Expecting: {particle.name}"
                     f" In added transition: {state.particle.name}",
                 )

@@ -157,7 +157,7 @@ class HelicityModel:
                 )
                 raise KeyError(
                     f'Component "{component}" not in model components. '
-                    f"Did you mean any of these?",
+                    "Did you mean any of these?",
                     candidates,
                 )
         if any(map(lambda c: c.startswith("I"), components)) and any(
@@ -308,7 +308,8 @@ class HelicityAmplitudeBuilder:
                 if value != previous_value:
                     logging.warning(
                         f'New default value {value} for parameter "{par.name}"'
-                        f" is inconsistent with existing value {previous_value}"
+                        " is inconsistent with existing value"
+                        f" {previous_value}"
                     )
             self.__parameter_defaults[par] = value
 
