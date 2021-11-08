@@ -338,7 +338,7 @@ def __safe_wrap_symbols(
 
 def partial_doit(
     expression: sp.Expr,
-    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic]]],
+    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic], ...]],
 ) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` up to a certain level.
 
