@@ -1,21 +1,34 @@
 # cspell:ignore einsum
+# pylint: disable=arguments-differ,protected-access,unused-argument
 """Kinematics of an amplitude model in the helicity formalism."""
 
-from typing import Dict, List, Mapping, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import attr
-import numpy as np
 from attr.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
-
-from .data import (
-    DataSet,
-    EventCollection,
-    FourMomentumSequence,
-    MatrixSequence,
-    ScalarSequence,
+from sympy.core.expr import Expr
+from sympy.core.numbers import Integer
+from sympy.core.symbol import Symbol
+from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.functions.elementary.trigonometric import acos, atan2, cos, sin
+from sympy.matrices.dense import MutableDenseMatrix as Matrix
+from sympy.printing.latex import LatexPrinter
+from sympy.printing.numpy import NumPyPrinter
+from sympy.tensor.array.expressions.array_expressions import (
+    ArraySlice,
+    ArraySymbol,
 )
+
+from ampform.sympy import (
+    UnevaluatedExpression,
+    create_expression,
+    implement_doit_method,
+)
+from ampform.sympy.math import ComplexSqrt
+
+FourMomentumSymbols = Dict[int, ArraySymbol]
 
 
 @attr.s(on_setattr=attr.setters.frozen)
@@ -86,12 +99,12 @@ class HelicityAdapter:
                 raise ValueError("Edge or node IDs of topology do not match")
         self.registered_topologies.add(topology)
 
-    def transform(self, events: EventCollection) -> DataSet:
-        output: Dict[str, ScalarSequence] = {}
+    def transform(self, four_momenta: FourMomentumSymbols) -> Dict[str, Expr]:
+        output = {}
         for topology in self.registered_topologies:
-            output.update(_compute_helicity_angles(events, topology))
-            output.update(_compute_invariant_masses(events, topology))
-        return DataSet(output)
+            output.update(compute_helicity_angles(four_momenta, topology))
+            output.update(compute_invariant_masses(four_momenta, topology))
+        return output
 
 
 def get_helicity_angle_label(
@@ -203,19 +216,19 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
 
 
-def _compute_helicity_angles(  # pylint: disable=too-many-locals
-    events: EventCollection, topology: Topology
-) -> DataSet:
-    if topology.outgoing_edge_ids != set(events):
+def compute_helicity_angles(
+    four_momenta: FourMomentumSymbols, topology: Topology
+) -> Dict[str, Expr]:
+    if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
-            f"Momentum IDs {set(events)} do not match "
+            f"Momentum IDs {set(four_momenta)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
-        events: EventCollection, node_id: int
-    ) -> DataSet:
-        helicity_angles: Dict[str, ScalarSequence] = {}
+        four_momenta: FourMomentumSymbols, node_id: int
+    ) -> Dict[str, Expr]:
+        helicity_angles: Dict[str, Expr] = {}
         child_state_ids = sorted(
             topology.get_edge_ids_outgoing_from_node(node_id)
         )
@@ -223,12 +236,12 @@ def _compute_helicity_angles(  # pylint: disable=too-many-locals
             topology.edges[i].ending_node_id is None for i in child_state_ids
         ):
             state_id = child_state_ids[0]
-            four_momentum = events[state_id]
+            four_momentum = four_momenta[state_id]
             phi_label, theta_label = get_helicity_angle_label(
                 topology, state_id
             )
-            helicity_angles[phi_label] = four_momentum.phi()
-            helicity_angles[theta_label] = four_momentum.theta()
+            helicity_angles[phi_label] = Phi(four_momentum)
+            helicity_angles[theta_label] = Theta(four_momentum)
         for state_id in child_state_ids:
             edge = topology.edges[state_id]
             if edge.ending_node_id is not None:
@@ -238,31 +251,32 @@ def _compute_helicity_angles(  # pylint: disable=too-many-locals
                 )
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = events.sum(sub_momenta_ids)
+                    four_momentum = sum(
+                        four_momenta[i] for i in sub_momenta_ids
+                    )
 
                     # boost all of those momenta into this new subsystem
-                    phi = four_momentum.phi()
-                    theta = four_momentum.theta()
-                    p3_norm = four_momentum.p_norm()
-                    beta = ScalarSequence(p3_norm / four_momentum.energy)
-                    new_momentum_pool = EventCollection(
-                        {
-                            k: _get_boost_z_matrix(beta).dot(
-                                _get_rotation_matrix_y(-theta).dot(
-                                    _get_rotation_matrix_z(-phi).dot(v)
-                                )
-                            )
-                            for k, v in events.items()
-                            if k in sub_momenta_ids
-                        }
-                    )
+                    phi = Phi(four_momentum)
+                    theta = Theta(four_momentum)
+                    p3_norm = ThreeMomentumNorm(four_momentum)
+                    beta = p3_norm / Energy(four_momentum)
+                    new_momentum_pool = {
+                        k: ArrayMultiplication(
+                            BoostZ(beta),
+                            RotationY(-theta),
+                            RotationZ(-phi),
+                            p,
+                        )
+                        for k, p in four_momenta.items()
+                        if k in sub_momenta_ids
+                    }
 
                     # register current angle variables
                     phi_label, theta_label = get_helicity_angle_label(
                         topology, state_id
                     )
-                    helicity_angles[phi_label] = four_momentum.phi()
-                    helicity_angles[theta_label] = four_momentum.theta()
+                    helicity_angles[phi_label] = Phi(four_momentum)
+                    helicity_angles[theta_label] = Theta(four_momentum)
 
                     # call next recursion
                     angles = __recursive_helicity_angles(
@@ -271,84 +285,345 @@ def _compute_helicity_angles(  # pylint: disable=too-many-locals
                     )
                     helicity_angles.update(angles)
 
-        return DataSet(helicity_angles)
+        return helicity_angles
 
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
     assert initial_state_edge.ending_node_id is not None
     return __recursive_helicity_angles(
-        events, initial_state_edge.ending_node_id
+        four_momenta, initial_state_edge.ending_node_id
     )
 
 
-def _get_boost_z_matrix(beta: ScalarSequence) -> MatrixSequence:
-    n_events = len(beta)
-    gamma = 1 / np.sqrt(1 - beta ** 2)
-    zeros = np.zeros(n_events)
-    ones = np.ones(n_events)
-    return MatrixSequence(
-        np.array(
-            [
-                [gamma, zeros, zeros, -gamma * beta],
-                [zeros, ones, zeros, zeros],
-                [zeros, zeros, ones, zeros],
-                [-gamma * beta, zeros, zeros, gamma],
-            ]
-        ).transpose(2, 0, 1)
-    )
-
-
-def _get_rotation_matrix_z(angle: ScalarSequence) -> MatrixSequence:
-    n_events = len(angle)
-    zeros = np.zeros(n_events)
-    ones = np.ones(n_events)
-    return MatrixSequence(
-        np.array(
-            [
-                [ones, zeros, zeros, zeros],
-                [zeros, np.cos(angle), -np.sin(angle), zeros],
-                [zeros, np.sin(angle), np.cos(angle), zeros],
-                [zeros, zeros, zeros, ones],
-            ]
-        ).transpose(2, 0, 1)
-    )
-
-
-def _get_rotation_matrix_y(angle: ScalarSequence) -> MatrixSequence:
-    n_events = len(angle)
-    zeros = np.zeros(n_events)
-    ones = np.ones(n_events)
-    return MatrixSequence(
-        np.array(
-            [
-                [ones, zeros, zeros, zeros],
-                [zeros, np.cos(angle), zeros, np.sin(angle)],
-                [zeros, zeros, ones, zeros],
-                [zeros, -np.sin(angle), zeros, np.cos(angle)],
-            ]
-        ).transpose(2, 0, 1)
-    )
-
-
-def _compute_invariant_masses(
-    events: Mapping[int, FourMomentumSequence], topology: Topology
-) -> DataSet:
+def compute_invariant_masses(
+    four_momenta: FourMomentumSymbols, topology: Topology
+) -> Dict[str, Expr]:
     """Compute the invariant masses for all final state combinations."""
-    if topology.outgoing_edge_ids != set(events):
+    if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
-            f"Momentum IDs {set(events)} do not match "
+            f"Momentum IDs {set(four_momenta)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
     invariant_masses = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
-        total_momentum = FourMomentumSequence(
-            sum(events[i] for i in attached_state_ids)
-        )
-        values = total_momentum.mass()
+        total_momentum = sum(four_momenta[i] for i in attached_state_ids)
+        invariant_mass = InvariantMass(total_momentum)
         name = get_invariant_mass_label(topology, state_id)
-        invariant_masses[name] = values
-    return DataSet(invariant_masses)
+        invariant_masses[name] = invariant_mass
+    return invariant_masses
+
+
+class ArrayAxisSum(Expr):
+    array: ArraySymbol = property(lambda self: self.args[0])
+    axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
+
+    def __new__(
+        cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
+    ) -> "ArrayAxisSum":
+        if axis is not None and not isinstance(axis, (int, Integer)):
+            raise TypeError("Only single digits allowed for axis")
+        return create_expression(cls, array, axis, **hints)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        array = printer._print(self.array)
+        if self.axis is None:
+            return fR"\sum{{{array}}}"
+        axis = printer._print(self.axis)
+        return fR"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports["numpy"].add("sum")
+        array = printer._print(self.array)
+        axis = printer._print(self.axis)
+        return f"sum({array}, axis={axis})"
+
+
+class ArrayMultiplication(Expr):
+    tensors: List[Expr] = property(lambda self: self.args)  # type: ignore[assignment]
+
+    def __new__(cls, *tensors: Expr, **hints: Any) -> "ArrayMultiplication":
+        return create_expression(cls, *tensors, **hints)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        tensors = map(printer._print, self.tensors)
+        return " ".join(tensors)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        def multiply(matrix: Expr, vector: Expr) -> str:
+            return (
+                'einsum("ij...,j...",'
+                f" transpose({matrix}, axes=(1, 2, 0)),"
+                f" transpose({vector}))"
+            )
+
+        def recursive_multiply(tensors: Sequence[Expr]) -> str:
+            if len(tensors) < 2:
+                raise ValueError("Need at least two tensors")
+            if len(tensors) == 2:
+                return multiply(tensors[0], tensors[1])
+            return multiply(tensors[0], recursive_multiply(tensors[1:]))
+
+        printer.module_imports["numpy"].update({"einsum", "transpose"})
+        tensors = list(map(printer._print, self.args))
+        if len(tensors) == 0:
+            return ""
+        if len(tensors) == 1:
+            return tensors[0]
+        return recursive_multiply(tensors)
+
+
+class BoostZ(Expr):
+    beta: Expr = property(lambda self: self.args[0])
+
+    def __new__(cls, beta: Expr, **kwargs: Any) -> "BoostZ":
+        return create_expression(cls, beta, **kwargs)
+
+    def as_explicit(self) -> Expr:
+        beta = self.beta
+        gamma = 1 / sqrt(1 - beta ** 2)
+        return Matrix(
+            [
+                [gamma, 0, 0, -gamma * beta],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-gamma * beta, 0, 0, gamma],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        beta = printer._print(self.beta)
+        return fR"\boldsymbol{{B_z}}\left({beta}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports["numpy"].update(
+            {"array", "ones", "zeros", "sqrt"}
+        )
+        beta = printer._print(self.beta)
+        gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
+        n_events = f"len({beta})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],
+                [{zeros}, {ones}, {zeros}, {zeros}],
+                [{zeros}, {zeros}, {ones}, {zeros}],
+                [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
+            ]
+        ).transpose(2, 0, 1)"""
+
+
+class RotationY(Expr):
+    angle: Expr = property(lambda self: self.args[0])
+
+    def __new__(cls, angle: Expr, **hints: Any) -> "RotationY":
+        return create_expression(cls, angle, **hints)
+
+    def as_explicit(self) -> Expr:
+        angle = self.angle
+        return Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, cos(angle), 0, sin(angle)],
+                [0, 0, 1, 0],
+                [0, -sin(angle), 0, cos(angle)],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        angle, *_ = self.args
+        angle = printer._print(angle)
+        return fR"\boldsymbol{{R_y}}\left({angle}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports["numpy"].update(
+            {"array", "cos", "ones", "zeros", "sin"}
+        )
+        angle = printer._print(self.angle)
+        n_events = f"len({angle})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, cos({angle}), {zeros}, sin({angle})],
+                [{zeros}, {zeros}, {ones}, {zeros}],
+                [{zeros}, -sin({angle}), {zeros}, cos({angle})],
+            ]
+        ).transpose(2, 0, 1)"""
+
+
+class RotationZ(Expr):
+    angle: Expr = property(lambda self: self.args[0])
+
+    def __new__(cls, angle: Symbol, **hints: Any) -> "RotationZ":
+        return create_expression(cls, angle, **hints)
+
+    def as_explicit(self) -> Expr:
+        angle = self.args[0]
+        return Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, cos(angle), -sin(angle), 0],
+                [0, sin(angle), cos(angle), 0],
+                [0, 0, 0, 1],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        angle, *_ = self.args
+        angle = printer._print(angle)
+        return fR"\boldsymbol{{R_z}}\left({angle}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports["numpy"].update(
+            {"array", "cos", "ones", "zeros", "sin"}
+        )
+        angle = printer._print(self.angle)
+        n_events = f"len({angle})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, cos({angle}), -sin({angle}), {zeros}],
+                [{zeros}, sin({angle}), cos({angle}), {zeros}],
+                [{zeros}, {zeros}, {zeros}, {ones}],
+            ]
+        ).transpose(2, 0, 1)"""
+
+
+@implement_doit_method()
+class Energy(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self.momentum, (slice(None), 0))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return f"E_{{{momentum}}}"
+
+
+@implement_doit_method()
+class FourMomentumX(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumX":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self.momentum, (slice(None), 1))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return f"{{{momentum}}}_{{x}}"
+
+
+@implement_doit_method()
+class FourMomentumY(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumY":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self.momentum, (slice(None), 2))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return f"{{{momentum}}}_{{y}}"
+
+
+@implement_doit_method()
+class FourMomentumZ(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumZ":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self.momentum, (slice(None), 3))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return f"{{{momentum}}}_{{z}}"
+
+
+@implement_doit_method()
+class ThreeMomentumNorm(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(
+        cls, momentum: ArraySymbol, **hints: Any
+    ) -> "ThreeMomentumNorm":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        three_momentum = ArraySlice(
+            self.momentum, (slice(None), slice(1, None))
+        )
+        norm_squared = ArrayAxisSum(three_momentum ** 2, axis=1)
+        return sqrt(norm_squared)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return fR"\left|\vec{{{momentum}}}\right|"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+@implement_doit_method()
+class InvariantMass(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> ArraySlice:
+        p = self.momentum
+        return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return f"m_{{{momentum}}}"
+
+
+@implement_doit_method()
+class Phi(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Phi":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> Expr:
+        p = self.momentum
+        return atan2(FourMomentumY(p), FourMomentumX(p))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return fR"\phi\left({momentum}\right)"
+
+
+@implement_doit_method()
+class Theta(UnevaluatedExpression):
+    momentum: ArraySymbol = property(lambda self: self.args[0])
+
+    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Theta":
+        return create_expression(cls, momentum, **hints)
+
+    def evaluate(self) -> Expr:
+        p = self.momentum
+        return acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return fR"\theta\left({momentum}\right)"
 
 
 def _assert_isobar_topology(topology: Topology) -> None:
@@ -369,6 +644,11 @@ def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
             f"Node {node_id} decays to {len(child_state_ids)} states,"
             " so this is not an isobar decay"
         )
+
+
+def create_four_momentum_symbols(topology: Topology) -> FourMomentumSymbols:
+    n_final_states = len(topology.outgoing_edge_ids)
+    return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
 
 
 def determine_attached_final_state(

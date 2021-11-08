@@ -198,6 +198,10 @@ nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
+    (
+        "py:class",
+        "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
+    ),
     ("py:class", "typing_extensions.Protocol"),
 ]
 
