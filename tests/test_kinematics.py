@@ -17,6 +17,7 @@ from sympy.utilities.lambdify import lambdify
 
 from ampform.kinematics import (
     ArrayMultiplication,
+    ArraySum,
     Energy,
     FourMomentumSymbols,
     FourMomentumX,
@@ -81,6 +82,23 @@ class TestArrayMultiplication:
         assert numpy_code == dedent(expected)
 
 
+class TestArraySum:
+    def test_latex(self):
+        x, y = sp.symbols("x y")
+        array_sum = ArraySum(x ** 2, sp.cos(y))
+        assert sp.latex(array_sum) == R"x^{2} + \cos{\left(y \right)}"
+
+    def test_latex_array_symbols(self):
+        p0, p1, p2, p3 = sp.symbols("p:4", cls=ArraySymbol)
+        array_sum = ArraySum(p0, p1, p2, p3)
+        assert sp.latex(array_sum) == "{p}_{0123}"
+
+    def test_numpy(self):
+        expr = ArraySum(*sp.symbols("x y"))
+        numpy_code = _generate_numpy_code(expr)
+        assert numpy_code == "x + y"
+
+
 class TestFourMomentumXYZ:
     def symbols(
         self,
@@ -103,10 +121,13 @@ class TestFourMomentumXYZ:
 
     def test_latex(self):
         _, e, p_x, p_y, p_z = self.symbols()
-        assert sp.latex(e) == "E_{p}"
-        assert sp.latex(p_x) == "{p}_{x}"
-        assert sp.latex(p_y) == "{p}_{y}"
-        assert sp.latex(p_z) == "{p}_{z}"
+        assert sp.latex(e) == R"E\left(p\right)"
+        assert sp.latex(p_x) == "{p}_x"
+        assert sp.latex(p_y) == "{p}_y"
+        assert sp.latex(p_z) == "{p}_z"
+        a, b = sp.symbols("A B", cls=ArraySymbol)
+        expr = FourMomentumX(a + b)
+        assert sp.latex(expr) == R"\left(A + B\right)_x"
 
 
 class TestInvariantMass:
@@ -180,7 +201,7 @@ class TestTheta:
         numpy_code = _generate_numpy_code(theta)
         assert (
             numpy_code
-            == "numpy.arccos(p[:, 3]*sum(p[:, 1:]**2, axis=1)**(-1/2))"
+            == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
         )
 
 

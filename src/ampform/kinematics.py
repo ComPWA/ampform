@@ -2,30 +2,52 @@
 # pylint: disable=arguments-differ,protected-access,unused-argument
 """Kinematics of an amplitude model in the helicity formalism."""
 
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+import functools
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+)
 
 import attr
+import sympy as sp
 from attr.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
+from sympy.core.basic import Basic
 from sympy.core.expr import Expr
 from sympy.core.numbers import Integer
 from sympy.core.symbol import Symbol
 from sympy.functions.elementary.miscellaneous import sqrt
 from sympy.functions.elementary.trigonometric import acos, atan2, cos, sin
 from sympy.matrices.dense import MutableDenseMatrix as Matrix
+from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
+from sympy.printing.precedence import PRECEDENCE
+from sympy.printing.printer import Printer
 
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
     implement_doit_method,
+    make_commutative,
 )
 from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 from ampform.sympy.math import ComplexSqrt
 
 FourMomentumSymbols = Dict[int, ArraySymbol]
+
+
+# for numpy broadcasting
+ArraySlice = make_commutative()(ArraySlice)  # type: ignore[misc]
 
 
 @attr.s(on_setattr=attr.setters.frozen)
@@ -248,8 +270,8 @@ def compute_helicity_angles(
                 )
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = sum(
-                        four_momenta[i] for i in sub_momenta_ids
+                    four_momentum = ArraySum(
+                        *[four_momenta[i] for i in sub_momenta_ids]
                     )
 
                     # boost all of those momenta into this new subsystem
@@ -304,13 +326,78 @@ def compute_invariant_masses(
     invariant_masses = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
-        total_momentum = sum(four_momenta[i] for i in attached_state_ids)
+        total_momentum = ArraySum(
+            *[four_momenta[i] for i in attached_state_ids]
+        )
         invariant_mass = InvariantMass(total_momentum)
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
 
 
+class ArraySum(Expr):
+    precedence = PRECEDENCE["Add"]
+    terms: Tuple[Basic, ...] = property(lambda self: self.args)  # type: ignore[assignment]
+
+    def __new__(cls, *terms: Basic, **hints: Any) -> "Energy":
+        return create_expression(cls, *terms, **hints)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        if all(
+            map(lambda i: isinstance(i, (Symbol, ArraySymbol)), self.terms)
+        ):
+            names = set(map(_strip_subscript_superscript, self.terms))
+            if len(names) == 1:
+                name = next(iter(names))
+                subscript = "".join(map(_get_subscript, self.terms))
+                return f"{{{name}}}_{{{subscript}}}"
+        return printer._print_ArraySum(self)
+
+
+def _print_array_sum(self: Printer, expr: ArraySum) -> str:
+    terms = map(self._print, expr.terms)
+    return " + ".join(terms)
+
+
+Printer._print_ArraySum = _print_array_sum
+
+
+def _get_subscript(symbol: Symbol) -> str:
+    """Collect subscripts from a `sympy.core.symbol.Symbol`.
+
+    >>> _get_subscript(Symbol("p1"))
+    '1'
+    >>> _get_subscript(Symbol("p^2_{0,0}"))
+    '0,0'
+    """
+    if isinstance(symbol, Basic):
+        text = sp.latex(symbol)
+    else:
+        text = symbol
+    _, _, subscripts = split_super_sub(text)
+    stripped_subscripts: Iterable[str] = map(
+        lambda s: s.strip("{").strip("}"), subscripts
+    )
+    return " ".join(stripped_subscripts)
+
+
+def _strip_subscript_superscript(symbol: Symbol) -> str:
+    """Collect subscripts from a `sympy.core.symbol.Symbol`.
+
+    >>> _strip_subscript_superscript(Symbol("p1"))
+    'p'
+    >>> _strip_subscript_superscript(Symbol("p^2_{0,0}"))
+    'p'
+    """
+    if isinstance(symbol, Basic):
+        text = sp.latex(symbol)
+    else:
+        text = symbol
+    name, _, _ = split_super_sub(text)
+    return name
+
+
+@make_commutative()
 class ArrayAxisSum(Expr):
     array: ArraySymbol = property(lambda self: self.args[0])
     axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
@@ -491,10 +578,37 @@ class RotationZ(Expr):
         ).transpose(2, 0, 1)"""
 
 
-@implement_doit_method
-class Energy(UnevaluatedExpression):
+class HasMomentum:
+    # pylint: disable=no-member
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
+
+def implement_latex_subscript(
+    subscript: str,
+) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+    def decorator(
+        decorated_class: Type[UnevaluatedExpression],
+    ) -> Type[UnevaluatedExpression]:
+        @functools.wraps(decorated_class.doit)
+        def _latex(
+            self: HasMomentum, printer: LatexPrinter, *args: Any
+        ) -> str:
+            momentum = printer._print(self.momentum)
+            if printer._needs_mul_brackets(self.momentum):
+                momentum = fR"\left({momentum}\right)"
+            else:
+                momentum = fR"{{{momentum}}}"
+            return f"{momentum}_{subscript}"
+
+        decorated_class._latex = _latex  # type: ignore[assignment]
+        return decorated_class
+
+    return decorator
+
+
+@implement_doit_method
+@make_commutative()
+class Energy(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
@@ -503,58 +617,45 @@ class Energy(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.momentum)
-        return f"E_{{{momentum}}}"
+        return fR"E\left({momentum}\right)"
 
 
+@implement_latex_subscript(subscript="x")
 @implement_doit_method
-class FourMomentumX(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class FourMomentumX(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumX":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
         return ArraySlice(self.momentum, (slice(None), 1))
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
-        return f"{{{momentum}}}_{{x}}"
 
-
+@implement_latex_subscript(subscript="y")
 @implement_doit_method
-class FourMomentumY(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class FourMomentumY(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumY":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
         return ArraySlice(self.momentum, (slice(None), 2))
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
-        return f"{{{momentum}}}_{{y}}"
 
-
+@implement_latex_subscript(subscript="z")
 @implement_doit_method
-class FourMomentumZ(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class FourMomentumZ(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumZ":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
         return ArraySlice(self.momentum, (slice(None), 3))
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
-        return f"{{{momentum}}}_{{z}}"
-
 
 @implement_doit_method
-class ThreeMomentumNorm(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
     def __new__(
         cls, momentum: ArraySymbol, **hints: Any
     ) -> "ThreeMomentumNorm":
@@ -576,9 +677,8 @@ class ThreeMomentumNorm(UnevaluatedExpression):
 
 
 @implement_doit_method
-class InvariantMass(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class InvariantMass(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
@@ -592,9 +692,8 @@ class InvariantMass(UnevaluatedExpression):
 
 
 @implement_doit_method
-class Phi(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class Phi(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Phi":
         return create_expression(cls, momentum, **hints)
 
@@ -608,9 +707,8 @@ class Phi(UnevaluatedExpression):
 
 
 @implement_doit_method
-class Theta(UnevaluatedExpression):
-    momentum: ArraySymbol = property(lambda self: self.args[0])
-
+@make_commutative()
+class Theta(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Theta":
         return create_expression(cls, momentum, **hints)
 

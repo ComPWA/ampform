@@ -131,7 +131,7 @@ def test_generate(  # pylint: disable=too-many-locals
 
     amplitude = round_nested(amplitude, n_decimals=2)
     a = str(amplitude)
-    assert a == "0.06/(m**2 + 0.06*I*sqrt(m**2 - 0.07)/Abs(m) - 0.98)"
+    assert a == "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
