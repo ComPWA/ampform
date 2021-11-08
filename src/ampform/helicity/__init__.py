@@ -24,7 +24,6 @@ from attr.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
-from qrules.particle import ParticleCollection
 from qrules.transition import ReactionInfo, StateTransition
 from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
@@ -117,9 +116,7 @@ class HelicityModel:  # noqa: R701
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
-    particles: ParticleCollection = attr.ib(
-        validator=instance_of(ParticleCollection)
-    )
+    reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
@@ -182,7 +179,6 @@ class HelicityAmplitudeBuilder:
         self.__adapter = HelicityAdapter(reaction)
         for grouping in reaction.transition_groups:
             self.__adapter.register_topology(grouping.topology)
-        self.__particles = extract_particle_collection(reaction.transitions)
 
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
@@ -213,7 +209,7 @@ class HelicityAmplitudeBuilder:
             components=self.__components,
             parameter_defaults=self.__parameter_defaults,
             kinematic_variables=kinematic_variables,
-            particles=self.__particles,
+            reaction_info=self.__reaction,
         )
 
     def __formulate_top_expression(self) -> sp.Expr:
@@ -368,18 +364,6 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
             transition, node_id
         )
         return cg_coefficients * amplitude
-
-
-def extract_particle_collection(
-    transitions: Iterable[StateTransition],
-) -> ParticleCollection:
-    """Collect all particles from a collection of state transitions."""
-    particles = ParticleCollection()
-    for transition in transitions:
-        for state in transition.states.values():
-            if state.particle not in particles:
-                particles.add(state.particle)
-    return particles
 
 
 def formulate_clebsch_gordan_coefficients(
