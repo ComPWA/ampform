@@ -164,8 +164,9 @@ class TestD1ToD0PiPi:
         )
         if coefficient not in amplitude_model.parameter_defaults:
             raise KeyError(
-                f"Coefficient {coefficient} does not exist in parameter defaults."
-                f" Choose any of {list(amplitude_model.parameter_defaults)}"
+                f"Coefficient {coefficient} does not exist in parameter"
+                " defaults. Choose any of"
+                f" {list(amplitude_model.parameter_defaults)}"
             )
         amplitude_model.parameter_defaults[coefficient] = 0.5
 

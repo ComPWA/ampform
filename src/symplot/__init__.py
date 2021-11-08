@@ -41,7 +41,7 @@ except ImportError:
     PrettyPrinter = Any
 
 if sys.version_info >= (3, 10):
-    from typing import TypeGuard
+    from typing import TypeGuard  # pylint: disable=no-name-in-module
 else:
     from typing_extensions import TypeGuard
 
@@ -189,7 +189,8 @@ class SliderKwargs(abc.Mapping):
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
                 raise TypeError(
-                    f'Range definition for slider "{slider_name}" is not a tuple'
+                    f'Range definition for slider "{slider_name}" is not a'
+                    " tuple"
                 )
             slider = self[slider_name]
             if _is_min_max(range_def):

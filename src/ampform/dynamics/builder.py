@@ -81,7 +81,8 @@ def create_non_dynamic_with_ff(
     angular_momentum = variable_pool.angular_momentum
     if angular_momentum is None:
         raise ValueError(
-            "Angular momentum is not defined but is required in the form factor!"
+            "Angular momentum is not defined but is required in the form"
+            " factor!"
         )
     q_squared = BreakupMomentumSquared(
         s=variable_pool.incoming_state_mass ** 2,
@@ -129,7 +130,8 @@ def _make_relativistic_breit_wigner_with_ff(
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the form factor!"
+                "Angular momentum is not defined but is required in the form"
+                " factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -161,9 +163,14 @@ def _make_relativistic_breit_wigner_with_ff(
     return dynamics_builder
 
 
-create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
-    phsp_factor=PhaseSpaceFactor,
-    docstring="Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.",
+__DOCSTRING = (
+    "Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."
+)
+create_relativistic_breit_wigner_with_ff = (
+    _make_relativistic_breit_wigner_with_ff(
+        phsp_factor=PhaseSpaceFactor,
+        docstring=__DOCSTRING,
+    )
 )
 create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
     phsp_factor=PhaseSpaceFactorAnalytic,

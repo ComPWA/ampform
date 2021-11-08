@@ -23,7 +23,8 @@ def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
     formalism = reaction.formalism
     if formalism is None:
         raise ValueError(
-            f"{ReactionInfo.__name__} does not have a formalism type:\n{reaction}"
+            f"{ReactionInfo.__name__} does not have a formalism"
+            f" type:\n{reaction}"
         )
     if formalism == "helicity":
         amplitude_builder = HelicityAmplitudeBuilder(reaction)
