@@ -16,16 +16,13 @@ from sympy.functions.elementary.trigonometric import acos, atan2, cos, sin
 from sympy.matrices.dense import MutableDenseMatrix as Matrix
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
-from sympy.tensor.array.expressions.array_expressions import (
-    ArraySlice,
-    ArraySymbol,
-)
 
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
     implement_doit_method,
 )
+from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 from ampform.sympy.math import ComplexSqrt
 
 FourMomentumSymbols = Dict[int, ArraySymbol]
@@ -494,7 +491,7 @@ class RotationZ(Expr):
         ).transpose(2, 0, 1)"""
 
 
-@implement_doit_method()
+@implement_doit_method
 class Energy(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -509,7 +506,7 @@ class Energy(UnevaluatedExpression):
         return f"E_{{{momentum}}}"
 
 
-@implement_doit_method()
+@implement_doit_method
 class FourMomentumX(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -524,7 +521,7 @@ class FourMomentumX(UnevaluatedExpression):
         return f"{{{momentum}}}_{{x}}"
 
 
-@implement_doit_method()
+@implement_doit_method
 class FourMomentumY(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -539,7 +536,7 @@ class FourMomentumY(UnevaluatedExpression):
         return f"{{{momentum}}}_{{y}}"
 
 
-@implement_doit_method()
+@implement_doit_method
 class FourMomentumZ(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -554,7 +551,7 @@ class FourMomentumZ(UnevaluatedExpression):
         return f"{{{momentum}}}_{{z}}"
 
 
-@implement_doit_method()
+@implement_doit_method
 class ThreeMomentumNorm(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -578,7 +575,7 @@ class ThreeMomentumNorm(UnevaluatedExpression):
         return printer._print(self.evaluate())
 
 
-@implement_doit_method()
+@implement_doit_method
 class InvariantMass(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -594,7 +591,7 @@ class InvariantMass(UnevaluatedExpression):
         return f"m_{{{momentum}}}"
 
 
-@implement_doit_method()
+@implement_doit_method
 class Phi(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
@@ -610,7 +607,7 @@ class Phi(UnevaluatedExpression):
         return fR"\phi\left({momentum}\right)"
 
 
-@implement_doit_method()
+@implement_doit_method
 class Theta(UnevaluatedExpression):
     momentum: ArraySymbol = property(lambda self: self.args[0])
 

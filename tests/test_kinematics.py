@@ -13,10 +13,6 @@ from sympy.core.expr import Expr
 from sympy.core.symbol import Symbol
 from sympy.matrices.expressions.matexpr import MatrixSymbol
 from sympy.printing.numpy import NumPyPrinter
-from sympy.tensor.array.expressions.array_expressions import (
-    ArraySlice,
-    ArraySymbol,
-)
 from sympy.utilities.lambdify import lambdify
 
 from ampform.kinematics import (
@@ -35,6 +31,7 @@ from ampform.kinematics import (
     create_four_momentum_symbols,
     determine_attached_final_state,
 )
+from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 
 
 @pytest.fixture(scope="session")
