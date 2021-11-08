@@ -3,7 +3,6 @@ from typing import Tuple
 
 import sympy as sp
 from qrules import ParticleCollection
-from sympy import preorder_traversal
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
@@ -135,7 +134,7 @@ def test_generate(  # pylint: disable=too-many-locals
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
-    for node in preorder_traversal(expression):
+    for node in sp.preorder_traversal(expression):
         if node.free_symbols:
             continue
         if isinstance(node, (float, sp.Float)):

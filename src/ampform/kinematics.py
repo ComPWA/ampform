@@ -21,13 +21,6 @@ import sympy as sp
 from attr.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
-from sympy.core.basic import Basic
-from sympy.core.expr import Expr
-from sympy.core.numbers import Integer
-from sympy.core.symbol import Symbol
-from sympy.functions.elementary.miscellaneous import sqrt
-from sympy.functions.elementary.trigonometric import acos, atan2, cos, sin
-from sympy.matrices.dense import MutableDenseMatrix as Matrix
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
@@ -118,7 +111,7 @@ class HelicityAdapter:
                 raise ValueError("Edge or node IDs of topology do not match")
         self.registered_topologies.add(topology)
 
-    def create_expressions(self) -> Dict[str, Expr]:
+    def create_expressions(self) -> Dict[str, sp.Expr]:
         output = {}
         for topology in self.registered_topologies:
             four_momenta = create_four_momentum_symbols(topology)
@@ -238,7 +231,7 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
 
 def compute_helicity_angles(
     four_momenta: FourMomentumSymbols, topology: Topology
-) -> Dict[str, Expr]:
+) -> Dict[str, sp.Expr]:
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
             f"Momentum IDs {set(four_momenta)} do not match "
@@ -247,8 +240,8 @@ def compute_helicity_angles(
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
         four_momenta: FourMomentumSymbols, node_id: int
-    ) -> Dict[str, Expr]:
-        helicity_angles: Dict[str, Expr] = {}
+    ) -> Dict[str, sp.Expr]:
+        helicity_angles: Dict[str, sp.Expr] = {}
         child_state_ids = sorted(
             topology.get_edge_ids_outgoing_from_node(node_id)
         )
@@ -317,7 +310,7 @@ def compute_helicity_angles(
 
 def compute_invariant_masses(
     four_momenta: FourMomentumSymbols, topology: Topology
-) -> Dict[str, Expr]:
+) -> Dict[str, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
@@ -336,16 +329,16 @@ def compute_invariant_masses(
     return invariant_masses
 
 
-class ArraySum(Expr):
+class ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
-    terms: Tuple[Basic, ...] = property(lambda self: self.args)  # type: ignore[assignment]
+    terms: Tuple[sp.Basic, ...] = property(lambda self: self.args)  # type: ignore[assignment]
 
-    def __new__(cls, *terms: Basic, **hints: Any) -> "Energy":
+    def __new__(cls, *terms: sp.Basic, **hints: Any) -> "Energy":
         return create_expression(cls, *terms, **hints)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         if all(
-            map(lambda i: isinstance(i, (Symbol, ArraySymbol)), self.terms)
+            map(lambda i: isinstance(i, (sp.Symbol, ArraySymbol)), self.terms)
         ):
             names = set(map(_strip_subscript_superscript, self.terms))
             if len(names) == 1:
@@ -363,15 +356,15 @@ def _print_array_sum(self: Printer, expr: ArraySum) -> str:
 Printer._print_ArraySum = _print_array_sum
 
 
-def _get_subscript(symbol: Symbol) -> str:
+def _get_subscript(symbol: sp.Symbol) -> str:
     """Collect subscripts from a `sympy.core.symbol.Symbol`.
 
-    >>> _get_subscript(Symbol("p1"))
+    >>> _get_subscript(sp.Symbol("p1"))
     '1'
-    >>> _get_subscript(Symbol("p^2_{0,0}"))
+    >>> _get_subscript(sp.Symbol("p^2_{0,0}"))
     '0,0'
     """
-    if isinstance(symbol, Basic):
+    if isinstance(symbol, sp.Basic):
         text = sp.latex(symbol)
     else:
         text = symbol
@@ -382,15 +375,15 @@ def _get_subscript(symbol: Symbol) -> str:
     return " ".join(stripped_subscripts)
 
 
-def _strip_subscript_superscript(symbol: Symbol) -> str:
+def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
     """Collect subscripts from a `sympy.core.symbol.Symbol`.
 
-    >>> _strip_subscript_superscript(Symbol("p1"))
+    >>> _strip_subscript_superscript(sp.Symbol("p1"))
     'p'
-    >>> _strip_subscript_superscript(Symbol("p^2_{0,0}"))
+    >>> _strip_subscript_superscript(sp.Symbol("p^2_{0,0}"))
     'p'
     """
-    if isinstance(symbol, Basic):
+    if isinstance(symbol, sp.Basic):
         text = sp.latex(symbol)
     else:
         text = symbol
@@ -399,14 +392,14 @@ def _strip_subscript_superscript(symbol: Symbol) -> str:
 
 
 @make_commutative()
-class ArrayAxisSum(Expr):
+class ArrayAxisSum(sp.Expr):
     array: ArraySymbol = property(lambda self: self.args[0])
     axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
 
     def __new__(
         cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
     ) -> "ArrayAxisSum":
-        if axis is not None and not isinstance(axis, (int, Integer)):
+        if axis is not None and not isinstance(axis, (int, sp.Integer)):
             raise TypeError("Only single digits allowed for axis")
         return create_expression(cls, array, axis, **hints)
 
@@ -424,10 +417,10 @@ class ArrayAxisSum(Expr):
         return f"sum({array}, axis={axis})"
 
 
-class ArrayMultiplication(Expr):
-    tensors: List[Expr] = property(lambda self: self.args)  # type: ignore[assignment]
+class ArrayMultiplication(sp.Expr):
+    tensors: List[sp.Expr] = property(lambda self: self.args)  # type: ignore[assignment]
 
-    def __new__(cls, *tensors: Expr, **hints: Any) -> "ArrayMultiplication":
+    def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
         return create_expression(cls, *tensors, **hints)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -435,14 +428,14 @@ class ArrayMultiplication(Expr):
         return " ".join(tensors)
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        def multiply(matrix: Expr, vector: Expr) -> str:
+        def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
             return (
                 'einsum("ij...,j...",'
                 f" transpose({matrix}, axes=(1, 2, 0)),"
                 f" transpose({vector}))"
             )
 
-        def recursive_multiply(tensors: Sequence[Expr]) -> str:
+        def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
             if len(tensors) < 2:
                 raise ValueError("Need at least two tensors")
             if len(tensors) == 2:
@@ -458,16 +451,16 @@ class ArrayMultiplication(Expr):
         return recursive_multiply(tensors)
 
 
-class BoostZ(Expr):
-    beta: Expr = property(lambda self: self.args[0])
+class BoostZ(sp.Expr):
+    beta: sp.Expr = property(lambda self: self.args[0])
 
-    def __new__(cls, beta: Expr, **kwargs: Any) -> "BoostZ":
+    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
         return create_expression(cls, beta, **kwargs)
 
-    def as_explicit(self) -> Expr:
+    def as_explicit(self) -> sp.Expr:
         beta = self.beta
-        gamma = 1 / sqrt(1 - beta ** 2)
-        return Matrix(
+        gamma = 1 / sp.sqrt(1 - beta ** 2)
+        return sp.Matrix(
             [
                 [gamma, 0, 0, -gamma * beta],
                 [0, 1, 0, 0],
@@ -499,20 +492,20 @@ class BoostZ(Expr):
         ).transpose(2, 0, 1)"""
 
 
-class RotationY(Expr):
-    angle: Expr = property(lambda self: self.args[0])
+class RotationY(sp.Expr):
+    angle: sp.Expr = property(lambda self: self.args[0])
 
-    def __new__(cls, angle: Expr, **hints: Any) -> "RotationY":
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
         return create_expression(cls, angle, **hints)
 
-    def as_explicit(self) -> Expr:
+    def as_explicit(self) -> sp.Expr:
         angle = self.angle
-        return Matrix(
+        return sp.Matrix(
             [
                 [1, 0, 0, 0],
-                [0, cos(angle), 0, sin(angle)],
+                [0, sp.cos(angle), 0, sp.sin(angle)],
                 [0, 0, 1, 0],
-                [0, -sin(angle), 0, cos(angle)],
+                [0, -sp.sin(angle), 0, sp.cos(angle)],
             ]
         )
 
@@ -539,19 +532,19 @@ class RotationY(Expr):
         ).transpose(2, 0, 1)"""
 
 
-class RotationZ(Expr):
-    angle: Expr = property(lambda self: self.args[0])
+class RotationZ(sp.Expr):
+    angle: sp.Expr = property(lambda self: self.args[0])
 
-    def __new__(cls, angle: Symbol, **hints: Any) -> "RotationZ":
+    def __new__(cls, angle: sp.Symbol, **hints: Any) -> "RotationZ":
         return create_expression(cls, angle, **hints)
 
-    def as_explicit(self) -> Expr:
+    def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
-        return Matrix(
+        return sp.Matrix(
             [
                 [1, 0, 0, 0],
-                [0, cos(angle), -sin(angle), 0],
-                [0, sin(angle), cos(angle), 0],
+                [0, sp.cos(angle), -sp.sin(angle), 0],
+                [0, sp.sin(angle), sp.cos(angle), 0],
                 [0, 0, 0, 1],
             ]
         )
@@ -667,7 +660,7 @@ class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
             self.momentum, (slice(None), slice(1, None))
         )
         norm_squared = ArrayAxisSum(three_momentum ** 2, axis=1)
-        return sqrt(norm_squared)
+        return sp.sqrt(norm_squared)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.momentum)
@@ -698,9 +691,9 @@ class Phi(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Phi":
         return create_expression(cls, momentum, **hints)
 
-    def evaluate(self) -> Expr:
+    def evaluate(self) -> sp.Expr:
         p = self.momentum
-        return atan2(FourMomentumY(p), FourMomentumX(p))
+        return sp.atan2(FourMomentumY(p), FourMomentumX(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.momentum)
@@ -713,9 +706,9 @@ class Theta(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Theta":
         return create_expression(cls, momentum, **hints)
 
-    def evaluate(self) -> Expr:
+    def evaluate(self) -> sp.Expr:
         p = self.momentum
-        return acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
+        return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.momentum)

@@ -9,11 +9,7 @@ import pytest
 import sympy as sp
 from numpy.lib.scimath import sqrt as complex_sqrt
 from qrules.topology import Topology, create_isobar_topologies
-from sympy.core.expr import Expr
-from sympy.core.symbol import Symbol
-from sympy.matrices.expressions.matexpr import MatrixSymbol
 from sympy.printing.numpy import NumPyPrinter
-from sympy.utilities.lambdify import lambdify
 
 from ampform.kinematics import (
     ArrayMultiplication,
@@ -50,7 +46,7 @@ def topology_and_momentum_symbols(
 @pytest.fixture(scope="session")
 def helicity_angles(
     topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols]
-) -> Dict[str, Expr]:
+) -> Dict[str, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
 
@@ -58,9 +54,9 @@ def helicity_angles(
 class TestArrayMultiplication:
     def test_numpy_str(self):
         n_events = 3
-        momentum = MatrixSymbol("p", m=n_events, n=4)
-        beta = Symbol("beta")
-        theta = Symbol("theta")
+        momentum = sp.MatrixSymbol("p", m=n_events, n=4)
+        beta = sp.Symbol("beta")
+        theta = sp.Symbol("theta")
         expr = ArrayMultiplication(beta, theta, momentum)
         numpy_code = _generate_numpy_code(expr)
         numpy_code = black.format_str(
@@ -148,7 +144,7 @@ class TestInvariantMass:
     ):
         p = ArraySymbol(f"p{state_id}")
         mass = InvariantMass(p)
-        np_mass = lambdify(p, mass.doit(), "numpy")
+        np_mass = sp.lambdify(p, mass.doit(), "numpy")
         four_momenta = data_sample[state_id]
         computed_values = np_mass(four_momenta)
         average_mass = np.average(computed_values)
@@ -317,12 +313,12 @@ def test_compute_helicity_angles(
     topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols],
     angle_name: str,
     expected_values: np.ndarray,
-    helicity_angles: Dict[str, Expr],
+    helicity_angles: Dict[str, sp.Expr],
 ):
     _, momentum_symbols = topology_and_momentum_symbols
     four_momenta = data_sample.values()
     expr = helicity_angles[angle_name]
-    np_angle = lambdify(momentum_symbols.values(), expr.doit())
+    np_angle = sp.lambdify(momentum_symbols.values(), expr.doit())
     computed = np_angle(*four_momenta)
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
 
@@ -352,7 +348,7 @@ def test_compute_invariant_masses_single_mass(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
     for i in topology.outgoing_edge_ids:
         expr = invariant_masses[f"m_{i}"]
-        np_expr = lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+        np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
         expected = __compute_mass(data_sample[i])
         computed = np_expr(*momentum_values)
         np.testing.assert_allclose(computed, expected, atol=1e-5)
@@ -369,7 +365,7 @@ def test_compute_invariant_masses(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
 
     expr = invariant_masses[mass_name]
-    np_expr = lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+    np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
     computed = np.average(np_expr(*momentum_values))
     indices = map(int, mass_name[2:])
     masses = __compute_mass(sum(data_sample[i] for i in indices))  # type: ignore[arg-type]
@@ -403,6 +399,6 @@ def test_determine_attached_final_state():
     assert determine_attached_final_state(topology, state_id=5) == [2, 3]
 
 
-def _generate_numpy_code(expr: Expr) -> str:
+def _generate_numpy_code(expr: sp.Expr) -> str:
     printer = NumPyPrinter()
     return printer.doprint(expr)
