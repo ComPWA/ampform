@@ -243,11 +243,6 @@ intersphinx_mapping = {
         f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
         None,
     ),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": (
-        f"https://pandas.pydata.org/pandas-docs/{get_version('pandas')}",
-        None,
-    ),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (
