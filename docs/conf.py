@@ -215,7 +215,10 @@ def get_version(package_name: str) -> str:
             continue
         if not line:
             continue
-        _, installed_version, *_ = tuple(line.split("=="))
+        line_segments = tuple(line.split("=="))
+        if len(line_segments) != 2:
+            continue
+        _, installed_version, *_ = line_segments
         installed_version = installed_version.strip()
         return installed_version
     return "stable"
