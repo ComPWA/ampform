@@ -7,17 +7,13 @@ from ampform.dynamics import ComplexSqrt
 
 
 class TestComplexSqrt:
-    @pytest.mark.parametrize("real", [False, True])
-    def test_evaluate(self, real: bool):
-        x = sp.Symbol("x", real=real)
+    def test_evaluate(self):
+        x = sp.Symbol("x")
         expr = ComplexSqrt(x).evaluate()
-        if real:
-            assert expr == sp.Piecewise(
-                (sp.I * sp.sqrt(-x), x < 0),
-                (sp.sqrt(x), True),
-            )
-        else:
-            assert expr == sp.sqrt(x)
+        assert expr == sp.Piecewise(
+            (sp.I * sp.sqrt(-x), x < 0),
+            (sp.sqrt(x), True),
+        )
 
     def test_latex(self):
         x = sp.Symbol("x")
