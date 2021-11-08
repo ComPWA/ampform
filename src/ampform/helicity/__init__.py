@@ -87,56 +87,39 @@ def __attempt_number_cast(text: str) -> Union[float, str]:
 
 
 @attr.s(frozen=True)
-class HelicityModel:
-    _expression: sp.Expr = attr.ib(
+class HelicityModel:  # noqa: R701
+    expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
+    parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
         converter=_order_symbol_mapping
     )
-    _components: "OrderedDict[str, sp.Expr]" = attr.ib(
+    """A mapping of suggested parameter values.
+
+    Keys are `~sympy.core.symbol.Symbol` instances from the main
+    :attr:`expression` that should be interpreted as parameters (as opposed to
+    variables). The symbols are ordered alphabetically by name with `natural
+    sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values
+    have been extracted from the input `~qrules.transition.ReactionInfo`.
+    """
+    components: "OrderedDict[str, sp.Expr]" = attr.ib(
         converter=_order_component_mapping
     )
-    _adapter: HelicityAdapter = attr.ib(
+    """A mapping for identifying main components in the :attr:`expression`.
+
+    Keys are the component names (`str`), formatted as LaTeX, and values are
+    sub-expressions in the main :attr:`expression`. The mapping is an
+    `~collections.OrderedDict` that orders the component names alphabetically
+    with `natural sort order
+    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+    """
+    adapter: HelicityAdapter = attr.ib(
         validator=attr.validators.instance_of(HelicityAdapter)
     )
+    """Adapter for converting four-momenta to kinematic variables."""
     particles: ParticleCollection = attr.ib(
         validator=instance_of(ParticleCollection)
     )
-
-    @property
-    def expression(self) -> sp.Expr:
-        return self._expression
-
-    @property
-    def components(self) -> "OrderedDict[str, sp.Expr]":
-        """A mapping for identifying main components in the :attr:`expression`.
-
-        Keys are the component names (`str`), formatted as LaTeX, and values
-        are sub-expressions in the main :attr:`expression`. The mapping is an
-        `~collections.OrderedDict` that orders the component names
-        alphabetically with `natural sort order
-        <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
-        """
-        return self._components
-
-    @property
-    def parameter_defaults(self) -> "OrderedDict[sp.Symbol, ParameterValue]":
-        """A mapping of suggested parameter values.
-
-        Keys are `~sympy.core.symbol.Symbol` instances from the main
-        :attr:`expression` that should be interpreted as parameters (as opposed
-        to variables). The symbols are ordered alphabetically by name with
-        `natural sort order
-        <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values have been
-        extracted from the input `~qrules.transition.ReactionInfo`.
-        """
-        return self._parameter_defaults
-
-    @property
-    def adapter(self) -> HelicityAdapter:
-        """Adapter for converting four-momenta to kinematic variables."""
-        return self._adapter
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
