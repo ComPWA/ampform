@@ -41,7 +41,7 @@ except ImportError:
     PrettyPrinter = Any
 
 if sys.version_info >= (3, 10):
-    from typing import TypeGuard
+    from typing import TypeGuard  # pylint: disable=no-name-in-module
 else:
     from typing_extensions import TypeGuard
 
