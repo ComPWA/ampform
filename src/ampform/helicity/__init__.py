@@ -24,7 +24,6 @@ from attr.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
-from qrules.particle import ParticleCollection
 from qrules.transition import ReactionInfo, StateTransition
 from sympy.physics.quantum.cg import CG
 from sympy.physics.quantum.spin import Rotation as Wigner
@@ -87,56 +86,37 @@ def __attempt_number_cast(text: str) -> Union[float, str]:
 
 
 @attr.s(frozen=True)
-class HelicityModel:
-    _expression: sp.Expr = attr.ib(
+class HelicityModel:  # noqa: R701
+    expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    _parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
+    parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
         converter=_order_symbol_mapping
     )
-    _components: "OrderedDict[str, sp.Expr]" = attr.ib(
+    """A mapping of suggested parameter values.
+
+    Keys are `~sympy.core.symbol.Symbol` instances from the main
+    :attr:`expression` that should be interpreted as parameters (as opposed to
+    variables). The symbols are ordered alphabetically by name with `natural
+    sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values
+    have been extracted from the input `~qrules.transition.ReactionInfo`.
+    """
+    components: "OrderedDict[str, sp.Expr]" = attr.ib(
         converter=_order_component_mapping
     )
-    _adapter: HelicityAdapter = attr.ib(
-        validator=attr.validators.instance_of(HelicityAdapter)
+    """A mapping for identifying main components in the :attr:`expression`.
+
+    Keys are the component names (`str`), formatted as LaTeX, and values are
+    sub-expressions in the main :attr:`expression`. The mapping is an
+    `~collections.OrderedDict` that orders the component names alphabetically
+    with `natural sort order
+    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+    """
+    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = attr.ib(
+        converter=_order_symbol_mapping
     )
-    particles: ParticleCollection = attr.ib(
-        validator=instance_of(ParticleCollection)
-    )
-
-    @property
-    def expression(self) -> sp.Expr:
-        return self._expression
-
-    @property
-    def components(self) -> "OrderedDict[str, sp.Expr]":
-        """A mapping for identifying main components in the :attr:`expression`.
-
-        Keys are the component names (`str`), formatted as LaTeX, and values
-        are sub-expressions in the main :attr:`expression`. The mapping is an
-        `~collections.OrderedDict` that orders the component names
-        alphabetically with `natural sort order
-        <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
-        """
-        return self._components
-
-    @property
-    def parameter_defaults(self) -> "OrderedDict[sp.Symbol, ParameterValue]":
-        """A mapping of suggested parameter values.
-
-        Keys are `~sympy.core.symbol.Symbol` instances from the main
-        :attr:`expression` that should be interpreted as parameters (as opposed
-        to variables). The symbols are ordered alphabetically by name with
-        `natural sort order
-        <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values have been
-        extracted from the input `~qrules.transition.ReactionInfo`.
-        """
-        return self._parameter_defaults
-
-    @property
-    def adapter(self) -> HelicityAdapter:
-        """Adapter for converting four-momenta to kinematic variables."""
-        return self._adapter
+    """Expressions for converting four-momenta to kinematic variables."""
+    reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
@@ -199,7 +179,6 @@ class HelicityAmplitudeBuilder:
         self.__adapter = HelicityAdapter(reaction)
         for grouping in reaction.transition_groups:
             self.__adapter.register_topology(grouping.topology)
-        self.__particles = extract_particle_collection(reaction.transitions)
 
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
@@ -220,12 +199,17 @@ class HelicityAmplitudeBuilder:
     def formulate(self) -> HelicityModel:
         self.__components = {}
         self.__parameter_defaults = {}
+        top_expression = self.__formulate_top_expression()
+        kinematic_variables = {
+            sp.Symbol(var_name, real=True): expr
+            for var_name, expr in self.__adapter.create_expressions().items()
+        }
         return HelicityModel(
-            expression=self.__formulate_top_expression(),
+            expression=top_expression,
             components=self.__components,
             parameter_defaults=self.__parameter_defaults,
-            adapter=self.__adapter,
-            particles=self.__particles,
+            kinematic_variables=kinematic_variables,
+            reaction_info=self.__reaction,
         )
 
     def __formulate_top_expression(self) -> sp.Expr:
@@ -380,18 +364,6 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
             transition, node_id
         )
         return cg_coefficients * amplitude
-
-
-def extract_particle_collection(
-    transitions: Iterable[StateTransition],
-) -> ParticleCollection:
-    """Collect all particles from a collection of state transitions."""
-    particles = ParticleCollection()
-    for transition in transitions:
-        for state in transition.states.values():
-            if state.particle not in particles:
-                particles.add(state.particle)
-    return particles
 
 
 def formulate_clebsch_gordan_coefficients(

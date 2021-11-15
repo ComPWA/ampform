@@ -20,8 +20,7 @@ from ampform.sympy import (
     create_expression,
     implement_doit_method,
 )
-
-from .math import ComplexSqrt
+from ampform.sympy.math import ComplexSqrt
 
 if sys.version_info >= (3, 8):
     from typing import Protocol

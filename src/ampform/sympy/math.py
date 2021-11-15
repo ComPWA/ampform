@@ -30,8 +30,6 @@ class ComplexSqrt(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         x = self.args[0]
-        if not x.is_real:
-            return sp.sqrt(x)
         return self._evaluate_complex(x)
 
     @staticmethod

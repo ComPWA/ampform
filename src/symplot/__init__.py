@@ -261,8 +261,6 @@ def prepare_sliders(
     # cspell:ignore lambdifygenerated
     """Lambdify a `sympy` expression and create sliders for its arguments.
 
-    >>> import sympy as sp
-    >>> from symplot import prepare_sliders
     >>> n = sp.Symbol("n", integer=True)
     >>> x = sp.Symbol("x")
     >>> expression, sliders = prepare_sliders(x ** n, plot_symbol=x)
@@ -294,8 +292,6 @@ def create_slider(symbol: sp.Symbol) -> Slider:
     The description for the slider is rendered as LaTeX from the
     `~sympy.core.symbol.Symbol` name.
 
-    >>> import sympy as sp
-    >>> from symplot import create_slider
     >>> create_slider(sp.Symbol("a"))
     FloatSlider(value=0.0, description='\\(a\\)')
     >>> create_slider(sp.Symbol("n0", integer=True))
@@ -338,7 +334,7 @@ def __safe_wrap_symbols(
 
 def partial_doit(
     expression: sp.Expr,
-    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic]]],
+    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic], ...]],
 ) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` up to a certain level.
 

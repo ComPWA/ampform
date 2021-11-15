@@ -4,7 +4,6 @@ from typing import Tuple
 import pytest
 import sympy as sp
 from qrules import ReactionInfo
-from sympy import cos, sin, sqrt
 
 from ampform import get_builder
 from ampform.helicity import (
@@ -29,6 +28,11 @@ class TestAmplitudeBuilder:
         assert len(model.parameter_defaults) == n_parameters
         assert len(model.components) == 4 + n_amplitudes
         assert len(model.expression.free_symbols) == 4 + n_parameters
+        assert len(model.kinematic_variables) == 9
+
+        variables = set(model.kinematic_variables)
+        paremeters = set(model.parameter_defaults)
+        assert model.expression.free_symbols <= variables | paremeters
 
         no_dynamics: sp.Expr = model.expression.doit()
         no_dynamics = no_dynamics.subs(model.parameter_defaults)
@@ -42,13 +46,13 @@ class TestAmplitudeBuilder:
         if reaction.formalism == "canonical-helicity":
             assert (
                 no_dynamics
-                == 0.8 * sqrt(10) * cos(theta) ** 2
-                + 4.4 * cos(theta) ** 2
-                + 0.8 * sqrt(10)
+                == 0.8 * sp.sqrt(10) * sp.cos(theta) ** 2
+                + 4.4 * sp.cos(theta) ** 2
+                + 0.8 * sp.sqrt(10)
                 + 4.4
             )
         else:
-            assert no_dynamics == 8.0 - 4.0 * sin(theta) ** 2
+            assert no_dynamics == 8.0 - 4.0 * sp.sin(theta) ** 2
 
 
 class TestHelicityModel:

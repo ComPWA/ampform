@@ -198,6 +198,10 @@ nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
+    (
+        "py:class",
+        "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
+    ),
     ("py:class", "typing_extensions.Protocol"),
 ]
 
@@ -215,7 +219,10 @@ def get_version(package_name: str) -> str:
             continue
         if not line:
             continue
-        _, installed_version, *_ = tuple(line.split("=="))
+        line_segments = tuple(line.split("=="))
+        if len(line_segments) != 2:
+            continue
+        _, installed_version, *_ = line_segments
         installed_version = installed_version.strip()
         return installed_version
     return "stable"
@@ -234,11 +241,6 @@ intersphinx_mapping = {
     ),
     "mpl_interactions": (
         f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
-        None,
-    ),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": (
-        f"https://pandas.pydata.org/pandas-docs/{get_version('pandas')}",
         None,
     ),
     "pwa": ("https://pwa.readthedocs.io", None),

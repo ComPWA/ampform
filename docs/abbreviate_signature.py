@@ -18,15 +18,9 @@ from sphinx.environment import BuildEnvironment
 def replace_link(text: str) -> str:
     replacements = {
         "SupportsIndex": "typing.SupportsIndex",
-        "_SupportsDType": "numpy.typing.DTypeLike",
         "a set-like object providing a view on D's items": "typing.ItemsView",
         "a set-like object providing a view on D's keys": "typing.KeysView",
         "an object providing a view on D's values": "typing.ValuesView",
-        "dtype": "numpy.dtype",
-        "np.dtype": "numpy.dtype",
-        "numpy.typing._array_like._SupportsArray": "numpy.typing.ArrayLike",
-        "numpy.typing._dtype_like._DTypeDict": "numpy.typing.DTypeLike",
-        "numpy.typing._dtype_like._SupportsDType": "numpy.typing.DTypeLike",
         "typing_extensions.Protocol": "typing.Protocol",
         # OrderedDict typing from collections,
         # see https://readthedocs.org/projects/ampform/builds/14828756
@@ -58,14 +52,6 @@ def new_type_to_xref(
 
     text = replace_link(text)
     short_text = text.split(".")[-1]
-
-    numpy_types = {
-        "numpy.typing.ArrayLike",
-        "numpy.typing.DTypeLike",
-    }
-    if text in numpy_types:
-        text = "numpy.typing"
-        reftype = "mod"
 
     return addnodes.pending_xref(
         "",

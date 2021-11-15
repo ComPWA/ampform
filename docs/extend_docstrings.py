@@ -30,12 +30,12 @@ from ampform.dynamics import (
     relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
-from ampform.dynamics.math import ComplexSqrt
 from ampform.helicity import (
     formulate_clebsch_gordan_coefficients,
     formulate_wigner_d,
 )
 from ampform.kinematics import get_helicity_angle_label
+from ampform.sympy.math import ComplexSqrt
 
 logging.getLogger().setLevel(logging.ERROR)
 
