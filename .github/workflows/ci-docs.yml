@@ -29,6 +29,7 @@ jobs:
         working-directory: docs
         env:
           EXECUTE_NB: YES
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make html
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}

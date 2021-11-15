@@ -103,6 +103,9 @@ repos:
       - id: nbqa-flake8
       - id: nbqa-isort
 
+      - id: nbqa-pyupgrade
+        args:
+          - --py36-plus
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0
     hooks:
