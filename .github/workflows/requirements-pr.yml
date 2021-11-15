@@ -7,8 +7,8 @@ on:
       - epic/*
 
 jobs:
-  upgrade:
-    name: Upgrade pinned requirements
+  pip-constraints:
+    name: Update pip constraints files
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -20,61 +20,58 @@ jobs:
           - "3.9"
     steps:
       - uses: actions/checkout@v2
-      - run: git fetch origin
-      - name: Check for modified dependencies
-        id: git-diff
-        run:
-          echo "::set-output name=dependency-changes::$(git diff
-          origin/$GITHUB_BASE_REF --name-only -- .constraints/ setup.cfg)"
-      - name: Show dependency changes changes
-        run: git diff origin/$GITHUB_BASE_REF -- .constraints/ setup.cfg
-      - name: Abort if fork PR and dependency changes
-        if:
-          github.event.pull_request.head.repo.full_name != github.repository &&
-          steps.git-diff.outputs.dependency-changes != ''
-        run: |
-          echo "::error::Cannot modify package dependencies through a PR from a fork"
-          exit 1
-      - name: Set up Python ${{ matrix.python-version }}
-        if: steps.git-diff.outputs.dependency-changes != ''
-        uses: actions/setup-python@master
+        with:
+          fetch-depth: 0
+      - name: Check if there are dependency changes
+        run: git diff origin/main --exit-code -- .constraints setup.cfg
+        continue-on-error: true
+      - uses: ComPWA/update-pip-constraints@main
+        if: success()
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        if: steps.git-diff.outputs.dependency-changes != ''
-        run: |
-          python -m pip install --upgrade pip
-          pip install pip-tools
-      - name: Upgrade dependencies
-        if: steps.git-diff.outputs.dependency-changes != ''
-        run: python3 .constraints/pin_requirements.py
-      - uses: actions/upload-artifact@v2
+
+  pre-commit:
+    name: pre-commit autoupdate
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
         with:
-          path: .constraints/py${{ matrix.python-version }}.txt
+          fetch-depth: 0
+      - name: Check if there are changes to pre-commit config
+        run: git diff origin/main --exit-code -- .pre-commit-config.yml
+        continue-on-error: true
+      - uses: ComPWA/update-pre-commit@main
+        if: success()
 
   push:
     name: Push changes
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Only run if PR does not come from a fork
+    # https://docs.github.com/en/actions/security-guides/encrypted-secrets#using-encrypted-secrets-in-a-workflow
     runs-on: ubuntu-20.04
     needs:
-      - upgrade
+      - pip-constraints
+      - pre-commit
     steps:
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.PAT }}
+        # GITHUB_TOKEN will not rerun checks after pushing to a PR branch
       - uses: actions/download-artifact@v2
-        with:
-          path: .constraints
-      - run: mv -f .constraints/artifact/* .constraints/
+      - run: |
+          [[ -f .pre-commit-config.yaml ]] && mv -f .pre-commit-config.yaml ..
+          mv -f * ../.constraints/
+        working-directory: artifact
       - run: git status -s
       - name: Commit and push changes
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
-          git config --global user.name "GitHub Action"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub"
+          git config --global user.email "noreply@github.com"
           git checkout -b ${GITHUB_HEAD_REF}
           if [[ $(git status -s) ]]; then
             git add -A
-            git commit -m "ci: upgrade pinned requirements (automatic)"
+            git commit -m "ci: update pip constraints and pre-commit config"
             git config pull.rebase true
             git pull origin ${GITHUB_HEAD_REF}
             git push origin HEAD:${GITHUB_HEAD_REF}
