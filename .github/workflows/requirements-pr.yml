@@ -27,7 +27,7 @@ jobs:
         run: git diff origin/main --exit-code -- .constraints setup.cfg
         continue-on-error: true
       - uses: ComPWA/update-pip-constraints@main
-        if: success()
+        if: failure()
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -42,7 +42,7 @@ jobs:
         run: git diff origin/main --exit-code -- .pre-commit-config.yml
         continue-on-error: true
       - uses: ComPWA/update-pre-commit@main
-        if: success()
+        if: failure()
 
   push:
     name: Push changes
@@ -59,10 +59,14 @@ jobs:
           token: ${{ secrets.PAT }}
         # GITHUB_TOKEN will not rerun checks after pushing to a PR branch
       - uses: actions/download-artifact@v2
-      - run: |
-          [[ -f .pre-commit-config.yaml ]] && mv -f .pre-commit-config.yaml ..
-          mv -f * ../.constraints/
-        working-directory: artifact
+      - name: Move artifacts to correct location
+        run: |
+          if [[ -d artifact ]]; then
+            cd artifact
+            ls -A
+            [[ -f .pre-commit-config.yaml ]] && mv -f .pre-commit-config.yaml ..
+            [[ "$(ls)" != "" ]] && mv -f * ../.constraints/
+          fi
       - run: git status -s
       - name: Commit and push changes
         run: |
