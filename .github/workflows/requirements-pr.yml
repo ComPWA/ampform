@@ -24,10 +24,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check if there are dependency changes
-        run: git diff origin/main --exit-code -- .constraints setup.cfg
-        continue-on-error: true
+        run: |
+          DIFF="$(git diff origin/main --color -- .constraints setup.cfg)"
+          echo ::set-output name=diff::"${DIFF}"
+        id: diff
       - uses: ComPWA/update-pip-constraints@main
-        if: failure()
+        if: steps.diff.outputs.diff != ''
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -39,10 +41,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check if there are changes to pre-commit config
-        run: git diff origin/main --exit-code -- .pre-commit-config.yml
-        continue-on-error: true
+        run: |
+          DIFF="$(git diff origin/main --color -- .pre-commit-config.yaml)"
+          echo ::set-output name=diff::"${DIFF}"
+        id: diff
       - uses: ComPWA/update-pre-commit@main
-        if: failure()
+        if: steps.diff.outputs.diff != ''
 
   push:
     name: Push changes
