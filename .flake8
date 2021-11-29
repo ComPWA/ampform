@@ -10,6 +10,8 @@ exclude =
     **/_build
     /typings/**
 ignore =
+    # False positive with attribute docstrings
+    B018
     # https://github.com/psf/black#slices
     E203
     # allowed by black
