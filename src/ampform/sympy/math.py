@@ -21,7 +21,7 @@ class ComplexSqrt(sp.Expr):
 
     is_commutative = True
 
-    def __new__(cls, x: sp.Expr, *args: Any, **kwargs: Any) -> sp.Expr:
+    def __new__(cls, x: sp.Expr, *args: Any, **kwargs: Any) -> "ComplexSqrt":
         x = sp.sympify(x)
         expr = sp.Expr.__new__(cls, x, *args, **kwargs)
         if hasattr(x, "free_symbols") and not x.free_symbols:
