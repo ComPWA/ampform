@@ -24,7 +24,7 @@ jobs:
       diff: ${{ steps.diff.outputs.diff }}
 
   pip-constraints:
-    name: Update pip constraints files
+    name: Update pip constraints
     needs: diff
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
