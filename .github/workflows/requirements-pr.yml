@@ -49,6 +49,7 @@ jobs:
 
   pre-commit:
     name: pre-commit autoupdate
+    needs: diff
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
       needs.diff.outputs.diff != ''
@@ -64,6 +65,7 @@ jobs:
       needs.diff.outputs.diff != ''
     runs-on: ubuntu-20.04
     needs:
+      - diff
       - pip-constraints
       - pre-commit
     steps:
