@@ -31,11 +31,6 @@ jobs:
           EXECUTE_NB: YES
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make html
-      - uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          name: html
-          path: docs/_build/html
       - name: Print error logs with color
         if: ${{ failure() }}
         # cspell:ignore printf
@@ -48,3 +43,8 @@ jobs:
             echo
             cat "$log_file"
           done
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: html
+          path: docs/_build/html
