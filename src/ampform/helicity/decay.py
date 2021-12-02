@@ -9,7 +9,7 @@ from qrules.transition import State, StateTransition
 from ampform.kinematics import _assert_two_body_decay
 
 
-@attr.frozen(auto_attribs=True)
+@attr.frozen
 class StateWithID(State):
     """Extension of `~qrules.transition.State` that embeds the state ID."""
 
@@ -27,7 +27,7 @@ class StateWithID(State):
         )
 
 
-@attr.frozen(auto_attribs=True)
+@attr.frozen
 class TwoBodyDecay:
     """Two-body sub-decay in a `~qrules.transition.StateTransition`.
 
