@@ -85,7 +85,7 @@ def __attempt_number_cast(text: str) -> Union[float, str]:
         return text
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class HelicityModel:  # noqa: R701
     expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)

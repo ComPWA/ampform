@@ -24,7 +24,7 @@ else:
     from typing_extensions import Protocol
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 

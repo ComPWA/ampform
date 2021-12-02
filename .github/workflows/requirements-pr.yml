@@ -7,8 +7,30 @@ on:
       - epic/*
 
 jobs:
+  diff:
+    name: Check dependency changes
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Determine dependency changes
+        run: |
+          DIFF="$(git diff origin/main --color -- .constraints .pre-commit-config.yaml setup.cfg)"
+          echo ::set-output name=diff::"${DIFF}"
+        id: diff
+    outputs:
+      diff: ${{ steps.diff.outputs.diff }}
+
   pip-constraints:
-    name: Update pip constraints files
+    name: Update pip constraints
+    needs: diff
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
+    # Only run if PR does not come from a fork
+    # https://docs.github.com/en/actions/security-guides/encrypted-secrets#using-encrypted-secrets-in-a-workflow
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -21,40 +43,29 @@ jobs:
           - "3.10"
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Check if there are dependency changes
-        run: |
-          DIFF="$(git diff origin/main --color -- .constraints setup.cfg)"
-          echo ::set-output name=diff::"${DIFF}"
-        id: diff
       - uses: ComPWA/update-pip-constraints@main
-        if: steps.diff.outputs.diff != ''
         with:
           python-version: ${{ matrix.python-version }}
 
   pre-commit:
     name: pre-commit autoupdate
+    needs: diff
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Check if there are changes to pre-commit config
-        run: |
-          DIFF="$(git diff origin/main --color -- .pre-commit-config.yaml)"
-          echo ::set-output name=diff::"${DIFF}"
-        id: diff
       - uses: ComPWA/update-pre-commit@main
-        if: steps.diff.outputs.diff != ''
 
   push:
     name: Push changes
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    # Only run if PR does not come from a fork
-    # https://docs.github.com/en/actions/security-guides/encrypted-secrets#using-encrypted-secrets-in-a-workflow
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
     runs-on: ubuntu-20.04
     needs:
+      - diff
       - pip-constraints
       - pre-commit
     steps:
