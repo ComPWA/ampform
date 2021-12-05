@@ -489,7 +489,7 @@ class BoostZ(sp.Expr):
                 [{zeros}, {zeros}, {ones}, {zeros}],
                 [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class RotationY(sp.Expr):
@@ -529,7 +529,7 @@ class RotationY(sp.Expr):
                 [{zeros}, {zeros}, {ones}, {zeros}],
                 [{zeros}, -sin({angle}), {zeros}, cos({angle})],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class RotationZ(sp.Expr):
@@ -569,7 +569,7 @@ class RotationZ(sp.Expr):
                 [{zeros}, sin({angle}), cos({angle}), {zeros}],
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class HasMomentum:
