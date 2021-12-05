@@ -59,7 +59,7 @@
   "python.linting.pylintEnabled": true,
   "python.linting.pylintUseMinimalCheckers": false,
   "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestArgs": ["--color=no", "--no-cov"],
+  "python.testing.pytestArgs": ["--color=no", "--no-cov", "-vv"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "rewrap.wrappingColumn": 79,
