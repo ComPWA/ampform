@@ -429,11 +429,7 @@ class ArrayMultiplication(sp.Expr):
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
-            return (
-                'einsum("ij...,j...",'
-                f" transpose({matrix}, axes=(1, 2, 0)),"
-                f" transpose({vector}))"
-            )
+            return f'einsum("...ij,...j->...i", {matrix}, {vector})'
 
         def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
             if len(tensors) < 2:
