@@ -411,7 +411,7 @@ class ArrayAxisSum(sp.Expr):
         return fR"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports["numpy"].add("sum")
+        printer.module_imports[printer._module].add("sum")
         array = printer._print(self.array)
         axis = printer._print(self.axis)
         return f"sum({array}, axis={axis})"
@@ -429,11 +429,7 @@ class ArrayMultiplication(sp.Expr):
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
-            return (
-                'einsum("ij...,j...",'
-                f" transpose({matrix}, axes=(1, 2, 0)),"
-                f" transpose({vector}))"
-            )
+            return f'einsum("...ij,...j->...i", {matrix}, {vector})'
 
         def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
             if len(tensors) < 2:
@@ -442,7 +438,7 @@ class ArrayMultiplication(sp.Expr):
                 return multiply(tensors[0], tensors[1])
             return multiply(tensors[0], recursive_multiply(tensors[1:]))
 
-        printer.module_imports["numpy"].update({"einsum", "transpose"})
+        printer.module_imports[printer._module].update({"einsum", "transpose"})
         tensors = list(map(printer._print, self.args))
         if len(tensors) == 0:
             return ""
@@ -474,7 +470,7 @@ class BoostZ(sp.Expr):
         return fR"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports["numpy"].update(
+        printer.module_imports[printer._module].update(
             {"array", "ones", "zeros", "sqrt"}
         )
         beta = printer._print(self.beta)
@@ -489,7 +485,7 @@ class BoostZ(sp.Expr):
                 [{zeros}, {zeros}, {ones}, {zeros}],
                 [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class RotationY(sp.Expr):
@@ -515,7 +511,7 @@ class RotationY(sp.Expr):
         return fR"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports["numpy"].update(
+        printer.module_imports[printer._module].update(
             {"array", "cos", "ones", "zeros", "sin"}
         )
         angle = printer._print(self.angle)
@@ -529,7 +525,7 @@ class RotationY(sp.Expr):
                 [{zeros}, {zeros}, {ones}, {zeros}],
                 [{zeros}, -sin({angle}), {zeros}, cos({angle})],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class RotationZ(sp.Expr):
@@ -555,7 +551,7 @@ class RotationZ(sp.Expr):
         return fR"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports["numpy"].update(
+        printer.module_imports[printer._module].update(
             {"array", "cos", "ones", "zeros", "sin"}
         )
         angle = printer._print(self.angle)
@@ -569,7 +565,7 @@ class RotationZ(sp.Expr):
                 [{zeros}, sin({angle}), cos({angle}), {zeros}],
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
-        ).transpose(2, 0, 1)"""
+        ).transpose((2, 0, 1))"""
 
 
 class HasMomentum:

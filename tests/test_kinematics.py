@@ -63,17 +63,7 @@ class TestArrayMultiplication:
             numpy_code, mode=black.Mode(line_length=70)
         )
         expected = """\
-            einsum(
-                "ij...,j...",
-                transpose(beta, axes=(1, 2, 0)),
-                transpose(
-                    einsum(
-                        "ij...,j...",
-                        transpose(theta, axes=(1, 2, 0)),
-                        transpose(p),
-                    )
-                ),
-            )
+        einsum("...ij,...j->...i", beta, einsum("...ij,...j->...i", theta, p))
         """
         assert numpy_code == dedent(expected)
 
