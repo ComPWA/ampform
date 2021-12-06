@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 """Generate an amplitude model with the helicity formalism."""
 
 import collections
@@ -25,8 +26,6 @@ from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from qrules.transition import ReactionInfo, StateTransition
-from sympy.physics.quantum.cg import CG
-from sympy.physics.quantum.spin import Rotation as Wigner
 
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
@@ -419,6 +418,8 @@ def formulate_clebsch_gordan_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
+    from sympy.physics.quantum.cg import CG
+
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
     angular_momentum = decay.interaction.l_magnitude
@@ -492,6 +493,8 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
         = D^{1}_{+1,(-1-0)}\left(-\phi_0,\theta_0,0\right)
         = D^{1}_{1,-1}\left(-\phi_0,\theta_0,0\right)
     """
+    from sympy.physics.quantum.spin import Rotation as Wigner
+
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
     return Wigner.D(
