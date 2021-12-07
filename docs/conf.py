@@ -202,7 +202,6 @@ nitpick_ignore = [
         "py:class",
         "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
     ),
-    ("py:class", "typing_extensions.Protocol"),
 ]
 
 
