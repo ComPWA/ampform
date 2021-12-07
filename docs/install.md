@@ -38,16 +38,6 @@ In that case, however, we highly recommend using the more dynamic
 {ref}`'editable installation' <compwa-org:develop:Editable installation>`
 instead. This goes as follows:
 
-:::{margin}
-
-```{seealso}
-
-{doc}`pwa:software/git`
-
-```
-
-:::
-
 1. Get the source code:
 
    ```shell
