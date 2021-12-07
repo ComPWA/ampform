@@ -17,15 +17,9 @@ from sphinx.environment import BuildEnvironment
 
 def replace_link(text: str) -> str:
     replacements = {
-        "SupportsIndex": "typing.SupportsIndex",
-        "a set-like object providing a view on D's items": "typing.ItemsView",
-        "a set-like object providing a view on D's keys": "typing.KeysView",
-        "an object providing a view on D's values": "typing.ValuesView",
-        "typing_extensions.Protocol": "typing.Protocol",
-        # OrderedDict typing from collections,
-        # see https://readthedocs.org/projects/ampform/builds/14828756
         "sp.Expr": "sympy.core.expr.Expr",
         "sp.Symbol": "sympy.core.symbol.Symbol",
+        "typing_extensions.Protocol": "typing.Protocol",
     }
     for old, new in replacements.items():
         if text == old:

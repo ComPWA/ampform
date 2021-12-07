@@ -19,6 +19,7 @@ import logging
 import sys
 from collections import abc
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -40,10 +41,11 @@ try:
 except ImportError:
     PrettyPrinter = Any
 
-if sys.version_info >= (3, 10):
-    from typing import TypeGuard  # pylint: disable=no-name-in-module
-else:
-    from typing_extensions import TypeGuard
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 10):
+        from typing import TypeGuard  # pylint: disable=no-name-in-module
+    else:
+        from typing_extensions import TypeGuard
 
 
 Slider = Union[FloatSlider, IntSlider]
@@ -219,7 +221,9 @@ class SliderKwargs(abc.Mapping):
                 slider.step = step_size
 
 
-def _is_min_max(range_def: RangeDefinition) -> TypeGuard[Tuple[float, float]]:
+def _is_min_max(
+    range_def: RangeDefinition,
+) -> "TypeGuard[Tuple[float, float]]":
     if len(range_def) == 2:
         return True
     return False
@@ -227,7 +231,7 @@ def _is_min_max(range_def: RangeDefinition) -> TypeGuard[Tuple[float, float]]:
 
 def _is_min_max_step(
     range_def: RangeDefinition,
-) -> TypeGuard[Tuple[float, float, Union[float, int]]]:
+) -> "TypeGuard[Tuple[float, float, Union[float, int]]]":
     if len(range_def) == 3:
         return True
     return False
