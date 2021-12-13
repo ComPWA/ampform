@@ -207,6 +207,11 @@ nitpick_ignore = [
 
 
 # Intersphinx settings
+version_remapping = {
+    "matplotlib": {"3.5.1": "3.5.0"},
+}
+
+
 def get_version(package_name: str) -> str:
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     constraints_path = f"../.constraints/py{python_version}.txt"
@@ -224,6 +229,11 @@ def get_version(package_name: str) -> str:
             continue
         _, installed_version, *_ = line_segments
         installed_version = installed_version.strip()
+        remapped_versions = version_remapping.get(package_name)
+        if remapped_versions is not None:
+            existing_version = remapped_versions.get(installed_version)
+            if existing_version is not None:
+                return existing_version
         return installed_version
     return "stable"
 
