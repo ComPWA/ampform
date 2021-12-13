@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.93
+    rev: 0.0.94
     hooks:
       - id: check-dev-files
         args:
@@ -78,7 +78,7 @@ repos:
           - --wrap-summaries=79
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.3.54
+    rev: 2.4.0
     hooks:
       - id: editorconfig-checker
         exclude: >
@@ -136,7 +136,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.192
+    rev: v1.1.195
     hooks:
       - id: pyright
 
