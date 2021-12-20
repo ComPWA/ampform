@@ -14,6 +14,22 @@ repos:
   - repo: meta
     hooks:
       - id: check-hooks-apply
+        args:
+          - --extra-keys
+          - |
+            cell.metadata.code_folding
+            cell.metadata.id
+            metadata.celltoolbar
+            metadata.colab.name
+            metadata.colab.provenance
+            metadata.interpreter
+            metadata.notify_time
+            metadata.toc
+            metadata.toc-autonumbering
+            metadata.toc-showcode
+            metadata.toc-showmarkdowntxt
+            metadata.toc-showtags
+            metadata.varInspector
       - id: check-useless-excludes
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
