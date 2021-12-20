@@ -14,22 +14,6 @@ repos:
   - repo: meta
     hooks:
       - id: check-hooks-apply
-        args:
-          - --extra-keys
-          - |
-            cell.metadata.code_folding
-            cell.metadata.id
-            metadata.celltoolbar
-            metadata.colab.name
-            metadata.colab.provenance
-            metadata.interpreter
-            metadata.notify_time
-            metadata.toc
-            metadata.toc-autonumbering
-            metadata.toc-showcode
-            metadata.toc-showmarkdowntxt
-            metadata.toc-showtags
-            metadata.varInspector
       - id: check-useless-excludes
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -118,29 +102,31 @@ repos:
       - id: nbqa-black
       - id: nbqa-flake8
       - id: nbqa-isort
-
       - id: nbqa-pyupgrade
         args:
           - --py36-plus
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0
     hooks:
       - id: nbstripout
-
         args:
           - --extra-keys
           - |
             cell.metadata.code_folding
+            cell.metadata.id
             metadata.celltoolbar
+            metadata.colab.name
+            metadata.colab.provenance
             metadata.interpreter
-            metadata.language_info
             metadata.notify_time
             metadata.toc
-            metadata.varInspector
             metadata.toc-autonumbering
             metadata.toc-showcode
             metadata.toc-showmarkdowntxt
             metadata.toc-showtags
+            metadata.varInspector
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.1
     hooks:
@@ -155,6 +141,13 @@ repos:
     rev: v1.1.197
     hooks:
       - id: pyright
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.29.1
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py36-plus
 
   # The following tools have to be install locally, because they can also be
   # used by code editors (e.g. linting and format-on-save).
@@ -185,9 +178,3 @@ repos:
         language: system
         types:
           - python
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.1
-    hooks:
-      - id: pyupgrade
-        args:
-          - --py36-plus
