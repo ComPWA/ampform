@@ -199,6 +199,11 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             self.__adapter.register_topology(grouping.topology)
 
     @property
+    def adapter(self) -> HelicityAdapter:
+        """Converter for computing kinematic variables from four-momenta."""
+        return self.__adapter
+
+    @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
         # noqa: D403
         """IDs of the final states that should be considered stable.
