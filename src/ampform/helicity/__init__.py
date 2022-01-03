@@ -159,9 +159,22 @@ class HelicityModel:  # noqa: R701
 
 
 class HelicityAmplitudeBuilder:
-    """Amplitude model generator for the helicity formalism."""
+    r"""Amplitude model generator for the helicity formalism.
 
-    def __init__(self, reaction: ReactionInfo) -> None:
+    Args:
+        reaction: The `~qrules.transition.ReactionInfo` from which to
+            :meth:`formulate` an amplitude model.
+        use_scalar_masses: Put final state 'invariant' masses
+            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults`
+            (with a *scalar* suggested value) instead of
+            `~.HelicityModel.kinematic_variables` (which are expressions to
+            compute an event-wise array of invariant masses). This is useful
+            if final state particles are stable.
+    """
+
+    def __init__(
+        self, reaction: ReactionInfo, use_scalar_masses: bool = False
+    ) -> None:
         self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
         self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
@@ -176,8 +189,17 @@ class HelicityAmplitudeBuilder:
                 " genenerate an amplitude model!"
             )
         self.__adapter = HelicityAdapter(reaction)
+        self.__use_scalar_masses = bool(use_scalar_masses)
         for grouping in reaction.transition_groups:
             self.__adapter.register_topology(grouping.topology)
+
+    @property
+    def use_scalar_masses(self) -> bool:
+        return self.__use_scalar_masses
+
+    @use_scalar_masses.setter
+    def use_scalar_masses(self, value: bool) -> None:
+        self.__use_scalar_masses = value
 
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
@@ -203,6 +225,12 @@ class HelicityAmplitudeBuilder:
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
         }
+        if self.__use_scalar_masses:
+            for state_id, state in self.__reaction.final_state.items():
+                mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
+                self.__parameter_defaults[mass_symbol] = state.mass
+                del kinematic_variables[mass_symbol]
+
         return HelicityModel(
             expression=top_expression,
             components=self.__components,

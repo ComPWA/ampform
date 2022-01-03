@@ -7,6 +7,7 @@ from qrules import ReactionInfo
 
 from ampform import get_builder
 from ampform.helicity import (
+    HelicityAmplitudeBuilder,
     HelicityModel,
     _generate_kinematic_variables,
     formulate_wigner_d,
@@ -14,26 +15,37 @@ from ampform.helicity import (
 )
 
 
-class TestAmplitudeBuilder:
-    def test_formulate(self, reaction: ReactionInfo):
+class TestHelicityAmplitudeBuilder:
+    @pytest.mark.parametrize("use_scalar_masses", [False, True])
+    def test_formulate(self, reaction: ReactionInfo, use_scalar_masses: bool):
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
             n_parameters = 4
         else:
             n_amplitudes = 8
             n_parameters = 2
+        n_kinematic_variables = 9
+        n_symbols = 4 + n_parameters
+        if use_scalar_masses:
+            n_parameters += 3
+            n_kinematic_variables -= 3
 
-        model_builder = get_builder(reaction)
+        model_builder: HelicityAmplitudeBuilder = get_builder(reaction)
+        model_builder.use_scalar_masses = use_scalar_masses
         model = model_builder.formulate()
         assert len(model.parameter_defaults) == n_parameters
         assert len(model.components) == 4 + n_amplitudes
-        assert len(model.expression.free_symbols) == 4 + n_parameters
-        assert len(model.kinematic_variables) == 9
+        assert len(model.expression.free_symbols) == n_symbols
+        assert len(model.kinematic_variables) == n_kinematic_variables
 
         variables = set(model.kinematic_variables)
         paremeters = set(model.parameter_defaults)
         assert model.expression.free_symbols <= variables | paremeters
-
+        final_state_masses = set(sp.symbols("m_(0:3)", real=True))
+        if use_scalar_masses:
+            assert final_state_masses <= paremeters
+        else:
+            assert final_state_masses <= variables
         no_dynamics: sp.Expr = model.expression.doit()
         no_dynamics = no_dynamics.subs(model.parameter_defaults)
         assert len(no_dynamics.free_symbols) == 1
