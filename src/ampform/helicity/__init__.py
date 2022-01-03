@@ -377,6 +377,8 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
     Here, :math:`C` stands for `Clebsch-Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
+
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/formalism`.
     """
 
     def __init__(self, reaction_result: ReactionInfo) -> None:
