@@ -7,6 +7,7 @@ from qrules import ReactionInfo
 
 from ampform import get_builder
 from ampform.helicity import (
+    HelicityAmplitudeBuilder,
     HelicityModel,
     _generate_kinematic_variables,
     formulate_wigner_d,
@@ -14,25 +15,47 @@ from ampform.helicity import (
 )
 
 
-class TestAmplitudeBuilder:
-    def test_formulate(self, reaction: ReactionInfo):
+class TestHelicityAmplitudeBuilder:
+    @pytest.mark.parametrize(
+        "stable_final_state_ids", [None, (1, 2), (0, 1, 2)]
+    )
+    def test_formulate(self, reaction: ReactionInfo, stable_final_state_ids):
+        # pylint: disable=too-many-locals
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
             n_parameters = 4
         else:
             n_amplitudes = 8
             n_parameters = 2
+        n_kinematic_variables = 9
+        n_symbols = 4 + n_parameters
+        if stable_final_state_ids is not None:
+            n_parameters += len(stable_final_state_ids)
+            n_kinematic_variables -= len(stable_final_state_ids)
 
-        model_builder = get_builder(reaction)
+        model_builder: HelicityAmplitudeBuilder = get_builder(reaction)
+        model_builder.stable_final_state_ids = stable_final_state_ids
         model = model_builder.formulate()
         assert len(model.parameter_defaults) == n_parameters
         assert len(model.components) == 4 + n_amplitudes
-        assert len(model.expression.free_symbols) == 4 + n_parameters
-        assert len(model.kinematic_variables) == 9
+        assert len(model.expression.free_symbols) == n_symbols
+        assert len(model.kinematic_variables) == n_kinematic_variables
 
         variables = set(model.kinematic_variables)
         paremeters = set(model.parameter_defaults)
         assert model.expression.free_symbols <= variables | paremeters
+
+        final_state_masses = set(sp.symbols("m_(0:3)", real=True))
+        stable_final_state_masses = set()
+        if stable_final_state_ids is not None:
+            stable_final_state_masses = {
+                sp.Symbol(f"m_{i}", real=True) for i in stable_final_state_ids
+            }
+        unstable_final_state_masses = (
+            final_state_masses - stable_final_state_masses
+        )
+        assert stable_final_state_masses <= paremeters
+        assert unstable_final_state_masses <= variables
 
         no_dynamics: sp.Expr = model.expression.doit()
         no_dynamics = no_dynamics.subs(model.parameter_defaults)
@@ -53,6 +76,16 @@ class TestAmplitudeBuilder:
             )
         else:
             assert no_dynamics == 8.0 - 4.0 * sp.sin(theta) ** 2
+
+    def test_stable_final_state_ids(self, reaction: ReactionInfo):
+        builder: HelicityAmplitudeBuilder = get_builder(reaction)
+        assert builder.stable_final_state_ids is None
+        builder.stable_final_state_ids = (1, 2)  # type: ignore[assignment]
+        assert builder.stable_final_state_ids == {1, 2}
+        with pytest.raises(
+            ValueError, match=r"^Final state IDs are \[0, 1, 2\].*"
+        ):
+            builder.stable_final_state_ids = [1, 2, 3]  # type: ignore[assignment]
 
 
 class TestHelicityModel:

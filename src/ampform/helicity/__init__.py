@@ -15,6 +15,7 @@ from typing import (
     List,
     Mapping,
     Optional,
+    Set,
     Tuple,
     Union,
 )
@@ -158,10 +159,27 @@ class HelicityModel:  # noqa: R701
         )
 
 
-class HelicityAmplitudeBuilder:
-    """Amplitude model generator for the helicity formalism."""
+class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+    r"""Amplitude model generator for the helicity formalism.
 
-    def __init__(self, reaction: ReactionInfo) -> None:
+    Args:
+        reaction: The `~qrules.transition.ReactionInfo` from which to
+            :meth:`formulate` an amplitude model.
+        use_scalar_masses: Put final state 'invariant' masses
+            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults`
+            (with a *scalar* suggested value) instead of
+            `~.HelicityModel.kinematic_variables` (which are expressions to
+            compute an event-wise array of invariant masses). This is useful
+            if final state particles are stable.
+
+            .. seealso:: :ref:`usage/amplitude:Stable final states`
+    """
+
+    def __init__(
+        self,
+        reaction: ReactionInfo,
+        stable_final_state_ids: Optional[Iterable[int]] = None,
+    ) -> None:
         self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
         self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
@@ -176,8 +194,28 @@ class HelicityAmplitudeBuilder:
                 " genenerate an amplitude model!"
             )
         self.__adapter = HelicityAdapter(reaction)
+        self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         for grouping in reaction.transition_groups:
             self.__adapter.register_topology(grouping.topology)
+
+    @property
+    def stable_final_state_ids(self) -> Optional[Set[int]]:
+        return self.__stable_final_state_ids
+
+    @stable_final_state_ids.setter
+    def stable_final_state_ids(self, value: Optional[Iterable[int]]) -> None:
+        self.__stable_final_state_ids = None
+        if value is not None:
+            self.__stable_final_state_ids = set(value)
+            if not self.__stable_final_state_ids <= set(
+                self.__reaction.final_state
+            ):
+                raise ValueError(
+                    "Final state IDs are"
+                    f" {sorted(self.__reaction.final_state)}, but trying to"
+                    " set stable final state IDs"
+                    f" {self.__stable_final_state_ids}"
+                )
 
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
@@ -203,6 +241,13 @@ class HelicityAmplitudeBuilder:
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
         }
+        if self.__stable_final_state_ids is not None:
+            for state_id in self.__stable_final_state_ids:
+                mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
+                particle = self.__reaction.final_state[state_id]
+                self.__parameter_defaults[mass_symbol] = particle.mass
+                del kinematic_variables[mass_symbol]
+
         return HelicityModel(
             expression=top_expression,
             components=self.__components,
@@ -349,6 +394,8 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
     Here, :math:`C` stands for `Clebsch-Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
+
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/formalism`.
     """
 
     def __init__(self, reaction_result: ReactionInfo) -> None:
