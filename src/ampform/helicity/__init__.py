@@ -165,7 +165,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     Args:
         reaction: The `~qrules.transition.ReactionInfo` from which to
             :meth:`formulate` an amplitude model.
-        use_scalar_masses: Put final state 'invariant' masses
+        stable_final_state_ids: Put final state 'invariant' masses
             (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults`
             (with a *scalar* suggested value) instead of
             `~.HelicityModel.kinematic_variables` (which are expressions to
