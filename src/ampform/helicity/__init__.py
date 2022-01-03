@@ -200,6 +200,12 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
+        # noqa: D403
+        """IDs of the final states that should be considered stable.
+
+        The 'invariant' mass symbols for these final states will be inserted as
+        **scalar** values into the `.parameter_defaults`.
+        """
         return self.__stable_final_state_ids
 
     @stable_final_state_ids.setter
