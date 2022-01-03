@@ -171,6 +171,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             `~.HelicityModel.kinematic_variables` (which are expressions to
             compute an event-wise array of invariant masses). This is useful
             if final state particles are stable.
+
+            .. seealso:: :ref:`usage/amplitude:Stable final states`
     """
 
     def __init__(
