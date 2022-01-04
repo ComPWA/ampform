@@ -165,7 +165,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     Args:
         reaction: The `~qrules.transition.ReactionInfo` from which to
             :meth:`formulate` an amplitude model.
-        use_scalar_masses: Put final state 'invariant' masses
+        stable_final_state_ids: Put final state 'invariant' masses
             (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults`
             (with a *scalar* suggested value) instead of
             `~.HelicityModel.kinematic_variables` (which are expressions to
@@ -199,7 +199,18 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             self.__adapter.register_topology(grouping.topology)
 
     @property
+    def adapter(self) -> HelicityAdapter:
+        """Converter for computing kinematic variables from four-momenta."""
+        return self.__adapter
+
+    @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
+        # noqa: D403
+        """IDs of the final states that should be considered stable.
+
+        The 'invariant' mass symbols for these final states will be inserted as
+        **scalar** values into the `.parameter_defaults`.
+        """
         return self.__stable_final_state_ids
 
     @stable_final_state_ids.setter

@@ -3,6 +3,7 @@
 """Kinematics of an amplitude model in the helicity formalism."""
 
 import functools
+import itertools
 from typing import (
     Any,
     Callable,
@@ -110,6 +111,24 @@ class HelicityAdapter:
             ):
                 raise ValueError("Edge or node IDs of topology do not match")
         self.registered_topologies.add(topology)
+
+    def permutate_registered_topologies(self) -> None:
+        """Register permutations of all `registered_topologies`.
+
+        See :ref:`usage/amplitude:Extend kinematic variables`.
+        """
+        for topology in set(self.registered_topologies):
+            final_state_ids = topology.outgoing_edge_ids
+            for permutation in itertools.permutations(final_state_ids):
+                id_mapping = dict(zip(topology.outgoing_edge_ids, permutation))
+                permuted_topology = attr.evolve(
+                    topology,
+                    edges={
+                        id_mapping.get(i, i): edge
+                        for i, edge in topology.edges.items()
+                    },
+                )
+                self.register_topology(permuted_topology)
 
     def create_expressions(self) -> Dict[str, sp.Expr]:
         output = {}

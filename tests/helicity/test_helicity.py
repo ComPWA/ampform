@@ -16,10 +16,16 @@ from ampform.helicity import (
 
 
 class TestHelicityAmplitudeBuilder:
+    @pytest.mark.parametrize("permutate_topologies", [False, True])
     @pytest.mark.parametrize(
         "stable_final_state_ids", [None, (1, 2), (0, 1, 2)]
     )
-    def test_formulate(self, reaction: ReactionInfo, stable_final_state_ids):
+    def test_formulate(
+        self,
+        permutate_topologies,
+        reaction: ReactionInfo,
+        stable_final_state_ids,
+    ):
         # pylint: disable=too-many-locals
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
@@ -35,6 +41,10 @@ class TestHelicityAmplitudeBuilder:
 
         model_builder: HelicityAmplitudeBuilder = get_builder(reaction)
         model_builder.stable_final_state_ids = stable_final_state_ids
+        if permutate_topologies:
+            model_builder.adapter.permutate_registered_topologies()
+            n_kinematic_variables += 10
+
         model = model_builder.formulate()
         assert len(model.parameter_defaults) == n_parameters
         assert len(model.components) == 4 + n_amplitudes

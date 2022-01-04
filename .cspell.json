@@ -99,6 +99,7 @@
         "mypy",
         "nishijima",
         "numpy",
+        "permutate",
         "pydocstyle",
         "pylint",
         "pyplot",
