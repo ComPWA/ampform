@@ -97,7 +97,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.2.2
+    rev: 1.2.3
     hooks:
       - id: nbqa-black
       - id: nbqa-flake8
@@ -142,7 +142,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.205
+    rev: v1.1.206
     hooks:
       - id: pyright
 
