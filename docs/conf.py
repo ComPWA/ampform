@@ -240,7 +240,7 @@ def get_version(package_name: str) -> str:
 
 intersphinx_mapping = {
     "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
-    "compwa-org": ("https://compwa-org.readthedocs.io/en/stable", None),
+    "compwa-org": ("https://compwa-org.readthedocs.io", None),
     "ipywidgets": (
         f"https://ipywidgets.readthedocs.io/en/{get_version('ipywidgets')}",
         None,
