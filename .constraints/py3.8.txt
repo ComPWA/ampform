@@ -159,7 +159,7 @@ smmap==5.0.0
 sniffio==1.2.0
 snowballstemmer==2.2.0
 soupsieve==2.3.1
-sphinx==4.3.2
+sphinx==4.4.0
 sphinx-autobuild==2021.3.14
 sphinx-book-theme==0.2.0
 sphinx-copybutton==0.4.0
