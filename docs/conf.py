@@ -179,6 +179,7 @@ html_theme_options = {
     "launch_buttons": {
         "binderhub_url": "https://mybinder.org",
         "colab_url": "https://colab.research.google.com",
+        "deepnote_url": "https://deepnote.com",
         "notebook_interface": "jupyterlab",
         "thebe": True,
         "thebelab": True,
