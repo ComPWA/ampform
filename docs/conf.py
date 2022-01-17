@@ -141,6 +141,7 @@ autodoc_default_options = {
             "doit",
             "evaluate",
             "is_commutative",
+            "precedence",
         ]
     ),
     "members": True,
