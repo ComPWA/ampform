@@ -153,6 +153,9 @@ autodoc_default_options = {
         ]
     ),
 }
+autodoc_type_aliases = {
+    "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
+}
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
