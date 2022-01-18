@@ -42,7 +42,7 @@ instead. This goes as follows:
 
 ```{seealso}
 
-{doc}`pwa:software/git`
+[Pro Git book](https://git-scm.com/book/en/v2)
 
 ```
 
