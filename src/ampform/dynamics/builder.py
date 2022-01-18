@@ -43,7 +43,14 @@ class TwoBodyKinematicVariableSet:
 
 
 BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
-"""Type that a `.ResonanceDynamicsBuilder` should return."""
+"""Type that a `.ResonanceDynamicsBuilder` should return.
+
+The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>`
+that describes the dynamics for the resonance. The second element are suggested
+parameter values (see :attr:`.parameter_defaults`) for the
+`~sympy.core.symbol.Symbol` instances that appear in the `sympy.Expr
+<sympy.core.expr.Expr>`.
+"""
 
 
 class ResonanceDynamicsBuilder(Protocol):
