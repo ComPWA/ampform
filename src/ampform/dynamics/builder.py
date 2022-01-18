@@ -109,7 +109,7 @@ def create_non_dynamic_with_ff(
 
 
 class RelativisticBreitWignerBuilder:
-    """Factory for building a `.relativistic_breit_wigner_with_ff`.
+    """Factory for building relativistic Breit-Wigner expressions.
 
     The :meth:`__call__` of this builder complies with the
     `.ResonanceDynamicsBuilder`, so instances of this class can be used in
@@ -117,7 +117,9 @@ class RelativisticBreitWignerBuilder:
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function with form
-            factor, using :func:`.relativistic_breit_wigner_with_ff`.
+            factor, using :func:`.relativistic_breit_wigner_with_ff`. If set to
+            `False`, :meth:`__call__` builds a
+            :func:`.relativistic_breit_wigner` (_without_ form factor).
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol`. Defaults to `.PhaseSpaceFactor`.
     """
@@ -135,7 +137,7 @@ class RelativisticBreitWignerBuilder:
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
-        """Build an relativistic Breit-Wigner expression."""
+        """Formulate a relativistic Breit-Wigner for this resonance."""
         if self.__with_form_factor:
             return self.__formulate_with_form_factor(resonance, variable_pool)
         return self.__formulate(resonance, variable_pool)
