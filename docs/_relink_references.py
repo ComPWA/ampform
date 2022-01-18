@@ -21,6 +21,7 @@ __TARGET_SUBSTITUTIONS = {
     "typing_extensions.Protocol": "typing.Protocol",
 }
 __REF_TYPE_SUBSTITUTIONS = {
+    "None": "obj",
     "ParameterValue": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
 }
@@ -43,19 +44,10 @@ try:  # Sphinx >=4.4.0
         target = __TARGET_SUBSTITUTIONS.get(target, target)
         reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
 
-        short_name = title.split(".")[-1]
         assert env is not None
-        if env.config.python_use_unqualified_type_names:
-            contnodes: List[nodes.Node] = [
-                pending_xref_condition("", short_name, condition="resolved"),
-                pending_xref_condition("", title, condition="*"),
-            ]
-        else:
-            contnodes = [nodes.Text(short_name)]
-
         return pending_xref(
             "",
-            *contnodes,
+            *__create_nodes(env, title),
             refdomain="py",
             reftype=reftype,
             reftarget=target,
@@ -80,22 +72,10 @@ except ImportError:  # Sphinx <4.4.0
         target = __TARGET_SUBSTITUTIONS.get(target, target)
         reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
 
-        short_name = target.split(".")[-1]
         assert env is not None
-        if env.config.python_use_unqualified_type_names:
-            # Note: It would be better to use qualname to describe the object to support support
-            # nested classes.  But python domain can't access the real python object because this
-            # module should work not-dynamically.
-            contnodes: List[nodes.Node] = [
-                pending_xref_condition("", short_name, condition="resolved"),
-                pending_xref_condition("", target, condition="*"),
-            ]
-        else:
-            contnodes = [nodes.Text(short_name)]
-
         return pending_xref(
             "",
-            *contnodes,
+            *__create_nodes(env, target),
             refdomain="py",
             reftype=reftype,
             reftarget=target,
@@ -110,6 +90,16 @@ def __get_env_kwargs(env: BuildEnvironment) -> dict:
             "py:class": env.ref_context.get("py:class"),
         }
     return {}
+
+
+def __create_nodes(env: BuildEnvironment, title: str) -> List[nodes.Node]:
+    short_name = title.split(".")[-1]
+    if env.config.python_use_unqualified_type_names:
+        return [
+            pending_xref_condition("", short_name, condition="resolved"),
+            pending_xref_condition("", title, condition="*"),
+        ]
+    return [nodes.Text(short_name)]
 
 
 def relink_references() -> None:
