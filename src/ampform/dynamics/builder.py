@@ -34,11 +34,11 @@ class TwoBodyKinematicVariableSet:
     amplitude model.
     """
 
-    incoming_state_mass: sp.Symbol = attr.ib(instance_of(sp.Symbol))
-    outgoing_state_mass1: sp.Symbol = attr.ib(instance_of(sp.Symbol))
-    outgoing_state_mass2: sp.Symbol = attr.ib(instance_of(sp.Symbol))
-    helicity_theta: sp.Symbol = attr.ib(instance_of(sp.Symbol))
-    helicity_phi: sp.Symbol = attr.ib(instance_of(sp.Symbol))
+    incoming_state_mass: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
+    outgoing_state_mass1: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
+    outgoing_state_mass2: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
+    helicity_theta: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
+    helicity_phi: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
     angular_momentum: Optional[int] = attr.ib(default=None)
 
 
