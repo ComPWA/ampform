@@ -17,6 +17,7 @@ from sphinx.environment import BuildEnvironment
 
 def replace_link(text: str) -> str:
     replacements = {
+        "Particle": "qrules.particle.Particle",
         "SupportsIndex": "typing.SupportsIndex",
         "_SupportsDType": "numpy.typing.DTypeLike",
         "a set-like object providing a view on D's items": "typing.ItemsView",
