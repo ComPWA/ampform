@@ -100,38 +100,62 @@ def create_non_dynamic_with_ff(
     )
 
 
-def create_relativistic_breit_wigner(
-    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> BuilderReturnType:
-    """Create a `.relativistic_breit_wigner` for a two-body decay."""
-    inv_mass = variable_pool.incoming_state_mass
-    res_mass = sp.Symbol(f"m_{resonance.name}")
-    res_width = sp.Symbol(f"Gamma_{resonance.name}")
-    expression = relativistic_breit_wigner(
-        s=inv_mass ** 2,
-        mass0=res_mass,
-        gamma0=res_width,
-    )
-    parameter_defaults = {
-        res_mass: resonance.mass,
-        res_width: resonance.width,
-    }
-    return expression, parameter_defaults
+class RelativisticBreitWignerBuilder:
+    """Factory for building a `.relativistic_breit_wigner_with_ff`.
 
+    The :meth:`__call__` of this builder complies with the
+    `.ResonanceDynamicsBuilder`, so instances of this class can be used in
+    :meth:`.set_dynamics`.
 
-def _make_relativistic_breit_wigner_with_ff(
-    phsp_factor: PhaseSpaceFactorProtocol,
-    docstring: str,
-) -> ResonanceDynamicsBuilder:
-    """Factory for `.relativistic_breit_wigner_with_ff`."""
+    Args:
+        form_factor: Formulate a relativistic Breit-Wigner function with form
+            factor, using :func:`.relativistic_breit_wigner_with_ff`.
+        phsp_factor: A class that complies with the
+            `.PhaseSpaceFactorProtocol`. Defaults to `.PhaseSpaceFactor`.
+    """
 
-    def dynamics_builder(
+    def __init__(
+        self,
+        form_factor: bool = False,
+        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+    ) -> None:
+        if phsp_factor is None:
+            phsp_factor = PhaseSpaceFactor
+        self.__phsp_factor = phsp_factor
+        self.__with_form_factor = form_factor
+
+    def __call__(
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+    ) -> BuilderReturnType:
+        if self.__with_form_factor:
+            return self.__formulate_with_form_factor(resonance, variable_pool)
+        return self.__formulate(resonance, variable_pool)
+
+    @staticmethod
+    def __formulate(
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+    ) -> BuilderReturnType:
+        inv_mass = variable_pool.incoming_state_mass
+        res_mass = sp.Symbol(f"m_{resonance.name}")
+        res_width = sp.Symbol(f"Gamma_{resonance.name}")
+        expression = relativistic_breit_wigner(
+            s=inv_mass ** 2,
+            mass0=res_mass,
+            gamma0=res_width,
+        )
+        parameter_defaults = {
+            res_mass: resonance.mass,
+            res_width: resonance.width,
+        }
+        return expression, parameter_defaults
+
+    def __formulate_with_form_factor(
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the form"
-                " factor!"
+                "Angular momentum is not defined but is required in the"
+                " form factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -150,7 +174,7 @@ def _make_relativistic_breit_wigner_with_ff(
             m_b=product2_inv_mass,
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
-            phsp_factor=phsp_factor,
+            phsp_factor=self.__phsp_factor,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
@@ -159,21 +183,28 @@ def _make_relativistic_breit_wigner_with_ff(
         }
         return expression, parameter_defaults
 
-    dynamics_builder.__doc__ = docstring
-    return dynamics_builder
 
+create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
+    form_factor=False
+).__call__
+"""
+Create a `.relativistic_breit_wigner` for a two-body decay.
+"""
 
-create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
+create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
+    form_factor=True,
     phsp_factor=PhaseSpaceFactor,
-    docstring=(
-        "Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."
-    ),
-)
-create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
+).__call__
+"""
+Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.
+"""
+
+create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
+    form_factor=True,
     phsp_factor=PhaseSpaceFactorAnalytic,
-    docstring="""
+).__call__
+"""
 Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
 .. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
-""",
-)
+"""
