@@ -60,6 +60,7 @@ class ResonanceDynamicsBuilder(Protocol):
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
+        """Formulate a dynamics `~sympy.core.expr.Expr` for this resonance."""
         ...
 
 
@@ -127,6 +128,7 @@ class RelativisticBreitWignerBuilder:
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
+        """Build an relativistic Breit-Wigner expression."""
         if self.__with_form_factor:
             return self.__formulate_with_form_factor(resonance, variable_pool)
         return self.__formulate(resonance, variable_pool)
