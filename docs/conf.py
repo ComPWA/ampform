@@ -156,6 +156,8 @@ autodoc_default_options = {
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
     "ParameterValue": "ampform.helicity.ParameterValue",
+    "RangeDefinition": "symplot.RangeDefinition",
+    "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
