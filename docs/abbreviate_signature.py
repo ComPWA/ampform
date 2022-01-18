@@ -21,8 +21,9 @@ __TARGET_SUBSTITUTIONS = {
 
 
 def new_type_to_xref(
-    target: str, env: BuildEnvironment = None
+    target: str, env: BuildEnvironment = None, suppress_prefix: bool = False
 ) -> addnodes.pending_xref:
+    # pylint: disable=unused-argument
     """Convert a type string to a cross reference node."""
     if target == "None":
         reftype = "obj"
@@ -51,4 +52,4 @@ def new_type_to_xref(
 
 
 def abbreviate_signature() -> None:
-    sphinx.domains.python.type_to_xref = new_type_to_xref  # type: ignore[assignment]
+    sphinx.domains.python.type_to_xref = new_type_to_xref
