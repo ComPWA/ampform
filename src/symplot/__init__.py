@@ -49,10 +49,12 @@ if TYPE_CHECKING:
 
 
 Slider = Union[FloatSlider, IntSlider]
+"""Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
 RangeDefinition = Union[
     Tuple[float, float],
     Tuple[float, float, Union[float, int]],
 ]
+"""Types of range definitions used in :meth:`.set_ranges`."""
 
 
 class SliderKwargs(abc.Mapping):
@@ -113,7 +115,7 @@ class SliderKwargs(abc.Mapping):
                     f'Slider "{name}" is not a valid ipywidgets slider'
                 )
 
-    def __getitem__(self, key: Union[str, sp.Symbol]) -> Slider:
+    def __getitem__(self, key: Union[str, sp.Symbol]) -> "Slider":
         """Get slider by symbol, symbol name, or argument name."""
         if isinstance(key, sp.Symbol):
             key = key.name
@@ -179,7 +181,7 @@ class SliderKwargs(abc.Mapping):
                 continue
 
     def set_ranges(  # noqa: R701
-        self, *args: Dict[str, RangeDefinition], **kwargs: RangeDefinition
+        self, *args: Dict[str, RangeDefinition], **kwargs: "RangeDefinition"
     ) -> None:
         """Set min, max and (optionally) the nr of steps for each slider.
 
@@ -290,7 +292,7 @@ def prepare_sliders(
     return lambdified_expression, sliders
 
 
-def create_slider(symbol: sp.Symbol) -> Slider:
+def create_slider(symbol: sp.Symbol) -> "Slider":
     r"""Create an `int` or `float` slider, depending on Symbol assumptions.
 
     The description for the slider is rendered as LaTeX from the
