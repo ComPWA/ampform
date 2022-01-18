@@ -31,7 +31,7 @@ try:  # Sphinx >=4.4.0
     from sphinx.addnodes import pending_xref_condition
     from sphinx.domains.python import parse_reftarget
 
-    def new_type_to_xref(
+    def _new_type_to_xref(
         target: str,
         env: BuildEnvironment = None,
         suppress_prefix: bool = False,
@@ -73,7 +73,7 @@ try:  # Sphinx >=4.4.0
 
 except ImportError:  # Sphinx <4.4.0
     # https://github.com/sphinx-doc/sphinx/blob/v4.3.2/sphinx/domains/python.py#L83-L107
-    def new_type_to_xref(
+    def _new_type_to_xref(
         target: str,
         env: BuildEnvironment = None,
         suppress_prefix: bool = False,
@@ -118,5 +118,5 @@ except ImportError:  # Sphinx <4.4.0
         )
 
 
-def abbreviate_signature() -> None:
-    sphinx.domains.python.type_to_xref = new_type_to_xref
+def relink_references() -> None:
+    sphinx.domains.python.type_to_xref = _new_type_to_xref
