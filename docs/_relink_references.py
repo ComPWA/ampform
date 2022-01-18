@@ -37,14 +37,6 @@ try:  # Sphinx >=4.4.0
         suppress_prefix: bool = False,
     ) -> pending_xref:
         """Convert a type string to a cross reference node."""
-        if env:
-            kwargs = {
-                "py:module": env.ref_context.get("py:module"),
-                "py:class": env.ref_context.get("py:class"),
-            }
-        else:
-            kwargs = {}
-
         reftype, target, title, refspecific = parse_reftarget(
             target, suppress_prefix
         )
@@ -68,7 +60,7 @@ try:  # Sphinx >=4.4.0
             reftype=reftype,
             reftarget=target,
             refspecific=refspecific,
-            **kwargs,
+            **__get_env_kwargs(env),
         )
 
 except ImportError:  # Sphinx <4.4.0
@@ -85,13 +77,6 @@ except ImportError:  # Sphinx <4.4.0
         else:
             reftype = "class"
 
-        if env:
-            kwargs = {
-                "py:module": env.ref_context.get("py:module"),
-                "py:class": env.ref_context.get("py:class"),
-            }
-        else:
-            kwargs = {}
         target = __TARGET_SUBSTITUTIONS.get(target, target)
         reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
 
@@ -114,8 +99,17 @@ except ImportError:  # Sphinx <4.4.0
             refdomain="py",
             reftype=reftype,
             reftarget=target,
-            **kwargs,
+            **__get_env_kwargs(env),
         )
+
+
+def __get_env_kwargs(env: BuildEnvironment) -> dict:
+    if env:
+        return {
+            "py:module": env.ref_context.get("py:module"),
+            "py:class": env.ref_context.get("py:class"),
+        }
+    return {}
 
 
 def relink_references() -> None:
