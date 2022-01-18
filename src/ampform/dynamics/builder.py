@@ -163,14 +163,11 @@ def _make_relativistic_breit_wigner_with_ff(
     return dynamics_builder
 
 
-__DOCSTRING = (
-    "Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."
-)
-create_relativistic_breit_wigner_with_ff = (
-    _make_relativistic_breit_wigner_with_ff(
-        phsp_factor=PhaseSpaceFactor,
-        docstring=__DOCSTRING,
-    )
+create_relativistic_breit_wigner_with_ff = _make_relativistic_breit_wigner_with_ff(
+    phsp_factor=PhaseSpaceFactor,
+    docstring=(
+        "Create a `.relativistic_breit_wigner_with_ff` for a two-body decay."
+    ),
 )
 create_analytic_breit_wigner = _make_relativistic_breit_wigner_with_ff(
     phsp_factor=PhaseSpaceFactorAnalytic,

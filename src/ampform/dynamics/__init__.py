@@ -30,6 +30,7 @@ else:
 
 @implement_doit_method
 class BlattWeisskopfSquared(UnevaluatedExpression):
+    # cspell:ignore pychyGekoppeltePartialwellenanalyseAnnihilationen
     r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
 
     Args:
