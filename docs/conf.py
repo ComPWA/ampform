@@ -155,6 +155,7 @@ autodoc_default_options = {
 }
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
+    "ParameterValue": "ampform.helicity.ParameterValue",
 }
 autodoc_typehints_format = "short"
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
