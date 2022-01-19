@@ -486,7 +486,7 @@ def compute_helicity_angles(
     >>> topology = topologies[0]
     >>> four_momenta = create_four_momentum_symbols(topology)
     >>> angles = compute_helicity_angles(four_momenta, topology)
-    >>> angles["theta_1+2"]
+    >>> angles["theta_12"]
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
@@ -610,26 +610,26 @@ def get_helicity_angle_label(
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
     ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
     ...     print(f"{i}: '{phi_label}'")
-    0: 'phi_0,034'
-    1: 'phi_1,12'
-    2: 'phi_2,12'
-    3: 'phi_3,34,034'
-    4: 'phi_4,34,034'
+    0: 'phi_0^034'
+    1: 'phi_1^12'
+    2: 'phi_2^12'
+    3: 'phi_3^34,034'
+    4: 'phi_4^34,034'
     5: 'phi_034'
     6: 'phi_12'
-    7: 'phi_34,034'
+    7: 'phi_34^034'
     >>> topology = topologies[1]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
     ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
     ...     print(f"{i}: '{phi_label}'")
-    0: 'phi_0,01'
-    1: 'phi_1,01'
-    2: 'phi_2,234'
-    3: 'phi_3,34,234'
-    4: 'phi_4,34,234'
+    0: 'phi_0^01'
+    1: 'phi_1^01'
+    2: 'phi_2^234'
+    3: 'phi_3^34,234'
+    4: 'phi_4^34,234'
     5: 'phi_01'
     6: 'phi_234'
-    7: 'phi_34,234'
+    7: 'phi_34^234'
 
     Some labels explained:
 
@@ -637,11 +637,11 @@ def get_helicity_angle_label(
       topology, we have :math:`p_6=p_1+p_2`.
     - :code:`phi_234`: **edge 6** *right*, because for this topology,
       :math:`p_6=p_2+p_3+p_4`.
-    - :code:`phi_1,12`: **edge 1** *left*, because 1 decays from
+    - :code:`phi_1^12`: **edge 1** *left*, because 1 decays from
       :math:`p_6=p_1+p_2`.
-    - :code:`phi_1,01`: **edge 1** *right*, because it decays from
+    - :code:`phi_1^01`: **edge 1** *right*, because it decays from
       :math:`p_5=p_0+p_1`.
-    - :code:`phi_4,34,234`: **edge 4** *right*, because it decays from edge 7
+    - :code:`phi_4^34,234`: **edge 4** *right*, because it decays from edge 7
       (:math:`p_7=p_3+p_4`), which comes from edge 6 (:math:`p_7=p_2+p_3+p_4`).
 
     As noted, the top-most parent (initial state) is not listed in the label.
@@ -667,7 +667,14 @@ def get_helicity_angle_label(
         return label
 
     label = recursive_label(topology, state_id)
-    return f"phi_{label}", f"theta_{label}"
+
+    index_groups = label.split(",")
+    subscript = index_groups[0]
+    suffix = f"_{subscript}"
+    if len(index_groups) > 1:
+        superscript = ",".join(index_groups[1:])
+        suffix += f"^{superscript}"
+    return f"phi{suffix}", f"theta{suffix}"
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:

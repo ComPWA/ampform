@@ -191,7 +191,7 @@ class TestTheta:
             ),
         ),
         (
-            "phi_23,123",
+            "phi_23^123",
             np.array(
                 [
                     1.04362,
@@ -208,7 +208,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_23,123",
+            "theta_23^123",
             np.arccos(
                 [
                     -0.772533,
@@ -225,7 +225,7 @@ class TestTheta:
             ),
         ),
         (
-            "phi_2,23,123",
+            "phi_2^23,123",
             np.array(
                 [  # WARNING: subsystem solution (ComPWA) results in pi differences
                     -2.77203 + np.pi,
@@ -242,7 +242,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_2,23,123",
+            "theta_2^23,123",
             np.arccos(
                 [
                     0.460324,
