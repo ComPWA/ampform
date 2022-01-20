@@ -6,6 +6,7 @@ import logging
 import operator
 import re
 from collections import OrderedDict
+from decimal import Decimal
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
@@ -645,6 +646,80 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def formulate_rotation_on_spin_state(
+    spin_magnitude: float,
+    spin_projection: float,
+    alpha: sp.Symbol,
+    beta: sp.Symbol,
+    gamma: sp.Symbol,
+) -> sp.Expr:
+    r"""Formulate action of an Euler rotation on a spin state.
+
+    When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler
+    angles <https://en.wikipedia.org/wiki/Euler_angles>`_
+    :math:`\alpha,\beta,\gamma`, the new state can be expressed in terms of
+    other spin states :math:`\left|s,m'\right\rangle` with the help of
+    Wigner-:math:`D` expansion coefficients:
+
+    .. math::
+
+        R(\alpha,\beta,\gamma)\left|s,m\right\rangle
+        = \sum^s_{m'=-s} D^s_{m',m}\left(\alpha,\beta,\gamma\right)
+        \left|s,m'\right\rangle
+
+    See :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(B.5).
+
+    This function gives the summation over these Wigner-:math:`D` functions and
+    can be used for spin alignment following
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45).
+
+    Args:
+        spin_magnitude: Spin magnitude :math:`s` of spin state that is being
+            rotated.
+        spin_projection: Spin projection component :math:`m` of the spin state
+            that is being rotated.
+
+        alpha: First Euler angle.
+        beta: Second Euler angle.
+        gamma: Third Euler angle.
+    """
+    from sympy.physics.quantum.spin import WignerD
+
+    allowed_projections = _create_spin_range(spin_magnitude)
+    return sum(
+        WignerD(
+            sp.Rational(spin_magnitude),
+            sp.Rational(spin_projection),
+            sp.Rational(m_prime),
+            alpha,
+            beta,
+            gamma,
+        )
+        for m_prime in allowed_projections
+    )
+
+
+def _create_spin_range(spin_magnitude: float) -> List[float]:
+    """Create a list of allowed spin projections.
+
+    >>> _create_spin_range(0)
+    [0.0]
+    >>> _create_spin_range(0.5)
+    [-0.5, 0.5]
+    >>> _create_spin_range(1)
+    [-1.0, 0.0, 1.0]
+    >>> projections = _create_spin_range(5)
+    >>> list(map(int, projections))
+    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+    """
+    spin_projections = []
+    projection = Decimal(-spin_magnitude)
+    while projection <= spin_magnitude:
+        spin_projections.append(float(projection))
+        projection += 1
+    return spin_projections
 
 
 def _generate_kinematic_variable_set(
