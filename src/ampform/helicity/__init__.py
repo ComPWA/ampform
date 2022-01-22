@@ -10,6 +10,7 @@ from decimal import Decimal
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
+    TYPE_CHECKING,
     DefaultDict,
     Dict,
     Iterable,
@@ -45,6 +46,9 @@ from .naming import (
     HelicityAmplitudeNameGenerator,
     generate_transition_label,
 )
+
+if TYPE_CHECKING:
+    from sympy.physics.quantum.spin import WignerD
 
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
@@ -626,7 +630,7 @@ def formulate_rotation_on_spin_state(
     alpha: sp.Symbol,
     beta: sp.Symbol,
     gamma: sp.Symbol,
-) -> sp.Expr:
+) -> Tuple["WignerD", ...]:
     r"""Formulate action of an Euler rotation on a spin state.
 
     When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler
@@ -657,17 +661,17 @@ def formulate_rotation_on_spin_state(
         beta: Second Euler angle.
         gamma: Third Euler angle.
     """
-    from sympy.physics.quantum.spin import WignerD
+    from sympy.physics.quantum.spin import Rotation as Wigner
 
     allowed_projections = _create_spin_range(spin_magnitude)
-    return sum(
-        WignerD(
-            sp.Rational(spin_magnitude),
-            sp.Rational(spin_projection),
-            sp.Rational(m_prime),
-            alpha,
-            beta,
-            gamma,
+    return tuple(
+        Wigner.D(
+            j=sp.Rational(spin_magnitude),
+            m=sp.Rational(spin_projection),
+            mp=sp.Rational(m_prime),
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
         )
         for m_prime in allowed_projections
     )

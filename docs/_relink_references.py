@@ -16,6 +16,7 @@ from sphinx.addnodes import pending_xref
 from sphinx.environment import BuildEnvironment
 
 __TARGET_SUBSTITUTIONS = {
+    "WignerD": "sympy.physics.quantum.spin.WignerD",
     "sp.Expr": "sympy.core.expr.Expr",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "typing_extensions.Protocol": "typing.Protocol",
