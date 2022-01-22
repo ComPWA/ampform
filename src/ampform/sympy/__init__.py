@@ -4,7 +4,7 @@
 
 import functools
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Type
+from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -55,9 +55,13 @@ class UnevaluatedExpression(sp.Expr):
         return f"{name}{args}"
 
 
+DecoratedClass = TypeVar("DecoratedClass")
+"""`~typing.TypeVar` for decorators like `make_commutative`."""
+
+
 def implement_expr(
     n_args: int,
-) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+) -> Callable[[DecoratedClass], DecoratedClass]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
     Implement a `~object.__new__` and `~sympy.core.basic.Basic.doit` method for
@@ -65,9 +69,7 @@ def implement_expr(
     `UnevaluatedExpression`).
     """
 
-    def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
+    def decorator(decorated_class: DecoratedClass) -> DecoratedClass:
         decorated_class = implement_new_method(n_args)(decorated_class)
         decorated_class = implement_doit_method(decorated_class)
         return decorated_class
@@ -77,16 +79,14 @@ def implement_expr(
 
 def implement_new_method(
     n_args: int,
-) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+) -> Callable[[DecoratedClass], DecoratedClass]:
     """Implement ``__new__()`` method for an `UnevaluatedExpression` class.
 
     Implement a `~object.__new__` method for a class that derives from
     `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
-    def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
+    def decorator(decorated_class: DecoratedClass) -> DecoratedClass:
         def new_method(  # pylint: disable=unused-argument
             cls: Type,
             *args: sp.Symbol,
@@ -109,31 +109,27 @@ def implement_new_method(
     return decorator
 
 
-def implement_doit_method(
-    decorated_class: Type[UnevaluatedExpression],
-) -> Type[UnevaluatedExpression]:
+def implement_doit_method(decorated_class: DecoratedClass) -> DecoratedClass:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
     Implement a `~sympy.core.basic.Basic.doit` method for a class that derives
     from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
-    @functools.wraps(decorated_class.doit)
+    @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
     def doit_method(self: UnevaluatedExpression, deep: bool = True) -> sp.Expr:
         expr = self.evaluate()
         if deep:
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method
+    decorated_class.doit = doit_method  # type: ignore[attr-defined]
     return decorated_class
 
 
-def make_commutative(
-    decorated_class: Type[UnevaluatedExpression],
-) -> Type[UnevaluatedExpression]:
-    decorated_class.is_commutative = True
-    decorated_class.is_extended_real = True
+def make_commutative(decorated_class: DecoratedClass) -> DecoratedClass:
+    decorated_class.is_commutative = True  # type: ignore[attr-defined]
+    decorated_class.is_extended_real = True  # type: ignore[attr-defined]
     return decorated_class
 
 

@@ -24,6 +24,7 @@ __REF_TYPE_SUBSTITUTIONS = {
     "None": "obj",
     "ParameterValue": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
+    "ampform.sympy.DecoratedClass": "obj",
     "symplot.RangeDefinition": "obj",
     "symplot.Slider": "obj",
 }
