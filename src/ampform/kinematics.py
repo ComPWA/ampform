@@ -41,7 +41,7 @@ FourMomentumSymbols = Dict[int, ArraySymbol]
 
 
 # for numpy broadcasting
-ArraySlice = make_commutative()(ArraySlice)  # type: ignore[misc]
+ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
 
 
 @attr.s(on_setattr=attr.setters.frozen)
@@ -410,7 +410,7 @@ def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
     return name
 
 
-@make_commutative()
+@make_commutative
 class ArrayAxisSum(sp.Expr):
     array: ArraySymbol = property(lambda self: self.args[0])
     axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
@@ -616,7 +616,7 @@ def implement_latex_subscript(
 
 
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class Energy(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
@@ -631,7 +631,7 @@ class Energy(HasMomentum, UnevaluatedExpression):
 
 @implement_latex_subscript(subscript="x")
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class FourMomentumX(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumX":
         return create_expression(cls, momentum, **hints)
@@ -642,7 +642,7 @@ class FourMomentumX(HasMomentum, UnevaluatedExpression):
 
 @implement_latex_subscript(subscript="y")
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class FourMomentumY(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumY":
         return create_expression(cls, momentum, **hints)
@@ -653,7 +653,7 @@ class FourMomentumY(HasMomentum, UnevaluatedExpression):
 
 @implement_latex_subscript(subscript="z")
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class FourMomentumZ(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumZ":
         return create_expression(cls, momentum, **hints)
@@ -663,7 +663,7 @@ class FourMomentumZ(HasMomentum, UnevaluatedExpression):
 
 
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
     def __new__(
         cls, momentum: ArraySymbol, **hints: Any
@@ -686,7 +686,7 @@ class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
 
 
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class InvariantMass(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
@@ -701,7 +701,7 @@ class InvariantMass(HasMomentum, UnevaluatedExpression):
 
 
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class Phi(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Phi":
         return create_expression(cls, momentum, **hints)
@@ -716,7 +716,7 @@ class Phi(HasMomentum, UnevaluatedExpression):
 
 
 @implement_doit_method
-@make_commutative()
+@make_commutative
 class Theta(HasMomentum, UnevaluatedExpression):
     def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Theta":
         return create_expression(cls, momentum, **hints)

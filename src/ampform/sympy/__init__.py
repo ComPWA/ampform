@@ -129,17 +129,12 @@ def implement_doit_method(
     return decorated_class
 
 
-def make_commutative() -> Callable[
-    [Type[UnevaluatedExpression]], Type[UnevaluatedExpression]
-]:
-    def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
-        decorated_class.is_commutative = True
-        decorated_class.is_extended_real = True
-        return decorated_class
-
-    return decorator
+def make_commutative(
+    decorated_class: Type[UnevaluatedExpression],
+) -> Type[UnevaluatedExpression]:
+    decorated_class.is_commutative = True
+    decorated_class.is_extended_real = True
+    return decorated_class
 
 
 def create_expression(
