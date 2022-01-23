@@ -1,5 +1,5 @@
 # cspell:ignore einsum
-# pylint: disable=arguments-differ,protected-access,unused-argument
+# pylint: disable=arguments-differ,no-member,protected-access,unused-argument
 """Kinematics of an amplitude model in the helicity formalism."""
 
 import functools
@@ -367,10 +367,13 @@ def compute_invariant_masses(
 
 class _ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
-    terms: Tuple[sp.Basic, ...] = property(lambda self: self.args)  # type: ignore[assignment]
 
     def __new__(cls, *terms: sp.Basic, **hints: Any) -> "Energy":
         return create_expression(cls, *terms, **hints)
+
+    @property
+    def terms(self) -> Tuple[sp.Basic, ...]:
+        return self.args
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         if all(
@@ -429,15 +432,20 @@ def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
 
 @make_commutative
 class _ArrayAxisSum(sp.Expr):
-    array: ArraySymbol = property(lambda self: self.args[0])
-    axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
-
     def __new__(
         cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
     ) -> "_ArrayAxisSum":
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             raise TypeError("Only single digits allowed for axis")
         return create_expression(cls, array, axis, **hints)
+
+    @property
+    def array(self) -> ArraySymbol:
+        return self.args[0]
+
+    @property
+    def axis(self) -> Optional[int]:
+        return self.args[1]
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         array = printer._print(self.array)
@@ -454,12 +462,14 @@ class _ArrayAxisSum(sp.Expr):
 
 
 class _ArrayMultiplication(sp.Expr):
-    tensors: List[sp.Expr] = property(lambda self: self.args)  # type: ignore[assignment]
-
     def __new__(
         cls, *tensors: sp.Expr, **hints: Any
     ) -> "_ArrayMultiplication":
         return create_expression(cls, *tensors, **hints)
+
+    @property
+    def tensors(self) -> List[sp.Expr]:
+        return self.args
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         tensors = map(printer._print, self.tensors)
@@ -486,10 +496,12 @@ class _ArrayMultiplication(sp.Expr):
 
 
 class BoostZ(sp.Expr):
-    beta: sp.Expr = property(lambda self: self.args[0])
-
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
         return create_expression(cls, beta, **kwargs)
+
+    @property
+    def beta(self) -> sp.Expr:
+        return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
         beta = self.beta
@@ -527,10 +539,12 @@ class BoostZ(sp.Expr):
 
 
 class RotationY(sp.Expr):
-    angle: sp.Expr = property(lambda self: self.args[0])
-
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
         return create_expression(cls, angle, **hints)
+
+    @property
+    def angle(self) -> sp.Expr:
+        return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
         angle = self.angle
@@ -567,10 +581,12 @@ class RotationY(sp.Expr):
 
 
 class RotationZ(sp.Expr):
-    angle: sp.Expr = property(lambda self: self.args[0])
-
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
         return create_expression(cls, angle, **hints)
+
+    @property
+    def angle(self) -> sp.Expr:
+        return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
@@ -607,8 +623,9 @@ class RotationZ(sp.Expr):
 
 
 class HasMomentum:
-    # pylint: disable=no-member
-    momentum: ArraySymbol = property(lambda self: self.args[0])
+    @property
+    def momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]  # type: ignore[attr-defined]
 
 
 def _implement_latex_subscript(
