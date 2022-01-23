@@ -156,6 +156,7 @@ autodoc_default_options = {
         ]
     ),
 }
+autodoc_member_order = "bysource"
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
     "FourMomenta": "ampform.kinematics.FourMomenta",
