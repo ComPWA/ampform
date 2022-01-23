@@ -58,13 +58,16 @@ def update_docstring(
 def render_blatt_weisskopf() -> None:
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
-    ff2 = BlattWeisskopfSquared(L, z)
+    expr = BlattWeisskopfSquared(L, z)
+    latex = _create_latex_doit_definition(expr, deep=True)
     update_docstring(
         BlattWeisskopfSquared,
         f"""
-    .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
+    .. math::
         :label: BlattWeisskopfSquared
         :class: full-width
+
+        {latex}
     """,
     )
 
@@ -103,11 +106,8 @@ def render_boost_z() -> None:
 
 def render_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    latex = sp.multiline_latex(
-        q_squared, q_squared.doit(), environment="eqnarray"
-    )
-    latex = textwrap.indent(latex, prefix=8 * " ")
+    expr = BreakupMomentumSquared(s, m_a, m_b)
+    latex = _create_latex_doit_definition(expr, deep=True)
     update_docstring(
         BreakupMomentumSquared,
         f"""
@@ -121,11 +121,11 @@ def render_breakup_momentum_squared() -> None:
 
 def render_complex_sqrt() -> None:
     x = sp.Symbol("x", real=True)
-    complex_sqrt = ComplexSqrt(x)
+    expr = ComplexSqrt(x)
     update_docstring(
         ComplexSqrt,
         fR"""
-    .. math:: {sp.latex(complex_sqrt)} = {sp.latex(complex_sqrt.evaluate())}
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.evaluate())}
         :label: ComplexSqrt
     """,
     )
@@ -134,7 +134,7 @@ def render_complex_sqrt() -> None:
 def render_energy_dependent_width() -> None:
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
-    width = EnergyDependentWidth(
+    expr = EnergyDependentWidth(
         s=s,
         mass0=m0,
         gamma0=w0,
@@ -143,8 +143,7 @@ def render_energy_dependent_width() -> None:
         angular_momentum=L,
         meson_radius=1,
     )
-    latex = sp.multiline_latex(width, width.evaluate(), environment="eqnarray")
-    latex = textwrap.indent(latex, prefix=8 * " ")
+    latex = _create_latex_doit_definition(expr)
     update_docstring(
         EnergyDependentWidth,
         fR"""
@@ -258,9 +257,8 @@ def render_get_helicity_angle_label() -> None:
 
 def render_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = PhaseSpaceFactor(s, m_a, m_b)
-    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
-    latex = textwrap.indent(latex, prefix=8 * " ")
+    expr = PhaseSpaceFactor(s, m_a, m_b)
+    latex = _create_latex_doit_definition(expr)
     update_docstring(
         PhaseSpaceFactor,
         f"""
@@ -277,9 +275,8 @@ def render_phase_space_factor() -> None:
 
 def render_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = PhaseSpaceFactorAbs(s, m_a, m_b)
-    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
-    latex = textwrap.indent(latex, prefix=8 * " ")
+    expr = PhaseSpaceFactorAbs(s, m_a, m_b)
+    latex = _create_latex_doit_definition(expr)
     update_docstring(
         PhaseSpaceFactorAbs,
         fR"""
@@ -296,10 +293,9 @@ def render_phase_space_factor_abs() -> None:
 
 def render_phase_space_factor_analytic() -> None:
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
-    rho = PhaseSpaceFactorAnalytic(s, m_a, m_b)
+    expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
+    latex = _create_latex_doit_definition(expr)
     rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
-    latex = textwrap.indent(latex, prefix=8 * " ")
     update_docstring(
         PhaseSpaceFactorAnalytic,
         fR"""
@@ -316,9 +312,8 @@ def render_phase_space_factor_analytic() -> None:
 
 def render_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    rho = PhaseSpaceFactorComplex(s, m_a, m_b)
-    latex = sp.multiline_latex(rho, rho.evaluate(), environment="eqnarray")
-    latex = textwrap.indent(latex, prefix=8 * " ")
+    expr = PhaseSpaceFactorComplex(s, m_a, m_b)
+    latex = _create_latex_doit_definition(expr)
     update_docstring(
         PhaseSpaceFactorComplex,
         fR"""
@@ -371,6 +366,13 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     :eq:`BreakupMomentumSquared`.
     """,
     )
+
+
+def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
+    latex = sp.multiline_latex(
+        expr, expr.doit(deep=deep), environment="eqnarray"
+    )
+    return textwrap.indent(latex, prefix=8 * " ")
 
 
 def __print_imports(printer: NumPyPrinter) -> str:
