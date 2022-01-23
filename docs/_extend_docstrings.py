@@ -62,7 +62,7 @@ def extend_boost_z() -> None:
 
     beta = sp.Symbol("beta")
     expr = BoostZ(beta)
-    _update_docstring(
+    _append_to_docstring(
         BoostZ,
         f"""\n
     This boost operates on a `FourMomentumSymbol` and looks like:
@@ -75,7 +75,7 @@ def extend_boost_z() -> None:
     printer = NumPyPrinter()
     numpy_code = BoostZ(b)._numpycode(printer)
     import_statements = __print_imports(printer)
-    _update_docstring(
+    _append_to_docstring(
         BoostZ,
         f"""
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
@@ -104,7 +104,7 @@ def extend_complex_sqrt() -> None:
 
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
-    _update_docstring(
+    _append_to_docstring(
         ComplexSqrt,
         fR"""
     .. math:: {sp.latex(expr)} = {sp.latex(expr.evaluate())}
@@ -116,7 +116,7 @@ def extend_complex_sqrt() -> None:
 def extend_energy_dependent_width() -> None:
     from ampform.dynamics import EnergyDependentWidth
 
-    _update_docstring(
+    _append_to_docstring(
         EnergyDependentWidth,
         """
     With that in mind, the "mass-dependent" width in a
@@ -135,7 +135,7 @@ def extend_energy_dependent_width() -> None:
         meson_radius=1,
     )
     _append_latex_doit_definition(expr)
-    _update_docstring(
+    _append_to_docstring(
         EnergyDependentWidth,
         R"""
     where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
@@ -148,7 +148,7 @@ def extend_energy_dependent_width() -> None:
 def extend_formulate_wigner_d() -> None:
     from ampform.helicity import formulate_wigner_d
 
-    _update_docstring(
+    _append_to_docstring(
         formulate_wigner_d,
         __get_graphviz_state_transition_example("helicity"),
     )
@@ -157,7 +157,7 @@ def extend_formulate_wigner_d() -> None:
 def extend_formulate_clebsch_gordan_coefficients() -> None:
     from ampform.helicity import formulate_clebsch_gordan_coefficients
 
-    _update_docstring(
+    _append_to_docstring(
         formulate_clebsch_gordan_coefficients,
         __get_graphviz_state_transition_example(
             formalism="canonical-helicity", transition_number=1
@@ -205,7 +205,7 @@ def extend_four_momentum_components() -> None:
     def _extend(component_class: Type[sp.Expr]) -> None:
         p = ArraySymbol("p")
         energy = component_class(p)
-        _update_docstring(
+        _append_to_docstring(
             component_class,
             f"""\n
             :math:`{sp.latex(energy)}={sp.latex(energy.doit())}`
@@ -237,7 +237,7 @@ def extend_get_helicity_angle_label() -> None:
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
     )
-    _update_docstring(
+    _append_to_docstring(
         get_helicity_angle_label,
         f"""
 
@@ -265,7 +265,7 @@ def extend_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
     _append_latex_doit_definition(expr)
-    _update_docstring(
+    _append_to_docstring(
         PhaseSpaceFactor,
         """
     with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
@@ -279,7 +279,7 @@ def extend_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
     _append_latex_doit_definition(expr)
-    _update_docstring(
+    _append_to_docstring(
         PhaseSpaceFactorAbs,
         """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
@@ -294,7 +294,7 @@ def extend_phase_space_factor_analytic() -> None:
     expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
     _append_latex_doit_definition(expr)
     rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    _update_docstring(
+    _append_to_docstring(
         PhaseSpaceFactorAnalytic,
         f"""
     with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
@@ -309,7 +309,7 @@ def extend_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
     _append_latex_doit_definition(expr)
-    _update_docstring(
+    _append_to_docstring(
         PhaseSpaceFactorComplex,
         """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
@@ -330,7 +330,7 @@ def extend_relativistic_breit_wigner() -> None:
 
     s, m0, w0 = sp.symbols("s m0 Gamma0")
     rel_bw = relativistic_breit_wigner(s, m0, w0)
-    _update_docstring(
+    _append_to_docstring(
         relativistic_breit_wigner,
         f"""
     .. math:: {sp.latex(rel_bw)}
@@ -353,7 +353,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    _update_docstring(
+    _append_to_docstring(
         relativistic_breit_wigner_with_ff,
         fR"""
     The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
@@ -374,7 +374,7 @@ def extend_rotation_y() -> None:
 
     angle = sp.Symbol("alpha")
     expr = RotationY(angle)
-    _update_docstring(
+    _append_to_docstring(
         RotationY,
         f"""\n
     The **matrix** for a rotation over angle :math:`\\alpha` around the
@@ -393,7 +393,7 @@ def extend_rotation_z() -> None:
 
     angle = sp.Symbol("alpha")
     expr = RotationZ(angle)
-    _update_docstring(
+    _append_to_docstring(
         RotationZ,
         f"""\n
     The **matrix** for a rotation over angle :math:`\\alpha` around the
@@ -407,7 +407,7 @@ def extend_rotation_z() -> None:
     printer = NumPyPrinter()
     numpy_code = RotationZ(a)._numpycode(printer)
     import_statements = __print_imports(printer)
-    _update_docstring(
+    _append_to_docstring(
         RotationZ,
         f"""
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
@@ -448,7 +448,7 @@ def _append_latex_doit_definition(
         extras = """
         :class: full-width
         """
-    return _update_docstring(
+    return _append_to_docstring(
         type(expr),
         f"""\n
     .. math::
@@ -466,7 +466,7 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
     return textwrap.indent(latex, prefix=8 * " ")
 
 
-def _update_docstring(
+def _append_to_docstring(
     class_type: Union[Callable, Type], appended_text: str
 ) -> None:
     assert class_type.__doc__ is not None
