@@ -54,19 +54,12 @@ from ampform.sympy.math import ComplexSqrt
 logging.getLogger().setLevel(logging.ERROR)
 
 
-def update_docstring(
-    class_type: Union[Callable, Type], appended_text: str
-) -> None:
-    assert class_type.__doc__ is not None
-    class_type.__doc__ += appended_text
-
-
 def render_blatt_weisskopf() -> None:
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
     expr = BlattWeisskopfSquared(L, z)
     latex = _create_latex_doit_definition(expr, deep=True)
-    update_docstring(
+    _update_docstring(
         BlattWeisskopfSquared,
         f"""
     .. math::
@@ -81,7 +74,7 @@ def render_blatt_weisskopf() -> None:
 def render_boost_z() -> None:
     beta = sp.Symbol("beta")
     expr = BoostZ(beta)
-    update_docstring(
+    _update_docstring(
         BoostZ,
         f"""\n
     This boost operates on a `FourMomentumSymbol` and looks like:
@@ -94,7 +87,7 @@ def render_boost_z() -> None:
     printer = NumPyPrinter()
     numpy_code = BoostZ(b)._numpycode(printer)
     import_statements = __print_imports(printer)
-    update_docstring(
+    _update_docstring(
         BoostZ,
         f"""
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
@@ -114,7 +107,7 @@ def render_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr, deep=True)
-    update_docstring(
+    _update_docstring(
         BreakupMomentumSquared,
         f"""
     .. math::
@@ -128,7 +121,7 @@ def render_breakup_momentum_squared() -> None:
 def render_complex_sqrt() -> None:
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
-    update_docstring(
+    _update_docstring(
         ComplexSqrt,
         fR"""
     .. math:: {sp.latex(expr)} = {sp.latex(expr.evaluate())}
@@ -150,7 +143,7 @@ def render_energy_dependent_width() -> None:
         meson_radius=1,
     )
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         EnergyDependentWidth,
         fR"""
     With that in mind, the "mass-dependent" width in a
@@ -169,14 +162,14 @@ def render_energy_dependent_width() -> None:
 
 
 def render_formulate_wigner_d() -> None:
-    update_docstring(
+    _update_docstring(
         formulate_wigner_d,
         __get_graphviz_state_transition_example("helicity"),
     )
 
 
 def render_formulate_clebsch_gordan_coefficients() -> None:
-    update_docstring(
+    _update_docstring(
         formulate_clebsch_gordan_coefficients,
         __get_graphviz_state_transition_example(
             formalism="canonical-helicity", transition_number=1
@@ -217,7 +210,7 @@ def render_four_momentum_components() -> None:
     def _render(component_class: Type[sp.Expr]) -> None:
         p = ArraySymbol("p")
         energy = component_class(p)
-        update_docstring(
+        _update_docstring(
             component_class,
             f"""\n
             :math:`{sp.latex(energy)}={sp.latex(energy.doit())}`
@@ -247,7 +240,7 @@ def render_get_helicity_angle_label() -> None:
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
     )
-    update_docstring(
+    _update_docstring(
         get_helicity_angle_label,
         f"""
 
@@ -265,7 +258,7 @@ def render_invariant_mass() -> None:
     p = ArraySymbol("p")
     expr = InvariantMass(p)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         InvariantMass,
         f"""\n
     .. math::
@@ -280,7 +273,7 @@ def render_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         PhaseSpaceFactor,
         f"""
 
@@ -298,7 +291,7 @@ def render_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         PhaseSpaceFactorAbs,
         fR"""
 
@@ -317,7 +310,7 @@ def render_phase_space_factor_analytic() -> None:
     expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
     rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    update_docstring(
+    _update_docstring(
         PhaseSpaceFactorAnalytic,
         fR"""
     .. math::
@@ -335,7 +328,7 @@ def render_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         PhaseSpaceFactorComplex,
         fR"""
 
@@ -353,7 +346,7 @@ def render_phi() -> None:
     p = ArraySymbol("p")
     expr = Phi(p)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         Phi,
         f"""\n
     .. math::
@@ -367,7 +360,7 @@ def render_phi() -> None:
 def render_relativistic_breit_wigner() -> None:
     s, m0, w0 = sp.symbols("s m0 Gamma0")
     rel_bw = relativistic_breit_wigner(s, m0, w0)
-    update_docstring(
+    _update_docstring(
         relativistic_breit_wigner,
         f"""
     .. math:: {sp.latex(rel_bw)}
@@ -388,7 +381,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
         angular_momentum=L,
         meson_radius=d,
     )
-    update_docstring(
+    _update_docstring(
         relativistic_breit_wigner_with_ff,
         fR"""
     The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
@@ -407,7 +400,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
 def render_rotation_y() -> None:
     angle = sp.Symbol("alpha")
     expr = RotationY(angle)
-    update_docstring(
+    _update_docstring(
         RotationY,
         f"""\n
     The **matrix** for a rotation over angle :math:`\\alpha` around the
@@ -424,7 +417,7 @@ def render_rotation_y() -> None:
 def render_rotation_z() -> None:
     angle = sp.Symbol("alpha")
     expr = RotationZ(angle)
-    update_docstring(
+    _update_docstring(
         RotationZ,
         f"""\n
     The **matrix** for a rotation over angle :math:`\\alpha` around the
@@ -438,7 +431,7 @@ def render_rotation_z() -> None:
     printer = NumPyPrinter()
     numpy_code = RotationZ(a)._numpycode(printer)
     import_statements = __print_imports(printer)
-    update_docstring(
+    _update_docstring(
         RotationZ,
         f"""
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
@@ -458,7 +451,7 @@ def render_theta() -> None:
     p = ArraySymbol("p")
     expr = Theta(p)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         Theta,
         f"""\n
     .. math::
@@ -473,7 +466,7 @@ def render_three_momentum_norm() -> None:
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
     latex = _create_latex_doit_definition(expr)
-    update_docstring(
+    _update_docstring(
         ThreeMomentumNorm,
         f"""\n
     .. math::
@@ -482,6 +475,13 @@ def render_three_momentum_norm() -> None:
         {latex}
     """,
     )
+
+
+def _update_docstring(
+    class_type: Union[Callable, Type], appended_text: str
+) -> None:
+    assert class_type.__doc__ is not None
+    class_type.__doc__ += appended_text
 
 
 def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
