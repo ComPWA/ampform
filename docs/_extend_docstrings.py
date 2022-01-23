@@ -147,14 +147,10 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
     )
 
     def _extend(component_class: Type[sp.Expr]) -> None:
+        _append_to_docstring(component_class, "\n\n")
         p = ArraySymbol("p")
-        energy = component_class(p)
-        _append_to_docstring(
-            component_class,
-            f"""\n
-            :math:`{sp.latex(energy)}={sp.latex(energy.doit())}`
-            """,
-        )
+        expr = component_class(p)
+        _append_latex_doit_definition(expr, inline=True)
 
     _extend(Energy)
     _extend(FourMomentumX)
@@ -296,7 +292,8 @@ def extend_ThreeMomentumNorm() -> None:
 
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
-    _append_latex_doit_definition(expr, deep=False)
+    _append_to_docstring(type(expr), "\n\n" + 4 * " ")
+    _append_latex_doit_definition(expr, deep=False, inline=True)
 
 
 def extend_formulate_clebsch_gordan_coefficients() -> None:
@@ -431,7 +428,7 @@ def _append_code_rendering(expr: sp.Expr) -> None:
     import_statements = __print_imports(printer)
     _append_to_docstring(
         type(expr),
-        f"""
+        f"""\n
     .. code::
 
         {import_statements}
@@ -441,8 +438,16 @@ def _append_code_rendering(expr: sp.Expr) -> None:
 
 
 def _append_latex_doit_definition(
-    expr: sp.Expr, deep: bool = False, full_width: bool = False
+    expr: sp.Expr,
+    deep: bool = False,
+    full_width: bool = False,
+    inline: bool = False,
 ) -> None:
+    if inline:
+        return _append_to_docstring(
+            type(expr),
+            f":math:`{sp.latex(expr)}={sp.latex(expr.doit(deep=deep))}`",
+        )
     latex = _create_latex_doit_definition(expr, deep)
     extras = ""
     if full_width:
