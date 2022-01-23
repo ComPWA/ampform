@@ -171,6 +171,175 @@ of events. The four-momenta are assumed to be in the order
 ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
 
 
+@implement_doit_method
+@make_commutative
+class Energy(UnevaluatedExpression):
+    """Represents the energy-component of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self._momentum, (slice(None), 0))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return fR"E\left({momentum}\right)"
+
+
+@_implement_latex_subscript(subscript="x")
+@implement_doit_method
+@make_commutative
+class FourMomentumX(UnevaluatedExpression):
+    """Component :math:`x` of a `FourMomentumSymbol`."""
+
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumX":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self._momentum, (slice(None), 1))
+
+
+@_implement_latex_subscript(subscript="y")
+@implement_doit_method
+@make_commutative
+class FourMomentumY(UnevaluatedExpression):
+    """Component :math:`y` of a `FourMomentumSymbol`."""
+
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumY":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self._momentum, (slice(None), 2))
+
+
+@_implement_latex_subscript(subscript="z")
+@implement_doit_method
+@make_commutative
+class FourMomentumZ(UnevaluatedExpression):
+    """Component :math:`z` of a `FourMomentumSymbol`."""
+
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumZ":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArraySlice(self._momentum, (slice(None), 3))
+
+
+@implement_doit_method
+@make_commutative
+class ThreeMomentumNorm(UnevaluatedExpression):
+    """Norm of the three-momentum of a `FourMomentumSymbol`."""
+
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "ThreeMomentumNorm":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        three_momentum = ArraySlice(
+            self._momentum, (slice(None), slice(1, None))
+        )
+        norm_squared = _ArrayAxisSum(three_momentum ** 2, axis=1)
+        return sp.sqrt(norm_squared)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return fR"\left|\vec{{{momentum}}}\right|"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+@implement_doit_method
+@make_commutative
+class InvariantMass(UnevaluatedExpression):
+    """Invariant mass of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        p = self._momentum
+        return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return f"m_{{{momentum}}}"
+
+
+@implement_doit_method
+@make_commutative
+class Phi(UnevaluatedExpression):
+    r"""Azimuthal angle :math:`\phi` of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Phi":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> sp.Expr:
+        p = self._momentum
+        return sp.atan2(FourMomentumY(p), FourMomentumX(p))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return fR"\phi\left({momentum}\right)"
+
+
+@implement_doit_method
+@make_commutative
+class Theta(UnevaluatedExpression):
+    r"""Polar (elevation) angle :math:`\theta` of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> sp.Expr:
+        p = self._momentum
+        return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return fR"\theta\left({momentum}\right)"
+
+
 def compute_helicity_angles(
     four_momenta: "FourMomenta", topology: Topology
 ) -> Dict[str, sp.Expr]:
@@ -661,175 +830,6 @@ class RotationZ(sp.Expr):
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
         ).transpose((2, 0, 1))"""
-
-
-@implement_doit_method
-@make_commutative
-class Energy(UnevaluatedExpression):
-    """Represents the energy-component of a `FourMomentumSymbol`."""
-
-    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 0))
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
-        return fR"E\left({momentum}\right)"
-
-
-@_implement_latex_subscript(subscript="x")
-@implement_doit_method
-@make_commutative
-class FourMomentumX(UnevaluatedExpression):
-    """Component :math:`x` of a `FourMomentumSymbol`."""
-
-    def __new__(
-        cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "FourMomentumX":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 1))
-
-
-@_implement_latex_subscript(subscript="y")
-@implement_doit_method
-@make_commutative
-class FourMomentumY(UnevaluatedExpression):
-    """Component :math:`y` of a `FourMomentumSymbol`."""
-
-    def __new__(
-        cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "FourMomentumY":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 2))
-
-
-@_implement_latex_subscript(subscript="z")
-@implement_doit_method
-@make_commutative
-class FourMomentumZ(UnevaluatedExpression):
-    """Component :math:`z` of a `FourMomentumSymbol`."""
-
-    def __new__(
-        cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "FourMomentumZ":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 3))
-
-
-@implement_doit_method
-@make_commutative
-class ThreeMomentumNorm(UnevaluatedExpression):
-    """Norm of the three-momentum of a `FourMomentumSymbol`."""
-
-    def __new__(
-        cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "ThreeMomentumNorm":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        three_momentum = ArraySlice(
-            self._momentum, (slice(None), slice(1, None))
-        )
-        norm_squared = _ArrayAxisSum(three_momentum ** 2, axis=1)
-        return sp.sqrt(norm_squared)
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
-        return fR"\left|\vec{{{momentum}}}\right|"
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        return printer._print(self.evaluate())
-
-
-@implement_doit_method
-@make_commutative
-class InvariantMass(UnevaluatedExpression):
-    """Invariant mass of a `FourMomentumSymbol`."""
-
-    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> ArraySlice:
-        p = self._momentum
-        return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
-        return f"m_{{{momentum}}}"
-
-
-@implement_doit_method
-@make_commutative
-class Phi(UnevaluatedExpression):
-    r"""Azimuthal angle :math:`\phi` of a `FourMomentumSymbol`."""
-
-    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Phi":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> sp.Expr:
-        p = self._momentum
-        return sp.atan2(FourMomentumY(p), FourMomentumX(p))
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
-        return fR"\phi\left({momentum}\right)"
-
-
-@implement_doit_method
-@make_commutative
-class Theta(UnevaluatedExpression):
-    r"""Polar (elevation) angle :math:`\theta` of a `FourMomentumSymbol`."""
-
-    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> "FourMomentumSymbol":
-        return self.args[0]
-
-    def evaluate(self) -> sp.Expr:
-        p = self._momentum
-        return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
-        return fR"\theta\left({momentum}\right)"
 
 
 def _assert_isobar_topology(topology: Topology) -> None:
