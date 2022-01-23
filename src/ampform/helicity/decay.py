@@ -1,9 +1,10 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import attr
 from qrules.quantum_numbers import InteractionProperties
+from qrules.topology import Topology
 from qrules.transition import State, StateTransition
 
 from ampform.kinematics import _assert_two_body_decay
@@ -106,6 +107,35 @@ def get_helicity_info(
         in_helicity_list[0],
         (out_helicity_list[0], out_helicity_list[1]),
     )
+
+
+def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
+    """Get the edge ID of the edge from which this state decayed.
+
+    .. warning:: This only works on 1-to-:math:`n` isobar topologies.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> get_parent_id(topology, state_id=0)
+    -1
+    >>> get_parent_id(topology, state_id=1)  # parent is the resonance
+    3
+    >>> get_parent_id(topology, state_id=2)
+    3
+    >>> get_parent_id(topology, state_id=3)
+    -1
+    >>> get_parent_id(topology, state_id=-1)  # already the top particle
+    """
+    edge = topology.edges[state_id]
+    if edge.originating_node_id is None:
+        return None
+    incoming_edge_ids = tuple(
+        topology.get_edge_ids_ingoing_to_node(edge.originating_node_id)
+    )
+    if len(incoming_edge_ids) != 1:
+        raise ValueError(f"{StateTransition.__name__} is not an isobar decay")
+    return incoming_edge_ids[0]
 
 
 def get_sorted_states(
