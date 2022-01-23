@@ -71,24 +71,17 @@ def extend_BoostZ() -> None:
         :label: BoostZ
     """,
     )
-    b = sp.Symbol("b")
-    printer = NumPyPrinter()
-    numpy_code = BoostZ(b)._numpycode(printer)
-    import_statements = __print_imports(printer)
     _append_to_docstring(
         BoostZ,
-        f"""
+        """
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
     a computational backend and it should operate on four-momentum arrays of
     rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
     `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
-
-    .. code::
-
-        {import_statements}
-        {numpy_code}
     """,
     )
+    b = sp.Symbol("b")
+    _append_code_rendering(BoostZ(b))
 
 
 def extend_BreakupMomentumSquared() -> None:
@@ -277,24 +270,17 @@ def extend_RotationZ() -> None:
         :label: RotationZ
     """,
     )
-    a = sp.Symbol("a")
-    printer = NumPyPrinter()
-    numpy_code = RotationZ(a)._numpycode(printer)
-    import_statements = __print_imports(printer)
     _append_to_docstring(
         RotationZ,
-        f"""
+        """
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
     a computational backend and it should operate on four-momentum arrays of
     rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
     `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
-
-    .. code-block::
-
-        {import_statements}
-        {numpy_code}
     """,
     )
+    a = sp.Symbol("a")
+    _append_code_rendering(RotationZ(a))
 
 
 def extend_Theta() -> None:
@@ -435,6 +421,21 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
     defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
     :eq:`BreakupMomentumSquared`.
+    """,
+    )
+
+
+def _append_code_rendering(expr: sp.Expr) -> None:
+    printer = NumPyPrinter()
+    numpy_code = expr._numpycode(printer)
+    import_statements = __print_imports(printer)
+    _append_to_docstring(
+        type(expr),
+        f"""
+    .. code::
+
+        {import_statements}
+        {numpy_code}
     """,
     )
 
