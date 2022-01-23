@@ -333,10 +333,10 @@ class Theta(UnevaluatedExpression):
         return fR"\theta\left({momentum}\right)"
 
 
-class BoostZ(sp.Expr):
+class BoostZMatrix(sp.Expr):
     """Represents a Lorentz boost matrix in the :math:`z`-direction."""
 
-    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
+    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
         return create_expression(cls, beta, **kwargs)
 
     @property
@@ -379,10 +379,10 @@ class BoostZ(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class RotationY(sp.Expr):
+class RotationYMatrix(sp.Expr):
     """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
         return create_expression(cls, angle, **hints)
 
     @property
@@ -424,10 +424,10 @@ class RotationY(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class RotationZ(sp.Expr):
+class RotationZMatrix(sp.Expr):
     """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
         return create_expression(cls, angle, **hints)
 
     @property
@@ -532,9 +532,9 @@ def compute_helicity_angles(
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
                         k: ArrayMultiplication(
-                            BoostZ(beta),
-                            RotationY(-theta),
-                            RotationZ(-phi),
+                            BoostZMatrix(beta),
+                            RotationYMatrix(-theta),
+                            RotationZMatrix(-phi),
                             p,
                         )
                         for k, p in four_momenta.items()

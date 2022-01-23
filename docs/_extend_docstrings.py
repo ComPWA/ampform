@@ -57,22 +57,22 @@ def extend_BlattWeisskopfSquared() -> None:
     _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 
-def extend_BoostZ() -> None:
-    from ampform.kinematics import BoostZ
+def extend_BoostZMatrix() -> None:
+    from ampform.kinematics import BoostZMatrix
 
     beta = sp.Symbol("beta")
-    expr = BoostZ(beta)
+    expr = BoostZMatrix(beta)
     _append_to_docstring(
-        BoostZ,
+        BoostZMatrix,
         f"""\n
     This boost operates on a `FourMomentumSymbol` and looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
-        :label: BoostZ
+        :label: BoostZMatrix
     """,
     )
     _append_to_docstring(
-        BoostZ,
+        BoostZMatrix,
         """
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
     a computational backend and it should operate on four-momentum arrays of
@@ -81,7 +81,7 @@ def extend_BoostZ() -> None:
     """,
     )
     b = sp.Symbol("b")
-    _append_code_rendering(BoostZ(b))
+    _append_code_rendering(BoostZMatrix(b))
 
 
 def extend_BreakupMomentumSquared() -> None:
@@ -232,42 +232,42 @@ def extend_Phi() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_RotationY() -> None:
-    from ampform.kinematics import RotationY
+def extend_RotationYMatrix() -> None:
+    from ampform.kinematics import RotationYMatrix
 
     angle = sp.Symbol("alpha")
-    expr = RotationY(angle)
+    expr = RotationYMatrix(angle)
     _append_to_docstring(
-        RotationY,
+        RotationYMatrix,
         f"""\n
     The matrix for a rotation over angle :math:`\\alpha` around the
     :math:`y`-axis operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
-        :label: RotationY
+        :label: RotationYMatrix
 
-    See `RotationZ` for the computational code.
+    See `RotationZMatrix` for the computational code.
     """,
     )
 
 
-def extend_RotationZ() -> None:
-    from ampform.kinematics import RotationZ
+def extend_RotationZMatrix() -> None:
+    from ampform.kinematics import RotationZMatrix
 
     angle = sp.Symbol("alpha")
-    expr = RotationZ(angle)
+    expr = RotationZMatrix(angle)
     _append_to_docstring(
-        RotationZ,
+        RotationZMatrix,
         f"""\n
     The matrix for a rotation over angle :math:`\\alpha` around the
     :math:`z`-axis operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
-        :label: RotationZ
+        :label: RotationZMatrix
     """,
     )
     _append_to_docstring(
-        RotationZ,
+        RotationZMatrix,
         """
     In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
     a computational backend and it should operate on four-momentum arrays of
@@ -276,7 +276,7 @@ def extend_RotationZ() -> None:
     """,
     )
     a = sp.Symbol("a")
-    _append_code_rendering(RotationZ(a))
+    _append_code_rendering(RotationZMatrix(a))
 
 
 def extend_Theta() -> None:
