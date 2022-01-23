@@ -569,7 +569,7 @@ class RotationY(sp.Expr):
 class RotationZ(sp.Expr):
     angle: sp.Expr = property(lambda self: self.args[0])
 
-    def __new__(cls, angle: sp.Symbol, **hints: Any) -> "RotationZ":
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
         return create_expression(cls, angle, **hints)
 
     def as_explicit(self) -> sp.Expr:
