@@ -46,22 +46,6 @@ if TYPE_CHECKING:
         from typing import TypeAlias
 
 
-FourMomentumSymbol: "TypeAlias" = ArraySymbol
-r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
-
-The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
-of events. The four-momenta are assumed to be in the order
-:math:`\left(E,\vec{p}\right)`. See also `Energy`, `FourMomentumX`,
-`FourMomentumY`, and `FourMomentumZ`.
-"""
-FourMomenta = Dict[int, "FourMomentumSymbol"]
-"""A mapping of state IDs to their corresponding `FourMomentumSymbol`."""
-
-
-# for numpy broadcasting
-ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
-
-
 @attr.s(on_setattr=attr.setters.frozen)
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
@@ -157,113 +141,32 @@ class HelicityAdapter:
         return output
 
 
-def get_helicity_angle_label(
-    topology: Topology, state_id: int
-) -> Tuple[str, str]:
-    """Generate labels that can be used to identify helicity angles.
-
-    The generated subscripts describe the decay sequence from the right to the
-    left, separated by commas. Resonance edge IDs are expressed as a sum of the
-    final state IDs that lie below them (see
-    :func:`.determine_attached_final_state`). The generated label does not
-    state the top-most edge (the initial state).
-
-    Example
-    -------
-    The following two allowed isobar topologies for a **1-to-5-body** decay
-    illustrates how the naming scheme results in a unique label for each of the
-    **eight edges** in the decay topology. Note that label only uses final
-    state IDs, but still reflects the internal decay topology.
+def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
+    """Create a set of array-symbols for a `~qrules.topology.Topology`.
 
     >>> from qrules.topology import create_isobar_topologies
-    >>> topologies = create_isobar_topologies(5)
-    >>> topology = topologies[0]
-    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
-    ...     print(f"{i}: '{phi_label}'")
-    0: 'phi_0,0+3+4'
-    1: 'phi_1,1+2'
-    2: 'phi_2,1+2'
-    3: 'phi_3,3+4,0+3+4'
-    4: 'phi_4,3+4,0+3+4'
-    5: 'phi_0+3+4'
-    6: 'phi_1+2'
-    7: 'phi_3+4,0+3+4'
-    >>> topology = topologies[1]
-    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
-    ...     print(f"{i}: '{phi_label}'")
-    0: 'phi_0,0+1'
-    1: 'phi_1,0+1'
-    2: 'phi_2,2+3+4'
-    3: 'phi_3,3+4,2+3+4'
-    4: 'phi_4,3+4,2+3+4'
-    5: 'phi_0+1'
-    6: 'phi_2+3+4'
-    7: 'phi_3+4,2+3+4'
-
-    Some labels explained:
-
-    - :code:`phi_1+2`: **edge 6** on the *left* topology, because for this
-      topology, we have :math:`p_6=p_1+p_2`.
-    - :code:`phi_2+3+4`: **edge 6** *right*, because for this topology,
-      :math:`p_6=p_2+p_3+p_4`.
-    - :code:`phi_1,1+2`: **edge 1** *left*, because 1 decays from
-      :math:`p_6=p_1+p_2`.
-    - :code:`phi_1,0+1`: **edge 1** *right*, because it decays from
-      :math:`p_5=p_0+p_1`.
-    - :code:`phi_4,3+4,2+3+4`: **edge 4** *right*, because it decays from edge
-      7 (:math:`p_7=p_3+p_4`), which comes from edge 6
-      (:math:`p_7=p_2+p_3+p_4`).
-
-    As noted, the top-most parent (initial state) is not listed in the label.
+    >>> topologies = create_isobar_topologies(3)
+    >>> create_four_momentum_symbols(topologies[0])
+    {0: p0, 1: p1, 2: p2}
     """
-    _assert_isobar_topology(topology)
-
-    def recursive_label(topology: Topology, state_id: int) -> str:
-        edge = topology.edges[state_id]
-        if edge.ending_node_id is None:
-            label = f"{state_id}"
-        else:
-            attached_final_state_ids = determine_attached_final_state(
-                topology, state_id
-            )
-            label = "+".join(map(str, attached_final_state_ids))
-        if edge.originating_node_id is not None:
-            incoming_state_ids = topology.get_edge_ids_ingoing_to_node(
-                edge.originating_node_id
-            )
-            state_id = next(iter(incoming_state_ids))
-            if state_id not in topology.incoming_edge_ids:
-                label += f",{recursive_label(topology, state_id)}"
-        return label
-
-    label = recursive_label(topology, state_id)
-    return f"phi_{label}", f"theta_{label}"
+    n_final_states = len(topology.outgoing_edge_ids)
+    return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
 
 
-def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
-    """Generate an invariant mass label for a state (edge on a topology).
+FourMomenta = Dict[int, "FourMomentumSymbol"]
+"""A mapping of state IDs to their corresponding `FourMomentumSymbol`."""
+FourMomentumSymbol: "TypeAlias" = ArraySymbol
+r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
-    Example
-    -------
-    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant
-    mass of state :math:`5` is :math:`m_{034}`, because
-    :math:`p_5=p_0+p_3+p_4`:
+The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
+of events. The four-momenta are assumed to be in the order
+:math:`\left(E,\vec{p}\right)`. See also `Energy`, `FourMomentumX`,
+`FourMomentumY`, and `FourMomentumZ`.
+"""
 
-    >>> from qrules.topology import create_isobar_topologies
-    >>> topologies = create_isobar_topologies(5)
-    >>> get_invariant_mass_label(topologies[0], state_id=5)
-    'm_034'
 
-    Naturally, the 'invariant' mass label for a final state is just the mass of the
-    state itself:
-
-    >>> get_invariant_mass_label(topologies[0], state_id=1)
-    'm_1'
-    """
-    final_state_ids = determine_attached_final_state(topology, state_id)
-    return f"m_{''.join(map(str, sorted(final_state_ids)))}"
+# for numpy broadcasting
+ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
 
 
 def compute_helicity_angles(
@@ -381,6 +284,115 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
+
+
+def get_helicity_angle_label(
+    topology: Topology, state_id: int
+) -> Tuple[str, str]:
+    """Generate labels that can be used to identify helicity angles.
+
+    The generated subscripts describe the decay sequence from the right to the
+    left, separated by commas. Resonance edge IDs are expressed as a sum of the
+    final state IDs that lie below them (see
+    :func:`.determine_attached_final_state`). The generated label does not
+    state the top-most edge (the initial state).
+
+    Example
+    -------
+    The following two allowed isobar topologies for a **1-to-5-body** decay
+    illustrates how the naming scheme results in a unique label for each of the
+    **eight edges** in the decay topology. Note that label only uses final
+    state IDs, but still reflects the internal decay topology.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> topology = topologies[0]
+    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
+    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
+    ...     print(f"{i}: '{phi_label}'")
+    0: 'phi_0,0+3+4'
+    1: 'phi_1,1+2'
+    2: 'phi_2,1+2'
+    3: 'phi_3,3+4,0+3+4'
+    4: 'phi_4,3+4,0+3+4'
+    5: 'phi_0+3+4'
+    6: 'phi_1+2'
+    7: 'phi_3+4,0+3+4'
+    >>> topology = topologies[1]
+    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
+    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
+    ...     print(f"{i}: '{phi_label}'")
+    0: 'phi_0,0+1'
+    1: 'phi_1,0+1'
+    2: 'phi_2,2+3+4'
+    3: 'phi_3,3+4,2+3+4'
+    4: 'phi_4,3+4,2+3+4'
+    5: 'phi_0+1'
+    6: 'phi_2+3+4'
+    7: 'phi_3+4,2+3+4'
+
+    Some labels explained:
+
+    - :code:`phi_1+2`: **edge 6** on the *left* topology, because for this
+      topology, we have :math:`p_6=p_1+p_2`.
+    - :code:`phi_2+3+4`: **edge 6** *right*, because for this topology,
+      :math:`p_6=p_2+p_3+p_4`.
+    - :code:`phi_1,1+2`: **edge 1** *left*, because 1 decays from
+      :math:`p_6=p_1+p_2`.
+    - :code:`phi_1,0+1`: **edge 1** *right*, because it decays from
+      :math:`p_5=p_0+p_1`.
+    - :code:`phi_4,3+4,2+3+4`: **edge 4** *right*, because it decays from edge
+      7 (:math:`p_7=p_3+p_4`), which comes from edge 6
+      (:math:`p_7=p_2+p_3+p_4`).
+
+    As noted, the top-most parent (initial state) is not listed in the label.
+    """
+    _assert_isobar_topology(topology)
+
+    def recursive_label(topology: Topology, state_id: int) -> str:
+        edge = topology.edges[state_id]
+        if edge.ending_node_id is None:
+            label = f"{state_id}"
+        else:
+            attached_final_state_ids = determine_attached_final_state(
+                topology, state_id
+            )
+            label = "+".join(map(str, attached_final_state_ids))
+        if edge.originating_node_id is not None:
+            incoming_state_ids = topology.get_edge_ids_ingoing_to_node(
+                edge.originating_node_id
+            )
+            state_id = next(iter(incoming_state_ids))
+            if state_id not in topology.incoming_edge_ids:
+                label += f",{recursive_label(topology, state_id)}"
+        return label
+
+    label = recursive_label(topology, state_id)
+    return f"phi_{label}", f"theta_{label}"
+
+
+def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
+    """Generate an invariant mass label for a state (edge on a topology).
+
+    Example
+    -------
+    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant
+    mass of state :math:`5` is :math:`m_{034}`, because
+    :math:`p_5=p_0+p_3+p_4`:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> get_invariant_mass_label(topologies[0], state_id=5)
+    'm_034'
+
+    Naturally, the 'invariant' mass label for a final state is just the mass of the
+    state itself:
+
+    >>> get_invariant_mass_label(topologies[0], state_id=1)
+    'm_1'
+    """
+    final_state_ids = determine_attached_final_state(topology, state_id)
+    return f"m_{''.join(map(str, sorted(final_state_ids)))}"
 
 
 class _ArraySum(sp.Expr):
@@ -857,18 +869,6 @@ def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
             f"Node {node_id} decays to {len(child_state_ids)} states,"
             " so this is not an isobar decay"
         )
-
-
-def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
-    """Create a set of array-symbols for a `~qrules.topology.Topology`.
-
-    >>> from qrules.topology import create_isobar_topologies
-    >>> topologies = create_isobar_topologies(3)
-    >>> create_four_momentum_symbols(topologies[0])
-    {0: p0, 1: p1, 2: p2}
-    """
-    n_final_states = len(topology.outgoing_edge_ids)
-    return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
 
 
 def determine_attached_final_state(
