@@ -673,8 +673,8 @@ def _implement_latex_subscript(
     ) -> Type[UnevaluatedExpression]:
         @functools.wraps(decorated_class.doit)
         def _latex(self: sp.Expr, printer: LatexPrinter, *args: Any) -> str:
-            momentum = printer._print(self.momentum)
-            if printer._needs_mul_brackets(self.momentum):
+            momentum = printer._print(self._momentum)
+            if printer._needs_mul_brackets(self._momentum):
                 momentum = fR"\left({momentum}\right)"
             else:
                 momentum = fR"{{{momentum}}}"
@@ -695,14 +695,14 @@ class Energy(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self.momentum, (slice(None), 0))
+        return ArraySlice(self._momentum, (slice(None), 0))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
+        momentum = printer._print(self._momentum)
         return fR"E\left({momentum}\right)"
 
 
@@ -718,11 +718,11 @@ class FourMomentumX(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self.momentum, (slice(None), 1))
+        return ArraySlice(self._momentum, (slice(None), 1))
 
 
 @_implement_latex_subscript(subscript="y")
@@ -737,11 +737,11 @@ class FourMomentumY(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self.momentum, (slice(None), 2))
+        return ArraySlice(self._momentum, (slice(None), 2))
 
 
 @_implement_latex_subscript(subscript="z")
@@ -756,11 +756,11 @@ class FourMomentumZ(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self.momentum, (slice(None), 3))
+        return ArraySlice(self._momentum, (slice(None), 3))
 
 
 @implement_doit_method
@@ -774,18 +774,18 @@ class ThreeMomentumNorm(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
         three_momentum = ArraySlice(
-            self.momentum, (slice(None), slice(1, None))
+            self._momentum, (slice(None), slice(1, None))
         )
         norm_squared = _ArrayAxisSum(three_momentum ** 2, axis=1)
         return sp.sqrt(norm_squared)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
+        momentum = printer._print(self._momentum)
         return fR"\left|\vec{{{momentum}}}\right|"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
@@ -801,15 +801,15 @@ class InvariantMass(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        p = self.momentum
+        p = self._momentum
         return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
+        momentum = printer._print(self._momentum)
         return f"m_{{{momentum}}}"
 
 
@@ -822,15 +822,15 @@ class Phi(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> sp.Expr:
-        p = self.momentum
+        p = self._momentum
         return sp.atan2(FourMomentumY(p), FourMomentumX(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
+        momentum = printer._print(self._momentum)
         return fR"\phi\left({momentum}\right)"
 
 
@@ -843,15 +843,15 @@ class Theta(UnevaluatedExpression):
         return create_expression(cls, momentum, **hints)
 
     @property
-    def momentum(self) -> "FourMomentumSymbol":
+    def _momentum(self) -> "FourMomentumSymbol":
         return self.args[0]
 
     def evaluate(self) -> sp.Expr:
-        p = self.momentum
+        p = self._momentum
         return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
+        momentum = printer._print(self._momentum)
         return fR"\theta\left({momentum}\right)"
 
 
