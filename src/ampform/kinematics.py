@@ -51,7 +51,8 @@ r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
 The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
 of events. The four-momenta are assumed to be in the order
-:math:`\left(E,\vec{p}\right)`.
+:math:`\left(E,\vec{p}\right)`. See also `Energy`, `FourMomentumX`,
+`FourMomentumY`, and `FourMomentumZ`.
 """
 FourMomenta = Dict[int, "FourMomentumSymbol"]
 """A mapping of state IDs to their corresponding `FourMomentumSymbol`."""
@@ -268,6 +269,23 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
 def compute_helicity_angles(
     four_momenta: "FourMomenta", topology: Topology
 ) -> Dict[str, sp.Expr]:
+    """Formulate expressions for all helicity angles in a topology.
+
+    Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles
+    appearing in a given `~qrules.topology.Topology`. The expressions are given
+    in terms of `FourMomenta` The expressions returned as values in a
+    `dict`, where the keys are defined by :func:`get_helicity_angle_label`.
+
+    Example
+    -------
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> four_momenta = create_four_momentum_symbols(topology)
+    >>> angles = compute_helicity_angles(four_momenta, topology)
+    >>> angles["theta_1+2"]
+    Theta(p1 + p2)
+    """
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
             f"Momentum IDs {set(four_momenta)} do not match "
@@ -654,6 +672,8 @@ def _implement_latex_subscript(
 @implement_doit_method
 @make_commutative
 class Energy(HasMomentum, UnevaluatedExpression):
+    """Represents the energy-component of a `FourMomentumSymbol`."""
+
     def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
@@ -669,6 +689,8 @@ class Energy(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumX(HasMomentum, UnevaluatedExpression):
+    """Component :math:`x` of a `FourMomentumSymbol`."""
+
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
     ) -> "FourMomentumX":
@@ -682,6 +704,8 @@ class FourMomentumX(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumY(HasMomentum, UnevaluatedExpression):
+    """Component :math:`y` of a `FourMomentumSymbol`."""
+
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
     ) -> "FourMomentumY":
@@ -695,6 +719,8 @@ class FourMomentumY(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumZ(HasMomentum, UnevaluatedExpression):
+    """Component :math:`z` of a `FourMomentumSymbol`."""
+
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
     ) -> "FourMomentumZ":
@@ -793,6 +819,13 @@ def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
 
 
 def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
+    """Create a set of array-symbols for a `~qrules.topology.Topology`.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> create_four_momentum_symbols(topologies[0])
+    {0: p0, 1: p1, 2: p2}
+    """
     n_final_states = len(topology.outgoing_edge_ids)
     return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
 

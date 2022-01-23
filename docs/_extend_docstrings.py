@@ -34,7 +34,14 @@ from ampform.helicity import (
     formulate_clebsch_gordan_coefficients,
     formulate_wigner_d,
 )
-from ampform.kinematics import get_helicity_angle_label
+from ampform.kinematics import (
+    Energy,
+    FourMomentumX,
+    FourMomentumY,
+    FourMomentumZ,
+    get_helicity_angle_label,
+)
+from ampform.sympy._array_expressions import ArraySymbol
 from ampform.sympy.math import ComplexSqrt
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -166,6 +173,23 @@ def __get_graphviz_state_transition_example(
             f'label="{state_id+2}: ',
         )
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
+
+
+def render_four_momentum_components() -> None:
+    def _render(component_class: Type[sp.Expr]) -> None:
+        p = ArraySymbol("p")
+        energy = component_class(p)
+        update_docstring(
+            component_class,
+            f"""\n
+            :math:`{sp.latex(energy)}={sp.latex(energy.doit())}`
+            """,
+        )
+
+    _render(Energy)
+    _render(FourMomentumX)
+    _render(FourMomentumY)
+    _render(FourMomentumZ)
 
 
 def render_get_helicity_angle_label() -> None:
