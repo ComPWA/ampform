@@ -283,7 +283,7 @@ def compute_helicity_angles(
                 )
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = ArraySum(
+                    four_momentum = _ArraySum(
                         *[four_momenta[i] for i in sub_momenta_ids]
                     )
 
@@ -293,7 +293,7 @@ def compute_helicity_angles(
                     p3_norm = ThreeMomentumNorm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
-                        k: ArrayMultiplication(
+                        k: _ArrayMultiplication(
                             BoostZ(beta),
                             RotationY(-theta),
                             RotationZ(-phi),
@@ -339,7 +339,7 @@ def compute_invariant_masses(
     invariant_masses = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
-        total_momentum = ArraySum(
+        total_momentum = _ArraySum(
             *[four_momenta[i] for i in attached_state_ids]
         )
         invariant_mass = InvariantMass(total_momentum)
@@ -348,7 +348,7 @@ def compute_invariant_masses(
     return invariant_masses
 
 
-class ArraySum(sp.Expr):
+class _ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
     terms: Tuple[sp.Basic, ...] = property(lambda self: self.args)  # type: ignore[assignment]
 
@@ -364,15 +364,15 @@ class ArraySum(sp.Expr):
                 name = next(iter(names))
                 subscript = "".join(map(_get_subscript, self.terms))
                 return f"{{{name}}}_{{{subscript}}}"
-        return printer._print_ArraySum(self)
+        return printer._print__ArraySum(self)
 
 
-def _print_array_sum(self: Printer, expr: ArraySum) -> str:
+def _print_array_sum(self: Printer, expr: _ArraySum) -> str:
     terms = map(self._print, expr.terms)
     return " + ".join(terms)
 
 
-Printer._print_ArraySum = _print_array_sum
+Printer._print__ArraySum = _print_array_sum
 
 
 def _get_subscript(symbol: sp.Symbol) -> str:
@@ -411,13 +411,13 @@ def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
 
 
 @make_commutative
-class ArrayAxisSum(sp.Expr):
+class _ArrayAxisSum(sp.Expr):
     array: ArraySymbol = property(lambda self: self.args[0])
     axis: Optional[int] = property(lambda self: self.args[1])  # type: ignore[assignment]
 
     def __new__(
         cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
-    ) -> "ArrayAxisSum":
+    ) -> "_ArrayAxisSum":
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             raise TypeError("Only single digits allowed for axis")
         return create_expression(cls, array, axis, **hints)
@@ -436,10 +436,12 @@ class ArrayAxisSum(sp.Expr):
         return f"sum({array}, axis={axis})"
 
 
-class ArrayMultiplication(sp.Expr):
+class _ArrayMultiplication(sp.Expr):
     tensors: List[sp.Expr] = property(lambda self: self.args)  # type: ignore[assignment]
 
-    def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
+    def __new__(
+        cls, *tensors: sp.Expr, **hints: Any
+    ) -> "_ArrayMultiplication":
         return create_expression(cls, *tensors, **hints)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -674,7 +676,7 @@ class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
         three_momentum = ArraySlice(
             self.momentum, (slice(None), slice(1, None))
         )
-        norm_squared = ArrayAxisSum(three_momentum ** 2, axis=1)
+        norm_squared = _ArrayAxisSum(three_momentum ** 2, axis=1)
         return sp.sqrt(norm_squared)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
