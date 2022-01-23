@@ -1,9 +1,7 @@
 # pylint: disable=no-member, no-self-use, redefined-outer-name
-# cspell:ignore atol doprint matexpr
-from textwrap import dedent
+# cspell:ignore atol doprint
 from typing import Dict, Tuple
 
-import black
 import numpy as np
 import pytest
 import sympy as sp
@@ -21,8 +19,6 @@ from ampform.kinematics import (
     Phi,
     Theta,
     ThreeMomentumNorm,
-    _ArrayMultiplication,
-    _ArraySum,
     compute_helicity_angles,
     compute_invariant_masses,
     create_four_momentum_symbols,
@@ -49,40 +45,6 @@ def helicity_angles(
 ) -> Dict[str, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
-
-
-class TestArrayMultiplication:
-    def test_numpy_str(self):
-        n_events = 3
-        momentum = sp.MatrixSymbol("p", m=n_events, n=4)
-        beta = sp.Symbol("beta")
-        theta = sp.Symbol("theta")
-        expr = _ArrayMultiplication(beta, theta, momentum)
-        numpy_code = _generate_numpy_code(expr)
-        numpy_code = black.format_str(
-            numpy_code, mode=black.Mode(line_length=70)
-        )
-        expected = """\
-        einsum("...ij,...j->...i", beta, einsum("...ij,...j->...i", theta, p))
-        """
-        assert numpy_code == dedent(expected)
-
-
-class TestArraySum:
-    def test_latex(self):
-        x, y = sp.symbols("x y")
-        array_sum = _ArraySum(x ** 2, sp.cos(y))
-        assert sp.latex(array_sum) == R"x^{2} + \cos{\left(y \right)}"
-
-    def test_latex_array_symbols(self):
-        p0, p1, p2, p3 = sp.symbols("p:4", cls=ArraySymbol)
-        array_sum = _ArraySum(p0, p1, p2, p3)
-        assert sp.latex(array_sum) == "{p}_{0123}"
-
-    def test_numpy(self):
-        expr = _ArraySum(*sp.symbols("x y"))
-        numpy_code = _generate_numpy_code(expr)
-        assert numpy_code == "x + y"
 
 
 class TestFourMomentumXYZ:

@@ -4,28 +4,15 @@
 
 import itertools
 import sys
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-)
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
 
 import attr
 import sympy as sp
 from attr.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
-from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
-from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.printer import Printer
 
 from ampform.sympy import (
     UnevaluatedExpression,
@@ -34,7 +21,13 @@ from ampform.sympy import (
     implement_doit_method,
     make_commutative,
 )
-from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
+from ampform.sympy._array_expressions import (
+    ArrayAxisSum,
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySum,
+    ArraySymbol,
+)
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -266,7 +259,7 @@ class ThreeMomentumNorm(UnevaluatedExpression):
         three_momentum = ArraySlice(
             self._momentum, (slice(None), slice(1, None))
         )
-        norm_squared = _ArrayAxisSum(three_momentum ** 2, axis=1)
+        norm_squared = ArrayAxisSum(three_momentum ** 2, axis=1)
         return sp.sqrt(norm_squared)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -392,7 +385,7 @@ def compute_helicity_angles(
                 )
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = _ArraySum(
+                    four_momentum = ArraySum(
                         *[four_momenta[i] for i in sub_momenta_ids]
                     )
 
@@ -402,7 +395,7 @@ def compute_helicity_angles(
                     p3_norm = ThreeMomentumNorm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
-                        k: _ArrayMultiplication(
+                        k: ArrayMultiplication(
                             BoostZ(beta),
                             RotationY(-theta),
                             RotationZ(-phi),
@@ -448,7 +441,7 @@ def compute_invariant_masses(
     invariant_masses = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
-        total_momentum = _ArraySum(
+        total_momentum = ArraySum(
             *[four_momenta[i] for i in attached_state_ids]
         )
         invariant_mass = InvariantMass(total_momentum)
@@ -564,136 +557,6 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
     """
     final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
-
-
-class _ArraySum(sp.Expr):
-    precedence = PRECEDENCE["Add"]
-
-    def __new__(cls, *terms: sp.Basic, **hints: Any) -> "Energy":
-        return create_expression(cls, *terms, **hints)
-
-    @property
-    def terms(self) -> Tuple[sp.Basic, ...]:
-        return self.args
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        if all(
-            map(lambda i: isinstance(i, (sp.Symbol, ArraySymbol)), self.terms)
-        ):
-            names = set(map(_strip_subscript_superscript, self.terms))
-            if len(names) == 1:
-                name = next(iter(names))
-                subscript = "".join(map(_get_subscript, self.terms))
-                return f"{{{name}}}_{{{subscript}}}"
-        return printer._print__ArraySum(self)
-
-
-def _print_array_sum(self: Printer, expr: _ArraySum) -> str:
-    terms = map(self._print, expr.terms)
-    return " + ".join(terms)
-
-
-Printer._print__ArraySum = _print_array_sum
-
-
-def _get_subscript(symbol: sp.Symbol) -> str:
-    """Collect subscripts from a `sympy.core.symbol.Symbol`.
-
-    >>> _get_subscript(sp.Symbol("p1"))
-    '1'
-    >>> _get_subscript(sp.Symbol("p^2_{0,0}"))
-    '0,0'
-    """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
-    _, _, subscripts = split_super_sub(text)
-    stripped_subscripts: Iterable[str] = map(
-        lambda s: s.strip("{").strip("}"), subscripts
-    )
-    return " ".join(stripped_subscripts)
-
-
-def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
-    """Collect subscripts from a `sympy.core.symbol.Symbol`.
-
-    >>> _strip_subscript_superscript(sp.Symbol("p1"))
-    'p'
-    >>> _strip_subscript_superscript(sp.Symbol("p^2_{0,0}"))
-    'p'
-    """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
-    name, _, _ = split_super_sub(text)
-    return name
-
-
-@make_commutative
-class _ArrayAxisSum(sp.Expr):
-    def __new__(
-        cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
-    ) -> "_ArrayAxisSum":
-        if axis is not None and not isinstance(axis, (int, sp.Integer)):
-            raise TypeError("Only single digits allowed for axis")
-        return create_expression(cls, array, axis, **hints)
-
-    @property
-    def array(self) -> ArraySymbol:
-        return self.args[0]
-
-    @property
-    def axis(self) -> Optional[int]:
-        return self.args[1]
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        array = printer._print(self.array)
-        if self.axis is None:
-            return fR"\sum{{{array}}}"
-        axis = printer._print(self.axis)
-        return fR"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].add("sum")
-        array = printer._print(self.array)
-        axis = printer._print(self.axis)
-        return f"sum({array}, axis={axis})"
-
-
-class _ArrayMultiplication(sp.Expr):
-    def __new__(
-        cls, *tensors: sp.Expr, **hints: Any
-    ) -> "_ArrayMultiplication":
-        return create_expression(cls, *tensors, **hints)
-
-    @property
-    def tensors(self) -> List[sp.Expr]:
-        return self.args
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        tensors = map(printer._print, self.tensors)
-        return " ".join(tensors)
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
-            return f'einsum("...ij,...j->...i", {matrix}, {vector})'
-
-        def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
-            if len(tensors) < 2:
-                raise ValueError("Need at least two tensors")
-            if len(tensors) == 2:
-                return multiply(tensors[0], tensors[1])
-            return multiply(tensors[0], recursive_multiply(tensors[1:]))
-
-        printer.module_imports[printer._module].update({"einsum", "transpose"})
-        tensors = list(map(printer._print, self.args))
-        if len(tensors) == 0:
-            return ""
-        if len(tensors) == 1:
-            return tensors[0]
-        return recursive_multiply(tensors)
 
 
 class BoostZ(sp.Expr):
