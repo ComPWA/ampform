@@ -260,7 +260,7 @@ def extend_RotationZ() -> None:
         RotationZ,
         f"""\n
     The matrix for a rotation over angle :math:`\\alpha` around the
-    :math:`y`-axis operating on `FourMomentumSymbol` looks like:
+    :math:`z`-axis operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :label: RotationZ
