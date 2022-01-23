@@ -2,13 +2,11 @@
 # pylint: disable=arguments-differ,no-member,protected-access,unused-argument
 """Classes and functions for relativistic four-momentum kinematics."""
 
-import functools
 import itertools
 import sys
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Dict,
     Iterable,
     List,
@@ -16,7 +14,6 @@ from typing import (
     Sequence,
     Set,
     Tuple,
-    Type,
 )
 
 import attr
@@ -32,6 +29,7 @@ from sympy.printing.printer import Printer
 
 from ampform.sympy import (
     UnevaluatedExpression,
+    _implement_latex_subscript,
     create_expression,
     implement_doit_method,
     make_commutative,
@@ -663,27 +661,6 @@ class RotationZ(sp.Expr):
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
         ).transpose((2, 0, 1))"""
-
-
-def _implement_latex_subscript(
-    subscript: str,
-) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
-    def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
-        @functools.wraps(decorated_class.doit)
-        def _latex(self: sp.Expr, printer: LatexPrinter, *args: Any) -> str:
-            momentum = printer._print(self._momentum)
-            if printer._needs_mul_brackets(self._momentum):
-                momentum = fR"\left({momentum}\right)"
-            else:
-                momentum = fR"{{{momentum}}}"
-            return f"{momentum}_{subscript}"
-
-        decorated_class._latex = _latex  # type: ignore[assignment]
-        return decorated_class
-
-    return decorator
 
 
 @implement_doit_method

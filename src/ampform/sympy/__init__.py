@@ -127,6 +127,28 @@ def implement_doit_method(decorated_class: DecoratedClass) -> DecoratedClass:
     return decorated_class
 
 
+def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
+    subscript: str,
+) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+    def decorator(
+        decorated_class: Type[UnevaluatedExpression],
+    ) -> Type[UnevaluatedExpression]:
+        # pylint: disable=protected-access, unused-argument
+        @functools.wraps(decorated_class.doit)
+        def _latex(self: sp.Expr, printer: LatexPrinter, *args: Any) -> str:
+            momentum = printer._print(self._momentum)
+            if printer._needs_mul_brackets(self._momentum):
+                momentum = fR"\left({momentum}\right)"
+            else:
+                momentum = fR"{{{momentum}}}"
+            return f"{momentum}_{subscript}"
+
+        decorated_class._latex = _latex  # type: ignore[assignment]
+        return decorated_class
+
+    return decorator
+
+
 def make_commutative(decorated_class: DecoratedClass) -> DecoratedClass:
     decorated_class.is_commutative = True  # type: ignore[attr-defined]
     decorated_class.is_extended_real = True  # type: ignore[attr-defined]
