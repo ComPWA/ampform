@@ -137,6 +137,7 @@ add_module_names = False
 autodoc_default_options = {
     "exclude-members": ", ".join(
         [
+            "as_explicit",
             "default_assumptions",
             "doit",
             "evaluate",
