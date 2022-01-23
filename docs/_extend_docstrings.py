@@ -58,17 +58,7 @@ def extend_blatt_weisskopf() -> None:
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
     expr = BlattWeisskopfSquared(L, z)
-    latex = _create_latex_doit_definition(expr, deep=True)
-    _update_docstring(
-        BlattWeisskopfSquared,
-        f"""
-    .. math::
-        :label: BlattWeisskopfSquared
-        :class: full-width
-
-        {latex}
-    """,
-    )
+    _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 
 def extend_boost_z() -> None:
@@ -106,16 +96,7 @@ def extend_boost_z() -> None:
 def extend_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)
-    latex = _create_latex_doit_definition(expr, deep=True)
-    _update_docstring(
-        BreakupMomentumSquared,
-        f"""
-    .. math::
-        :label: BreakupMomentumSquared
-
-        {latex}
-    """,
-    )
+    _append_latex_doit_definition(expr, deep=True)
 
 
 def extend_complex_sqrt() -> None:
@@ -131,6 +112,13 @@ def extend_complex_sqrt() -> None:
 
 
 def extend_energy_dependent_width() -> None:
+    _update_docstring(
+        EnergyDependentWidth,
+        """
+    With that in mind, the "mass-dependent" width in a
+    `.relativistic_breit_wigner_with_ff` becomes:
+    """,
+    )
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
     expr = EnergyDependentWidth(
@@ -142,18 +130,10 @@ def extend_energy_dependent_width() -> None:
         angular_momentum=L,
         meson_radius=1,
     )
-    latex = _create_latex_doit_definition(expr)
+    _append_latex_doit_definition(expr)
     _update_docstring(
         EnergyDependentWidth,
-        fR"""
-    With that in mind, the "mass-dependent" width in a
-    `.relativistic_breit_wigner_with_ff` becomes:
-
-    .. math::
-        :label: EnergyDependentWidth
-
-        {latex}
-
+        R"""
     where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
     defined by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default)
     defined by :eq:`PhaseSpaceFactor`.
@@ -257,31 +237,16 @@ def extend_get_helicity_angle_label() -> None:
 def extend_invariant_mass() -> None:
     p = ArraySymbol("p")
     expr = InvariantMass(p)
-    latex = _create_latex_doit_definition(expr)
-    _update_docstring(
-        InvariantMass,
-        f"""\n
-    .. math::
-        :label: InvariantMass
-
-        {latex}
-    """,
-    )
+    _append_latex_doit_definition(expr)
 
 
 def extend_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
-    latex = _create_latex_doit_definition(expr)
+    _append_latex_doit_definition(expr)
     _update_docstring(
         PhaseSpaceFactor,
-        f"""
-
-    .. math::
-        :label: PhaseSpaceFactor
-
-        {latex}
-
+        """
     with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
@@ -290,16 +255,10 @@ def extend_phase_space_factor() -> None:
 def extend_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
-    latex = _create_latex_doit_definition(expr)
+    _append_latex_doit_definition(expr)
     _update_docstring(
         PhaseSpaceFactorAbs,
-        fR"""
-
-    .. math::
-        :label: PhaseSpaceFactorAbs
-
-        {latex}
-
+        """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
@@ -308,16 +267,11 @@ def extend_phase_space_factor_abs() -> None:
 def extend_phase_space_factor_analytic() -> None:
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
     expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
-    latex = _create_latex_doit_definition(expr)
+    _append_latex_doit_definition(expr)
     rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
     _update_docstring(
         PhaseSpaceFactorAnalytic,
-        fR"""
-    .. math::
-        :label: PhaseSpaceFactorAnalytic
-
-        {latex}
-
+        f"""
     with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
     :eq:`PhaseSpaceFactorAbs`.
     """,
@@ -327,16 +281,10 @@ def extend_phase_space_factor_analytic() -> None:
 def extend_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
-    latex = _create_latex_doit_definition(expr)
+    _append_latex_doit_definition(expr)
     _update_docstring(
         PhaseSpaceFactorComplex,
-        fR"""
-
-    .. math::
-        :label: PhaseSpaceFactorComplex
-
-        {latex}
-
+        """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
@@ -345,16 +293,7 @@ def extend_phase_space_factor_complex() -> None:
 def extend_phi() -> None:
     p = ArraySymbol("p")
     expr = Phi(p)
-    latex = _create_latex_doit_definition(expr)
-    _update_docstring(
-        Phi,
-        f"""\n
-    .. math::
-        :label: Phi
-
-        {latex}
-    """,
-    )
+    _append_latex_doit_definition(expr)
 
 
 def extend_relativistic_breit_wigner() -> None:
@@ -450,38 +389,33 @@ def extend_rotation_z() -> None:
 def extend_theta() -> None:
     p = ArraySymbol("p")
     expr = Theta(p)
-    latex = _create_latex_doit_definition(expr)
-    _update_docstring(
-        Theta,
-        f"""\n
-    .. math::
-        :label: Theta
-
-        {latex}
-    """,
-    )
+    _append_latex_doit_definition(expr)
 
 
 def extend_three_momentum_norm() -> None:
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
-    latex = _create_latex_doit_definition(expr)
-    _update_docstring(
-        ThreeMomentumNorm,
+    _append_latex_doit_definition(expr, deep=False)
+
+
+def _append_latex_doit_definition(
+    expr: sp.Expr, deep: bool = False, full_width: bool = False
+) -> None:
+    latex = _create_latex_doit_definition(expr, deep)
+    extras = ""
+    if full_width:
+        extras = """
+        :class: full-width
+        """
+    return _update_docstring(
+        type(expr),
         f"""\n
     .. math::
-        :label: ThreeMomentumNorm
+        :label: {type(expr).__name__}{extras}
 
         {latex}
     """,
     )
-
-
-def _update_docstring(
-    class_type: Union[Callable, Type], appended_text: str
-) -> None:
-    assert class_type.__doc__ is not None
-    class_type.__doc__ += appended_text
 
 
 def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
@@ -489,6 +423,13 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
         expr, expr.doit(deep=deep), environment="eqnarray"
     )
     return textwrap.indent(latex, prefix=8 * " ")
+
+
+def _update_docstring(
+    class_type: Union[Callable, Type], appended_text: str
+) -> None:
+    assert class_type.__doc__ is not None
+    class_type.__doc__ += appended_text
 
 
 def __print_imports(printer: NumPyPrinter) -> str:
