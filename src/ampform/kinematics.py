@@ -333,6 +333,142 @@ class Theta(UnevaluatedExpression):
         return fR"\theta\left({momentum}\right)"
 
 
+class BoostZ(sp.Expr):
+    """Represents a Lorentz boost **matrix** in the :math:`z`-direction."""
+
+    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
+        return create_expression(cls, beta, **kwargs)
+
+    @property
+    def beta(self) -> sp.Expr:
+        r"""Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`."""
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        beta = self.beta
+        gamma = 1 / sp.sqrt(1 - beta ** 2)
+        return sp.Matrix(
+            [
+                [gamma, 0, 0, -gamma * beta],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-gamma * beta, 0, 0, gamma],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        beta = printer._print(self.beta)
+        return fR"\boldsymbol{{B_z}}\left({beta}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].update(
+            {"array", "ones", "zeros", "sqrt"}
+        )
+        beta = printer._print(self.beta)
+        gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
+        n_events = f"len({beta})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],
+                [{zeros}, {ones}, {zeros}, {zeros}],
+                [{zeros}, {zeros}, {ones}, {zeros}],
+                [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
+            ]
+        ).transpose((2, 0, 1))"""
+
+
+class RotationY(sp.Expr):
+    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
+
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
+        return create_expression(cls, angle, **hints)
+
+    @property
+    def angle(self) -> sp.Expr:
+        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        angle = self.angle
+        return sp.Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, sp.cos(angle), 0, sp.sin(angle)],
+                [0, 0, 1, 0],
+                [0, -sp.sin(angle), 0, sp.cos(angle)],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        angle, *_ = self.args
+        angle = printer._print(angle)
+        return fR"\boldsymbol{{R_y}}\left({angle}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].update(
+            {"array", "cos", "ones", "zeros", "sin"}
+        )
+        angle = printer._print(self.angle)
+        n_events = f"len({angle})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, cos({angle}), {zeros}, sin({angle})],
+                [{zeros}, {zeros}, {ones}, {zeros}],
+                [{zeros}, -sin({angle}), {zeros}, cos({angle})],
+            ]
+        ).transpose((2, 0, 1))"""
+
+
+class RotationZ(sp.Expr):
+    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
+
+    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
+        return create_expression(cls, angle, **hints)
+
+    @property
+    def angle(self) -> sp.Expr:
+        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        angle = self.args[0]
+        return sp.Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, sp.cos(angle), -sp.sin(angle), 0],
+                [0, sp.sin(angle), sp.cos(angle), 0],
+                [0, 0, 0, 1],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        angle, *_ = self.args
+        angle = printer._print(angle)
+        return fR"\boldsymbol{{R_z}}\left({angle}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].update(
+            {"array", "cos", "ones", "zeros", "sin"}
+        )
+        angle = printer._print(self.angle)
+        n_events = f"len({angle})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, cos({angle}), -sin({angle}), {zeros}],
+                [{zeros}, sin({angle}), cos({angle}), {zeros}],
+                [{zeros}, {zeros}, {zeros}, {ones}],
+            ]
+        ).transpose((2, 0, 1))"""
+
+
 def compute_helicity_angles(
     four_momenta: "FourMomenta", topology: Topology
 ) -> Dict[str, sp.Expr]:
@@ -557,142 +693,6 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
     """
     final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
-
-
-class BoostZ(sp.Expr):
-    """Represents a Lorentz boost **matrix** in the :math:`z`-direction."""
-
-    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
-        return create_expression(cls, beta, **kwargs)
-
-    @property
-    def beta(self) -> sp.Expr:
-        r"""Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`."""
-        return self.args[0]
-
-    def as_explicit(self) -> sp.Expr:
-        beta = self.beta
-        gamma = 1 / sp.sqrt(1 - beta ** 2)
-        return sp.Matrix(
-            [
-                [gamma, 0, 0, -gamma * beta],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [-gamma * beta, 0, 0, gamma],
-            ]
-        )
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        beta = printer._print(self.beta)
-        return fR"\boldsymbol{{B_z}}\left({beta}\right)"
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "ones", "zeros", "sqrt"}
-        )
-        beta = printer._print(self.beta)
-        gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
-        n_events = f"len({beta})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
-        return f"""array(
-            [
-                [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],
-                [{zeros}, {ones}, {zeros}, {zeros}],
-                [{zeros}, {zeros}, {ones}, {zeros}],
-                [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
-            ]
-        ).transpose((2, 0, 1))"""
-
-
-class RotationY(sp.Expr):
-    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
-
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
-        return create_expression(cls, angle, **hints)
-
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
-
-    def as_explicit(self) -> sp.Expr:
-        angle = self.angle
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), 0, sp.sin(angle)],
-                [0, 0, 1, 0],
-                [0, -sp.sin(angle), 0, sp.cos(angle)],
-            ]
-        )
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        angle, *_ = self.args
-        angle = printer._print(angle)
-        return fR"\boldsymbol{{R_y}}\left({angle}\right)"
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "cos", "ones", "zeros", "sin"}
-        )
-        angle = printer._print(self.angle)
-        n_events = f"len({angle})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
-        return f"""array(
-            [
-                [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), {zeros}, sin({angle})],
-                [{zeros}, {zeros}, {ones}, {zeros}],
-                [{zeros}, -sin({angle}), {zeros}, cos({angle})],
-            ]
-        ).transpose((2, 0, 1))"""
-
-
-class RotationZ(sp.Expr):
-    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
-
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
-        return create_expression(cls, angle, **hints)
-
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
-
-    def as_explicit(self) -> sp.Expr:
-        angle = self.args[0]
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), -sp.sin(angle), 0],
-                [0, sp.sin(angle), sp.cos(angle), 0],
-                [0, 0, 0, 1],
-            ]
-        )
-
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        angle, *_ = self.args
-        angle = printer._print(angle)
-        return fR"\boldsymbol{{R_z}}\left({angle}\right)"
-
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "cos", "ones", "zeros", "sin"}
-        )
-        angle = printer._print(self.angle)
-        n_events = f"len({angle})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
-        return f"""array(
-            [
-                [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), -sin({angle}), {zeros}],
-                [{zeros}, sin({angle}), cos({angle}), {zeros}],
-                [{zeros}, {zeros}, {zeros}, {ones}],
-            ]
-        ).transpose((2, 0, 1))"""
 
 
 def _assert_isobar_topology(topology: Topology) -> None:
