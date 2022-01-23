@@ -1,5 +1,5 @@
 # flake8: noqa
-# pylint: disable=import-error,invalid-name,protected-access
+# pylint: disable=import-error,import-outside-toplevel,invalid-name,protected-access
 # pyright: reportMissingImports=false
 """Extend docstrings of the API.
 
@@ -19,42 +19,14 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.dynamics import (
-    BlattWeisskopfSquared,
-    BreakupMomentumSquared,
-    EnergyDependentWidth,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,
-    PhaseSpaceFactorAnalytic,
-    PhaseSpaceFactorComplex,
-    relativistic_breit_wigner,
-    relativistic_breit_wigner_with_ff,
-)
-from ampform.helicity import (
-    formulate_clebsch_gordan_coefficients,
-    formulate_wigner_d,
-)
-from ampform.kinematics import (
-    BoostZ,
-    Energy,
-    FourMomentumX,
-    FourMomentumY,
-    FourMomentumZ,
-    InvariantMass,
-    Phi,
-    RotationY,
-    RotationZ,
-    Theta,
-    ThreeMomentumNorm,
-    get_helicity_angle_label,
-)
 from ampform.sympy._array_expressions import ArraySymbol
-from ampform.sympy.math import ComplexSqrt
 
 logging.getLogger().setLevel(logging.ERROR)
 
 
 def extend_blatt_weisskopf() -> None:
+    from ampform.dynamics import BlattWeisskopfSquared
+
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
     expr = BlattWeisskopfSquared(L, z)
@@ -62,6 +34,8 @@ def extend_blatt_weisskopf() -> None:
 
 
 def extend_boost_z() -> None:
+    from ampform.kinematics import BoostZ
+
     beta = sp.Symbol("beta")
     expr = BoostZ(beta)
     _update_docstring(
@@ -94,12 +68,16 @@ def extend_boost_z() -> None:
 
 
 def extend_breakup_momentum_squared() -> None:
+    from ampform.dynamics import BreakupMomentumSquared
+
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)
     _append_latex_doit_definition(expr, deep=True)
 
 
 def extend_complex_sqrt() -> None:
+    from ampform.sympy.math import ComplexSqrt
+
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
     _update_docstring(
@@ -112,6 +90,8 @@ def extend_complex_sqrt() -> None:
 
 
 def extend_energy_dependent_width() -> None:
+    from ampform.dynamics import EnergyDependentWidth
+
     _update_docstring(
         EnergyDependentWidth,
         """
@@ -142,6 +122,8 @@ def extend_energy_dependent_width() -> None:
 
 
 def extend_formulate_wigner_d() -> None:
+    from ampform.helicity import formulate_wigner_d
+
     _update_docstring(
         formulate_wigner_d,
         __get_graphviz_state_transition_example("helicity"),
@@ -149,6 +131,8 @@ def extend_formulate_wigner_d() -> None:
 
 
 def extend_formulate_clebsch_gordan_coefficients() -> None:
+    from ampform.helicity import formulate_clebsch_gordan_coefficients
+
     _update_docstring(
         formulate_clebsch_gordan_coefficients,
         __get_graphviz_state_transition_example(
@@ -187,6 +171,13 @@ def __get_graphviz_state_transition_example(
 
 
 def extend_four_momentum_components() -> None:
+    from ampform.kinematics import (
+        Energy,
+        FourMomentumX,
+        FourMomentumY,
+        FourMomentumZ,
+    )
+
     def _extend(component_class: Type[sp.Expr]) -> None:
         p = ArraySymbol("p")
         energy = component_class(p)
@@ -204,6 +195,8 @@ def extend_four_momentum_components() -> None:
 
 
 def extend_get_helicity_angle_label() -> None:
+    from ampform.kinematics import get_helicity_angle_label
+
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(
         map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
@@ -235,12 +228,16 @@ def extend_get_helicity_angle_label() -> None:
 
 
 def extend_invariant_mass() -> None:
+    from ampform.kinematics import InvariantMass
+
     p = ArraySymbol("p")
     expr = InvariantMass(p)
     _append_latex_doit_definition(expr)
 
 
 def extend_phase_space_factor() -> None:
+    from ampform.dynamics import PhaseSpaceFactor
+
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
     _append_latex_doit_definition(expr)
@@ -253,6 +250,8 @@ def extend_phase_space_factor() -> None:
 
 
 def extend_phase_space_factor_abs() -> None:
+    from ampform.dynamics import PhaseSpaceFactorAbs
+
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
     _append_latex_doit_definition(expr)
@@ -265,6 +264,8 @@ def extend_phase_space_factor_abs() -> None:
 
 
 def extend_phase_space_factor_analytic() -> None:
+    from ampform.dynamics import PhaseSpaceFactorAbs, PhaseSpaceFactorAnalytic
+
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
     expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
     _append_latex_doit_definition(expr)
@@ -279,6 +280,8 @@ def extend_phase_space_factor_analytic() -> None:
 
 
 def extend_phase_space_factor_complex() -> None:
+    from ampform.dynamics import PhaseSpaceFactorComplex
+
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
     _append_latex_doit_definition(expr)
@@ -291,12 +294,16 @@ def extend_phase_space_factor_complex() -> None:
 
 
 def extend_phi() -> None:
+    from ampform.kinematics import Phi
+
     p = ArraySymbol("p")
     expr = Phi(p)
     _append_latex_doit_definition(expr)
 
 
 def extend_relativistic_breit_wigner() -> None:
+    from ampform.dynamics import relativistic_breit_wigner
+
     s, m0, w0 = sp.symbols("s m0 Gamma0")
     rel_bw = relativistic_breit_wigner(s, m0, w0)
     _update_docstring(
@@ -309,6 +316,8 @@ def extend_relativistic_breit_wigner() -> None:
 
 
 def extend_relativistic_breit_wigner_with_ff() -> None:
+    from ampform.dynamics import relativistic_breit_wigner_with_ff
+
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
     rel_bw_with_ff = relativistic_breit_wigner_with_ff(
@@ -337,6 +346,8 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
 
 
 def extend_rotation_y() -> None:
+    from ampform.kinematics import RotationY
+
     angle = sp.Symbol("alpha")
     expr = RotationY(angle)
     _update_docstring(
@@ -354,6 +365,8 @@ def extend_rotation_y() -> None:
 
 
 def extend_rotation_z() -> None:
+    from ampform.kinematics import RotationZ
+
     angle = sp.Symbol("alpha")
     expr = RotationZ(angle)
     _update_docstring(
@@ -387,12 +400,16 @@ def extend_rotation_z() -> None:
 
 
 def extend_theta() -> None:
+    from ampform.kinematics import Theta
+
     p = ArraySymbol("p")
     expr = Theta(p)
     _append_latex_doit_definition(expr)
 
 
 def extend_three_momentum_norm() -> None:
+    from ampform.kinematics import ThreeMomentumNorm
+
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
     _append_latex_doit_definition(expr, deep=False)
