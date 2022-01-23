@@ -28,6 +28,33 @@ class StateWithID(State):
         )
 
 
+def count_parents(topology: Topology, state_id: int) -> int:
+    """Count the number of parents above a certain state.
+
+    .. warning:: This only works on 1-to-:math:`n` isobar topologies.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> count_parents(topology, state_id=0)
+    1
+    >>> count_parents(topology, state_id=1)
+    2
+    >>> count_parents(topology, state_id=2)
+    2
+    >>> count_parents(topology, state_id=3)
+    1
+    >>> count_parents(topology, state_id=-1)
+    0
+    """
+    n_parents = 0
+    parent_id = get_parent_id(topology, state_id)
+    while parent_id is not None:
+        parent_id = get_parent_id(topology, parent_id)
+        n_parents += 1
+    return n_parents
+
+
 @attr.frozen
 class TwoBodyDecay:
     """Two-body sub-decay in a `~qrules.transition.StateTransition`.
