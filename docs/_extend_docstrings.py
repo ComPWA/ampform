@@ -499,17 +499,15 @@ def __print_imports(printer: NumPyPrinter) -> str:
     return code
 
 
-SCRIPT_NAME = __file__.rsplit("/", maxsplit=1)[-1]
-SCRIPT_NAME = ".".join(SCRIPT_NAME.split(".")[:-1])
-
-
 def extend_docstrings() -> None:
+    script_name = __file__.rsplit("/", maxsplit=1)[-1]
+    script_name = ".".join(script_name.split(".")[:-1])
     definitions = dict(globals())
     for name, definition in definitions.items():
         module = inspect.getmodule(definition)
         if module is None:
             continue
-        if module.__name__ not in {"__main__", SCRIPT_NAME}:
+        if module.__name__ not in {"__main__", script_name}:
             continue
         if not inspect.isfunction(definition):
             continue
