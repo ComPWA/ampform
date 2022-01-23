@@ -145,55 +145,6 @@ def extend_EnergyDependentWidth() -> None:
     )
 
 
-def extend_formulate_wigner_d() -> None:
-    from ampform.helicity import formulate_wigner_d
-
-    _append_to_docstring(
-        formulate_wigner_d,
-        __get_graphviz_state_transition_example("helicity"),
-    )
-
-
-def extend_formulate_clebsch_gordan_coefficients() -> None:
-    from ampform.helicity import formulate_clebsch_gordan_coefficients
-
-    _append_to_docstring(
-        formulate_clebsch_gordan_coefficients,
-        __get_graphviz_state_transition_example(
-            formalism="canonical-helicity", transition_number=1
-        ),
-    )
-
-
-def __get_graphviz_state_transition_example(
-    formalism: str, transition_number: int = 0
-) -> str:
-    reaction = qrules.generate_transitions(
-        initial_state=[("J/psi(1S)", [+1])],
-        final_state=[("gamma", [-1]), "f(0)(980)"],
-        formalism=formalism,
-    )
-    transition = reaction.transitions[transition_number]
-    new_interaction = attr.evolve(
-        transition.interactions[0],
-        parity_prefactor=None,
-    )
-    interactions = dict(transition.interactions)
-    interactions[0] = new_interaction
-    transition = attr.evolve(transition, interactions=interactions)
-    dot = qrules.io.asdot(
-        transition,
-        render_initial_state_id=True,
-        render_node=True,
-    )
-    for state_id in [0, 1, -1]:
-        dot = dot.replace(
-            f'label="{state_id}: ',
-            f'label="{state_id+2}: ',
-        )
-    return _graphviz_to_image(dot, indent=4, options={"align": "center"})
-
-
 def extend_Energy_and_FourMomentumXYZ() -> None:
     from ampform.kinematics import (
         Energy,
@@ -216,39 +167,6 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
     _extend(FourMomentumX)
     _extend(FourMomentumY)
     _extend(FourMomentumZ)
-
-
-def extend_get_helicity_angle_label() -> None:
-    from ampform.kinematics import get_helicity_angle_label
-
-    topologies = qrules.topology.create_isobar_topologies(5)
-    dot0, dot1, *_ = tuple(
-        map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
-    )
-    graphviz0 = _graphviz_to_image(
-        dot0,
-        indent=6,
-        caption=":code:`topologies[0]`",
-        label="one-to-five-topology-0",
-    )
-    graphviz1 = _graphviz_to_image(
-        dot1,
-        indent=6,
-        caption=":code:`topologies[1]`",
-        label="one-to-five-topology-1",
-    )
-    _append_to_docstring(
-        get_helicity_angle_label,
-        f"""
-
-    .. panels::
-      :body: text-center
-      {graphviz0}
-
-      ---
-      {graphviz1}
-    """,
-    )
 
 
 def extend_InvariantMass() -> None:
@@ -325,50 +243,6 @@ def extend_Phi() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_relativistic_breit_wigner() -> None:
-    from ampform.dynamics import relativistic_breit_wigner
-
-    s, m0, w0 = sp.symbols("s m0 Gamma0")
-    rel_bw = relativistic_breit_wigner(s, m0, w0)
-    _append_to_docstring(
-        relativistic_breit_wigner,
-        f"""
-    .. math:: {sp.latex(rel_bw)}
-        :label: relativistic_breit_wigner
-    """,
-    )
-
-
-def extend_relativistic_breit_wigner_with_ff() -> None:
-    from ampform.dynamics import relativistic_breit_wigner_with_ff
-
-    L = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
-    rel_bw_with_ff = relativistic_breit_wigner_with_ff(
-        s=s,
-        mass0=m0,
-        gamma0=w0,
-        m_a=m_a,
-        m_b=m_b,
-        angular_momentum=L,
-        meson_radius=d,
-    )
-    _append_to_docstring(
-        relativistic_breit_wigner_with_ff,
-        fR"""
-    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
-    factor is:
-
-    .. math:: {sp.latex(rel_bw_with_ff)}
-        :label: relativistic_breit_wigner_with_ff
-
-    where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
-    defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
-    :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
 def extend_RotationY() -> None:
     from ampform.kinematics import RotationY
 
@@ -437,6 +311,132 @@ def extend_ThreeMomentumNorm() -> None:
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
     _append_latex_doit_definition(expr, deep=False)
+
+
+def extend_formulate_clebsch_gordan_coefficients() -> None:
+    from ampform.helicity import formulate_clebsch_gordan_coefficients
+
+    _append_to_docstring(
+        formulate_clebsch_gordan_coefficients,
+        __get_graphviz_state_transition_example(
+            formalism="canonical-helicity", transition_number=1
+        ),
+    )
+
+
+def extend_formulate_wigner_d() -> None:
+    from ampform.helicity import formulate_wigner_d
+
+    _append_to_docstring(
+        formulate_wigner_d,
+        __get_graphviz_state_transition_example("helicity"),
+    )
+
+
+def __get_graphviz_state_transition_example(
+    formalism: str, transition_number: int = 0
+) -> str:
+    reaction = qrules.generate_transitions(
+        initial_state=[("J/psi(1S)", [+1])],
+        final_state=[("gamma", [-1]), "f(0)(980)"],
+        formalism=formalism,
+    )
+    transition = reaction.transitions[transition_number]
+    new_interaction = attr.evolve(
+        transition.interactions[0],
+        parity_prefactor=None,
+    )
+    interactions = dict(transition.interactions)
+    interactions[0] = new_interaction
+    transition = attr.evolve(transition, interactions=interactions)
+    dot = qrules.io.asdot(
+        transition,
+        render_initial_state_id=True,
+        render_node=True,
+    )
+    for state_id in [0, 1, -1]:
+        dot = dot.replace(
+            f'label="{state_id}: ',
+            f'label="{state_id+2}: ',
+        )
+    return _graphviz_to_image(dot, indent=4, options={"align": "center"})
+
+
+def extend_get_helicity_angle_label() -> None:
+    from ampform.kinematics import get_helicity_angle_label
+
+    topologies = qrules.topology.create_isobar_topologies(5)
+    dot0, dot1, *_ = tuple(
+        map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
+    )
+    graphviz0 = _graphviz_to_image(
+        dot0,
+        indent=6,
+        caption=":code:`topologies[0]`",
+        label="one-to-five-topology-0",
+    )
+    graphviz1 = _graphviz_to_image(
+        dot1,
+        indent=6,
+        caption=":code:`topologies[1]`",
+        label="one-to-five-topology-1",
+    )
+    _append_to_docstring(
+        get_helicity_angle_label,
+        f"""
+
+    .. panels::
+      :body: text-center
+      {graphviz0}
+
+      ---
+      {graphviz1}
+    """,
+    )
+
+
+def extend_relativistic_breit_wigner() -> None:
+    from ampform.dynamics import relativistic_breit_wigner
+
+    s, m0, w0 = sp.symbols("s m0 Gamma0")
+    rel_bw = relativistic_breit_wigner(s, m0, w0)
+    _append_to_docstring(
+        relativistic_breit_wigner,
+        f"""
+    .. math:: {sp.latex(rel_bw)}
+        :label: relativistic_breit_wigner
+    """,
+    )
+
+
+def extend_relativistic_breit_wigner_with_ff() -> None:
+    from ampform.dynamics import relativistic_breit_wigner_with_ff
+
+    L = sp.Symbol("L", integer=True)
+    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
+    rel_bw_with_ff = relativistic_breit_wigner_with_ff(
+        s=s,
+        mass0=m0,
+        gamma0=w0,
+        m_a=m_a,
+        m_b=m_b,
+        angular_momentum=L,
+        meson_radius=d,
+    )
+    _append_to_docstring(
+        relativistic_breit_wigner_with_ff,
+        fR"""
+    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
+    factor is:
+
+    .. math:: {sp.latex(rel_bw_with_ff)}
+        :label: relativistic_breit_wigner_with_ff
+
+    where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
+    defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
+    :eq:`BreakupMomentumSquared`.
+    """,
+    )
 
 
 def _append_latex_doit_definition(
