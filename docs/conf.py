@@ -72,11 +72,11 @@ if os.path.exists(LOGO_PATH):
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import insert_math  # noqa: E402
+from _extend_docstrings import extend_docstrings  # noqa: E402
 from _relink_references import relink_references  # noqa: E402
 
+extend_docstrings()
 relink_references()
-insert_math()
 
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(

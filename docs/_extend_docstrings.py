@@ -503,7 +503,7 @@ SCRIPT_NAME = __file__.rsplit("/", maxsplit=1)[-1]
 SCRIPT_NAME = ".".join(SCRIPT_NAME.split(".")[:-1])
 
 
-def insert_math() -> None:
+def extend_docstrings() -> None:
     definitions = dict(globals())
     for name, definition in definitions.items():
         module = inspect.getmodule(definition)
@@ -514,6 +514,8 @@ def insert_math() -> None:
         if not inspect.isfunction(definition):
             continue
         if not name.startswith("extend_"):
+            continue
+        if name == "extend_docstrings":
             continue
         function_arguments = inspect.signature(definition).parameters
         if len(function_arguments):
