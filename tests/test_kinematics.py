@@ -13,7 +13,7 @@ from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics import (
     Energy,
-    FourMomentumSymbols,
+    FourMomenta,
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
@@ -34,7 +34,7 @@ from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 @pytest.fixture(scope="session")
 def topology_and_momentum_symbols(
     data_sample: Dict[int, np.ndarray]
-) -> Tuple[Topology, FourMomentumSymbols]:
+) -> Tuple[Topology, FourMomenta]:
     n = len(data_sample)
     assert n == 4
     topologies = create_isobar_topologies(n)
@@ -45,7 +45,7 @@ def topology_and_momentum_symbols(
 
 @pytest.fixture(scope="session")
 def helicity_angles(
-    topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols]
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta]
 ) -> Dict[str, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
@@ -300,7 +300,7 @@ class TestTheta:
 )
 def test_compute_helicity_angles(
     data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
     angle_name: str,
     expected_values: np.ndarray,
     helicity_angles: Dict[str, sp.Expr],
@@ -314,7 +314,7 @@ def test_compute_helicity_angles(
 
 
 def test_compute_invariant_masses_names(
-    topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols]
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta]
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
@@ -331,7 +331,7 @@ def test_compute_invariant_masses_names(
 
 def test_compute_invariant_masses_single_mass(
     data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     momentum_values = data_sample.values()
@@ -348,7 +348,7 @@ def test_compute_invariant_masses_single_mass(
 def test_compute_invariant_masses(
     mass_name: str,
     data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomentumSymbols],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     momentum_values = data_sample.values()

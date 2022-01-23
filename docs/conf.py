@@ -158,6 +158,8 @@ autodoc_default_options = {
 }
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
+    "FourMomenta": "ampform.kinematics.FourMomenta",
+    "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
     "ParameterValue": "ampform.helicity.ParameterValue",
     "RangeDefinition": "symplot.RangeDefinition",
     "Slider": "symplot.Slider",

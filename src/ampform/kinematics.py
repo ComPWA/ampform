@@ -4,7 +4,9 @@
 
 import functools
 import itertools
+import sys
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -37,7 +39,22 @@ from ampform.sympy import (
 from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 from ampform.sympy.math import ComplexSqrt
 
-FourMomentumSymbols = Dict[int, ArraySymbol]
+if TYPE_CHECKING:
+    if sys.version_info < (3, 10):
+        from typing_extensions import TypeAlias
+    else:
+        from typing import TypeAlias
+
+
+FourMomentumSymbol: "TypeAlias" = ArraySymbol
+r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
+
+The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
+of events. The four-momenta are assumed to be in the order
+:math:`\left(E,\vec{p}\right)`.
+"""
+FourMomenta = Dict[int, "FourMomentumSymbol"]
+"""A mapping of state IDs to their corresponding `FourMomentumSymbol`."""
 
 
 # for numpy broadcasting
@@ -249,7 +266,7 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
 
 
 def compute_helicity_angles(
-    four_momenta: FourMomentumSymbols, topology: Topology
+    four_momenta: "FourMomenta", topology: Topology
 ) -> Dict[str, sp.Expr]:
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
@@ -258,7 +275,7 @@ def compute_helicity_angles(
         )
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
-        four_momenta: FourMomentumSymbols, node_id: int
+        four_momenta: FourMomenta, node_id: int
     ) -> Dict[str, sp.Expr]:
         helicity_angles: Dict[str, sp.Expr] = {}
         child_state_ids = sorted(
@@ -328,7 +345,7 @@ def compute_helicity_angles(
 
 
 def compute_invariant_masses(
-    four_momenta: FourMomentumSymbols, topology: Topology
+    four_momenta: "FourMomenta", topology: Topology
 ) -> Dict[str, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
@@ -620,7 +637,7 @@ def _implement_latex_subscript(
 @implement_doit_method
 @make_commutative
 class Energy(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
@@ -635,7 +652,9 @@ class Energy(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumX(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumX":
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumX":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
@@ -646,7 +665,9 @@ class FourMomentumX(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumY(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumY":
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumY":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
@@ -657,7 +678,9 @@ class FourMomentumY(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class FourMomentumZ(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "FourMomentumZ":
+    def __new__(
+        cls, momentum: "FourMomentumSymbol", **hints: Any
+    ) -> "FourMomentumZ":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
@@ -668,7 +691,7 @@ class FourMomentumZ(HasMomentum, UnevaluatedExpression):
 @make_commutative
 class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
     def __new__(
-        cls, momentum: ArraySymbol, **hints: Any
+        cls, momentum: "FourMomentumSymbol", **hints: Any
     ) -> "ThreeMomentumNorm":
         return create_expression(cls, momentum, **hints)
 
@@ -690,7 +713,7 @@ class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class InvariantMass(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Energy":
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> ArraySlice:
@@ -705,7 +728,7 @@ class InvariantMass(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class Phi(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Phi":
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Phi":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -720,7 +743,7 @@ class Phi(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class Theta(HasMomentum, UnevaluatedExpression):
-    def __new__(cls, momentum: ArraySymbol, **hints: Any) -> "Theta":
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
         return create_expression(cls, momentum, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -752,7 +775,7 @@ def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
         )
 
 
-def create_four_momentum_symbols(topology: Topology) -> FourMomentumSymbols:
+def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
     n_final_states = len(topology.outgoing_edge_ids)
     return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
 
