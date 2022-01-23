@@ -592,7 +592,7 @@ class HasMomentum:
     momentum: ArraySymbol = property(lambda self: self.args[0])
 
 
-def implement_latex_subscript(
+def _implement_latex_subscript(
     subscript: str,
 ) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
     def decorator(
@@ -629,7 +629,7 @@ class Energy(HasMomentum, UnevaluatedExpression):
         return fR"E\left({momentum}\right)"
 
 
-@implement_latex_subscript(subscript="x")
+@_implement_latex_subscript(subscript="x")
 @implement_doit_method
 @make_commutative
 class FourMomentumX(HasMomentum, UnevaluatedExpression):
@@ -640,7 +640,7 @@ class FourMomentumX(HasMomentum, UnevaluatedExpression):
         return ArraySlice(self.momentum, (slice(None), 1))
 
 
-@implement_latex_subscript(subscript="y")
+@_implement_latex_subscript(subscript="y")
 @implement_doit_method
 @make_commutative
 class FourMomentumY(HasMomentum, UnevaluatedExpression):
@@ -651,7 +651,7 @@ class FourMomentumY(HasMomentum, UnevaluatedExpression):
         return ArraySlice(self.momentum, (slice(None), 2))
 
 
-@implement_latex_subscript(subscript="z")
+@_implement_latex_subscript(subscript="z")
 @implement_doit_method
 @make_commutative
 class FourMomentumZ(HasMomentum, UnevaluatedExpression):
