@@ -742,6 +742,8 @@ class FourMomentumZ(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
+    """Norm of the three-momentum of a `FourMomentumSymbol`."""
+
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
     ) -> "ThreeMomentumNorm":
@@ -765,6 +767,8 @@ class ThreeMomentumNorm(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class InvariantMass(HasMomentum, UnevaluatedExpression):
+    """Invariant mass of a `FourMomentumSymbol`."""
+
     def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Energy":
         return create_expression(cls, momentum, **hints)
 
@@ -780,6 +784,8 @@ class InvariantMass(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class Phi(HasMomentum, UnevaluatedExpression):
+    r"""Azimuthal angle :math:`\phi` of a `FourMomentumSymbol`."""
+
     def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Phi":
         return create_expression(cls, momentum, **hints)
 
@@ -795,6 +801,8 @@ class Phi(HasMomentum, UnevaluatedExpression):
 @implement_doit_method
 @make_commutative
 class Theta(HasMomentum, UnevaluatedExpression):
+    r"""Polar (elevation) angle :math:`\theta` of a `FourMomentumSymbol`."""
+
     def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
         return create_expression(cls, momentum, **hints)
 

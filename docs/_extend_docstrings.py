@@ -40,8 +40,12 @@ from ampform.kinematics import (
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
+    InvariantMass,
+    Phi,
     RotationY,
     RotationZ,
+    Theta,
+    ThreeMomentumNorm,
     get_helicity_angle_label,
 )
 from ampform.sympy._array_expressions import ArraySymbol
@@ -257,6 +261,21 @@ def render_get_helicity_angle_label() -> None:
     )
 
 
+def render_invariant_mass() -> None:
+    p = ArraySymbol("p")
+    expr = InvariantMass(p)
+    latex = _create_latex_doit_definition(expr)
+    update_docstring(
+        InvariantMass,
+        f"""\n
+    .. math::
+        :label: InvariantMass
+
+        {latex}
+    """,
+    )
+
+
 def render_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
@@ -326,6 +345,21 @@ def render_phase_space_factor_complex() -> None:
         {latex}
 
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
+    """,
+    )
+
+
+def render_phi() -> None:
+    p = ArraySymbol("p")
+    expr = Phi(p)
+    latex = _create_latex_doit_definition(expr)
+    update_docstring(
+        Phi,
+        f"""\n
+    .. math::
+        :label: Phi
+
+        {latex}
     """,
     )
 
@@ -416,6 +450,36 @@ def render_rotation_z() -> None:
 
         {import_statements}
         {numpy_code}
+    """,
+    )
+
+
+def render_theta() -> None:
+    p = ArraySymbol("p")
+    expr = Theta(p)
+    latex = _create_latex_doit_definition(expr)
+    update_docstring(
+        Theta,
+        f"""\n
+    .. math::
+        :label: Theta
+
+        {latex}
+    """,
+    )
+
+
+def render_three_momentum_norm() -> None:
+    p = ArraySymbol("p")
+    expr = ThreeMomentumNorm(p)
+    latex = _create_latex_doit_definition(expr)
+    update_docstring(
+        ThreeMomentumNorm,
+        f"""\n
+    .. math::
+        :label: ThreeMomentumNorm
+
+        {latex}
     """,
     )
 
