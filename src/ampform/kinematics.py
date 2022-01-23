@@ -334,7 +334,7 @@ class Theta(UnevaluatedExpression):
 
 
 class BoostZ(sp.Expr):
-    """Represents a Lorentz boost **matrix** in the :math:`z`-direction."""
+    """Represents a Lorentz boost matrix in the :math:`z`-direction."""
 
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
         return create_expression(cls, beta, **kwargs)

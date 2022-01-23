@@ -240,7 +240,7 @@ def extend_RotationY() -> None:
     _append_to_docstring(
         RotationY,
         f"""\n
-    The **matrix** for a rotation over angle :math:`\\alpha` around the
+    The matrix for a rotation over angle :math:`\\alpha` around the
     :math:`y`-axis operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
@@ -259,7 +259,7 @@ def extend_RotationZ() -> None:
     _append_to_docstring(
         RotationZ,
         f"""\n
-    The **matrix** for a rotation over angle :math:`\\alpha` around the
+    The matrix for a rotation over angle :math:`\\alpha` around the
     :math:`y`-axis operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
