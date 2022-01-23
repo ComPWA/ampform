@@ -40,6 +40,8 @@ from ampform.kinematics import (
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
+    RotationY,
+    RotationZ,
     get_helicity_angle_label,
 )
 from ampform.sympy._array_expressions import ArraySymbol
@@ -364,6 +366,56 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
     defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
     :eq:`BreakupMomentumSquared`.
+    """,
+    )
+
+
+def render_rotation_y() -> None:
+    angle = sp.Symbol("alpha")
+    expr = RotationY(angle)
+    update_docstring(
+        RotationY,
+        f"""\n
+    The **matrix** for a rotation over angle :math:`\\alpha` around the
+    :math:`y`-axis operating on `FourMomentumSymbol` looks like:
+
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+        :label: RotationY
+
+    See `RotationZ` for the computational code.
+    """,
+    )
+
+
+def render_rotation_z() -> None:
+    angle = sp.Symbol("alpha")
+    expr = RotationZ(angle)
+    update_docstring(
+        RotationZ,
+        f"""\n
+    The **matrix** for a rotation over angle :math:`\\alpha` around the
+    :math:`y`-axis operating on `FourMomentumSymbol` looks like:
+
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+        :label: RotationZ
+    """,
+    )
+    a = sp.Symbol("a")
+    printer = NumPyPrinter()
+    numpy_code = RotationZ(a)._numpycode(printer)
+    import_statements = __print_imports(printer)
+    update_docstring(
+        RotationZ,
+        f"""
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
+    a computational backend and it should operate on four-momentum arrays of
+    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
+    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+
+    .. code-block::
+
+        {import_statements}
+        {numpy_code}
     """,
     )
 

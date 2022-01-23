@@ -560,11 +560,14 @@ class BoostZ(sp.Expr):
 
 
 class RotationY(sp.Expr):
+    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
+
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationY":
         return create_expression(cls, angle, **hints)
 
     @property
     def angle(self) -> sp.Expr:
+        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
         return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
@@ -602,11 +605,14 @@ class RotationY(sp.Expr):
 
 
 class RotationZ(sp.Expr):
+    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
+
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZ":
         return create_expression(cls, angle, **hints)
 
     @property
     def angle(self) -> sp.Expr:
+        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
         return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
