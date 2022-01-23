@@ -294,6 +294,7 @@ def extend_ThreeMomentumNorm() -> None:
     expr = ThreeMomentumNorm(p)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
+    _append_code_rendering(expr)
 
 
 def extend_formulate_clebsch_gordan_coefficients() -> None:
