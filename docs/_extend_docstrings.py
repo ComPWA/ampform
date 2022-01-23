@@ -54,7 +54,7 @@ from ampform.sympy.math import ComplexSqrt
 logging.getLogger().setLevel(logging.ERROR)
 
 
-def render_blatt_weisskopf() -> None:
+def extend_blatt_weisskopf() -> None:
     L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
     expr = BlattWeisskopfSquared(L, z)
@@ -71,7 +71,7 @@ def render_blatt_weisskopf() -> None:
     )
 
 
-def render_boost_z() -> None:
+def extend_boost_z() -> None:
     beta = sp.Symbol("beta")
     expr = BoostZ(beta)
     _update_docstring(
@@ -103,7 +103,7 @@ def render_boost_z() -> None:
     )
 
 
-def render_breakup_momentum_squared() -> None:
+def extend_breakup_momentum_squared() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr, deep=True)
@@ -118,7 +118,7 @@ def render_breakup_momentum_squared() -> None:
     )
 
 
-def render_complex_sqrt() -> None:
+def extend_complex_sqrt() -> None:
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
     _update_docstring(
@@ -130,7 +130,7 @@ def render_complex_sqrt() -> None:
     )
 
 
-def render_energy_dependent_width() -> None:
+def extend_energy_dependent_width() -> None:
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
     expr = EnergyDependentWidth(
@@ -161,14 +161,14 @@ def render_energy_dependent_width() -> None:
     )
 
 
-def render_formulate_wigner_d() -> None:
+def extend_formulate_wigner_d() -> None:
     _update_docstring(
         formulate_wigner_d,
         __get_graphviz_state_transition_example("helicity"),
     )
 
 
-def render_formulate_clebsch_gordan_coefficients() -> None:
+def extend_formulate_clebsch_gordan_coefficients() -> None:
     _update_docstring(
         formulate_clebsch_gordan_coefficients,
         __get_graphviz_state_transition_example(
@@ -206,8 +206,8 @@ def __get_graphviz_state_transition_example(
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
 
-def render_four_momentum_components() -> None:
-    def _render(component_class: Type[sp.Expr]) -> None:
+def extend_four_momentum_components() -> None:
+    def _extend(component_class: Type[sp.Expr]) -> None:
         p = ArraySymbol("p")
         energy = component_class(p)
         _update_docstring(
@@ -217,13 +217,13 @@ def render_four_momentum_components() -> None:
             """,
         )
 
-    _render(Energy)
-    _render(FourMomentumX)
-    _render(FourMomentumY)
-    _render(FourMomentumZ)
+    _extend(Energy)
+    _extend(FourMomentumX)
+    _extend(FourMomentumY)
+    _extend(FourMomentumZ)
 
 
-def render_get_helicity_angle_label() -> None:
+def extend_get_helicity_angle_label() -> None:
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(
         map(lambda t: qrules.io.asdot(t, render_resonance_id=True), topologies)
@@ -254,7 +254,7 @@ def render_get_helicity_angle_label() -> None:
     )
 
 
-def render_invariant_mass() -> None:
+def extend_invariant_mass() -> None:
     p = ArraySymbol("p")
     expr = InvariantMass(p)
     latex = _create_latex_doit_definition(expr)
@@ -269,7 +269,7 @@ def render_invariant_mass() -> None:
     )
 
 
-def render_phase_space_factor() -> None:
+def extend_phase_space_factor() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
@@ -287,7 +287,7 @@ def render_phase_space_factor() -> None:
     )
 
 
-def render_phase_space_factor_abs() -> None:
+def extend_phase_space_factor_abs() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
@@ -305,7 +305,7 @@ def render_phase_space_factor_abs() -> None:
     )
 
 
-def render_phase_space_factor_analytic() -> None:
+def extend_phase_space_factor_analytic() -> None:
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
     expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
@@ -324,7 +324,7 @@ def render_phase_space_factor_analytic() -> None:
     )
 
 
-def render_phase_space_factor_complex() -> None:
+def extend_phase_space_factor_complex() -> None:
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
     latex = _create_latex_doit_definition(expr)
@@ -342,7 +342,7 @@ def render_phase_space_factor_complex() -> None:
     )
 
 
-def render_phi() -> None:
+def extend_phi() -> None:
     p = ArraySymbol("p")
     expr = Phi(p)
     latex = _create_latex_doit_definition(expr)
@@ -357,7 +357,7 @@ def render_phi() -> None:
     )
 
 
-def render_relativistic_breit_wigner() -> None:
+def extend_relativistic_breit_wigner() -> None:
     s, m0, w0 = sp.symbols("s m0 Gamma0")
     rel_bw = relativistic_breit_wigner(s, m0, w0)
     _update_docstring(
@@ -369,7 +369,7 @@ def render_relativistic_breit_wigner() -> None:
     )
 
 
-def render_relativistic_breit_wigner_with_ff() -> None:
+def extend_relativistic_breit_wigner_with_ff() -> None:
     L = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d")
     rel_bw_with_ff = relativistic_breit_wigner_with_ff(
@@ -397,7 +397,7 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     )
 
 
-def render_rotation_y() -> None:
+def extend_rotation_y() -> None:
     angle = sp.Symbol("alpha")
     expr = RotationY(angle)
     _update_docstring(
@@ -414,7 +414,7 @@ def render_rotation_y() -> None:
     )
 
 
-def render_rotation_z() -> None:
+def extend_rotation_z() -> None:
     angle = sp.Symbol("alpha")
     expr = RotationZ(angle)
     _update_docstring(
@@ -447,7 +447,7 @@ def render_rotation_z() -> None:
     )
 
 
-def render_theta() -> None:
+def extend_theta() -> None:
     p = ArraySymbol("p")
     expr = Theta(p)
     latex = _create_latex_doit_definition(expr)
@@ -462,7 +462,7 @@ def render_theta() -> None:
     )
 
 
-def render_three_momentum_norm() -> None:
+def extend_three_momentum_norm() -> None:
     p = ArraySymbol("p")
     expr = ThreeMomentumNorm(p)
     latex = _create_latex_doit_definition(expr)
@@ -513,7 +513,7 @@ def insert_math() -> None:
             continue
         if not inspect.isfunction(definition):
             continue
-        if not name.startswith("render_"):
+        if not name.startswith("extend_"):
             continue
         function_arguments = inspect.signature(definition).parameters
         if len(function_arguments):
