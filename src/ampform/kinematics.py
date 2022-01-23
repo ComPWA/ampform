@@ -589,7 +589,16 @@ def compute_invariant_masses(
 def get_helicity_angle_label(
     topology: Topology, state_id: int
 ) -> Tuple[str, str]:
-    """Generate labels that can be used to identify helicity angles.
+    r"""Generate a nested helicity angle label for :math:`\phi,\theta`.
+
+    See :func:`get_boost_chain_suffix` for the meaning of the suffix.
+    """
+    suffix = get_boost_chain_suffix(topology, state_id)
+    return f"phi{suffix}", f"theta{suffix}"
+
+
+def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
+    """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 
     The generated subscripts describe the decay sequence from the right to the
     left, separated by commas. Resonance edge IDs are expressed as a sum of the
@@ -608,8 +617,8 @@ def get_helicity_angle_label(
     >>> topologies = create_isobar_topologies(5)
     >>> topology = topologies[0]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
-    ...     print(f"{i}: '{phi_label}'")
+    ...     suffix = get_boost_chain_suffix(topology, i)
+    ...     print(f"{i}: 'phi{suffix}'")
     0: 'phi_0^034'
     1: 'phi_1^12'
     2: 'phi_2^12'
@@ -620,8 +629,8 @@ def get_helicity_angle_label(
     7: 'phi_34^034'
     >>> topology = topologies[1]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     phi_label, theta_label = get_helicity_angle_label(topology, i)
-    ...     print(f"{i}: '{phi_label}'")
+    ...     suffix = get_boost_chain_suffix(topology, i)
+    ...     print(f"{i}: 'phi{suffix}'")
     0: 'phi_0^01'
     1: 'phi_1^01'
     2: 'phi_2^234'
@@ -674,7 +683,7 @@ def get_helicity_angle_label(
     if len(index_groups) > 1:
         superscript = ",".join(index_groups[1:])
         suffix += f"^{superscript}"
-    return f"phi{suffix}", f"theta{suffix}"
+    return suffix
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:

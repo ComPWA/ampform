@@ -346,8 +346,8 @@ def __get_graphviz_state_transition_example(
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
 
-def extend_get_helicity_angle_label() -> None:
-    from ampform.kinematics import get_helicity_angle_label
+def extend_get_boost_chain_suffix() -> None:
+    from ampform.kinematics import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(
@@ -366,7 +366,7 @@ def extend_get_helicity_angle_label() -> None:
         label="one-to-five-topology-1",
     )
     _append_to_docstring(
-        get_helicity_angle_label,
+        get_boost_chain_suffix,
         f"""
 
     .. panels::
