@@ -1,6 +1,6 @@
 # cspell:ignore einsum
 # pylint: disable=arguments-differ,no-member,protected-access,unused-argument
-"""Kinematics of an amplitude model in the helicity formalism."""
+"""Classes and functions for relativistic four-momentum kinematics."""
 
 import functools
 import itertools
