@@ -48,7 +48,7 @@ def extend_docstrings() -> None:
         definition()
 
 
-def extend_blatt_weisskopf() -> None:
+def extend_BlattWeisskopfSquared() -> None:
     from ampform.dynamics import BlattWeisskopfSquared
 
     L = sp.Symbol("L", integer=True)
@@ -57,7 +57,7 @@ def extend_blatt_weisskopf() -> None:
     _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 
-def extend_boost_z() -> None:
+def extend_BoostZ() -> None:
     from ampform.kinematics import BoostZ
 
     beta = sp.Symbol("beta")
@@ -91,7 +91,7 @@ def extend_boost_z() -> None:
     )
 
 
-def extend_breakup_momentum_squared() -> None:
+def extend_BreakupMomentumSquared() -> None:
     from ampform.dynamics import BreakupMomentumSquared
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
@@ -99,7 +99,7 @@ def extend_breakup_momentum_squared() -> None:
     _append_latex_doit_definition(expr, deep=True)
 
 
-def extend_complex_sqrt() -> None:
+def extend_ComplexSqrt() -> None:
     from ampform.sympy.math import ComplexSqrt
 
     x = sp.Symbol("x", real=True)
@@ -113,7 +113,7 @@ def extend_complex_sqrt() -> None:
     )
 
 
-def extend_energy_dependent_width() -> None:
+def extend_EnergyDependentWidth() -> None:
     from ampform.dynamics import EnergyDependentWidth
 
     _append_to_docstring(
@@ -194,7 +194,7 @@ def __get_graphviz_state_transition_example(
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
 
-def extend_four_momentum_components() -> None:
+def extend_Energy_and_FourMomentumXYZ() -> None:
     from ampform.kinematics import (
         Energy,
         FourMomentumX,
@@ -251,7 +251,7 @@ def extend_get_helicity_angle_label() -> None:
     )
 
 
-def extend_invariant_mass() -> None:
+def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 
     p = ArraySymbol("p")
@@ -259,7 +259,7 @@ def extend_invariant_mass() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_phase_space_factor() -> None:
+def extend_PhaseSpaceFactor() -> None:
     from ampform.dynamics import PhaseSpaceFactor
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
@@ -273,7 +273,7 @@ def extend_phase_space_factor() -> None:
     )
 
 
-def extend_phase_space_factor_abs() -> None:
+def extend_PhaseSpaceFactorAbs() -> None:
     from ampform.dynamics import PhaseSpaceFactorAbs
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
@@ -287,7 +287,7 @@ def extend_phase_space_factor_abs() -> None:
     )
 
 
-def extend_phase_space_factor_analytic() -> None:
+def extend_PhaseSpaceFactorAnalytic() -> None:
     from ampform.dynamics import PhaseSpaceFactorAbs, PhaseSpaceFactorAnalytic
 
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
@@ -303,7 +303,7 @@ def extend_phase_space_factor_analytic() -> None:
     )
 
 
-def extend_phase_space_factor_complex() -> None:
+def extend_PhaseSpaceFactorComplex() -> None:
     from ampform.dynamics import PhaseSpaceFactorComplex
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
@@ -317,7 +317,7 @@ def extend_phase_space_factor_complex() -> None:
     )
 
 
-def extend_phi() -> None:
+def extend_Phi() -> None:
     from ampform.kinematics import Phi
 
     p = ArraySymbol("p")
@@ -369,7 +369,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     )
 
 
-def extend_rotation_y() -> None:
+def extend_RotationY() -> None:
     from ampform.kinematics import RotationY
 
     angle = sp.Symbol("alpha")
@@ -388,7 +388,7 @@ def extend_rotation_y() -> None:
     )
 
 
-def extend_rotation_z() -> None:
+def extend_RotationZ() -> None:
     from ampform.kinematics import RotationZ
 
     angle = sp.Symbol("alpha")
@@ -423,7 +423,7 @@ def extend_rotation_z() -> None:
     )
 
 
-def extend_theta() -> None:
+def extend_Theta() -> None:
     from ampform.kinematics import Theta
 
     p = ArraySymbol("p")
@@ -431,7 +431,7 @@ def extend_theta() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_three_momentum_norm() -> None:
+def extend_ThreeMomentumNorm() -> None:
     from ampform.kinematics import ThreeMomentumNorm
 
     p = ArraySymbol("p")
