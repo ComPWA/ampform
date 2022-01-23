@@ -154,7 +154,11 @@ def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
 
 
 FourMomenta = Dict[int, "FourMomentumSymbol"]
-"""A mapping of state IDs to their corresponding `FourMomentumSymbol`."""
+"""A mapping of state IDs to their corresponding `FourMomentumSymbol`.
+
+It's best to create a `dict` of `FourMomenta` with
+:func:`create_four_momentum_symbols`.
+"""
 FourMomentumSymbol: "TypeAlias" = ArraySymbol
 r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
