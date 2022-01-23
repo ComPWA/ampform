@@ -24,6 +24,30 @@ from ampform.sympy._array_expressions import ArraySymbol
 logging.getLogger().setLevel(logging.ERROR)
 
 
+def extend_docstrings() -> None:
+    script_name = __file__.rsplit("/", maxsplit=1)[-1]
+    script_name = ".".join(script_name.split(".")[:-1])
+    definitions = dict(globals())
+    for name, definition in definitions.items():
+        module = inspect.getmodule(definition)
+        if module is None:
+            continue
+        if module.__name__ not in {"__main__", script_name}:
+            continue
+        if not inspect.isfunction(definition):
+            continue
+        if not name.startswith("extend_"):
+            continue
+        if name == "extend_docstrings":
+            continue
+        function_arguments = inspect.signature(definition).parameters
+        if len(function_arguments):
+            raise ValueError(
+                f"Local function {name} should not have a signature"
+            )
+        definition()
+
+
 def extend_blatt_weisskopf() -> None:
     from ampform.dynamics import BlattWeisskopfSquared
 
@@ -455,30 +479,6 @@ def __print_imports(printer: NumPyPrinter) -> str:
         imported_items = ", ".join(sorted(items))
         code += f"from {module} import {imported_items}\n"
     return code
-
-
-def extend_docstrings() -> None:
-    script_name = __file__.rsplit("/", maxsplit=1)[-1]
-    script_name = ".".join(script_name.split(".")[:-1])
-    definitions = dict(globals())
-    for name, definition in definitions.items():
-        module = inspect.getmodule(definition)
-        if module is None:
-            continue
-        if module.__name__ not in {"__main__", script_name}:
-            continue
-        if not inspect.isfunction(definition):
-            continue
-        if not name.startswith("extend_"):
-            continue
-        if name == "extend_docstrings":
-            continue
-        function_arguments = inspect.signature(definition).parameters
-        if len(function_arguments):
-            raise ValueError(
-                f"Local function {name} should not have a signature"
-            )
-        definition()
 
 
 _GRAPHVIZ_COUNTER = 0
