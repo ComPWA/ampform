@@ -514,11 +514,14 @@ class _ArrayMultiplication(sp.Expr):
 
 
 class BoostZ(sp.Expr):
+    """Represents a Lorentz boost **matrix** in the :math:`z`-direction."""
+
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZ":
         return create_expression(cls, beta, **kwargs)
 
     @property
     def beta(self) -> sp.Expr:
+        r"""Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`."""
         return self.args[0]
 
     def as_explicit(self) -> sp.Expr:

@@ -1,7 +1,6 @@
 # flake8: noqa
-# pylint: disable=import-error,invalid-name
+# pylint: disable=import-error,invalid-name,protected-access
 # pyright: reportMissingImports=false
-
 """Extend docstrings of the API.
 
 This small script is used by ``conf.py`` to dynamically modify docstrings.
@@ -18,6 +17,7 @@ import attr
 import graphviz
 import qrules
 import sympy as sp
+from sympy.printing.numpy import NumPyPrinter
 
 from ampform.dynamics import (
     BlattWeisskopfSquared,
@@ -35,6 +35,7 @@ from ampform.helicity import (
     formulate_wigner_d,
 )
 from ampform.kinematics import (
+    BoostZ,
     Energy,
     FourMomentumX,
     FourMomentumY,
@@ -64,6 +65,38 @@ def render_blatt_weisskopf() -> None:
     .. math:: {sp.latex(ff2)} = {sp.latex(ff2.doit())}
         :label: BlattWeisskopfSquared
         :class: full-width
+    """,
+    )
+
+
+def render_boost_z() -> None:
+    beta = sp.Symbol("beta")
+    expr = BoostZ(beta)
+    update_docstring(
+        BoostZ,
+        f"""\n
+    This boost operates on a `FourMomentumSymbol` and looks like:
+
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+        :label: BoostZ
+    """,
+    )
+    b = sp.Symbol("b")
+    printer = NumPyPrinter()
+    numpy_code = BoostZ(b)._numpycode(printer)
+    import_statements = __print_imports(printer)
+    update_docstring(
+        BoostZ,
+        f"""
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
+    a computational backend and it should operate on four-momentum arrays of
+    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
+    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+
+    .. code::
+
+        {import_statements}
+        {numpy_code}
     """,
     )
 
@@ -338,6 +371,14 @@ def render_relativistic_breit_wigner_with_ff() -> None:
     :eq:`BreakupMomentumSquared`.
     """,
     )
+
+
+def __print_imports(printer: NumPyPrinter) -> str:
+    code = ""
+    for module, items in printer.module_imports.items():
+        imported_items = ", ".join(sorted(items))
+        code += f"from {module} import {imported_items}\n"
+    return code
 
 
 SCRIPT_NAME = __file__.rsplit("/", maxsplit=1)[-1]
