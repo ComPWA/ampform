@@ -652,7 +652,7 @@ def group_transitions(
     return list(transition_groups.values())
 
 
-def formulate_rotation_on_spin_state(
+def formulate_helicity_rotation(
     spin_magnitude: float,
     spin_projection: float,
     alpha: sp.Symbol,
@@ -692,9 +692,9 @@ def formulate_rotation_on_spin_state(
     Example
     -------
     >>> a, b, c = sp.symbols("a b c")
-    >>> formulate_rotation_on_spin_state(0, 0, a, b, c)
+    >>> formulate_helicity_rotation(0, 0, a, b, c)
     (WignerD(0, 0, 0, a, b, c),)
-    >>> formulate_rotation_on_spin_state(1/2, -1/2, a, b, c)
+    >>> formulate_helicity_rotation(1/2, -1/2, a, b, c)
     (WignerD(1/2, -1/2, -1/2, a, b, c), WignerD(1/2, -1/2, 1/2, a, b, c))
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
