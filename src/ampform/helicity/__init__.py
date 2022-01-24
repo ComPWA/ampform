@@ -688,6 +688,14 @@ def formulate_rotation_on_spin_state(
         alpha: First Euler angle.
         beta: Second Euler angle.
         gamma: Third Euler angle.
+
+    Example
+    -------
+    >>> a, b, c = sp.symbols("a b c")
+    >>> formulate_rotation_on_spin_state(0, 0, a, b, c)
+    (WignerD(0, 0, 0, a, b, c),)
+    >>> formulate_rotation_on_spin_state(1/2, -1/2, a, b, c)
+    (WignerD(1/2, -1/2, -1/2, a, b, c), WignerD(1/2, -1/2, 1/2, a, b, c))
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
