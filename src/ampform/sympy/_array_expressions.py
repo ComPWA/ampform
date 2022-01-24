@@ -1,5 +1,6 @@
 # cspell:ignore sympified
-# pylint: disable=arguments-differ, line-too-long, protected-access, singleton-comparison
+# pylint: disable=arguments-differ, line-too-long, protected-access
+# pylint: disable=singleton-comparison, unused-argument
 """Temporary module for SymPy :code:`ArraySlice` and related classes.
 
 This module can be removed once `sympy/sympy#22265
@@ -8,20 +9,27 @@ This module can be removed once `sympy/sympy#22265
 
 from collections import abc
 from itertools import zip_longest
-from typing import Any, Iterable, Optional
-from typing import Tuple as tTuple
-from typing import Type
-from typing import Union as tUnion
-from typing import overload
+from typing import (
+    Any,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    overload,
+)
 
+import sympy as sp
 from sympy.codegen.ast import none
-from sympy.core.basic import Basic
-from sympy.core.containers import Tuple
-from sympy.core.expr import Expr
 from sympy.core.sympify import _sympify
 from sympy.functions.elementary.integers import floor
+from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
+from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
+from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
 from sympy.tensor.array.expressions.array_expressions import (
     ArraySymbol,
@@ -29,13 +37,15 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
+from . import create_expression, make_commutative
+
 
 class ArrayElement(_ArrayExpr):
-    parent: Expr = property(lambda self: self._args[0])  # type: ignore[assignment]
-    indices: Tuple = property(lambda self: self._args[1])
+    parent: sp.Expr = property(lambda self: self._args[0])  # type: ignore[assignment]
+    indices: sp.Tuple = property(lambda self: self._args[1])
 
-    def __new__(cls, parent: Expr, indices: Iterable) -> "ArrayElement":
-        sympified_indices = Tuple(*map(_sympify, indices))
+    def __new__(cls, parent: sp.Expr, indices: Iterable) -> "ArrayElement":
+        sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
         if any(
             (i >= s) == True  # noqa: E712
@@ -56,7 +66,7 @@ class ArrayElement(_ArrayExpr):
             ]
         else:
             normalized_indices = list(indices)
-        return Expr.__new__(cls, parent, Tuple(*normalized_indices))
+        return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
 
 _ArrayExpr._iterable = False  # required for lambdify
@@ -64,7 +74,7 @@ _ArrayExpr._iterable = False  # required for lambdify
 
 @overload
 def _array_symbol_getitem(
-    self: Type[ArraySymbol], key: tUnion[Basic, int]
+    self: Type[ArraySymbol], key: Union[sp.Basic, int]
 ) -> "ArrayElement":
     ...
 
@@ -76,14 +86,14 @@ def _array_symbol_getitem(self: Type[ArraySymbol], key: slice) -> "ArraySlice":
 
 @overload
 def _array_symbol_getitem(
-    self: Type[ArraySymbol], key: tTuple[tUnion[Basic, int], ...]
+    self: Type[ArraySymbol], key: Tuple[Union[sp.Basic, int], ...]
 ) -> "ArrayElement":
     ...
 
 
 @overload
 def _array_symbol_getitem(
-    self: Type[ArraySymbol], key: tTuple[tUnion[Basic, int, slice], ...]
+    self: Type[ArraySymbol], key: Tuple[Union[sp.Basic, int, slice], ...]
 ) -> "ArraySlice":
     ...
 
@@ -101,7 +111,7 @@ def _array_symbol_getitem(self, key):  # type: ignore[no-untyped-def]
 ArraySymbol.__getitem__ = _array_symbol_getitem
 
 
-def _normalize_index(idx: Any, axis_size: Optional[Expr]) -> Any:
+def _normalize_index(idx: Any, axis_size: Optional[sp.Expr]) -> Any:
     if (
         axis_size
         and axis_size.is_Integer
@@ -113,11 +123,13 @@ def _normalize_index(idx: Any, axis_size: Optional[Expr]) -> Any:
 
 
 class ArraySlice(_ArrayExpr):
-    parent: Expr = property(lambda self: self.args[0])  # type: ignore[assignment]
-    indices: tTuple[Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
+    parent: sp.Expr = property(lambda self: self.args[0])  # type: ignore[assignment]
+    indices: Tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
 
     def __new__(
-        cls, parent: Expr, indices: tTuple[tUnion[Basic, int, slice], ...]
+        cls,
+        parent: sp.Expr,
+        indices: Tuple[Union[sp.Basic, int, slice], ...],
     ) -> "ArraySlice":
         parent_shape = get_shape(parent)
         normalized_indices = []
@@ -125,14 +137,14 @@ class ArraySlice(_ArrayExpr):
             if idx is None:
                 break
             if isinstance(idx, slice):
-                new_idx = Tuple(*normalize(idx, axis_size))
+                new_idx = sp.Tuple(*normalize(idx, axis_size))
             else:
                 new_idx = _sympify(_normalize_index(idx, axis_size))
             normalized_indices.append(new_idx)
-        return Expr.__new__(cls, parent, Tuple(*normalized_indices))
+        return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> tTuple[tUnion[Basic, int], ...]:
+    def shape(self) -> Tuple[Union[sp.Basic, int], ...]:
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)
@@ -144,7 +156,7 @@ class ArraySlice(_ArrayExpr):
 def _compute_slice_size(idx: Any, axis_size: Any) -> Any:  # noqa: R701
     if idx is None:
         return axis_size
-    if not isinstance(idx, Tuple):
+    if not isinstance(idx, sp.Tuple):
         return 1
     start, stop, step = idx
     if stop is None and axis_size is None:
@@ -158,10 +170,10 @@ def _compute_slice_size(idx: Any, axis_size: Any) -> Any:  # noqa: R701
 
 def normalize(  # noqa: R701
     i: Any, parentsize: Any
-) -> tTuple[Basic, Basic, Basic]:
+) -> Tuple[sp.Basic, sp.Basic, sp.Basic]:
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
-    if not isinstance(i, (tuple, list, Tuple)):
+    if not isinstance(i, (tuple, list, sp.Tuple)):
         if (i < 0) == True:  # noqa: E712
             i += parentsize
         i = (i, i + 1, 1)
@@ -253,3 +265,131 @@ LatexPrinter._print_ArrayElement = _print_latex_ArrayElement
 LatexPrinter._print_ArraySlice = _print_latex_ArraySlice
 StrPrinter._print_ArrayElement = _print_str_ArrayElement
 StrPrinter._print_ArraySlice = _print_str_ArraySlice
+
+
+class ArraySum(sp.Expr):
+    precedence = PRECEDENCE["Add"]
+
+    def __new__(cls, *terms: sp.Basic, **hints: Any) -> "ArraySum":
+        return create_expression(cls, *terms, **hints)
+
+    @property
+    def terms(self) -> Tuple[sp.Basic, ...]:
+        return self.args
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        if all(
+            map(lambda i: isinstance(i, (sp.Symbol, ArraySymbol)), self.terms)
+        ):
+            names = set(map(_strip_subscript_superscript, self.terms))
+            if len(names) == 1:
+                name = next(iter(names))
+                subscript = "".join(map(_get_subscript, self.terms))
+                return f"{{{name}}}_{{{subscript}}}"
+        return printer._print_ArraySum(self)
+
+
+def _print_array_sum(self: Printer, expr: ArraySum) -> str:
+    terms = map(self._print, expr.terms)
+    return " + ".join(terms)
+
+
+Printer._print_ArraySum = _print_array_sum
+
+
+def _get_subscript(symbol: sp.Symbol) -> str:
+    """Collect subscripts from a `sympy.core.symbol.Symbol`.
+
+    >>> _get_subscript(sp.Symbol("p1"))
+    '1'
+    >>> _get_subscript(sp.Symbol("p^2_{0,0}"))
+    '0,0'
+    """
+    if isinstance(symbol, sp.Basic):
+        text = sp.latex(symbol)
+    else:
+        text = symbol
+    _, _, subscripts = split_super_sub(text)
+    stripped_subscripts: Iterable[str] = map(
+        lambda s: s.strip("{").strip("}"), subscripts
+    )
+    return " ".join(stripped_subscripts)
+
+
+def _strip_subscript_superscript(symbol: sp.Symbol) -> str:
+    """Collect subscripts from a `sympy.core.symbol.Symbol`.
+
+    >>> _strip_subscript_superscript(sp.Symbol("p1"))
+    'p'
+    >>> _strip_subscript_superscript(sp.Symbol("p^2_{0,0}"))
+    'p'
+    """
+    if isinstance(symbol, sp.Basic):
+        text = sp.latex(symbol)
+    else:
+        text = symbol
+    name, _, _ = split_super_sub(text)
+    return name
+
+
+@make_commutative
+class ArrayAxisSum(sp.Expr):
+    def __new__(
+        cls, array: ArraySymbol, axis: Optional[int] = None, **hints: Any
+    ) -> "ArrayAxisSum":
+        if axis is not None and not isinstance(axis, (int, sp.Integer)):
+            raise TypeError("Only single digits allowed for axis")
+        return create_expression(cls, array, axis, **hints)
+
+    @property
+    def array(self) -> ArraySymbol:
+        return self.args[0]
+
+    @property
+    def axis(self) -> Optional[int]:
+        return self.args[1]
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        array = printer._print(self.array)
+        if self.axis is None:
+            return fR"\sum{{{array}}}"
+        axis = printer._print(self.axis)
+        return fR"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].add("sum")
+        array = printer._print(self.array)
+        axis = printer._print(self.axis)
+        return f"sum({array}, axis={axis})"
+
+
+class ArrayMultiplication(sp.Expr):
+    def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
+        return create_expression(cls, *tensors, **hints)
+
+    @property
+    def tensors(self) -> List[sp.Expr]:
+        return self.args
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        tensors = map(printer._print, self.tensors)
+        return " ".join(tensors)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
+            return f'einsum("...ij,...j->...i", {matrix}, {vector})'
+
+        def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
+            if len(tensors) < 2:
+                raise ValueError("Need at least two tensors")
+            if len(tensors) == 2:
+                return multiply(tensors[0], tensors[1])
+            return multiply(tensors[0], recursive_multiply(tensors[1:]))
+
+        printer.module_imports[printer._module].update({"einsum", "transpose"})
+        tensors = list(map(printer._print, self.args))
+        if len(tensors) == 0:
+            return ""
+        if len(tensors) == 1:
+            return tensors[0]
+        return recursive_multiply(tensors)

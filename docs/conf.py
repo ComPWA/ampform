@@ -72,11 +72,11 @@ if os.path.exists(LOGO_PATH):
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import insert_math  # noqa: E402
+from _extend_docstrings import extend_docstrings  # noqa: E402
 from _relink_references import relink_references  # noqa: E402
 
+extend_docstrings()
 relink_references()
-insert_math()
 
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
@@ -137,10 +137,13 @@ add_module_names = False
 autodoc_default_options = {
     "exclude-members": ", ".join(
         [
+            "as_explicit",
             "default_assumptions",
             "doit",
             "evaluate",
             "is_commutative",
+            "is_extended_real",
+            "precedence",
         ]
     ),
     "members": True,
@@ -153,8 +156,11 @@ autodoc_default_options = {
         ]
     ),
 }
+autodoc_member_order = "bysource"
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
+    "FourMomenta": "ampform.kinematics.FourMomenta",
+    "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
     "ParameterValue": "ampform.helicity.ParameterValue",
     "RangeDefinition": "symplot.RangeDefinition",
     "Slider": "symplot.Slider",

@@ -308,7 +308,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_sequential_decay(
         self, transition: StateTransition
     ) -> sp.Expr:
-        partial_decays: List[sp.Symbol] = [
+        partial_decays: List[sp.Expr] = [
             self._formulate_partial_decay(transition, node_id)
             for node_id in transition.topology.nodes
         ]

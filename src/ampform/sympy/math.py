@@ -8,7 +8,10 @@ import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
 from sympy.printing.printer import Printer
 
+from . import make_commutative
 
+
+@make_commutative
 class ComplexSqrt(sp.Expr):
     """Square root that returns positive imaginary values for negative input.
 
@@ -18,8 +21,6 @@ class ComplexSqrt(sp.Expr):
     and :doc:`sympy:modules/printing` for how to implement a custom
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
-
-    is_commutative = True
 
     def __new__(cls, x: sp.Expr, *args: Any, **kwargs: Any) -> "ComplexSqrt":
         x = sp.sympify(x)
