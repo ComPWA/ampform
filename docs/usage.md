@@ -13,4 +13,5 @@ usage/modify
 usage/interactive
 usage/dynamics
 usage/helicity/formalism
+usage/helicity/spin-alignment
 ```
