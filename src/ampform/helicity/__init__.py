@@ -36,6 +36,7 @@ from ampform.dynamics.builder import (
 )
 from ampform.kinematics import (
     HelicityAdapter,
+    get_boost_chain_suffix,
     get_helicity_angle_label,
     get_invariant_mass_label,
 )
@@ -622,6 +623,27 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def formulate_wigner_rotation(
+    transition: StateTransition, rotated_state_id: int
+) -> Tuple["WignerD", ...]:
+    """Formulate the spin rotation matrices for a Wigner rotation.
+
+    A **Wigner rotation** is the 'average' rotation that results form a chain
+    of Lorentz boosts to a new reference frame with regard to a direct boost.
+    See :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially
+    Eq.(36).
+    """
+    state = transition.states[rotated_state_id]
+    suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
+    return formulate_helicity_rotation(
+        spin_magnitude=state.particle.spin,
+        spin_projection=state.spin_projection,
+        alpha=sp.Symbol(f"alpha{suffix}", real=True),
+        beta=sp.Symbol(f"beta{suffix}", real=True),
+        gamma=sp.Symbol(f"gamma{suffix}", real=True),
+    )
 
 
 def formulate_helicity_rotation(
