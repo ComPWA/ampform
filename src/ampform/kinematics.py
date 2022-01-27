@@ -4,6 +4,7 @@
 
 import itertools
 import sys
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
 
 import attr
@@ -597,6 +598,7 @@ def get_helicity_angle_label(
     return f"phi{suffix}", f"theta{suffix}"
 
 
+@lru_cache(maxsize=None)
 def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 
