@@ -31,6 +31,7 @@ from attr.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
+from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -39,7 +40,7 @@ from ampform.dynamics.builder import (
 )
 from ampform.kinematics import (
     HelicityAdapter,
-    get_boost_chain_suffix,
+    determine_attached_final_state,
     get_helicity_angle_label,
     get_invariant_mass_label,
 )
@@ -711,7 +712,7 @@ def formulate_rotation_chain(
         transition, rotated_state_id, reference_state_id
     )
     idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
-    idx_suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
+    idx_suffix = _get_helicity_suffix(transition.topology, rotated_state_id)
     wigner_rotation = formulate_wigner_rotation(
         transition,
         rotated_state_id,
@@ -727,7 +728,7 @@ def formulate_helicity_rotation_chain(
     rotated_state = transition.states[rotated_state_id]
     spin_magnitude = rotated_state.particle.spin
     idx_root_counter = 0
-    idx_suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
+    idx_suffix = _get_helicity_suffix(transition.topology, rotated_state_id)
 
     def get_helicity_rotation(state_id: int) -> Generator[PoolSum, None, None]:
         parent_id = get_parent_id(topology, state_id)
@@ -792,7 +793,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
-    suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
+    suffix = _get_helicity_suffix(transition.topology, rotated_state_id)
     return formulate_helicity_rotation(
         spin_magnitude=state.particle.spin,
         spin_projection=state.spin_projection,
@@ -904,6 +905,26 @@ def _create_spin_range(spin_magnitude: float) -> List[float]:
         spin_projections.append(float(projection))
         projection += 1
     return spin_projections
+
+
+def _get_helicity_suffix(topology: Topology, state_id: int) -> str:
+    superscript = __get_topology_identifier(topology)
+    return f"_{state_id}^{superscript}"
+
+
+def __get_topology_identifier(topology: Topology) -> str:
+    resonance_names = [
+        "".join(__get_resonance_identifier(topology, i))
+        for i in topology.intermediate_edge_ids
+    ]
+    return ",".join(sorted(resonance_names, key=_natural_sorting))
+
+
+def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
+    attached_final_state_ids = determine_attached_final_state(
+        topology, state_id
+    )
+    return "".join(map(str, attached_final_state_ids))
 
 
 def _generate_kinematic_variable_set(
