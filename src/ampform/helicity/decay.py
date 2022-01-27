@@ -1,5 +1,6 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
+from functools import lru_cache
 from typing import Iterable, List, Optional, Tuple
 
 import attr
@@ -87,18 +88,10 @@ class TwoBodyDecay:
             raise ValueError(
                 f"Node {node_id} does not represent a 1-to-2 body decay!"
             )
-
-        sorted_by_id = sorted(out_state_ids)
-        final_state_ids = [
-            i for i in sorted_by_id if i in topology.outgoing_edge_ids
-        ]
-        intermediate_state_ids = [
-            i for i in sorted_by_id if i in topology.intermediate_edge_ids
-        ]
-        sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
-
         ingoing_state_id = next(iter(in_state_ids))
-        out_state_id1, out_state_id2, *_ = sorted_by_ending
+        out_state_id1, out_state_id2, *_ = tuple(out_state_ids)
+        if is_opposite_helicity_state(topology, out_state_id1):
+            out_state_id2, out_state_id1 = out_state_id1, out_state_id2
         return cls(
             parent=StateWithID.from_transition(transition, ingoing_state_id),
             children=(
@@ -119,6 +112,42 @@ class TwoBodyDecay:
             f"Spin magnitude ({spin_magnitude}) of single particle state"
             " cannot be used as the angular momentum as it is not integral!"
         )
+
+
+@lru_cache(maxsize=None)
+def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
+    """Determine if an edge is an "opposite helicity" state.
+
+    This function provides a deterministic way of identifying states in a
+    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state.
+
+    The Wigner-:math:`D` function for a two-particle state treats one helicity
+    with a negative sign. This sign originates from Eq.(13) in
+    :cite:`jacobGeneralTheoryCollisions1959` (see also Eq.(6) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`). Following
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that
+    gets this minus sign the **"opposite helicity" state**. The other state is
+    called **helicity state**. The choice of (opposite) helicity state affects
+    not only the sign in the Wigner-:math:`D` function, but also the choice of
+    angles: the argument of the Wigner-:math:`D` function returned by
+    :func:`.formulate_wigner_d` are the angles of the helicity state.
+    """
+    parent_node = topology.edges[state_id].originating_node_id
+    if parent_node is None:
+        return False
+    out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
+    sorted_by_id = sorted(out_state_ids)
+    final_state_ids = [
+        i for i in sorted_by_id if i in topology.outgoing_edge_ids
+    ]
+    intermediate_state_ids = [
+        i for i in sorted_by_id if i in topology.intermediate_edge_ids
+    ]
+    sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
+    helicity_state_id = sorted_by_ending[0]
+    if state_id == helicity_state_id:
+        return False
+    return True
 
 
 def get_helicity_info(
