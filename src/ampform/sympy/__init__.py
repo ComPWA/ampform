@@ -1,13 +1,15 @@
 # cspell:ignore mhash
-# pylint: disable=invalid-getnewargs-ex-returned
+# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
+import itertools
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Type, TypeVar
+from typing import Any, Callable, List, Optional, Tuple, Type, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
+from sympy.printing.precedence import PRECEDENCE
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -192,3 +194,58 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
     return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
+
+
+@implement_doit_method
+class PoolSum(UnevaluatedExpression):
+    # pylint: disable=line-too-long
+    r"""Sum over indices where the values are taken from a domain set.
+
+    >>> i, j, m, n = sp.symbols("i j m n")
+    >>> expr = PoolSum(i**m + j**n, (i, [-0.5, +0.5]), (j, [2, 4, 5]))
+    >>> expr
+    PoolSum(i**m + j**n, (i, [-0.5, 0.5]), (j, [2, 4, 5]))
+    >>> sp.latex(expr)
+    '\\sum_{\\substack{i\\in\\left\\{-0.5,0.5\\right\\}\\\\j\\in\\left\\{2,4,5\\right\\}}}i^{m} + j^{n}'
+    >>> expr.doit()
+    3*(-0.5)**m + 3*0.5**m + 2*2**n + 2*4**n + 2*5**n
+    """
+
+    precedence = PRECEDENCE["Mul"]
+
+    def __new__(
+        cls,
+        expression: sp.Expr,
+        *indices: Tuple[sp.Symbol, List[float]],
+        **hints: Any,
+    ) -> "PoolSum":
+        return create_expression(cls, expression, *indices, **hints)
+
+    @property
+    def expression(self) -> sp.Expr:
+        return self.args[0]
+
+    @property
+    def indices(self) -> List[Tuple[sp.Symbol, List[float]]]:
+        return self.args[1:]
+
+    def evaluate(self) -> sp.Expr:
+        indices = dict(self.indices)
+        return sp.Add(
+            *[
+                self.expression.subs(zip(indices, combi))
+                for combi in itertools.product(*indices.values())
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        expression = printer._print(self.expression)
+        indices = dict(self.indices)
+        index_ranges: List[str] = []
+        for idx, values in indices.items():
+            idx_values = ",".join(map(printer._print, values))
+            index_ranges.append(
+                Rf"{printer._print(idx)}\in\left\{{{idx_values}\right\}}"
+            )
+        substack = R"\\".join(index_ranges)
+        return Rf"\sum_{{\substack{{{substack}}}}}{expression}"
