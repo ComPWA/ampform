@@ -1,8 +1,7 @@
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel, too-many-arguments
 """Generate an amplitude model with the helicity formalism."""
 
 import collections
-import itertools
 import logging
 import operator
 import re
@@ -19,6 +18,7 @@ from typing import (
     List,
     Mapping,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Union,
@@ -42,6 +42,7 @@ from ampform.kinematics import (
     get_helicity_angle_label,
     get_invariant_mass_label,
 )
+from ampform.sympy import PoolSum
 
 from .decay import TwoBodyDecay, count_parents, get_parent_id
 from .naming import (
@@ -655,7 +656,7 @@ def group_transitions(
     return list(transition_groups.values())
 
 
-def create_alignment_summation_combinations(
+def formulate_spin_alignment(
     transition: StateTransition, reference_state_id: int
 ) -> List[Tuple["WignerD", ...]]:
     """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
@@ -673,94 +674,118 @@ def create_alignment_summation_combinations(
             "Reference state has to be one of the final state IDs"
             f" {list(transition.final_states)}"
         )
-    matrix_choices = collect_all_rotation_matrices(
-        transition, reference_state_id
-    )
-    return [tuple(combi) for combi in itertools.product(*matrix_choices)]
-
-
-def collect_all_rotation_matrices(
-    transition: StateTransition, reference_state_id: int
-) -> List[Tuple["WignerD", ...]]:
-    """Collect all spin rotation matrices up to the initial state.
-
-    This generates the Wigner-:math:`D` functions for one of the summations in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45). Use
-    :func:`create_alignment_summation_combinations` to generate the full
-    summation.
-    """
-    product_elements = []
+    rotations = PoolSum(1)
     for rotated_state_id in transition.final_states:
-        rotation_matrices = collect_rotation_chain(
+        additional_rotations = formulate_rotation_chain(
             transition, rotated_state_id, reference_state_id
         )
-        product_elements.extend(rotation_matrices)
-    return product_elements
+        rotations = __multiply_pool_sums([rotations, additional_rotations])
+    return rotations
 
 
-def collect_rotation_chain(
+__GREEK_INDEX_NAMES = ("lambda", "mu", "nu", "xi", "alpha", "beta", "gamma")
+
+
+def formulate_rotation_chain(
     transition: StateTransition, rotated_state_id: int, reference_state_id: int
-) -> List[Tuple[sp.Expr, ...]]:
+) -> PoolSum:
+    """Formulate the spin alignment sum for a specific chain.
+
+    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`.
+    """
     number_of_parents = count_parents(transition.topology, rotated_state_id)
     if number_of_parents == 0:
-        return [sp.Rational(1)]
+        return PoolSum(1)
     if number_of_parents == 1:
         reference_parent_state_id = get_parent_id(
             transition.topology, reference_state_id
         )
         if reference_parent_state_id is None:
-            return [sp.Rational(1)]
-        helicity_matrices = collect_helicity_rotation_chain(
+            return PoolSum(1)
+        helicity_rotations = formulate_helicity_rotation_chain(
             transition, rotated_state_id, reference_parent_state_id
         )
-        return helicity_matrices
-    helicity_matrices = collect_helicity_rotation_chain(
+        return helicity_rotations
+    helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, reference_state_id
     )
-    wigner_rotation = formulate_wigner_rotation(transition, rotated_state_id)
-    return [wigner_rotation] + helicity_matrices
+    idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
+    idx_suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
+    wigner_rotation = formulate_wigner_rotation(
+        transition,
+        rotated_state_id,
+        m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
+    )
+    return __multiply_pool_sums([wigner_rotation, helicity_rotations])
 
 
-def collect_helicity_rotation_chain(
+def formulate_helicity_rotation_chain(
     transition: StateTransition, rotated_state_id: int, reference_state_id: int
-) -> List[Tuple["WignerD", ...]]:
+) -> PoolSum:
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
     spin_magnitude = rotated_state.particle.spin
     spin_projection = rotated_state.spin_projection
+    idx_root_iter = iter(__GREEK_INDEX_NAMES)
+    idx_suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
 
-    def get_helicity_rotation(
-        state_id: int,
-    ) -> Generator[Tuple["WignerD", ...], None, None]:
+    def get_helicity_rotation(state_id: int) -> Generator[PoolSum, None, None]:
         parent_id = get_parent_id(topology, state_id)
         if parent_id is None:
             return
+        # pylint: disable=stop-iteration-return
+        idx_root = next(idx_root_iter)
         phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
         phi = sp.Symbol(phi_label, real=True)
         theta = sp.Symbol(theta_theta, real=True)
         yield formulate_helicity_rotation(
-            spin_magnitude, spin_projection, alpha=phi, beta=-theta, gamma=0
+            spin_magnitude,
+            spin_projection,
+            m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
+            alpha=phi,
+            beta=-theta,
+            gamma=0,
         )
         yield from get_helicity_rotation(parent_id)
 
-    return list(get_helicity_rotation(reference_state_id))
+    rotations = get_helicity_rotation(reference_state_id)
+    return __multiply_pool_sums(list(rotations))
+
+
+def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
+    if len(sum_expressions) == 0:
+        raise ValueError(f"Product needs at least one {PoolSum.__name__}")
+    product = sp.Mul(*[pool_sum.expression for pool_sum in sum_expressions])
+    combined_indices = []
+    for pool_sum in sum_expressions:
+        combined_indices.extend(pool_sum.indices)
+    return PoolSum(product, *combined_indices)
 
 
 def formulate_wigner_rotation(
-    transition: StateTransition, rotated_state_id: int
-) -> Tuple["WignerD", ...]:
+    transition: StateTransition, rotated_state_id: int, m_prime: sp.Symbol
+) -> PoolSum:
     """Formulate the spin rotation matrices for a Wigner rotation.
 
     A **Wigner rotation** is the 'average' rotation that results form a chain
     of Lorentz boosts to a new reference frame with regard to a direct boost.
     See :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially
     Eq.(36).
+
+    Args:
+        transition: The `~qrules.transition.StateTransition` in which you
+            want to rotate one of the spin states.
+        rotated_state_id: The state ID of a spin `~qrules.transition.State`
+            that you want to rotate.
+        m_prime: The summation symbol :math:`m'` that should be used when
+            summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
     suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
     return formulate_helicity_rotation(
         spin_magnitude=state.particle.spin,
         spin_projection=state.spin_projection,
+        m_prime=m_prime,
         alpha=sp.Symbol(f"alpha{suffix}", real=True),
         beta=sp.Symbol(f"beta{suffix}", real=True),
         gamma=sp.Symbol(f"gamma{suffix}", real=True),
@@ -770,10 +795,11 @@ def formulate_wigner_rotation(
 def formulate_helicity_rotation(
     spin_magnitude: float,
     spin_projection: float,
+    m_prime: sp.Symbol,
     alpha: sp.Symbol,
     beta: sp.Symbol,
     gamma: sp.Symbol,
-) -> Tuple["WignerD", ...]:
+) -> PoolSum:
     r"""Formulate action of an Euler rotation on a spin state.
 
     When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler
@@ -783,6 +809,7 @@ def formulate_helicity_rotation(
     Wigner-:math:`D` expansion coefficients:
 
     .. math::
+        :label: formulate_helicity_rotation
 
         R(\alpha,\beta,\gamma)\left|s,m\right\rangle
         = \sum^s_{m'=-s} D^s_{m',m}\left(\alpha,\beta,\gamma\right)
@@ -799,6 +826,9 @@ def formulate_helicity_rotation(
             rotated.
         spin_projection: Spin projection component :math:`m` of the spin state
             that is being rotated.
+        m_prime: A index `~sympy.core.symbol.Symbol` or
+            `~sympy.core.symbol.Dummy` that represents :math:`m'` helicities in
+            Eq. :eq:`formulate_helicity_rotation`.
 
         alpha: First Euler angle.
         beta: Second Euler angle.
@@ -806,25 +836,25 @@ def formulate_helicity_rotation(
 
     Example
     -------
-    >>> a, b, c = sp.symbols("a b c")
-    >>> formulate_helicity_rotation(0, 0, a, b, c)
-    (WignerD(0, 0, 0, a, b, c),)
-    >>> formulate_helicity_rotation(1/2, -1/2, a, b, c)
-    (WignerD(1/2, -1/2, -1/2, a, b, c), WignerD(1/2, -1/2, 1/2, a, b, c))
+    >>> a, b, c, i = sp.symbols("a b c i")
+    >>> formulate_helicity_rotation(0, 0, i, a, b, c)
+    PoolSum(WignerD(0, 0, i, a, b, c), (i, [0]))
+    >>> formulate_helicity_rotation(1/2, -1/2, i, a, b, c)
+    PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, [-1/2, 1/2]))
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
-    allowed_projections = _create_spin_range(spin_magnitude)
-    return tuple(
+    helicities = map(sp.Rational, _create_spin_range(spin_magnitude))
+    return PoolSum(
         Wigner.D(
             j=sp.Rational(spin_magnitude),
             m=sp.Rational(spin_projection),
-            mp=sp.Rational(m_prime),
+            mp=m_prime,
             alpha=alpha,
             beta=beta,
             gamma=gamma,
-        )
-        for m_prime in allowed_projections
+        ),
+        (m_prime, list(helicities)),
     )
 
 
