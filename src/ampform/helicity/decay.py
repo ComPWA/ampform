@@ -150,6 +150,20 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     return True
 
 
+def get_sibling_state_id(topology: Topology, state_id: int) -> int:
+    """Get the sibling state ID for a state in an isobar decay."""
+    parent_node = topology.edges[state_id].originating_node_id
+    if parent_node is None:
+        raise ValueError(
+            f"State {state_id} is an incoming edge and does not have siblings."
+        )
+    out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
+    out_state_ids.remove(state_id)
+    if len(out_state_ids) != 1:
+        raise ValueError("Not an isobar decay")
+    return next(iter(out_state_ids))
+
+
 def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> Tuple[State, Tuple[State, State]]:
