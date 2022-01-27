@@ -8,7 +8,10 @@ from qrules.quantum_numbers import InteractionProperties
 from qrules.topology import Topology
 from qrules.transition import State, StateTransition
 
-from ampform.kinematics import _assert_two_body_decay
+from ampform.kinematics import (
+    _assert_two_body_decay,
+    determine_attached_final_state,
+)
 
 
 @attr.frozen
@@ -105,22 +108,10 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     angles: the argument of the Wigner-:math:`D` function returned by
     :func:`.formulate_wigner_d` are the angles of the helicity state.
     """
-    parent_node = topology.edges[state_id].originating_node_id
-    if parent_node is None:
-        return False
-    out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
-    sorted_by_id = sorted(out_state_ids)
-    final_state_ids = [
-        i for i in sorted_by_id if i in topology.outgoing_edge_ids
-    ]
-    intermediate_state_ids = [
-        i for i in sorted_by_id if i in topology.intermediate_edge_ids
-    ]
-    sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
-    helicity_state_id = sorted_by_ending[0]
-    if state_id == helicity_state_id:
-        return False
-    return True
+    sibling_id = get_sibling_state_id(topology, state_id)
+    state_fs_ids = determine_attached_final_state(topology, state_id)
+    sibling_fs_ids = determine_attached_final_state(topology, sibling_id)
+    return tuple(state_fs_ids) > tuple(sibling_fs_ids)
 
 
 def get_sibling_state_id(topology: Topology, state_id: int) -> int:
