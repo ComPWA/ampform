@@ -743,7 +743,7 @@ def formulate_helicity_rotation_chain(
             spin_projection,
             m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
             alpha=phi,
-            beta=-theta,
+            beta=theta,
             gamma=0,
         )
         yield from get_helicity_rotation(parent_id)
