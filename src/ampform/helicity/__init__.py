@@ -22,6 +22,7 @@ from typing import (
     Set,
     Tuple,
     Union,
+    overload,
 )
 
 import attr
@@ -716,7 +717,7 @@ def formulate_rotation_chain(
         rotated_state_id,
         m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
     )
-    return __multiply_pool_sums([wigner_rotation, helicity_rotations])
+    return __multiply_pool_sums([helicity_rotations, wigner_rotation])
 
 
 def formulate_helicity_rotation_chain(
@@ -725,8 +726,7 @@ def formulate_helicity_rotation_chain(
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
     spin_magnitude = rotated_state.particle.spin
-    spin_projection = rotated_state.spin_projection
-    idx_root_iter = iter(__GREEK_INDEX_NAMES)
+    idx_root_counter = 0
     idx_suffix = get_boost_chain_suffix(transition.topology, rotated_state_id)
 
     def get_helicity_rotation(state_id: int) -> Generator[PoolSum, None, None]:
@@ -734,13 +734,18 @@ def formulate_helicity_rotation_chain(
         if parent_id is None:
             return
         # pylint: disable=stop-iteration-return
-        idx_root = next(idx_root_iter)
+        nonlocal idx_root_counter
+        idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
+        next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
+        idx_root_counter += 1
         phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
         phi = sp.Symbol(phi_label, real=True)
         theta = sp.Symbol(theta_theta, real=True)
         yield formulate_helicity_rotation(
             spin_magnitude,
-            spin_projection,
+            spin_projection=sp.Symbol(
+                f"{next_idx_root}{idx_suffix}", real=True
+            ),
             m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
             alpha=phi,
             beta=theta,
@@ -749,7 +754,13 @@ def formulate_helicity_rotation_chain(
         yield from get_helicity_rotation(parent_id)
 
     rotations = get_helicity_rotation(reference_state_id)
-    return __multiply_pool_sums(list(rotations))
+    summation = __multiply_pool_sums(list(rotations))
+    if len(summation.indices) == 1:
+        idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
+        dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", real=True)
+        spin_projection = transition.states[rotated_state_id].spin_projection
+        return summation.subs(dangling_idx, sp.Rational(spin_projection))
+    return summation
 
 
 def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
@@ -793,8 +804,8 @@ def formulate_wigner_rotation(
 
 
 def formulate_helicity_rotation(
-    spin_magnitude: float,
-    spin_projection: float,
+    spin_magnitude: Union[float, sp.Symbol],
+    spin_projection: Union[float, sp.Symbol],
     m_prime: sp.Symbol,
     alpha: sp.Symbol,
     beta: sp.Symbol,
@@ -847,8 +858,8 @@ def formulate_helicity_rotation(
     helicities = map(sp.Rational, _create_spin_range(spin_magnitude))
     return PoolSum(
         Wigner.D(
-            j=sp.Rational(spin_magnitude),
-            m=sp.Rational(spin_projection),
+            j=__rationalize(spin_magnitude),
+            m=__rationalize(spin_projection),
             mp=m_prime,
             alpha=alpha,
             beta=beta,
@@ -856,6 +867,22 @@ def formulate_helicity_rotation(
         ),
         (m_prime, list(helicities)),
     )
+
+
+@overload
+def __rationalize(value: float) -> sp.Rational:
+    ...
+
+
+@overload
+def __rationalize(value: sp.Symbol) -> sp.Symbol:
+    ...
+
+
+def __rationalize(value):  # type:ignore[no-untyped-def]
+    if isinstance(value, sp.Symbol):
+        return value
+    return sp.Rational(value)
 
 
 def _create_spin_range(spin_magnitude: float) -> List[float]:
