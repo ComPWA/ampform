@@ -14,6 +14,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 import sympy as sp
@@ -254,6 +255,35 @@ class PoolSum(UnevaluatedExpression):
             sum_symbols.append(_render_sum_symbol(printer, idx, values))
         expression = printer._print(self.expression)
         return R" ".join(sum_symbols) + f"{{{expression}}}"
+
+    def cleanup(self) -> Union[sp.Expr, "PoolSum"]:
+        """Remove redundant summations, like indices with one or no value.
+
+        >>> x, i = sp.symbols("x i")
+        >>> PoolSum(x**i, (i, [0, 1, 2])).cleanup().doit()
+        x**2 + x + 1
+        >>> PoolSum(x, (i, [0, 1, 2])).cleanup()
+        x
+        >>> PoolSum(x).cleanup()
+        x
+        >>> PoolSum(x**i, (i, [0])).cleanup()
+        1
+        """
+        substitutions = {}
+        new_indices = []
+        for idx, values in self.indices:
+            if idx not in self.expression.free_symbols:
+                continue
+            if len(values) == 0:
+                continue
+            if len(values) == 1:
+                substitutions[idx] = values[0]
+            else:
+                new_indices.append((idx, values))
+        new_expression = self.expression.xreplace(substitutions)
+        if len(new_indices) == 0:
+            return new_expression
+        return PoolSum(new_expression, *new_indices)
 
 
 def _render_sum_symbol(
