@@ -46,7 +46,12 @@ from ampform.kinematics import (
 )
 from ampform.sympy import PoolSum
 
-from .decay import TwoBodyDecay, count_parents, get_parent_id
+from .decay import (
+    TwoBodyDecay,
+    get_parent_id,
+    get_sibling_state_id,
+    is_opposite_helicity_state,
+)
 from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
@@ -659,7 +664,7 @@ def group_transitions(
 
 
 def formulate_spin_alignment(
-    transition: StateTransition, reference_state_id: int
+    transition: StateTransition,
 ) -> List[Tuple["WignerD", ...]]:
     """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
 
@@ -671,15 +676,10 @@ def formulate_spin_alignment(
     multiply the Wigner-:math:`D` functions in each `tuple` and sum over all
     these products.
     """
-    if reference_state_id not in transition.final_states:
-        raise ValueError(
-            "Reference state has to be one of the final state IDs"
-            f" {list(transition.final_states)}"
-        )
     rotations = PoolSum(1)
     for rotated_state_id in transition.final_states:
         additional_rotations = formulate_rotation_chain(
-            transition, rotated_state_id, reference_state_id
+            transition, rotated_state_id
         )
         rotations = __multiply_pool_sums([rotations, additional_rotations])
     return rotations
@@ -689,28 +689,17 @@ __GREEK_INDEX_NAMES = ("lambda", "mu", "nu", "xi", "alpha", "beta", "gamma")
 
 
 def formulate_rotation_chain(
-    transition: StateTransition, rotated_state_id: int, reference_state_id: int
+    transition: StateTransition, rotated_state_id: int
 ) -> PoolSum:
     """Formulate the spin alignment sum for a specific chain.
 
     See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`.
     """
-    number_of_parents = count_parents(transition.topology, rotated_state_id)
-    if number_of_parents == 0:
-        return PoolSum(1)
-    if number_of_parents == 1:
-        reference_parent_state_id = get_parent_id(
-            transition.topology, reference_state_id
-        )
-        if reference_parent_state_id is None:
-            return PoolSum(1)
-        helicity_rotations = formulate_helicity_rotation_chain(
-            transition, rotated_state_id, reference_parent_state_id
-        )
-        return helicity_rotations
     helicity_rotations = formulate_helicity_rotation_chain(
-        transition, rotated_state_id, reference_state_id
+        transition, rotated_state_id
     )
+    if len(helicity_rotations.indices) == 1:
+        return helicity_rotations
     idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
     idx_suffix = _get_helicity_suffix(transition.topology, rotated_state_id)
     wigner_rotation = formulate_wigner_rotation(
@@ -722,7 +711,7 @@ def formulate_rotation_chain(
 
 
 def formulate_helicity_rotation_chain(
-    transition: StateTransition, rotated_state_id: int, reference_state_id: int
+    transition: StateTransition, rotated_state_id: int
 ) -> PoolSum:
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
@@ -739,6 +728,8 @@ def formulate_helicity_rotation_chain(
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
         idx_root_counter += 1
+        if is_opposite_helicity_state(topology, state_id):
+            state_id = get_sibling_state_id(topology, state_id)
         phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
         phi = sp.Symbol(phi_label, real=True)
         theta = sp.Symbol(theta_theta, real=True)
@@ -754,7 +745,7 @@ def formulate_helicity_rotation_chain(
         )
         yield from get_helicity_rotation(parent_id)
 
-    rotations = get_helicity_rotation(reference_state_id)
+    rotations = get_helicity_rotation(rotated_state_id)
     summation = __multiply_pool_sums(list(rotations))
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
