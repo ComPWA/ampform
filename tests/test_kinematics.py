@@ -10,8 +10,11 @@ from qrules.topology import Topology, create_isobar_topologies
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics import (
+    BoostMatrix,
+    BoostZMatrix,
     Energy,
     FourMomenta,
+    FourMomentumSymbol,
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
@@ -44,6 +47,45 @@ def helicity_angles(
 ) -> Dict[str, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
+
+
+class TestBoostMatrix:
+    def test_boost_in_z_direction_reduces_to_z_boost(self):
+        p = FourMomentumSymbol("p")
+        expr = BoostMatrix(p)
+        func = sp.lambdify(p, expr)
+        p_array = np.array([[5, 0, 0, 1]])
+        matrix = func(p_array)[0]
+        assert pytest.approx(matrix) == np.array(
+            [
+                [1.02062073, 0, 0, -0.20412415],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-0.20412415, 0, 0, 1.02062073],
+            ]
+        )
+
+        z_expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        z_func = sp.lambdify(p, z_expr.doit())
+        z_matrix = z_func(p_array)[0]
+        assert pytest.approx(matrix) == z_matrix
+
+
+class TestBoostZMatrix:
+    def test_boost_into_own_rest_frame_gives_mass(self):
+        p = FourMomentumSymbol("p")
+        expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        func = sp.lambdify(p, expr.doit())
+        p_array = np.array([[5, 0, 0, 1]])
+        boost_z = func(p_array)[0]
+        boosted_array = np.einsum("...ij,...j->...i", boost_z, p_array)
+        mass = 4.89897949
+        assert pytest.approx(boosted_array[0]) == [mass, 0, 0, 0]
+
+        expr = InvariantMass(p)
+        func = sp.lambdify(p, expr.doit())
+        mass_array = func(p_array)
+        assert pytest.approx(mass_array[0]) == mass
 
 
 class TestFourMomentumXYZ:
