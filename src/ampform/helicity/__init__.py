@@ -171,8 +171,14 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             `~.HelicityModel.kinematic_variables` (which are expressions to
             compute an event-wise array of invariant masses). This is useful
             if final state particles are stable.
+        stable_final_state_ids: Put the invariant of the initial state
+            (:math:`m_{012\dots}`) under `.HelicityModel.parameter_defaults`
+            (with a *scalar* suggested value) instead of
+            `~.HelicityModel.kinematic_variables`. This is useful if
+            four-momenta were generated with or kinematically fit to a specific
+            initial state energy.
 
-            .. seealso:: :ref:`usage/amplitude:Stable final states`
+            .. seealso:: :ref:`usage/amplitude:Scalar masses`
     """
 
     def __init__(
@@ -232,6 +238,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     @property
     def scalar_initial_state_mass(self) -> bool:
+        """Add initial state mass as scalar value to `.parameter_defaults`.
+
+        .. seealso:: :ref:`usage/amplitude:Scalar masses`
+        """
         return self.__scalar_initial_state_mass
 
     @scalar_initial_state_mass.setter
