@@ -5,7 +5,7 @@
 import itertools
 import sys
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Set, Tuple
 
 import attr
 import sympy as sp
@@ -15,6 +15,10 @@ from qrules.transition import ReactionInfo, StateTransition
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
 
+from ampform.helicity.decay import (
+    assert_isobar_topology,
+    determine_attached_final_state,
+)
 from ampform.sympy import (
     UnevaluatedExpression,
     _implement_latex_subscript,
@@ -74,7 +78,7 @@ class HelicityAdapter:
         self.register_topology(transition.topology)
 
     def register_topology(self, topology: Topology) -> None:
-        _assert_isobar_topology(topology)
+        assert_isobar_topology(topology)
         if len(self.registered_topologies) == 0:
             object.__setattr__(
                 self,
@@ -657,7 +661,7 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 
     As noted, the top-most parent (initial state) is not listed in the label.
     """
-    _assert_isobar_topology(topology)
+    assert_isobar_topology(topology)
 
     def recursive_label(topology: Topology, state_id: int) -> str:
         edge = topology.edges[state_id]
@@ -710,48 +714,3 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
     """
     final_state_ids = determine_attached_final_state(topology, state_id)
     return f"m_{''.join(map(str, sorted(final_state_ids)))}"
-
-
-def _assert_isobar_topology(topology: Topology) -> None:
-    for node_id in topology.nodes:
-        _assert_two_body_decay(topology, node_id)
-
-
-def _assert_two_body_decay(topology: Topology, node_id: int) -> None:
-    parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
-    if len(parent_state_ids) != 1:
-        raise ValueError(
-            f"Node {node_id} has {len(parent_state_ids)} parent states,"
-            " so this is not an isobar decay"
-        )
-    child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-    if len(child_state_ids) != 2:
-        raise ValueError(
-            f"Node {node_id} decays to {len(child_state_ids)} states,"
-            " so this is not an isobar decay"
-        )
-
-
-def determine_attached_final_state(
-    topology: Topology, state_id: int
-) -> List[int]:
-    """Determine all final state particles of a transition.
-
-    These are attached downward (forward in time) for a given edge (resembling
-    the root).
-
-    Example
-    -------
-    For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
-
-    >>> from qrules.topology import create_isobar_topologies
-    >>> topologies = create_isobar_topologies(5)
-    >>> determine_attached_final_state(topologies[0], state_id=5)
-    [0, 3, 4]
-    """
-    edge = topology.edges[state_id]
-    if edge.ending_node_id is None:
-        return [state_id]
-    return sorted(
-        topology.get_originating_final_state_edge_ids(edge.ending_node_id)
-    )
