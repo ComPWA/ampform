@@ -18,6 +18,8 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.helicity.decay import (
     assert_isobar_topology,
     determine_attached_final_state,
+    get_sibling_state_id,
+    is_opposite_helicity_state,
 )
 from ampform.sympy import (
     UnevaluatedExpression,
@@ -491,7 +493,7 @@ def compute_helicity_angles(
     >>> topology = topologies[0]
     >>> four_momenta = create_four_momentum_symbols(topology)
     >>> angles = compute_helicity_angles(four_momenta, topology)
-    >>> angles["theta_12"]
+    >>> angles["theta_0"]
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
@@ -511,6 +513,8 @@ def compute_helicity_angles(
             topology.edges[i].ending_node_id is None for i in child_state_ids
         ):
             state_id = child_state_ids[0]
+            if is_opposite_helicity_state(topology, state_id):
+                state_id = child_state_ids[1]
             four_momentum = four_momenta[state_id]
             phi_label, theta_label = get_helicity_angle_label(
                 topology, state_id
@@ -547,6 +551,8 @@ def compute_helicity_angles(
                     }
 
                     # register current angle variables
+                    if is_opposite_helicity_state(topology, state_id):
+                        state_id = get_sibling_state_id(topology, state_id)
                     phi_label, theta_label = get_helicity_angle_label(
                         topology, state_id
                     )

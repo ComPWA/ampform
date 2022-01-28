@@ -53,7 +53,9 @@ class TestHelicityAmplitudeBuilder:
 
         variables = set(model.kinematic_variables)
         paremeters = set(model.parameter_defaults)
-        assert model.expression.free_symbols <= variables | paremeters
+        free_symbols = model.expression.free_symbols
+        undefined_symbols = free_symbols - paremeters - variables
+        assert not undefined_symbols
 
         final_state_masses = set(sp.symbols("m_(0:3)", real=True))
         stable_final_state_masses = set()

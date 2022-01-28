@@ -156,7 +156,7 @@ class TestTheta:
     ("angle_name", "expected_values"),
     [
         (
-            "phi_123",
+            "phi_0",
             np.array(
                 [
                     2.79758,
@@ -173,7 +173,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_123",
+            "theta_0",
             np.arccos(
                 [
                     -0.914298,
@@ -190,7 +190,7 @@ class TestTheta:
             ),
         ),
         (
-            "phi_23^123",
+            "phi_1^123",
             np.array(
                 [
                     1.04362,
@@ -207,7 +207,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_23^123",
+            "theta_1^123",
             np.arccos(
                 [
                     -0.772533,
