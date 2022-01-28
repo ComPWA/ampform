@@ -4,9 +4,8 @@ from typing import Iterable, List, Tuple
 
 import attr
 from qrules.quantum_numbers import InteractionProperties
+from qrules.topology import Topology
 from qrules.transition import State, StateTransition
-
-from ampform.kinematics import _assert_two_body_decay
 
 
 @attr.frozen
@@ -97,7 +96,7 @@ def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> Tuple[State, Tuple[State, State]]:
     """Extract in- and outgoing states for a two-body decay node."""
-    _assert_two_body_decay(transition.topology, node_id)
+    assert_two_body_decay(transition.topology, node_id)
     in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
     out_edge_ids = transition.topology.get_edge_ids_outgoing_from_node(node_id)
     in_helicity_list = get_sorted_states(transition, in_edge_ids)
@@ -120,3 +119,48 @@ def get_sorted_states(
     """
     states = [transition.states[i] for i in state_ids]
     return sorted(states, key=lambda s: s.particle.name)
+
+
+def assert_isobar_topology(topology: Topology) -> None:
+    for node_id in topology.nodes:
+        assert_two_body_decay(topology, node_id)
+
+
+def assert_two_body_decay(topology: Topology, node_id: int) -> None:
+    parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
+    if len(parent_state_ids) != 1:
+        raise ValueError(
+            f"Node {node_id} has {len(parent_state_ids)} parent states,"
+            " so this is not an isobar decay"
+        )
+    child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
+    if len(child_state_ids) != 2:
+        raise ValueError(
+            f"Node {node_id} decays to {len(child_state_ids)} states,"
+            " so this is not an isobar decay"
+        )
+
+
+def determine_attached_final_state(
+    topology: Topology, state_id: int
+) -> List[int]:
+    """Determine all final state particles of a transition.
+
+    These are attached downward (forward in time) for a given edge (resembling
+    the root).
+
+    Example
+    -------
+    For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> determine_attached_final_state(topologies[0], state_id=5)
+    [0, 3, 4]
+    """
+    edge = topology.edges[state_id]
+    if edge.ending_node_id is None:
+        return [state_id]
+    return sorted(
+        topology.get_originating_final_state_edge_ids(edge.ending_node_id)
+    )
