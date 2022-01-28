@@ -97,6 +97,20 @@ class TestHelicityAmplitudeBuilder:
         ):
             builder.stable_final_state_ids = [1, 2, 3]  # type: ignore[assignment]
 
+    def test_scalar_initial_state(self, reaction: ReactionInfo):
+        builder: HelicityAmplitudeBuilder = get_builder(reaction)
+        assert builder.scalar_initial_state_mass is False
+        initial_state_mass = sp.Symbol("m_012", real=True)
+
+        model = builder.formulate()
+        assert initial_state_mass in model.kinematic_variables
+        assert initial_state_mass not in model.parameter_defaults
+
+        builder.scalar_initial_state_mass = True
+        model = builder.formulate()
+        assert initial_state_mass not in model.kinematic_variables
+        assert initial_state_mass in model.parameter_defaults
+
 
 class TestHelicityModel:
     def test_sum_components(self, amplitude_model: Tuple[str, HelicityModel]):
