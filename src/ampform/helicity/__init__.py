@@ -179,6 +179,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self,
         reaction: ReactionInfo,
         stable_final_state_ids: Optional[Iterable[int]] = None,
+        scalar_initial_state_mass: bool = False,
     ) -> None:
         self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
@@ -195,6 +196,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             )
         self.__adapter = HelicityAdapter(reaction)
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
+        self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
         for grouping in reaction.transition_groups:
             self.__adapter.register_topology(grouping.topology)
 
@@ -228,6 +230,16 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     f" {self.__stable_final_state_ids}"
                 )
 
+    @property
+    def scalar_initial_state_mass(self) -> bool:
+        return self.__scalar_initial_state_mass
+
+    @scalar_initial_state_mass.setter
+    def scalar_initial_state_mass(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError
+        self.__scalar_initial_state_mass = value
+
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
@@ -252,12 +264,18 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
         }
-        if self.__stable_final_state_ids is not None:
-            for state_id in self.__stable_final_state_ids:
+        if self.stable_final_state_ids is not None:
+            for state_id in self.stable_final_state_ids:
                 mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
                 particle = self.__reaction.final_state[state_id]
                 self.__parameter_defaults[mass_symbol] = particle.mass
                 del kinematic_variables[mass_symbol]
+        if self.scalar_initial_state_mass:
+            subscript = "".join(map(str, sorted(self.__reaction.final_state)))
+            mass_symbol = sp.Symbol(f"m_{subscript}", real=True)
+            particle = self.__reaction.initial_state[-1]
+            self.__parameter_defaults[mass_symbol] = particle.mass
+            del kinematic_variables[mass_symbol]
 
         return HelicityModel(
             expression=top_expression,
