@@ -386,6 +386,60 @@ class BoostZMatrix(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
+class BoostMatrix(sp.Expr):
+    """Represents a general Lorentz boost matrix."""
+
+    def __new__(cls, momentum: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
+        return create_expression(cls, momentum, **kwargs)
+
+    @property
+    def momentum(self) -> sp.Expr:
+        r"""Velocity in the :math:`z`-direction, :math:`\momentum=p_z/E`."""
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        momentum = self.momentum
+        energy = Energy(momentum)
+        beta = ThreeMomentumNorm(momentum) / energy
+        b_x = FourMomentumX(momentum) / energy
+        b_y = FourMomentumY(momentum) / energy
+        b_z = FourMomentumZ(momentum) / energy
+        g = 1 / sp.sqrt(1 - beta**2)
+        return sp.Matrix(
+            [
+                [g, -g * b_x, -g * b_y, -g * b_z],
+                [
+                    -g * b_x,
+                    1 + (g - 1) * b_x**2 / beta**2,
+                    (g - 1) * b_y * b_x / beta**2,
+                    (g - 1) * b_z * b_x / beta**2,
+                ],
+                [
+                    -g * b_y,
+                    (g - 1) * b_x * b_y / beta**2,
+                    1 + (g - 1) * b_y**2 / beta**2,
+                    (g - 1) * b_z * b_y / beta**2,
+                ],
+                [
+                    -g * b_z,
+                    (g - 1) * b_x * b_z / beta**2,
+                    (g - 1) * b_y * b_z / beta**2,
+                    1 + (g - 1) * b_z**2 / beta**2,
+                ],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.momentum)
+        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return (
+            printer._print(self.as_explicit().doit(), *args)
+            + ".transpose((2, 0, 1))"
+        )
+
+
 class RotationYMatrix(sp.Expr):
     """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
 
