@@ -19,6 +19,7 @@ from ampform.kinematics import (
     FourMomentumY,
     FourMomentumZ,
     InvariantMass,
+    NegativeMomentum,
     Phi,
     Theta,
     ThreeMomentum,
@@ -222,6 +223,17 @@ class TestTheta:
             numpy_code
             == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
         )
+
+
+class TestNegativeMomentum:
+    def test_same_as_inverse(self, data_sample: Dict[int, np.ndarray]):
+        p = FourMomentumSymbol("p")
+        expr = NegativeMomentum(p)
+        func = sp.lambdify(p, expr.doit())
+        for p_array in data_sample.values():
+            negative_array = func(p_array)
+            assert pytest.approx(negative_array[:, 0]) == p_array[:, 0]
+            assert pytest.approx(negative_array[:, 1:]) == -p_array[:, 1:]
 
 
 @pytest.mark.parametrize(

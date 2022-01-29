@@ -370,6 +370,72 @@ class Theta(UnevaluatedExpression):
         return Rf"\theta\left({momentum}\right)"
 
 
+@implement_doit_method
+@make_commutative
+class NegativeMomentum(UnevaluatedExpression):
+    r"""Invert the spatial components of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> sp.Expr:
+        p = self._momentum
+        eta = MinkowskiMetric(p)
+        return ArrayMultiplication(eta, p)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return Rf"-\left({momentum}\right)"
+
+
+class MinkowskiMetric(sp.Expr):
+    # pylint: disable=no-self-use
+    r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
+
+    def __new__(
+        cls, momentum: FourMomentumSymbol, **hints: Any
+    ) -> "MinkowskiMetric":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "MinkowskiMetric":
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        return sp.Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, -1, 0, 0],
+                [0, 0, -1, 0],
+                [0, 0, 0, -1],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        return R"\boldsymbol{\eta}"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].update(
+            {"array", "ones", "zeros"}
+        )
+        momentum = printer._print(self._momentum)
+        n_events = f"len({momentum})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, -{ones}, {zeros}, {zeros}],
+                [{zeros}, {zeros}, -{ones}, {zeros}],
+                [{zeros}, {zeros}, {zeros}, -{ones}],
+            ]
+        ).transpose((2, 0, 1))"""
+
+
 class BoostZMatrix(sp.Expr):
     """Represents a Lorentz boost matrix in the :math:`z`-direction."""
 
