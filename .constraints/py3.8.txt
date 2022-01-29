@@ -139,7 +139,7 @@ pydocstyle==6.1.1
 pyflakes==2.4.0
 pygments==2.11.2
 pylint==2.12.2
-pyparsing==2.4.7
+pyparsing==3.0.7
 pyrsistent==0.18.1
 pytest==6.2.5
 pytest-cov==3.0.0
