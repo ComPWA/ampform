@@ -100,6 +100,23 @@ class TestBoostMatrix:
             p_xyz = np.nan_to_num(p_xyz, nan=0)
             assert pytest.approx(p_xyz) == 0
 
+    def test_boosting_back_gives_original_momentum(
+        self, data_sample: Dict[int, np.ndarray]
+    ):
+        p = FourMomentumSymbol("p")
+        boost = BoostMatrix(p)
+        inverse_boost = BoostMatrix(NegativeMomentum(p))
+        expr = ArrayMultiplication(inverse_boost, boost, p)
+        func = sp.lambdify(p, expr)
+        for momentum_array in data_sample.values():
+            computed_momentum: np.ndarray = func(momentum_array)
+            is_nan = np.isnan(computed_momentum)
+            assert not np.all(is_nan)
+            assert (
+                pytest.approx(computed_momentum[~is_nan], abs=1e-2)
+                == momentum_array[~is_nan]
+            )
+
 
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
