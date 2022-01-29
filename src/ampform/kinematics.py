@@ -4,8 +4,7 @@
 
 import itertools
 import sys
-from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Set
 
 import attr
 import sympy as sp
@@ -21,6 +20,7 @@ from ampform.helicity.decay import (
     get_sibling_state_id,
     is_opposite_helicity_state,
 )
+from ampform.helicity.naming import get_helicity_angle_label
 from ampform.sympy import (
     UnevaluatedExpression,
     _implement_latex_subscript,
@@ -538,7 +538,7 @@ def compute_helicity_angles(
     Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles
     appearing in a given `~qrules.topology.Topology`. The expressions are given
     in terms of `FourMomenta` The expressions returned as values in a
-    `dict`, where the keys are defined by :func:`get_helicity_angle_label`.
+    `dict`, where the keys are defined by :func:`.get_helicity_angle_label`.
 
     Example
     -------
@@ -649,107 +649,6 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
-
-
-def get_helicity_angle_label(
-    topology: Topology, state_id: int
-) -> Tuple[str, str]:
-    r"""Generate a nested helicity angle label for :math:`\phi,\theta`.
-
-    See :func:`get_boost_chain_suffix` for the meaning of the suffix.
-    """
-    suffix = get_boost_chain_suffix(topology, state_id)
-    return f"phi{suffix}", f"theta{suffix}"
-
-
-@lru_cache(maxsize=None)
-def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
-    """Generate a subscript-superscript to identify a chain of Lorentz boosts.
-
-    The generated subscripts describe the decay sequence from the right to the
-    left, separated by commas. Resonance edge IDs are expressed as a sum of the
-    final state IDs that lie below them (see
-    :func:`.determine_attached_final_state`). The generated label does not
-    state the top-most edge (the initial state).
-
-    Example
-    -------
-    The following two allowed isobar topologies for a **1-to-5-body** decay
-    illustrates how the naming scheme results in a unique label for each of the
-    **eight edges** in the decay topology. Note that label only uses final
-    state IDs, but still reflects the internal decay topology.
-
-    >>> from qrules.topology import create_isobar_topologies
-    >>> topologies = create_isobar_topologies(5)
-    >>> topology = topologies[0]
-    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     suffix = get_boost_chain_suffix(topology, i)
-    ...     print(f"{i}: 'phi{suffix}'")
-    0: 'phi_0^034'
-    1: 'phi_1^12'
-    2: 'phi_2^12'
-    3: 'phi_3^34,034'
-    4: 'phi_4^34,034'
-    5: 'phi_034'
-    6: 'phi_12'
-    7: 'phi_34^034'
-    >>> topology = topologies[1]
-    >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
-    ...     suffix = get_boost_chain_suffix(topology, i)
-    ...     print(f"{i}: 'phi{suffix}'")
-    0: 'phi_0^01'
-    1: 'phi_1^01'
-    2: 'phi_2^234'
-    3: 'phi_3^34,234'
-    4: 'phi_4^34,234'
-    5: 'phi_01'
-    6: 'phi_234'
-    7: 'phi_34^234'
-
-    Some labels explained:
-
-    - :code:`phi_12`: **edge 6** on the *left* topology, because for this
-      topology, we have :math:`p_6=p_1+p_2`.
-    - :code:`phi_234`: **edge 6** *right*, because for this topology,
-      :math:`p_6=p_2+p_3+p_4`.
-    - :code:`phi_1^12`: **edge 1** *left*, because 1 decays from
-      :math:`p_6=p_1+p_2`.
-    - :code:`phi_1^01`: **edge 1** *right*, because it decays from
-      :math:`p_5=p_0+p_1`.
-    - :code:`phi_4^34,234`: **edge 4** *right*, because it decays from edge 7
-      (:math:`p_7=p_3+p_4`), which comes from edge 6 (:math:`p_7=p_2+p_3+p_4`).
-
-    As noted, the top-most parent (initial state) is not listed in the label.
-    """
-    assert_isobar_topology(topology)
-
-    def recursive_label(topology: Topology, state_id: int) -> str:
-        edge = topology.edges[state_id]
-        if edge.ending_node_id is None:
-            label = f"{state_id}"
-        else:
-            attached_final_state_ids = determine_attached_final_state(
-                topology, state_id
-            )
-            label = "".join(map(str, attached_final_state_ids))
-        if edge.originating_node_id is not None:
-            incoming_state_ids = topology.get_edge_ids_ingoing_to_node(
-                edge.originating_node_id
-            )
-            state_id = next(iter(incoming_state_ids))
-            if state_id not in topology.incoming_edge_ids:
-                label += f",{recursive_label(topology, state_id)}"
-        return label
-
-    label = recursive_label(topology, state_id)
-
-    index_groups = label.split(",")
-    subscript = index_groups[0]
-    suffix = f"_{subscript}"
-    if len(index_groups) > 1:
-        superscript = ",".join(index_groups[1:])
-        suffix += f"^{superscript}"
-    return suffix
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:

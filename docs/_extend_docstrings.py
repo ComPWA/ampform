@@ -347,7 +347,7 @@ def __get_graphviz_state_transition_example(
 
 
 def extend_get_boost_chain_suffix() -> None:
-    from ampform.kinematics import get_boost_chain_suffix
+    from ampform.helicity.naming import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(
