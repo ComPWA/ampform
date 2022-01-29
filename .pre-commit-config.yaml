@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v5.6.12
+    rev: v5.7.0
     hooks:
       - id: cspell
 
@@ -144,7 +144,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.209
+    rev: v1.1.216
     hooks:
       - id: pyright
 
