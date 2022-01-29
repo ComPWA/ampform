@@ -4,7 +4,6 @@
 import collections
 import logging
 import operator
-import re
 from collections import OrderedDict
 from difflib import get_close_matches
 from functools import reduce
@@ -32,17 +31,15 @@ from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
 )
-from ampform.kinematics import (
-    HelicityAdapter,
-    get_helicity_angle_label,
-    get_invariant_mass_label,
-)
+from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
 
 from .decay import TwoBodyDecay
 from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     generate_transition_label,
+    get_helicity_angle_label,
+    natural_sorting,
 )
 
 ParameterValue = Union[float, complex, int]
@@ -53,7 +50,7 @@ def _order_component_mapping(
     mapping: Mapping[str, ParameterValue]
 ) -> "OrderedDict[str, ParameterValue]":
     return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
     )
 
 
@@ -64,25 +61,10 @@ def _order_symbol_mapping(
         [
             (symbol, mapping[symbol])
             for symbol in sorted(
-                mapping, key=lambda s: _natural_sorting(s.name)
+                mapping, key=lambda s: natural_sorting(s.name)
             )
         ]
     )
-
-
-def _natural_sorting(text: str) -> List[Union[float, str]]:
-    # https://stackoverflow.com/a/5967539/13219025
-    return [
-        __attempt_number_cast(c)
-        for c in re.split(r"[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)", text)
-    ]
-
-
-def __attempt_number_cast(text: str) -> Union[float, str]:
-    try:
-        return float(text)
-    except ValueError:
-        return text
 
 
 @attr.frozen
