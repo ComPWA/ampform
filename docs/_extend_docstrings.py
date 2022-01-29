@@ -158,6 +158,16 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
     _extend(FourMomentumZ)
 
 
+def extend_EuclideanNorm() -> None:
+    from ampform.kinematics import EuclideanNorm
+
+    vector = ArraySymbol("v")
+    expr = EuclideanNorm(vector)
+    _append_to_docstring(type(expr), "\n\n" + 4 * " ")
+    _append_latex_doit_definition(expr, deep=False, inline=True)
+    _append_code_rendering(expr)
+
+
 def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 
@@ -287,11 +297,11 @@ def extend_Theta() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_ThreeMomentumNorm() -> None:
-    from ampform.kinematics import ThreeMomentumNorm
+def extend_ThreeMomentum() -> None:
+    from ampform.kinematics import ThreeMomentum
 
     p = ArraySymbol("p")
-    expr = ThreeMomentumNorm(p)
+    expr = ThreeMomentum(p)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
     _append_code_rendering(expr)

@@ -250,12 +250,12 @@ class FourMomentumZ(UnevaluatedExpression):
 
 @implement_doit_method
 @make_commutative
-class ThreeMomentumNorm(UnevaluatedExpression):
-    """Norm of the three-momentum of a `FourMomentumSymbol`."""
+class ThreeMomentum(UnevaluatedExpression):
+    """Spatial components of a `FourMomentumSymbol`."""
 
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "ThreeMomentumNorm":
+    ) -> "ThreeMomentum":
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -266,15 +266,44 @@ class ThreeMomentumNorm(UnevaluatedExpression):
         three_momentum = ArraySlice(
             self._momentum, (slice(None), slice(1, None))
         )
-        norm_squared = ArrayAxisSum(three_momentum**2, axis=1)
-        return sp.sqrt(norm_squared)
+        return three_momentum
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return Rf"\left|\vec{{{momentum}}}\right|"
+        return Rf"\vec{{{momentum}}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         return printer._print(self.evaluate())
+
+
+@implement_doit_method
+@make_commutative
+class EuclideanNorm(UnevaluatedExpression):
+    """Take the euclidean norm of an array over axis 1."""
+
+    def __new__(
+        cls, vector: "FourMomentumSymbol", **hints: Any
+    ) -> "EuclideanNorm":
+        return create_expression(cls, vector, **hints)
+
+    @property
+    def _vector(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        norm_squared = ArrayAxisSum(self._vector**2, axis=1)
+        return sp.sqrt(norm_squared)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        vector = printer._print(self._vector)
+        return Rf"\left|{vector}\right|"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+def three_momentum_norm(momentum: FourMomentumSymbol) -> EuclideanNorm:
+    return EuclideanNorm(ThreeMomentum(momentum))
 
 
 @implement_doit_method
@@ -291,7 +320,8 @@ class InvariantMass(UnevaluatedExpression):
 
     def evaluate(self) -> ArraySlice:
         p = self._momentum
-        return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
+        p_xyz = ThreeMomentum(p)
+        return ComplexSqrt(Energy(p) ** 2 - EuclideanNorm(p_xyz) ** 2)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
@@ -333,7 +363,7 @@ class Theta(UnevaluatedExpression):
 
     def evaluate(self) -> sp.Expr:
         p = self._momentum
-        return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
+        return sp.acos(FourMomentumZ(p) / three_momentum_norm(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
@@ -400,7 +430,7 @@ class BoostMatrix(sp.Expr):
     def as_explicit(self) -> sp.Expr:
         momentum = self.momentum
         energy = Energy(momentum)
-        beta = ThreeMomentumNorm(momentum) / energy
+        beta = three_momentum_norm(momentum) / energy
         b_x = FourMomentumX(momentum) / energy
         b_y = FourMomentumY(momentum) / energy
         b_z = FourMomentumZ(momentum) / energy
@@ -591,7 +621,7 @@ def compute_helicity_angles(
                     # boost all of those momenta into this new subsystem
                     phi = Phi(four_momentum)
                     theta = Theta(four_momentum)
-                    p3_norm = ThreeMomentumNorm(four_momentum)
+                    p3_norm = three_momentum_norm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
                         k: ArrayMultiplication(

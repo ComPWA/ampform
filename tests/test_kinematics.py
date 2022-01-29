@@ -21,10 +21,11 @@ from ampform.kinematics import (
     InvariantMass,
     Phi,
     Theta,
-    ThreeMomentumNorm,
+    ThreeMomentum,
     compute_helicity_angles,
     compute_invariant_masses,
     create_four_momentum_symbols,
+    three_momentum_norm,
 )
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
@@ -69,7 +70,8 @@ class TestBoostMatrix:
             ]
         )
 
-        z_expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        beta = three_momentum_norm(p) / Energy(p)
+        z_expr = BoostZMatrix(beta)
         z_func = sp.lambdify(p, z_expr.doit())
         z_matrix = z_func(p_array)[0]
         assert pytest.approx(matrix) == z_matrix
@@ -101,7 +103,8 @@ class TestBoostMatrix:
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
         p = FourMomentumSymbol("p")
-        expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        beta = three_momentum_norm(p) / Energy(p)
+        expr = BoostZMatrix(beta)
         func = sp.lambdify(p, expr.doit())
         p_array = np.array([[5, 0, 0, 1]])
         boost_z = func(p_array)[0]
@@ -171,19 +174,19 @@ class TestInvariantMass:
         assert pytest.approx(average_mass, abs=1e-5) == expected_mass
 
 
-class TestThreeMomentumNorm:
+class TestThreeMomentum:
     @property
-    def p_norm(self) -> ThreeMomentumNorm:
+    def p_norm(self) -> ThreeMomentum:
         p = ArraySymbol("p")
-        return ThreeMomentumNorm(p)
+        return ThreeMomentum(p)
 
     def test_latex(self):
         latex = sp.latex(self.p_norm)
-        assert latex == R"\left|\vec{p}\right|"
+        assert latex == R"\vec{p}"
 
     def test_numpy(self):
         numpy_code = _generate_numpy_code(self.p_norm)
-        assert numpy_code == "numpy.sqrt(sum(p[:, 1:]**2, axis=1))"
+        assert numpy_code == "p[:, 1:]"
 
 
 class TestPhi:
