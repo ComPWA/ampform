@@ -26,7 +26,11 @@ from ampform.kinematics import (
     compute_invariant_masses,
     create_four_momentum_symbols,
 )
-from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
+from ampform.sympy._array_expressions import (
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySymbol,
+)
 
 
 @pytest.fixture(scope="session")
@@ -69,6 +73,29 @@ class TestBoostMatrix:
         z_func = sp.lambdify(p, z_expr.doit())
         z_matrix = z_func(p_array)[0]
         assert pytest.approx(matrix) == z_matrix
+
+    def test_boost_into_rest_frame_gives_mass(
+        self,
+        data_sample: Dict[int, np.ndarray],
+        topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    ):
+        # pylint: disable=too-many-locals
+        _, momenta = topology_and_momentum_symbols
+        pi0_mass = 0.135
+        masses = {0: pi0_mass, 1: 0, 2: pi0_mass, 3: pi0_mass}
+        for state_id, momentum_array in data_sample.items():
+            momentum = momenta[state_id]
+            boost = BoostMatrix(momentum)
+            expr = ArrayMultiplication(boost, momentum)
+            func = sp.lambdify(momentum, expr)
+            boosted_array: np.ndarray = func(momentum_array)
+            assert not np.all(np.isnan(boosted_array))
+            mass = boosted_array[:, 0]
+            mass = mass[~np.isnan(mass)]
+            assert pytest.approx(mass, abs=1e-2) == masses[state_id]
+            p_xyz = boosted_array[:, 1:]
+            p_xyz = np.nan_to_num(p_xyz, nan=0)
+            assert pytest.approx(p_xyz) == 0
 
 
 class TestBoostZMatrix:
