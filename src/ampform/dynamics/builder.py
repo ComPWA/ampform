@@ -93,14 +93,14 @@ def create_non_dynamic_with_ff(
             " factor!"
         )
     q_squared = BreakupMomentumSquared(
-        s=variable_pool.incoming_state_mass ** 2,
+        s=variable_pool.incoming_state_mass**2,
         m_a=variable_pool.outgoing_state_mass1,
         m_b=variable_pool.outgoing_state_mass2,
     )
     meson_radius = sp.Symbol(f"d_{resonance.name}")
     form_factor_squared = BlattWeisskopfSquared(
         angular_momentum,
-        z=q_squared * meson_radius ** 2,
+        z=q_squared * meson_radius**2,
     )
     return (
         sp.sqrt(form_factor_squared),
@@ -150,7 +150,7 @@ class RelativisticBreitWignerBuilder:
         res_mass = sp.Symbol(f"m_{resonance.name}")
         res_width = sp.Symbol(f"Gamma_{resonance.name}")
         expression = relativistic_breit_wigner(
-            s=inv_mass ** 2,
+            s=inv_mass**2,
             mass0=res_mass,
             gamma0=res_width,
         )
@@ -178,7 +178,7 @@ class RelativisticBreitWignerBuilder:
         meson_radius = sp.Symbol(f"d_{resonance.name}")
 
         expression = relativistic_breit_wigner_with_ff(
-            s=inv_mass ** 2,
+            s=inv_mass**2,
             mass0=res_mass,
             gamma0=res_width,
             m_a=product1_inv_mass,

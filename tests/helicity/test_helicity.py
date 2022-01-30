@@ -122,8 +122,8 @@ class TestHelicityModel:
         assert from_intensities == model.expression
         for spin_jpsi in ["-1", "+1"]:
             for spin_gamma in ["-1", "+1"]:
-                jpsi_with_spin = fR"J/\psi(1S)_{{{spin_jpsi}}}"
-                gamma_with_spin = fR"\gamma_{{{spin_gamma}}}"
+                jpsi_with_spin = Rf"J/\psi(1S)_{{{spin_jpsi}}}"
+                gamma_with_spin = Rf"\gamma_{{{spin_gamma}}}"
                 from_amplitudes = model.sum_components(
                     components=filter(
                         lambda c: c.startswith("A")

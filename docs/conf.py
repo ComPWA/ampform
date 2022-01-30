@@ -118,6 +118,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx_codeautolink",
     "sphinx_copybutton",
     "sphinx_panels",
     "sphinx_thebe",
@@ -166,6 +167,7 @@ autodoc_type_aliases = {
     "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
+codeautolink_concat_default = True
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button

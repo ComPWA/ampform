@@ -25,7 +25,7 @@ class TestNonRelativisticKMatrix:
         if n_channels > 1:
             factor += f"{n_channels}"
             factor += "*"
-        assert str(breit_wigner) == fR"-m1*w1/(-m1**2 + {factor}I*m1*w1 + s)"
+        assert str(breit_wigner) == Rf"-m1*w1/(-m1**2 + {factor}I*m1*w1 + s)"
 
     def test_interference_single_channel(self):
         k_matrix = NonRelativisticKMatrix.formulate(n_poles=2, n_channels=1)

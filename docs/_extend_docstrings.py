@@ -99,7 +99,7 @@ def extend_ComplexSqrt() -> None:
     expr = ComplexSqrt(x)
     _append_to_docstring(
         ComplexSqrt,
-        fR"""
+        Rf"""
     .. math:: {sp.latex(expr)} = {sp.latex(expr.evaluate())}
         :label: ComplexSqrt
     """,
@@ -409,7 +409,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     )
     _append_to_docstring(
         relativistic_breit_wigner_with_ff,
-        fR"""
+        Rf"""
     The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
     factor is:
 

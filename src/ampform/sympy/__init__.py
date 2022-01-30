@@ -138,9 +138,9 @@ def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
         def _latex(self: sp.Expr, printer: LatexPrinter, *args: Any) -> str:
             momentum = printer._print(self._momentum)
             if printer._needs_mul_brackets(self._momentum):
-                momentum = fR"\left({momentum}\right)"
+                momentum = Rf"\left({momentum}\right)"
             else:
-                momentum = fR"{{{momentum}}}"
+                momentum = Rf"{{{momentum}}}"
             return f"{momentum}_{subscript}"
 
         decorated_class._latex = _latex  # type: ignore[assignment]

@@ -282,7 +282,7 @@ class NonRelativisticPVector(TMatrix):
         gamma = residue_constant[pole_id, i]
         mass = pole_position[pole_id]
         width = pole_width[pole_id, i]
-        parametrization = beta * gamma * mass * width / (mass ** 2 - s)
+        parametrization = beta * gamma * mass * width / (mass**2 - s)
         return sp.Sum(parametrization, (pole_id, 1, n_poles))
 
 
@@ -414,11 +414,11 @@ class RelativisticPVector(TMatrix):
         width = pole_width[pole_id, i]
         q_squared = BreakupMomentumSquared(s, m_a[i], m_b[i])
         form_factor_squared = BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius ** 2
+            angular_momentum, z=q_squared * meson_radius**2
         )
         form_factor = sp.sqrt(form_factor_squared)
         return sp.Sum(
-            beta * gamma * mass0 * width * form_factor / (mass0 ** 2 - s),
+            beta * gamma * mass0 * width * form_factor / (mass0**2 - s),
             (pole_id, 1, n_poles),
         )
 

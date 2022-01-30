@@ -73,63 +73,63 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         cases: Dict[int, sp.Expr] = {
             0: 1,
             1: 2 * z / (z + 1),
-            2: 13 * z ** 2 / ((z - 3) * (z - 3) + 9 * z),
+            2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
             3: (
                 277
-                * z ** 3
+                * z**3
                 / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
             ),
             4: (
                 12746
-                * z ** 4
+                * z**4
                 / (
-                    (z ** 2 - 45 * z + 105) * (z ** 2 - 45 * z + 105)
+                    (z**2 - 45 * z + 105) * (z**2 - 45 * z + 105)
                     + 25 * z * (2 * z - 21) * (2 * z - 21)
                 )
             ),
             5: 998881
-            * z ** 5
+            * z**5
             / (
-                z ** 5
-                + 15 * z ** 4
-                + 315 * z ** 3
-                + 6300 * z ** 2
+                z**5
+                + 15 * z**4
+                + 315 * z**3
+                + 6300 * z**2
                 + 99225 * z
                 + 893025
             ),
             6: 118394977
-            * z ** 6
+            * z**6
             / (
-                z ** 6
-                + 21 * z ** 5
-                + 630 * z ** 4
-                + 18900 * z ** 3
-                + 496125 * z ** 2
+                z**6
+                + 21 * z**5
+                + 630 * z**4
+                + 18900 * z**3
+                + 496125 * z**2
                 + 9823275 * z
                 + 108056025
             ),
             7: 19727003738
-            * z ** 7
+            * z**7
             / (
-                z ** 7
-                + 28 * z ** 6
-                + 1134 * z ** 5
-                + 47250 * z ** 4
-                + 1819125 * z ** 3
-                + 58939650 * z ** 2
+                z**7
+                + 28 * z**6
+                + 1134 * z**5
+                + 47250 * z**4
+                + 1819125 * z**3
+                + 58939650 * z**2
                 + 1404728325 * z
                 + 18261468225
             ),
             8: 4392846440677
-            * z ** 8
+            * z**8
             / (
-                z ** 8
-                + 36 * z ** 7
-                + 1890 * z ** 6
-                + 103950 * z ** 5
-                + 5457375 * z ** 4
-                + 255405150 * z ** 3
-                + 9833098275 * z ** 2
+                z**8
+                + 36 * z**7
+                + 1890 * z**6
+                + 103950 * z**5
+                + 5457375 * z**4
+                + 255405150 * z**3
+                + 9833098275 * z**2
                 + 273922023375 * z
                 + 4108830350625
             ),
@@ -145,7 +145,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
-        return fR"B_{{{angular_momentum}}}^2\left({z}\right)"
+        return Rf"B_{{{angular_momentum}}}^2\left({z}\right)"
 
 
 class PhaseSpaceFactorProtocol(Protocol):
@@ -188,7 +188,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\rho" + subscript if self._name is None else self._name
-        return fR"{name}\left({s}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @implement_doit_method
@@ -223,7 +223,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\hat{\rho}" + subscript if self._name is None else self._name
-        return fR"{name}\left({s}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @implement_doit_method
@@ -259,7 +259,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
             if self._name is None
             else self._name
         )
-        return fR"{name}\left({s}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @implement_doit_method
@@ -292,7 +292,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
             if self._name is None
             else self._name
         )
-        return fR"{name}\left({s}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 def _analytic_continuation(
@@ -377,23 +377,23 @@ class EnergyDependentWidth(UnevaluatedExpression):
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
         q_squared = BreakupMomentumSquared(s, m_a, m_b)
-        q0_squared = BreakupMomentumSquared(mass0 ** 2, m_a, m_b)
+        q0_squared = BreakupMomentumSquared(mass0**2, m_a, m_b)
         form_factor_sq = BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius ** 2
+            angular_momentum, z=q_squared * meson_radius**2
         )
         form_factor0_sq = BlattWeisskopfSquared(
-            angular_momentum, z=q0_squared * meson_radius ** 2
+            angular_momentum, z=q0_squared * meson_radius**2
         )
         rho = self.phsp_factor(s, m_a, m_b)
-        rho0 = self.phsp_factor(mass0 ** 2, m_a, m_b)
+        rho0 = self.phsp_factor(mass0**2, m_a, m_b)
         return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         s, _, width, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(width))
-        name = fR"\Gamma{subscript}" if self._name is None else self._name
-        return fR"{name}\left({s}\right)"
+        name = Rf"\Gamma{subscript}" if self._name is None else self._name
+        return Rf"{name}\left({s}\right)"
 
 
 @implement_doit_method
@@ -433,7 +433,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
         name = "q^2" + subscript if self._name is None else self._name
-        return fR"{name}\left({s}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 def relativistic_breit_wigner(
@@ -444,7 +444,7 @@ def relativistic_breit_wigner(
     See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`asnerDalitzPlotAnalysis2006`.
     """
-    return gamma0 * mass0 / (mass0 ** 2 - s - gamma0 * mass0 * sp.I)
+    return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
@@ -464,14 +464,14 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     ff_squared = BlattWeisskopfSquared(
-        angular_momentum, z=q_squared * meson_radius ** 2
+        angular_momentum, z=q_squared * meson_radius**2
     )
     form_factor = sp.sqrt(ff_squared)
     mass_dependent_width = EnergyDependentWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return (mass0 * gamma0 * form_factor) / (
-        mass0 ** 2 - s - mass_dependent_width * mass0 * sp.I
+        mass0**2 - s - mass_dependent_width * mass0 * sp.I
     )
 
 
