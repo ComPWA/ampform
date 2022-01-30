@@ -1,6 +1,6 @@
 # pylint: disable=no-member, no-self-use, redefined-outer-name
 # cspell:ignore atol doprint
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pytest
@@ -23,6 +23,7 @@ from ampform.kinematics import (
     Phi,
     Theta,
     ThreeMomentum,
+    compute_boost_chain,
     compute_helicity_angles,
     compute_invariant_masses,
     create_four_momentum_symbols,
@@ -429,3 +430,52 @@ def __compute_mass(array: np.ndarray) -> np.ndarray:
 def _generate_numpy_code(expr: sp.Expr) -> str:
     printer = NumPyPrinter()
     return printer.doprint(expr)
+
+
+@pytest.mark.parametrize(
+    ("state_id", "expected"),
+    [
+        (
+            0,
+            ["B(p0)"],
+        ),
+        (
+            1,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p1))",
+            ],
+        ),
+        (
+            2,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p2+p3))",
+                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p2)))",
+            ],
+        ),
+        (
+            3,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p2+p3))",
+                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p3)))",
+            ],
+        ),
+    ],
+)
+def test_compute_boost_chain(
+    state_id: int,
+    expected: List[str],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+):
+    topology, momentum_symbols = topology_and_momentum_symbols
+    boost_chain = compute_boost_chain(topology, momentum_symbols, state_id)
+    boost_chain_str = [
+        str(expr)
+        .replace("BoostMatrix", "B")
+        .replace("ArrayMultiplication", "mul")
+        .replace(" + ", "+")
+        for expr in boost_chain
+    ]
+    assert boost_chain_str == expected

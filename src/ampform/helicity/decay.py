@@ -167,6 +167,30 @@ def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
     return incoming_edge_ids[0]
 
 
+def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
+    """Get the edge ID of the edge from which this state decayed.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> list_decay_chain_ids(topology, state_id=0)
+    [0, -1]
+    >>> list_decay_chain_ids(topology, state_id=1)
+    [1, 3, -1]
+    >>> list_decay_chain_ids(topology, state_id=2)
+    [2, 3, -1]
+    >>> list_decay_chain_ids(topology, state_id=-1)
+    [-1]
+    """
+    assert_isobar_topology(topology)
+    parent_list = []
+    current_id: Optional[int] = state_id
+    while current_id is not None:
+        parent_list.append(current_id)
+        current_id = get_parent_id(topology, current_id)
+    return parent_list
+
+
 def get_sorted_states(
     transition: StateTransition, state_ids: Iterable[int]
 ) -> List[State]:

@@ -4,7 +4,7 @@
 
 import itertools
 import sys
-from typing import TYPE_CHECKING, Any, Dict, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import attr
 import sympy as sp
@@ -19,6 +19,7 @@ from ampform.helicity.decay import (
     determine_attached_final_state,
     get_sibling_state_id,
     is_opposite_helicity_state,
+    list_decay_chain_ids,
 )
 from ampform.helicity.naming import get_helicity_angle_label
 from ampform.sympy import (
@@ -653,7 +654,7 @@ def compute_helicity_angles(
         )
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
-        four_momenta: FourMomenta, node_id: int
+        four_momenta: "FourMomenta", node_id: int
     ) -> Dict[str, sp.Expr]:
         helicity_angles: Dict[str, sp.Expr] = {}
         child_state_ids = sorted(
@@ -745,6 +746,69 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
+
+
+def compute_boost_chain(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> List[BoostMatrix]:
+    boost_matrices = []
+    decay_chain_state_ids = __get_boost_chain_ids(topology, state_id)
+    boosted_momenta = {
+        i: get_four_momentum_sum(topology, momenta, i)
+        for i in decay_chain_state_ids
+    }
+    for current_state_id in decay_chain_state_ids:
+        current_momentum = boosted_momenta[current_state_id]
+        boost = BoostMatrix(current_momentum)
+        boosted_momenta = {
+            i: ArrayMultiplication(boost, p)
+            for i, p in boosted_momenta.items()
+        }
+        boost_matrices.append(boost)
+    return boost_matrices
+
+
+def __get_boost_chain_ids(topology: Topology, state_id: int) -> List[int]:
+    """Get the state IDs from first resonance to this final state.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topology = create_isobar_topologies(3)[0]
+    >>> __get_boost_chain_ids(topology, state_id=0)
+    [0]
+    >>> __get_boost_chain_ids(topology, state_id=1)
+    [3, 1]
+    >>> __get_boost_chain_ids(topology, state_id=2)
+    [3, 2]
+    """
+    decay_chain_state_ids = list(
+        reversed(list_decay_chain_ids(topology, state_id))
+    )
+    initial_state_id = next(iter(topology.incoming_edge_ids))
+    decay_chain_state_ids.remove(initial_state_id)
+    return decay_chain_state_ids
+
+
+def get_four_momentum_sum(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> Union[ArraySum, FourMomentumSymbol]:
+    """Get the `FourMomentumSymbol` or sum of momenta for **any** edge ID.
+
+    If the edge ID is a final state ID, return its `FourMomentumSymbol`. If
+    it's an intermediate edge ID, return the sum of the momenta of the final
+    states to which it decays.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topology = create_isobar_topologies(3)[0]
+    >>> momenta = create_four_momentum_symbols(topology)
+    >>> get_four_momentum_sum(topology, momenta, state_id=0)
+    p0
+    >>> get_four_momentum_sum(topology, momenta, state_id=3)
+    p1 + p2
+    """
+    if state_id in topology.outgoing_edge_ids:
+        return momenta[state_id]
+    sub_momenta_ids = determine_attached_final_state(topology, state_id)
+    return ArraySum(*[momenta[i] for i in sub_momenta_ids])
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
