@@ -449,7 +449,7 @@ class BoostZMatrix(sp.Expr):
 
     def as_explicit(self) -> sp.Expr:
         beta = self.beta
-        gamma = 1 / sp.sqrt(1 - beta**2)
+        gamma = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix(
             [
                 [gamma, 0, 0, -gamma * beta],
@@ -500,7 +500,7 @@ class BoostMatrix(sp.Expr):
         b_x = FourMomentumX(momentum) / energy
         b_y = FourMomentumY(momentum) / energy
         b_z = FourMomentumZ(momentum) / energy
-        g = 1 / sp.sqrt(1 - beta**2)
+        g = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix(
             [
                 [g, -g * b_x, -g * b_y, -g * b_z],

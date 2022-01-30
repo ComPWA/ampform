@@ -92,12 +92,10 @@ class TestBoostMatrix:
             expr = ArrayMultiplication(boost, momentum)
             func = sp.lambdify(momentum, expr)
             boosted_array: np.ndarray = func(momentum_array)
-            assert not np.all(np.isnan(boosted_array))
+            assert not np.any(np.isnan(boosted_array))
             mass = boosted_array[:, 0]
-            mass = mass[~np.isnan(mass)]
             assert pytest.approx(mass, abs=1e-2) == masses[state_id]
             p_xyz = boosted_array[:, 1:]
-            p_xyz = np.nan_to_num(p_xyz, nan=0)
             assert pytest.approx(p_xyz) == 0
 
     def test_boosting_back_gives_original_momentum(
@@ -110,12 +108,8 @@ class TestBoostMatrix:
         func = sp.lambdify(p, expr)
         for momentum_array in data_sample.values():
             computed_momentum: np.ndarray = func(momentum_array)
-            is_nan = np.isnan(computed_momentum)
-            assert not np.all(is_nan)
-            assert (
-                pytest.approx(computed_momentum[~is_nan], abs=1e-2)
-                == momentum_array[~is_nan]
-            )
+            assert not np.any(np.isnan(computed_momentum))
+            assert pytest.approx(computed_momentum, abs=1e-2) == momentum_array
 
 
 class TestBoostZMatrix:
