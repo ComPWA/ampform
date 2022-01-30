@@ -22,9 +22,9 @@ exclude = '''
     | dist
 )/
 '''
-experimental-string-processing = true
 include = '\.pyi?$'
 line-length = 79
+preview = true
 target-version = [
     "py36",
     "py37",
