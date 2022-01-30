@@ -35,6 +35,7 @@ from ampform.sympy._array_expressions import (
     ArraySlice,
     ArraySum,
     ArraySymbol,
+    MatrixMultiplication,
 )
 from ampform.sympy.math import ComplexSqrt
 
@@ -746,6 +747,20 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
+
+
+def compute_wigner_rotation_matrix(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> MatrixMultiplication:
+    """Compute a Wigner rotation matrix.
+
+    Implementation of Eq. (36) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`.
+    """
+    momentum = momenta[state_id]
+    inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
+    boost_chain = compute_boost_chain(topology, momenta, state_id)
+    return MatrixMultiplication(inverted_direct_boost, *boost_chain)
 
 
 def compute_boost_chain(

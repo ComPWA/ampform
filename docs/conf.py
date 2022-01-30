@@ -219,6 +219,7 @@ nitpick_ignore = [
         "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
     ),
     ("py:class", "ampform.sympy._array_expressions.ArraySum"),
+    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "typing_extensions.Protocol"),
 ]
 
