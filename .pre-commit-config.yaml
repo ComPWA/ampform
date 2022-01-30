@@ -101,6 +101,8 @@ repos:
     rev: 1.2.3
     hooks:
       - id: nbqa-black
+        additional_dependencies:
+          - black>=22.1.0
       - id: nbqa-flake8
       - id: nbqa-isort
       - id: nbqa-pyupgrade

@@ -303,7 +303,7 @@ def create_slider(symbol: sp.Symbol) -> "Slider":
     >>> create_slider(sp.Symbol("n0", integer=True))
     IntSlider(value=0, description='\\(n_{0}\\)')
     """
-    description = fR"\({sp.latex(symbol)}\)"
+    description = Rf"\({sp.latex(symbol)}\)"
     if symbol.is_integer:
         return IntSlider(description=description)
     return FloatSlider(description=description)

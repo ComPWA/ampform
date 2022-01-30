@@ -33,7 +33,7 @@ class TestArrayMultiplication:
 class TestArraySum:
     def test_latex(self):
         x, y = sp.symbols("x y")
-        array_sum = ArraySum(x ** 2, sp.cos(y))
+        array_sum = ArraySum(x**2, sp.cos(y))
         assert sp.latex(array_sum) == R"x^{2} + \cos{\left(y \right)}"
 
     def test_latex_array_symbols(self):

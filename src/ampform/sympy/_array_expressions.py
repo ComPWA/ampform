@@ -223,7 +223,7 @@ def _print_latex_ArraySlice(  # noqa: N802
         stringified_indices.append(_slice_to_str(self, idx, axis_size))
     parent = self.parenthesize(expr.parent, PRECEDENCE["Func"], strict=True)
     indices = ", ".join(stringified_indices)
-    return fR"{parent}\left[{indices}\right]"
+    return Rf"{parent}\left[{indices}\right]"
 
 
 def _print_str_ArrayElement(  # noqa: N802
@@ -352,9 +352,9 @@ class ArrayAxisSum(sp.Expr):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         array = printer._print(self.array)
         if self.axis is None:
-            return fR"\sum{{{array}}}"
+            return Rf"\sum{{{array}}}"
         axis = printer._print(self.axis)
-        return fR"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
+        return Rf"\sum_{{\mathrm{{axis{axis}}}}}{{{array}}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         printer.module_imports[printer._module].add("sum")

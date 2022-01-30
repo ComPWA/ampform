@@ -21,7 +21,7 @@ class TestBlattWeisskopfSquared:
         form_factor_9 = form_factor.subs(angular_momentum, 8).evaluate()
         factor, z_power, _ = form_factor_9.args
         assert factor == 4392846440677
-        assert z_power == z ** 8
+        assert z_power == z**8
         assert BlattWeisskopfSquared.max_angular_momentum is None
         BlattWeisskopfSquared.max_angular_momentum = 1
         assert form_factor.evaluate() == sp.Piecewise(
@@ -44,9 +44,9 @@ class TestEnergyDependentWidth:
             angular_momentum=0,
             meson_radius=1,
         )
-        assert width.doit() == w0 * sp.sqrt(-(m_a ** 2) + s / 4) * sp.sqrt(
-            m0 ** 2
-        ) / (sp.sqrt(s) * sp.sqrt(m0 ** 2 / 4 - m_a ** 2))
+        assert width.doit() == w0 * sp.sqrt(-(m_a**2) + s / 4) * sp.sqrt(
+            m0**2
+        ) / (sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2))
         assert width.phsp_factor is PhaseSpaceFactor
         assert width._name is None
 

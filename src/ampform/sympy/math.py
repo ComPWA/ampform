@@ -42,7 +42,7 @@ class ComplexSqrt(sp.Expr):
 
     def _latex(self, printer: Printer, *args: Any) -> str:
         x = printer._print(self.args[0])
-        return fR"\sqrt[\mathrm{{c}}]{{{x}}}"
+        return Rf"\sqrt[\mathrm{{c}}]{{{x}}}"
 
     def _numpycode(self, printer: Printer, *args: Any) -> str:
         return self.__print_complex(printer)

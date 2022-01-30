@@ -173,7 +173,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         interaction = transition.interactions[node_id]
         angular_momentum = sp.Rational(interaction.l_magnitude)
         coupled_spin = sp.Rational(interaction.s_magnitude)
-        return fR" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
+        return Rf" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
 
 
 def generate_transition_label(transition: StateTransition) -> str:

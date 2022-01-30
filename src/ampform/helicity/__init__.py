@@ -330,7 +330,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 sequential_expressions.append(expression)
         amplitude_sum = sum(sequential_expressions)
         coherent_intensity = abs(amplitude_sum) ** 2
-        self.__components[fR"I_{{{graph_group_label}}}"] = coherent_intensity
+        self.__components[Rf"I_{{{graph_group_label}}}"] = coherent_intensity
         return coherent_intensity
 
     def __formulate_sequential_decay(

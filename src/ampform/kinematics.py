@@ -181,7 +181,7 @@ class Energy(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return fR"E\left({momentum}\right)"
+        return Rf"E\left({momentum}\right)"
 
 
 @_implement_latex_subscript(subscript="x")
@@ -259,12 +259,12 @@ class ThreeMomentumNorm(UnevaluatedExpression):
         three_momentum = ArraySlice(
             self._momentum, (slice(None), slice(1, None))
         )
-        norm_squared = ArrayAxisSum(three_momentum ** 2, axis=1)
+        norm_squared = ArrayAxisSum(three_momentum**2, axis=1)
         return sp.sqrt(norm_squared)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return fR"\left|\vec{{{momentum}}}\right|"
+        return Rf"\left|\vec{{{momentum}}}\right|"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         return printer._print(self.evaluate())
@@ -309,7 +309,7 @@ class Phi(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return fR"\phi\left({momentum}\right)"
+        return Rf"\phi\left({momentum}\right)"
 
 
 @implement_doit_method
@@ -330,7 +330,7 @@ class Theta(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return fR"\theta\left({momentum}\right)"
+        return Rf"\theta\left({momentum}\right)"
 
 
 class BoostZMatrix(sp.Expr):
@@ -346,7 +346,7 @@ class BoostZMatrix(sp.Expr):
 
     def as_explicit(self) -> sp.Expr:
         beta = self.beta
-        gamma = 1 / sp.sqrt(1 - beta ** 2)
+        gamma = 1 / sp.sqrt(1 - beta**2)
         return sp.Matrix(
             [
                 [gamma, 0, 0, -gamma * beta],
@@ -358,7 +358,7 @@ class BoostZMatrix(sp.Expr):
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         beta = printer._print(self.beta)
-        return fR"\boldsymbol{{B_z}}\left({beta}\right)"
+        return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         printer.module_imports[printer._module].update(
@@ -404,7 +404,7 @@ class RotationYMatrix(sp.Expr):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
         angle = printer._print(angle)
-        return fR"\boldsymbol{{R_y}}\left({angle}\right)"
+        return Rf"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         printer.module_imports[printer._module].update(
@@ -449,7 +449,7 @@ class RotationZMatrix(sp.Expr):
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
         angle = printer._print(angle)
-        return fR"\boldsymbol{{R_z}}\left({angle}\right)"
+        return Rf"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         printer.module_imports[printer._module].update(

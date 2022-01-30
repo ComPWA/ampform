@@ -328,7 +328,7 @@ def test_compute_invariant_masses(
 def __compute_mass(array: np.ndarray) -> np.ndarray:
     energy = array[:, 0]
     three_momentum = array[:, 1:]
-    mass_squared = energy ** 2 - np.sum(three_momentum ** 2, axis=1)
+    mass_squared = energy**2 - np.sum(three_momentum**2, axis=1)
     return complex_sqrt(mass_squared)
 
 
