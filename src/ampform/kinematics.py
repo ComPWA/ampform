@@ -21,7 +21,10 @@ from ampform.helicity.decay import (
     is_opposite_helicity_state,
     list_decay_chain_ids,
 )
-from ampform.helicity.naming import get_helicity_angle_label
+from ampform.helicity.naming import (
+    get_helicity_angle_label,
+    get_helicity_suffix,
+)
 from ampform.sympy import (
     UnevaluatedExpression,
     _implement_latex_subscript,
@@ -747,6 +750,34 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
+
+
+def compute_wigner_angles(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> Dict[str, sp.Expr]:
+    """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
+
+    Implementation of (B.2-4) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, with :math:`x'_z` etc.
+    taken from the result of :func:`compute_wigner_rotation_matrix`.
+    """
+    wigner_rotation_matrix = compute_wigner_rotation_matrix(
+        topology, momenta, state_id
+    )
+    x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
+    y_z = ArraySlice(wigner_rotation_matrix, (slice(None), 2, 3))
+    z_x = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 1))
+    z_y = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 2))
+    z_z = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 3))
+    alpha = sp.atan2(z_y, z_x)
+    beta = sp.acos(z_z)
+    gamma = sp.atan2(y_z, -x_z)
+    suffix = get_helicity_suffix(topology, state_id)
+    return {
+        f"alpha{suffix}": alpha,
+        f"beta{suffix}": beta,
+        f"gamma{suffix}": gamma,
+    }
 
 
 def compute_wigner_rotation_matrix(
