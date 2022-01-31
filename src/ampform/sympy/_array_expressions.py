@@ -6,6 +6,7 @@
 This module can be removed once `sympy/sympy#22265
 <https://github.com/sympy/sympy/pull/22265>`_ is merged and released.
 """
+
 import string
 from collections import abc
 from itertools import zip_longest
@@ -354,6 +355,16 @@ class ArrayAxisSum(sp.Expr):
 
 
 class ArrayMultiplication(sp.Expr):
+    r"""Contract rank-:math:`n` arrays and a rank-:math`n-1` array.
+
+    This class is particularly useful to create a tensor product of rank-3
+    matrix array classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`,
+    with a rank-2 `.FourMomentumSymbol`. In that case, if :math:`n` is the
+    number of events, you would get a contraction of arrays of shape
+    :math:`n\times\times4\times4` (:math:`n` Lorentz matrices) to
+    :math:`n\times\times4` (:math:`n` four-momentum tuples).
+    """
+
     def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
         return create_expression(cls, *tensors, **hints)
 

@@ -20,7 +20,7 @@ from . import (
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
-else:
+else:  # pragma: no cover
     from typing_extensions import Protocol
 
 

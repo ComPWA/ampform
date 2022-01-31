@@ -137,9 +137,9 @@ class TestFourMomentumXYZ:
     def symbols(
         self,
     ) -> Tuple[
-        ArraySymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
+        FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
     ]:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         e = Energy(p)
         p_x = FourMomentumX(p)
         p_y = FourMomentumY(p)
@@ -180,7 +180,7 @@ class TestInvariantMass:
         state_id: int,
         expected_mass: float,
     ):
-        p = ArraySymbol(f"p{state_id}")
+        p = FourMomentumSymbol(f"p{state_id}")
         mass = InvariantMass(p)
         np_mass = sp.lambdify(p, mass.doit(), "numpy")
         four_momenta = data_sample[state_id]
@@ -192,7 +192,7 @@ class TestInvariantMass:
 class TestThreeMomentum:
     @property
     def p_norm(self) -> ThreeMomentum:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return ThreeMomentum(p)
 
     def test_latex(self):
@@ -207,7 +207,7 @@ class TestThreeMomentum:
 class TestPhi:
     @property
     def phi(self) -> Theta:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return Phi(p)
 
     def test_latex(self):
@@ -223,7 +223,7 @@ class TestPhi:
 class TestTheta:
     @property
     def theta(self) -> Theta:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return Theta(p)
 
     def test_latex(self):
