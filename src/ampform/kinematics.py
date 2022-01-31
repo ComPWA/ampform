@@ -30,7 +30,7 @@ from ampform.sympy._array_expressions import (
 )
 from ampform.sympy.math import ComplexSqrt
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     if sys.version_info < (3, 10):
         from typing_extensions import TypeAlias
     else:

@@ -41,7 +41,7 @@ try:
 except ImportError:
     PrettyPrinter = Any
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     if sys.version_info >= (3, 10):
         from typing import TypeGuard  # pylint: disable=no-name-in-module
     else:

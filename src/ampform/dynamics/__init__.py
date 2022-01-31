@@ -25,7 +25,7 @@ from ampform.sympy.math import ComplexSqrt
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
-    from typing_extensions import Protocol
+    from typing_extensions import Protocol  # pragma: no cover
 
 
 @implement_doit_method
@@ -160,7 +160,7 @@ class PhaseSpaceFactorProtocol(Protocol):
         self, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
     ) -> sp.Expr:
         """Expected `~inspect.signature`."""
-        ...
+        ...  # pragma: no cover
 
 
 @implement_doit_method
