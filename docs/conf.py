@@ -199,6 +199,7 @@ html_theme_options = {
         "thebe": True,
         "thebelab": True,
     },
+    "show_navbar_depth": 2,
     "theme_dev_mode": True,
 }
 html_title = "AmpForm"
