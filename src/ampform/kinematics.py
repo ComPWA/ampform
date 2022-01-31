@@ -141,7 +141,7 @@ def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
     {0: p0, 1: p1, 2: p2}
     """
     n_final_states = len(topology.outgoing_edge_ids)
-    return {i: ArraySymbol(f"p{i}") for i in range(n_final_states)}
+    return {i: FourMomentumSymbol(f"p{i}") for i in range(n_final_states)}
 
 
 FourMomenta = Dict[int, "FourMomentumSymbol"]
