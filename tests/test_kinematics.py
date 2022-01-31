@@ -10,8 +10,10 @@ from qrules.topology import Topology, create_isobar_topologies
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics import (
+    BoostZMatrix,
     Energy,
     FourMomenta,
+    FourMomentumSymbol,
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
@@ -47,13 +49,30 @@ def helicity_angles(
     return compute_helicity_angles(momentum_symbols, topology)
 
 
+class TestBoostZMatrix:
+    def test_boost_into_own_rest_frame_gives_mass(self):
+        p = FourMomentumSymbol("p")
+        expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        func = sp.lambdify(p, expr.doit())
+        p_array = np.array([[5, 0, 0, 1]])
+        boost_z = func(p_array)[0]
+        boosted_array = np.einsum("...ij,...j->...i", boost_z, p_array)
+        mass = 4.89897949
+        assert pytest.approx(boosted_array[0]) == [mass, 0, 0, 0]
+
+        expr = InvariantMass(p)
+        func = sp.lambdify(p, expr.doit())
+        mass_array = func(p_array)
+        assert pytest.approx(mass_array[0]) == mass
+
+
 class TestFourMomentumXYZ:
     def symbols(
         self,
     ) -> Tuple[
-        ArraySymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
+        FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
     ]:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         e = Energy(p)
         p_x = FourMomentumX(p)
         p_y = FourMomentumY(p)
@@ -94,7 +113,7 @@ class TestInvariantMass:
         state_id: int,
         expected_mass: float,
     ):
-        p = ArraySymbol(f"p{state_id}")
+        p = FourMomentumSymbol(f"p{state_id}")
         mass = InvariantMass(p)
         np_mass = sp.lambdify(p, mass.doit(), "numpy")
         four_momenta = data_sample[state_id]
@@ -106,7 +125,7 @@ class TestInvariantMass:
 class TestThreeMomentumNorm:
     @property
     def p_norm(self) -> ThreeMomentumNorm:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return ThreeMomentumNorm(p)
 
     def test_latex(self):
@@ -121,7 +140,7 @@ class TestThreeMomentumNorm:
 class TestPhi:
     @property
     def phi(self) -> Theta:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return Phi(p)
 
     def test_latex(self):
@@ -137,7 +156,7 @@ class TestPhi:
 class TestTheta:
     @property
     def theta(self) -> Theta:
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         return Theta(p)
 
     def test_latex(self):

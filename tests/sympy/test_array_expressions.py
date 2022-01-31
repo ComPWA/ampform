@@ -1,8 +1,5 @@
 # pylint: disable=no-self-use
 # cspell:ignore doprint
-from textwrap import dedent
-
-import black
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
@@ -21,13 +18,7 @@ class TestArrayMultiplication:
         theta = sp.Symbol("theta")
         expr = ArrayMultiplication(beta, theta, momentum)
         numpy_code = _generate_numpy_code(expr)
-        numpy_code = black.format_str(
-            numpy_code, mode=black.Mode(line_length=70)
-        )
-        expected = """\
-        einsum("...ij,...j->...i", beta, einsum("...ij,...j->...i", theta, p))
-        """
-        assert numpy_code == dedent(expected)
+        assert numpy_code == 'einsum("...ij,...jk,...k->...i", beta, theta, p)'
 
 
 class TestArraySum:

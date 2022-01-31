@@ -19,7 +19,7 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.sympy._array_expressions import ArraySymbol
+from ampform.kinematics import FourMomentumSymbol
 
 logging.getLogger().setLevel(logging.ERROR)
 
@@ -148,7 +148,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
 
     def _extend(component_class: Type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")
-        p = ArraySymbol("p")
+        p = FourMomentumSymbol("p")
         expr = component_class(p)
         _append_latex_doit_definition(expr, inline=True)
 
@@ -161,7 +161,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
 def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 
-    p = ArraySymbol("p")
+    p = FourMomentumSymbol("p")
     expr = InvariantMass(p)
     _append_latex_doit_definition(expr)
 
@@ -227,7 +227,7 @@ def extend_PhaseSpaceFactorComplex() -> None:
 def extend_Phi() -> None:
     from ampform.kinematics import Phi
 
-    p = ArraySymbol("p")
+    p = FourMomentumSymbol("p")
     expr = Phi(p)
     _append_latex_doit_definition(expr)
 
@@ -282,7 +282,7 @@ def extend_RotationZMatrix() -> None:
 def extend_Theta() -> None:
     from ampform.kinematics import Theta
 
-    p = ArraySymbol("p")
+    p = FourMomentumSymbol("p")
     expr = Theta(p)
     _append_latex_doit_definition(expr)
 
@@ -290,7 +290,7 @@ def extend_Theta() -> None:
 def extend_ThreeMomentumNorm() -> None:
     from ampform.kinematics import ThreeMomentumNorm
 
-    p = ArraySymbol("p")
+    p = FourMomentumSymbol("p")
     expr = ThreeMomentumNorm(p)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)

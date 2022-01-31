@@ -177,6 +177,19 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
 
 
 def generate_transition_label(transition: StateTransition) -> str:
+    r"""Generate a label for a coherent intensity, including spin projection.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state="J/psi(1S)",
+    ...     final_state=["gamma", "pi0", "pi0"],
+    ...     allowed_intermediate_particles=["f(0)(980)"],
+    ... )
+    >>> print(generate_transition_label(reaction.transitions[0]))
+    J/\psi(1S)_{-1} \to \gamma_{-1} \pi^{0}_{0} \pi^{0}_{0}
+    >>> print(generate_transition_label(reaction.transitions[-1]))
+    J/\psi(1S)_{+1} \to \gamma_{+1} \pi^{0}_{0} \pi^{0}_{0}
+    """
     initial_state_ids = transition.topology.incoming_edge_ids
     final_state_ids = transition.topology.outgoing_edge_ids
     initial_states = get_sorted_states(transition, initial_state_ids)
