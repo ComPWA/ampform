@@ -256,6 +256,19 @@ def get_version(package_name: str) -> str:
     return "stable"
 
 
+def get_minor_version(package_name: str) -> str:
+    installed_version = get_version(package_name)
+    if installed_version == "stable":
+        return installed_version
+    matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
+    if matches is None:
+        raise ValueError(
+            "Could not find documentation for"
+            f" {package_name} v{installed_version}"
+        )
+    return matches[1]
+
+
 intersphinx_mapping = {
     "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io", None),
@@ -272,6 +285,7 @@ intersphinx_mapping = {
         f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
         None,
     ),
+    "numpy": (f"https://numpy.org/doc/{get_minor_version('numpy')}", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (
