@@ -7,19 +7,10 @@ This module can be removed once `sympy/sympy#22265
 <https://github.com/sympy/sympy/pull/22265>`_ is merged and released.
 """
 
+import string
 from collections import abc
 from itertools import zip_longest
-from typing import (
-    Any,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    overload,
-)
+from typing import Any, Iterable, List, Optional, Tuple, Type, Union, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -364,6 +355,16 @@ class ArrayAxisSum(sp.Expr):
 
 
 class ArrayMultiplication(sp.Expr):
+    r"""Contract rank-:math:`n` arrays and a rank-:math`n-1` array.
+
+    This class is particularly useful to create a tensor product of rank-3
+    matrix array classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`,
+    with a rank-2 `.FourMomentumSymbol`. In that case, if :math:`n` is the
+    number of events, you would get a contraction of arrays of shape
+    :math:`n\times\times4\times4` (:math:`n` Lorentz matrices) to
+    :math:`n\times\times4` (:math:`n` four-momentum tuples).
+    """
+
     def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
         return create_expression(cls, *tensors, **hints)
 
@@ -376,20 +377,32 @@ class ArrayMultiplication(sp.Expr):
         return " ".join(tensors)
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        def multiply(matrix: sp.Expr, vector: sp.Expr) -> str:
-            return f'einsum("...ij,...j->...i", {matrix}, {vector})'
-
-        def recursive_multiply(tensors: Sequence[sp.Expr]) -> str:
-            if len(tensors) < 2:
-                raise ValueError("Need at least two tensors")
-            if len(tensors) == 2:
-                return multiply(tensors[0], tensors[1])
-            return multiply(tensors[0], recursive_multiply(tensors[1:]))
-
         printer.module_imports[printer._module].update({"einsum", "transpose"})
         tensors = list(map(printer._print, self.args))
         if len(tensors) == 0:
             return ""
         if len(tensors) == 1:
             return tensors[0]
-        return recursive_multiply(tensors)
+        contraction = self._create_einsum_subscripts(len(tensors))
+        return f'einsum("{contraction}", {", ".join(tensors)})'
+
+    @staticmethod
+    def _create_einsum_subscripts(n_arrays: int) -> str:
+        """Create the contraction path for `ArrayMultiplication`.
+
+        >>> ArrayMultiplication._create_einsum_subscripts(1)
+        '...i->...i'
+        >>> ArrayMultiplication._create_einsum_subscripts(2)
+        '...ij,...j->...i'
+        >>> ArrayMultiplication._create_einsum_subscripts(3)
+        '...ij,...jk,...k->...i'
+        """
+        letters = string.ascii_lowercase[8 : 8 + n_arrays]
+        contraction = ""
+        for i, j in zip_longest(letters, letters[1:]):
+            if j is None:
+                contraction += f"...{i}"
+            else:
+                contraction += f"...{i}{j},"
+        contraction += "->...i"
+        return contraction
