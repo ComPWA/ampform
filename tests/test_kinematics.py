@@ -176,7 +176,7 @@ class TestTheta:
     ("angle_name", "expected_values"),
     [
         (
-            "phi_1+2+3",
+            "phi_123",
             np.array(
                 [
                     2.79758,
@@ -193,7 +193,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_1+2+3",
+            "theta_123",
             np.arccos(
                 [
                     -0.914298,
@@ -210,7 +210,7 @@ class TestTheta:
             ),
         ),
         (
-            "phi_2+3,1+2+3",
+            "phi_23^123",
             np.array(
                 [
                     1.04362,
@@ -227,7 +227,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_2+3,1+2+3",
+            "theta_23^123",
             np.arccos(
                 [
                     -0.772533,
@@ -244,7 +244,7 @@ class TestTheta:
             ),
         ),
         (
-            "phi_2,2+3,1+2+3",
+            "phi_2^23,123",
             np.array(
                 [  # WARNING: subsystem solution (ComPWA) results in pi differences
                     -2.77203 + np.pi,
@@ -261,7 +261,7 @@ class TestTheta:
             ),
         ),
         (
-            "theta_2,2+3,1+2+3",
+            "theta_2^23,123",
             np.arccos(
                 [
                     0.460324,
