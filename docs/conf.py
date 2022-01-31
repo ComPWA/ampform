@@ -461,3 +461,10 @@ def remove_http(url: str) -> str:
 
 
 register_plugin("pybtex.style.formatting", "unsrt_et_al", MyStyle)
+
+
+# Generate additional pages
+if EXECUTE_NB:
+    from _generate_wigner_code import generate_wigner_code
+
+    generate_wigner_code()
