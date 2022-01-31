@@ -90,6 +90,7 @@
         "isospin",
         "itertools",
         "jupyter",
+        "Lambdification",
         "lambdified",
         "lambdify",
         "lineshape",
