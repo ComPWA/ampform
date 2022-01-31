@@ -530,15 +530,7 @@ def test_compute_wigner_rotation_matrix(
     assert str(expr) == expected
 
 
-@pytest.mark.parametrize(
-    "state_id",
-    [
-        0,
-        1,
-        pytest.param(2, marks=pytest.mark.slow),
-        pytest.param(3, marks=pytest.mark.slow),
-    ],
-)
+@pytest.mark.parametrize("state_id", [0, 1, 2, 3])
 def test_compute_wigner_rotation_matrix_numpy(
     state_id: int,
     data_sample: Dict[int, np.ndarray],
