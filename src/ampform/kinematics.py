@@ -487,52 +487,105 @@ class BoostZMatrix(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class BoostMatrix(sp.Expr):
-    """Represents a general Lorentz boost matrix."""
+@implement_doit_method
+class BoostMatrix(UnevaluatedExpression):
+    r"""Compute a rank-3 Lorentz boost matrix from a `FourMomentumSymbol`.
 
-    def __new__(cls, momentum: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
+    Wrapper class around `.RapidityBoostMatrix` that makes LaTeX more concise.
+    """
+
+    def __new__(cls, momentum: sp.Expr, **kwargs: Any) -> "BoostMatrix":
         return create_expression(cls, momentum, **kwargs)
 
     @property
-    def momentum(self) -> sp.Expr:
-        r"""Velocity in the :math:`z`-direction, :math:`\momentum=p_z/E`."""
+    def _momentum(self) -> sp.Expr:
         return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
-        momentum = self.momentum
-        energy = Energy(momentum)
-        beta = three_momentum_norm(momentum) / energy
-        b_x = FourMomentumX(momentum) / energy
-        b_y = FourMomentumY(momentum) / energy
-        b_z = FourMomentumZ(momentum) / energy
-        g = 1 / ComplexSqrt(1 - beta**2)
+        self.evaluate().as_explicit()
+
+    def evaluate(self) -> ArraySlice:
+        energy = Energy(self._momentum)
+        beta_vector = self._momentum / energy
+        beta_x = ArraySlice(beta_vector, (slice(None), 1))
+        beta_y = ArraySlice(beta_vector, (slice(None), 2))
+        beta_z = ArraySlice(beta_vector, (slice(None), 3))
+        return RapidityBoostMatrix(beta_x, beta_y, beta_z)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+
+
+class RapidityBoostMatrix(sp.Expr):
+    r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
+
+    Args:
+        beta_x:
+        beta_y:
+        beta_z: Elements of the rapidity vector
+            :math:`\vec\beta = \vec{p}/E`, with :math:`\vec{p}` a
+            `ThreeMomentum` and :math:`E` its `Energy`.
+
+    .. note:: The reason that this class is constructed from elements of
+        :math:`\vec{\beta}` and not directly of a `FourMomentumSymbol` (as in
+        `BoostMatrix`) is that SymPy can then extract the expressions for
+        :math:`\vec\beta` as common sub-expressions with
+        :func:`~sympy.simplify.cse_main.cse`. This is important for
+        :func:`~sympy.utilities.lambdify.lambdify`, which speeds up
+        computations with `TensorWaves <https://tensorwaves.rtfd.io>`_.
+    """
+
+    def __new__(
+        cls, beta_x: sp.Expr, beta_y: sp.Expr, beta_z: sp.Expr, **kwargs: Any
+    ) -> "BoostZMatrix":
+        return create_expression(cls, beta_x, beta_y, beta_z, **kwargs)
+
+    @property
+    def _beta_x(self) -> sp.Expr:
+        return self.args[0]
+
+    @property
+    def _beta_y(self) -> sp.Expr:
+        return self.args[1]
+
+    @property
+    def _beta_z(self) -> sp.Expr:
+        return self.args[2]
+
+    def as_explicit(self) -> sp.Expr:
+        b_x = self._beta_x
+        b_y = self._beta_y
+        b_z = self._beta_z
+        beta_squared = b_x**2 + b_y**2 + b_z**2
+        g = 1 / ComplexSqrt(1 - beta_squared)
         return sp.Matrix(
             [
                 [g, -g * b_x, -g * b_y, -g * b_z],
                 [
                     -g * b_x,
-                    1 + (g - 1) * b_x**2 / beta**2,
-                    (g - 1) * b_y * b_x / beta**2,
-                    (g - 1) * b_z * b_x / beta**2,
+                    1 + (g - 1) * b_x**2 / beta_squared,
+                    (g - 1) * b_y * b_x / beta_squared,
+                    (g - 1) * b_z * b_x / beta_squared,
                 ],
                 [
                     -g * b_y,
-                    (g - 1) * b_x * b_y / beta**2,
-                    1 + (g - 1) * b_y**2 / beta**2,
-                    (g - 1) * b_z * b_y / beta**2,
+                    (g - 1) * b_x * b_y / beta_squared,
+                    1 + (g - 1) * b_y**2 / beta_squared,
+                    (g - 1) * b_z * b_y / beta_squared,
                 ],
                 [
                     -g * b_z,
-                    (g - 1) * b_x * b_z / beta**2,
-                    (g - 1) * b_y * b_z / beta**2,
-                    1 + (g - 1) * b_z**2 / beta**2,
+                    (g - 1) * b_x * b_z / beta_squared,
+                    (g - 1) * b_y * b_z / beta_squared,
+                    1 + (g - 1) * b_z**2 / beta_squared,
                 ],
             ]
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self.momentum)
-        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+        betas = map(printer._print, self.args)
+        return Rf"\boldsymbol{{B}}\left({', '.join(betas)}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         return (

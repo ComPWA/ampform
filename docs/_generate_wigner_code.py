@@ -25,7 +25,7 @@ def generate_wigner_code() -> None:
     _, beta, _ = map(sp.Symbol, angle_definitions)
     beta_expr = angle_definitions[str(beta)]
 
-    func = sp.lambdify(momenta.values(), beta_expr, cse=True)
+    func = sp.lambdify(momenta.values(), beta_expr.doit(), cse=True)
 
     src = inspect.getsource(func)
     import_statements = """
