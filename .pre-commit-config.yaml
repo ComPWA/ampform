@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v5.8.0
+    rev: v5.8.1
     hooks:
       - id: cspell
 
