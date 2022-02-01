@@ -315,6 +315,7 @@ linkcheck_ignore = [
     "https://doi.org/10.1093/ptep/ptaa104",
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
     "https://hss-opus.ub.ruhr-uni-bochum.de",
+    "https://suchung.web.cern.ch",
 ]
 
 # Settings for myst_nb
