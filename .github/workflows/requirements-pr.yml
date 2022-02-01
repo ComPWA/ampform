@@ -1,0 +1,98 @@
+name: Requirements (PR)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - epic/*
+
+jobs:
+  diff:
+    name: Check dependency changes
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Determine dependency changes
+        run: |
+          DIFF="$(git diff origin/main --color -- .constraints .pre-commit-config.yaml setup.cfg)"
+          echo ::set-output name=diff::"${DIFF}"
+        id: diff
+    outputs:
+      diff: ${{ steps.diff.outputs.diff }}
+
+  pip-constraints:
+    name: Update pip constraints
+    needs: diff
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
+    # Only run if PR does not come from a fork
+    # https://docs.github.com/en/actions/security-guides/encrypted-secrets#using-encrypted-secrets-in-a-workflow
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ComPWA/update-pip-constraints@main
+        with:
+          python-version: ${{ matrix.python-version }}
+
+  pre-commit:
+    name: pre-commit autoupdate
+    needs: diff
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ComPWA/update-pre-commit@main
+
+  push:
+    name: Push changes
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.diff.outputs.diff != ''
+    runs-on: ubuntu-20.04
+    needs:
+      - diff
+      - pip-constraints
+      - pre-commit
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+        # GITHUB_TOKEN will not rerun checks after pushing to a PR branch
+      - uses: actions/download-artifact@v2
+      - name: Move artifacts to correct location
+        run: |
+          if [[ -d artifact ]]; then
+            cd artifact
+            ls -A
+            [[ -f .pre-commit-config.yaml ]] && mv -f .pre-commit-config.yaml ..
+            [[ "$(ls)" != "" ]] && mv -f * ../.constraints/
+          fi
+      - run: git status -s
+      - name: Commit and push changes
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
+          git config --global user.name "GitHub"
+          git config --global user.email "noreply@github.com"
+          git checkout -b ${GITHUB_HEAD_REF}
+          if [[ $(git status -s) ]]; then
+            git add -A
+            git commit -m "ci: update pip constraints and pre-commit config"
+            git config pull.rebase true
+            git pull origin ${GITHUB_HEAD_REF}
+            git push origin HEAD:${GITHUB_HEAD_REF}
+          fi

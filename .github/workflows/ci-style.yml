@@ -1,0 +1,36 @@
+name: pre-commit
+
+on:
+  push:
+    branches:
+      - main
+      - epic/*
+  pull_request:
+    branches:
+      - main
+      - epic/*
+
+jobs:
+  style:
+    name: Style checks
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -c .constraints/py3.8.txt -e .[sty]
+      - name: Run non-local pre-commit hooks
+        run: |
+          pre-commit run flake8 -a --color always
+          pre-commit run mypy -a --color always
+          pre-commit run pylint -a --color always
+      - name: Run pre-commit hooks that don't work on pre-commit.ci
+        # cspell:ignore editorconfig
+        run: |
+          pre-commit run editorconfig-checker -a --color always
+          pre-commit run pyright -a --color always

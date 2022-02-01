@@ -1,3 +1,15 @@
+ci:
+  autoupdate_commit_msg: "ci: autoupdate pre-commit hooks"
+  autoupdate_schedule: quarterly # already done by requirements-cron.yml
+  skip:
+    # local hooks
+    - flake8
+    - mypy
+    - pylint
+    # hooks that don't work on pre-commit.ci
+    - editorconfig-checker
+    - pyright
+
 repos:
   - repo: meta
     hooks:
@@ -27,3 +39,150 @@ repos:
         name: Tests should start with test_
         args: ["--django"]
       - id: trailing-whitespace
+
+  - repo: https://github.com/ComPWA/repo-maintenance
+    rev: 0.0.101
+    hooks:
+      - id: check-dev-files
+        args:
+          - --pin-requirements
+      - id: fix-first-nbcell
+        args:
+          - --add-install-cell
+          - --additional-packages=IPython
+          - --extras-require=doc,viz
+      - id: fix-nbformat-version
+      - id: format-setup-cfg
+
+  - repo: https://github.com/psf/black
+    rev: 22.1.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.12.1
+    hooks:
+      - id: blacken-docs
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v5.7.0
+    hooks:
+      - id: cspell
+
+  - repo: https://github.com/myint/docformatter
+    rev: v1.4
+    hooks:
+      - id: docformatter
+        args:
+          - --in-place
+          - --wrap-descriptions=79
+          - --wrap-summaries=79
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 2.4.0
+    hooks:
+      - id: editorconfig-checker
+        exclude: >
+          (?x)^(
+            .*\.py
+          )$
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.30.0
+    hooks:
+      - id: markdownlint
+
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.2.3
+    hooks:
+      - id: nbqa-black
+        additional_dependencies:
+          - black>=22.1.0
+      - id: nbqa-flake8
+      - id: nbqa-isort
+      - id: nbqa-pyupgrade
+        args:
+          - --py36-plus
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.5.0
+    hooks:
+      - id: nbstripout
+        args:
+          - --extra-keys
+          - |
+            cell.metadata.code_folding
+            cell.metadata.id
+            metadata.celltoolbar
+            metadata.colab.name
+            metadata.colab.provenance
+            metadata.interpreter
+            metadata.language_info.codemirror_mode
+            metadata.language_info.file_extension
+            metadata.language_info.mimetype
+            metadata.language_info.nbconvert_exporter
+            metadata.language_info.pygments_lexer
+            metadata.notify_time
+            metadata.toc
+            metadata.toc-autonumbering
+            metadata.toc-showcode
+            metadata.toc-showmarkdowntxt
+            metadata.toc-showtags
+            metadata.varInspector
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.5.1
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
+
+  - repo: https://github.com/ComPWA/mirrors-pyright
+    rev: v1.1.216
+    hooks:
+      - id: pyright
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.31.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py36-plus
+
+  # The following tools have to be install locally, because they can also be
+  # used by code editors (e.g. linting and format-on-save).
+
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: flake8
+        language: system
+        types:
+          - python
+
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        require_serial: true
+        types:
+          - python
+
+      - id: pylint
+        name: pylint
+        entry: pylint
+        args:
+          - --rcfile=.pylintrc
+          - --score=no
+        language: system
+        types:
+          - python
