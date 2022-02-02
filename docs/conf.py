@@ -469,3 +469,5 @@ if EXECUTE_NB:
     from _generate_wigner_code import generate_wigner_code
 
     generate_wigner_code()
+else:
+    exclude_patterns.append("*/generated-code.*")
