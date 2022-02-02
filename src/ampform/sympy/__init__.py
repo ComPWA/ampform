@@ -55,13 +55,13 @@ class UnevaluatedExpression(sp.Expr):
         return f"{name}{args}"
 
 
-DecoratedClass = TypeVar("DecoratedClass")
+DecoratedClass = TypeVar("DecoratedClass", bound=UnevaluatedExpression)
 """`~typing.TypeVar` for decorators like `make_commutative`."""
 
 
 def implement_expr(
     n_args: int,
-) -> Callable[[DecoratedClass], DecoratedClass]:
+) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
     Implement a `~object.__new__` and `~sympy.core.basic.Basic.doit` method for
@@ -69,7 +69,9 @@ def implement_expr(
     `UnevaluatedExpression`).
     """
 
-    def decorator(decorated_class: DecoratedClass) -> DecoratedClass:
+    def decorator(
+        decorated_class: Type[DecoratedClass],
+    ) -> Type[DecoratedClass]:
         decorated_class = implement_new_method(n_args)(decorated_class)
         decorated_class = implement_doit_method(decorated_class)
         return decorated_class
@@ -79,14 +81,16 @@ def implement_expr(
 
 def implement_new_method(
     n_args: int,
-) -> Callable[[DecoratedClass], DecoratedClass]:
+) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
     """Implement ``__new__()`` method for an `UnevaluatedExpression` class.
 
     Implement a `~object.__new__` method for a class that derives from
     `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
-    def decorator(decorated_class: DecoratedClass) -> DecoratedClass:
+    def decorator(
+        decorated_class: Type[DecoratedClass],
+    ) -> Type[DecoratedClass]:
         def new_method(  # pylint: disable=unused-argument
             cls: Type,
             *args: sp.Symbol,
@@ -109,7 +113,9 @@ def implement_new_method(
     return decorator
 
 
-def implement_doit_method(decorated_class: DecoratedClass) -> DecoratedClass:
+def implement_doit_method(
+    decorated_class: Type[DecoratedClass],
+) -> Type[DecoratedClass]:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
     Implement a `~sympy.core.basic.Basic.doit` method for a class that derives
@@ -149,7 +155,9 @@ def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
     return decorator
 
 
-def make_commutative(decorated_class: DecoratedClass) -> DecoratedClass:
+def make_commutative(
+    decorated_class: Type[DecoratedClass],
+) -> Type[DecoratedClass]:
     decorated_class.is_commutative = True  # type: ignore[attr-defined]
     decorated_class.is_extended_real = True  # type: ignore[attr-defined]
     return decorated_class
