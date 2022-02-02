@@ -562,7 +562,7 @@ class _RapidityBoostMatrix(NumPyPrintable):
         b_x = self.args[1]
         b_y = self.args[2]
         b_z = self.args[3]
-        g = 1 / ComplexSqrt(1 - beta_squared)
+        g = 1 / sp.sqrt(1 - beta_squared)
         return sp.Matrix(
             [
                 [g, -g * b_x, -g * b_y, -g * b_z],
