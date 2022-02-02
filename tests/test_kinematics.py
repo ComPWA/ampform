@@ -62,7 +62,7 @@ class TestBoostMatrix:
     def test_boost_in_z_direction_reduces_to_z_boost(self):
         p = FourMomentumSymbol("p")
         expr = BoostMatrix(p)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
         matrix = func(p_array)[0]
         assert pytest.approx(matrix) == np.array(
@@ -76,7 +76,7 @@ class TestBoostMatrix:
 
         beta = three_momentum_norm(p) / Energy(p)
         z_expr = BoostZMatrix(beta)
-        z_func = sp.lambdify(p, z_expr.doit())
+        z_func = sp.lambdify(p, z_expr.doit(), cse=True)
         z_matrix = z_func(p_array)[0]
         assert pytest.approx(matrix) == z_matrix
 
@@ -93,7 +93,7 @@ class TestBoostMatrix:
             momentum = momenta[state_id]
             boost = BoostMatrix(momentum)
             expr = ArrayMultiplication(boost, momentum)
-            func = sp.lambdify(momentum, expr.doit())
+            func = sp.lambdify(momentum, expr.doit(), cse=True)
             boosted_array: np.ndarray = func(momentum_array)
             assert not np.any(np.isnan(boosted_array))
             mass = boosted_array[:, 0]
@@ -108,7 +108,7 @@ class TestBoostMatrix:
         boost = BoostMatrix(p)
         inverse_boost = BoostMatrix(NegativeMomentum(p))
         expr = ArrayMultiplication(inverse_boost, boost, p)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         for momentum_array in data_sample.values():
             computed_momentum: np.ndarray = func(momentum_array)
             assert not np.any(np.isnan(computed_momentum))
@@ -120,7 +120,7 @@ class TestBoostZMatrix:
         p = FourMomentumSymbol("p")
         beta = three_momentum_norm(p) / Energy(p)
         expr = BoostZMatrix(beta)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
         boost_z = func(p_array)[0]
         boosted_array = np.einsum("...ij,...j->...i", boost_z, p_array)
@@ -128,7 +128,7 @@ class TestBoostZMatrix:
         assert pytest.approx(boosted_array[0]) == [mass, 0, 0, 0]
 
         expr = InvariantMass(p)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         mass_array = func(p_array)
         assert pytest.approx(mass_array[0]) == mass
 
@@ -182,7 +182,7 @@ class TestInvariantMass:
     ):
         p = FourMomentumSymbol(f"p{state_id}")
         mass = InvariantMass(p)
-        np_mass = sp.lambdify(p, mass.doit(), "numpy")
+        np_mass = sp.lambdify(p, mass.doit(), cse=True)
         four_momenta = data_sample[state_id]
         computed_values = np_mass(four_momenta)
         average_mass = np.average(computed_values)
@@ -243,7 +243,7 @@ class TestNegativeMomentum:
     def test_same_as_inverse(self, data_sample: Dict[int, np.ndarray]):
         p = FourMomentumSymbol("p")
         expr = NegativeMomentum(p)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         for p_array in data_sample.values():
             negative_array = func(p_array)
             assert pytest.approx(negative_array[:, 0]) == p_array[:, 0]
@@ -367,7 +367,7 @@ def test_compute_helicity_angles(
     _, momentum_symbols = topology_and_momentum_symbols
     four_momenta = data_sample.values()
     expr = helicity_angles[angle_name]
-    np_angle = sp.lambdify(momentum_symbols.values(), expr.doit())
+    np_angle = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np_angle(*four_momenta)
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
 
@@ -397,7 +397,7 @@ def test_compute_invariant_masses_single_mass(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
     for i in topology.outgoing_edge_ids:
         expr = invariant_masses[f"m_{i}"]
-        np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+        np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
         expected = __compute_mass(data_sample[i])
         computed = np_expr(*momentum_values)
         np.testing.assert_allclose(computed, expected, atol=1e-5)
@@ -414,7 +414,7 @@ def test_compute_invariant_masses(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
 
     expr = invariant_masses[mass_name]
-    np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+    np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np.average(np_expr(*momentum_values))
     indices = map(int, mass_name[2:])
     masses = __compute_mass(sum(data_sample[i] for i in indices))  # type: ignore[arg-type]
