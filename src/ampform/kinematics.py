@@ -314,7 +314,7 @@ class EuclideanNormSquared(UnevaluatedExpression):
 
     def __new__(
         cls, vector: "FourMomentumSymbol", **hints: Any
-    ) -> "EuclideanNorm":
+    ) -> "EuclideanNormSquared":
         return create_expression(cls, vector, **hints)
 
     @property
@@ -514,60 +514,48 @@ class BoostZMatrix(NumPyPrintable):
 
 @implement_doit_method
 class BoostMatrix(UnevaluatedExpression):
-    r"""Compute a rank-3 Lorentz boost matrix from a `FourMomentumSymbol`.
+    r"""Compute a rank-3 Lorentz boost matrix from a `FourMomentumSymbol`."""
 
-    Wrapper class around `.RapidityBoostMatrix` that makes LaTeX more concise.
-    """
-
-    def __new__(cls, momentum: sp.Expr, **kwargs: Any) -> "BoostMatrix":
+    def __new__(
+        cls, momentum: FourMomentumSymbol, **kwargs: Any
+    ) -> "BoostMatrix":
         return create_expression(cls, momentum, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
-        self.evaluate().as_explicit()
+        return self.evaluate().as_explicit()
 
-    def evaluate(self) -> "RapidityBoostMatrix":
+    def evaluate(self) -> "_RapidityBoostMatrix":
         momentum = self.args[0]
-        beta = EuclideanNormSquared(ThreeMomentum(momentum))
         energy = Energy(momentum)
+        beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
         beta_x = FourMomentumX(momentum) / energy
         beta_y = FourMomentumY(momentum) / energy
         beta_z = FourMomentumZ(momentum) / energy
-        return RapidityBoostMatrix(beta, beta_x, beta_y, beta_z)
+        return _RapidityBoostMatrix(beta_sq, beta_x, beta_y, beta_z)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.args[0])
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
 
-class RapidityBoostMatrix(NumPyPrintable):
+class _RapidityBoostMatrix(NumPyPrintable):
     r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
 
-    Args:
-        beta: `EuclideanNormSquared` of :math:`\vec\beta`.
-        beta_x:
-        beta_y:
-        beta_z: Elements of the rapidity vector
-            :math:`\vec\beta = \vec{p}/E`, with :math:`\vec{p}` a
-            `ThreeMomentum` and :math:`E` its `Energy`.
-
-    .. note:: The reason that this class is constructed from elements of
-        :math:`\vec{\beta}` and not directly of a `FourMomentumSymbol` (as in
-        `BoostMatrix`) is that SymPy can then extract the expressions for
-        :math:`\vec\beta` as common sub-expressions with
-        :func:`~sympy.simplify.cse_main.cse`. This is important for
-        :func:`~sympy.utilities.lambdify.lambdify`, which speeds up
-        computations with `TensorWaves <https://tensorwaves.rtfd.io>`_.
+    See `.NumPyPrintable` for why this class has been extracted out of
+    `BoostMatrix`.
     """
 
     def __new__(
         cls,
-        beta: EuclideanNormSquared,
+        beta_squared: EuclideanNormSquared,
         beta_x: sp.Expr,
         beta_y: sp.Expr,
         beta_z: sp.Expr,
         **kwargs: Any,
     ) -> "BoostZMatrix":
-        return create_expression(cls, beta, beta_x, beta_y, beta_z, **kwargs)
+        return create_expression(
+            cls, beta_squared, beta_x, beta_y, beta_z, **kwargs
+        )
 
     def as_explicit(self) -> sp.Expr:
         beta_squared = self.args[0]
