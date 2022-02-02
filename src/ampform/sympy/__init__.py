@@ -11,12 +11,14 @@ from sympy.printing.latex import LatexPrinter
 
 
 class UnevaluatedExpression(sp.Expr):
-    """Base class for classes that expressions with an ``evaluate()`` method.
+    """Base class for classes that expressions with an :meth:`evaluate` method.
 
     Derive from this class when decorating a class with :func:`implement_expr`
     or :func:`implement_doit_method`. It is important to derive from
-    `UnevaluatedExpression`, because an :code:`evaluate()` method has to be
+    `UnevaluatedExpression`, because an :meth:`evaluate` method has to be
     implemented.
+
+    .. automethod:: evaluate
     """
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
@@ -44,7 +46,7 @@ class UnevaluatedExpression(sp.Expr):
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
-        pass
+        """Unfold this `~sympy.core.expr.Expr`."""
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         """Provide a mathematical Latex representation for notebooks."""
