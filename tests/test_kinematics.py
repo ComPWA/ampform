@@ -62,7 +62,7 @@ class TestBoostMatrix:
     def test_boost_in_z_direction_reduces_to_z_boost(self):
         p = FourMomentumSymbol("p")
         expr = BoostMatrix(p)
-        func = sp.lambdify(p, expr)
+        func = sp.lambdify(p, expr.doit())
         p_array = np.array([[5, 0, 0, 1]])
         matrix = func(p_array)[0]
         assert pytest.approx(matrix) == np.array(
@@ -93,7 +93,7 @@ class TestBoostMatrix:
             momentum = momenta[state_id]
             boost = BoostMatrix(momentum)
             expr = ArrayMultiplication(boost, momentum)
-            func = sp.lambdify(momentum, expr)
+            func = sp.lambdify(momentum, expr.doit())
             boosted_array: np.ndarray = func(momentum_array)
             assert not np.any(np.isnan(boosted_array))
             mass = boosted_array[:, 0]
@@ -108,7 +108,7 @@ class TestBoostMatrix:
         boost = BoostMatrix(p)
         inverse_boost = BoostMatrix(NegativeMomentum(p))
         expr = ArrayMultiplication(inverse_boost, boost, p)
-        func = sp.lambdify(p, expr)
+        func = sp.lambdify(p, expr.doit())
         for momentum_array in data_sample.values():
             computed_momentum: np.ndarray = func(momentum_array)
             assert not np.any(np.isnan(computed_momentum))
@@ -538,7 +538,7 @@ def test_compute_wigner_rotation_matrix_numpy(
 ):
     topology, momenta = topology_and_momentum_symbols
     expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
-    func = sp.lambdify(momenta.values(), expr, cse=True)
+    func = sp.lambdify(momenta.values(), expr.doit(), cse=True)
     momentum_array = data_sample[state_id]
     wigner_matrix_array = func(*data_sample.values())
     assert wigner_matrix_array.shape == (len(momentum_array), 4, 4)
