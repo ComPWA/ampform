@@ -32,7 +32,7 @@ defusedxml==0.7.1
 deprecated==1.2.13
 distlib==0.3.4
 docutils==0.16
-entrypoints==0.3
+entrypoints==0.4
 execnet==1.9.0
 executing==0.8.2
 filelock==3.4.2
