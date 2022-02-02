@@ -8,6 +8,7 @@ from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
+from sympy.printing.numpy import NumPyPrinter
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -55,6 +56,46 @@ class UnevaluatedExpression(sp.Expr):
         if self._name is not None:
             name = self._name
         return f"{name}{args}"
+
+
+class NumPyPrintable(sp.Expr):
+    r"""`~sympy.core.expr.Expr` class that can lambdify to NumPy code.
+
+    This interface for classes that derive from `sympy.Expr
+    <sympy.core.expr.Expr>` enforce the implementation of a :meth:`_numpycode`
+    method in case the class does not correctly
+    :func:`~sympy.utilities.lambdify.lambdify` to NumPy code. For more info on
+    SymPy printers, see :doc:`sympy:modules/printing`.
+
+    Several computational frameworks try to converge their interface to that of
+    NumPy. See for instance `TensorFlow's NumPy API
+    <https://www.tensorflow.org/guide/tf_numpy>`_ and `jax.numpy
+    <https://jax.readthedocs.io/en/latest/jax.numpy.html>`_. This fact is used
+    in `TensorWaves <https://tensorwaves.rtfd.io>`_ to
+    :func:`~sympy.utilities.lambdify.lambdify` SymPy expressions to these
+    different backends with the same lambdification code.
+
+    .. note:: This interface differs from `UnevaluatedExpression` in that it
+        **should not** implement an :meth:`.evaluate` (and therefore a
+        :meth:`~sympy.core.basic.Basic.doit`) method.
+
+
+    .. warning:: The implemented :meth:`_numpycode` method should countain as
+        little SymPy computations as possible. Instead, it should get most
+        information from its construction `~sympy.core.basic.Basic.args`, so
+        that SymPy can use printer tricks like
+        :func:`~sympy.simplify.cse_main.cse`, prior expanding with
+        :meth:`~sympy.core.basic.Basic.doit`, and other simplifications that
+        can make the generated code shorter. An example is the `.BoostZMatrix`
+        class, which takes :math:`\beta` as input instead of the
+        `.FourMomentumSymbol` from which :math:`\beta` is computed.
+
+    .. automethod:: _numpycode
+    """
+
+    @abstractmethod
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        """Lambdify this `NumPyPrintable` class to NumPy code."""
 
 
 DecoratedClass = TypeVar("DecoratedClass", bound=UnevaluatedExpression)
