@@ -15,6 +15,7 @@ from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.sympy import (
+    NumPyPrintable,
     UnevaluatedExpression,
     _implement_latex_subscript,
     create_expression,
@@ -243,7 +244,7 @@ class FourMomentumZ(UnevaluatedExpression):
 
 @implement_doit_method
 @make_commutative
-class ThreeMomentumNorm(UnevaluatedExpression):
+class ThreeMomentumNorm(NumPyPrintable, UnevaluatedExpression):
     """Norm of the three-momentum of a `FourMomentumSymbol`."""
 
     def __new__(
@@ -333,7 +334,7 @@ class Theta(UnevaluatedExpression):
         return Rf"\theta\left({momentum}\right)"
 
 
-class BoostZMatrix(sp.Expr):
+class BoostZMatrix(NumPyPrintable):
     """Represents a Lorentz boost matrix in the :math:`z`-direction."""
 
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
@@ -379,7 +380,7 @@ class BoostZMatrix(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class RotationYMatrix(sp.Expr):
+class RotationYMatrix(NumPyPrintable):
     """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
@@ -424,7 +425,7 @@ class RotationYMatrix(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class RotationZMatrix(sp.Expr):
+class RotationZMatrix(NumPyPrintable):
     """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
