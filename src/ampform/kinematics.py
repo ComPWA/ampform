@@ -297,12 +297,36 @@ class EuclideanNorm(UnevaluatedExpression):
         return self.args[0]
 
     def evaluate(self) -> ArraySlice:
-        norm_squared = ArrayAxisSum(self._vector**2, axis=1)
-        return sp.sqrt(norm_squared)
+        return sp.sqrt(EuclideanNormSquared(self._vector))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         vector = printer._print(self._vector)
         return Rf"\left|{vector}\right|"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+@implement_doit_method
+@make_commutative
+class EuclideanNormSquared(UnevaluatedExpression):
+    """Take the squared euclidean norm of an array over axis 1."""
+
+    def __new__(
+        cls, vector: "FourMomentumSymbol", **hints: Any
+    ) -> "EuclideanNorm":
+        return create_expression(cls, vector, **hints)
+
+    @property
+    def _vector(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArrayAxisSum(self._vector**2, axis=1)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        vector = printer._print(self._vector)
+        return Rf"\left|{vector}\right|^{{2}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         return printer._print(self.evaluate())
@@ -498,23 +522,20 @@ class BoostMatrix(UnevaluatedExpression):
     def __new__(cls, momentum: sp.Expr, **kwargs: Any) -> "BoostMatrix":
         return create_expression(cls, momentum, **kwargs)
 
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]
-
     def as_explicit(self) -> sp.Expr:
         self.evaluate().as_explicit()
 
-    def evaluate(self) -> ArraySlice:
-        energy = Energy(self._momentum)
-        beta_vector = self._momentum / energy
-        beta_x = ArraySlice(beta_vector, (slice(None), 1))
-        beta_y = ArraySlice(beta_vector, (slice(None), 2))
-        beta_z = ArraySlice(beta_vector, (slice(None), 3))
-        return RapidityBoostMatrix(beta_x, beta_y, beta_z)
+    def evaluate(self) -> "RapidityBoostMatrix":
+        momentum = self.args[0]
+        beta = EuclideanNormSquared(ThreeMomentum(momentum))
+        energy = Energy(momentum)
+        beta_x = FourMomentumX(momentum) / energy
+        beta_y = FourMomentumY(momentum) / energy
+        beta_z = FourMomentumZ(momentum) / energy
+        return RapidityBoostMatrix(beta, beta_x, beta_y, beta_z)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        momentum = printer._print(self._momentum)
+        momentum = printer._print(self.args[0])
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
 
@@ -522,6 +543,7 @@ class RapidityBoostMatrix(NumPyPrintable):
     r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
 
     Args:
+        beta: `EuclideanNormSquared` of :math:`\vec\beta`.
         beta_x:
         beta_y:
         beta_z: Elements of the rapidity vector
@@ -538,27 +560,20 @@ class RapidityBoostMatrix(NumPyPrintable):
     """
 
     def __new__(
-        cls, beta_x: sp.Expr, beta_y: sp.Expr, beta_z: sp.Expr, **kwargs: Any
+        cls,
+        beta: EuclideanNormSquared,
+        beta_x: sp.Expr,
+        beta_y: sp.Expr,
+        beta_z: sp.Expr,
+        **kwargs: Any,
     ) -> "BoostZMatrix":
-        return create_expression(cls, beta_x, beta_y, beta_z, **kwargs)
-
-    @property
-    def _beta_x(self) -> sp.Expr:
-        return self.args[0]
-
-    @property
-    def _beta_y(self) -> sp.Expr:
-        return self.args[1]
-
-    @property
-    def _beta_z(self) -> sp.Expr:
-        return self.args[2]
+        return create_expression(cls, beta, beta_x, beta_y, beta_z, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
-        b_x = self._beta_x
-        b_y = self._beta_y
-        b_z = self._beta_z
-        beta_squared = b_x**2 + b_y**2 + b_z**2
+        beta_squared = self.args[0]
+        b_x = self.args[1]
+        b_y = self.args[2]
+        b_z = self.args[3]
         g = 1 / ComplexSqrt(1 - beta_squared)
         return sp.Matrix(
             [
