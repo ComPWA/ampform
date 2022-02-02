@@ -45,8 +45,11 @@ class UnevaluatedExpression(sp.Expr):
     """Optional instance attribute that can be used in LaTeX representations."""
 
     def __new__(  # pylint: disable=unused-argument
-        cls, *args: Any, name: Optional[str] = None, **hints: Any
-    ) -> "UnevaluatedExpression":
+        cls: Type["DecoratedClass"],
+        *args: Any,
+        name: Optional[str] = None,
+        **hints: Any,
+    ) -> "DecoratedClass":
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
