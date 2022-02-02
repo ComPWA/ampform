@@ -171,7 +171,7 @@ class NumPyPrintable(sp.Expr):
 
 
 DecoratedClass = TypeVar("DecoratedClass", bound=UnevaluatedExpression)
-"""`~typing.TypeVar` for decorators like `make_commutative`."""
+"""`~typing.TypeVar` for decorators like :func:`make_commutative`."""
 
 
 def implement_expr(
@@ -179,9 +179,9 @@ def implement_expr(
 ) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
-    Implement a `~object.__new__` and `~sympy.core.basic.Basic.doit` method for
-    a class that derives from `~sympy.core.expr.Expr` (via
-    `UnevaluatedExpression`).
+    Implement a :meth:`~object.__new__` and
+    :meth:`~sympy.core.basic.Basic.doit` method for a class that derives from
+    `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
     def decorator(
@@ -197,9 +197,9 @@ def implement_expr(
 def implement_new_method(
     n_args: int,
 ) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
-    """Implement ``__new__()`` method for an `UnevaluatedExpression` class.
+    """Implement :meth:`UnevaluatedExpression.__new__` on a derived class.
 
-    Implement a `~object.__new__` method for a class that derives from
+    Implement a :meth:`~object.__new__` method for a class that derives from
     `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
@@ -233,8 +233,11 @@ def implement_doit_method(
 ) -> Type[DecoratedClass]:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
-    Implement a `~sympy.core.basic.Basic.doit` method for a class that derives
-    from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
+    Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that
+    derives from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`). A
+    :meth:`~sympy.core.basic.Basic.doit` method is an extension of an
+    :meth:`~.UnevaluatedExpression.evaluate` method in the sense that it can
+    work recursively on deeper expression trees.
     """
 
     @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
@@ -273,6 +276,10 @@ def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
 def make_commutative(
     decorated_class: Type[DecoratedClass],
 ) -> Type[DecoratedClass]:
+    """Set commutative and 'extended real' assumptions on expression class.
+
+    .. seealso:: :doc:`sympy:guides/assumptions`
+    """
     decorated_class.is_commutative = True  # type: ignore[attr-defined]
     decorated_class.is_extended_real = True  # type: ignore[attr-defined]
     return decorated_class
