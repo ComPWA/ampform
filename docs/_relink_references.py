@@ -19,6 +19,7 @@ __TARGET_SUBSTITUTIONS = {
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "sp.Expr": "sympy.core.expr.Expr",
     "sp.Symbol": "sympy.core.symbol.Symbol",
+    "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
     "typing_extensions.Protocol": "typing.Protocol",
 }
 __REF_TYPE_SUBSTITUTIONS = {

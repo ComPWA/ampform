@@ -26,6 +26,7 @@ from ampform.helicity.naming import (
     get_helicity_suffix,
 )
 from ampform.sympy import (
+    NumPyPrintable,
     UnevaluatedExpression,
     _implement_latex_subscript,
     create_expression,
@@ -397,7 +398,7 @@ class NegativeMomentum(UnevaluatedExpression):
         return Rf"-\left({momentum}\right)"
 
 
-class MinkowskiMetric(sp.Expr):
+class MinkowskiMetric(NumPyPrintable):
     # pylint: disable=no-self-use
     r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
 
@@ -441,7 +442,7 @@ class MinkowskiMetric(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class BoostZMatrix(sp.Expr):
+class BoostZMatrix(NumPyPrintable):
     """Represents a Lorentz boost matrix in the :math:`z`-direction."""
 
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
@@ -517,7 +518,7 @@ class BoostMatrix(UnevaluatedExpression):
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
 
-class RapidityBoostMatrix(sp.Expr):
+class RapidityBoostMatrix(NumPyPrintable):
     r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
 
     Args:
@@ -594,7 +595,7 @@ class RapidityBoostMatrix(sp.Expr):
         )
 
 
-class RotationYMatrix(sp.Expr):
+class RotationYMatrix(NumPyPrintable):
     """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
@@ -639,7 +640,7 @@ class RotationYMatrix(sp.Expr):
         ).transpose((2, 0, 1))"""
 
 
-class RotationZMatrix(sp.Expr):
+class RotationZMatrix(NumPyPrintable):
     """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
