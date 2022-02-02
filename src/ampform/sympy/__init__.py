@@ -12,14 +12,31 @@ from sympy.printing.numpy import NumPyPrinter
 
 
 class UnevaluatedExpression(sp.Expr):
-    """Base class for classes that expressions with an :meth:`evaluate` method.
+    """Base class for expression classes with an :meth:`evaluate` method.
 
-    Derive from this class when decorating a class with :func:`implement_expr`
-    or :func:`implement_doit_method`. It is important to derive from
-    `UnevaluatedExpression`, because an :meth:`evaluate` method has to be
-    implemented.
+    Deriving from `~sympy.core.expr.Expr` allows us to keep expression trees
+    condense before unfolding them with their `~sympy.core.basic.Basic.doit`
+    method. This allows us to:
 
+    1. condense the LaTeX representation of an expression tree by providing a
+       custom :meth:`_latex` method.
+    2. overwrite its printer methods (see `NumPyPrintable` and e.g.
+       :doc:`compwa-org:report/001`).
+
+    The `UnevaluatedExpression` base class makes implementations of its derived
+    classes more secure by enforcing the developer to provide implementations
+    for these methods, so that SymPy mechanisms work correctly. Decorators like
+    :func:`implement_expr` and :func:`implement_doit_method` provide convenient
+    means to implement the missing methods.
+
+    .. autolink-preface::
+
+        import sympy as sp
+        from ampform.sympy import UnevaluatedExpression, create_expression
+
+    .. automethod:: __new__
     .. automethod:: evaluate
+    .. automethod:: _latex
     """
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
@@ -30,6 +47,30 @@ class UnevaluatedExpression(sp.Expr):
     def __new__(  # pylint: disable=unused-argument
         cls, *args: Any, name: Optional[str] = None, **hints: Any
     ) -> "UnevaluatedExpression":
+        """Constructor for a class derived from `UnevaluatedExpression`.
+
+        This :meth:`~object.__new__` method correctly sets the
+        `~sympy.core.basic.Basic.args`, assumptions etc. Overwrite it in order
+        to further specify its signature. The function
+        :func:`create_expression` can be used in its implementation, like so:
+
+        >>> class MyExpression(UnevaluatedExpression):
+        ...    def __new__(
+        ...        cls, x: sp.Symbol, y: sp.Symbol, n: int, **hints
+        ...    ) -> "MyExpression":
+        ...        return create_expression(cls, x, y, n, **hints)
+        ...
+        ...    def evaluate(self) -> sp.Expr:
+        ...        x, y, n = self.args
+        ...        return (x + y)**n
+        ...
+        >>> x, y = sp.symbols("x y")
+        >>> expr = MyExpression(x, y, n=3)
+        >>> expr
+        MyExpression(x, y, 3)
+        >>> expr.evaluate()
+        (x + y)**3
+        """
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
         obj._args = args
@@ -47,10 +88,38 @@ class UnevaluatedExpression(sp.Expr):
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
-        """Unfold this `~sympy.core.expr.Expr`."""
+        """Evaluate and 'unfold' this `UnevaluatedExpression` by one level.
+
+        >>> from ampform.dynamics import BreakupMomentumSquared
+        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
+        True
+        >>> s, m1, m2 = sp.symbols("s m1 m2")
+        >>> expr = BreakupMomentumSquared(s, m1, m2)
+        >>> expr
+        BreakupMomentumSquared(s, m1, m2)
+        >>> expr.evaluate()
+        (s - (m1 - m2)**2)*(s - (m1 + m2)**2)/(4*s)
+        >>> expr.doit(deep=False)
+        (s - (m1 - m2)**2)*(s - (m1 + m2)**2)/(4*s)
+
+        .. note:: When decorating this class with :func:`implement_doit_method`,
+            its :meth:`evaluate` method is equivalent to
+            :meth:`~sympy.core.basic.Basic.doit` with :code:`deep=False`.
+        """
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        """Provide a mathematical Latex representation for notebooks."""
+        r"""Provide a mathematical Latex representation for pretty printing.
+
+        >>> from ampform.dynamics import BreakupMomentumSquared
+        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
+        True
+        >>> s, m1 = sp.symbols("s m1")
+        >>> expr = BreakupMomentumSquared(s, m1, m1)
+        >>> print(sp.latex(expr))
+        q^2\left(s\right)
+        >>> print(sp.latex(expr.doit()))
+        - m_{1}^{2} + \frac{s}{4}
+        """
         args = tuple(map(printer._print, self.args))
         name = self.__class__.__name__
         if self._name is not None:
@@ -213,10 +282,7 @@ def create_expression(
     name: Optional[str] = None,
     **kwargs: Any,
 ) -> sp.Expr:
-    """Helper function for implementing :code:`Expr.__new__`.
-
-    See e.g. source code of `.BlattWeisskopfSquared`.
-    """
+    """Helper function for implementing `UnevaluatedExpression.__new__`."""
     args = sp.sympify(args)
     expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
     if evaluate:

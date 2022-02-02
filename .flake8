@@ -51,6 +51,7 @@ rst-roles =
     ref
     term
 rst-directives =
+    autolink-preface
     automethod
     deprecated
     envvar
