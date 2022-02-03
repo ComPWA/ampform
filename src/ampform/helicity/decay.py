@@ -91,6 +91,22 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 
     This function provides a deterministic way of identifying states in a
     `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state.
+    It enforces that:
+
+    1. state :code:`0` is never an opposite helicity state
+    2. the sibling of an opposite helicity state is a helicity state.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> for topology in topologies:
+    ...     assert not is_opposite_helicity_state(topology, state_id=0)
+    ...     for state_id in set(topology.edges) - topology.incoming_edge_ids:
+    ...         sibling_id = get_sibling_state_id(topology, state_id)
+    ...         assert is_opposite_helicity_state(
+    ...             topology, state_id
+    ...         ) != is_opposite_helicity_state(
+    ...             topology, sibling_id
+    ...         )
 
     The Wigner-:math:`D` function for a two-particle state treats one helicity
     with a negative sign. This sign originates from Eq.(13) in
@@ -110,7 +126,21 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 
 
 def get_sibling_state_id(topology: Topology, state_id: int) -> int:
-    """Get the sibling state ID for a state in an isobar decay."""
+    r"""Get the sibling state ID for a state in an isobar decay.
+
+    Example
+    -------
+    .. code-block::
+
+        -- 3 -- 0
+            \
+             4 -- 1
+              \
+               2
+
+    The sibling state of :code:`1` is :code:`2` and the sibling state of
+    :code:`3` is :code:`4`.
+    """
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
         raise ValueError(

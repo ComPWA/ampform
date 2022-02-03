@@ -674,7 +674,11 @@ def formulate_rotation_chain(
 ) -> PoolSum:
     """Formulate the spin alignment sum for a specific chain.
 
-    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`.
+    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain
+    consists of a series of helicity rotations (see
+    :func:`formulate_helicity_rotation_chain`) plus a Wigner rotation (see
+    :func:`.formulate_wigner_rotation`) in case there is more than one helicity
+    rotation.
     """
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id
@@ -694,6 +698,15 @@ def formulate_rotation_chain(
 def formulate_helicity_rotation_chain(
     transition: StateTransition, rotated_state_id: int
 ) -> PoolSum:
+    """Formulate a Wigner-:math:`D` for each helicity rotation up some state.
+
+    The helicity rotations are performed going through the decay
+    `~qrules.topology.Topology` starting from the initial state up some
+    :code:`rotated_state_id`. Each rotation operates on the spin state and is
+    therefore formulated as a `~sympy.physics.quantum.spin.WignerD` function
+    (see :func:`.formulate_helicity_rotation`). See
+    {doc}`/usage/helicity/spin-alignment` for more info.
+    """
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
     spin_magnitude = rotated_state.particle.spin
