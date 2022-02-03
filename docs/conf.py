@@ -273,6 +273,10 @@ def get_minor_version(package_name: str) -> str:
 
 
 intersphinx_mapping = {
+    "IPython": (
+        f"https://ipython.readthedocs.io/en/{get_version('IPython')}",
+        None,
+    ),
     "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
