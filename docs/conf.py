@@ -119,6 +119,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_codeautolink",
+    "sphinx_comments",
     "sphinx_copybutton",
     "sphinx_panels",
     "sphinx_thebe",
@@ -359,6 +360,16 @@ interactively modify the parameters.
 """,
 }
 myst_update_mathjax = False
+
+# Settings for sphinx_comments
+comments_config = {
+    "hypothesis": True,
+    "utterances": {
+        "repo": f"ComPWA/{REPO_NAME}",
+        "issue-term": "pathname",
+        "label": "📝 Docs",
+    },
+}
 
 # Settings for Thebe cell output
 thebe_config = {
