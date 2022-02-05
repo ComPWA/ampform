@@ -79,18 +79,6 @@ class TwoBodyDecay:
             interaction=transition.interactions[node_id],
         )
 
-    def extract_angular_momentum(self) -> int:
-        angular_momentum = self.interaction.l_magnitude
-        if angular_momentum is not None:
-            return angular_momentum
-        spin_magnitude = self.parent.particle.spin
-        if spin_magnitude.is_integer():
-            return int(spin_magnitude)
-        raise ValueError(
-            f"Spin magnitude ({spin_magnitude}) of single particle state"
-            " cannot be used as the angular momentum as it is not integral!"
-        )
-
 
 def get_helicity_info(
     transition: StateTransition, node_id: int
