@@ -348,6 +348,8 @@ def _state_to_str(
         else:
             helicity = state.spin_projection
         helicity_str = _render_float(helicity)
+        if "_" in output_string:
+            output_string = f"{{{output_string}}}"
         output_string += f"_{{{helicity_str}}}"
     return output_string
 
