@@ -100,7 +100,8 @@ def create_non_dynamic_with_ff(
         m_a=variable_pool.outgoing_state_mass1,
         m_b=variable_pool.outgoing_state_mass2,
     )
-    meson_radius = sp.Symbol(f"d_{resonance.name}")
+    res_identifier = resonance.latex if resonance.latex else resonance.name
+    meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
     form_factor_squared = BlattWeisskopfSquared(
         angular_momentum,
         z=q_squared * meson_radius**2,
@@ -150,8 +151,9 @@ class RelativisticBreitWignerBuilder:
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
         inv_mass = variable_pool.incoming_state_mass
-        res_mass = sp.Symbol(f"m_{resonance.name}")
-        res_width = sp.Symbol(f"Gamma_{resonance.name}")
+        res_identifier = resonance.latex if resonance.latex else resonance.name
+        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
+        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
         expression = relativistic_breit_wigner(
             s=inv_mass**2,
             mass0=res_mass,
@@ -183,11 +185,12 @@ class RelativisticBreitWignerBuilder:
             )
 
         inv_mass = variable_pool.incoming_state_mass
-        res_mass = sp.Symbol(f"m_{resonance.name}")
-        res_width = sp.Symbol(f"Gamma_{resonance.name}")
+        res_identifier = resonance.latex if resonance.latex else resonance.name
+        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
+        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
         product1_inv_mass = variable_pool.outgoing_state_mass1
         product2_inv_mass = variable_pool.outgoing_state_mass2
-        meson_radius = sp.Symbol(f"d_{resonance.name}")
+        meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
 
         expression = relativistic_breit_wigner_with_ff(
             s=inv_mass**2,
