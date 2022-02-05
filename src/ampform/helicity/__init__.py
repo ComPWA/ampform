@@ -905,13 +905,18 @@ def _generate_kinematic_variable_set(
         get_invariant_mass_label(transition.topology, decay.children[1].id),
         real=True,
     )
+    angular_momentum: Optional[
+        Union[float, int]
+    ] = decay.interaction.l_magnitude
+    if angular_momentum is None:
+        angular_momentum = decay.parent.particle.spin
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
         outgoing_state_mass1=child1_mass,
         outgoing_state_mass2=child2_mass,
         helicity_theta=theta,
         helicity_phi=phi,
-        angular_momentum=decay.extract_angular_momentum(),
+        angular_momentum=angular_momentum,
     )
 
 

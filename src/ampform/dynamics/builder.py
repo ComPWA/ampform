@@ -6,6 +6,7 @@ from typing import Dict, Optional, Tuple
 import attr
 import sympy as sp
 from attr.validators import instance_of
+from attrs.converters import optional
 from qrules.particle import Particle
 
 from . import (
@@ -39,7 +40,9 @@ class TwoBodyKinematicVariableSet:
     outgoing_state_mass2: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
     helicity_theta: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
     helicity_phi: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    angular_momentum: Optional[int] = attr.ib(default=None)
+    angular_momentum: Optional[float] = attr.ib(
+        default=None, converter=optional(float)
+    )
 
 
 BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
@@ -163,10 +166,20 @@ class RelativisticBreitWignerBuilder:
     def __formulate_with_form_factor(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
-        if variable_pool.angular_momentum is None:
+        angular_momentum = variable_pool.angular_momentum
+        if angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the"
-                " form factor!"
+                "Angular momentum is not defined, but is required for the form"
+                " factor. You probably need to generate the transitions with"
+                ' formalism="canonical-helicity".'
+            )
+        if isinstance(angular_momentum, int):
+            angular_momentum = float(angular_momentum)
+        if not angular_momentum.is_integer():
+            raise ValueError(
+                f"Angular momentum L={angular_momentum} of is not integral."
+                " You probably need to generate the transitions with"
+                ' formalism="canonical-helicity".'
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -174,7 +187,6 @@ class RelativisticBreitWignerBuilder:
         res_width = sp.Symbol(f"Gamma_{resonance.name}")
         product1_inv_mass = variable_pool.outgoing_state_mass1
         product2_inv_mass = variable_pool.outgoing_state_mass2
-        angular_momentum = variable_pool.angular_momentum
         meson_radius = sp.Symbol(f"d_{resonance.name}")
 
         expression = relativistic_breit_wigner_with_ff(
