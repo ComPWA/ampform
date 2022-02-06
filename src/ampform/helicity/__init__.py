@@ -55,10 +55,10 @@ from .decay import (
 from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
-    _natural_sorting,
     generate_transition_label,
     get_helicity_angle_label,
     get_helicity_suffix,
+    natural_sorting,
 )
 
 if TYPE_CHECKING:
@@ -72,7 +72,7 @@ def _order_component_mapping(
     mapping: Mapping[str, ParameterValue]
 ) -> "OrderedDict[str, ParameterValue]":
     return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
     )
 
 
@@ -86,7 +86,7 @@ def _order_symbol_mapping(
         [
             (symbol, mapping[symbol])
             for symbol in sorted(
-                mapping, key=lambda s: _natural_sorting(s.name)
+                mapping, key=lambda s: natural_sorting(s.name)
             )
         ]
     )
@@ -130,7 +130,7 @@ class ParameterValues(abc.Mapping):
                 f"Parameter mapping has {len(self)} keys, but trying to"
                 f" get item {__k}"
             )
-        raise KeyError(
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot get parameter value for key type {type(__k).__name__}"
         )
 
@@ -159,7 +159,7 @@ class ParameterValues(abc.Mapping):
                 f"Parameter mapping has {len(self)} keys, but trying to"
                 f" set item {__k}"
             )
-        raise KeyError(
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot set parameter value for key type {type(__k).__name__}"
         )
 
@@ -991,11 +991,10 @@ def _generate_kinematic_variable_set(
         get_invariant_mass_label(transition.topology, decay.children[1].id),
         real=True,
     )
-    angular_momentum: Optional[
-        Union[float, int]
-    ] = decay.interaction.l_magnitude
+    angular_momentum: Optional[int] = decay.interaction.l_magnitude
     if angular_momentum is None:
-        angular_momentum = decay.parent.particle.spin
+        if decay.parent.particle.spin.is_integer():
+            angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
         outgoing_state_mass1=child1_mass,

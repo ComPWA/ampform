@@ -325,7 +325,7 @@ def __get_topology_identifier(topology: Topology) -> str:
         "".join(__get_resonance_identifier(topology, i))
         for i in topology.intermediate_edge_ids
     ]
-    return ",".join(sorted(resonance_names, key=_natural_sorting))
+    return ",".join(sorted(resonance_names, key=natural_sorting))
 
 
 def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
@@ -335,7 +335,15 @@ def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
     return "".join(map(str, attached_final_state_ids))
 
 
-def _natural_sorting(text: str) -> List[Union[float, str]]:
+def natural_sorting(text: str) -> List[Union[float, str]]:
+    """Function that can be used for natural sort order in :func:`sorted`.
+
+    See `natural sort order
+    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+
+    >>> sorted(["z11", "z2"], key=natural_sorting)
+    ['z2', 'z11']
+    """
     # https://stackoverflow.com/a/5967539/13219025
     return [
         __attempt_number_cast(c)
