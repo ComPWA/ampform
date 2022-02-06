@@ -236,11 +236,13 @@ version_remapping = {
 def get_version(package_name: str) -> str:
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     constraints_path = f"../.constraints/py{python_version}.txt"
+    package_name = package_name.lower()
     with open(constraints_path) as stream:
         constraints = stream.read()
     for line in constraints.split("\n"):
         line = line.split("#")[0]  # remove comments
         line = line.strip()
+        line = line.lower()
         if not line.startswith(package_name):
             continue
         if not line:
