@@ -254,7 +254,7 @@ def _merge_args_kwargs(
     """
     output_dict = {}
     for arg in args:
-        if not isinstance(arg, dict):
+        if not isinstance(arg, abc.Mapping):
             raise TypeError("Positional arguments have to be of type dict")
         output_dict.update(arg)
     output_dict.update(kwargs)
