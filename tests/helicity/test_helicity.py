@@ -1,4 +1,5 @@
 # pylint: disable=no-member, no-self-use
+
 from typing import Tuple
 
 import pytest
@@ -9,6 +10,7 @@ from ampform import get_builder
 from ampform.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
+    ParameterValues,
     _generate_kinematic_variables,
     formulate_wigner_d,
     group_transitions,
@@ -140,6 +142,19 @@ class TestHelicityModel:
                 )
                 selected_intensity = next(selected_intensities)
                 assert from_amplitudes == model.components[selected_intensity]
+
+
+class TestParameterValues:
+    @pytest.mark.parametrize("subs_method", ["subs"])
+    def test_subs_xreplace(self, subs_method: str):
+        a, b, x, y = sp.symbols("a b x y")
+        expr: sp.Expr = a * x + b * y
+        parameters = ParameterValues({a: 2, b: -3})
+        if subs_method == "subs":
+            expr = expr.subs(parameters)
+        elif subs_method == "xreplace":
+            expr = expr.xreplace(parameters)
+        assert expr == 2 * x - 3 * y
 
 
 @pytest.mark.parametrize(
