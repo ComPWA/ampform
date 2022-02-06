@@ -4,8 +4,13 @@ from typing import Optional
 import pytest
 from qrules.particle import Particle
 from qrules.quantum_numbers import InteractionProperties
+from qrules.topology import create_isobar_topologies
 
-from ampform.helicity.decay import StateWithID, TwoBodyDecay
+from ampform.helicity.decay import (
+    StateWithID,
+    TwoBodyDecay,
+    determine_attached_final_state,
+)
 
 
 def _create_dummy_decay(
@@ -50,3 +55,22 @@ class TestTwoBodyDecay:
     def test_invalid_angular_momentum(self, decay: TwoBodyDecay):
         with pytest.raises(ValueError, match="not integral"):
             decay.extract_angular_momentum()
+
+
+def test_determine_attached_final_state():
+    topologies = create_isobar_topologies(4)
+    # outer states
+    for topology in topologies:
+        for i in topology.outgoing_edge_ids:
+            assert determine_attached_final_state(topology, state_id=i) == [i]
+        for i in topology.incoming_edge_ids:
+            assert determine_attached_final_state(
+                topology, state_id=i
+            ) == list(topology.outgoing_edge_ids)
+    # intermediate states
+    topology = topologies[0]
+    assert determine_attached_final_state(topology, state_id=4) == [0, 1]
+    assert determine_attached_final_state(topology, state_id=5) == [2, 3]
+    topology = topologies[1]
+    assert determine_attached_final_state(topology, state_id=4) == [1, 2, 3]
+    assert determine_attached_final_state(topology, state_id=5) == [2, 3]
