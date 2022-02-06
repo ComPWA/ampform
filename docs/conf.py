@@ -169,6 +169,9 @@ autodoc_type_aliases = {
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
+codeautolink_global_preface = """
+from IPython.display import display
+"""
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
@@ -233,11 +236,13 @@ version_remapping = {
 def get_version(package_name: str) -> str:
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     constraints_path = f"../.constraints/py{python_version}.txt"
+    package_name = package_name.lower()
     with open(constraints_path) as stream:
         constraints = stream.read()
     for line in constraints.split("\n"):
         line = line.split("#")[0]  # remove comments
         line = line.strip()
+        line = line.lower()
         if not line.startswith(package_name):
             continue
         if not line:
@@ -270,6 +275,10 @@ def get_minor_version(package_name: str) -> str:
 
 
 intersphinx_mapping = {
+    "IPython": (
+        f"https://ipython.readthedocs.io/en/{get_version('IPython')}",
+        None,
+    ),
     "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
