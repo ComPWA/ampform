@@ -41,18 +41,17 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.102
+    rev: "7351575"
     hooks:
       - id: check-dev-files
         args:
           - --pin-requirements
-      - id: fix-first-nbcell
-        args:
-          - --add-install-cell
-          - --additional-packages=IPython
-          - --extras-require=doc,viz
       - id: fix-nbformat-version
       - id: format-setup-cfg
+      - id: set-nb-cells
+        args:
+          - --add-install-cell
+          - --extras-require=doc,viz
 
   - repo: https://github.com/psf/black
     rev: 22.1.0
