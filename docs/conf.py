@@ -169,6 +169,9 @@ autodoc_type_aliases = {
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
+codeautolink_global_preface = """
+from IPython.display import display
+"""
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
