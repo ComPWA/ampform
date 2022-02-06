@@ -164,9 +164,9 @@ sphinx-autobuild==2021.3.14
 sphinx-book-theme==0.2.0
 sphinx-codeautolink==0.10.0
 sphinx-comments==0.0.3
-sphinx-copybutton==0.4.0
+sphinx-copybutton==0.5.0
 sphinx-panels==0.6.0
-sphinx-thebe==0.0.10
+sphinx-thebe==0.1.0
 sphinx-togglebutton==0.2.3
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-bibtex==2.4.1
@@ -194,7 +194,7 @@ types-setuptools==57.4.8
 types-urllib3==1.26.9
 typing-extensions==4.0.1 ; python_version < "3.8.0"
 urllib3==1.26.8
-virtualenv==20.13.0
+virtualenv==20.13.1
 wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.3
