@@ -115,7 +115,7 @@ class ParameterValues(abc.Mapping):
                 f"Parameter mapping has {len(self)} keys, but trying to"
                 f" get item {__k}"
             )
-        raise TypeError(
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot get parameter value for key type {type(__k).__name__}"
         )
 
@@ -144,7 +144,7 @@ class ParameterValues(abc.Mapping):
                 f"Parameter mapping has {len(self)} keys, but trying to"
                 f" set item {__k}"
             )
-        raise TypeError(
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot set parameter value for key type {type(__k).__name__}"
         )
 

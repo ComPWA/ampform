@@ -145,7 +145,7 @@ class TestHelicityModel:
 
 
 class TestParameterValues:
-    @pytest.mark.parametrize("subs_method", ["subs"])
+    @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
     def test_subs_xreplace(self, subs_method: str):
         a, b, x, y = sp.symbols("a b x y")
         expr: sp.Expr = a * x + b * y
@@ -154,6 +154,8 @@ class TestParameterValues:
             expr = expr.subs(parameters)
         elif subs_method == "xreplace":
             expr = expr.xreplace(parameters)
+        else:
+            raise NotImplementedError
         assert expr == 2 * x - 3 * y
 
 
