@@ -1,21 +1,28 @@
-# pylint: disable=import-outside-toplevel
-"""Generate an amplitude model with the helicity formalism."""
+# pylint: disable=import-outside-toplevel, too-many-arguments, too-many-lines
+"""Generate an amplitude model with the helicity formalism.
+
+.. autolink-preface::
+
+    import sympy as sp
+"""
 
 import collections
 import logging
 import operator
-from collections import OrderedDict
+from collections import OrderedDict, abc
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
     DefaultDict,
     Dict,
     Iterable,
+    Iterator,
     List,
     Mapping,
     Optional,
     Set,
     Tuple,
+    TypeVar,
     Union,
 )
 
@@ -54,9 +61,12 @@ def _order_component_mapping(
     )
 
 
+_T = TypeVar("_T")
+
+
 def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, sp.Expr]
-) -> "OrderedDict[sp.Symbol, sp.Expr]":
+    mapping: Mapping[sp.Symbol, _T]  # type: ignore[valid-type]
+) -> "OrderedDict[sp.Symbol, _T]":
     return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
@@ -67,14 +77,90 @@ def _order_symbol_mapping(
     )
 
 
+class ParameterValues(abc.Mapping):
+    """Ordered mapping to `ParameterValue` with convenient getter and setter.
+
+    >>> a, b, c = sp.symbols("a b c")
+    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
+    >>> parameters[a]
+    0.0
+    >>> parameters["b"]
+    (1+1j)
+    >>> parameters["b"] = 3
+    >>> parameters[1]
+    3
+    >>> parameters[2]
+    -2
+    >>> parameters[2] = 3.14
+    >>> parameters[c]
+    3.14
+    """
+
+    def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
+        self.__mapping = _order_symbol_mapping(mapping)
+
+    def __getitem__(self, __k: Union[sp.Symbol, int, str]) -> ParameterValue:
+        if isinstance(__k, sp.Symbol):
+            return self.__mapping[__k]
+        if isinstance(__k, str):
+            for symbol, value in self.__mapping.items():
+                if symbol.name == __k:
+                    return value
+            raise KeyError(f'No parameter available with name "{__k}"')
+        if isinstance(__k, int):
+            for i, value in enumerate(self.__mapping.values()):
+                if i == __k:
+                    return value
+            raise KeyError(
+                f"Parameter mapping has {len(self)} keys, but trying to"
+                f" get item {__k}"
+            )
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
+            f"Cannot get parameter value for key type {type(__k).__name__}"
+        )
+
+    def __setitem__(  # noqa: R701
+        self, __k: Union[sp.Symbol, int, str], __v: ParameterValue
+    ) -> None:
+        try:
+            self[__k]
+        except KeyError as e:
+            raise KeyError("Not allowed to define new items") from e
+        if isinstance(__k, sp.Symbol):
+            self.__mapping[__k] = __v
+            return
+        if isinstance(__k, str):
+            for symbol in self.__mapping:
+                if symbol.name == __k:
+                    self.__mapping[symbol] = __v
+                    return
+            raise KeyError(f'No parameter available with name "{__k}"')
+        if isinstance(__k, int):
+            for i, symbol in enumerate(self.__mapping):
+                if i == __k:
+                    self.__mapping[symbol] = __v
+                    return
+            raise KeyError(
+                f"Parameter mapping has {len(self)} keys, but trying to"
+                f" set item {__k}"
+            )
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
+            f"Cannot set parameter value for key type {type(__k).__name__}"
+        )
+
+    def __len__(self) -> int:
+        return len(self.__mapping)
+
+    def __iter__(self) -> Iterator[sp.Symbol]:
+        return iter(self.__mapping)
+
+
 @attr.frozen
 class HelicityModel:  # noqa: R701
     expression: sp.Expr = attr.ib(
         validator=attr.validators.instance_of(sp.Expr)
     )
-    parameter_defaults: "OrderedDict[sp.Symbol, ParameterValue]" = attr.ib(
-        converter=_order_symbol_mapping
-    )
+    parameter_defaults: ParameterValues = attr.ib(converter=ParameterValues)
     """A mapping of suggested parameter values.
 
     Keys are `~sympy.core.symbol.Symbol` instances from the main
