@@ -33,7 +33,11 @@ from ampform.kinematics import (
     create_four_momentum_symbols,
 )
 from ampform.sympy import cse_all_symbols
-from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
+from ampform.sympy._array_expressions import (
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySymbol,
+)
 
 
 @pytest.fixture(scope="session")
@@ -73,6 +77,48 @@ class TestBoostZMatrix:
         func = sp.lambdify(p, expr.doit())
         mass_array = func(p_array)
         assert pytest.approx(mass_array[0]) == mass
+
+    def test_numpycode_cse_in_expression_tree(self):
+        p, beta, phi, theta = sp.symbols("p beta phi theta")
+        expr = ArrayMultiplication(
+            BoostZMatrix(beta, n_events=_ArraySize(p)),
+            RotationYMatrix(theta, n_events=_ArraySize(p)),
+            RotationZMatrix(phi, n_events=_ArraySize(p)),
+            p,
+        )
+        func = sp.lambdify([], expr.doit(), cse=True)
+        src = inspect.getsource(func)
+        expected_src = """
+        def _lambdifygenerated():
+            x0 = 1/sqrt(1 - beta**2)
+            x1 = len(p)
+            x2 = ones(x1)
+            x3 = zeros(x1)
+            return (einsum("...ij,...jk,...kl,...l->...i", array(
+                    [
+                        [x0, x3, x3, -beta*x0],
+                        [x3, x2, x3, x3],
+                        [x3, x3, x2, x3],
+                        [-beta*x0, x3, x3, x0],
+                    ]
+                ).transpose((2, 0, 1)), array(
+                    [
+                        [x2, x3, x3, x3],
+                        [x3, cos(theta), x3, sin(theta)],
+                        [x3, x3, x2, x3],
+                        [x3, -sin(theta), x3, cos(theta)],
+                    ]
+                ).transpose((2, 0, 1)), array(
+                    [
+                        [x2, x3, x3, x3],
+                        [x3, cos(phi), -sin(phi), x3],
+                        [x3, sin(phi), cos(phi), x3],
+                        [x3, x3, x3, x2],
+                    ]
+                ).transpose((2, 0, 1)), p))
+        """
+        expected_src = textwrap.dedent(expected_src)
+        assert src.strip() == expected_src.strip()
 
 
 class TestFourMomentumXYZ:

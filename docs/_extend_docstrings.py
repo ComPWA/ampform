@@ -21,6 +21,7 @@ from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics import FourMomentumSymbol, _ArraySize
 from ampform.sympy import NumPyPrintable
+from ampform.sympy._array_expressions import ArrayMultiplication
 
 logging.getLogger().setLevel(logging.ERROR)
 
@@ -86,6 +87,41 @@ def extend_BoostZMatrix() -> None:
         BoostZMatrix(b, n_events=_ArraySize(b)).doit(),
         use_cse=True,
         docstring_class=BoostZMatrix,
+    )
+
+    from ampform.kinematics import RotationYMatrix, RotationZMatrix
+
+    _append_to_docstring(
+        BoostZMatrix,
+        """
+    Note that this code was generated with :func:`sympy.lambdify
+    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True` (using
+    :func:`.cse_all_symbols`, to be more precise). The repetition of
+    :func:`numpy.ones` is still bothersome, but these sub-nodes is also
+    extracted by :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the
+    expression is nested further down in an :doc:`expression tree
+    <sympy:tutorial/manipulation>`, for instance when boosting a
+    `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
+    """,
+    )
+    p, beta, phi, theta = sp.symbols("p beta phi theta")
+    expr = ArrayMultiplication(
+        BoostZMatrix(beta, n_events=_ArraySize(p)),
+        RotationYMatrix(theta, n_events=_ArraySize(p)),
+        RotationZMatrix(phi, n_events=_ArraySize(p)),
+        p,
+    )
+    _append_to_docstring(
+        BoostZMatrix,
+        f"""\n
+    .. math:: {sp.latex(expr)}
+        :label: boost-in-z-direction
+
+    which in :mod:`numpy` code becomes:
+    """,
+    )
+    _append_code_rendering(
+        expr.doit(), use_cse=True, docstring_class=BoostZMatrix
     )
 
 
