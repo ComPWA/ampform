@@ -564,21 +564,21 @@ class BoostMatrix(UnevaluatedExpression):
     def as_explicit(self) -> sp.Expr:
         return self.evaluate().as_explicit()
 
-    def evaluate(self) -> "_RapidityBoostMatrix":
+    def evaluate(self) -> "_BoostMatrixImplementation":
         momentum = self.args[0]
         energy = Energy(momentum)
         beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
         beta_x = FourMomentumX(momentum) / energy
         beta_y = FourMomentumY(momentum) / energy
         beta_z = FourMomentumZ(momentum) / energy
-        return _RapidityBoostMatrix(beta_sq, beta_x, beta_y, beta_z)
+        return _BoostMatrixImplementation(beta_sq, beta_x, beta_y, beta_z)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.args[0])
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
 
-class _RapidityBoostMatrix(NumPyPrintable):
+class _BoostMatrixImplementation(NumPyPrintable):
     r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
 
     See `.NumPyPrintable` for why this class has been extracted out of
