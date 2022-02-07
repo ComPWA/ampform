@@ -387,18 +387,17 @@ class BoostZMatrix(NumPyPrintable):
 
 @implement_doit_method
 class RotationYMatrix(UnevaluatedExpression):
-    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
+    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`.
+
+    Args:
+        angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+    """
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
         return create_expression(cls, angle, **hints)
 
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
-
     def as_explicit(self) -> sp.Expr:
-        angle = self.angle
+        angle = self.args[0]
         return sp.Matrix(
             [
                 [1, 0, 0, 0],
@@ -409,7 +408,7 @@ class RotationYMatrix(UnevaluatedExpression):
         )
 
     def evaluate(self) -> "_RotationYMatrixImplementation":
-        angle = self.angle
+        angle = self.args[0]
         size = _ArraySize(angle)
         return _RotationYMatrixImplementation(
             angle=angle,
@@ -451,15 +450,14 @@ class _RotationYMatrixImplementation(NumPyPrintable):
 
 @implement_doit_method
 class RotationZMatrix(UnevaluatedExpression):
-    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
+    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`.
+
+    Args:
+        angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+    """
 
     def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
         return create_expression(cls, angle, **hints)
-
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
 
     def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
@@ -473,7 +471,7 @@ class RotationZMatrix(UnevaluatedExpression):
         )
 
     def evaluate(self) -> "_RotationZMatrixImplementation":
-        angle = self.angle
+        angle = self.args[0]
         size = _ArraySize(angle)
         return _RotationZMatrixImplementation(
             angle=angle,
