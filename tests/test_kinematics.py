@@ -175,13 +175,21 @@ class TestTheta:
 
 
 class TestRotationZMatrix:
-    def test_numpycode(self):
+    @pytest.fixture(scope="session")
+    def rotation_expr(self):
         angle = sp.Symbol("a")
-        expr = RotationZMatrix(angle)
-        func = sp.lambdify(angle, expr)
+        return RotationZMatrix(angle)
+
+    @pytest.fixture(scope="session")
+    def rotation_func(self, rotation_expr):
+        angle = sp.Symbol("a")
+        return sp.lambdify(angle, rotation_expr, cse=True)
+
+    def test_numpycode(self, rotation_expr: RotationZMatrix):
+        func = sp.lambdify([], rotation_expr)
         src = inspect.getsource(func)
         expected_src = """
-def _lambdifygenerated(a):
+def _lambdifygenerated():
     return (array(
             [
                 [ones(len(a)), zeros(len(a)), zeros(len(a)), zeros(len(a))],
@@ -193,6 +201,28 @@ def _lambdifygenerated(a):
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
+
+    def test_rotation_over_multiple_two_pi_is_identity(self, rotation_func):
+        angle_array = np.arange(-2, 4, 1) * 2 * np.pi
+        rotation_matrices = rotation_func(angle_array)
+        identity = np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+            ]
+        )
+        identity = np.tile(identity, reps=(len(angle_array), 1, 1))
+        assert pytest.approx(rotation_matrices) == identity
+
+    def test_rotation_over_pi_flips_xy(self, rotation_func):
+        vectors = np.array([[1, 1, 1, 1]])
+        angle_array = np.array([np.pi])
+        rotated_vectors = np.einsum(
+            "...ij,...j->...j", rotation_func(angle_array), vectors
+        )
+        assert pytest.approx(rotated_vectors) == np.array([[1, -1, -1, 1]])
 
 
 @pytest.mark.parametrize(
