@@ -25,6 +25,8 @@ from ampform.kinematics import (
     RotationZMatrix,
     Theta,
     ThreeMomentumNorm,
+    _OnesArray,
+    _ZerosArray,
     compute_helicity_angles,
     compute_invariant_masses,
     create_four_momentum_symbols,
@@ -184,21 +186,22 @@ class TestRotationYMatrix:
     @pytest.fixture(scope="session")
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
-        return sp.lambdify(angle, rotation_expr)
+        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
 
-    def test_numpycode(self, rotation_expr: RotationYMatrix):
-        func = sp.lambdify([], rotation_expr)
+    def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
+        func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
-def _lambdifygenerated():
-    return (array(
-            [
-                [ones(len(a)), zeros(len(a)), zeros(len(a)), zeros(len(a))],
-                [zeros(len(a)), cos(a), zeros(len(a)), sin(a)],
-                [zeros(len(a)), zeros(len(a)), ones(len(a)), zeros(len(a))],
-                [zeros(len(a)), -sin(a), zeros(len(a)), cos(a)],
-            ]
-        ).transpose((2, 0, 1)))
+        def _lambdifygenerated():
+            x0 = len(a)
+            return (array(
+                    [
+                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
+                        [zeros(x0), cos(a), zeros(x0), sin(a)],
+                        [zeros(x0), zeros(x0), ones(x0), zeros(x0)],
+                        [zeros(x0), -sin(a), zeros(x0), cos(a)],
+                    ]
+                ).transpose((2, 0, 1)))
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
@@ -221,21 +224,22 @@ class TestRotationZMatrix:
     @pytest.fixture(scope="session")
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
-        return sp.lambdify(angle, rotation_expr, cse=True)
+        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
 
-    def test_numpycode(self, rotation_expr: RotationZMatrix):
-        func = sp.lambdify([], rotation_expr)
+    def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
+        func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
-def _lambdifygenerated():
-    return (array(
-            [
-                [ones(len(a)), zeros(len(a)), zeros(len(a)), zeros(len(a))],
-                [zeros(len(a)), cos(a), -sin(a), zeros(len(a))],
-                [zeros(len(a)), sin(a), cos(a), zeros(len(a))],
-                [zeros(len(a)), zeros(len(a)), zeros(len(a)), ones(len(a))],
-            ]
-        ).transpose((2, 0, 1)))
+        def _lambdifygenerated():
+            x0 = len(a)
+            return (array(
+                    [
+                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
+                        [zeros(x0), cos(a), -sin(a), zeros(x0)],
+                        [zeros(x0), sin(a), cos(a), zeros(x0)],
+                        [zeros(x0), zeros(x0), zeros(x0), ones(x0)],
+                    ]
+                ).transpose((2, 0, 1)))
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
@@ -250,10 +254,17 @@ def _lambdifygenerated():
 
 
 @pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
+def test_rotation_latex_repr_is_identical_with_doit(rotation):
+    angle = sp.Symbol("a")
+    expr = rotation(angle)
+    assert sp.latex(expr) == sp.latex(expr.doit())
+
+
+@pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
 def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
     expr = rotation(angle)
-    func = sp.lambdify(angle, expr)
+    func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
     identity = np.array(
@@ -266,6 +277,24 @@ def test_rotation_over_multiple_two_pi_is_identity(rotation):
     )
     identity = np.tile(identity, reps=(len(angle_array), 1, 1))
     assert pytest.approx(rotation_matrices) == identity
+
+
+class TestOnesZerosArray:
+    @pytest.mark.parametrize("array_type", ["ones", "zeros"])
+    @pytest.mark.parametrize("shape", [10, (4, 2), [3, 5, 7]])
+    def test_numpycode(self, array_type, shape):
+        if array_type == "ones":
+            expr_class = _OnesArray
+            array_func = np.ones
+        elif array_type == "zeros":
+            expr_class = _ZerosArray
+            array_func = np.zeros
+        else:
+            raise NotImplementedError
+        array_expr = expr_class(shape)
+        create_array = sp.lambdify([], array_expr)
+        array = create_array()
+        np.testing.assert_array_equal(array, array_func(shape))
 
 
 @pytest.mark.parametrize(

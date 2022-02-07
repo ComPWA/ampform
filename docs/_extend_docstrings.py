@@ -20,6 +20,7 @@ import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics import FourMomentumSymbol
+from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
 
@@ -276,7 +277,11 @@ def extend_RotationZMatrix() -> None:
     """,
     )
     a = sp.Symbol("a")
-    _append_code_rendering(RotationZMatrix(a))
+    _append_code_rendering(
+        RotationZMatrix(a).doit(),
+        use_cse=True,
+        docstring_class=RotationZMatrix,
+    )
 
 
 def extend_Theta() -> None:
@@ -423,12 +428,25 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     )
 
 
-def _append_code_rendering(expr: sp.Expr) -> None:
+def _append_code_rendering(
+    expr: NumPyPrintable,
+    use_cse: bool = False,
+    docstring_class: Optional[type] = None,
+) -> None:
     printer = NumPyPrinter()
-    numpy_code = expr._numpycode(printer)
+    if use_cse:
+        args = sorted(expr.free_symbols, key=str)
+        func = sp.lambdify(args, expr, cse=True, printer=printer)
+        numpy_code = inspect.getsource(func)
+    else:
+        numpy_code = expr._numpycode(printer)
     import_statements = __print_imports(printer)
+    if docstring_class is None:
+        docstring_class = type(expr)
+    numpy_code = textwrap.dedent(numpy_code)
+    numpy_code = textwrap.indent(numpy_code, prefix=8 * " ").strip()
     _append_to_docstring(
-        type(expr),
+        docstring_class,
         f"""\n
     .. code::
 
