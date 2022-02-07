@@ -321,6 +321,12 @@ def extend_RotationZMatrix() -> None:
         use_cse=True,
         docstring_class=RotationZMatrix,
     )
+    _append_to_docstring(
+        RotationZMatrix,
+        """
+    See also the note that comes with Equation :eq:`boost-in-z-direction`.
+    """,
+    )
 
 
 def extend_Theta() -> None:
