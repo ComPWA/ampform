@@ -340,18 +340,17 @@ class Theta(UnevaluatedExpression):
 
 
 class BoostZMatrix(NumPyPrintable):
-    """Represents a Lorentz boost matrix in the :math:`z`-direction."""
+    r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
+
+    Args:
+        beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
+    """
 
     def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
         return create_expression(cls, beta, **kwargs)
 
-    @property
-    def beta(self) -> sp.Expr:
-        r"""Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`."""
-        return self.args[0]
-
     def as_explicit(self) -> sp.Expr:
-        beta = self.beta
+        beta = self.args[0]
         gamma = 1 / sp.sqrt(1 - beta**2)
         return sp.Matrix(
             [
@@ -363,14 +362,14 @@ class BoostZMatrix(NumPyPrintable):
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        beta = printer._print(self.beta)
+        beta = printer._print(self.args[0])
         return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         printer.module_imports[printer._module].update(
             {"array", "ones", "zeros", "sqrt"}
         )
-        beta = printer._print(self.beta)
+        beta = printer._print(self.args[0])
         gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
         n_events = f"len({beta})"
         zeros = f"zeros({n_events})"
