@@ -448,7 +448,7 @@ def _append_code_rendering(
     _append_to_docstring(
         docstring_class,
         f"""\n
-    .. code::
+    .. code-block:: python
 
         {import_statements}
         {numpy_code}
