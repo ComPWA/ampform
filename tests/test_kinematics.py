@@ -1,5 +1,7 @@
 # pylint: disable=no-member, no-self-use, redefined-outer-name
 # cspell:ignore atol doprint
+import inspect
+import textwrap
 from typing import Dict, Tuple
 
 import numpy as np
@@ -19,6 +21,7 @@ from ampform.kinematics import (
     FourMomentumZ,
     InvariantMass,
     Phi,
+    RotationZMatrix,
     Theta,
     ThreeMomentumNorm,
     compute_helicity_angles,
@@ -169,6 +172,27 @@ class TestTheta:
             numpy_code
             == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
         )
+
+
+class TestRotationZMatrix:
+    def test_numpycode(self):
+        angle = sp.Symbol("a")
+        expr = RotationZMatrix(angle)
+        func = sp.lambdify(angle, expr)
+        src = inspect.getsource(func)
+        expected_src = """
+def _lambdifygenerated(a):
+    return (array(
+            [
+                [ones(len(a)), zeros(len(a)), zeros(len(a)), zeros(len(a))],
+                [zeros(len(a)), cos(a), -sin(a), zeros(len(a))],
+                [zeros(len(a)), sin(a), cos(a), zeros(len(a))],
+                [zeros(len(a)), zeros(len(a)), zeros(len(a)), ones(len(a))],
+            ]
+        ).transpose((2, 0, 1)))
+        """
+        expected_src = textwrap.dedent(expected_src)
+        assert src.strip() == expected_src.strip()
 
 
 @pytest.mark.parametrize(
