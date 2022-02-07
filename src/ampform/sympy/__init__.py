@@ -335,7 +335,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
 
 def cse_all_symbols(
     expr: sp.Expr,
-) -> Tuple[List[Tuple[sp.Symbol, sp.Expr]], List[sp.Expr]]:
+) -> Tuple[List[Tuple[sp.Symbol, sp.Expr]], sp.Expr]:
     """Identify all symbols as common sub-expressions.
 
     :func:`sympy.cse <sympy.simplify.cse_main.cse>`, which is used by default
@@ -356,7 +356,7 @@ def cse_all_symbols(
     >>> a, b, y = sp.symbols("a b y")
     >>> expr = a+b + y ** (a+b)
     >>> cse_all_symbols(expr)
-    ([(x0, a + b), (x1, y)], [x0 + x1**x0])
+    ([(x0, a + b), (x1, y)], x0 + x1**x0)
     """
     replacements, reduced_exprs = sp.cse(expr)
     replacements_dict = dict(replacements)
@@ -372,7 +372,7 @@ def cse_all_symbols(
         dummy = next(symbol_generator)
         replacements.append((dummy, non_dummy))
         reduced_exprs = [e.xreplace({non_dummy: dummy}) for e in reduced_exprs]
-    return replacements, reduced_exprs
+    return replacements, reduced_exprs[0]
 
 
 def _continue_numbering(

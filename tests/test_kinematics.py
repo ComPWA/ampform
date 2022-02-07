@@ -192,7 +192,7 @@ class TestRotationYMatrix:
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
         rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=True)
+        return sp.lambdify(angle, rotation_expr, cse=cse_all_symbols)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
@@ -201,14 +201,14 @@ class TestRotationYMatrix:
         def _lambdifygenerated():
             x0 = a
             x1 = n
-            return ([array(
+            return (array(
                     [
                         [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
                         [zeros(x1), cos(x0), zeros(x1), sin(x0)],
                         [zeros(x1), zeros(x1), ones(x1), zeros(x1)],
                         [zeros(x1), -sin(x0), zeros(x1), cos(x0)],
                     ]
-                ).transpose((2, 0, 1))])
+                ).transpose((2, 0, 1)))
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
@@ -233,7 +233,7 @@ class TestRotationZMatrix:
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
         rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=True)
+        return sp.lambdify(angle, rotation_expr, cse=cse_all_symbols)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
@@ -242,14 +242,14 @@ class TestRotationZMatrix:
         def _lambdifygenerated():
             x0 = a
             x1 = n
-            return ([array(
+            return (array(
                     [
                         [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
                         [zeros(x1), cos(x0), -sin(x0), zeros(x1)],
                         [zeros(x1), sin(x0), cos(x0), zeros(x1)],
                         [zeros(x1), zeros(x1), zeros(x1), ones(x1)],
                     ]
-                ).transpose((2, 0, 1))])
+                ).transpose((2, 0, 1)))
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
@@ -275,7 +275,7 @@ def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
     n_events = _ArraySize(angle)
     expr = rotation(angle, n_events)
-    func = sp.lambdify(angle, expr.doit(), cse=True)
+    func = sp.lambdify(angle, expr.doit(), cse=cse_all_symbols)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
     identity = np.array(
