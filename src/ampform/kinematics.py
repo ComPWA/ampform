@@ -4,7 +4,17 @@
 
 import itertools
 import sys
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
 import attr
 import sympy as sp
@@ -334,19 +344,25 @@ class Theta(UnevaluatedExpression):
         return Rf"\theta\left({momentum}\right)"
 
 
-class BoostZMatrix(NumPyPrintable):
-    """Represents a Lorentz boost matrix in the :math:`z`-direction."""
+@implement_doit_method
+class BoostZMatrix(UnevaluatedExpression):
+    r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
 
-    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
-        return create_expression(cls, beta, **kwargs)
+    Args:
+        beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`beta`.
+    """
 
-    @property
-    def beta(self) -> sp.Expr:
-        r"""Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`."""
-        return self.args[0]
+    def __new__(
+        cls, beta: sp.Expr, n_events: Optional[sp.Symbol] = None, **kwargs: Any
+    ) -> "BoostZMatrix":
+        if n_events is None:
+            n_events = _ArraySize(beta)
+        return create_expression(cls, beta, n_events, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
-        beta = self.beta
+        beta = self.args[0]
         gamma = 1 / sp.sqrt(1 - beta**2)
         return sp.Matrix(
             [
@@ -357,42 +373,72 @@ class BoostZMatrix(NumPyPrintable):
             ]
         )
 
+    def evaluate(self) -> "_BoostZMatrixImplementation":
+        beta = self.args[0]
+        gamma = 1 / sp.sqrt(1 - beta**2)
+        n_events = self.args[1]
+        return _BoostZMatrixImplementation(
+            beta=beta,
+            gamma=gamma,
+            gamma_beta=gamma * beta,
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
+        )
+
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        beta = printer._print(self.beta)
+        return printer._print(self.evaluate(), *args)
+
+
+class _BoostZMatrixImplementation(NumPyPrintable):
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        beta: sp.Expr,
+        gamma: sp.Expr,
+        gamma_beta: sp.Expr,
+        ones: "_OnesArray",
+        zeros: "_ZerosArray",
+        **hints: Any,
+    ) -> "_BoostZMatrixImplementation":
+        return create_expression(
+            cls, beta, gamma, gamma_beta, ones, zeros, **hints
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        beta = printer._print(self.args[0])
         return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "ones", "zeros", "sqrt"}
-        )
-        beta = printer._print(self.beta)
-        gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
-        n_events = f"len({beta})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
+        printer.module_imports[printer._module].add("array")
+        _, gamma, gamma_beta, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
-                [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],
+                [{gamma}, {zeros}, {zeros}, -{gamma_beta}],
                 [{zeros}, {ones}, {zeros}, {zeros}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
-                [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
+                [-{gamma_beta}, {zeros}, {zeros}, {gamma}],
             ]
         ).transpose((2, 0, 1))"""
 
 
-class RotationYMatrix(NumPyPrintable):
-    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`."""
+@implement_doit_method
+class RotationYMatrix(UnevaluatedExpression):
+    r"""Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`.
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
-        return create_expression(cls, angle, **hints)
+    Args:
+        angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
+    """
 
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
+    def __new__(
+        cls, angle: sp.Expr, n_events: Optional[sp.Symbol] = None, **hints: Any
+    ) -> "RotationYMatrix":
+        if n_events is None:
+            n_events = _ArraySize(angle)
+        return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
-        angle = self.angle
+        angle = self.args[0]
         return sp.Matrix(
             [
                 [1, 0, 0, 0],
@@ -402,39 +448,69 @@ class RotationYMatrix(NumPyPrintable):
             ]
         )
 
+    def evaluate(self) -> "_RotationYMatrixImplementation":
+        angle = self.args[0]
+        n_events = self.args[1]
+        return _RotationYMatrixImplementation(
+            angle=angle,
+            cos_angle=sp.cos(angle),
+            sin_angle=sp.sin(angle),
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate(), *args)
+
+
+class _RotationYMatrixImplementation(NumPyPrintable):
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        angle: sp.Expr,
+        cos_angle: sp.Expr,
+        sin_angle: sp.Expr,
+        ones: "_OnesArray",
+        zeros: "_ZerosArray",
+        **hints: Any,
+    ) -> "_RotationYMatrixImplementation":
+        return create_expression(
+            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
+        )
+
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
         angle = printer._print(angle)
         return Rf"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "cos", "ones", "zeros", "sin"}
-        )
-        angle = printer._print(self.angle)
-        n_events = f"len({angle})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
+        printer.module_imports[printer._module].add("array")
+        _, cos_angle, sin_angle, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
                 [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), {zeros}, sin({angle})],
+                [{zeros}, {cos_angle}, {zeros}, {sin_angle}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
-                [{zeros}, -sin({angle}), {zeros}, cos({angle})],
+                [{zeros}, -{sin_angle}, {zeros}, {cos_angle}],
             ]
         ).transpose((2, 0, 1))"""
 
 
-class RotationZMatrix(NumPyPrintable):
-    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`."""
+@implement_doit_method
+class RotationZMatrix(UnevaluatedExpression):
+    r"""Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`.
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
-        return create_expression(cls, angle, **hints)
+    Args:
+        angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
+    """
 
-    @property
-    def angle(self) -> sp.Expr:
-        """Angle with which to rotate, see e.g. `Phi` and `Theta`."""
-        return self.args[0]
+    def __new__(
+        cls, angle: sp.Expr, n_events: Optional[sp.Symbol] = None, **hints: Any
+    ) -> "RotationZMatrix":
+        if n_events is None:
+            n_events = _ArraySize(angle)
+        return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
@@ -447,27 +523,84 @@ class RotationZMatrix(NumPyPrintable):
             ]
         )
 
+    def evaluate(self) -> "_RotationZMatrixImplementation":
+        angle = self.args[0]
+        n_events = self.args[1]
+        return _RotationZMatrixImplementation(
+            angle=angle,
+            cos_angle=sp.cos(angle),
+            sin_angle=sp.sin(angle),
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate(), *args)
+
+
+class _RotationZMatrixImplementation(NumPyPrintable):
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        angle: sp.Expr,
+        cos_angle: sp.Expr,
+        sin_angle: sp.Expr,
+        ones: "_OnesArray",
+        zeros: "_ZerosArray",
+        **hints: Any,
+    ) -> "_RotationZMatrixImplementation":
+        return create_expression(
+            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
+        )
+
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
         angle = printer._print(angle)
         return Rf"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "cos", "ones", "zeros", "sin"}
-        )
-        angle = printer._print(self.angle)
-        n_events = f"len({angle})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
+        printer.module_imports[printer._module].add("array")
+        _, cos_angle, sin_angle, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
                 [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), -sin({angle}), {zeros}],
-                [{zeros}, sin({angle}), cos({angle}), {zeros}],
+                [{zeros}, {cos_angle}, -{sin_angle}, {zeros}],
+                [{zeros}, {sin_angle}, {cos_angle}, {zeros}],
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
         ).transpose((2, 0, 1))"""
+
+
+class _OnesArray(NumPyPrintable):
+    def __new__(
+        cls, shape: Union[int, Sequence[int]], **kwargs: Any
+    ) -> "_OnesArray":
+        return create_expression(cls, shape, **kwargs)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].add("ones")
+        shape = printer._print(self.args[0])
+        return f"ones({shape})"
+
+
+class _ZerosArray(NumPyPrintable):
+    def __new__(
+        cls, shape: Union[int, Sequence[int]], **kwargs: Any
+    ) -> "_ZerosArray":
+        return create_expression(cls, shape, **kwargs)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].add("zeros")
+        shape = printer._print(self.args[0])
+        return f"zeros({shape})"
+
+
+class _ArraySize(NumPyPrintable):
+    def __new__(cls, array: sp.Basic, **kwargs: Any) -> "_ArraySize":
+        return create_expression(cls, array, **kwargs)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        shape = printer._print(self.args[0])
+        return f"len({shape})"
 
 
 def compute_helicity_angles(
@@ -495,6 +628,8 @@ def compute_helicity_angles(
             f"Momentum IDs {set(four_momenta)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
+
+    n_events = _get_number_of_events(four_momenta)
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
         four_momenta: FourMomenta, node_id: int
@@ -533,9 +668,9 @@ def compute_helicity_angles(
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
                         k: ArrayMultiplication(
-                            BoostZMatrix(beta),
-                            RotationYMatrix(-theta),
-                            RotationZMatrix(-phi),
+                            BoostZMatrix(beta, n_events),
+                            RotationYMatrix(-theta, n_events),
+                            RotationZMatrix(-phi, n_events),
                             p,
                         )
                         for k, p in four_momenta.items()
@@ -564,6 +699,13 @@ def compute_helicity_angles(
     return __recursive_helicity_angles(
         four_momenta, initial_state_edge.ending_node_id
     )
+
+
+def _get_number_of_events(
+    four_momenta: "FourMomenta",
+) -> "_ArraySize":
+    sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
+    return _ArraySize(sorted_momentum_symbols[0])
 
 
 def compute_invariant_masses(
