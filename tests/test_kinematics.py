@@ -314,8 +314,7 @@ def test_rotation_latex_repr_is_identical_with_doit(rotation):
 @pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
 def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
-    n_events = _ArraySize(angle)
-    expr = rotation(angle, n_events)
+    expr = rotation(angle)
     func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)

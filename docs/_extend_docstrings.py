@@ -84,7 +84,7 @@ def extend_BoostZMatrix() -> None:
     )
     b = sp.Symbol("b")
     _append_code_rendering(
-        BoostZMatrix(b, n_events=_ArraySize(b)).doit(),
+        BoostZMatrix(b).doit(),
         use_cse=True,
         docstring_class=BoostZMatrix,
     )
@@ -317,7 +317,7 @@ def extend_RotationZMatrix() -> None:
     )
     a = sp.Symbol("a")
     _append_code_rendering(
-        RotationZMatrix(a, n_events=_ArraySize(a)).doit(),
+        RotationZMatrix(a).doit(),
         use_cse=True,
         docstring_class=RotationZMatrix,
     )

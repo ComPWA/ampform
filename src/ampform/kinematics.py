@@ -4,7 +4,7 @@
 
 import itertools
 import sys
-from typing import TYPE_CHECKING, Any, Dict, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Set, Union
 
 import attr
 import sympy as sp
@@ -345,11 +345,15 @@ class BoostZMatrix(UnevaluatedExpression):
 
     Args:
         beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`beta`.
     """
 
     def __new__(
-        cls, beta: sp.Expr, n_events: sp.Symbol, **kwargs: Any
+        cls, beta: sp.Expr, n_events: Optional[sp.Symbol] = None, **kwargs: Any
     ) -> "BoostZMatrix":
+        if n_events is None:
+            n_events = _ArraySize(beta)
         return create_expression(cls, beta, n_events, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
@@ -413,15 +417,19 @@ class _BoostZMatrixImplementation(NumPyPrintable):
 
 @implement_doit_method
 class RotationYMatrix(UnevaluatedExpression):
-    """Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`.
+    r"""Rotation matrix around the :math:`y`-axis for a `FourMomentumSymbol`.
 
     Args:
         angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
     def __new__(
-        cls, angle: sp.Expr, n_events: sp.Symbol, **hints: Any
+        cls, angle: sp.Expr, n_events: Optional[sp.Symbol] = None, **hints: Any
     ) -> "RotationYMatrix":
+        if n_events is None:
+            n_events = _ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
@@ -484,15 +492,19 @@ class _RotationYMatrixImplementation(NumPyPrintable):
 
 @implement_doit_method
 class RotationZMatrix(UnevaluatedExpression):
-    """Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`.
+    r"""Rotation matrix around the :math:`z`-axis for a `FourMomentumSymbol`.
 
     Args:
         angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
+        n_events: Number of events :math:`n` for this matrix array of shape
+            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
     def __new__(
-        cls, angle: sp.Expr, n_events: sp.Symbol, **hints: Any
+        cls, angle: sp.Expr, n_events: Optional[sp.Symbol] = None, **hints: Any
     ) -> "RotationZMatrix":
+        if n_events is None:
+            n_events = _ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
