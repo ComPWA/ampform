@@ -437,10 +437,12 @@ def _append_code_rendering(
     use_cse: bool = False,
     docstring_class: Optional[type] = None,
 ) -> None:
+    from ampform.sympy import cse_all_symbols
+
     printer = NumPyPrinter()
     if use_cse:
         args = sorted(expr.free_symbols, key=str)
-        func = sp.lambdify(args, expr, cse=True, printer=printer)
+        func = sp.lambdify(args, expr, cse=cse_all_symbols, printer=printer)
         numpy_code = inspect.getsource(func)
     else:
         numpy_code = expr._numpycode(printer)

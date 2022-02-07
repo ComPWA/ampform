@@ -32,6 +32,7 @@ from ampform.kinematics import (
     compute_invariant_masses,
     create_four_momentum_symbols,
 )
+from ampform.sympy import cse_all_symbols
 from ampform.sympy._array_expressions import ArraySlice, ArraySymbol
 
 
@@ -194,18 +195,20 @@ class TestRotationYMatrix:
         return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
-        func = sp.lambdify([], rotation_expr.doit(), cse=True)
+        func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            return (array(
+            x0 = a
+            x1 = n
+            return ([array(
                     [
-                        [ones(n), zeros(n), zeros(n), zeros(n)],
-                        [zeros(n), cos(a), zeros(n), sin(a)],
-                        [zeros(n), zeros(n), ones(n), zeros(n)],
-                        [zeros(n), -sin(a), zeros(n), cos(a)],
+                        [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
+                        [zeros(x1), cos(x0), zeros(x1), sin(x0)],
+                        [zeros(x1), zeros(x1), ones(x1), zeros(x1)],
+                        [zeros(x1), -sin(x0), zeros(x1), cos(x0)],
                     ]
-                ).transpose((2, 0, 1)))
+                ).transpose((2, 0, 1))])
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
@@ -233,18 +236,20 @@ class TestRotationZMatrix:
         return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
-        func = sp.lambdify([], rotation_expr.doit(), cse=True)
+        func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            return (array(
+            x0 = a
+            x1 = n
+            return ([array(
                     [
-                        [ones(n), zeros(n), zeros(n), zeros(n)],
-                        [zeros(n), cos(a), -sin(a), zeros(n)],
-                        [zeros(n), sin(a), cos(a), zeros(n)],
-                        [zeros(n), zeros(n), zeros(n), ones(n)],
+                        [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
+                        [zeros(x1), cos(x0), -sin(x0), zeros(x1)],
+                        [zeros(x1), sin(x0), cos(x0), zeros(x1)],
+                        [zeros(x1), zeros(x1), zeros(x1), ones(x1)],
                     ]
-                ).transpose((2, 0, 1)))
+                ).transpose((2, 0, 1))])
         """
         expected_src = textwrap.dedent(expected_src)
         assert src.strip() == expected_src.strip()
