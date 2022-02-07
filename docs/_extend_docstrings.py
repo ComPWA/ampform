@@ -445,15 +445,25 @@ def _append_code_rendering(
         docstring_class = type(expr)
     numpy_code = textwrap.dedent(numpy_code)
     numpy_code = textwrap.indent(numpy_code, prefix=8 * " ").strip()
-    _append_to_docstring(
-        docstring_class,
-        f"""\n
+    options = ""
+    if (
+        max(__get_text_width(import_statements), __get_text_width(numpy_code))
+        > 90
+    ):
+        options += ":class: full-width\n"
+    appended_text = f"""\n
     .. code-block:: python
-
+        {options}
         {import_statements}
         {numpy_code}
-    """,
-    )
+    """
+    _append_to_docstring(docstring_class, appended_text)
+
+
+def __get_text_width(text: str) -> int:
+    lines = text.split("\n")
+    widths = map(len, lines)
+    return max(widths)
 
 
 def _append_latex_doit_definition(
