@@ -4,23 +4,11 @@
 
 import functools
 from abc import abstractmethod
-from typing import (
-    Any,
-    Callable,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
-from sympy.utilities.iterables import numbered_symbols
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -331,59 +319,3 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
     return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
-
-
-def cse_all_symbols(
-    expr: sp.Expr,
-) -> Tuple[List[Tuple[sp.Symbol, sp.Expr]], sp.Expr]:
-    """Identify all symbols as common sub-expressions.
-
-    :func:`sympy.cse <sympy.simplify.cse_main.cse>`, which is used by default
-    when setting :code:`cse=True` in
-    :func:`~sympy.utilities.lambdify.lambdify`, does not extract all symbols as
-    common sub-expressions:
-
-    >>> a, b, y = sp.symbols("a b y")
-    >>> expr = a+b + y ** (a+b)
-    >>> sp.cse(expr)
-    ([(x0, a + b)], [x0 + y**x0])
-
-    In most cases, this is fine, but when lambdifying matrix classes like
-    `.BoostZMatrix` and `.RotationZMatrix`, we want to identify the
-    :func:`numpy.ones` expressions as common sub-expressions as well. This can
-    be done by using :func:`cse_all_symbols`:
-
-    >>> a, b, y = sp.symbols("a b y")
-    >>> expr = a+b + y ** (a+b)
-    >>> cse_all_symbols(expr)
-    ([(x0, a + b), (x1, y)], x0 + x1**x0)
-    """
-    replacements, reduced_exprs = sp.cse(expr)
-    replacements_dict = dict(replacements)
-    free_symbols: Set[sp.Symbol] = set()
-    for reduced_expr in reduced_exprs:
-        free_symbols |= reduced_expr.free_symbols
-    non_dummy_symbols = sorted(free_symbols - set(replacements_dict), key=str)
-    if not non_dummy_symbols:
-        return replacements, reduced_exprs
-
-    symbol_generator = _continue_numbering(replacements_dict)
-    for non_dummy in non_dummy_symbols:
-        dummy = next(symbol_generator)
-        replacements.append((dummy, non_dummy))
-        reduced_exprs = [e.xreplace({non_dummy: dummy}) for e in reduced_exprs]
-    return replacements, reduced_exprs[0]
-
-
-def _continue_numbering(
-    symbols: Iterable[sp.Symbol],
-) -> Generator[sp.Symbol, None, None]:
-    ordered_symbols = sorted(symbols, key=str)
-    if len(ordered_symbols) > 0:
-        last_symbol = ordered_symbols[-1]
-        return numbered_symbols(
-            prefix=last_symbol.name[0],
-            start=int(last_symbol.name[1:]) + 1,
-            **last_symbol.assumptions0,
-        )
-    return numbered_symbols()

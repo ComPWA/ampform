@@ -95,9 +95,8 @@ def extend_BoostZMatrix() -> None:
         BoostZMatrix,
         """
     Note that this code was generated with :func:`sympy.lambdify
-    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True` (using
-    :func:`.cse_all_symbols`, to be more precise). The repetition of
-    :func:`numpy.ones` is still bothersome, but these sub-nodes is also
+    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True`. The repetition
+    of :func:`numpy.ones` is still bothersome, but these sub-nodes is also
     extracted by :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the
     expression is nested further down in an :doc:`expression tree
     <sympy:tutorial/manipulation>`, for instance when boosting a
@@ -473,12 +472,10 @@ def _append_code_rendering(
     use_cse: bool = False,
     docstring_class: Optional[type] = None,
 ) -> None:
-    from ampform.sympy import cse_all_symbols
-
     printer = NumPyPrinter()
     if use_cse:
         args = sorted(expr.free_symbols, key=str)
-        func = sp.lambdify(args, expr, cse=cse_all_symbols, printer=printer)
+        func = sp.lambdify(args, expr, cse=True, printer=printer)
         numpy_code = inspect.getsource(func)
     else:
         numpy_code = expr._numpycode(printer)

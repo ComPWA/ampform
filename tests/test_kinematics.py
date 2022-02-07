@@ -32,7 +32,6 @@ from ampform.kinematics import (
     compute_invariant_masses,
     create_four_momentum_symbols,
 )
-from ampform.sympy import cse_all_symbols
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
     ArraySlice,
@@ -238,21 +237,19 @@ class TestRotationYMatrix:
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
         rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=cse_all_symbols)
+        return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
-        func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
+        func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            x0 = a
-            x1 = n
             return (array(
                     [
-                        [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
-                        [zeros(x1), cos(x0), zeros(x1), sin(x0)],
-                        [zeros(x1), zeros(x1), ones(x1), zeros(x1)],
-                        [zeros(x1), -sin(x0), zeros(x1), cos(x0)],
+                        [ones(n), zeros(n), zeros(n), zeros(n)],
+                        [zeros(n), cos(a), zeros(n), sin(a)],
+                        [zeros(n), zeros(n), ones(n), zeros(n)],
+                        [zeros(n), -sin(a), zeros(n), cos(a)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -279,21 +276,19 @@ class TestRotationZMatrix:
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
         rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=cse_all_symbols)
+        return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
-        func = sp.lambdify([], rotation_expr.doit(), cse=cse_all_symbols)
+        func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            x0 = a
-            x1 = n
             return (array(
                     [
-                        [ones(x1), zeros(x1), zeros(x1), zeros(x1)],
-                        [zeros(x1), cos(x0), -sin(x0), zeros(x1)],
-                        [zeros(x1), sin(x0), cos(x0), zeros(x1)],
-                        [zeros(x1), zeros(x1), zeros(x1), ones(x1)],
+                        [ones(n), zeros(n), zeros(n), zeros(n)],
+                        [zeros(n), cos(a), -sin(a), zeros(n)],
+                        [zeros(n), sin(a), cos(a), zeros(n)],
+                        [zeros(n), zeros(n), zeros(n), ones(n)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -321,7 +316,7 @@ def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
     n_events = _ArraySize(angle)
     expr = rotation(angle, n_events)
-    func = sp.lambdify(angle, expr.doit(), cse=cse_all_symbols)
+    func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
     identity = np.array(
