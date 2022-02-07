@@ -562,7 +562,36 @@ class BoostMatrix(UnevaluatedExpression):
         return create_expression(cls, momentum, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
-        return self.evaluate().as_explicit()
+        momentum = self.args[0]
+        energy = Energy(momentum)
+        beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
+        beta_x = FourMomentumX(momentum) / energy
+        beta_y = FourMomentumY(momentum) / energy
+        beta_z = FourMomentumZ(momentum) / energy
+        g = 1 / sp.sqrt(1 - beta_sq)
+        return sp.Matrix(
+            [
+                [g, -g * beta_x, -g * beta_y, -g * beta_z],
+                [
+                    -g * beta_x,
+                    1 + (g - 1) * beta_x**2 / beta_sq,
+                    (g - 1) * beta_y * beta_x / beta_sq,
+                    (g - 1) * beta_z * beta_x / beta_sq,
+                ],
+                [
+                    -g * beta_y,
+                    (g - 1) * beta_x * beta_y / beta_sq,
+                    1 + (g - 1) * beta_y**2 / beta_sq,
+                    (g - 1) * beta_z * beta_y / beta_sq,
+                ],
+                [
+                    -g * beta_z,
+                    (g - 1) * beta_x * beta_z / beta_sq,
+                    (g - 1) * beta_y * beta_z / beta_sq,
+                    1 + (g - 1) * beta_z**2 / beta_sq,
+                ],
+            ]
+        )
 
     def evaluate(self) -> "_BoostMatrixImplementation":
         momentum = self.args[0]
@@ -571,7 +600,20 @@ class BoostMatrix(UnevaluatedExpression):
         beta_x = FourMomentumX(momentum) / energy
         beta_y = FourMomentumY(momentum) / energy
         beta_z = FourMomentumZ(momentum) / energy
-        return _BoostMatrixImplementation(beta_sq, beta_x, beta_y, beta_z)
+        gamma = 1 / sp.sqrt(1 - beta_sq)
+        return _BoostMatrixImplementation(
+            momentum,
+            b00=gamma,
+            b01=-gamma * beta_x,
+            b02=-gamma * beta_y,
+            b03=-gamma * beta_z,
+            b11=1 + (gamma - 1) * beta_x**2 / beta_sq,
+            b12=(gamma - 1) * beta_x * beta_y / beta_sq,
+            b13=(gamma - 1) * beta_x * beta_z / beta_sq,
+            b22=1 + (gamma - 1) * beta_y**2 / beta_sq,
+            b23=(gamma - 1) * beta_y * beta_z / beta_sq,
+            b33=1 + (gamma - 1) * beta_z**2 / beta_sq,
+        )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self.args[0])
@@ -579,63 +621,52 @@ class BoostMatrix(UnevaluatedExpression):
 
 
 class _BoostMatrixImplementation(NumPyPrintable):
-    r"""Compute a rank-3 Lorentz boost matrix from rapidity :math:`\vec\beta`.
-
-    See `.NumPyPrintable` for why this class has been extracted out of
-    `BoostMatrix`.
-    """
-
-    def __new__(
+    def __new__(  # pylint: disable=too-many-arguments,too-many-locals
         cls,
-        beta_squared: EuclideanNormSquared,
-        beta_x: sp.Expr,
-        beta_y: sp.Expr,
-        beta_z: sp.Expr,
+        momentum: FourMomentumSymbol,
+        b00: sp.Basic,
+        b01: sp.Basic,
+        b02: sp.Basic,
+        b03: sp.Basic,
+        b11: sp.Basic,
+        b12: sp.Basic,
+        b13: sp.Basic,
+        b22: sp.Basic,
+        b23: sp.Basic,
+        b33: sp.Basic,
         **kwargs: Any,
     ) -> "BoostZMatrix":
         return create_expression(
-            cls, beta_squared, beta_x, beta_y, beta_z, **kwargs
-        )
-
-    def as_explicit(self) -> sp.Expr:
-        beta_squared = self.args[0]
-        b_x = self.args[1]
-        b_y = self.args[2]
-        b_z = self.args[3]
-        g = 1 / sp.sqrt(1 - beta_squared)
-        return sp.Matrix(
-            [
-                [g, -g * b_x, -g * b_y, -g * b_z],
-                [
-                    -g * b_x,
-                    1 + (g - 1) * b_x**2 / beta_squared,
-                    (g - 1) * b_y * b_x / beta_squared,
-                    (g - 1) * b_z * b_x / beta_squared,
-                ],
-                [
-                    -g * b_y,
-                    (g - 1) * b_x * b_y / beta_squared,
-                    1 + (g - 1) * b_y**2 / beta_squared,
-                    (g - 1) * b_z * b_y / beta_squared,
-                ],
-                [
-                    -g * b_z,
-                    (g - 1) * b_x * b_z / beta_squared,
-                    (g - 1) * b_y * b_z / beta_squared,
-                    1 + (g - 1) * b_z**2 / beta_squared,
-                ],
-            ]
+            cls,
+            momentum,
+            b00,
+            b01,
+            b02,
+            b03,
+            b11,
+            b12,
+            b13,
+            b22,
+            b23,
+            b33,
+            **kwargs,
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        betas = map(printer._print, self.args)
-        return Rf"\boldsymbol{{B}}\left({', '.join(betas)}\right)"
+        momentum = printer._print(self.args[0])
+        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        return (
-            printer._print(self.as_explicit().doit(), *args)
-            + ".transpose((2, 0, 1))"
-        )
+        # pylint: disable=too-many-locals, unbalanced-tuple-unpacking
+        _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
+        return f"""array(
+            [
+                [{b00}, {b01}, {b02}, {b03}],
+                [{b01}, {b11}, {b12}, {b13}],
+                [{b02}, {b12}, {b22}, {b23}],
+                [{b03}, {b13}, {b23}, {b33}],
+            ]
+        ).transpose((2, 0, 1))"""
 
 
 @implement_doit_method
