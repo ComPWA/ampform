@@ -59,6 +59,37 @@ def extend_BlattWeisskopfSquared() -> None:
     _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 
+def extend_BoostMatrix() -> None:
+    from ampform.kinematics import BoostMatrix
+
+    p = FourMomentumSymbol("p")
+    expr = BoostMatrix(p)
+    _append_to_docstring(
+        BoostMatrix,
+        f"""\n
+    This boost operates on a `FourMomentumSymbol` and looks like:
+
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+        :class: full-width
+        :label: BoostMatrix
+    """,
+    )
+    _append_to_docstring(
+        BoostMatrix,
+        """
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
+    a computational backend and it should operate on four-momentum arrays of
+    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
+    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+    """,
+    )
+    _append_code_rendering(
+        BoostMatrix(p).doit(),
+        use_cse=True,
+        docstring_class=BoostMatrix,
+    )
+
+
 def extend_BoostZMatrix() -> None:
     from ampform.kinematics import BoostZMatrix
 
