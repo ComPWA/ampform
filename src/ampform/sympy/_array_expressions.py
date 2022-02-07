@@ -431,7 +431,7 @@ class MatrixMultiplication(sp.Expr):
         return " ".join(tensors)
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update({"einsum", "transpose"})
+        printer.module_imports[printer._module].add("einsum")
         tensors = list(map(printer._print, self.args))
         if len(tensors) == 0:
             return ""
