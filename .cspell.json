@@ -193,6 +193,8 @@
         "kmatrix",
         "kutschke",
         "kwargs",
+        "lambdifygenerated",
+        "lambdifying",
         "linestyle",
         "linewidth",
         "linkcheck",

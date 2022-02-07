@@ -170,6 +170,9 @@ autodoc_type_aliases = {
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
 codeautolink_global_preface = """
+import numpy
+import numpy as np
+import sympy as sp
 from IPython.display import display
 """
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False

@@ -19,7 +19,9 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.kinematics import FourMomentumSymbol
+from ampform.kinematics import FourMomentumSymbol, _ArraySize
+from ampform.sympy import NumPyPrintable
+from ampform.sympy._array_expressions import ArrayMultiplication
 
 logging.getLogger().setLevel(logging.ERROR)
 
@@ -60,8 +62,8 @@ def extend_BlattWeisskopfSquared() -> None:
 def extend_BoostZMatrix() -> None:
     from ampform.kinematics import BoostZMatrix
 
-    beta = sp.Symbol("beta")
-    expr = BoostZMatrix(beta)
+    beta, n_events = sp.symbols("beta n")
+    expr = BoostZMatrix(beta, n_events)
     _append_to_docstring(
         BoostZMatrix,
         f"""\n
@@ -81,7 +83,45 @@ def extend_BoostZMatrix() -> None:
     """,
     )
     b = sp.Symbol("b")
-    _append_code_rendering(BoostZMatrix(b))
+    _append_code_rendering(
+        BoostZMatrix(b).doit(),
+        use_cse=True,
+        docstring_class=BoostZMatrix,
+    )
+
+    from ampform.kinematics import RotationYMatrix, RotationZMatrix
+
+    _append_to_docstring(
+        BoostZMatrix,
+        """
+    Note that this code was generated with :func:`sympy.lambdify
+    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True`. The repetition
+    of :func:`numpy.ones` is still bothersome, but these sub-nodes is also
+    extracted by :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the
+    expression is nested further down in an :doc:`expression tree
+    <sympy:tutorial/manipulation>`, for instance when boosting a
+    `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
+    """,
+    )
+    p, beta, phi, theta = sp.symbols("p beta phi theta")
+    expr = ArrayMultiplication(
+        BoostZMatrix(beta, n_events=_ArraySize(p)),
+        RotationYMatrix(theta, n_events=_ArraySize(p)),
+        RotationZMatrix(phi, n_events=_ArraySize(p)),
+        p,
+    )
+    _append_to_docstring(
+        BoostZMatrix,
+        f"""\n
+    .. math:: {sp.latex(expr)}
+        :label: boost-in-z-direction
+
+    which in :mod:`numpy` code becomes:
+    """,
+    )
+    _append_code_rendering(
+        expr.doit(), use_cse=True, docstring_class=BoostZMatrix
+    )
 
 
 def extend_BreakupMomentumSquared() -> None:
@@ -245,8 +285,8 @@ def extend_Phi() -> None:
 def extend_RotationYMatrix() -> None:
     from ampform.kinematics import RotationYMatrix
 
-    angle = sp.Symbol("alpha")
-    expr = RotationYMatrix(angle)
+    angle, n_events = sp.symbols("alpha n")
+    expr = RotationYMatrix(angle, n_events)
     _append_to_docstring(
         RotationYMatrix,
         f"""\n
@@ -264,8 +304,8 @@ def extend_RotationYMatrix() -> None:
 def extend_RotationZMatrix() -> None:
     from ampform.kinematics import RotationZMatrix
 
-    angle = sp.Symbol("alpha")
-    expr = RotationZMatrix(angle)
+    angle, n_events = sp.symbols("alpha n")
+    expr = RotationZMatrix(angle, n_events)
     _append_to_docstring(
         RotationZMatrix,
         f"""\n
@@ -286,7 +326,17 @@ def extend_RotationZMatrix() -> None:
     """,
     )
     a = sp.Symbol("a")
-    _append_code_rendering(RotationZMatrix(a))
+    _append_code_rendering(
+        RotationZMatrix(a).doit(),
+        use_cse=True,
+        docstring_class=RotationZMatrix,
+    )
+    _append_to_docstring(
+        RotationZMatrix,
+        """
+    See also the note that comes with Equation :eq:`boost-in-z-direction`.
+    """,
+    )
 
 
 def extend_Theta() -> None:
@@ -433,19 +483,42 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     )
 
 
-def _append_code_rendering(expr: sp.Expr) -> None:
+def _append_code_rendering(
+    expr: NumPyPrintable,
+    use_cse: bool = False,
+    docstring_class: Optional[type] = None,
+) -> None:
     printer = NumPyPrinter()
-    numpy_code = expr._numpycode(printer)
+    if use_cse:
+        args = sorted(expr.free_symbols, key=str)
+        func = sp.lambdify(args, expr, cse=True, printer=printer)
+        numpy_code = inspect.getsource(func)
+    else:
+        numpy_code = expr._numpycode(printer)
     import_statements = __print_imports(printer)
-    _append_to_docstring(
-        type(expr),
-        f"""\n
-    .. code::
-
+    if docstring_class is None:
+        docstring_class = type(expr)
+    numpy_code = textwrap.dedent(numpy_code)
+    numpy_code = textwrap.indent(numpy_code, prefix=8 * " ").strip()
+    options = ""
+    if (
+        max(__get_text_width(import_statements), __get_text_width(numpy_code))
+        > 90
+    ):
+        options += ":class: full-width\n"
+    appended_text = f"""\n
+    .. code-block:: python
+        {options}
         {import_statements}
         {numpy_code}
-    """,
-    )
+    """
+    _append_to_docstring(docstring_class, appended_text)
+
+
+def __get_text_width(text: str) -> int:
+    lines = text.split("\n")
+    widths = map(len, lines)
+    return max(widths)
 
 
 def _append_latex_doit_definition(
