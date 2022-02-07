@@ -339,7 +339,8 @@ class Theta(UnevaluatedExpression):
         return Rf"\theta\left({momentum}\right)"
 
 
-class BoostZMatrix(NumPyPrintable):
+@implement_doit_method
+class BoostZMatrix(UnevaluatedExpression):
     r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
 
     Args:
@@ -361,19 +362,37 @@ class BoostZMatrix(NumPyPrintable):
             ]
         )
 
+    def evaluate(self) -> "_BoostZMatrixImplementation":
+        beta = self.args[0]
+        size = _ArraySize(beta)
+        return _BoostZMatrixImplementation(
+            beta=beta,
+            ones=_OnesArray(size),
+            zeros=_ZerosArray(size),
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate(), *args)
+
+
+class _BoostZMatrixImplementation(NumPyPrintable):
+    def __new__(
+        cls,
+        beta: sp.Expr,
+        ones: "_OnesArray",
+        zeros: "_ZerosArray",
+        **hints: Any,
+    ) -> "_BoostZMatrixImplementation":
+        return create_expression(cls, beta, ones, zeros, **hints)
+
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         beta = printer._print(self.args[0])
         return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "ones", "zeros", "sqrt"}
-        )
-        beta = printer._print(self.args[0])
+        printer.module_imports[printer._module].update({"array", "sqrt"})
+        beta, ones, zeros = map(printer._print, self.args)
         gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
-        n_events = f"len({beta})"
-        zeros = f"zeros({n_events})"
-        ones = f"ones({n_events})"
         return f"""array(
             [
                 [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],

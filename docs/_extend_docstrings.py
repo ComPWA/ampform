@@ -82,7 +82,11 @@ def extend_BoostZMatrix() -> None:
     """,
     )
     b = sp.Symbol("b")
-    _append_code_rendering(BoostZMatrix(b))
+    _append_code_rendering(
+        BoostZMatrix(b).doit(),
+        use_cse=True,
+        docstring_class=BoostZMatrix,
+    )
 
 
 def extend_BreakupMomentumSquared() -> None:
