@@ -366,9 +366,12 @@ class BoostZMatrix(UnevaluatedExpression):
 
     def evaluate(self) -> "_BoostZMatrixImplementation":
         beta = self.args[0]
+        gamma = 1 / sp.sqrt(1 - beta**2)
         n_events = self.args[1]
         return _BoostZMatrixImplementation(
             beta=beta,
+            gamma=gamma,
+            gamma_beta=gamma * beta,
             ones=_OnesArray(n_events),
             zeros=_ZerosArray(n_events),
         )
@@ -378,29 +381,32 @@ class BoostZMatrix(UnevaluatedExpression):
 
 
 class _BoostZMatrixImplementation(NumPyPrintable):
-    def __new__(
+    def __new__(  # pylint: disable=too-many-arguments
         cls,
         beta: sp.Expr,
+        gamma: sp.Expr,
+        gamma_beta: sp.Expr,
         ones: "_OnesArray",
         zeros: "_ZerosArray",
         **hints: Any,
     ) -> "_BoostZMatrixImplementation":
-        return create_expression(cls, beta, ones, zeros, **hints)
+        return create_expression(
+            cls, beta, gamma, gamma_beta, ones, zeros, **hints
+        )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         beta = printer._print(self.args[0])
         return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update({"array", "sqrt"})
-        beta, ones, zeros = map(printer._print, self.args)
-        gamma = f"1 / sqrt(1 - ({beta}) ** 2)"
+        printer.module_imports[printer._module].add("array")
+        _, gamma, gamma_beta, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
-                [{gamma}, {zeros}, {zeros}, -{gamma} * {beta}],
+                [{gamma}, {zeros}, {zeros}, -{gamma_beta}],
                 [{zeros}, {ones}, {zeros}, {zeros}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
-                [-{gamma} * {beta}, {zeros}, {zeros}, {gamma}],
+                [-{gamma_beta}, {zeros}, {zeros}, {gamma}],
             ]
         ).transpose((2, 0, 1))"""
 
@@ -434,6 +440,8 @@ class RotationYMatrix(UnevaluatedExpression):
         n_events = self.args[1]
         return _RotationYMatrixImplementation(
             angle=angle,
+            cos_angle=sp.cos(angle),
+            sin_angle=sp.sin(angle),
             ones=_OnesArray(n_events),
             zeros=_ZerosArray(n_events),
         )
@@ -443,14 +451,18 @@ class RotationYMatrix(UnevaluatedExpression):
 
 
 class _RotationYMatrixImplementation(NumPyPrintable):
-    def __new__(
+    def __new__(  # pylint: disable=too-many-arguments
         cls,
         angle: sp.Expr,
+        cos_angle: sp.Expr,
+        sin_angle: sp.Expr,
         ones: "_OnesArray",
         zeros: "_ZerosArray",
         **hints: Any,
     ) -> "_RotationYMatrixImplementation":
-        return create_expression(cls, angle, ones, zeros, **hints)
+        return create_expression(
+            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
+        )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
@@ -458,14 +470,14 @@ class _RotationYMatrixImplementation(NumPyPrintable):
         return Rf"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update({"array", "cos", "sin"})
-        angle, ones, zeros = map(printer._print, self.args)
+        printer.module_imports[printer._module].add("array")
+        _, cos_angle, sin_angle, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
                 [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), {zeros}, sin({angle})],
+                [{zeros}, {cos_angle}, {zeros}, {sin_angle}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
-                [{zeros}, -sin({angle}), {zeros}, cos({angle})],
+                [{zeros}, -{sin_angle}, {zeros}, {cos_angle}],
             ]
         ).transpose((2, 0, 1))"""
 
@@ -499,6 +511,8 @@ class RotationZMatrix(UnevaluatedExpression):
         n_events = self.args[1]
         return _RotationZMatrixImplementation(
             angle=angle,
+            cos_angle=sp.cos(angle),
+            sin_angle=sp.sin(angle),
             ones=_OnesArray(n_events),
             zeros=_ZerosArray(n_events),
         )
@@ -508,14 +522,18 @@ class RotationZMatrix(UnevaluatedExpression):
 
 
 class _RotationZMatrixImplementation(NumPyPrintable):
-    def __new__(
+    def __new__(  # pylint: disable=too-many-arguments
         cls,
         angle: sp.Expr,
+        cos_angle: sp.Expr,
+        sin_angle: sp.Expr,
         ones: "_OnesArray",
         zeros: "_ZerosArray",
         **hints: Any,
     ) -> "_RotationZMatrixImplementation":
-        return create_expression(cls, angle, ones, zeros, **hints)
+        return create_expression(
+            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
+        )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         angle, *_ = self.args
@@ -523,13 +541,13 @@ class _RotationZMatrixImplementation(NumPyPrintable):
         return Rf"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
-        printer.module_imports[printer._module].update({"array", "cos", "sin"})
-        angle, ones, zeros = map(printer._print, self.args)
+        printer.module_imports[printer._module].add("array")
+        _, cos_angle, sin_angle, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
                 [{ones}, {zeros}, {zeros}, {zeros}],
-                [{zeros}, cos({angle}), -sin({angle}), {zeros}],
-                [{zeros}, sin({angle}), cos({angle}), {zeros}],
+                [{zeros}, {cos_angle}, -{sin_angle}, {zeros}],
+                [{zeros}, {sin_angle}, {cos_angle}, {zeros}],
                 [{zeros}, {zeros}, {zeros}, {ones}],
             ]
         ).transpose((2, 0, 1))"""
