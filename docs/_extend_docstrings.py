@@ -19,7 +19,7 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.kinematics import FourMomentumSymbol
+from ampform.kinematics import FourMomentumSymbol, _ArraySize
 from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -83,7 +83,7 @@ def extend_BoostZMatrix() -> None:
     )
     b = sp.Symbol("b")
     _append_code_rendering(
-        BoostZMatrix(b, n_events).doit(),
+        BoostZMatrix(b, n_events=_ArraySize(b)).doit(),
         use_cse=True,
         docstring_class=BoostZMatrix,
     )
@@ -282,7 +282,7 @@ def extend_RotationZMatrix() -> None:
     )
     a = sp.Symbol("a")
     _append_code_rendering(
-        RotationZMatrix(a, n_events).doit(),
+        RotationZMatrix(a, n_events=_ArraySize(a)).doit(),
         use_cse=True,
         docstring_class=RotationZMatrix,
     )
