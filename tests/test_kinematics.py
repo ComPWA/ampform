@@ -25,6 +25,7 @@ from ampform.kinematics import (
     RotationZMatrix,
     Theta,
     ThreeMomentumNorm,
+    _ArraySize,
     _OnesArray,
     _ZerosArray,
     compute_helicity_angles,
@@ -57,7 +58,9 @@ def helicity_angles(
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
         p = FourMomentumSymbol("p")
-        expr = BoostZMatrix(ThreeMomentumNorm(p) / Energy(p))
+        n_events = _ArraySize(p)
+        beta = ThreeMomentumNorm(p) / Energy(p)
+        expr = BoostZMatrix(beta, n_events)
         func = sp.lambdify(p, expr.doit())
         p_array = np.array([[5, 0, 0, 1]])
         boost_z = func(p_array)[0]
@@ -180,26 +183,27 @@ class TestTheta:
 class TestRotationYMatrix:
     @pytest.fixture(scope="session")
     def rotation_expr(self):
-        angle = sp.Symbol("a")
-        return RotationYMatrix(angle)
+        angle, n_events = sp.symbols("a n")
+        return RotationYMatrix(angle, n_events)
 
     @pytest.fixture(scope="session")
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
-        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
+        rotation_expr = rotation_expr.doit()
+        rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
+        return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            x0 = len(a)
             return (array(
                     [
-                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
-                        [zeros(x0), cos(a), zeros(x0), sin(a)],
-                        [zeros(x0), zeros(x0), ones(x0), zeros(x0)],
-                        [zeros(x0), -sin(a), zeros(x0), cos(a)],
+                        [ones(n), zeros(n), zeros(n), zeros(n)],
+                        [zeros(n), cos(a), zeros(n), sin(a)],
+                        [zeros(n), zeros(n), ones(n), zeros(n)],
+                        [zeros(n), -sin(a), zeros(n), cos(a)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -218,26 +222,27 @@ class TestRotationYMatrix:
 class TestRotationZMatrix:
     @pytest.fixture(scope="session")
     def rotation_expr(self):
-        angle = sp.Symbol("a")
-        return RotationZMatrix(angle)
+        angle, n_events = sp.symbols("a n")
+        return RotationZMatrix(angle, n_events)
 
     @pytest.fixture(scope="session")
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
-        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
+        rotation_expr = rotation_expr.doit()
+        rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
+        return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
-            x0 = len(a)
             return (array(
                     [
-                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
-                        [zeros(x0), cos(a), -sin(a), zeros(x0)],
-                        [zeros(x0), sin(a), cos(a), zeros(x0)],
-                        [zeros(x0), zeros(x0), zeros(x0), ones(x0)],
+                        [ones(n), zeros(n), zeros(n), zeros(n)],
+                        [zeros(n), cos(a), -sin(a), zeros(n)],
+                        [zeros(n), sin(a), cos(a), zeros(n)],
+                        [zeros(n), zeros(n), zeros(n), ones(n)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -255,15 +260,16 @@ class TestRotationZMatrix:
 
 @pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
 def test_rotation_latex_repr_is_identical_with_doit(rotation):
-    angle = sp.Symbol("a")
-    expr = rotation(angle)
+    angle, n_events = sp.symbols("a n")
+    expr = rotation(angle, n_events)
     assert sp.latex(expr) == sp.latex(expr.doit())
 
 
 @pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
 def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
-    expr = rotation(angle)
+    n_events = _ArraySize(angle)
+    expr = rotation(angle, n_events)
     func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
@@ -297,6 +303,7 @@ class TestOnesZerosArray:
         np.testing.assert_array_equal(array, array_func(shape))
 
 
+@pytest.mark.parametrize("use_cse", [False, True])
 @pytest.mark.parametrize(
     ("angle_name", "expected_values"),
     [
@@ -404,7 +411,8 @@ class TestOnesZerosArray:
         ),
     ],
 )
-def test_compute_helicity_angles(
+def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
+    use_cse: bool,
     data_sample: Dict[int, np.ndarray],
     topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
     angle_name: str,
@@ -414,7 +422,7 @@ def test_compute_helicity_angles(
     _, momentum_symbols = topology_and_momentum_symbols
     four_momenta = data_sample.values()
     expr = helicity_angles[angle_name]
-    np_angle = sp.lambdify(momentum_symbols.values(), expr.doit())
+    np_angle = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=use_cse)
     computed = np_angle(*four_momenta)
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
 

@@ -347,8 +347,10 @@ class BoostZMatrix(UnevaluatedExpression):
         beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
     """
 
-    def __new__(cls, beta: sp.Expr, **kwargs: Any) -> "BoostZMatrix":
-        return create_expression(cls, beta, **kwargs)
+    def __new__(
+        cls, beta: sp.Expr, n_events: sp.Symbol, **kwargs: Any
+    ) -> "BoostZMatrix":
+        return create_expression(cls, beta, n_events, **kwargs)
 
     def as_explicit(self) -> sp.Expr:
         beta = self.args[0]
@@ -364,11 +366,11 @@ class BoostZMatrix(UnevaluatedExpression):
 
     def evaluate(self) -> "_BoostZMatrixImplementation":
         beta = self.args[0]
-        size = _ArraySize(beta)
+        n_events = self.args[1]
         return _BoostZMatrixImplementation(
             beta=beta,
-            ones=_OnesArray(size),
-            zeros=_ZerosArray(size),
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -411,8 +413,10 @@ class RotationYMatrix(UnevaluatedExpression):
         angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
     """
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationYMatrix":
-        return create_expression(cls, angle, **hints)
+    def __new__(
+        cls, angle: sp.Expr, n_events: sp.Symbol, **hints: Any
+    ) -> "RotationYMatrix":
+        return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
@@ -427,11 +431,11 @@ class RotationYMatrix(UnevaluatedExpression):
 
     def evaluate(self) -> "_RotationYMatrixImplementation":
         angle = self.args[0]
-        size = _ArraySize(angle)
+        n_events = self.args[1]
         return _RotationYMatrixImplementation(
             angle=angle,
-            ones=_OnesArray(size),
-            zeros=_ZerosArray(size),
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -474,8 +478,10 @@ class RotationZMatrix(UnevaluatedExpression):
         angle: Angle with which to rotate, see e.g. `Phi` and `Theta`.
     """
 
-    def __new__(cls, angle: sp.Expr, **hints: Any) -> "RotationZMatrix":
-        return create_expression(cls, angle, **hints)
+    def __new__(
+        cls, angle: sp.Expr, n_events: sp.Symbol, **hints: Any
+    ) -> "RotationZMatrix":
+        return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.Expr:
         angle = self.args[0]
@@ -490,11 +496,11 @@ class RotationZMatrix(UnevaluatedExpression):
 
     def evaluate(self) -> "_RotationZMatrixImplementation":
         angle = self.args[0]
-        size = _ArraySize(angle)
+        n_events = self.args[1]
         return _RotationZMatrixImplementation(
             angle=angle,
-            ones=_OnesArray(size),
-            zeros=_ZerosArray(size),
+            ones=_OnesArray(n_events),
+            zeros=_ZerosArray(n_events),
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
@@ -588,6 +594,8 @@ def compute_helicity_angles(
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
 
+    n_events = _get_number_of_events(four_momenta)
+
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
         four_momenta: FourMomenta, node_id: int
     ) -> Dict[str, sp.Expr]:
@@ -625,9 +633,9 @@ def compute_helicity_angles(
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
                         k: ArrayMultiplication(
-                            BoostZMatrix(beta),
-                            RotationYMatrix(-theta),
-                            RotationZMatrix(-phi),
+                            BoostZMatrix(beta, n_events),
+                            RotationYMatrix(-theta, n_events),
+                            RotationZMatrix(-phi, n_events),
                             p,
                         )
                         for k, p in four_momenta.items()
@@ -656,6 +664,13 @@ def compute_helicity_angles(
     return __recursive_helicity_angles(
         four_momenta, initial_state_edge.ending_node_id
     )
+
+
+def _get_number_of_events(
+    four_momenta: "FourMomenta",
+) -> "_ArraySize":
+    sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
+    return _ArraySize(sorted_momentum_symbols[0])
 
 
 def compute_invariant_masses(

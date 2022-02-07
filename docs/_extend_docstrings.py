@@ -61,8 +61,8 @@ def extend_BlattWeisskopfSquared() -> None:
 def extend_BoostZMatrix() -> None:
     from ampform.kinematics import BoostZMatrix
 
-    beta = sp.Symbol("beta")
-    expr = BoostZMatrix(beta)
+    beta, n_events = sp.symbols("beta n")
+    expr = BoostZMatrix(beta, n_events)
     _append_to_docstring(
         BoostZMatrix,
         f"""\n
@@ -83,7 +83,7 @@ def extend_BoostZMatrix() -> None:
     )
     b = sp.Symbol("b")
     _append_code_rendering(
-        BoostZMatrix(b).doit(),
+        BoostZMatrix(b, n_events).doit(),
         use_cse=True,
         docstring_class=BoostZMatrix,
     )
@@ -240,8 +240,8 @@ def extend_Phi() -> None:
 def extend_RotationYMatrix() -> None:
     from ampform.kinematics import RotationYMatrix
 
-    angle = sp.Symbol("alpha")
-    expr = RotationYMatrix(angle)
+    angle, n_events = sp.symbols("alpha n")
+    expr = RotationYMatrix(angle, n_events)
     _append_to_docstring(
         RotationYMatrix,
         f"""\n
@@ -259,8 +259,8 @@ def extend_RotationYMatrix() -> None:
 def extend_RotationZMatrix() -> None:
     from ampform.kinematics import RotationZMatrix
 
-    angle = sp.Symbol("alpha")
-    expr = RotationZMatrix(angle)
+    angle, n_events = sp.symbols("alpha n")
+    expr = RotationZMatrix(angle, n_events)
     _append_to_docstring(
         RotationZMatrix,
         f"""\n
@@ -282,7 +282,7 @@ def extend_RotationZMatrix() -> None:
     )
     a = sp.Symbol("a")
     _append_code_rendering(
-        RotationZMatrix(a).doit(),
+        RotationZMatrix(a, n_events).doit(),
         use_cse=True,
         docstring_class=RotationZMatrix,
     )
