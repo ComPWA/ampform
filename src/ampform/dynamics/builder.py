@@ -117,10 +117,9 @@ class RelativisticBreitWignerBuilder:
     :meth:`.set_dynamics`.
 
     Args:
-        form_factor: Formulate a relativistic Breit-Wigner function with form
-            factor, using :func:`.relativistic_breit_wigner_with_ff`. If set to
-            `False`, :meth:`__call__` builds a
-            :func:`.relativistic_breit_wigner` (_without_ form factor).
+        form_factor: Formulate a relativistic Breit-Wigner function multiplied
+            by a Blatt-Weisskopf form factor (Equation
+            :eq:`BlattWeisskopfSquared`).
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol`. Defaults to `.PhaseSpaceFactor`.
     """
