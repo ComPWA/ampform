@@ -18,8 +18,10 @@ from typing import (
     DefaultDict,
     Dict,
     Generator,
+    ItemsView,
     Iterable,
     Iterator,
+    KeysView,
     List,
     Mapping,
     Optional,
@@ -28,6 +30,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    ValuesView,
     overload,
 )
 
@@ -168,6 +171,15 @@ class ParameterValues(abc.Mapping):
 
     def __iter__(self) -> Iterator[sp.Symbol]:
         return iter(self.__mapping)
+
+    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
+        return self.__mapping.items()
+
+    def keys(self) -> KeysView[sp.Symbol]:
+        return self.__mapping.keys()
+
+    def values(self) -> ValuesView[ParameterValue]:
+        return self.__mapping.values()
 
 
 @attr.frozen
