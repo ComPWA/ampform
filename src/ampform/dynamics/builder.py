@@ -266,6 +266,7 @@ form factor.
 """
 
 create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
+    energy_dependent_width=True,
     form_factor=True,
     phsp_factor=PhaseSpaceFactor,
 ).__call__
@@ -277,6 +278,7 @@ form factor and a 'normal' `.PhaseSpaceFactor`.
 """
 
 create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
+    energy_dependent_width=True,
     form_factor=True,
     phsp_factor=PhaseSpaceFactorAnalytic,
 ).__call__
