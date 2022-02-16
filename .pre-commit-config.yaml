@@ -93,7 +93,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.31.0
+    rev: v0.31.1
     hooks:
       - id: markdownlint
 
@@ -146,7 +146,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.218
+    rev: v1.1.221
     hooks:
       - id: pyright
 
