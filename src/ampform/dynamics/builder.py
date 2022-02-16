@@ -131,14 +131,14 @@ class RelativisticBreitWignerBuilder:
     ) -> None:
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
-        self.__phsp_factor = phsp_factor
-        self.__with_form_factor = form_factor
+        self.phsp_factor = phsp_factor
+        self.form_factor = form_factor
 
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
         """Formulate a relativistic Breit-Wigner for this resonance."""
-        if self.__with_form_factor:
+        if self.form_factor:
             return self.__formulate_with_form_factor(resonance, variable_pool)
         return self.__formulate(resonance, variable_pool)
 
@@ -187,7 +187,7 @@ class RelativisticBreitWignerBuilder:
             m_b=product2_inv_mass,
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
-            phsp_factor=self.__phsp_factor,
+            phsp_factor=self.phsp_factor,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
