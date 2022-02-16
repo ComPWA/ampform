@@ -11,11 +11,11 @@ from qrules.particle import Particle
 from . import (
     BlattWeisskopfSquared,
     BreakupMomentumSquared,
+    EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorAnalytic,
     PhaseSpaceFactorProtocol,
     relativistic_breit_wigner,
-    relativistic_breit_wigner_with_ff,
 )
 
 if sys.version_info >= (3, 8):
@@ -118,32 +118,50 @@ class RelativisticBreitWignerBuilder:
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function multiplied
-            by a Blatt-Weisskopf form factor (Equation
-            :eq:`BlattWeisskopfSquared`).
+            by a Blatt-Weisskopf form factor, see Equation
+            :eq:`BlattWeisskopfSquared`.
+        energy_dependent_width: Use an `.EnergyDependentWidth` in the
+            denominator of the Breit-Wigner. See
+            :pdg-review:`2020; Resonances; p.6`, Equation (49.21).
         phsp_factor: A class that complies with the
-            `.PhaseSpaceFactorProtocol`. Defaults to `.PhaseSpaceFactor`.
+            `.PhaseSpaceFactorProtocol` that is used in the energy-dependent
+            width. Defaults to `.PhaseSpaceFactor`.
     """
 
     def __init__(
         self,
         form_factor: bool = False,
+        energy_dependent_width: bool = False,
         phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
     ) -> None:
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
         self.phsp_factor = phsp_factor
+        self.energy_dependent_width = energy_dependent_width
         self.form_factor = form_factor
 
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
         """Formulate a relativistic Breit-Wigner for this resonance."""
+        if self.energy_dependent_width:
+            expr, parameter_defaults = self.__energy_dependent_breit_wigner(
+                resonance, variable_pool
+            )
+        else:
+            expr, parameter_defaults = self.__simple_breit_wigner(
+                resonance, variable_pool
+            )
         if self.form_factor:
-            return self.__formulate_with_form_factor(resonance, variable_pool)
-        return self.__formulate(resonance, variable_pool)
+            form_factor, parameters = self.__create_form_factor(
+                resonance, variable_pool
+            )
+            parameter_defaults.update(parameters)
+            return form_factor * expr, parameter_defaults
+        return expr, parameter_defaults
 
     @staticmethod
-    def __formulate(
+    def __simple_breit_wigner(
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
         inv_mass = variable_pool.incoming_state_mass
@@ -161,7 +179,7 @@ class RelativisticBreitWignerBuilder:
         }
         return expression, parameter_defaults
 
-    def __formulate_with_form_factor(
+    def __energy_dependent_breit_wigner(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> "BuilderReturnType":
         if variable_pool.angular_momentum is None:
@@ -171,30 +189,70 @@ class RelativisticBreitWignerBuilder:
             )
 
         inv_mass = variable_pool.incoming_state_mass
-        res_identifier = resonance.latex if resonance.latex else resonance.name
-        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
-        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
-        product1_inv_mass = variable_pool.outgoing_state_mass1
-        product2_inv_mass = variable_pool.outgoing_state_mass2
+        m_a = variable_pool.outgoing_state_mass1
+        m_b = variable_pool.outgoing_state_mass2
         angular_momentum = variable_pool.angular_momentum
-        meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
+        res_mass, res_width, meson_radius = self.__create_symbols(resonance)
 
-        expression = relativistic_breit_wigner_with_ff(
-            s=inv_mass**2,
+        s = inv_mass**2
+        mass_dependent_width = EnergyDependentWidth(
+            s=s,
             mass0=res_mass,
             gamma0=res_width,
-            m_a=product1_inv_mass,
-            m_b=product2_inv_mass,
+            m_a=m_a,
+            m_b=m_b,
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
             phsp_factor=self.phsp_factor,
+        )
+        breit_wigner_expr = (res_mass * res_width) / (
+            res_mass**2 - s - mass_dependent_width * res_mass * sp.I
         )
         parameter_defaults = {
             res_mass: resonance.mass,
             res_width: resonance.width,
             meson_radius: 1,
         }
-        return expression, parameter_defaults
+        return breit_wigner_expr, parameter_defaults
+
+    def __create_form_factor(
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+    ) -> "BuilderReturnType":
+        if variable_pool.angular_momentum is None:
+            raise ValueError(
+                "Angular momentum is not defined but is required in the"
+                " form factor!"
+            )
+
+        inv_mass = variable_pool.incoming_state_mass
+        angular_momentum = variable_pool.angular_momentum
+        res_mass, res_width, meson_radius = self.__create_symbols(resonance)
+
+        q_squared = BreakupMomentumSquared(
+            s=inv_mass**2,
+            m_a=variable_pool.outgoing_state_mass1,
+            m_b=variable_pool.outgoing_state_mass2,
+        )
+        ff_squared = BlattWeisskopfSquared(
+            angular_momentum, z=q_squared * meson_radius**2
+        )
+        form_factor = sp.sqrt(ff_squared)
+        parameter_defaults = {
+            res_mass: resonance.mass,
+            res_width: resonance.width,
+            meson_radius: 1,
+        }
+        return form_factor, parameter_defaults
+
+    @staticmethod
+    def __create_symbols(
+        resonance: Particle,
+    ) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
+        res_identifier = resonance.latex if resonance.latex else resonance.name
+        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
+        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
+        meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
+        return res_mass, res_width, meson_radius
 
 
 create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
