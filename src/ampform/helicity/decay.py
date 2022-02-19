@@ -2,13 +2,13 @@
 
 from typing import Iterable, List, Tuple
 
-import attr
+from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
 from qrules.topology import Topology
 from qrules.transition import State, StateTransition
 
 
-@attr.frozen
+@frozen
 class StateWithID(State):
     """Extension of `~qrules.transition.State` that embeds the state ID."""
 
@@ -26,7 +26,7 @@ class StateWithID(State):
         )
 
 
-@attr.frozen
+@frozen
 class TwoBodyDecay:
     """Two-body sub-decay in a `~qrules.transition.StateTransition`.
 

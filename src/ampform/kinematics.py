@@ -6,9 +6,10 @@ import itertools
 import sys
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Set, Union
 
-import attr
+import attrs
 import sympy as sp
-from attr.validators import instance_of
+from attrs import define, field
+from attrs.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 from sympy.printing.latex import LatexPrinter
@@ -43,7 +44,7 @@ if TYPE_CHECKING:  # pragma: no cover
         from typing import TypeAlias
 
 
-@attr.s(on_setattr=attr.setters.frozen)
+@define(on_setattr=attrs.setters.frozen)
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
 
@@ -54,8 +55,8 @@ class HelicityAdapter:
     helicity angles (see :func:`.get_helicity_angle_label`).
     """
 
-    reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
-    registered_topologies: Set[Topology] = attr.ib(
+    reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
+    registered_topologies: Set[Topology] = field(
         factory=set, init=False, repr=False
     )
 
@@ -80,12 +81,6 @@ class HelicityAdapter:
 
     def register_topology(self, topology: Topology) -> None:
         assert_isobar_topology(topology)
-        if len(self.registered_topologies) == 0:
-            object.__setattr__(
-                self,
-                "final_state_ids",
-                tuple(sorted(topology.outgoing_edge_ids)),
-            )
         if len(topology.incoming_edge_ids) != 1:
             raise ValueError(
                 f"Topology has {len(topology.incoming_edge_ids)} incoming"
@@ -120,7 +115,7 @@ class HelicityAdapter:
             final_state_ids = topology.outgoing_edge_ids
             for permutation in itertools.permutations(final_state_ids):
                 id_mapping = dict(zip(topology.outgoing_edge_ids, permutation))
-                permuted_topology = attr.evolve(
+                permuted_topology = attrs.evolve(
                     topology,
                     edges={
                         id_mapping.get(i, i): edge
