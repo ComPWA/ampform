@@ -80,12 +80,6 @@ class HelicityAdapter:
 
     def register_topology(self, topology: Topology) -> None:
         assert_isobar_topology(topology)
-        if len(self.registered_topologies) == 0:
-            object.__setattr__(
-                self,
-                "final_state_ids",
-                tuple(sorted(topology.outgoing_edge_ids)),
-            )
         if len(topology.incoming_edge_ids) != 1:
             raise ValueError(
                 f"Topology has {len(topology.incoming_edge_ids)} incoming"
