@@ -3,9 +3,9 @@
 import sys
 from typing import Dict, Optional, Tuple
 
-import attr
 import sympy as sp
-from attr.validators import instance_of
+from attrs import field, frozen
+from attrs.validators import instance_of
 from qrules.particle import Particle
 
 from . import (
@@ -24,7 +24,7 @@ else:  # pragma: no cover
     from typing_extensions import Protocol
 
 
-@attr.frozen
+@frozen
 class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
@@ -34,12 +34,12 @@ class TwoBodyKinematicVariableSet:
     amplitude model.
     """
 
-    incoming_state_mass: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    outgoing_state_mass1: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    outgoing_state_mass2: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    helicity_theta: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    helicity_phi: sp.Symbol = attr.ib(validator=instance_of(sp.Symbol))
-    angular_momentum: Optional[int] = attr.ib(default=None)
+    incoming_state_mass: sp.Symbol = field(validator=instance_of(sp.Symbol))
+    outgoing_state_mass1: sp.Symbol = field(validator=instance_of(sp.Symbol))
+    outgoing_state_mass2: sp.Symbol = field(validator=instance_of(sp.Symbol))
+    helicity_theta: sp.Symbol = field(validator=instance_of(sp.Symbol))
+    helicity_phi: sp.Symbol = field(validator=instance_of(sp.Symbol))
+    angular_momentum: Optional[int] = field(default=None)
 
 
 BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]

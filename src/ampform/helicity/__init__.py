@@ -29,9 +29,9 @@ from typing import (
     ValuesView,
 )
 
-import attr
 import sympy as sp
-from attr.validators import instance_of
+from attrs import field, frozen
+from attrs.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
@@ -167,12 +167,10 @@ class ParameterValues(abc.Mapping):
         return self.__mapping.values()
 
 
-@attr.frozen
+@frozen
 class HelicityModel:  # noqa: R701
-    expression: sp.Expr = attr.ib(
-        validator=attr.validators.instance_of(sp.Expr)
-    )
-    parameter_defaults: ParameterValues = attr.ib(converter=ParameterValues)
+    expression: sp.Expr = field(validator=instance_of(sp.Expr))
+    parameter_defaults: ParameterValues = field(converter=ParameterValues)
     """A mapping of suggested parameter values.
 
     Keys are `~sympy.core.symbol.Symbol` instances from the main
@@ -181,7 +179,7 @@ class HelicityModel:  # noqa: R701
     sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values
     have been extracted from the input `~qrules.transition.ReactionInfo`.
     """
-    components: "OrderedDict[str, sp.Expr]" = attr.ib(
+    components: "OrderedDict[str, sp.Expr]" = field(
         converter=_order_component_mapping
     )
     """A mapping for identifying main components in the :attr:`expression`.
@@ -192,11 +190,11 @@ class HelicityModel:  # noqa: R701
     with `natural sort order
     <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
     """
-    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = attr.ib(
+    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
-    reaction_info: ReactionInfo = attr.ib(validator=instance_of(ReactionInfo))
+    reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
