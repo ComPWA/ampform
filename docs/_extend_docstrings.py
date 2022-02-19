@@ -11,7 +11,7 @@ import logging
 import textwrap
 from typing import Callable, Dict, Optional, Type, Union
 
-import attr
+import attrs
 
 # sphinx.ext.graphviz does not work well on RTD
 import graphviz
@@ -376,13 +376,13 @@ def __get_graphviz_state_transition_example(
         formalism=formalism,
     )
     transition = reaction.transitions[transition_number]
-    new_interaction = attr.evolve(
+    new_interaction = attrs.evolve(
         transition.interactions[0],
         parity_prefactor=None,
     )
     interactions = dict(transition.interactions)
     interactions[0] = new_interaction
-    transition = attr.evolve(transition, interactions=interactions)
+    transition = attrs.evolve(transition, interactions=interactions)
     dot = qrules.io.asdot(
         transition,
         render_initial_state_id=True,

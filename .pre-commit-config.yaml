@@ -184,5 +184,6 @@ repos:
           - --rcfile=.pylintrc
           - --score=no
         language: system
+        require_serial: true
         types:
           - python
