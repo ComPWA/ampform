@@ -12,10 +12,14 @@ jobs:
     steps:
       - name: Determine if week number is even
         run: |
-          WEEK_NUMBER=$(date +%U)
-          IS_EVEN_WEEK="$(($WEEK_NUMBER % 2 == 0))"
-          echo "This is week $WEEK_NUMBER. It even week: $IS_EVEN_WEEK"
-          echo ::set-output name=is-even-week::"$IS_EVEN_WEEK"
+          if [[ $GITHUB_EVENT_NAME == "workflow_dispatch" ]]; then
+            echo ::set-output name=is-even-week::"-1"
+          else
+            WEEK_NUMBER=$(date +"%-U")
+            IS_EVEN_WEEK="$(($WEEK_NUMBER % 2 == 0))"
+            echo "This is week $WEEK_NUMBER. Is even week: $IS_EVEN_WEEK"
+            echo ::set-output name=is-even-week::"$IS_EVEN_WEEK"
+          fi
         id: is-even-week
     outputs:
       is-even-week: ${{ steps.is-even-week.outputs.is-even-week }}
