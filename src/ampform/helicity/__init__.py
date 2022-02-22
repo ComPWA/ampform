@@ -30,7 +30,7 @@ from typing import (
 )
 
 import sympy as sp
-from attrs import field, frozen
+from attrs import define, field, frozen
 from attrs.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
@@ -237,6 +237,18 @@ class HelicityModel:  # noqa: R701
         )
 
 
+@define
+class _HelicityModelIngredients:
+    parameter_defaults: Dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    components: Dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
+
+    def reset(self) -> None:
+        self.parameter_defaults = {}
+        self.components = {}
+        self.kinematic_variables = {}
+
+
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     r"""Amplitude model generator for the helicity formalism.
 
@@ -267,8 +279,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
-        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
-        self.__components: Dict[str, sp.Expr] = {}
+        self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices: Dict[
             TwoBodyDecay, ResonanceDynamicsBuilder
         ] = {}
@@ -345,8 +356,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             )
 
     def formulate(self) -> HelicityModel:
-        self.__components = {}
-        self.__parameter_defaults = {}
+        self.__ingredients.reset()
         top_expression = self.__formulate_top_expression()
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
@@ -354,21 +364,21 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         }
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
-                mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
+                symbol = sp.Symbol(f"m_{state_id}", real=True)
                 particle = self.__reaction.final_state[state_id]
-                self.__parameter_defaults[mass_symbol] = particle.mass
-                del kinematic_variables[mass_symbol]
+                self.__ingredients.parameter_defaults[symbol] = particle.mass
+                del kinematic_variables[symbol]
         if self.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.__reaction.final_state)))
-            mass_symbol = sp.Symbol(f"m_{subscript}", real=True)
+            symbol = sp.Symbol(f"m_{subscript}", real=True)
             particle = self.__reaction.initial_state[-1]
-            self.__parameter_defaults[mass_symbol] = particle.mass
-            del kinematic_variables[mass_symbol]
+            self.__ingredients.parameter_defaults[symbol] = particle.mass
+            del kinematic_variables[symbol]
 
         return HelicityModel(
             expression=top_expression,
-            components=self.__components,
-            parameter_defaults=self.__parameter_defaults,
+            components=self.__ingredients.components,
+            parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
             reaction_info=self.__reaction,
         )
@@ -407,9 +417,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
         amplitude_sum = sum(sequential_expressions)
-        coherent_intensity = abs(amplitude_sum) ** 2
-        self.__components[Rf"I_{{{graph_group_label}}}"] = coherent_intensity
-        return coherent_intensity
+        expression = abs(amplitude_sum) ** 2
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = expression
+        return expression
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -425,9 +436,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         expression = coefficient * sequential_amplitudes
         if prefactor is not None:
             expression = prefactor * expression
-        self.__components[
-            f"A_{{{self._name_generator.generate_amplitude_name(transition)}}}"
-        ] = expression
+        subscript = self._name_generator.generate_amplitude_name(transition)
+        self.__ingredients.components[f"A_{{{subscript}}}"] = expression
         return expression
 
     def _formulate_partial_decay(
@@ -448,15 +458,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         variable_set = _generate_kinematic_variable_set(transition, node_id)
         expression, parameters = builder(decay.parent.particle, variable_set)
         for par, value in parameters.items():
-            if par in self.__parameter_defaults:
-                previous_value = self.__parameter_defaults[par]
+            if par in self.__ingredients.parameter_defaults:
+                previous_value = self.__ingredients.parameter_defaults[par]
                 if value != previous_value:
                     logging.warning(
                         f'New default value {value} for parameter "{par.name}"'
                         " is inconsistent with existing value"
                         f" {previous_value}"
                     )
-            self.__parameter_defaults[par] = value
+            self.__ingredients.parameter_defaults[par] = value
 
         return expression
 
@@ -472,9 +482,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         suffix = self._name_generator.generate_sequential_amplitude_suffix(
             transition
         )
-        coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
-        self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
-        return coefficient_symbol
+        symbol = sp.Symbol(f"C_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
 
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
