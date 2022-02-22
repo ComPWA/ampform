@@ -69,6 +69,7 @@
     "*/.pydocstyle": true,
     ".constraints/*.txt": true
   },
+  "telemetry.telemetryLevel": "off",
   "yaml.schemas": {
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
