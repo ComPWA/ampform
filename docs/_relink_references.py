@@ -48,13 +48,11 @@ try:  # Sphinx >=4.4.0
         env: BuildEnvironment = None,
         suppress_prefix: bool = False,
     ) -> pending_xref:
-        """Convert a type string to a cross reference node."""
         reftype, target, title, refspecific = parse_reftarget(
             target, suppress_prefix
         )
         target = __TARGET_SUBSTITUTIONS.get(target, target)
         reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
-
         assert env is not None
         return pending_xref(
             "",
@@ -74,15 +72,8 @@ except ImportError:  # Sphinx <4.4.0
         suppress_prefix: bool = False,
     ) -> pending_xref:
         # pylint: disable=unused-argument
-        """Convert a type string to a cross reference node."""
-        if target == "None":
-            reftype = "obj"
-        else:
-            reftype = "class"
-
         target = __TARGET_SUBSTITUTIONS.get(target, target)
-        reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
-
+        reftype = __REF_TYPE_SUBSTITUTIONS.get(target, "class")
         assert env is not None
         return pending_xref(
             "",
