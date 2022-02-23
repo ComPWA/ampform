@@ -294,22 +294,21 @@ class DynamicsSelector(abc.Mapping):
 
     @assign.register(TwoBodyDecay)
     def _(
-        self, selection: TwoBodyDecay, builder: ResonanceDynamicsBuilder
+        self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder
     ) -> None:
-        self.__choices[selection] = builder
+        self.__choices[decay] = builder
 
     @assign.register(tuple)
     def _(
         self,
-        selection: Tuple[StateTransition, int],
+        transition_node: Tuple[StateTransition, int],
         builder: ResonanceDynamicsBuilder,
     ) -> None:
-        decay = TwoBodyDecay.create(selection)
+        decay = TwoBodyDecay.create(transition_node)
         return self.assign(decay, builder)
 
     @assign.register(str)
-    def _(self, selection: str, builder: ResonanceDynamicsBuilder) -> None:
-        particle_name = selection
+    def _(self, particle_name: str, builder: ResonanceDynamicsBuilder) -> None:
         found_particle = False
         for decay in self.__choices:
             decaying_particle = decay.parent.particle
@@ -322,10 +321,8 @@ class DynamicsSelector(abc.Mapping):
             )
 
     @assign.register(Particle)
-    def _(
-        self, selection: Particle, builder: ResonanceDynamicsBuilder
-    ) -> None:
-        return self.assign(selection.name, builder)
+    def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
+        return self.assign(particle.name, builder)
 
     def __getitem__(
         self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
