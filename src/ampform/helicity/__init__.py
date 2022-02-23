@@ -36,6 +36,7 @@ from attrs.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
+from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -313,6 +314,12 @@ class DynamicsSelector(abc.Mapping):
             logging.warning(
                 f'Model contains no resonance with name "{particle_name}"'
             )
+
+    @assign.register(Particle)
+    def _(
+        self, selection: Particle, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        return self.assign(selection.name, builder)
 
     def __getitem__(
         self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
