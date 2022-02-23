@@ -145,7 +145,10 @@ autodoc_default_options = {
             "evaluate",
             "is_commutative",
             "is_extended_real",
+            "items",
+            "keys",
             "precedence",
+            "values",
         ]
     ),
     "members": True,
