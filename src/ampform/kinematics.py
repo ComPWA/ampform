@@ -79,6 +79,7 @@ class HelicityAdapter:
         self.register_topology(topology)
 
     def register_topology(self, topology: Topology) -> None:
+        assert_isobar_topology(topology)
         if self.__topologies:
             existing = next(iter(self.__topologies))
             if topology.incoming_edge_ids != existing.incoming_edge_ids:
