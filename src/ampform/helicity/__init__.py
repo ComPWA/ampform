@@ -11,8 +11,9 @@ import logging
 import operator
 from collections import OrderedDict, abc
 from difflib import get_close_matches
-from functools import reduce
+from functools import reduce, singledispatchmethod
 from typing import (
+    Any,
     DefaultDict,
     Dict,
     ItemsView,
@@ -40,6 +41,7 @@ from qrules.transition import ReactionInfo, StateTransition
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
+    create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
 
@@ -251,6 +253,89 @@ class _HelicityModelIngredients:
         self.kinematic_variables = {}
 
 
+class DynamicsSelector(abc.Mapping):
+    """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
+
+    def __init__(
+        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+    ) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
+        self.__choices: Dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
+        for transition in transitions:
+            for node_id in transition.topology.nodes:
+                decay = TwoBodyDecay.from_transition(transition, node_id)
+                self.__choices[decay] = create_non_dynamic
+
+    @singledispatchmethod
+    def assign(
+        self, selection: Any, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
+
+        Currently, the following types of selections are implements:
+
+        - `str`: Select transition nodes by the name of the
+          `~.TwoBodyDecay.parent` `~qrules.particle.Particle`.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition`
+          with a node ID: set dynamics for one specific transition node.
+        """
+        raise NotImplementedError(
+            "Cannot set dynamics builder for selection type"
+            f" {type(selection).__name__}"
+        )
+
+    @assign.register(TwoBodyDecay)
+    def _(
+        self, selection: TwoBodyDecay, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        self.__choices[selection] = builder
+
+    @assign.register(tuple)
+    def _(
+        self,
+        selection: Tuple[StateTransition, int],
+        builder: ResonanceDynamicsBuilder,
+    ) -> None:
+        decay = TwoBodyDecay.create(selection)
+        return self.assign(decay, builder)
+
+    @assign.register(str)
+    def _(self, selection: str, builder: ResonanceDynamicsBuilder) -> None:
+        particle_name = selection
+        found_particle = False
+        for decay in self.__choices:
+            decaying_particle = decay.parent.particle
+            if decaying_particle.name == particle_name:
+                self.__choices[decay] = builder
+                found_particle = True
+        if not found_particle:
+            logging.warning(
+                f'Model contains no resonance with name "{particle_name}"'
+            )
+
+    def __getitem__(
+        self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
+    ) -> ResonanceDynamicsBuilder:
+        __k = TwoBodyDecay.create(__k)
+        return self.__choices[__k]
+
+    def __len__(self) -> int:
+        return len(self.__choices)
+
+    def __iter__(self) -> Iterator[TwoBodyDecay]:
+        return iter(self.__choices)
+
+    def items(self) -> ItemsView[TwoBodyDecay, ResonanceDynamicsBuilder]:
+        return self.__choices.items()
+
+    def keys(self) -> KeysView[TwoBodyDecay]:
+        return self.__choices.keys()
+
+    def values(self) -> ValuesView[ResonanceDynamicsBuilder]:
+        return self.__choices.values()
+
+
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     r"""Amplitude model generator for the helicity formalism.
 
@@ -279,18 +364,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         stable_final_state_ids: Optional[Iterable[int]] = None,
         scalar_initial_state_mass: bool = False,
     ) -> None:
-        self._name_generator = HelicityAmplitudeNameGenerator()
-        self.__reaction = reaction
-        self.__ingredients = _HelicityModelIngredients()
-        self.__dynamics_choices: Dict[
-            TwoBodyDecay, ResonanceDynamicsBuilder
-        ] = {}
-
         if len(reaction.transitions) < 1:
             raise ValueError(
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
+        self._name_generator = HelicityAmplitudeNameGenerator()
+        self.__reaction = reaction
+        self.__ingredients = _HelicityModelIngredients()
+        self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
@@ -301,6 +383,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def adapter(self) -> HelicityAdapter:
         """Converter for computing kinematic variables from four-momenta."""
         return self.__adapter
+
+    @property
+    def dynamics_choices(self) -> DynamicsSelector:
+        return self.__dynamics_choices
 
     @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
@@ -344,18 +430,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        found_particle = False
-        for transition in self.__reaction.transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                decaying_particle = decay.parent.particle
-                if decaying_particle.name == particle_name:
-                    self.__dynamics_choices[decay] = dynamics_builder
-                    found_particle = True
-        if not found_particle:
-            logging.warning(
-                f'Model contains no resonance with name "{particle_name}"'
-            )
+        self.__dynamics_choices.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()

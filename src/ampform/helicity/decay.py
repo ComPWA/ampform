@@ -1,6 +1,7 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
-from typing import Iterable, List, Tuple
+from functools import singledispatch
+from typing import Any, Iterable, List, Tuple
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -47,6 +48,16 @@ class TwoBodyDecay:
     children: Tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
 
+    @staticmethod
+    def create(obj: Any) -> "TwoBodyDecay":
+        """Create a `TwoBodyDecay` instance from an arbitrary object.
+
+        More implementations of :meth:`create` can be implemented with
+        :func:`@ampform.helicity.decay._create_two_body_decay.register(TYPE)
+        <functools.singledispatch>`.
+        """
+        return _create_two_body_decay(obj)
+
     @classmethod
     def from_transition(
         cls, transition: StateTransition, node_id: int
@@ -78,6 +89,28 @@ class TwoBodyDecay:
             ),
             interaction=transition.interactions[node_id],
         )
+
+
+@singledispatch
+def _create_two_body_decay(obj: Any) -> TwoBodyDecay:
+    raise NotImplementedError(
+        f"Cannot create a {TwoBodyDecay.__name__} from a {type(obj).__name__}"
+    )
+
+
+@_create_two_body_decay.register(TwoBodyDecay)
+def _(obj: TwoBodyDecay) -> TwoBodyDecay:
+    return obj
+
+
+@_create_two_body_decay.register(tuple)
+def _(obj: tuple) -> TwoBodyDecay:
+    if len(obj) == 2:
+        if isinstance(obj[0], StateTransition) and isinstance(obj[1], int):
+            return TwoBodyDecay.from_transition(*obj)
+    raise NotImplementedError(
+        f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
+    )
 
 
 def get_helicity_info(
