@@ -9,9 +9,10 @@
 import collections
 import logging
 import operator
+import sys
 from collections import OrderedDict, abc
 from difflib import get_close_matches
-from functools import reduce, singledispatchmethod
+from functools import reduce
 from typing import (
     Any,
     DefaultDict,
@@ -54,6 +55,11 @@ from .naming import (
     get_helicity_angle_label,
     natural_sorting,
 )
+
+if sys.version_info >= (3, 8):
+    from functools import singledispatchmethod
+else:
+    from singledispatchmethod import singledispatchmethod
 
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
