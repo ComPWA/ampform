@@ -63,6 +63,8 @@ class SliderKwargs(abc.Mapping):
     Sliders can be defined in :func:`~mpl_interactions.pyplot.interactive_plot`
     through :term:`kwargs <python:keyword argument>`. This wrapper class can be
     used for that.
+
+    .. automethod:: __getitem__
     """
 
     def __init__(
