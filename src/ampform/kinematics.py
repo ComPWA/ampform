@@ -4,12 +4,22 @@
 
 import itertools
 import sys
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Set, Union
+from collections import abc
+from functools import singledispatch
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    FrozenSet,
+    Iterable,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+)
 
 import attrs
 import sympy as sp
-from attrs import define, field
-from attrs.validators import instance_of
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 from sympy.printing.latex import LatexPrinter
@@ -44,7 +54,6 @@ if TYPE_CHECKING:  # pragma: no cover
         from typing import TypeAlias
 
 
-@define(on_setattr=attrs.setters.frozen)
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
 
@@ -55,63 +64,43 @@ class HelicityAdapter:
     helicity angles (see :func:`.get_helicity_angle_label`).
     """
 
-    reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
-    registered_topologies: Set[Topology] = field(
-        factory=set, init=False, repr=False
-    )
+    def __init__(
+        self,
+        transitions: Union[
+            ReactionInfo, Iterable[Union[Topology, StateTransition]]
+        ],
+    ) -> None:
+        self.__topologies = _extract_topologies(transitions)
+        for topology in self.__topologies:
+            assert_isobar_topology(topology)
 
     def register_transition(self, transition: StateTransition) -> None:
-        if set(self.reaction_info.initial_state) != set(
-            transition.initial_states
-        ):
-            raise ValueError("Transition has mismatching initial state IDs")
-        if set(self.reaction_info.final_state) != set(transition.final_states):
-            raise ValueError("Transition has mismatching final state IDs")
-        for state_id in self.reaction_info.final_state:
-            particle = self.reaction_info.initial_state[state_id]
-            state = transition.initial_states[state_id]
-            if particle != state.particle:
-                raise ValueError(
-                    "Transition has different initial particle at"
-                    f" {state_id}.",
-                    f" Expecting: {particle.name}"
-                    f" In added transition: {state.particle.name}",
-                )
-        self.register_topology(transition.topology)
+        topology = _get_topology(transition)
+        self.register_topology(topology)
 
     def register_topology(self, topology: Topology) -> None:
-        assert_isobar_topology(topology)
-        if len(topology.incoming_edge_ids) != 1:
-            raise ValueError(
-                f"Topology has {len(topology.incoming_edge_ids)} incoming"
-                " edges, so is not isobar"
-            )
-        if len(self.registered_topologies) != 0:
-            existing_topology = next(iter(self.registered_topologies))
-            if (
-                (
-                    topology.incoming_edge_ids
-                    != existing_topology.incoming_edge_ids
+        if self.__topologies:
+            existing = next(iter(self.__topologies))
+            if topology.incoming_edge_ids != existing.incoming_edge_ids:
+                raise ValueError(
+                    "Initial state ID mismatch those of existing topologies"
                 )
-                or (
-                    topology.outgoing_edge_ids
-                    != existing_topology.outgoing_edge_ids
+            if topology.outgoing_edge_ids != existing.outgoing_edge_ids:
+                raise ValueError(
+                    "Final state IDs mismatch those of existing topologies"
                 )
-                or (
-                    topology.outgoing_edge_ids
-                    != existing_topology.outgoing_edge_ids
-                )
-                or (topology.nodes != existing_topology.nodes)
-            ):
-                raise ValueError("Edge or node IDs of topology do not match")
-        self.registered_topologies.add(topology)
+        self.__topologies.add(topology)
+
+    @property
+    def registered_topologies(self) -> FrozenSet[Topology]:
+        return frozenset(self.__topologies)
 
     def permutate_registered_topologies(self) -> None:
-        """Register permutations of all `registered_topologies`.
+        """Register outgoing edge permutations of all `registered_topologies`.
 
         See :ref:`usage/amplitude:Extend kinematic variables`.
         """
-        for topology in set(self.registered_topologies):
+        for topology in set(self.__topologies):
             final_state_ids = topology.outgoing_edge_ids
             for permutation in itertools.permutations(final_state_ids):
                 id_mapping = dict(zip(topology.outgoing_edge_ids, permutation))
@@ -122,15 +111,49 @@ class HelicityAdapter:
                         for i, edge in topology.edges.items()
                     },
                 )
-                self.register_topology(permuted_topology)
+                self.__topologies.add(permuted_topology)
 
     def create_expressions(self) -> Dict[str, sp.Expr]:
         output = {}
-        for topology in self.registered_topologies:
+        for topology in self.__topologies:
             four_momenta = create_four_momentum_symbols(topology)
             output.update(compute_helicity_angles(four_momenta, topology))
             output.update(compute_invariant_masses(four_momenta, topology))
         return output
+
+
+@singledispatch
+def _extract_topologies(
+    obj: Union[ReactionInfo, Iterable[Union[Topology, StateTransition]]]
+) -> Set[Topology]:
+    raise TypeError(f"Cannot extract topologies from a {type(obj).__name__}")
+
+
+@_extract_topologies.register(ReactionInfo)
+def _(transitions: ReactionInfo) -> Set[Topology]:
+    return _extract_topologies(transitions.transitions)
+
+
+@_extract_topologies.register(abc.Iterable)
+def _(transitions: abc.Iterable) -> Set[Topology]:
+    return {_get_topology(t) for t in transitions}
+
+
+@singledispatch
+def _get_topology(obj: Any) -> Topology:
+    raise TypeError(
+        f"Cannot create a {Topology.__name__} from a {type(obj).__name__}"
+    )
+
+
+@_get_topology.register(Topology)
+def _(obj: Topology) -> Topology:
+    return obj
+
+
+@_get_topology.register(StateTransition)
+def _(obj: StateTransition) -> Topology:
+    return obj.topology
 
 
 def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
