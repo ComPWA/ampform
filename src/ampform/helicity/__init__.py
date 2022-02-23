@@ -386,8 +386,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__adapter = HelicityAdapter(reaction)
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
-        for grouping in reaction.transition_groups:
-            self.__adapter.register_topology(grouping.topology)
 
     @property
     def adapter(self) -> HelicityAdapter:
