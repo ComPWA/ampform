@@ -97,6 +97,8 @@ class ParameterValues(abc.Mapping):
     >>> parameters[2] = 3.14
     >>> parameters[c]
     3.14
+
+    .. automethod:: __getitem__
     """
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
