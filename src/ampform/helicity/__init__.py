@@ -9,10 +9,12 @@
 import collections
 import logging
 import operator
+import sys
 from collections import OrderedDict, abc
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
+    Any,
     DefaultDict,
     Dict,
     ItemsView,
@@ -30,16 +32,18 @@ from typing import (
 )
 
 import sympy as sp
-from attrs import field, frozen
+from attrs import define, field, frozen
 from attrs.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
+from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
+    create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
 
@@ -51,6 +55,11 @@ from .naming import (
     get_helicity_angle_label,
     natural_sorting,
 )
+
+if sys.version_info >= (3, 8):
+    from functools import singledispatchmethod
+else:
+    from singledispatchmethod import singledispatchmethod
 
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
@@ -97,6 +106,8 @@ class ParameterValues(abc.Mapping):
     >>> parameters[2] = 3.14
     >>> parameters[c]
     3.14
+
+    .. automethod:: __getitem__
     """
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
@@ -237,6 +248,104 @@ class HelicityModel:  # noqa: R701
         )
 
 
+@define
+class _HelicityModelIngredients:
+    parameter_defaults: Dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    components: Dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
+
+    def reset(self) -> None:
+        self.parameter_defaults = {}
+        self.components = {}
+        self.kinematic_variables = {}
+
+
+class DynamicsSelector(abc.Mapping):
+    """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
+
+    def __init__(
+        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+    ) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
+        self.__choices: Dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
+        for transition in transitions:
+            for node_id in transition.topology.nodes:
+                decay = TwoBodyDecay.from_transition(transition, node_id)
+                self.__choices[decay] = create_non_dynamic
+
+    @singledispatchmethod
+    def assign(
+        self, selection: Any, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
+
+        Currently, the following types of selections are implements:
+
+        - `str`: Select transition nodes by the name of the
+          `~.TwoBodyDecay.parent` `~qrules.particle.Particle`.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition`
+          with a node ID: set dynamics for one specific transition node.
+        """
+        raise NotImplementedError(
+            "Cannot set dynamics builder for selection type"
+            f" {type(selection).__name__}"
+        )
+
+    @assign.register(TwoBodyDecay)
+    def _(
+        self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        self.__choices[decay] = builder
+
+    @assign.register(tuple)
+    def _(
+        self,
+        transition_node: Tuple[StateTransition, int],
+        builder: ResonanceDynamicsBuilder,
+    ) -> None:
+        decay = TwoBodyDecay.create(transition_node)
+        return self.assign(decay, builder)
+
+    @assign.register(str)
+    def _(self, particle_name: str, builder: ResonanceDynamicsBuilder) -> None:
+        found_particle = False
+        for decay in self.__choices:
+            decaying_particle = decay.parent.particle
+            if decaying_particle.name == particle_name:
+                self.__choices[decay] = builder
+                found_particle = True
+        if not found_particle:
+            logging.warning(
+                f'Model contains no resonance with name "{particle_name}"'
+            )
+
+    @assign.register(Particle)
+    def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
+        return self.assign(particle.name, builder)
+
+    def __getitem__(
+        self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
+    ) -> ResonanceDynamicsBuilder:
+        __k = TwoBodyDecay.create(__k)
+        return self.__choices[__k]
+
+    def __len__(self) -> int:
+        return len(self.__choices)
+
+    def __iter__(self) -> Iterator[TwoBodyDecay]:
+        return iter(self.__choices)
+
+    def items(self) -> ItemsView[TwoBodyDecay, ResonanceDynamicsBuilder]:
+        return self.__choices.items()
+
+    def keys(self) -> KeysView[TwoBodyDecay]:
+        return self.__choices.keys()
+
+    def values(self) -> ValuesView[ResonanceDynamicsBuilder]:
+        return self.__choices.values()
+
+
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     r"""Amplitude model generator for the helicity formalism.
 
@@ -265,19 +374,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         stable_final_state_ids: Optional[Iterable[int]] = None,
         scalar_initial_state_mass: bool = False,
     ) -> None:
-        self._name_generator = HelicityAmplitudeNameGenerator()
-        self.__reaction = reaction
-        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
-        self.__components: Dict[str, sp.Expr] = {}
-        self.__dynamics_choices: Dict[
-            TwoBodyDecay, ResonanceDynamicsBuilder
-        ] = {}
-
         if len(reaction.transitions) < 1:
             raise ValueError(
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
+        self._name_generator = HelicityAmplitudeNameGenerator()
+        self.__reaction = reaction
+        self.__ingredients = _HelicityModelIngredients()
+        self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
@@ -288,6 +393,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def adapter(self) -> HelicityAdapter:
         """Converter for computing kinematic variables from four-momenta."""
         return self.__adapter
+
+    @property
+    def dynamics_choices(self) -> DynamicsSelector:
+        return self.__dynamics_choices
 
     @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
@@ -331,22 +440,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        found_particle = False
-        for transition in self.__reaction.transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                decaying_particle = decay.parent.particle
-                if decaying_particle.name == particle_name:
-                    self.__dynamics_choices[decay] = dynamics_builder
-                    found_particle = True
-        if not found_particle:
-            logging.warning(
-                f'Model contains no resonance with name "{particle_name}"'
-            )
+        self.__dynamics_choices.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
-        self.__components = {}
-        self.__parameter_defaults = {}
+        self.__ingredients.reset()
         top_expression = self.__formulate_top_expression()
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
@@ -354,21 +451,21 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         }
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
-                mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
+                symbol = sp.Symbol(f"m_{state_id}", real=True)
                 particle = self.__reaction.final_state[state_id]
-                self.__parameter_defaults[mass_symbol] = particle.mass
-                del kinematic_variables[mass_symbol]
+                self.__ingredients.parameter_defaults[symbol] = particle.mass
+                del kinematic_variables[symbol]
         if self.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.__reaction.final_state)))
-            mass_symbol = sp.Symbol(f"m_{subscript}", real=True)
+            symbol = sp.Symbol(f"m_{subscript}", real=True)
             particle = self.__reaction.initial_state[-1]
-            self.__parameter_defaults[mass_symbol] = particle.mass
-            del kinematic_variables[mass_symbol]
+            self.__ingredients.parameter_defaults[symbol] = particle.mass
+            del kinematic_variables[symbol]
 
         return HelicityModel(
             expression=top_expression,
-            components=self.__components,
-            parameter_defaults=self.__parameter_defaults,
+            components=self.__ingredients.components,
+            parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
             reaction_info=self.__reaction,
         )
@@ -407,9 +504,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
         amplitude_sum = sum(sequential_expressions)
-        coherent_intensity = abs(amplitude_sum) ** 2
-        self.__components[Rf"I_{{{graph_group_label}}}"] = coherent_intensity
-        return coherent_intensity
+        expression = abs(amplitude_sum) ** 2
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = expression
+        return expression
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -425,9 +523,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         expression = coefficient * sequential_amplitudes
         if prefactor is not None:
             expression = prefactor * expression
-        self.__components[
-            f"A_{{{self._name_generator.generate_amplitude_name(transition)}}}"
-        ] = expression
+        subscript = self._name_generator.generate_amplitude_name(transition)
+        self.__ingredients.components[f"A_{{{subscript}}}"] = expression
         return expression
 
     def _formulate_partial_decay(
@@ -448,15 +545,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         variable_set = _generate_kinematic_variable_set(transition, node_id)
         expression, parameters = builder(decay.parent.particle, variable_set)
         for par, value in parameters.items():
-            if par in self.__parameter_defaults:
-                previous_value = self.__parameter_defaults[par]
+            if par in self.__ingredients.parameter_defaults:
+                previous_value = self.__ingredients.parameter_defaults[par]
                 if value != previous_value:
                     logging.warning(
                         f'New default value {value} for parameter "{par.name}"'
                         " is inconsistent with existing value"
                         f" {previous_value}"
                     )
-            self.__parameter_defaults[par] = value
+            self.__ingredients.parameter_defaults[par] = value
 
         return expression
 
@@ -472,9 +569,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         suffix = self._name_generator.generate_sequential_amplitude_suffix(
             transition
         )
-        coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
-        self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
-        return coefficient_symbol
+        symbol = sp.Symbol(f"C_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
 
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
