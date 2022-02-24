@@ -112,18 +112,18 @@ class ParameterValues(abc.Mapping):
     """
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__mapping = _order_symbol_mapping(mapping)
+        self.__parameters = _order_symbol_mapping(mapping)
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> ParameterValue:
         if isinstance(key, sp.Symbol):
-            return self.__mapping[key]
+            return self.__parameters[key]
         if isinstance(key, str):
-            for symbol, value in self.__mapping.items():
+            for symbol, value in self.__parameters.items():
                 if symbol.name == key:
                     return value
             raise KeyError(f'No parameter available with name "{key}"')
         if isinstance(key, int):
-            for i, value in enumerate(self.__mapping.values()):
+            for i, value in enumerate(self.__parameters.values()):
                 if i == key:
                     return value
             raise KeyError(
@@ -142,18 +142,18 @@ class ParameterValues(abc.Mapping):
         except KeyError as e:
             raise KeyError("Not allowed to define new items") from e
         if isinstance(key, sp.Symbol):
-            self.__mapping[key] = value
+            self.__parameters[key] = value
             return
         if isinstance(key, str):
-            for symbol in self.__mapping:
+            for symbol in self.__parameters:
                 if symbol.name == key:
-                    self.__mapping[symbol] = value
+                    self.__parameters[symbol] = value
                     return
             raise KeyError(f'No parameter available with name "{key}"')
         if isinstance(key, int):
-            for i, symbol in enumerate(self.__mapping):
+            for i, symbol in enumerate(self.__parameters):
                 if i == key:
-                    self.__mapping[symbol] = value
+                    self.__parameters[symbol] = value
                     return
             raise KeyError(
                 f"Parameter mapping has {len(self)} keys, but trying to"
@@ -164,19 +164,19 @@ class ParameterValues(abc.Mapping):
         )
 
     def __len__(self) -> int:
-        return len(self.__mapping)
+        return len(self.__parameters)
 
     def __iter__(self) -> Iterator[sp.Symbol]:
-        return iter(self.__mapping)
+        return iter(self.__parameters)
 
     def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
-        return self.__mapping.items()
+        return self.__parameters.items()
 
     def keys(self) -> KeysView[sp.Symbol]:
-        return self.__mapping.keys()
+        return self.__parameters.keys()
 
     def values(self) -> ValuesView[ParameterValue]:
-        return self.__mapping.values()
+        return self.__parameters.values()
 
 
 @frozen
