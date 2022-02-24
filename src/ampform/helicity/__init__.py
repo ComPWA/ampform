@@ -89,12 +89,12 @@ class ParameterValues(abc.Mapping):
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
         self.__parameters = dict(mapping)
 
-    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> ParameterValue:
+    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
         par = self._get_parameter(key)
         return self.__parameters[par]
 
     def __setitem__(
-        self, key: Union[sp.Symbol, int, str], value: ParameterValue
+        self, key: Union[sp.Symbol, int, str], value: "ParameterValue"
     ) -> None:
         par = self._get_parameter(key)
         self.__parameters[par] = value
