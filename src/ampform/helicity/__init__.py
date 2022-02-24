@@ -31,6 +31,7 @@ from typing import (
     ValuesView,
 )
 
+import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
@@ -216,6 +217,59 @@ class HelicityModel:  # noqa: R701
     )
     """Expressions for converting four-momenta to kinematic variables."""
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
+
+    def rename_symbols(  # noqa: R701
+        self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
+    ) -> "HelicityModel":
+        """Rename certain symbols in the model.
+
+        Renames all `~sympy.core.symbol.Symbol` instance that appear in
+        `expression`, `parameter_defaults`, `components`, and
+        `kinematic_variables`. This method can be used to :ref:`couple
+        parameters <usage/modify:Couple parameters>`.
+
+        Args:
+            renames: A mapping from old to new names.
+
+        Returns:
+            A **new** instance of a `HelicityModel` with symbols in all
+            attributes renamed accordingly.
+        """
+        renames = dict(renames)
+        symbols = self.__collect_symbols()
+        symbol_names = {s.name for s in symbols}
+        for name in renames:
+            if name not in symbol_names:
+                logging.warning(f"There is no symbol with name {name}")
+        symbol_mapping = {
+            s: sp.Symbol(renames[s.name], **s.assumptions0)
+            if s.name in renames
+            else s
+            for s in symbols
+        }
+        return attrs.evolve(
+            self,
+            expression=self.expression.xreplace(symbol_mapping),
+            parameter_defaults={
+                symbol_mapping[par]: value
+                for par, value in self.parameter_defaults.items()
+            },
+            components={
+                name: expr.xreplace(symbol_mapping)
+                for name, expr in self.components.items()
+            },
+            kinematic_variables={
+                symbol_mapping[var]: expr.xreplace(symbol_mapping)
+                for var, expr in self.kinematic_variables.items()
+            },
+        )
+
+    def __collect_symbols(self) -> Set[sp.Symbol]:
+        symbols: Set[sp.Symbol] = self.expression.free_symbols
+        symbols |= set(self.kinematic_variables)
+        for expr in self.kinematic_variables.values():
+            symbols |= expr.free_symbols
+        return symbols
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
