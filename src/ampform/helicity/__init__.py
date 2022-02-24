@@ -30,6 +30,7 @@ from typing import (
     ValuesView,
 )
 
+import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
@@ -166,17 +167,40 @@ def _order_symbol_mapping(
     )
 
 
+def _order_amplitudes(
+    mapping: Mapping[sp.Indexed, sp.Expr]
+) -> "OrderedDict[str,  sp.Expr]":
+    return collections.OrderedDict(
+        [
+            (key, mapping[key])
+            for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
+        ]
+    )
+
+
 @frozen
 class HelicityModel:  # noqa: R701
-    expression: sp.Expr = field(validator=instance_of(sp.Expr))
+    intensity: sp.Expr = field(validator=instance_of(sp.Expr))
+    """Main expression describing the intensity over `kinematic_variables`."""
     parameter_defaults: ParameterValues = field(converter=ParameterValues)
     """A mapping of suggested parameter values.
 
     Keys are `~sympy.core.symbol.Symbol` instances from the main
     :attr:`expression` that should be interpreted as parameters (as opposed to
-    variables). The symbols are ordered alphabetically by name with `natural
-    sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values
-    have been extracted from the input `~qrules.transition.ReactionInfo`.
+    `kinematic_variables`). The symbols are ordered alphabetically by name with
+    natural sort order (:func:`.natural_sorting`). Values have been extracted
+    from the input `~qrules.transition.ReactionInfo`.
+    """
+    amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
+        converter=_order_amplitudes
+    )
+    """Definitions for the amplitudes that appear in `intensity`.
+
+    The main `intensity` is a sum over amplitudes for each initial and final
+    state helicity combination. These amplitudes are indicated with as
+    `sp.Indexed <sympy.tensor.indexed.Indexed>` instances and this attribute
+    provides the definitions for each of these. See also :ref:`TR-014
+    <compwa-org:tr-014-solution-2>`.
     """
     components: "OrderedDict[str, sp.Expr]" = field(
         converter=_order_component_mapping
@@ -186,14 +210,22 @@ class HelicityModel:  # noqa: R701
     Keys are the component names (`str`), formatted as LaTeX, and values are
     sub-expressions in the main :attr:`expression`. The mapping is an
     `~collections.OrderedDict` that orders the component names alphabetically
-    with `natural sort order
-    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+    with natural sort order (:func:`.natural_sorting`).
     """
     kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
+
+    @property
+    def expression(self) -> sp.Expr:
+        """Expression for the `intensity` with all amplitudes fully expressed.
+
+        Constructed from `intensity` by substituting its amplitude symbols with
+        the definitions with `amplitudes`.
+        """
+        return self.intensity.xreplace(self.amplitudes)
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
@@ -203,13 +235,11 @@ class HelicityModel:  # noqa: R701
         for component in components:
             if component not in self.components:
                 first_letter = component[0]
+                # pylint: disable=cell-var-from-loop
                 candidates = get_close_matches(
                     component,
                     filter(
-                        lambda c: c.startswith(
-                            first_letter  # pylint: disable=cell-var-from-loop
-                        ),
-                        self.components,
+                        lambda c: c.startswith(first_letter), self.components
                     ),
                 )
                 raise KeyError(
@@ -239,11 +269,21 @@ class HelicityModel:  # noqa: R701
 @define
 class _HelicityModelIngredients:
     parameter_defaults: Dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    amplitudes: Dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: Dict[str, sp.Expr] = field(factory=dict)
     kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
+    amplitude_base: sp.IndexedBase = field(
+        init=False, on_setattr=attrs.setters.frozen, repr=False
+    )
+
+    def __attrs_post_init__(self) -> None:
+        # https://www.attrs.org/en/stable/init.html#post-init
+        base = sp.IndexedBase("A", complex=True)
+        object.__setattr__(self, "amplitude_base", base)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
+        self.amplitudes = {}
         self.components = {}
         self.kinematic_variables = {}
 
@@ -430,7 +470,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
-        top_expression = self.__formulate_top_expression()
+        main_expression = self.__formulate_top_expression()
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
@@ -449,7 +489,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             del kinematic_variables[symbol]
 
         return HelicityModel(
-            expression=top_expression,
+            intensity=main_expression,
+            amplitudes=self.__ingredients.amplitudes,
             components=self.__ingredients.components,
             parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
@@ -477,23 +518,31 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_coherent_intensity(
         self, transition_group: List[StateTransition]
     ) -> sp.Expr:
-        graph_group_label = generate_transition_label(transition_group[0])
+        transition = transition_group[0]
+        graph_group_label = generate_transition_label(transition)
         sequential_expressions: List[sp.Expr] = []
-        for transition in transition_group:
+        for group in transition_group:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
-                    transition.to_graph()
+                    group.to_graph()
                 )
             )
             for graph in sequential_graphs:
                 transition = StateTransition.from_graph(graph)
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
+        outer_state_ids = list(transition.initial_states)
+        outer_state_ids += sorted(transition.final_states)
+        helicities = tuple(
+            sp.Rational(transition.states[i].spin_projection)
+            for i in outer_state_ids
+        )
+        amplitude_symbol = self.__ingredients.amplitude_base[helicities]
         amplitude_sum = sum(sequential_expressions)
-        expression = abs(amplitude_sum) ** 2
+        self.__ingredients.amplitudes[amplitude_symbol] = amplitude_sum
         component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = expression
-        return expression
+        self.__ingredients.components[component_name] = abs(amplitude_sum) ** 2
+        return abs(amplitude_symbol) ** 2
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
