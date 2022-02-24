@@ -21,6 +21,7 @@ __TARGET_SUBSTITUTIONS = {
     "ampform.helicity._T": "typing.TypeVar",
     "an object providing a view on D's values": "typing.ValuesView",
     "sp.Expr": "sympy.core.expr.Expr",
+    "sp.Indexed": "sympy.tensor.indexed.Indexed",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
     "typing_extensions.Protocol": "typing.Protocol",
