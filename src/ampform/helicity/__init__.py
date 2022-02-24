@@ -204,15 +204,6 @@ def _order_amplitudes(
 class HelicityModel:  # noqa: R701
     intensity: sp.Expr = field(validator=instance_of(sp.Expr))
     """Main expression describing the intensity over `kinematic_variables`."""
-    parameter_defaults: ParameterValues = field(converter=ParameterValues)
-    """A mapping of suggested parameter values.
-
-    Keys are `~sympy.core.symbol.Symbol` instances from the main
-    :attr:`expression` that should be interpreted as parameters (as opposed to
-    `kinematic_variables`). The symbols are ordered alphabetically by name with
-    natural sort order (:func:`.natural_sorting`). Values have been extracted
-    from the input `~qrules.transition.ReactionInfo`.
-    """
     amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
         converter=_order_amplitudes
     )
@@ -224,6 +215,19 @@ class HelicityModel:  # noqa: R701
     provides the definitions for each of these. See also :ref:`TR-014
     <compwa-org:tr-014-solution-2>`.
     """
+    parameter_defaults: ParameterValues = field(converter=ParameterValues)
+    """A mapping of suggested parameter values.
+
+    Keys are `~sympy.core.symbol.Symbol` instances from the main
+    :attr:`expression` that should be interpreted as parameters (as opposed to
+    `kinematic_variables`). The symbols are ordered alphabetically by name with
+    natural sort order (:func:`.natural_sorting`). Values have been extracted
+    from the input `~qrules.transition.ReactionInfo`.
+    """
+    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
+        converter=_order_symbol_mapping
+    )
+    """Expressions for converting four-momenta to kinematic variables."""
     components: "OrderedDict[str, sp.Expr]" = field(
         converter=_order_component_mapping
     )
@@ -234,10 +238,6 @@ class HelicityModel:  # noqa: R701
     `~collections.OrderedDict` that orders the component names alphabetically
     with natural sort order (:func:`.natural_sorting`).
     """
-    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
-        converter=_order_symbol_mapping
-    )
-    """Expressions for converting four-momenta to kinematic variables."""
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
 
     @property
@@ -570,9 +570,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return HelicityModel(
             intensity=main_expression,
             amplitudes=self.__ingredients.amplitudes,
-            components=self.__ingredients.components,
             parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
+            components=self.__ingredients.components,
             reaction_info=self.__reaction,
         )
 
