@@ -15,6 +15,7 @@ from collections import OrderedDict, abc
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
+    TYPE_CHECKING,
     Any,
     DefaultDict,
     Dict,
@@ -31,6 +32,7 @@ from typing import (
     ValuesView,
 )
 
+import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
@@ -63,6 +65,9 @@ if sys.version_info >= (3, 8):
 else:
     from singledispatchmethod import singledispatchmethod
 
+if TYPE_CHECKING:
+    from IPython.lib.pretty import PrettyPrinter
+
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
@@ -91,6 +96,24 @@ class ParameterValues(abc.Mapping):
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
         self.__parameters = dict(mapping)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.__parameters})"
+
+    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}({{"):
+                p.breakable()
+                for par, value in self.items():
+                    p.pretty(par)
+                    p.text(": ")
+                    p.pretty(value)
+                    p.text(",")
+                    p.breakable()
+            p.text("})")
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
         par = self._get_parameter(key)
@@ -212,6 +235,59 @@ class HelicityModel:  # noqa: R701
     )
     """Expressions for converting four-momenta to kinematic variables."""
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
+
+    def rename_symbols(  # noqa: R701
+        self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
+    ) -> "HelicityModel":
+        """Rename certain symbols in the model.
+
+        Renames all `~sympy.core.symbol.Symbol` instance that appear in
+        `expression`, `parameter_defaults`, `components`, and
+        `kinematic_variables`. This method can be used to :ref:`couple
+        parameters <usage/modify:Couple parameters>`.
+
+        Args:
+            renames: A mapping from old to new names.
+
+        Returns:
+            A **new** instance of a `HelicityModel` with symbols in all
+            attributes renamed accordingly.
+        """
+        renames = dict(renames)
+        symbols = self.__collect_symbols()
+        symbol_names = {s.name for s in symbols}
+        for name in renames:
+            if name not in symbol_names:
+                logging.warning(f"There is no symbol with name {name}")
+        symbol_mapping = {
+            s: sp.Symbol(renames[s.name], **s.assumptions0)
+            if s.name in renames
+            else s
+            for s in symbols
+        }
+        return attrs.evolve(
+            self,
+            expression=self.expression.xreplace(symbol_mapping),
+            parameter_defaults={
+                symbol_mapping[par]: value
+                for par, value in self.parameter_defaults.items()
+            },
+            components={
+                name: expr.xreplace(symbol_mapping)
+                for name, expr in self.components.items()
+            },
+            kinematic_variables={
+                symbol_mapping[var]: expr.xreplace(symbol_mapping)
+                for var, expr in self.kinematic_variables.items()
+            },
+        )
+
+    def __collect_symbols(self) -> Set[sp.Symbol]:
+        symbols: Set[sp.Symbol] = self.expression.free_symbols
+        symbols |= set(self.kinematic_variables)
+        for expr in self.kinematic_variables.values():
+            symbols |= expr.free_symbols
+        return symbols
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]

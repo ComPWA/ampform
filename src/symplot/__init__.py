@@ -142,13 +142,13 @@ class SliderKwargs(abc.Mapping):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}("
+            f"{type(self).__name__}("
             f"sliders={self._sliders}, "
             f"arg_to_symbol={self._arg_to_symbol})"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
-        class_name = self.__class__.__name__
+        class_name = type(self).__name__
         if cycle:
             p.text(f"{class_name}(...)")
         else:
