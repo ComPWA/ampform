@@ -26,7 +26,6 @@ from typing import (
     Optional,
     Set,
     Tuple,
-    TypeVar,
     Union,
     ValuesView,
 )
@@ -65,30 +64,6 @@ ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
 
-def _order_component_mapping(
-    mapping: Mapping[str, ParameterValue]
-) -> "OrderedDict[str, ParameterValue]":
-    return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
-    )
-
-
-_T = TypeVar("_T")
-
-
-def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, _T]  # type: ignore[valid-type]
-) -> "OrderedDict[sp.Symbol, _T]":
-    return collections.OrderedDict(
-        [
-            (symbol, mapping[symbol])
-            for symbol in sorted(
-                mapping, key=lambda s: natural_sorting(s.name)
-            )
-        ]
-    )
-
-
 class ParameterValues(abc.Mapping):
     """Ordered mapping to `ParameterValue` with convenient getter and setter.
 
@@ -112,7 +87,7 @@ class ParameterValues(abc.Mapping):
     """
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__parameters = _order_symbol_mapping(mapping)
+        self.__parameters = dict(mapping)
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> ParameterValue:
         par = self._get_parameter(key)
@@ -168,6 +143,27 @@ class ParameterValues(abc.Mapping):
 
     def values(self) -> ValuesView[ParameterValue]:
         return self.__parameters.values()
+
+
+def _order_component_mapping(
+    mapping: Mapping[str, sp.Expr]
+) -> "OrderedDict[str, sp.Expr]":
+    return collections.OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
+    )
+
+
+def _order_symbol_mapping(
+    mapping: Mapping[sp.Symbol, sp.Expr]
+) -> "OrderedDict[sp.Symbol, sp.Expr]":
+    return collections.OrderedDict(
+        [
+            (symbol, mapping[symbol])
+            for symbol in sorted(
+                mapping, key=lambda s: natural_sorting(s.name)
+            )
+        ]
+    )
 
 
 @frozen
