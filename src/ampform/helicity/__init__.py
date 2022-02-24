@@ -114,53 +114,53 @@ class ParameterValues(abc.Mapping):
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
         self.__mapping = _order_symbol_mapping(mapping)
 
-    def __getitem__(self, __k: Union[sp.Symbol, int, str]) -> ParameterValue:
-        if isinstance(__k, sp.Symbol):
-            return self.__mapping[__k]
-        if isinstance(__k, str):
+    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> ParameterValue:
+        if isinstance(key, sp.Symbol):
+            return self.__mapping[key]
+        if isinstance(key, str):
             for symbol, value in self.__mapping.items():
-                if symbol.name == __k:
+                if symbol.name == key:
                     return value
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
+            raise KeyError(f'No parameter available with name "{key}"')
+        if isinstance(key, int):
             for i, value in enumerate(self.__mapping.values()):
-                if i == __k:
+                if i == key:
                     return value
             raise KeyError(
                 f"Parameter mapping has {len(self)} keys, but trying to"
-                f" get item {__k}"
+                f" get item {key}"
             )
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot get parameter value for key type {type(__k).__name__}"
+            f"Cannot get parameter value for key type {type(key).__name__}"
         )
 
     def __setitem__(  # noqa: R701
-        self, __k: Union[sp.Symbol, int, str], __v: ParameterValue
+        self, key: Union[sp.Symbol, int, str], value: ParameterValue
     ) -> None:
         try:
-            self[__k]
+            self[key]
         except KeyError as e:
             raise KeyError("Not allowed to define new items") from e
-        if isinstance(__k, sp.Symbol):
-            self.__mapping[__k] = __v
+        if isinstance(key, sp.Symbol):
+            self.__mapping[key] = value
             return
-        if isinstance(__k, str):
+        if isinstance(key, str):
             for symbol in self.__mapping:
-                if symbol.name == __k:
-                    self.__mapping[symbol] = __v
+                if symbol.name == key:
+                    self.__mapping[symbol] = value
                     return
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
+            raise KeyError(f'No parameter available with name "{key}"')
+        if isinstance(key, int):
             for i, symbol in enumerate(self.__mapping):
-                if i == __k:
-                    self.__mapping[symbol] = __v
+                if i == key:
+                    self.__mapping[symbol] = value
                     return
             raise KeyError(
                 f"Parameter mapping has {len(self)} keys, but trying to"
-                f" set item {__k}"
+                f" set item {key}"
             )
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot set parameter value for key type {type(__k).__name__}"
+            f"Cannot set parameter value for key type {type(key).__name__}"
         )
 
     def __len__(self) -> int:
