@@ -14,6 +14,7 @@ from collections import OrderedDict, abc
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
+    TYPE_CHECKING,
     Any,
     DefaultDict,
     Dict,
@@ -60,6 +61,9 @@ if sys.version_info >= (3, 8):
 else:
     from singledispatchmethod import singledispatchmethod
 
+if TYPE_CHECKING:
+    from IPython.lib.pretty import PrettyPrinter
+
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
@@ -88,6 +92,24 @@ class ParameterValues(abc.Mapping):
 
     def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
         self.__parameters = dict(mapping)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.__parameters})"
+
+    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}({{"):
+                p.breakable()
+                for par, value in self.items():
+                    p.pretty(par)
+                    p.text(": ")
+                    p.pretty(value)
+                    p.text(",")
+                    p.breakable()
+            p.text("})")
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
         par = self._get_parameter(key)
