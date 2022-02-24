@@ -115,52 +115,43 @@ class ParameterValues(abc.Mapping):
         self.__parameters = _order_symbol_mapping(mapping)
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> ParameterValue:
-        if isinstance(key, sp.Symbol):
-            return self.__parameters[key]
-        if isinstance(key, str):
-            for symbol, value in self.__parameters.items():
-                if symbol.name == key:
-                    return value
-            raise KeyError(f'No parameter available with name "{key}"')
-        if isinstance(key, int):
-            for i, value in enumerate(self.__parameters.values()):
-                if i == key:
-                    return value
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" get item {key}"
-            )
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot get parameter value for key type {type(key).__name__}"
-        )
+        par = self._get_parameter(key)
+        return self.__parameters[par]
 
-    def __setitem__(  # noqa: R701
+    def __setitem__(
         self, key: Union[sp.Symbol, int, str], value: ParameterValue
     ) -> None:
-        try:
-            self[key]
-        except KeyError as e:
-            raise KeyError("Not allowed to define new items") from e
-        if isinstance(key, sp.Symbol):
-            self.__parameters[key] = value
-            return
-        if isinstance(key, str):
-            for symbol in self.__parameters:
-                if symbol.name == key:
-                    self.__parameters[symbol] = value
-                    return
-            raise KeyError(f'No parameter available with name "{key}"')
-        if isinstance(key, int):
-            for i, symbol in enumerate(self.__parameters):
-                if i == key:
-                    self.__parameters[symbol] = value
-                    return
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" set item {key}"
-            )
+        par = self._get_parameter(key)
+        self.__parameters[par] = value
+
+    @singledispatchmethod
+    def _get_parameter(self, key: Union[sp.Symbol, int, str]) -> sp.Symbol:
+        # pylint: disable=no-self-use
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot set parameter value for key type {type(key).__name__}"
+            f"Cannot find parameter for key type {type(key).__name__}"
+        )
+
+    @_get_parameter.register(sp.Symbol)
+    def _(self, par: sp.Symbol) -> sp.Symbol:
+        if par not in self.__parameters:
+            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+        return par
+
+    @_get_parameter.register(str)
+    def _(self, name: str) -> sp.Symbol:
+        for parameter in self.__parameters:
+            if parameter.name == name:
+                return parameter
+        raise KeyError(f"No parameter available with name {name}")
+
+    @_get_parameter.register(int)
+    def _(self, key: int) -> sp.Symbol:
+        for i, parameter in enumerate(self.__parameters):
+            if i == key:
+                return parameter
+        raise KeyError(
+            f"Parameter mapping has {len(self)} parameters, but trying to get"
+            f" parameter number {key}"
         )
 
     def __len__(self) -> int:
