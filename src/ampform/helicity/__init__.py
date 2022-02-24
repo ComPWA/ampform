@@ -27,7 +27,6 @@ from typing import (
     Optional,
     Set,
     Tuple,
-    TypeVar,
     Union,
     ValuesView,
 )
@@ -68,20 +67,98 @@ ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
 
+class ParameterValues(abc.Mapping):
+    """Ordered mapping to `ParameterValue` with convenient getter and setter.
+
+    >>> a, b, c = sp.symbols("a b c")
+    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
+    >>> parameters[a]
+    0.0
+    >>> parameters["b"]
+    (1+1j)
+    >>> parameters["b"] = 3
+    >>> parameters[1]
+    3
+    >>> parameters[2]
+    -2
+    >>> parameters[2] = 3.14
+    >>> parameters[c]
+    3.14
+
+    .. automethod:: __getitem__
+    .. automethod:: __setitem__
+    """
+
+    def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
+        self.__parameters = dict(mapping)
+
+    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
+        par = self._get_parameter(key)
+        return self.__parameters[par]
+
+    def __setitem__(
+        self, key: Union[sp.Symbol, int, str], value: "ParameterValue"
+    ) -> None:
+        par = self._get_parameter(key)
+        self.__parameters[par] = value
+
+    @singledispatchmethod
+    def _get_parameter(self, key: Union[sp.Symbol, int, str]) -> sp.Symbol:
+        # pylint: disable=no-self-use
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
+            f"Cannot find parameter for key type {type(key).__name__}"
+        )
+
+    @_get_parameter.register(sp.Symbol)
+    def _(self, par: sp.Symbol) -> sp.Symbol:
+        if par not in self.__parameters:
+            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+        return par
+
+    @_get_parameter.register(str)
+    def _(self, name: str) -> sp.Symbol:
+        for parameter in self.__parameters:
+            if parameter.name == name:
+                return parameter
+        raise KeyError(f"No parameter available with name {name}")
+
+    @_get_parameter.register(int)
+    def _(self, key: int) -> sp.Symbol:
+        for i, parameter in enumerate(self.__parameters):
+            if i == key:
+                return parameter
+        raise KeyError(
+            f"Parameter mapping has {len(self)} parameters, but trying to get"
+            f" parameter number {key}"
+        )
+
+    def __len__(self) -> int:
+        return len(self.__parameters)
+
+    def __iter__(self) -> Iterator[sp.Symbol]:
+        return iter(self.__parameters)
+
+    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
+        return self.__parameters.items()
+
+    def keys(self) -> KeysView[sp.Symbol]:
+        return self.__parameters.keys()
+
+    def values(self) -> ValuesView[ParameterValue]:
+        return self.__parameters.values()
+
+
 def _order_component_mapping(
-    mapping: Mapping[str, ParameterValue]
-) -> "OrderedDict[str, ParameterValue]":
+    mapping: Mapping[str, sp.Expr]
+) -> "OrderedDict[str, sp.Expr]":
     return collections.OrderedDict(
         [(key, mapping[key]) for key in sorted(mapping, key=_natural_sorting)]
     )
 
 
-_T = TypeVar("_T")
-
-
 def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, _T]  # type: ignore[valid-type]
-) -> "OrderedDict[sp.Symbol, _T]":
+    mapping: Mapping[sp.Symbol, sp.Expr]
+) -> "OrderedDict[sp.Symbol, sp.Expr]":
     return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
@@ -105,95 +182,6 @@ def __attempt_number_cast(text: str) -> Union[float, str]:
         return float(text)
     except ValueError:
         return text
-
-
-class ParameterValues(abc.Mapping):
-    """Ordered mapping to `ParameterValue` with convenient getter and setter.
-
-    >>> a, b, c = sp.symbols("a b c")
-    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
-    >>> parameters[a]
-    0.0
-    >>> parameters["b"]
-    (1+1j)
-    >>> parameters["b"] = 3
-    >>> parameters[1]
-    3
-    >>> parameters[2]
-    -2
-    >>> parameters[2] = 3.14
-    >>> parameters[c]
-    3.14
-
-    .. automethod:: __getitem__
-    """
-
-    def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__mapping = _order_symbol_mapping(mapping)
-
-    def __getitem__(self, __k: Union[sp.Symbol, int, str]) -> ParameterValue:
-        if isinstance(__k, sp.Symbol):
-            return self.__mapping[__k]
-        if isinstance(__k, str):
-            for symbol, value in self.__mapping.items():
-                if symbol.name == __k:
-                    return value
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
-            for i, value in enumerate(self.__mapping.values()):
-                if i == __k:
-                    return value
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" get item {__k}"
-            )
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot get parameter value for key type {type(__k).__name__}"
-        )
-
-    def __setitem__(  # noqa: R701
-        self, __k: Union[sp.Symbol, int, str], __v: ParameterValue
-    ) -> None:
-        try:
-            self[__k]
-        except KeyError as e:
-            raise KeyError("Not allowed to define new items") from e
-        if isinstance(__k, sp.Symbol):
-            self.__mapping[__k] = __v
-            return
-        if isinstance(__k, str):
-            for symbol in self.__mapping:
-                if symbol.name == __k:
-                    self.__mapping[symbol] = __v
-                    return
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
-            for i, symbol in enumerate(self.__mapping):
-                if i == __k:
-                    self.__mapping[symbol] = __v
-                    return
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" set item {__k}"
-            )
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot set parameter value for key type {type(__k).__name__}"
-        )
-
-    def __len__(self) -> int:
-        return len(self.__mapping)
-
-    def __iter__(self) -> Iterator[sp.Symbol]:
-        return iter(self.__mapping)
-
-    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
-        return self.__mapping.items()
-
-    def keys(self) -> KeysView[sp.Symbol]:
-        return self.__mapping.keys()
-
-    def values(self) -> ValuesView[ParameterValue]:
-        return self.__mapping.values()
 
 
 @frozen

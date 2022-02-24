@@ -29,6 +29,7 @@ __REF_TYPE_SUBSTITUTIONS = {
     "None": "obj",
     "ParameterValue": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
+    "ampform.helicity.ParameterValue": "obj",
     "ampform.kinematics.FourMomenta": "obj",
     "ampform.kinematics.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
