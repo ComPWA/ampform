@@ -87,8 +87,8 @@ class ParameterValues(abc.Mapping):
     .. automethod:: __setitem__
     """
 
-    def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__parameters = dict(mapping)
+    def __init__(self, parameters: Mapping[sp.Symbol, ParameterValue]) -> None:
+        self.__parameters = dict(parameters)
 
     def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
         par = self._get_parameter(key)
