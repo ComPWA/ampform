@@ -75,7 +75,6 @@ else:
 
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
-    from sympy.physics.quantum.spin import WignerD
 
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
@@ -990,7 +989,7 @@ def group_transitions(
 
 def formulate_spin_alignment(
     transition: StateTransition,
-) -> List[Tuple["WignerD", ...]]:
+) -> PoolSum:
     """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
 
     Generate all Wigner-:math:`D` function combinations that appear in
