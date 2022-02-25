@@ -256,7 +256,7 @@ class TestHelicityModel:
 
         model = builder.formulate()
         assert len(model.amplitudes) == len(helicity_combinations)
-        intensity_terms = model.intensity.args
+        intensity_terms = model.intensity.evaluate().args
         assert len(intensity_terms) == len(helicity_combinations)
 
 

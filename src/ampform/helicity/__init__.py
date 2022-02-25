@@ -13,7 +13,7 @@ import sys
 from collections import OrderedDict, abc
 from decimal import Decimal
 from difflib import get_close_matches
-from functools import reduce
+from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -214,7 +214,7 @@ def _order_amplitudes(
 
 @frozen
 class HelicityModel:  # noqa: R701
-    intensity: sp.Expr = field(validator=instance_of(sp.Expr))
+    intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
     amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
         converter=_order_amplitudes
@@ -259,7 +259,7 @@ class HelicityModel:  # noqa: R701
         Constructed from `intensity` by substituting its amplitude symbols with
         the definitions with `amplitudes`.
         """
-        return self.intensity.xreplace(self.amplitudes)
+        return self.intensity.evaluate().xreplace(self.amplitudes)
 
     def rename_symbols(  # noqa: R701
         self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
@@ -588,14 +588,25 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             reaction_info=self.__reaction,
         )
 
-    def __formulate_top_expression(self) -> sp.Expr:
+    def __formulate_top_expression(self) -> PoolSum:
         transition_groups = group_transitions(self.__reaction.transitions)
         self.__register_parameter_couplings(transition_groups)
-        coherent_intensities = [
-            self.__formulate_coherent_intensity(group)
-            for group in transition_groups
+        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        collected_helicities: Dict[sp.Symbol, Set[sp.Rational]] = {
+            _create_helicity_symbol(i): set() for i in outer_state_ids
+        }
+        for group in transition_groups:
+            amplitude = self.__formulate_main_amplitudes(group)
+            for state_id, helicity in zip(outer_state_ids, amplitude.indices):
+                symbol = _create_helicity_symbol(state_id)
+                collected_helicities[symbol].add(helicity)
+        helicity_symbols = list(collected_helicities)
+        amplitude_symbol = self.__ingredients.amplitude_base[helicity_symbols]
+        helicity_values = [
+            (symbol, sorted(values))
+            for symbol, values in collected_helicities.items()
         ]
-        return sum(coherent_intensities)
+        return PoolSum(abs(amplitude_symbol) ** 2, *helicity_values)
 
     def __register_parameter_couplings(
         self, transition_groups: List[List[StateTransition]]
@@ -606,9 +617,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     transition
                 )
 
-    def __formulate_coherent_intensity(
+    def __formulate_main_amplitudes(
         self, transition_group: List[StateTransition]
-    ) -> sp.Expr:
+    ) -> sp.Indexed:
         transition = transition_group[0]
         graph_group_label = generate_transition_label(transition)
         sequential_expressions: List[sp.Expr] = []
@@ -622,18 +633,17 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 transition = StateTransition.from_graph(graph)
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
-        outer_state_ids = list(transition.initial_states)
-        outer_state_ids += sorted(transition.final_states)
+        outer_state_ids = _get_outer_state_ids(transition)
         helicities = tuple(
             sp.Rational(transition.states[i].spin_projection)
             for i in outer_state_ids
         )
         amplitude_symbol = self.__ingredients.amplitude_base[helicities]
-        amplitude_sum = sum(sequential_expressions)
-        self.__ingredients.amplitudes[amplitude_symbol] = amplitude_sum
+        amplitude = sum(sequential_expressions)
         component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = abs(amplitude_sum) ** 2
-        return abs(amplitude_symbol) ** 2
+        self.__ingredients.amplitudes[amplitude_symbol] = amplitude
+        self.__ingredients.components[component_name] = abs(amplitude) ** 2
+        return amplitude_symbol
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -719,6 +729,35 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     if coefficient_suffix != raw_suffix:
                         return prefactor
         return None
+
+
+def _create_helicity_symbol(i: int) -> sp.Symbol:
+    if i == -1:  # initial state
+        name = "lambda"
+    else:
+        name = f"lambda{i}"
+    return sp.Symbol(name, rational=True)
+
+
+@singledispatch
+def _get_outer_state_ids(
+    obj: Union[ReactionInfo, StateTransition]
+) -> List[int]:
+    raise NotImplementedError(
+        f"Cannot get outer state IDs from a {type(obj).__name__}"
+    )
+
+
+@_get_outer_state_ids.register(StateTransition)
+def _(transition: StateTransition) -> List[int]:
+    outer_state_ids = list(transition.initial_states)
+    outer_state_ids += sorted(transition.final_states)
+    return outer_state_ids
+
+
+@_get_outer_state_ids.register(ReactionInfo)
+def _(reaction: ReactionInfo) -> List[int]:
+    return _get_outer_state_ids(reaction.transitions[0])
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
