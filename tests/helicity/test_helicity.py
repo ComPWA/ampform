@@ -1,9 +1,11 @@
 # pylint: disable=no-member, no-self-use
 
+import logging
 from typing import Tuple
 
 import pytest
 import sympy as sp
+from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
 
 from ampform import get_builder
@@ -117,6 +119,90 @@ class TestHelicityAmplitudeBuilder:
 
 
 class TestHelicityModel:
+    def test_rename_symbols_no_renames(
+        self, amplitude_model: Tuple[str, HelicityModel]
+    ):
+        _, model = amplitude_model
+        new_model = model.rename_symbols({})
+        assert new_model == model
+
+    def test_rename_parameters(
+        self, amplitude_model: Tuple[str, HelicityModel]
+    ):
+        _, model = amplitude_model
+        d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}")
+        assert {d1, d2} <= set(model.parameter_defaults)
+        assert {d1, d2} <= model.expression.free_symbols
+
+        new_d = sp.Symbol("d")
+        new_model = model.rename_symbols(
+            {
+                d1.name: new_d.name,
+                d2.name: new_d.name,
+            }
+        )
+        assert not {d1, d2} & new_model.expression.free_symbols
+        assert not {d1, d2} & set(new_model.parameter_defaults)
+        assert new_d in new_model.parameter_defaults
+        assert new_d in new_model.expression.free_symbols
+        assert (
+            len(new_model.expression.free_symbols)
+            == len(model.expression.free_symbols) - 1
+        )
+        assert (
+            len(new_model.parameter_defaults)
+            == len(model.parameter_defaults) - 1
+        )
+        assert (
+            model.expression.xreplace({d1: new_d, d2: new_d})
+            == new_model.expression
+        )
+
+    def test_rename_variables(
+        self, amplitude_model: Tuple[str, HelicityModel]
+    ):
+        _, model = amplitude_model
+        old_symbol = sp.Symbol("m_12", real=True)
+        assert old_symbol in model.kinematic_variables
+        assert old_symbol in model.expression.free_symbols
+
+        new_symbol = sp.Symbol("m_{f_0}", real=True)
+        new_model = model.rename_symbols({old_symbol.name: new_symbol.name})
+        assert old_symbol not in new_model.kinematic_variables
+        assert old_symbol not in new_model.expression.free_symbols
+        assert new_symbol in new_model.kinematic_variables
+        assert new_symbol in new_model.expression.free_symbols
+        assert (
+            model.expression.xreplace({old_symbol: new_symbol})
+            == new_model.expression
+        )
+
+    def test_assumptions_after_rename(
+        self, amplitude_model: Tuple[str, HelicityModel]
+    ):
+        # pylint: disable=protected-access
+        _, model = amplitude_model
+        old = "m_{f_{0}(980)}"
+        new = "m"
+        new_model = model.rename_symbols({old: new})
+        assert (
+            new_model.parameter_defaults._get_parameter(new).assumptions0
+            == model.parameter_defaults._get_parameter(old).assumptions0
+        )
+
+    def test_rename_symbols_warnings(
+        self,
+        amplitude_model: Tuple[str, HelicityModel],
+        caplog: LogCaptureFixture,
+    ):
+        _, model = amplitude_model
+        old_name = "non-existent"
+        with caplog.at_level(logging.WARNING):
+            new_model = model.rename_symbols({old_name: "new name"})
+        assert caplog.records
+        assert old_name in caplog.records[-1].msg
+        assert new_model == model
+
     def test_sum_components(self, amplitude_model: Tuple[str, HelicityModel]):
         # pylint: disable=cell-var-from-loop, line-too-long
         _, model = amplitude_model

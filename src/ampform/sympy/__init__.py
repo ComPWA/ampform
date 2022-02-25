@@ -136,7 +136,7 @@ class UnevaluatedExpression(sp.Expr):
         - m_{1}^{2} + \frac{s}{4}
         """
         args = tuple(map(printer._print, self.args))
-        name = self.__class__.__name__
+        name = type(self).__name__
         if self._name is not None:
             name = self._name
         return f"{name}{args}"

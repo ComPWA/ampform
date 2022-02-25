@@ -145,7 +145,10 @@ autodoc_default_options = {
             "evaluate",
             "is_commutative",
             "is_extended_real",
+            "items",
+            "keys",
             "precedence",
+            "values",
         ]
     ),
     "members": True,
@@ -154,7 +157,6 @@ autodoc_default_options = {
     "special-members": ", ".join(
         [
             "__call__",
-            "__getitem__",
         ]
     ),
 }

@@ -9,12 +9,14 @@
 import collections
 import logging
 import operator
+import sys
 from collections import OrderedDict, abc
 from decimal import Decimal
 from difflib import get_close_matches
 from functools import reduce
 from typing import (
     TYPE_CHECKING,
+    Any,
     DefaultDict,
     Dict,
     Generator,
@@ -28,23 +30,25 @@ from typing import (
     Sequence,
     Set,
     Tuple,
-    TypeVar,
     Union,
     ValuesView,
     overload,
 )
 
+import attrs
 import sympy as sp
-from attrs import field, frozen
+from attrs import define, field, frozen
 from attrs.validators import instance_of
 from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
+from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
+    create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
 from ampform.sympy import PoolSum
@@ -64,35 +68,17 @@ from .naming import (
     natural_sorting,
 )
 
+if sys.version_info >= (3, 8):
+    from functools import singledispatchmethod
+else:
+    from singledispatchmethod import singledispatchmethod
+
 if TYPE_CHECKING:
+    from IPython.lib.pretty import PrettyPrinter
     from sympy.physics.quantum.spin import WignerD
 
 ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
-
-
-def _order_component_mapping(
-    mapping: Mapping[str, ParameterValue]
-) -> "OrderedDict[str, ParameterValue]":
-    return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
-    )
-
-
-_T = TypeVar("_T")
-
-
-def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, _T]  # type: ignore[valid-type]
-) -> "OrderedDict[sp.Symbol, _T]":
-    return collections.OrderedDict(
-        [
-            (symbol, mapping[symbol])
-            for symbol in sorted(
-                mapping, key=lambda s: natural_sorting(s.name)
-            )
-        ]
-    )
 
 
 class ParameterValues(abc.Mapping):
@@ -112,88 +98,148 @@ class ParameterValues(abc.Mapping):
     >>> parameters[2] = 3.14
     >>> parameters[c]
     3.14
+
+    .. automethod:: __getitem__
+    .. automethod:: __setitem__
     """
 
-    def __init__(self, mapping: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__mapping = _order_symbol_mapping(mapping)
+    def __init__(self, parameters: Mapping[sp.Symbol, ParameterValue]) -> None:
+        self.__parameters = dict(parameters)
 
-    def __getitem__(self, __k: Union[sp.Symbol, int, str]) -> ParameterValue:
-        if isinstance(__k, sp.Symbol):
-            return self.__mapping[__k]
-        if isinstance(__k, str):
-            for symbol, value in self.__mapping.items():
-                if symbol.name == __k:
-                    return value
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
-            for i, value in enumerate(self.__mapping.values()):
-                if i == __k:
-                    return value
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" get item {__k}"
-            )
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.__parameters})"
+
+    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}({{"):
+                p.breakable()
+                for par, value in self.items():
+                    p.pretty(par)
+                    p.text(": ")
+                    p.pretty(value)
+                    p.text(",")
+                    p.breakable()
+            p.text("})")
+
+    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
+        par = self._get_parameter(key)
+        return self.__parameters[par]
+
+    def __setitem__(
+        self, key: Union[sp.Symbol, int, str], value: "ParameterValue"
+    ) -> None:
+        par = self._get_parameter(key)
+        self.__parameters[par] = value
+
+    @singledispatchmethod
+    def _get_parameter(self, key: Union[sp.Symbol, int, str]) -> sp.Symbol:
+        # pylint: disable=no-self-use
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot get parameter value for key type {type(__k).__name__}"
+            f"Cannot find parameter for key type {type(key).__name__}"
         )
 
-    def __setitem__(  # noqa: R701
-        self, __k: Union[sp.Symbol, int, str], __v: ParameterValue
-    ) -> None:
-        try:
-            self[__k]
-        except KeyError as e:
-            raise KeyError("Not allowed to define new items") from e
-        if isinstance(__k, sp.Symbol):
-            self.__mapping[__k] = __v
-            return
-        if isinstance(__k, str):
-            for symbol in self.__mapping:
-                if symbol.name == __k:
-                    self.__mapping[symbol] = __v
-                    return
-            raise KeyError(f'No parameter available with name "{__k}"')
-        if isinstance(__k, int):
-            for i, symbol in enumerate(self.__mapping):
-                if i == __k:
-                    self.__mapping[symbol] = __v
-                    return
-            raise KeyError(
-                f"Parameter mapping has {len(self)} keys, but trying to"
-                f" set item {__k}"
-            )
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot set parameter value for key type {type(__k).__name__}"
+    @_get_parameter.register(sp.Symbol)
+    def _(self, par: sp.Symbol) -> sp.Symbol:
+        if par not in self.__parameters:
+            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+        return par
+
+    @_get_parameter.register(str)
+    def _(self, name: str) -> sp.Symbol:
+        for parameter in self.__parameters:
+            if parameter.name == name:
+                return parameter
+        raise KeyError(f"No parameter available with name {name}")
+
+    @_get_parameter.register(int)
+    def _(self, key: int) -> sp.Symbol:
+        for i, parameter in enumerate(self.__parameters):
+            if i == key:
+                return parameter
+        raise KeyError(
+            f"Parameter mapping has {len(self)} parameters, but trying to get"
+            f" parameter number {key}"
         )
 
     def __len__(self) -> int:
-        return len(self.__mapping)
+        return len(self.__parameters)
 
     def __iter__(self) -> Iterator[sp.Symbol]:
-        return iter(self.__mapping)
+        return iter(self.__parameters)
 
     def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
-        return self.__mapping.items()
+        return self.__parameters.items()
 
     def keys(self) -> KeysView[sp.Symbol]:
-        return self.__mapping.keys()
+        return self.__parameters.keys()
 
     def values(self) -> ValuesView[ParameterValue]:
-        return self.__mapping.values()
+        return self.__parameters.values()
+
+
+def _order_component_mapping(
+    mapping: Mapping[str, sp.Expr]
+) -> "OrderedDict[str, sp.Expr]":
+    return collections.OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
+    )
+
+
+def _order_symbol_mapping(
+    mapping: Mapping[sp.Symbol, sp.Expr]
+) -> "OrderedDict[sp.Symbol, sp.Expr]":
+    return collections.OrderedDict(
+        [
+            (symbol, mapping[symbol])
+            for symbol in sorted(
+                mapping, key=lambda s: natural_sorting(s.name)
+            )
+        ]
+    )
+
+
+def _order_amplitudes(
+    mapping: Mapping[sp.Indexed, sp.Expr]
+) -> "OrderedDict[str,  sp.Expr]":
+    return collections.OrderedDict(
+        [
+            (key, mapping[key])
+            for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
+        ]
+    )
 
 
 @frozen
 class HelicityModel:  # noqa: R701
-    expression: sp.Expr = field(validator=instance_of(sp.Expr))
+    intensity: sp.Expr = field(validator=instance_of(sp.Expr))
+    """Main expression describing the intensity over `kinematic_variables`."""
+    amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
+        converter=_order_amplitudes
+    )
+    """Definitions for the amplitudes that appear in `intensity`.
+
+    The main `intensity` is a sum over amplitudes for each initial and final
+    state helicity combination. These amplitudes are indicated with as
+    `sp.Indexed <sympy.tensor.indexed.Indexed>` instances and this attribute
+    provides the definitions for each of these. See also :ref:`TR-014
+    <compwa-org:tr-014-solution-2>`.
+    """
     parameter_defaults: ParameterValues = field(converter=ParameterValues)
     """A mapping of suggested parameter values.
 
     Keys are `~sympy.core.symbol.Symbol` instances from the main
     :attr:`expression` that should be interpreted as parameters (as opposed to
-    variables). The symbols are ordered alphabetically by name with `natural
-    sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_. Values
-    have been extracted from the input `~qrules.transition.ReactionInfo`.
+    `kinematic_variables`). The symbols are ordered alphabetically by name with
+    natural sort order (:func:`.natural_sorting`). Values have been extracted
+    from the input `~qrules.transition.ReactionInfo`.
     """
+    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
+        converter=_order_symbol_mapping
+    )
+    """Expressions for converting four-momenta to kinematic variables."""
     components: "OrderedDict[str, sp.Expr]" = field(
         converter=_order_component_mapping
     )
@@ -202,14 +248,75 @@ class HelicityModel:  # noqa: R701
     Keys are the component names (`str`), formatted as LaTeX, and values are
     sub-expressions in the main :attr:`expression`. The mapping is an
     `~collections.OrderedDict` that orders the component names alphabetically
-    with `natural sort order
-    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+    with natural sort order (:func:`.natural_sorting`).
     """
-    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
-        converter=_order_symbol_mapping
-    )
-    """Expressions for converting four-momenta to kinematic variables."""
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
+
+    @property
+    def expression(self) -> sp.Expr:
+        """Expression for the `intensity` with all amplitudes fully expressed.
+
+        Constructed from `intensity` by substituting its amplitude symbols with
+        the definitions with `amplitudes`.
+        """
+        return self.intensity.xreplace(self.amplitudes)
+
+    def rename_symbols(  # noqa: R701
+        self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
+    ) -> "HelicityModel":
+        """Rename certain symbols in the model.
+
+        Renames all `~sympy.core.symbol.Symbol` instance that appear in
+        `expression`, `parameter_defaults`, `components`, and
+        `kinematic_variables`. This method can be used to :ref:`couple
+        parameters <usage/modify:Couple parameters>`.
+
+        Args:
+            renames: A mapping from old to new names.
+
+        Returns:
+            A **new** instance of a `HelicityModel` with symbols in all
+            attributes renamed accordingly.
+        """
+        renames = dict(renames)
+        symbols = self.__collect_symbols()
+        symbol_names = {s.name for s in symbols}
+        for name in renames:
+            if name not in symbol_names:
+                logging.warning(f"There is no symbol with name {name}")
+        symbol_mapping = {
+            s: sp.Symbol(renames[s.name], **s.assumptions0)
+            if s.name in renames
+            else s
+            for s in symbols
+        }
+        return attrs.evolve(
+            self,
+            intensity=self.intensity.xreplace(symbol_mapping),
+            amplitudes={
+                amp: expr.xreplace(symbol_mapping)
+                for amp, expr in self.amplitudes.items()
+            },
+            parameter_defaults={
+                symbol_mapping[par]: value
+                for par, value in self.parameter_defaults.items()
+            },
+            components={
+                name: expr.xreplace(symbol_mapping)
+                for name, expr in self.components.items()
+            },
+            kinematic_variables={
+                symbol_mapping[var]: expr.xreplace(symbol_mapping)
+                for var, expr in self.kinematic_variables.items()
+            },
+        )
+
+    def __collect_symbols(self) -> Set[sp.Symbol]:
+        symbols: Set[sp.Symbol] = self.expression.free_symbols
+        symbols |= set(self.kinematic_variables)
+        for expr in self.kinematic_variables.values():
+            symbols |= expr.free_symbols
+        return symbols
 
     def sum_components(  # noqa: R701
         self, components: Iterable[str]
@@ -219,13 +326,11 @@ class HelicityModel:  # noqa: R701
         for component in components:
             if component not in self.components:
                 first_letter = component[0]
+                # pylint: disable=cell-var-from-loop
                 candidates = get_close_matches(
                     component,
                     filter(
-                        lambda c: c.startswith(
-                            first_letter  # pylint: disable=cell-var-from-loop
-                        ),
-                        self.components,
+                        lambda c: c.startswith(first_letter), self.components
                     ),
                 )
                 raise KeyError(
@@ -250,6 +355,114 @@ class HelicityModel:  # noqa: R701
         raise ValueError(
             'Not all component names started with either "A" or "I"'
         )
+
+
+@define
+class _HelicityModelIngredients:
+    parameter_defaults: Dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    amplitudes: Dict[sp.Indexed, sp.Expr] = field(factory=dict)
+    components: Dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
+    amplitude_base: sp.IndexedBase = field(
+        init=False, on_setattr=attrs.setters.frozen, repr=False
+    )
+
+    def __attrs_post_init__(self) -> None:
+        # https://www.attrs.org/en/stable/init.html#post-init
+        base = sp.IndexedBase("A", complex=True)
+        object.__setattr__(self, "amplitude_base", base)
+
+    def reset(self) -> None:
+        self.parameter_defaults = {}
+        self.amplitudes = {}
+        self.components = {}
+        self.kinematic_variables = {}
+
+
+class DynamicsSelector(abc.Mapping):
+    """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
+
+    def __init__(
+        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+    ) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
+        self.__choices: Dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
+        for transition in transitions:
+            for node_id in transition.topology.nodes:
+                decay = TwoBodyDecay.from_transition(transition, node_id)
+                self.__choices[decay] = create_non_dynamic
+
+    @singledispatchmethod
+    def assign(
+        self, selection: Any, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
+
+        Currently, the following types of selections are implements:
+
+        - `str`: Select transition nodes by the name of the
+          `~.TwoBodyDecay.parent` `~qrules.particle.Particle`.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition`
+          with a node ID: set dynamics for one specific transition node.
+        """
+        raise NotImplementedError(
+            "Cannot set dynamics builder for selection type"
+            f" {type(selection).__name__}"
+        )
+
+    @assign.register(TwoBodyDecay)
+    def _(
+        self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder
+    ) -> None:
+        self.__choices[decay] = builder
+
+    @assign.register(tuple)
+    def _(
+        self,
+        transition_node: Tuple[StateTransition, int],
+        builder: ResonanceDynamicsBuilder,
+    ) -> None:
+        decay = TwoBodyDecay.create(transition_node)
+        return self.assign(decay, builder)
+
+    @assign.register(str)
+    def _(self, particle_name: str, builder: ResonanceDynamicsBuilder) -> None:
+        found_particle = False
+        for decay in self.__choices:
+            decaying_particle = decay.parent.particle
+            if decaying_particle.name == particle_name:
+                self.__choices[decay] = builder
+                found_particle = True
+        if not found_particle:
+            logging.warning(
+                f'Model contains no resonance with name "{particle_name}"'
+            )
+
+    @assign.register(Particle)
+    def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
+        return self.assign(particle.name, builder)
+
+    def __getitem__(
+        self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
+    ) -> ResonanceDynamicsBuilder:
+        __k = TwoBodyDecay.create(__k)
+        return self.__choices[__k]
+
+    def __len__(self) -> int:
+        return len(self.__choices)
+
+    def __iter__(self) -> Iterator[TwoBodyDecay]:
+        return iter(self.__choices)
+
+    def items(self) -> ItemsView[TwoBodyDecay, ResonanceDynamicsBuilder]:
+        return self.__choices.items()
+
+    def keys(self) -> KeysView[TwoBodyDecay]:
+        return self.__choices.keys()
+
+    def values(self) -> ValuesView[ResonanceDynamicsBuilder]:
+        return self.__choices.values()
 
 
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
@@ -280,29 +493,27 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         stable_final_state_ids: Optional[Iterable[int]] = None,
         scalar_initial_state_mass: bool = False,
     ) -> None:
-        self._name_generator = HelicityAmplitudeNameGenerator()
-        self.__reaction = reaction
-        self.__parameter_defaults: Dict[sp.Symbol, ParameterValue] = {}
-        self.__components: Dict[str, sp.Expr] = {}
-        self.__dynamics_choices: Dict[
-            TwoBodyDecay, ResonanceDynamicsBuilder
-        ] = {}
-
         if len(reaction.transitions) < 1:
             raise ValueError(
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
+        self._name_generator = HelicityAmplitudeNameGenerator()
+        self.__reaction = reaction
+        self.__ingredients = _HelicityModelIngredients()
+        self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
-        for grouping in reaction.transition_groups:
-            self.__adapter.register_topology(grouping.topology)
 
     @property
     def adapter(self) -> HelicityAdapter:
         """Converter for computing kinematic variables from four-momenta."""
         return self.__adapter
+
+    @property
+    def dynamics_choices(self) -> DynamicsSelector:
+        return self.__dynamics_choices
 
     @property
     def stable_final_state_ids(self) -> Optional[Set[int]]:
@@ -346,45 +557,34 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        found_particle = False
-        for transition in self.__reaction.transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                decaying_particle = decay.parent.particle
-                if decaying_particle.name == particle_name:
-                    self.__dynamics_choices[decay] = dynamics_builder
-                    found_particle = True
-        if not found_particle:
-            logging.warning(
-                f'Model contains no resonance with name "{particle_name}"'
-            )
+        self.__dynamics_choices.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
-        self.__components = {}
-        self.__parameter_defaults = {}
-        top_expression = self.__formulate_top_expression()
+        self.__ingredients.reset()
+        main_expression = self.__formulate_top_expression()
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
         }
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
-                mass_symbol = sp.Symbol(f"m_{state_id}", real=True)
+                symbol = sp.Symbol(f"m_{state_id}", real=True)
                 particle = self.__reaction.final_state[state_id]
-                self.__parameter_defaults[mass_symbol] = particle.mass
-                del kinematic_variables[mass_symbol]
+                self.__ingredients.parameter_defaults[symbol] = particle.mass
+                del kinematic_variables[symbol]
         if self.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.__reaction.final_state)))
-            mass_symbol = sp.Symbol(f"m_{subscript}", real=True)
+            symbol = sp.Symbol(f"m_{subscript}", real=True)
             particle = self.__reaction.initial_state[-1]
-            self.__parameter_defaults[mass_symbol] = particle.mass
-            del kinematic_variables[mass_symbol]
+            self.__ingredients.parameter_defaults[symbol] = particle.mass
+            del kinematic_variables[symbol]
 
         return HelicityModel(
-            expression=top_expression,
-            components=self.__components,
-            parameter_defaults=self.__parameter_defaults,
+            intensity=main_expression,
+            amplitudes=self.__ingredients.amplitudes,
+            parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
+            components=self.__ingredients.components,
             reaction_info=self.__reaction,
         )
 
@@ -409,22 +609,31 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_coherent_intensity(
         self, transition_group: List[StateTransition]
     ) -> sp.Expr:
-        graph_group_label = generate_transition_label(transition_group[0])
+        transition = transition_group[0]
+        graph_group_label = generate_transition_label(transition)
         sequential_expressions: List[sp.Expr] = []
-        for transition in transition_group:
+        for group in transition_group:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
-                    transition.to_graph()
+                    group.to_graph()
                 )
             )
             for graph in sequential_graphs:
                 transition = StateTransition.from_graph(graph)
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
+        outer_state_ids = list(transition.initial_states)
+        outer_state_ids += sorted(transition.final_states)
+        helicities = tuple(
+            sp.Rational(transition.states[i].spin_projection)
+            for i in outer_state_ids
+        )
+        amplitude_symbol = self.__ingredients.amplitude_base[helicities]
         amplitude_sum = sum(sequential_expressions)
-        coherent_intensity = abs(amplitude_sum) ** 2
-        self.__components[Rf"I_{{{graph_group_label}}}"] = coherent_intensity
-        return coherent_intensity
+        self.__ingredients.amplitudes[amplitude_symbol] = amplitude_sum
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = abs(amplitude_sum) ** 2
+        return abs(amplitude_symbol) ** 2
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -440,9 +649,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         expression = coefficient * sequential_amplitudes
         if prefactor is not None:
             expression = prefactor * expression
-        self.__components[
-            f"A_{{{self._name_generator.generate_amplitude_name(transition)}}}"
-        ] = expression
+        subscript = self._name_generator.generate_amplitude_name(transition)
+        self.__ingredients.components[f"A_{{{subscript}}}"] = expression
         return expression
 
     def _formulate_partial_decay(
@@ -463,15 +671,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         variable_set = _generate_kinematic_variable_set(transition, node_id)
         expression, parameters = builder(decay.parent.particle, variable_set)
         for par, value in parameters.items():
-            if par in self.__parameter_defaults:
-                previous_value = self.__parameter_defaults[par]
+            if par in self.__ingredients.parameter_defaults:
+                previous_value = self.__ingredients.parameter_defaults[par]
                 if value != previous_value:
                     logging.warning(
                         f'New default value {value} for parameter "{par.name}"'
                         " is inconsistent with existing value"
                         f" {previous_value}"
                     )
-            self.__parameter_defaults[par] = value
+            self.__ingredients.parameter_defaults[par] = value
 
         return expression
 
@@ -487,9 +695,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         suffix = self._name_generator.generate_sequential_amplitude_suffix(
             transition
         )
-        coefficient_symbol = sp.Symbol(f"C_{{{suffix}}}")
-        self.__parameter_defaults[coefficient_symbol] = complex(1, 0)
-        return coefficient_symbol
+        symbol = sp.Symbol(f"C_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
 
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
