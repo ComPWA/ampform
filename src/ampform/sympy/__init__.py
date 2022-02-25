@@ -5,7 +5,16 @@
 import functools
 import itertools
 from abc import abstractmethod
-from typing import Any, Callable, List, Optional, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -329,13 +338,13 @@ class PoolSum(UnevaluatedExpression):
     r"""Sum over indices where the values are taken from a domain set.
 
     >>> i, j, m, n = sp.symbols("i j m n")
-    >>> expr = PoolSum(i**m + j**n, (i, [-0.5, +0.5]), (j, [2, 4, 5]))
+    >>> expr = PoolSum(i**m + j**n, (i, [-1, 0, +1]), (j, [2, 4, 5]))
     >>> expr
-    PoolSum(i**m + j**n, (i, [-0.5, 0.5]), (j, [2, 4, 5]))
-    >>> sp.latex(expr)
-    '\\sum_{\\substack{i\\in\\left\\{-0.5,0.5\\right\\}\\\\j\\in\\left\\{2,4,5\\right\\}}}i^{m} + j^{n}'
+    PoolSum(i**m + j**n, (i, [-1, 0, 1]), (j, [2, 4, 5]))
+    >>> print(sp.latex(expr))
+    \sum_{i=-1}^{1} \sum_{j\in\left\{2,4,5\right\}}{i^{m} + j^{n}}
     >>> expr.doit()
-    3*(-0.5)**m + 3*0.5**m + 2*2**n + 2*4**n + 2*5**n
+    3*(-1)**m + 3*0**m + 3*2**n + 3*4**n + 3*5**n + 3
     """
 
     precedence = PRECEDENCE["Mul"]
@@ -366,13 +375,53 @@ class PoolSum(UnevaluatedExpression):
         )
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
-        expression = printer._print(self.expression)
         indices = dict(self.indices)
-        index_ranges: List[str] = []
+        sum_symbols: List[str] = []
         for idx, values in indices.items():
-            idx_values = ",".join(map(printer._print, values))
-            index_ranges.append(
-                Rf"{printer._print(idx)}\in\left\{{{idx_values}\right\}}"
-            )
-        substack = R"\\".join(index_ranges)
-        return Rf"\sum_{{\substack{{{substack}}}}}{expression}"
+            sum_symbols.append(_render_sum_symbol(printer, idx, values))
+        expression = printer._print(self.expression)
+        return R" ".join(sum_symbols) + f"{{{expression}}}"
+
+
+def _render_sum_symbol(
+    printer: LatexPrinter, idx: sp.Symbol, values: Sequence[float]
+) -> str:
+    if len(values) == 0:
+        return ""
+    idx = printer._print(idx)
+    if len(values) == 1:
+        value = values[0]
+        return Rf"\sum_{{{idx}={value}}}"
+    if _is_regular_series(values):
+        sorted_values = sorted(values)
+        first_value = sorted_values[0]
+        last_value = sorted_values[-1]
+        return Rf"\sum_{{{idx}={first_value}}}^{{{last_value}}}"
+    idx_values = ",".join(map(printer._print, values))
+    return Rf"\sum_{{{idx}\in\left\{{{idx_values}\right\}}}}"
+
+
+def _is_regular_series(values: Sequence[float]) -> bool:
+    """Check whether a set of values is a series with unit distances.
+
+    >>> _is_regular_series([0, 1, 2])
+    True
+    >>> _is_regular_series([-0.5, +0.5])
+    True
+    >>> _is_regular_series([+0.5, -0.5, 1.5])
+    True
+    >>> _is_regular_series([-1, +1])
+    False
+    >>> _is_regular_series([1])
+    False
+    >>> _is_regular_series([])
+    False
+    """
+    if len(values) <= 1:
+        return False
+    sorted_values = sorted(values)
+    for val, next_val in zip(sorted_values, sorted_values[1:]):
+        difference = float(next_val - val)
+        if difference != 1.0:
+            return False
+    return True
