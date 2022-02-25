@@ -8,6 +8,7 @@ from abc import abstractmethod
 from typing import (
     Any,
     Callable,
+    Iterable,
     List,
     Optional,
     Sequence,
@@ -340,7 +341,7 @@ class PoolSum(UnevaluatedExpression):
     >>> i, j, m, n = sp.symbols("i j m n")
     >>> expr = PoolSum(i**m + j**n, (i, [-1, 0, +1]), (j, [2, 4, 5]))
     >>> expr
-    PoolSum(i**m + j**n, (i, [-1, 0, 1]), (j, [2, 4, 5]))
+    PoolSum(i**m + j**n, (i, (-1, 0, 1)), (j, (2, 4, 5)))
     >>> print(sp.latex(expr))
     \sum_{i=-1}^{1} \sum_{j\in\left\{2,4,5\right\}}{i^{m} + j^{n}}
     >>> expr.doit()
@@ -352,9 +353,10 @@ class PoolSum(UnevaluatedExpression):
     def __new__(
         cls,
         expression: sp.Expr,
-        *indices: Tuple[sp.Symbol, List[float]],
+        *indices: Tuple[sp.Symbol, Iterable[sp.Float]],
         **hints: Any,
     ) -> "PoolSum":
+        indices = tuple((s, tuple(v)) for s, v in indices)
         return create_expression(cls, expression, *indices, **hints)
 
     @property
@@ -362,7 +364,7 @@ class PoolSum(UnevaluatedExpression):
         return self.args[0]
 
     @property
-    def indices(self) -> List[Tuple[sp.Symbol, List[float]]]:
+    def indices(self) -> List[Tuple[sp.Symbol, Tuple[sp.Float, ...]]]:
         return self.args[1:]
 
     def evaluate(self) -> sp.Expr:
