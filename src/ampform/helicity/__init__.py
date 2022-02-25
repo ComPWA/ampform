@@ -1140,9 +1140,9 @@ def formulate_helicity_rotation(
     -------
     >>> a, b, c, i = sp.symbols("a b c i")
     >>> formulate_helicity_rotation(0, 0, i, a, b, c)
-    PoolSum(WignerD(0, 0, i, a, b, c), (i, [0]))
+    PoolSum(WignerD(0, 0, i, a, b, c), (i, (0,)))
     >>> formulate_helicity_rotation(1/2, -1/2, i, a, b, c)
-    PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, [-1/2, 1/2]))
+    PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, (-1/2, 1/2)))
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
