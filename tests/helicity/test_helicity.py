@@ -4,6 +4,7 @@ import logging
 from typing import Tuple
 
 import pytest
+import qrules
 import sympy as sp
 from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
@@ -230,6 +231,33 @@ class TestHelicityModel:
                 )
                 selected_intensity = next(selected_intensities)
                 assert from_amplitudes == model.components[selected_intensity]
+
+    @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
+    def test_amplitudes(self, formalism: str):
+        reaction = qrules.generate_transitions(
+            initial_state=("J/psi(1S)", [-1, +1]),
+            final_state=["K0", "Sigma+", "p~"],
+            allowed_intermediate_particles=["Sigma(1660)~-"],
+            allowed_interaction_types=["strong"],
+            formalism=formalism,
+        )
+        assert len(reaction.get_intermediate_particles()) == 1
+
+        builder = get_builder(reaction)
+        helicity_combinations = {
+            tuple(
+                state.spin_projection
+                for state_id, state in transition.states.items()
+                if state_id not in transition.intermediate_states
+            )
+            for transition in reaction.transitions
+        }
+        assert len(helicity_combinations) == 8
+
+        model = builder.formulate()
+        assert len(model.amplitudes) == len(helicity_combinations)
+        intensity_terms = model.intensity.args
+        assert len(intensity_terms) == len(helicity_combinations)
 
 
 class TestParameterValues:
