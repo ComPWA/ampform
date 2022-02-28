@@ -588,7 +588,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
 
     def __formulate_top_expression(self) -> PoolSum:
-        transition_groups = group_transitions(self.__reaction.transitions)
+        transition_groups = group_by_spin_projection(
+            self.__reaction.transitions
+        )
         outer_state_ids = _get_outer_state_ids(self.__reaction)
         collected_helicities: Dict[sp.Symbol, Set[sp.Rational]] = {
             _create_helicity_symbol(i): set() for i in outer_state_ids
@@ -946,7 +948,7 @@ def get_prefactor(transition: StateTransition) -> float:
     return prefactor
 
 
-def group_transitions(
+def group_by_spin_projection(
     transitions: Iterable[StateTransition],
 ) -> List[List[StateTransition]]:
     """Match final and initial states in groups.

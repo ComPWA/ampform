@@ -16,7 +16,7 @@ from ampform.helicity import (
     ParameterValues,
     _generate_kinematic_variables,
     formulate_wigner_d,
-    group_transitions,
+    group_by_spin_projection,
 )
 
 
@@ -322,8 +322,8 @@ def test_formulate_wigner_d(
     assert str(wigner_d) == expected
 
 
-def test_group_transitions(reaction: ReactionInfo):
-    transition_groups = group_transitions(reaction.transitions)
+def test_group_by_spin_projection(reaction: ReactionInfo):
+    transition_groups = group_by_spin_projection(reaction.transitions)
     assert len(transition_groups) == 4
     for group in transition_groups:
         transition_iter = iter(group)
