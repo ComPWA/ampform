@@ -43,6 +43,7 @@ from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from qrules.particle import Particle
+from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -986,6 +987,16 @@ def group_by_spin_projection(
     return list(transition_groups.values())
 
 
+def group_by_topology(
+    transitions: Iterable[StateTransition],
+) -> Dict[Topology, List[StateTransition]]:
+    """Group state transitions by different `~qrules.topology.Topology`."""
+    transition_groups = collections.defaultdict(list)
+    for transition in transitions:
+        transition_groups[transition.topology].append(transition)
+    return dict(transition_groups)
+
+
 def formulate_spin_alignment(
     transition: StateTransition,
 ) -> PoolSum:
@@ -1023,7 +1034,7 @@ def formulate_rotation_chain(
     rotation.
     """
     idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
-    helicity_symbol = sp.Symbol(f"m{idx_suffix}", real=True)
+    helicity_symbol = sp.Symbol(f"m{idx_suffix}", rational=True)
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, helicity_symbol
     )
@@ -1033,8 +1044,8 @@ def formulate_rotation_chain(
     wigner_rotation = formulate_wigner_rotation(
         transition,
         rotated_state_id,
-        helicity_symbol=sp.Symbol(f"m{idx_suffix}", real=True),
-        m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
+        helicity_symbol=sp.Symbol(f"m{idx_suffix}", rational=True),
+        m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
     )
     return __multiply_pool_sums([helicity_rotations, wigner_rotation])
 
@@ -1076,9 +1087,9 @@ def formulate_helicity_rotation_chain(
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(
-                f"{next_idx_root}{idx_suffix}", real=True
+                f"{next_idx_root}{idx_suffix}", rational=True
             ),
-            m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
+            m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
             alpha=phi,
             beta=theta,
             gamma=0,
@@ -1089,7 +1100,7 @@ def formulate_helicity_rotation_chain(
     summation = __multiply_pool_sums(list(rotations))
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
-        dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", real=True)
+        dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
         return summation.subs(dangling_idx, helicity_symbol)
     return summation
 
