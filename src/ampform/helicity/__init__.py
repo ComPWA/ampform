@@ -1033,18 +1033,18 @@ def formulate_rotation_chain(
     :func:`.formulate_wigner_rotation`) in case there is more than one helicity
     rotation.
     """
-    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
-    helicity_symbol = sp.Symbol(f"m{idx_suffix}", rational=True)
+    helicity_symbol = sp.Symbol(f"m{rotated_state_id}", rational=True)
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, helicity_symbol
     )
     if len(helicity_rotations.indices) == 1:
         return helicity_rotations
     idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
+    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     wigner_rotation = formulate_wigner_rotation(
         transition,
         rotated_state_id,
-        helicity_symbol=sp.Symbol(f"m{idx_suffix}", rational=True),
+        helicity_symbol=helicity_symbol,
         m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
     )
     return __multiply_pool_sums([helicity_rotations, wigner_rotation])
