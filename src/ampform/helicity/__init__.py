@@ -621,6 +621,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Indexed:
         transition = transition_group[0]
         graph_group_label = generate_transition_label(transition)
+        amplitude_symbol = self.__create_amplitude_symbol(transition)
         sequential_expressions: List[sp.Expr] = []
         for group in transition_group:
             sequential_graphs = (
@@ -632,17 +633,21 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 transition = StateTransition.from_graph(graph)
                 expression = self.__formulate_sequential_decay(transition)
                 sequential_expressions.append(expression)
-        outer_state_ids = _get_outer_state_ids(transition)
-        helicities = tuple(
-            sp.Rational(transition.states[i].spin_projection)
-            for i in outer_state_ids
-        )
-        amplitude_symbol = self.__ingredients.amplitude_base[helicities]
         amplitude = sum(sequential_expressions)
         component_name = f"I_{{{graph_group_label}}}"
         self.__ingredients.amplitudes[amplitude_symbol] = amplitude
         self.__ingredients.components[component_name] = abs(amplitude) ** 2
         return amplitude_symbol
+
+    def __create_amplitude_symbol(
+        self, transition: StateTransition
+    ) -> sp.Indexed:
+        outer_state_ids = _get_outer_state_ids(transition)
+        helicities = tuple(
+            sp.Rational(transition.states[i].spin_projection)
+            for i in outer_state_ids
+        )
+        return self.__ingredients.amplitude_base[helicities]
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
