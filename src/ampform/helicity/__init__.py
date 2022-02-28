@@ -1022,23 +1022,27 @@ def formulate_rotation_chain(
     :func:`.formulate_wigner_rotation`) in case there is more than one helicity
     rotation.
     """
+    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
+    helicity_symbol = sp.Symbol(f"m{idx_suffix}", real=True)
     helicity_rotations = formulate_helicity_rotation_chain(
-        transition, rotated_state_id
+        transition, rotated_state_id, helicity_symbol
     )
     if len(helicity_rotations.indices) == 1:
         return helicity_rotations
     idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
-    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     wigner_rotation = formulate_wigner_rotation(
         transition,
         rotated_state_id,
+        helicity_symbol=sp.Symbol(f"m{idx_suffix}", real=True),
         m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", real=True),
     )
     return __multiply_pool_sums([helicity_rotations, wigner_rotation])
 
 
 def formulate_helicity_rotation_chain(
-    transition: StateTransition, rotated_state_id: int
+    transition: StateTransition,
+    rotated_state_id: int,
+    helicity_symbol: sp.Symbol,
 ) -> PoolSum:
     """Formulate a Wigner-:math:`D` for each helicity rotation up some state.
 
@@ -1086,8 +1090,7 @@ def formulate_helicity_rotation_chain(
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", real=True)
-        spin_projection = transition.states[rotated_state_id].spin_projection
-        return summation.subs(dangling_idx, sp.Rational(spin_projection))
+        return summation.subs(dangling_idx, helicity_symbol)
     return summation
 
 
@@ -1102,7 +1105,10 @@ def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
 
 
 def formulate_wigner_rotation(
-    transition: StateTransition, rotated_state_id: int, m_prime: sp.Symbol
+    transition: StateTransition,
+    rotated_state_id: int,
+    helicity_symbol: sp.Symbol,
+    m_prime: sp.Symbol,
 ) -> PoolSum:
     """Formulate the spin rotation matrices for a Wigner rotation.
 
@@ -1116,15 +1122,23 @@ def formulate_wigner_rotation(
             want to rotate one of the spin states.
         rotated_state_id: The state ID of a spin `~qrules.transition.State`
             that you want to rotate.
+        helicity_symbol: Optional `~sympy.core.symbol.Symbol` for :math:`m` in
+            :math:`D^s_{mm'}. Falls back to the value of
+            `~qrules.transition.State.spin_projection` embedded in the provided
+            :code:`transition`.
         m_prime: The summation symbol :math:`m'` that should be used when
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
     no_zero_spin = state.particle.mass == 0.0
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
+    if helicity_symbol is None:
+        spin_projection = state.spin_projection
+    else:
+        spin_projection = helicity_symbol
     return formulate_helicity_rotation(
         spin_magnitude=state.particle.spin,
-        spin_projection=state.spin_projection,
+        spin_projection=spin_projection,
         m_prime=m_prime,
         alpha=sp.Symbol(f"alpha{suffix}", real=True),
         beta=sp.Symbol(f"beta{suffix}", real=True),
