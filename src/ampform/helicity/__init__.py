@@ -593,8 +593,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         collected_helicities: Dict[sp.Symbol, Set[sp.Rational]] = {
             _create_helicity_symbol(i): set() for i in outer_state_ids
         }
-        for group in transition_groups:
-            amplitude = self.__formulate_main_amplitudes(group)
+        for transition in transition_groups:
+            amplitude = self.__formulate_main_amplitudes(transition)
             for state_id, helicity in zip(outer_state_ids, amplitude.indices):
                 symbol = _create_helicity_symbol(state_id)
                 collected_helicities[symbol].add(helicity)
@@ -609,19 +609,21 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_main_amplitudes(
         self, transition_group: List[StateTransition]
     ) -> sp.Indexed:
-        transition = transition_group[0]
-        graph_group_label = generate_transition_label(transition)
-        amplitude_symbol = self.__create_amplitude_symbol(transition)
+        first_transition = transition_group[0]
+        graph_group_label = generate_transition_label(first_transition)
+        amplitude_symbol = self.__create_amplitude_symbol(first_transition)
         sequential_expressions: List[sp.Expr] = []
-        for group in transition_group:
+        for transition in transition_group:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
-                    group.to_graph()
+                    transition.to_graph()
                 )
             )
             for graph in sequential_graphs:
-                transition = StateTransition.from_graph(graph)
-                expression = self.__formulate_sequential_decay(transition)
+                first_transition = StateTransition.from_graph(graph)
+                expression = self.__formulate_sequential_decay(
+                    first_transition
+                )
                 sequential_expressions.append(expression)
         amplitude = sum(sequential_expressions)
         component_name = f"I_{{{graph_group_label}}}"
