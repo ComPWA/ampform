@@ -2,11 +2,11 @@
 
 import re
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import sympy as sp
 from qrules.topology import Topology
-from qrules.transition import State, StateTransition
+from qrules.transition import ReactionInfo, State, StateTransition
 
 from .decay import (
     assert_isobar_topology,
@@ -17,10 +17,16 @@ from .decay import (
 
 
 class HelicityAmplitudeNameGenerator:
-    def __init__(self) -> None:
+    def __init__(
+        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+    ) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
         self.parity_partner_coefficient_mapping: Dict[str, str] = {}
+        for transition in transitions:
+            self.__register_amplitude_coefficient_name(transition)
 
-    def register_amplitude_coefficient_name(
+    def __register_amplitude_coefficient_name(
         self, transition: StateTransition
     ) -> None:
         for node_id in transition.topology.nodes:

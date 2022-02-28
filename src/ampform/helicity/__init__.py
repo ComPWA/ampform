@@ -497,8 +497,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
-        self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
+        self._name_generator = HelicityAmplitudeNameGenerator(reaction)
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
@@ -589,7 +589,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __formulate_top_expression(self) -> PoolSum:
         transition_groups = group_transitions(self.__reaction.transitions)
-        self.__register_parameter_couplings(transition_groups)
         outer_state_ids = _get_outer_state_ids(self.__reaction)
         collected_helicities: Dict[sp.Symbol, Set[sp.Rational]] = {
             _create_helicity_symbol(i): set() for i in outer_state_ids
@@ -606,15 +605,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             for symbol, values in collected_helicities.items()
         ]
         return PoolSum(abs(amplitude_symbol) ** 2, *helicity_values)
-
-    def __register_parameter_couplings(
-        self, transition_groups: List[List[StateTransition]]
-    ) -> None:
-        for graph_group in transition_groups:
-            for transition in graph_group:
-                self._name_generator.register_amplitude_coefficient_name(
-                    transition
-                )
 
     def __formulate_main_amplitudes(
         self, transition_group: List[StateTransition]
@@ -782,9 +772,9 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
     """
 
-    def __init__(self, reaction_result: ReactionInfo) -> None:
-        super().__init__(reaction_result)
-        self._name_generator = CanonicalAmplitudeNameGenerator()
+    def __init__(self, reaction: ReactionInfo) -> None:
+        super().__init__(reaction)
+        self._name_generator = CanonicalAmplitudeNameGenerator(reaction)
 
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
