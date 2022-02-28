@@ -1121,6 +1121,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
+    no_zero_spin = state.particle.mass == 0.0
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     return formulate_helicity_rotation(
         spin_magnitude=state.particle.spin,
@@ -1129,6 +1130,7 @@ def formulate_wigner_rotation(
         alpha=sp.Symbol(f"alpha{suffix}", real=True),
         beta=sp.Symbol(f"beta{suffix}", real=True),
         gamma=sp.Symbol(f"gamma{suffix}", real=True),
+        no_zero_spin=no_zero_spin,
     )
 
 
@@ -1139,6 +1141,7 @@ def formulate_helicity_rotation(
     alpha: sp.Symbol,
     beta: sp.Symbol,
     gamma: sp.Symbol,
+    no_zero_spin: bool = False,
 ) -> PoolSum:
     r"""Formulate action of an Euler rotation on a spin state.
 
@@ -1173,6 +1176,8 @@ def formulate_helicity_rotation(
         alpha: First Euler angle.
         beta: Second Euler angle.
         gamma: Third Euler angle.
+        no_zero_spin: Skip value :code:`0.0` in the generated spin projection
+            range. Useful for massless particles.
 
     Example
     -------
@@ -1184,7 +1189,9 @@ def formulate_helicity_rotation(
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
-    helicities = map(sp.Rational, _create_spin_range(spin_magnitude))
+    helicities = map(
+        sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin)
+    )
     return PoolSum(
         Wigner.D(
             j=__rationalize(spin_magnitude),
@@ -1214,7 +1221,9 @@ def __rationalize(value):  # type:ignore[no-untyped-def]
     return sp.Rational(value)
 
 
-def _create_spin_range(spin_magnitude: float) -> List[float]:
+def _create_spin_range(
+    spin_magnitude: float, no_zero_spin: bool = False
+) -> List[float]:
     """Create a list of allowed spin projections.
 
     >>> _create_spin_range(0)
@@ -1223,6 +1232,8 @@ def _create_spin_range(spin_magnitude: float) -> List[float]:
     [-0.5, 0.5]
     >>> _create_spin_range(1)
     [-1.0, 0.0, 1.0]
+    >>> _create_spin_range(1, no_zero_spin=True)
+    [-1.0, 1.0]
     >>> projections = _create_spin_range(5)
     >>> list(map(int, projections))
     [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
@@ -1230,7 +1241,10 @@ def _create_spin_range(spin_magnitude: float) -> List[float]:
     spin_projections = []
     projection = Decimal(-spin_magnitude)
     while projection <= spin_magnitude:
-        spin_projections.append(float(projection))
+        if no_zero_spin and projection == 0.0:
+            pass
+        else:
+            spin_projections.append(float(projection))
         projection += 1
     return spin_projections
 
