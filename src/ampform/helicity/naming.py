@@ -322,11 +322,12 @@ def get_helicity_suffix(topology: Topology, state_id: int) -> str:
     Used in :doc:`/usage/helicity/spin-alignment`. Comparable to
     :func:`get_boost_chain_suffix`.
     """
-    superscript = __get_topology_identifier(topology)
+    superscript = get_topology_identifier(topology)
     return f"_{state_id}^{superscript}"
 
 
-def __get_topology_identifier(topology: Topology) -> str:
+def get_topology_identifier(topology: Topology) -> str:
+    """Create an identifier `str` for a `~qrules.topology.Topology`."""
     resonance_names = [
         "".join(__get_resonance_identifier(topology, i))
         for i in topology.intermediate_edge_ids

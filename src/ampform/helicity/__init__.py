@@ -66,6 +66,7 @@ from .naming import (
     generate_transition_label,
     get_helicity_angle_label,
     get_helicity_suffix,
+    get_topology_identifier,
     natural_sorting,
 )
 
@@ -363,14 +364,6 @@ class _HelicityModelIngredients:
     amplitudes: Dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: Dict[str, sp.Expr] = field(factory=dict)
     kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
-    amplitude_base: sp.IndexedBase = field(
-        init=False, on_setattr=attrs.setters.frozen, repr=False
-    )
-
-    def __attrs_post_init__(self) -> None:
-        # https://www.attrs.org/en/stable/init.html#post-init
-        base = sp.IndexedBase("A", complex=True)
-        object.__setattr__(self, "amplitude_base", base)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
@@ -561,7 +554,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
-        main_expression = self.__formulate_top_expression()
+        main_intensity = self.__formulate_top_expression()
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
             for var_name, expr in self.__adapter.create_expressions().items()
@@ -580,7 +573,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             del kinematic_variables[symbol]
 
         return HelicityModel(
-            intensity=main_expression,
+            intensity=main_intensity,
             amplitudes=self.__ingredients.amplitudes,
             parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
@@ -589,34 +582,47 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
 
     def __formulate_top_expression(self) -> PoolSum:
+        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        spin_projections: DefaultDict[
+            sp.Symbol, Set[sp.Rational]
+        ] = collections.defaultdict(set)
         transition_groups = group_by_spin_projection(
             self.__reaction.transitions
         )
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
-        collected_helicities: Dict[sp.Symbol, Set[sp.Rational]] = {
-            _create_helicity_symbol(i): set() for i in outer_state_ids
-        }
-        for transition in transition_groups:
-            amplitude = self.__formulate_main_amplitudes(transition)
-            for state_id, helicity in zip(outer_state_ids, amplitude.indices):
-                symbol = _create_helicity_symbol(state_id)
-                collected_helicities[symbol].add(helicity)
-        helicity_symbols = list(collected_helicities)
-        amplitude_symbol = self.__ingredients.amplitude_base[helicity_symbols]
-        helicity_values = [
-            (symbol, sorted(values))
-            for symbol, values in collected_helicities.items()
-        ]
-        return PoolSum(abs(amplitude_symbol) ** 2, *helicity_values)
+        for group in transition_groups:
+            self.__register_amplitudes(group)
+            for transition in group:
+                for i in outer_state_ids:
+                    state = transition.states[i]
+                    symbol = _create_spin_projection_symbol(i)
+                    value = sp.Rational(state.spin_projection)
+                    spin_projections[symbol].add(value)
 
-    def __formulate_main_amplitudes(
+        topologies = sorted({t.topology for t in self.__reaction.transitions})
+        amplitudes = sum(
+            _create_amplitude_base(t)[list(spin_projections)]
+            for t in topologies
+        )
+        return PoolSum(abs(amplitudes) ** 2, *spin_projections.items())
+
+    def __register_amplitudes(
         self, transition_group: List[StateTransition]
-    ) -> sp.Indexed:
+    ) -> None:
+        transition_by_topology = group_by_topology(transition_group)
+        expression = sum(
+            self.__formulate_topology_amplitude(transitions)
+            for transitions in transition_by_topology.values()
+        )
         first_transition = transition_group[0]
         graph_group_label = generate_transition_label(first_transition)
-        amplitude_symbol = self.__create_amplitude_symbol(first_transition)
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = abs(expression) ** 2
+
+    def __formulate_topology_amplitude(
+        self, transitions: Sequence[StateTransition]
+    ) -> sp.Expr:
         sequential_expressions: List[sp.Expr] = []
-        for transition in transition_group:
+        for transition in transitions:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
                     transition.to_graph()
@@ -628,21 +634,12 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     first_transition
                 )
                 sequential_expressions.append(expression)
-        amplitude = sum(sequential_expressions)
-        component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.amplitudes[amplitude_symbol] = amplitude
-        self.__ingredients.components[component_name] = abs(amplitude) ** 2
-        return amplitude_symbol
 
-    def __create_amplitude_symbol(
-        self, transition: StateTransition
-    ) -> sp.Indexed:
-        outer_state_ids = _get_outer_state_ids(transition)
-        helicities = tuple(
-            sp.Rational(transition.states[i].spin_projection)
-            for i in outer_state_ids
-        )
-        return self.__ingredients.amplitude_base[helicities]
+        first_transition = transitions[0]
+        symbol = _create_amplitude_symbol(first_transition)
+        expression = sum(sequential_expressions)
+        self.__ingredients.amplitudes[symbol] = expression
+        return expression
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -730,12 +727,27 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return None
 
 
-def _create_helicity_symbol(i: int) -> sp.Symbol:
-    if i == -1:  # initial state
-        name = "lambda"
+def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
+    outer_state_ids = _get_outer_state_ids(transition)
+    helicities = tuple(
+        sp.Rational(transition.states[i].spin_projection)
+        for i in outer_state_ids
+    )
+    base = _create_amplitude_base(transition.topology)
+    return base[helicities]
+
+
+def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
+    superscript = get_topology_identifier(topology)
+    return sp.IndexedBase(f"A^{superscript}", complex=True)
+
+
+def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        suffix = ""
     else:
-        name = f"lambda{i}"
-    return sp.Symbol(name, rational=True)
+        suffix = str(state_id)
+    return sp.Symbol(f"m{suffix}", rational=True)
 
 
 @singledispatch
@@ -1033,7 +1045,7 @@ def formulate_rotation_chain(
     :func:`.formulate_wigner_rotation`) in case there is more than one helicity
     rotation.
     """
-    helicity_symbol = sp.Symbol(f"m{rotated_state_id}", rational=True)
+    helicity_symbol = _create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, helicity_symbol
     )
