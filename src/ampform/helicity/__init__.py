@@ -1096,6 +1096,7 @@ def formulate_helicity_rotation_chain(
         phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
         phi = sp.Symbol(phi_label, real=True)
         theta = sp.Symbol(theta_theta, real=True)
+        no_zero_spin = transition.states[state_id].particle.mass == 0.0
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(
@@ -1105,6 +1106,7 @@ def formulate_helicity_rotation_chain(
             alpha=phi,
             beta=theta,
             gamma=0,
+            no_zero_spin=no_zero_spin,
         )
         yield from get_helicity_rotation(parent_id)
 
