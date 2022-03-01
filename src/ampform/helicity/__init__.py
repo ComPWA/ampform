@@ -582,14 +582,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
 
     def __formulate_top_expression(self) -> PoolSum:
+        # pylint: disable=too-many-locals
         outer_state_ids = _get_outer_state_ids(self.__reaction)
         spin_projections: DefaultDict[
             sp.Symbol, Set[sp.Rational]
         ] = collections.defaultdict(set)
-        transition_groups = group_by_spin_projection(
-            self.__reaction.transitions
-        )
-        for group in transition_groups:
+        spin_groups = group_by_spin_projection(self.__reaction.transitions)
+        for group in spin_groups:
             self.__register_amplitudes(group)
             for transition in group:
                 for i in outer_state_ids:
@@ -598,12 +597,28 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     value = sp.Rational(state.spin_projection)
                     spin_projections[symbol].add(value)
 
-        topologies = sorted({t.topology for t in self.__reaction.transitions})
-        amplitudes = sum(
-            _create_amplitude_base(t)[list(spin_projections)]
-            for t in topologies
-        )
-        return PoolSum(abs(amplitudes) ** 2, *spin_projections.items())
+        topology_groups = group_by_topology(self.__reaction.transitions)
+        if len(topology_groups) == 1:
+            topology = next(iter(topology_groups))
+            amplitude_sum = _create_amplitude_base(topology)[
+                list(spin_projections)
+            ]
+        else:
+            amplitude_sum = sp.S.Zero
+            for topology, transitions in topology_groups.items():
+                base = _create_amplitude_base(topology)
+                helicities = [
+                    _create_helicity_symbol(topology, i)
+                    for i in outer_state_ids
+                ]
+                amplitude_symbol = base[helicities]
+                first_transition = transitions[0]
+                alignment_sum = formulate_spin_alignment(first_transition)
+                amplitude_sum += PoolSum(
+                    alignment_sum.expression * amplitude_symbol,
+                    *alignment_sum.indices,
+                )
+        return PoolSum(abs(amplitude_sum) ** 2, *spin_projections.items())
 
     def __register_amplitudes(
         self, transition_group: List[StateTransition]
@@ -740,6 +755,17 @@ def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
 def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
     superscript = get_topology_identifier(topology)
     return sp.IndexedBase(f"A^{superscript}", complex=True)
+
+
+def _create_helicity_symbol(
+    topology: Topology, state_id: int, root: str = "lambda"
+) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        name = "m"
+    else:
+        suffix = get_helicity_suffix(topology, state_id)
+        name = f"{root}{suffix}"
+    return sp.Symbol(name, rational=True)
 
 
 def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
