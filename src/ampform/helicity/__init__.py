@@ -507,6 +507,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
+        self.align_spin: Optional[bool] = None
+        """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
 
@@ -609,7 +611,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     spin_projections[symbol].add(value)
 
         topology_groups = group_by_topology(self.__reaction.transitions)
-        if len(topology_groups) == 1:
+        align_spin = self.align_spin
+        if align_spin is None:
+            align_spin = len(topology_groups) > 1
+        if not align_spin:
             topology = next(iter(topology_groups))
             amplitude_sum = _create_amplitude_base(topology)[
                 list(spin_projections)
