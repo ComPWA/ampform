@@ -12,6 +12,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -368,8 +369,12 @@ class PoolSum(UnevaluatedExpression):
     def indices(self) -> List[Tuple[sp.Symbol, Tuple[sp.Float, ...]]]:
         return self.args[1:]
 
+    @property
+    def free_symbols(self) -> Set[sp.Symbol]:
+        return super().free_symbols - {s for s, _ in self.indices}
+
     def evaluate(self) -> sp.Expr:
-        indices = dict(self.indices)
+        indices = {symbol: tuple(values) for symbol, values in self.indices}
         return sp.Add(
             *[
                 self.expression.subs(zip(indices, combi))
