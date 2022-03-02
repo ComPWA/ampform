@@ -25,7 +25,6 @@ from typing import (
     Iterator,
     KeysView,
     List,
-    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -74,8 +73,10 @@ from .naming import (
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
+    from typing import Literal
 else:
     from singledispatchmethod import singledispatchmethod
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
