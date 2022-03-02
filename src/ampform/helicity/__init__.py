@@ -771,7 +771,7 @@ def _create_helicity_symbol(
     topology: Topology, state_id: int, root: str = "lambda"
 ) -> sp.Symbol:
     if state_id == -1:  # initial state
-        name = "m"
+        name = "m_A"
     else:
         suffix = get_helicity_suffix(topology, state_id)
         name = f"{root}{suffix}"
@@ -780,7 +780,7 @@ def _create_helicity_symbol(
 
 def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
     if state_id == -1:  # initial state
-        suffix = ""
+        suffix = "_A"
     else:
         suffix = str(state_id)
     return sp.Symbol(f"m{suffix}", rational=True)
