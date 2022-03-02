@@ -358,8 +358,13 @@ class PoolSum(UnevaluatedExpression):
         *indices: Tuple[sp.Symbol, Iterable[sp.Float]],
         **hints: Any,
     ) -> "PoolSum":
-        indices = tuple((s, tuple(v)) for s, v in indices)
-        return create_expression(cls, expression, *indices, **hints)
+        converted_indices = []
+        for idx_symbol, values in indices:
+            values = tuple(values)
+            if len(values) == 0:
+                raise ValueError(f"No values provided for index {idx_symbol}")
+            converted_indices.append((idx_symbol, values))
+        return create_expression(cls, expression, *converted_indices, **hints)
 
     @property
     def expression(self) -> sp.Expr:
