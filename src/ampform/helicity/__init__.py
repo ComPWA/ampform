@@ -25,6 +25,7 @@ from typing import (
     Iterator,
     KeysView,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -608,7 +609,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             for topology, transitions in topology_groups.items():
                 base = _create_amplitude_base(topology)
                 helicities = [
-                    _create_helicity_symbol(topology, i)
+                    _get_opposite_helicity_sign(topology, i)
+                    * _create_helicity_symbol(topology, i)
                     for i in outer_state_ids
                 ]
                 amplitude_symbol = base[helicities]
@@ -750,6 +752,14 @@ def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
     )
     base = _create_amplitude_base(transition.topology)
     return base[helicities]
+
+
+def _get_opposite_helicity_sign(
+    topology: Topology, state_id: int
+) -> Literal[-1, 1]:
+    if state_id != -1 and is_opposite_helicity_state(topology, state_id):
+        return -1
+    return 1
 
 
 def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
