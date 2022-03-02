@@ -76,7 +76,7 @@ jupyter-core==4.9.2
 jupyter-server==1.13.5
 jupyter-server-mathjax==0.2.5
 jupyter-sphinx==0.3.2
-jupyterlab==3.2.9
+jupyterlab==3.3.0
 jupyterlab-code-formatter==1.4.10
 jupyterlab-markup==1.0.1
 jupyterlab-myst==0.1.6 ; python_version >= "3.7.0"
