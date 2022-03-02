@@ -1,5 +1,6 @@
 # cspell:ignore einsum
-# pylint: disable=arguments-differ,no-member,protected-access,unused-argument
+# pylint: disable=arguments-differ,no-member,protected-access,too-many-lines
+# pylint: disable=unused-argument
 """Classes and functions for relativistic four-momentum kinematics."""
 
 import itertools
@@ -12,6 +13,7 @@ from typing import (
     Dict,
     FrozenSet,
     Iterable,
+    List,
     Optional,
     Sequence,
     Set,
@@ -28,8 +30,15 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.helicity.decay import (
     assert_isobar_topology,
     determine_attached_final_state,
+    get_parent_id,
+    get_sibling_state_id,
+    is_opposite_helicity_state,
+    list_decay_chain_ids,
 )
-from ampform.helicity.naming import get_helicity_angle_label
+from ampform.helicity.naming import (
+    get_helicity_angle_label,
+    get_helicity_suffix,
+)
 from ampform.sympy import (
     NumPyPrintable,
     UnevaluatedExpression,
@@ -44,6 +53,7 @@ from ampform.sympy._array_expressions import (
     ArraySlice,
     ArraySum,
     ArraySymbol,
+    MatrixMultiplication,
 )
 from ampform.sympy.math import ComplexSqrt
 
@@ -114,12 +124,23 @@ class HelicityAdapter:
                 )
                 self.__topologies.add(permuted_topology)
 
-    def create_expressions(self) -> Dict[str, sp.Expr]:
+    def create_expressions(
+        self, generate_wigner_angles: bool = False
+    ) -> Dict[str, sp.Expr]:
         output = {}
         for topology in self.__topologies:
-            four_momenta = create_four_momentum_symbols(topology)
-            output.update(compute_helicity_angles(four_momenta, topology))
-            output.update(compute_invariant_masses(four_momenta, topology))
+            momenta = create_four_momentum_symbols(topology)
+            output.update(compute_helicity_angles(momenta, topology))
+            output.update(compute_invariant_masses(momenta, topology))
+            if generate_wigner_angles:
+                wigner_rotation_ids = {
+                    i
+                    for i in topology.outgoing_edge_ids
+                    if get_parent_id(topology, i) != -1
+                }
+                for state_id in wigner_rotation_ids:
+                    angles = compute_wigner_angles(topology, momenta, state_id)
+                    output.update(angles)
         return output
 
 
@@ -268,12 +289,12 @@ class FourMomentumZ(UnevaluatedExpression):
 
 @implement_doit_method
 @make_commutative
-class ThreeMomentumNorm(NumPyPrintable, UnevaluatedExpression):
-    """Norm of the three-momentum of a `FourMomentumSymbol`."""
+class ThreeMomentum(UnevaluatedExpression):
+    """Spatial components of a `FourMomentumSymbol`."""
 
     def __new__(
         cls, momentum: "FourMomentumSymbol", **hints: Any
-    ) -> "ThreeMomentumNorm":
+    ) -> "ThreeMomentum":
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -284,15 +305,68 @@ class ThreeMomentumNorm(NumPyPrintable, UnevaluatedExpression):
         three_momentum = ArraySlice(
             self._momentum, (slice(None), slice(1, None))
         )
-        norm_squared = ArrayAxisSum(three_momentum**2, axis=1)
-        return sp.sqrt(norm_squared)
+        return three_momentum
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
-        return Rf"\left|\vec{{{momentum}}}\right|"
+        return Rf"\vec{{{momentum}}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
         return printer._print(self.evaluate())
+
+
+@implement_doit_method
+@make_commutative
+class EuclideanNorm(UnevaluatedExpression):
+    """Take the euclidean norm of an array over axis 1."""
+
+    def __new__(
+        cls, vector: "FourMomentumSymbol", **hints: Any
+    ) -> "EuclideanNorm":
+        return create_expression(cls, vector, **hints)
+
+    @property
+    def _vector(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return sp.sqrt(EuclideanNormSquared(self._vector))
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        vector = printer._print(self._vector)
+        return Rf"\left|{vector}\right|"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+@implement_doit_method
+@make_commutative
+class EuclideanNormSquared(UnevaluatedExpression):
+    """Take the squared euclidean norm of an array over axis 1."""
+
+    def __new__(
+        cls, vector: "FourMomentumSymbol", **hints: Any
+    ) -> "EuclideanNormSquared":
+        return create_expression(cls, vector, **hints)
+
+    @property
+    def _vector(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> ArraySlice:
+        return ArrayAxisSum(self._vector**2, axis=1)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        vector = printer._print(self._vector)
+        return Rf"\left|{vector}\right|^{{2}}"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        return printer._print(self.evaluate())
+
+
+def three_momentum_norm(momentum: FourMomentumSymbol) -> EuclideanNorm:
+    return EuclideanNorm(ThreeMomentum(momentum))
 
 
 @implement_doit_method
@@ -309,7 +383,8 @@ class InvariantMass(UnevaluatedExpression):
 
     def evaluate(self) -> ArraySlice:
         p = self._momentum
-        return ComplexSqrt(Energy(p) ** 2 - ThreeMomentumNorm(p) ** 2)
+        p_xyz = ThreeMomentum(p)
+        return ComplexSqrt(Energy(p) ** 2 - EuclideanNorm(p_xyz) ** 2)
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
@@ -351,11 +426,77 @@ class Theta(UnevaluatedExpression):
 
     def evaluate(self) -> sp.Expr:
         p = self._momentum
-        return sp.acos(FourMomentumZ(p) / ThreeMomentumNorm(p))
+        return sp.acos(FourMomentumZ(p) / three_momentum_norm(p))
 
     def _latex(self, printer: LatexPrinter, *args: Any) -> str:
         momentum = printer._print(self._momentum)
         return Rf"\theta\left({momentum}\right)"
+
+
+@implement_doit_method
+@make_commutative
+class NegativeMomentum(UnevaluatedExpression):
+    r"""Invert the spatial components of a `FourMomentumSymbol`."""
+
+    def __new__(cls, momentum: "FourMomentumSymbol", **hints: Any) -> "Theta":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "FourMomentumSymbol":
+        return self.args[0]
+
+    def evaluate(self) -> sp.Expr:
+        p = self._momentum
+        eta = MinkowskiMetric(p)
+        return ArrayMultiplication(eta, p)
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self._momentum)
+        return Rf"-\left({momentum}\right)"
+
+
+class MinkowskiMetric(NumPyPrintable):
+    # pylint: disable=no-self-use
+    r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
+
+    def __new__(
+        cls, momentum: FourMomentumSymbol, **hints: Any
+    ) -> "MinkowskiMetric":
+        return create_expression(cls, momentum, **hints)
+
+    @property
+    def _momentum(self) -> "MinkowskiMetric":
+        return self.args[0]
+
+    def as_explicit(self) -> sp.Expr:
+        return sp.Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, -1, 0, 0],
+                [0, 0, -1, 0],
+                [0, 0, 0, -1],
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        return R"\boldsymbol{\eta}"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].update(
+            {"array", "ones", "zeros"}
+        )
+        momentum = printer._print(self._momentum)
+        n_events = f"len({momentum})"
+        zeros = f"zeros({n_events})"
+        ones = f"ones({n_events})"
+        return f"""array(
+            [
+                [{ones}, {zeros}, {zeros}, {zeros}],
+                [{zeros}, -{ones}, {zeros}, {zeros}],
+                [{zeros}, {zeros}, -{ones}, {zeros}],
+                [{zeros}, {zeros}, {zeros}, -{ones}],
+            ]
+        ).transpose((2, 0, 1))"""
 
 
 @implement_doit_method
@@ -377,7 +518,7 @@ class BoostZMatrix(UnevaluatedExpression):
 
     def as_explicit(self) -> sp.Expr:
         beta = self.args[0]
-        gamma = 1 / sp.sqrt(1 - beta**2)
+        gamma = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix(
             [
                 [gamma, 0, 0, -gamma * beta],
@@ -430,6 +571,123 @@ class _BoostZMatrixImplementation(NumPyPrintable):
                 [{zeros}, {ones}, {zeros}, {zeros}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
                 [-{gamma_beta}, {zeros}, {zeros}, {gamma}],
+            ]
+        ).transpose((2, 0, 1))"""
+
+
+@implement_doit_method
+class BoostMatrix(UnevaluatedExpression):
+    r"""Compute a rank-3 Lorentz boost matrix from a `FourMomentumSymbol`."""
+
+    def __new__(
+        cls, momentum: FourMomentumSymbol, **kwargs: Any
+    ) -> "BoostMatrix":
+        return create_expression(cls, momentum, **kwargs)
+
+    def as_explicit(self) -> sp.Expr:
+        momentum = self.args[0]
+        energy = Energy(momentum)
+        beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
+        beta_x = FourMomentumX(momentum) / energy
+        beta_y = FourMomentumY(momentum) / energy
+        beta_z = FourMomentumZ(momentum) / energy
+        g = 1 / sp.sqrt(1 - beta_sq)
+        return sp.Matrix(
+            [
+                [g, -g * beta_x, -g * beta_y, -g * beta_z],
+                [
+                    -g * beta_x,
+                    1 + (g - 1) * beta_x**2 / beta_sq,
+                    (g - 1) * beta_y * beta_x / beta_sq,
+                    (g - 1) * beta_z * beta_x / beta_sq,
+                ],
+                [
+                    -g * beta_y,
+                    (g - 1) * beta_x * beta_y / beta_sq,
+                    1 + (g - 1) * beta_y**2 / beta_sq,
+                    (g - 1) * beta_z * beta_y / beta_sq,
+                ],
+                [
+                    -g * beta_z,
+                    (g - 1) * beta_x * beta_z / beta_sq,
+                    (g - 1) * beta_y * beta_z / beta_sq,
+                    1 + (g - 1) * beta_z**2 / beta_sq,
+                ],
+            ]
+        )
+
+    def evaluate(self) -> "_BoostMatrixImplementation":
+        momentum = self.args[0]
+        energy = Energy(momentum)
+        beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
+        beta_x = FourMomentumX(momentum) / energy
+        beta_y = FourMomentumY(momentum) / energy
+        beta_z = FourMomentumZ(momentum) / energy
+        gamma = 1 / sp.sqrt(1 - beta_sq)
+        return _BoostMatrixImplementation(
+            momentum,
+            b00=gamma,
+            b01=-gamma * beta_x,
+            b02=-gamma * beta_y,
+            b03=-gamma * beta_z,
+            b11=1 + (gamma - 1) * beta_x**2 / beta_sq,
+            b12=(gamma - 1) * beta_x * beta_y / beta_sq,
+            b13=(gamma - 1) * beta_x * beta_z / beta_sq,
+            b22=1 + (gamma - 1) * beta_y**2 / beta_sq,
+            b23=(gamma - 1) * beta_y * beta_z / beta_sq,
+            b33=1 + (gamma - 1) * beta_z**2 / beta_sq,
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.args[0])
+        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+
+
+class _BoostMatrixImplementation(NumPyPrintable):
+    def __new__(  # pylint: disable=too-many-arguments,too-many-locals
+        cls,
+        momentum: FourMomentumSymbol,
+        b00: sp.Basic,
+        b01: sp.Basic,
+        b02: sp.Basic,
+        b03: sp.Basic,
+        b11: sp.Basic,
+        b12: sp.Basic,
+        b13: sp.Basic,
+        b22: sp.Basic,
+        b23: sp.Basic,
+        b33: sp.Basic,
+        **kwargs: Any,
+    ) -> "BoostZMatrix":
+        return create_expression(
+            cls,
+            momentum,
+            b00,
+            b01,
+            b02,
+            b03,
+            b11,
+            b12,
+            b13,
+            b22,
+            b23,
+            b33,
+            **kwargs,
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        momentum = printer._print(self.args[0])
+        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        # pylint: disable=too-many-locals, unbalanced-tuple-unpacking
+        _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
+        return f"""array(
+            [
+                [{b00}, {b01}, {b02}, {b03}],
+                [{b01}, {b11}, {b12}, {b13}],
+                [{b02}, {b12}, {b22}, {b23}],
+                [{b03}, {b13}, {b23}, {b33}],
             ]
         ).transpose((2, 0, 1))"""
 
@@ -634,7 +892,7 @@ def compute_helicity_angles(
     >>> topology = topologies[0]
     >>> four_momenta = create_four_momentum_symbols(topology)
     >>> angles = compute_helicity_angles(four_momenta, topology)
-    >>> angles["theta_12"]
+    >>> angles["theta_0"]
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
@@ -646,7 +904,7 @@ def compute_helicity_angles(
     n_events = _get_number_of_events(four_momenta)
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
-        four_momenta: FourMomenta, node_id: int
+        four_momenta: "FourMomenta", node_id: int
     ) -> Dict[str, sp.Expr]:
         helicity_angles: Dict[str, sp.Expr] = {}
         child_state_ids = sorted(
@@ -656,6 +914,8 @@ def compute_helicity_angles(
             topology.edges[i].ending_node_id is None for i in child_state_ids
         ):
             state_id = child_state_ids[0]
+            if is_opposite_helicity_state(topology, state_id):
+                state_id = child_state_ids[1]
             four_momentum = four_momenta[state_id]
             phi_label, theta_label = get_helicity_angle_label(
                 topology, state_id
@@ -678,7 +938,7 @@ def compute_helicity_angles(
                     # boost all of those momenta into this new subsystem
                     phi = Phi(four_momentum)
                     theta = Theta(four_momentum)
-                    p3_norm = ThreeMomentumNorm(four_momentum)
+                    p3_norm = three_momentum_norm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool = {
                         k: ArrayMultiplication(
@@ -692,6 +952,8 @@ def compute_helicity_angles(
                     }
 
                     # register current angle variables
+                    if is_opposite_helicity_state(topology, state_id):
+                        state_id = get_sibling_state_id(topology, state_id)
                     phi_label, theta_label = get_helicity_angle_label(
                         topology, state_id
                     )
@@ -741,6 +1003,111 @@ def compute_invariant_masses(
         name = get_invariant_mass_label(topology, state_id)
         invariant_masses[name] = invariant_mass
     return invariant_masses
+
+
+def compute_wigner_angles(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> Dict[str, sp.Expr]:
+    """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
+
+    Implementation of (B.2-4) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, with :math:`x'_z` etc.
+    taken from the result of :func:`compute_wigner_rotation_matrix`.
+    """
+    wigner_rotation_matrix = compute_wigner_rotation_matrix(
+        topology, momenta, state_id
+    )
+    x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
+    y_z = ArraySlice(wigner_rotation_matrix, (slice(None), 2, 3))
+    z_x = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 1))
+    z_y = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 2))
+    z_z = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 3))
+    alpha = sp.atan2(z_y, z_x)
+    beta = sp.acos(z_z)
+    gamma = sp.atan2(y_z, -x_z)
+    suffix = get_helicity_suffix(topology, state_id)
+    return {
+        f"alpha{suffix}": alpha,
+        f"beta{suffix}": beta,
+        f"gamma{suffix}": gamma,
+    }
+
+
+def compute_wigner_rotation_matrix(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> MatrixMultiplication:
+    """Compute a Wigner rotation matrix.
+
+    Implementation of Eq. (36) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`.
+    """
+    momentum = momenta[state_id]
+    inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
+    boost_chain = compute_boost_chain(topology, momenta, state_id)
+    return MatrixMultiplication(inverted_direct_boost, *boost_chain)
+
+
+def compute_boost_chain(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> List[BoostMatrix]:
+    boost_matrices = []
+    decay_chain_state_ids = __get_boost_chain_ids(topology, state_id)
+    boosted_momenta = {
+        i: get_four_momentum_sum(topology, momenta, i)
+        for i in decay_chain_state_ids
+    }
+    for current_state_id in decay_chain_state_ids:
+        current_momentum = boosted_momenta[current_state_id]
+        boost = BoostMatrix(current_momentum)
+        boosted_momenta = {
+            i: ArrayMultiplication(boost, p)
+            for i, p in boosted_momenta.items()
+        }
+        boost_matrices.append(boost)
+    return boost_matrices
+
+
+def __get_boost_chain_ids(topology: Topology, state_id: int) -> List[int]:
+    """Get the state IDs from first resonance to this final state.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topology = create_isobar_topologies(3)[0]
+    >>> __get_boost_chain_ids(topology, state_id=0)
+    [0]
+    >>> __get_boost_chain_ids(topology, state_id=1)
+    [3, 1]
+    >>> __get_boost_chain_ids(topology, state_id=2)
+    [3, 2]
+    """
+    decay_chain_state_ids = list(
+        reversed(list_decay_chain_ids(topology, state_id))
+    )
+    initial_state_id = next(iter(topology.incoming_edge_ids))
+    decay_chain_state_ids.remove(initial_state_id)
+    return decay_chain_state_ids
+
+
+def get_four_momentum_sum(
+    topology: Topology, momenta: "FourMomenta", state_id: int
+) -> Union[ArraySum, FourMomentumSymbol]:
+    """Get the `FourMomentumSymbol` or sum of momenta for **any** edge ID.
+
+    If the edge ID is a final state ID, return its `FourMomentumSymbol`. If
+    it's an intermediate edge ID, return the sum of the momenta of the final
+    states to which it decays.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topology = create_isobar_topologies(3)[0]
+    >>> momenta = create_four_momentum_symbols(topology)
+    >>> get_four_momentum_sum(topology, momenta, state_id=0)
+    p0
+    >>> get_four_momentum_sum(topology, momenta, state_id=3)
+    p1 + p2
+    """
+    if state_id in topology.outgoing_edge_ids:
+        return momenta[state_id]
+    sub_momenta_ids = determine_attached_final_state(topology, state_id)
+    return ArraySum(*[momenta[i] for i in sub_momenta_ids])
 
 
 def get_invariant_mass_label(topology: Topology, state_id: int) -> str:

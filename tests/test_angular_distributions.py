@@ -89,7 +89,7 @@ class TestEpemToDmD0Pip:
                 1 + sp.cos(sp.Symbol("theta_02", real=True)) ** 2,
             ),
             (  # phi distribution of the epem decay
-                "phi_02",
+                "phi_0",
                 1,
             ),
             (  # cos(theta') distribution from D2*

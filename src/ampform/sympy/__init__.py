@@ -1,14 +1,28 @@
 # cspell:ignore mhash
-# pylint: disable=invalid-getnewargs-ex-returned
+# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
+import itertools
 from abc import abstractmethod
-from typing import Any, Callable, Optional, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
+from sympy.printing.precedence import PRECEDENCE
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -319,3 +333,137 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
     return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
+
+
+@implement_doit_method
+class PoolSum(UnevaluatedExpression):
+    # pylint: disable=line-too-long
+    r"""Sum over indices where the values are taken from a domain set.
+
+    >>> i, j, m, n = sp.symbols("i j m n")
+    >>> expr = PoolSum(i**m + j**n, (i, (-1, 0, +1)), (j, (2, 4, 5)))
+    >>> expr
+    PoolSum(i**m + j**n, (i, (-1, 0, 1)), (j, (2, 4, 5)))
+    >>> print(sp.latex(expr))
+    \sum_{i=-1}^{1} \sum_{j\in\left\{2,4,5\right\}}{i^{m} + j^{n}}
+    >>> expr.doit()
+    3*(-1)**m + 3*0**m + 3*2**n + 3*4**n + 3*5**n + 3
+    """
+
+    precedence = PRECEDENCE["Mul"]
+
+    def __new__(
+        cls,
+        expression: sp.Expr,
+        *indices: Tuple[sp.Symbol, Iterable[sp.Float]],
+        **hints: Any,
+    ) -> "PoolSum":
+        converted_indices = []
+        for idx_symbol, values in indices:
+            values = tuple(values)
+            if len(values) == 0:
+                raise ValueError(f"No values provided for index {idx_symbol}")
+            converted_indices.append((idx_symbol, values))
+        return create_expression(cls, expression, *converted_indices, **hints)
+
+    @property
+    def expression(self) -> sp.Expr:
+        return self.args[0]
+
+    @property
+    def indices(self) -> List[Tuple[sp.Symbol, Tuple[sp.Float, ...]]]:
+        return self.args[1:]
+
+    @property
+    def free_symbols(self) -> Set[sp.Symbol]:
+        return super().free_symbols - {s for s, _ in self.indices}
+
+    def evaluate(self) -> sp.Expr:
+        indices = {symbol: tuple(values) for symbol, values in self.indices}
+        return sp.Add(
+            *[
+                self.expression.subs(zip(indices, combi))
+                for combi in itertools.product(*indices.values())
+            ]
+        )
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        indices = dict(self.indices)
+        sum_symbols: List[str] = []
+        for idx, values in indices.items():
+            sum_symbols.append(_render_sum_symbol(printer, idx, values))
+        expression = printer._print(self.expression)
+        return R" ".join(sum_symbols) + f"{{{expression}}}"
+
+    def cleanup(self) -> Union[sp.Expr, "PoolSum"]:
+        """Remove redundant summations, like indices with one or no value.
+
+        >>> x, i = sp.symbols("x i")
+        >>> PoolSum(x**i, (i, [0, 1, 2])).cleanup().doit()
+        x**2 + x + 1
+        >>> PoolSum(x, (i, [0, 1, 2])).cleanup()
+        x
+        >>> PoolSum(x).cleanup()
+        x
+        >>> PoolSum(x**i, (i, [0])).cleanup()
+        1
+        """
+        substitutions = {}
+        new_indices = []
+        for idx, values in self.indices:
+            if idx not in self.expression.free_symbols:
+                continue
+            if len(values) == 0:
+                continue
+            if len(values) == 1:
+                substitutions[idx] = values[0]
+            else:
+                new_indices.append((idx, values))
+        new_expression = self.expression.xreplace(substitutions)
+        if len(new_indices) == 0:
+            return new_expression
+        return PoolSum(new_expression, *new_indices)
+
+
+def _render_sum_symbol(
+    printer: LatexPrinter, idx: sp.Symbol, values: Sequence[float]
+) -> str:
+    if len(values) == 0:
+        return ""
+    idx = printer._print(idx)
+    if len(values) == 1:
+        value = values[0]
+        return Rf"\sum_{{{idx}={value}}}"
+    if _is_regular_series(values):
+        sorted_values = sorted(values)
+        first_value = sorted_values[0]
+        last_value = sorted_values[-1]
+        return Rf"\sum_{{{idx}={first_value}}}^{{{last_value}}}"
+    idx_values = ",".join(map(printer._print, values))
+    return Rf"\sum_{{{idx}\in\left\{{{idx_values}\right\}}}}"
+
+
+def _is_regular_series(values: Sequence[float]) -> bool:
+    """Check whether a set of values is a series with unit distances.
+
+    >>> _is_regular_series([0, 1, 2])
+    True
+    >>> _is_regular_series([-0.5, +0.5])
+    True
+    >>> _is_regular_series([+0.5, -0.5, 1.5])
+    True
+    >>> _is_regular_series([-1, +1])
+    False
+    >>> _is_regular_series([1])
+    False
+    >>> _is_regular_series([])
+    False
+    """
+    if len(values) <= 1:
+        return False
+    sorted_values = sorted(values)
+    for val, next_val in zip(sorted_values, sorted_values[1:]):
+        difference = float(next_val - val)
+        if difference != 1.0:
+            return False
+    return True

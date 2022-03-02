@@ -11,13 +11,15 @@ import logging
 import operator
 import sys
 from collections import OrderedDict, abc
+from decimal import Decimal
 from difflib import get_close_matches
-from functools import reduce
+from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
     Any,
     DefaultDict,
     Dict,
+    Generator,
     ItemsView,
     Iterable,
     Iterator,
@@ -25,10 +27,12 @@ from typing import (
     List,
     Mapping,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Union,
     ValuesView,
+    overload,
 )
 
 import attrs
@@ -39,6 +43,7 @@ from qrules.combinatorics import (
     perform_external_edge_identical_particle_combinatorics,
 )
 from qrules.particle import Particle
+from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -47,20 +52,31 @@ from ampform.dynamics.builder import (
     create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
+from ampform.sympy import PoolSum
 
-from .decay import TwoBodyDecay
+from .decay import (
+    TwoBodyDecay,
+    collect_topologies,
+    get_parent_id,
+    get_sibling_state_id,
+    is_opposite_helicity_state,
+)
 from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     generate_transition_label,
     get_helicity_angle_label,
+    get_helicity_suffix,
+    get_topology_identifier,
     natural_sorting,
 )
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
+    from typing import Literal
 else:
     from singledispatchmethod import singledispatchmethod
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
@@ -202,7 +218,7 @@ def _order_amplitudes(
 
 @frozen
 class HelicityModel:  # noqa: R701
-    intensity: sp.Expr = field(validator=instance_of(sp.Expr))
+    intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
     amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
         converter=_order_amplitudes
@@ -247,7 +263,17 @@ class HelicityModel:  # noqa: R701
         Constructed from `intensity` by substituting its amplitude symbols with
         the definitions with `amplitudes`.
         """
-        return self.intensity.xreplace(self.amplitudes)
+
+        def unfold_poolsums(expr: sp.Expr) -> sp.Expr:
+            new_expr = expr
+            for node in sp.postorder_traversal(expr):
+                if isinstance(node, PoolSum):
+                    new_expr = new_expr.xreplace({node: node.evaluate()})
+            return new_expr
+
+        intensity = self.intensity.evaluate()
+        intensity = unfold_poolsums(intensity)
+        return intensity.subs(self.amplitudes)
 
     def rename_symbols(  # noqa: R701
         self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
@@ -351,14 +377,6 @@ class _HelicityModelIngredients:
     amplitudes: Dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: Dict[str, sp.Expr] = field(factory=dict)
     kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
-    amplitude_base: sp.IndexedBase = field(
-        init=False, on_setattr=attrs.setters.frozen, repr=False
-    )
-
-    def __attrs_post_init__(self) -> None:
-        # https://www.attrs.org/en/stable/init.html#post-init
-        base = sp.IndexedBase("A", complex=True)
-        object.__setattr__(self, "amplitude_base", base)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
@@ -486,11 +504,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
-        self._name_generator = HelicityAmplitudeNameGenerator()
         self.__reaction = reaction
+        self._name_generator = HelicityAmplitudeNameGenerator(reaction)
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
+        self.align_spin: Optional[bool] = None
+        """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
 
@@ -549,10 +569,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
-        main_expression = self.__formulate_top_expression()
+        main_intensity = self.__formulate_top_expression()
+        _str_kinematic_variables = self.__adapter.create_expressions(
+            generate_wigner_angles=self.__is_align_spin
+        )
         kinematic_variables = {
             sp.Symbol(var_name, real=True): expr
-            for var_name, expr in self.__adapter.create_expressions().items()
+            for var_name, expr in _str_kinematic_variables.items()
         }
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
@@ -568,7 +591,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             del kinematic_variables[symbol]
 
         return HelicityModel(
-            intensity=main_expression,
+            intensity=main_intensity,
             amplitudes=self.__ingredients.amplitudes,
             parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
@@ -576,52 +599,96 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             reaction_info=self.__reaction,
         )
 
-    def __formulate_top_expression(self) -> sp.Expr:
-        transition_groups = group_transitions(self.__reaction.transitions)
-        self.__register_parameter_couplings(transition_groups)
-        coherent_intensities = [
-            self.__formulate_coherent_intensity(group)
-            for group in transition_groups
-        ]
-        return sum(coherent_intensities)
+    def __formulate_top_expression(self) -> PoolSum:
+        # pylint: disable=too-many-locals
+        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        spin_projections: DefaultDict[
+            sp.Symbol, Set[sp.Rational]
+        ] = collections.defaultdict(set)
+        spin_groups = group_by_spin_projection(self.__reaction.transitions)
+        for group in spin_groups:
+            self.__register_amplitudes(group)
+            for transition in group:
+                for i in outer_state_ids:
+                    state = transition.states[i]
+                    symbol = _create_spin_projection_symbol(i)
+                    value = sp.Rational(state.spin_projection)
+                    spin_projections[symbol].add(value)
 
-    def __register_parameter_couplings(
-        self, transition_groups: List[List[StateTransition]]
-    ) -> None:
-        for graph_group in transition_groups:
-            for transition in graph_group:
-                self._name_generator.register_amplitude_coefficient_name(
-                    transition
-                )
+        topology_groups = group_by_topology(self.__reaction.transitions)
+        if self.__is_align_spin:
+            amplitude = self.__formulate_aligned_amplitude(topology_groups)
+        else:
+            indices = list(spin_projections)
+            amplitude = sum(
+                _create_amplitude_base(topology)[indices]
+                for topology in topology_groups
+            )
+        return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
-    def __formulate_coherent_intensity(
-        self, transition_group: List[StateTransition]
+    def __formulate_aligned_amplitude(
+        self, topology_groups: Dict[Topology, List[StateTransition]]
     ) -> sp.Expr:
-        transition = transition_group[0]
-        graph_group_label = generate_transition_label(transition)
+        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        amplitude = sp.S.Zero
+        for topology, transitions in topology_groups.items():
+            base = _create_amplitude_base(topology)
+            helicities = [
+                _get_opposite_helicity_sign(topology, i)
+                * _create_helicity_symbol(topology, i)
+                for i in outer_state_ids
+            ]
+            amplitude_symbol = base[helicities]
+            first_transition = transitions[0]
+            alignment_sum = formulate_spin_alignment(first_transition)
+            amplitude += PoolSum(
+                alignment_sum.expression * amplitude_symbol,
+                *alignment_sum.indices,
+            )
+        return amplitude
+
+    @property
+    def __is_align_spin(self) -> bool:
+        if self.align_spin is None:
+            topologies = collect_topologies(self.__reaction.transitions)
+            return len(topologies) > 1
+        return self.align_spin
+
+    def __register_amplitudes(
+        self, transition_group: List[StateTransition]
+    ) -> None:
+        transition_by_topology = group_by_topology(transition_group)
+        expression = sum(
+            self.__formulate_topology_amplitude(transitions)
+            for transitions in transition_by_topology.values()
+        )
+        first_transition = transition_group[0]
+        graph_group_label = generate_transition_label(first_transition)
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = abs(expression) ** 2
+
+    def __formulate_topology_amplitude(
+        self, transitions: Sequence[StateTransition]
+    ) -> sp.Expr:
         sequential_expressions: List[sp.Expr] = []
-        for group in transition_group:
+        for transition in transitions:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
-                    group.to_graph()
+                    transition.to_graph()
                 )
             )
             for graph in sequential_graphs:
-                transition = StateTransition.from_graph(graph)
-                expression = self.__formulate_sequential_decay(transition)
+                first_transition = StateTransition.from_graph(graph)
+                expression = self.__formulate_sequential_decay(
+                    first_transition
+                )
                 sequential_expressions.append(expression)
-        outer_state_ids = list(transition.initial_states)
-        outer_state_ids += sorted(transition.final_states)
-        helicities = tuple(
-            sp.Rational(transition.states[i].spin_projection)
-            for i in outer_state_ids
-        )
-        amplitude_symbol = self.__ingredients.amplitude_base[helicities]
-        amplitude_sum = sum(sequential_expressions)
-        self.__ingredients.amplitudes[amplitude_symbol] = amplitude_sum
-        component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = abs(amplitude_sum) ** 2
-        return abs(amplitude_symbol) ** 2
+
+        first_transition = transitions[0]
+        symbol = _create_amplitude_symbol(first_transition)
+        expression = sum(sequential_expressions)
+        self.__ingredients.amplitudes[symbol] = expression
+        return expression
 
     def __formulate_sequential_decay(
         self, transition: StateTransition
@@ -709,6 +776,69 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return None
 
 
+def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
+    outer_state_ids = _get_outer_state_ids(transition)
+    helicities = tuple(
+        sp.Rational(transition.states[i].spin_projection)
+        for i in outer_state_ids
+    )
+    base = _create_amplitude_base(transition.topology)
+    return base[helicities]
+
+
+def _get_opposite_helicity_sign(
+    topology: Topology, state_id: int
+) -> Literal[-1, 1]:
+    if state_id != -1 and is_opposite_helicity_state(topology, state_id):
+        return -1
+    return 1
+
+
+def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
+    superscript = get_topology_identifier(topology)
+    return sp.IndexedBase(f"A^{superscript}", complex=True)
+
+
+def _create_helicity_symbol(
+    topology: Topology, state_id: int, root: str = "lambda"
+) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        name = "m_A"
+    else:
+        suffix = get_helicity_suffix(topology, state_id)
+        name = f"{root}{suffix}"
+    return sp.Symbol(name, rational=True)
+
+
+def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        suffix = "_A"
+    else:
+        suffix = str(state_id)
+    return sp.Symbol(f"m{suffix}", rational=True)
+
+
+@singledispatch
+def _get_outer_state_ids(
+    obj: Union[ReactionInfo, StateTransition]
+) -> List[int]:
+    raise NotImplementedError(
+        f"Cannot get outer state IDs from a {type(obj).__name__}"
+    )
+
+
+@_get_outer_state_ids.register(StateTransition)
+def _(transition: StateTransition) -> List[int]:
+    outer_state_ids = list(transition.initial_states)
+    outer_state_ids += sorted(transition.final_states)
+    return outer_state_ids
+
+
+@_get_outer_state_ids.register(ReactionInfo)
+def _(reaction: ReactionInfo) -> List[int]:
+    return _get_outer_state_ids(reaction.transitions[0])
+
+
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     r"""Amplitude model generator for the canonical helicity formalism.
 
@@ -724,12 +854,12 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     Here, :math:`C` stands for `Clebsch-Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
 
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/formalism`.
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
     """
 
-    def __init__(self, reaction_result: ReactionInfo) -> None:
-        super().__init__(reaction_result)
-        self._name_generator = CanonicalAmplitudeNameGenerator()
+    def __init__(self, reaction: ReactionInfo) -> None:
+        super().__init__(reaction)
+        self._name_generator = CanonicalAmplitudeNameGenerator(reaction)
 
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
@@ -899,7 +1029,7 @@ def get_prefactor(transition: StateTransition) -> float:
     return prefactor
 
 
-def group_transitions(
+def group_by_spin_projection(
     transitions: Iterable[StateTransition],
 ) -> List[List[StateTransition]]:
     """Match final and initial states in groups.
@@ -935,6 +1065,293 @@ def group_transitions(
         transition_groups[group_key].append(transition)
 
     return list(transition_groups.values())
+
+
+def group_by_topology(
+    transitions: Iterable[StateTransition],
+) -> Dict[Topology, List[StateTransition]]:
+    """Group state transitions by different `~qrules.topology.Topology`."""
+    transition_groups = collections.defaultdict(list)
+    for transition in transitions:
+        transition_groups[transition.topology].append(transition)
+    return dict(transition_groups)
+
+
+def formulate_spin_alignment(
+    transition: StateTransition,
+) -> PoolSum:
+    """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
+
+    Generate all Wigner-:math:`D` function combinations that appear in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45), but for a generic
+    multibody decay. Each element in the returned `list` is a `tuple` of
+    Wigner-:math:`D` functions that appear in the summation, for a specific set
+    of helicities were are summing over. To generate the full sum, make a
+    multiply the Wigner-:math:`D` functions in each `tuple` and sum over all
+    these products.
+    """
+    rotations = PoolSum(1)
+    for rotated_state_id in transition.final_states:
+        additional_rotations = formulate_rotation_chain(
+            transition, rotated_state_id
+        )
+        rotations = __multiply_pool_sums([rotations, additional_rotations])
+    return rotations
+
+
+__GREEK_INDEX_NAMES = ("lambda", "mu", "nu", "xi", "alpha", "beta", "gamma")
+
+
+def formulate_rotation_chain(
+    transition: StateTransition, rotated_state_id: int
+) -> PoolSum:
+    """Formulate the spin alignment sum for a specific chain.
+
+    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain
+    consists of a series of helicity rotations (see
+    :func:`formulate_helicity_rotation_chain`) plus a Wigner rotation (see
+    :func:`.formulate_wigner_rotation`) in case there is more than one helicity
+    rotation.
+    """
+    helicity_symbol = _create_spin_projection_symbol(rotated_state_id)
+    helicity_rotations = formulate_helicity_rotation_chain(
+        transition, rotated_state_id, helicity_symbol
+    )
+    if len(helicity_rotations.indices) == 1:
+        return helicity_rotations
+    idx_root = __GREEK_INDEX_NAMES[len(helicity_rotations.indices)]
+    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
+    wigner_rotation = formulate_wigner_rotation(
+        transition,
+        rotated_state_id,
+        helicity_symbol=helicity_symbol,
+        m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
+    )
+    return __multiply_pool_sums([helicity_rotations, wigner_rotation])
+
+
+def formulate_helicity_rotation_chain(
+    transition: StateTransition,
+    rotated_state_id: int,
+    helicity_symbol: sp.Symbol,
+) -> PoolSum:
+    """Formulate a Wigner-:math:`D` for each helicity rotation up some state.
+
+    The helicity rotations are performed going through the decay
+    `~qrules.topology.Topology` starting from the initial state up some
+    :code:`rotated_state_id`. Each rotation operates on the spin state and is
+    therefore formulated as a `~sympy.physics.quantum.spin.WignerD` function
+    (see :func:`.formulate_helicity_rotation`). See
+    {doc}`/usage/helicity/spin-alignment` for more info.
+    """
+    topology = transition.topology
+    rotated_state = transition.states[rotated_state_id]
+    spin_magnitude = rotated_state.particle.spin
+    idx_root_counter = 0
+    idx_suffix = get_helicity_suffix(transition.topology, rotated_state_id)
+
+    def get_helicity_rotation(state_id: int) -> Generator[PoolSum, None, None]:
+        parent_id = get_parent_id(topology, state_id)
+        if parent_id is None:
+            return
+        # pylint: disable=stop-iteration-return
+        nonlocal idx_root_counter
+        idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
+        next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
+        idx_root_counter += 1
+        if is_opposite_helicity_state(topology, state_id):
+            state_id = get_sibling_state_id(topology, state_id)
+        phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
+        phi = sp.Symbol(phi_label, real=True)
+        theta = sp.Symbol(theta_theta, real=True)
+        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
+        yield formulate_helicity_rotation(
+            spin_magnitude,
+            spin_projection=sp.Symbol(
+                f"{next_idx_root}{idx_suffix}", rational=True
+            ),
+            m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
+            alpha=phi,
+            beta=theta,
+            gamma=0,
+            no_zero_spin=no_zero_spin,
+        )
+        yield from get_helicity_rotation(parent_id)
+
+    rotations = get_helicity_rotation(rotated_state_id)
+    summation = __multiply_pool_sums(list(rotations))
+    if len(summation.indices) == 1:
+        idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
+        dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
+        return summation.subs(dangling_idx, helicity_symbol)
+    return summation
+
+
+def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
+    if len(sum_expressions) == 0:
+        raise ValueError(f"Product needs at least one {PoolSum.__name__}")
+    product = sp.Mul(*[pool_sum.expression for pool_sum in sum_expressions])
+    combined_indices = []
+    for pool_sum in sum_expressions:
+        combined_indices.extend(pool_sum.indices)
+    return PoolSum(product, *combined_indices)
+
+
+def formulate_wigner_rotation(
+    transition: StateTransition,
+    rotated_state_id: int,
+    helicity_symbol: sp.Symbol,
+    m_prime: sp.Symbol,
+) -> PoolSum:
+    """Formulate the spin rotation matrices for a Wigner rotation.
+
+    A **Wigner rotation** is the 'average' rotation that results form a chain
+    of Lorentz boosts to a new reference frame with regard to a direct boost.
+    See :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially
+    Eq.(36).
+
+    Args:
+        transition: The `~qrules.transition.StateTransition` in which you
+            want to rotate one of the spin states.
+        rotated_state_id: The state ID of a spin `~qrules.transition.State`
+            that you want to rotate.
+        helicity_symbol: Optional `~sympy.core.symbol.Symbol` for :math:`m` in
+            :math:`D^s_{mm'}. Falls back to the value of
+            `~qrules.transition.State.spin_projection` embedded in the provided
+            :code:`transition`.
+        m_prime: The summation symbol :math:`m'` that should be used when
+            summing over the Wigner-:math:`D` functions for this rotation.
+    """
+    state = transition.states[rotated_state_id]
+    no_zero_spin = state.particle.mass == 0.0
+    suffix = get_helicity_suffix(transition.topology, rotated_state_id)
+    if helicity_symbol is None:
+        spin_projection = state.spin_projection
+    else:
+        spin_projection = helicity_symbol
+    return formulate_helicity_rotation(
+        spin_magnitude=state.particle.spin,
+        spin_projection=spin_projection,
+        m_prime=m_prime,
+        alpha=sp.Symbol(f"alpha{suffix}", real=True),
+        beta=sp.Symbol(f"beta{suffix}", real=True),
+        gamma=sp.Symbol(f"gamma{suffix}", real=True),
+        no_zero_spin=no_zero_spin,
+    )
+
+
+def formulate_helicity_rotation(
+    spin_magnitude: Union[float, sp.Symbol],
+    spin_projection: Union[float, sp.Symbol],
+    m_prime: sp.Symbol,
+    alpha: sp.Symbol,
+    beta: sp.Symbol,
+    gamma: sp.Symbol,
+    no_zero_spin: bool = False,
+) -> PoolSum:
+    r"""Formulate action of an Euler rotation on a spin state.
+
+    When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler
+    angles <https://en.wikipedia.org/wiki/Euler_angles>`_
+    :math:`\alpha,\beta,\gamma`, the new state can be expressed in terms of
+    other spin states :math:`\left|s,m'\right\rangle` with the help of
+    Wigner-:math:`D` expansion coefficients:
+
+    .. math::
+        :label: formulate_helicity_rotation
+
+        R(\alpha,\beta,\gamma)\left|s,m\right\rangle
+        = \sum^s_{m'=-s} D^s_{m',m}\left(\alpha,\beta,\gamma\right)
+        \left|s,m'\right\rangle
+
+    See :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(B.5).
+
+    This function gives the summation over these Wigner-:math:`D` functions and
+    can be used for spin alignment following
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45).
+
+    Args:
+        spin_magnitude: Spin magnitude :math:`s` of spin state that is being
+            rotated.
+        spin_projection: Spin projection component :math:`m` of the spin state
+            that is being rotated.
+        m_prime: A index `~sympy.core.symbol.Symbol` or
+            `~sympy.core.symbol.Dummy` that represents :math:`m'` helicities in
+            Eq. :eq:`formulate_helicity_rotation`.
+
+        alpha: First Euler angle.
+        beta: Second Euler angle.
+        gamma: Third Euler angle.
+        no_zero_spin: Skip value :code:`0.0` in the generated spin projection
+            range. Useful for massless particles.
+
+    Example
+    -------
+    >>> a, b, c, i = sp.symbols("a b c i")
+    >>> formulate_helicity_rotation(0, 0, i, a, b, c)
+    PoolSum(WignerD(0, 0, i, a, b, c), (i, (0,)))
+    >>> formulate_helicity_rotation(1/2, -1/2, i, a, b, c)
+    PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, (-1/2, 1/2)))
+    """
+    from sympy.physics.quantum.spin import Rotation as Wigner
+
+    helicities = map(
+        sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin)
+    )
+    return PoolSum(
+        Wigner.D(
+            j=__rationalize(spin_magnitude),
+            m=__rationalize(spin_projection),
+            mp=m_prime,
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
+        ),
+        (m_prime, list(helicities)),
+    )
+
+
+@overload
+def __rationalize(value: float) -> sp.Rational:
+    ...
+
+
+@overload
+def __rationalize(value: sp.Symbol) -> sp.Symbol:
+    ...
+
+
+def __rationalize(value):  # type:ignore[no-untyped-def]
+    if isinstance(value, sp.Symbol):
+        return value
+    return sp.Rational(value)
+
+
+def _create_spin_range(
+    spin_magnitude: float, no_zero_spin: bool = False
+) -> List[float]:
+    """Create a list of allowed spin projections.
+
+    >>> _create_spin_range(0)
+    [0.0]
+    >>> _create_spin_range(0.5)
+    [-0.5, 0.5]
+    >>> _create_spin_range(1)
+    [-1.0, 0.0, 1.0]
+    >>> _create_spin_range(1, no_zero_spin=True)
+    [-1.0, 1.0]
+    >>> projections = _create_spin_range(5)
+    >>> list(map(int, projections))
+    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+    """
+    spin_projections = []
+    projection = Decimal(-spin_magnitude)
+    while projection <= spin_magnitude:
+        spin_projections.append(float(projection))
+        projection += 1
+    if no_zero_spin and len(spin_projections) > 1:
+        spin_projections.remove(0.0)
+    return spin_projections
 
 
 def _generate_kinematic_variable_set(

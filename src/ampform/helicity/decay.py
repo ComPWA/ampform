@@ -1,7 +1,7 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
-from functools import singledispatch
-from typing import Any, Iterable, List, Tuple
+from functools import lru_cache, singledispatch
+from typing import Any, Iterable, List, Optional, Tuple
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -69,18 +69,10 @@ class TwoBodyDecay:
             raise ValueError(
                 f"Node {node_id} does not represent a 1-to-2 body decay!"
             )
-
-        sorted_by_id = sorted(out_state_ids)
-        final_state_ids = [
-            i for i in sorted_by_id if i in topology.outgoing_edge_ids
-        ]
-        intermediate_state_ids = [
-            i for i in sorted_by_id if i in topology.intermediate_edge_ids
-        ]
-        sorted_by_ending = tuple(intermediate_state_ids + final_state_ids)
-
         ingoing_state_id = next(iter(in_state_ids))
-        out_state_id1, out_state_id2, *_ = sorted_by_ending
+        out_state_id1, out_state_id2, *_ = tuple(out_state_ids)
+        if is_opposite_helicity_state(topology, out_state_id1):
+            out_state_id2, out_state_id1 = out_state_id1, out_state_id2
         return cls(
             parent=StateWithID.from_transition(transition, ingoing_state_id),
             children=(
@@ -113,6 +105,81 @@ def _(obj: tuple) -> TwoBodyDecay:
     )
 
 
+@lru_cache(maxsize=None)
+def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
+    """Determine if an edge is an "opposite helicity" state.
+
+    This function provides a deterministic way of identifying states in a
+    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state.
+    It enforces that:
+
+    1. state :code:`0` is never an opposite helicity state
+    2. the sibling of an opposite helicity state is a helicity state.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(5)
+    >>> for topology in topologies:
+    ...     assert not is_opposite_helicity_state(topology, state_id=0)
+    ...     for state_id in set(topology.edges) - topology.incoming_edge_ids:
+    ...         sibling_id = get_sibling_state_id(topology, state_id)
+    ...         assert is_opposite_helicity_state(
+    ...             topology, state_id
+    ...         ) != is_opposite_helicity_state(
+    ...             topology, sibling_id
+    ...         )
+
+    The Wigner-:math:`D` function for a two-particle state treats one helicity
+    with a negative sign. This sign originates from Eq.(13) in
+    :cite:`jacobGeneralTheoryCollisions1959` (see also Eq.(6) in
+    :cite:`marangottoHelicityAmplitudesGeneric2020`). Following
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that
+    gets this minus sign the **"opposite helicity" state**. The other state is
+    called **helicity state**. The choice of (opposite) helicity state affects
+    not only the sign in the Wigner-:math:`D` function, but also the choice of
+    angles: the argument of the Wigner-:math:`D` function returned by
+    :func:`.formulate_wigner_d` are the angles of the helicity state.
+    """
+    sibling_id = get_sibling_state_id(topology, state_id)
+    state_fs_ids = determine_attached_final_state(topology, state_id)
+    sibling_fs_ids = determine_attached_final_state(topology, sibling_id)
+    return tuple(state_fs_ids) > tuple(sibling_fs_ids)
+
+
+@lru_cache(maxsize=None)
+def collect_topologies(
+    transitions: Tuple[StateTransition, ...]
+) -> List[Topology]:
+    return sorted({t.topology for t in transitions})
+
+
+def get_sibling_state_id(topology: Topology, state_id: int) -> int:
+    r"""Get the sibling state ID for a state in an isobar decay.
+
+    Example
+    -------
+    .. code-block::
+
+        -- 3 -- 0
+            \
+             4 -- 1
+              \
+               2
+
+    The sibling state of :code:`1` is :code:`2` and the sibling state of
+    :code:`3` is :code:`4`.
+    """
+    parent_node = topology.edges[state_id].originating_node_id
+    if parent_node is None:
+        raise ValueError(
+            f"State {state_id} is an incoming edge and does not have siblings."
+        )
+    out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
+    out_state_ids.remove(state_id)
+    if len(out_state_ids) != 1:
+        raise ValueError("Not an isobar decay")
+    return next(iter(out_state_ids))
+
+
 def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> Tuple[State, Tuple[State, State]]:
@@ -126,6 +193,59 @@ def get_helicity_info(
         in_helicity_list[0],
         (out_helicity_list[0], out_helicity_list[1]),
     )
+
+
+def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
+    """Get the edge ID of the edge from which this state decayed.
+
+    .. warning:: This only works on 1-to-:math:`n` isobar topologies.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> get_parent_id(topology, state_id=0)
+    -1
+    >>> get_parent_id(topology, state_id=1)  # parent is the resonance
+    3
+    >>> get_parent_id(topology, state_id=2)
+    3
+    >>> get_parent_id(topology, state_id=3)
+    -1
+    >>> get_parent_id(topology, state_id=-1)  # already the top particle
+    """
+    edge = topology.edges[state_id]
+    if edge.originating_node_id is None:
+        return None
+    incoming_edge_ids = tuple(
+        topology.get_edge_ids_ingoing_to_node(edge.originating_node_id)
+    )
+    if len(incoming_edge_ids) != 1:
+        raise ValueError(f"{StateTransition.__name__} is not an isobar decay")
+    return incoming_edge_ids[0]
+
+
+def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
+    """Get the edge ID of the edge from which this state decayed.
+
+    >>> from qrules.topology import create_isobar_topologies
+    >>> topologies = create_isobar_topologies(3)
+    >>> topology = topologies[0]
+    >>> list_decay_chain_ids(topology, state_id=0)
+    [0, -1]
+    >>> list_decay_chain_ids(topology, state_id=1)
+    [1, 3, -1]
+    >>> list_decay_chain_ids(topology, state_id=2)
+    [2, 3, -1]
+    >>> list_decay_chain_ids(topology, state_id=-1)
+    [-1]
+    """
+    assert_isobar_topology(topology)
+    parent_list = []
+    current_id: Optional[int] = state_id
+    while current_id is not None:
+        parent_list.append(current_id)
+        current_id = get_parent_id(topology, current_id)
+    return parent_list
 
 
 def get_sorted_states(

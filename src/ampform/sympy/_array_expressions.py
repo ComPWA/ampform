@@ -406,3 +406,53 @@ class ArrayMultiplication(sp.Expr):
                 contraction += f"...{i}{j},"
         contraction += "->...i"
         return contraction
+
+
+class MatrixMultiplication(sp.Expr):
+    r"""Contract rank-:math:`n` arrays and a rank-:math`n` array.
+
+    This class is particularly useful to create a tensor product of rank-3
+    matrix array classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`,
+    with a rank-3 `.FourMomentumSymbol`. In that case, if :math:`n` is the
+    number of events, you would get a contraction of arrays of shape
+    :math:`n\times\times4\times4` (:math:`n` Lorentz matrices) to
+    :math:`n\times\times4\times4` (:math:`n` four-momentum tuples).
+    """
+
+    def __new__(cls, *tensors: sp.Expr, **hints: Any) -> "ArrayMultiplication":
+        return create_expression(cls, *tensors, **hints)
+
+    @property
+    def tensors(self) -> List[sp.Expr]:
+        return self.args
+
+    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+        tensors = map(printer._print, self.tensors)
+        return " ".join(tensors)
+
+    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+        printer.module_imports[printer._module].add("einsum")
+        tensors = list(map(printer._print, self.args))
+        if len(tensors) == 0:
+            return ""
+        if len(tensors) == 1:
+            return tensors[0]
+        contraction = self._create_einsum_subscripts(len(tensors))
+        return f'einsum("{contraction}", {", ".join(tensors)})'
+
+    @staticmethod
+    def _create_einsum_subscripts(n_arrays: int) -> str:
+        """Create the contraction path for `MatrixMultiplication`.
+
+        >>> MatrixMultiplication._create_einsum_subscripts(1)
+        '...ij->...ij'
+        >>> MatrixMultiplication._create_einsum_subscripts(2)
+        '...ij,...jk->...ik'
+        >>> MatrixMultiplication._create_einsum_subscripts(3)
+        '...ij,...jk,...kl->...il'
+        """
+        letters = string.ascii_lowercase[8 : 8 + n_arrays + 1]
+        groups = []
+        for i, j in zip(letters, letters[1:]):
+            groups.append(f"...{i}{j}")
+        return f"{','.join(groups)}->...i{letters[-1]}"

@@ -2,7 +2,7 @@
 # cspell:ignore atol doprint
 import inspect
 import textwrap
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pytest
@@ -11,7 +11,9 @@ from numpy.lib.scimath import sqrt as complex_sqrt
 from qrules.topology import Topology, create_isobar_topologies
 from sympy.printing.numpy import NumPyPrinter
 
+from ampform.helicity.decay import get_parent_id
 from ampform.kinematics import (
+    BoostMatrix,
     BoostZMatrix,
     Energy,
     FourMomenta,
@@ -20,17 +22,21 @@ from ampform.kinematics import (
     FourMomentumY,
     FourMomentumZ,
     InvariantMass,
+    NegativeMomentum,
     Phi,
     RotationYMatrix,
     RotationZMatrix,
     Theta,
-    ThreeMomentumNorm,
+    ThreeMomentum,
     _ArraySize,
     _OnesArray,
     _ZerosArray,
+    compute_boost_chain,
     compute_helicity_angles,
     compute_invariant_masses,
+    compute_wigner_rotation_matrix,
     create_four_momentum_symbols,
+    three_momentum_norm,
 )
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
@@ -59,13 +65,74 @@ def helicity_angles(
     return compute_helicity_angles(momentum_symbols, topology)
 
 
+class TestBoostMatrix:
+    def test_boost_in_z_direction_reduces_to_z_boost(self):
+        p = FourMomentumSymbol("p")
+        expr = BoostMatrix(p)
+        func = sp.lambdify(p, expr.doit(), cse=True)
+        p_array = np.array([[5, 0, 0, 1]])
+        matrix = func(p_array)[0]
+        assert pytest.approx(matrix) == np.array(
+            [
+                [1.02062073, 0, 0, -0.20412415],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-0.20412415, 0, 0, 1.02062073],
+            ]
+        )
+
+        beta = three_momentum_norm(p) / Energy(p)
+        z_expr = BoostZMatrix(beta)
+        z_func = sp.lambdify(p, z_expr.doit(), cse=True)
+        z_matrix = z_func(p_array)[0]
+        assert pytest.approx(matrix) == z_matrix
+
+    @pytest.mark.parametrize("state_id", [0, 1, 2, 3])
+    def test_boost_into_rest_frame_gives_mass(
+        self,
+        state_id: int,
+        data_sample: Dict[int, np.ndarray],
+        topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    ):
+        # pylint: disable=too-many-locals
+        pi0_mass = 0.135
+        masses = {0: pi0_mass, 1: 0, 2: pi0_mass, 3: pi0_mass}
+        _, momenta = topology_and_momentum_symbols
+        momentum = momenta[state_id]
+        momentum_array = data_sample[state_id]
+        boost = BoostMatrix(momentum)
+        expr = ArrayMultiplication(boost, momentum)
+        func = sp.lambdify(momentum, expr.doit(), cse=True)
+        boosted_array: np.ndarray = func(momentum_array)
+        assert not np.all(np.isnan(boosted_array))
+        boosted_array = np.nan_to_num(boosted_array, nan=masses[state_id])
+        mass_array = boosted_array[:, 0]
+        assert pytest.approx(mass_array, abs=1e-2) == masses[state_id]
+        p_xyz = boosted_array[:, 1:]
+        assert pytest.approx(p_xyz) == 0
+
+    @pytest.mark.parametrize("state_id", [0, 2, 3])
+    def test_boosting_back_gives_original_momentum(
+        self, state_id: int, data_sample: Dict[int, np.ndarray]
+    ):
+        p = FourMomentumSymbol("p")
+        boost = BoostMatrix(p)
+        inverse_boost = BoostMatrix(NegativeMomentum(p))
+        expr = ArrayMultiplication(inverse_boost, boost, p)
+        func = sp.lambdify(p, expr.doit(), cse=True)
+        momentum_array = data_sample[state_id]
+        computed_momentum: np.ndarray = func(momentum_array)
+        assert not np.any(np.isnan(computed_momentum))
+        assert pytest.approx(computed_momentum, abs=1e-2) == momentum_array
+
+
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
         p = FourMomentumSymbol("p")
         n_events = _ArraySize(p)
-        beta = ThreeMomentumNorm(p) / Energy(p)
+        beta = three_momentum_norm(p) / Energy(p)
         expr = BoostZMatrix(beta, n_events)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
         boost_z = func(p_array)[0]
         boosted_array = np.einsum("...ij,...j->...i", boost_z, p_array)
@@ -73,7 +140,7 @@ class TestBoostZMatrix:
         assert pytest.approx(boosted_array[0]) == [mass, 0, 0, 0]
 
         expr = InvariantMass(p)
-        func = sp.lambdify(p, expr.doit())
+        func = sp.lambdify(p, expr.doit(), cse=True)
         mass_array = func(p_array)
         assert pytest.approx(mass_array[0]) == mass
 
@@ -169,26 +236,26 @@ class TestInvariantMass:
     ):
         p = FourMomentumSymbol(f"p{state_id}")
         mass = InvariantMass(p)
-        np_mass = sp.lambdify(p, mass.doit(), "numpy")
+        np_mass = sp.lambdify(p, mass.doit(), cse=True)
         four_momenta = data_sample[state_id]
         computed_values = np_mass(four_momenta)
         average_mass = np.average(computed_values)
         assert pytest.approx(average_mass, abs=1e-5) == expected_mass
 
 
-class TestThreeMomentumNorm:
+class TestThreeMomentum:
     @property
-    def p_norm(self) -> ThreeMomentumNorm:
+    def p_norm(self) -> ThreeMomentum:
         p = FourMomentumSymbol("p")
-        return ThreeMomentumNorm(p)
+        return ThreeMomentum(p)
 
     def test_latex(self):
         latex = sp.latex(self.p_norm)
-        assert latex == R"\left|\vec{p}\right|"
+        assert latex == R"\vec{p}"
 
     def test_numpy(self):
         numpy_code = _generate_numpy_code(self.p_norm)
-        assert numpy_code == "numpy.sqrt(sum(p[:, 1:]**2, axis=1))"
+        assert numpy_code == "p[:, 1:]"
 
 
 class TestPhi:
@@ -224,6 +291,17 @@ class TestTheta:
             numpy_code
             == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
         )
+
+
+class TestNegativeMomentum:
+    def test_same_as_inverse(self, data_sample: Dict[int, np.ndarray]):
+        p = FourMomentumSymbol("p")
+        expr = NegativeMomentum(p)
+        func = sp.lambdify(p, expr.doit(), cse=True)
+        for p_array in data_sample.values():
+            negative_array = func(p_array)
+            assert pytest.approx(negative_array[:, 0]) == p_array[:, 0]
+            assert pytest.approx(negative_array[:, 1:]) == -p_array[:, 1:]
 
 
 class TestRotationYMatrix:
@@ -353,7 +431,7 @@ class TestOnesZerosArray:
     ("angle_name", "expected_values"),
     [
         (
-            "phi_123",
+            "phi_0",
             np.array(
                 [
                     2.79758,
@@ -370,7 +448,7 @@ class TestOnesZerosArray:
             ),
         ),
         (
-            "theta_123",
+            "theta_0",
             np.arccos(
                 [
                     -0.914298,
@@ -387,7 +465,7 @@ class TestOnesZerosArray:
             ),
         ),
         (
-            "phi_23^123",
+            "phi_1^123",
             np.array(
                 [
                     1.04362,
@@ -404,7 +482,7 @@ class TestOnesZerosArray:
             ),
         ),
         (
-            "theta_23^123",
+            "theta_1^123",
             np.arccos(
                 [
                     -0.772533,
@@ -497,7 +575,7 @@ def test_compute_invariant_masses_single_mass(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
     for i in topology.outgoing_edge_ids:
         expr = invariant_masses[f"m_{i}"]
-        np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+        np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
         expected = __compute_mass(data_sample[i])
         computed = np_expr(*momentum_values)
         np.testing.assert_allclose(computed, expected, atol=1e-5)
@@ -514,7 +592,7 @@ def test_compute_invariant_masses(
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
 
     expr = invariant_masses[mass_name]
-    np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), "numpy")
+    np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np.average(np_expr(*momentum_values))
     indices = map(int, mass_name[2:])
     masses = __compute_mass(sum(data_sample[i] for i in indices))  # type: ignore[arg-type]
@@ -532,3 +610,127 @@ def __compute_mass(array: np.ndarray) -> np.ndarray:
 def _generate_numpy_code(expr: sp.Expr) -> str:
     printer = NumPyPrinter()
     return printer.doprint(expr)
+
+
+@pytest.mark.parametrize(
+    ("state_id", "expected"),
+    [
+        (
+            0,
+            ["B(p0)"],
+        ),
+        (
+            1,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p1))",
+            ],
+        ),
+        (
+            2,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p2+p3))",
+                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p2)))",
+            ],
+        ),
+        (
+            3,
+            [
+                "B(p1+p2+p3)",
+                "B(mul(B(p1+p2+p3), p2+p3))",
+                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p3)))",
+            ],
+        ),
+    ],
+)
+def test_compute_boost_chain(
+    state_id: int,
+    expected: List[str],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+):
+    topology, momentum_symbols = topology_and_momentum_symbols
+    boost_chain = compute_boost_chain(topology, momentum_symbols, state_id)
+    boost_chain_str = [
+        str(expr)
+        .replace("BoostMatrix", "B")
+        .replace("ArrayMultiplication", "mul")
+        .replace(" + ", "+")
+        for expr in boost_chain
+    ]
+    assert boost_chain_str == expected
+
+
+@pytest.mark.parametrize(
+    ("state_id", "expected"),
+    [
+        (
+            0,
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)),"
+            " BoostMatrix(p0))",
+        ),
+        (
+            1,
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
+            " BoostMatrix(p1 + p2 + p3),"
+            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+            " p1)))",
+        ),
+        (
+            2,
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)),"
+            " BoostMatrix(p1 + p2 + p3),"
+            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
+            " p3)),"
+            " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 +"
+            " p3), p2))))",
+        ),
+        (
+            3,
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)),"
+            " BoostMatrix(p1 + p2 + p3),"
+            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
+            " p3)),"
+            " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 +"
+            " p3), p3))))",
+        ),
+    ],
+)
+def test_compute_wigner_rotation_matrix(
+    state_id: int,
+    expected: str,
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+):
+    topology, momenta = topology_and_momentum_symbols
+    expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
+    assert str(expr) == expected
+
+
+@pytest.mark.parametrize(
+    "state_id",
+    [
+        0,
+        pytest.param(2, marks=pytest.mark.slow),
+        pytest.param(3, marks=pytest.mark.slow),
+    ],
+)
+def test_compute_wigner_rotation_matrix_numpy(
+    state_id: int,
+    data_sample: Dict[int, np.ndarray],
+    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+):
+    topology, momenta = topology_and_momentum_symbols
+    expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
+    func = sp.lambdify(momenta.values(), expr.doit(), cse=True)
+    momentum_array = data_sample[state_id]
+    wigner_matrix_array = func(*data_sample.values())
+    assert wigner_matrix_array.shape == (len(momentum_array), 4, 4)
+    if get_parent_id(topology, state_id) == -1:
+        product = np.einsum(
+            "...ij,...j->...j", wigner_matrix_array, momentum_array
+        )
+        assert pytest.approx(product) == momentum_array
+    matrix_column_norms = np.linalg.norm(wigner_matrix_array, axis=1)
+    assert pytest.approx(matrix_column_norms) == 1

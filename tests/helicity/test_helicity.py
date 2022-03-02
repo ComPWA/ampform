@@ -4,6 +4,7 @@ import logging
 from typing import Tuple
 
 import pytest
+import qrules
 import sympy as sp
 from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
@@ -15,7 +16,7 @@ from ampform.helicity import (
     ParameterValues,
     _generate_kinematic_variables,
     formulate_wigner_d,
-    group_transitions,
+    group_by_spin_projection,
 )
 
 
@@ -57,7 +58,9 @@ class TestHelicityAmplitudeBuilder:
 
         variables = set(model.kinematic_variables)
         paremeters = set(model.parameter_defaults)
-        assert model.expression.free_symbols <= variables | paremeters
+        free_symbols = model.expression.free_symbols
+        undefined_symbols = free_symbols - paremeters - variables
+        assert not undefined_symbols
 
         final_state_masses = set(sp.symbols("m_(0:3)", real=True))
         stable_final_state_masses = set()
@@ -229,6 +232,33 @@ class TestHelicityModel:
                 selected_intensity = next(selected_intensities)
                 assert from_amplitudes == model.components[selected_intensity]
 
+    @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
+    def test_amplitudes(self, formalism: str):
+        reaction = qrules.generate_transitions(
+            initial_state=("J/psi(1S)", [-1, +1]),
+            final_state=["K0", "Sigma+", "p~"],
+            allowed_intermediate_particles=["Sigma(1660)~-"],
+            allowed_interaction_types=["strong"],
+            formalism=formalism,
+        )
+        assert len(reaction.get_intermediate_particles()) == 1
+
+        builder = get_builder(reaction)
+        helicity_combinations = {
+            tuple(
+                state.spin_projection
+                for state_id, state in transition.states.items()
+                if state_id not in transition.intermediate_states
+            )
+            for transition in reaction.transitions
+        }
+        assert len(helicity_combinations) == 8
+
+        model = builder.formulate()
+        assert len(model.amplitudes) == len(helicity_combinations)
+        intensity_terms = model.intensity.evaluate().args
+        assert len(intensity_terms) == len(helicity_combinations)
+
 
 class TestParameterValues:
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
@@ -248,7 +278,7 @@ class TestParameterValues:
 @pytest.mark.parametrize(
     ("node_id", "mass", "phi", "theta"),
     [
-        (0, "m_012", "phi_12", "theta_12"),
+        (0, "m_012", "phi_0", "theta_0"),
         (1, "m_12", "phi_1^12", "theta_1^12"),
     ],
 )
@@ -269,11 +299,11 @@ def test_generate_kinematic_variables(
 @pytest.mark.parametrize(
     ("transition", "node_id", "expected"),
     [
-        (0, 0, "WignerD(1, -1, 1, -phi_12, theta_12, 0)"),
+        (0, 0, "WignerD(1, -1, -1, -phi_0, theta_0, 0)"),
         (0, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
-        (1, 0, "WignerD(1, -1, -1, -phi_12, theta_12, 0)"),
+        (1, 0, "WignerD(1, -1, 1, -phi_0, theta_0, 0)"),
         (1, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
-        (2, 0, "WignerD(1, 1, 1, -phi_12, theta_12, 0)"),
+        (2, 0, "WignerD(1, 1, -1, -phi_0, theta_0, 0)"),
         (2, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
     ],
 )
@@ -292,8 +322,8 @@ def test_formulate_wigner_d(
     assert str(wigner_d) == expected
 
 
-def test_group_transitions(reaction: ReactionInfo):
-    transition_groups = group_transitions(reaction.transitions)
+def test_group_by_spin_projection(reaction: ReactionInfo):
+    transition_groups = group_by_spin_projection(reaction.transitions)
     assert len(transition_groups) == 4
     for group in transition_groups:
         transition_iter = iter(group)

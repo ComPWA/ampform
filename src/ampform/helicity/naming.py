@@ -2,11 +2,11 @@
 
 import re
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import sympy as sp
 from qrules.topology import Topology
-from qrules.transition import State, StateTransition
+from qrules.transition import ReactionInfo, State, StateTransition
 
 from .decay import (
     assert_isobar_topology,
@@ -17,10 +17,16 @@ from .decay import (
 
 
 class HelicityAmplitudeNameGenerator:
-    def __init__(self) -> None:
+    def __init__(
+        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+    ) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
         self.parity_partner_coefficient_mapping: Dict[str, str] = {}
+        for transition in transitions:
+            self.__register_amplitude_coefficient_name(transition)
 
-    def register_amplitude_coefficient_name(
+    def __register_amplitude_coefficient_name(
         self, transition: StateTransition
     ) -> None:
         for node_id in transition.topology.nodes:
@@ -308,6 +314,32 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
         superscript = ",".join(index_groups[1:])
         suffix += f"^{superscript}"
     return suffix
+
+
+def get_helicity_suffix(topology: Topology, state_id: int) -> str:
+    """Create an identifier suffix for a topology.
+
+    Used in :doc:`/usage/helicity/spin-alignment`. Comparable to
+    :func:`get_boost_chain_suffix`.
+    """
+    superscript = get_topology_identifier(topology)
+    return f"_{state_id}^{superscript}"
+
+
+def get_topology_identifier(topology: Topology) -> str:
+    """Create an identifier `str` for a `~qrules.topology.Topology`."""
+    resonance_names = [
+        "".join(__get_resonance_identifier(topology, i))
+        for i in topology.intermediate_edge_ids
+    ]
+    return ",".join(sorted(resonance_names, key=natural_sorting))
+
+
+def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
+    attached_final_state_ids = determine_attached_final_state(
+        topology, state_id
+    )
+    return "".join(map(str, attached_final_state_ids))
 
 
 def natural_sorting(text: str) -> List[Union[float, str]]:

@@ -11,6 +11,7 @@ maxdepth: 2
 usage/amplitude
 usage/modify
 usage/interactive
-usage/formalism
 usage/dynamics
+usage/helicity/formalism
+usage/helicity/spin-alignment
 ```

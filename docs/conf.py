@@ -229,6 +229,8 @@ nitpick_ignore = [
         "py:class",
         "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
     ),
+    ("py:class", "ampform.sympy._array_expressions.ArraySum"),
+    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "typing_extensions.Protocol"),
 ]
 
@@ -351,8 +353,10 @@ nb_render_priority = {
 nb_render_priority["doctest"] = nb_render_priority["html"]
 
 jupyter_execute_notebooks = "off"
+EXECUTE_NB = False
 if "EXECUTE_NB" in os.environ:
     print("\033[93;1mWill run Jupyter notebooks!\033[0m")
+    EXECUTE_NB = True
     jupyter_execute_notebooks = "force"
 
 # Settings for myst-parser
@@ -366,6 +370,7 @@ myst_enable_extensions = [
 BINDER_LINK = f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
 myst_substitutions = {
     "branch": BRANCH,
+    "EXECUTE_NB": EXECUTE_NB,
     "run_interactive": f"""
 ```{{margin}}
 Run this notebook [on Binder]({BINDER_LINK}) or

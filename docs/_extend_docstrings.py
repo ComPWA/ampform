@@ -59,6 +59,37 @@ def extend_BlattWeisskopfSquared() -> None:
     _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 
+def extend_BoostMatrix() -> None:
+    from ampform.kinematics import BoostMatrix
+
+    p = FourMomentumSymbol("p")
+    expr = BoostMatrix(p)
+    _append_to_docstring(
+        BoostMatrix,
+        f"""\n
+    This boost operates on a `FourMomentumSymbol` and looks like:
+
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+        :class: full-width
+        :label: BoostMatrix
+    """,
+    )
+    _append_to_docstring(
+        BoostMatrix,
+        """
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
+    a computational backend and it should operate on four-momentum arrays of
+    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
+    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+    """,
+    )
+    _append_code_rendering(
+        BoostMatrix(p).doit(),
+        use_cse=True,
+        docstring_class=BoostMatrix,
+    )
+
+
 def extend_BoostZMatrix() -> None:
     from ampform.kinematics import BoostZMatrix
 
@@ -196,6 +227,16 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
     _extend(FourMomentumX)
     _extend(FourMomentumY)
     _extend(FourMomentumZ)
+
+
+def extend_EuclideanNorm() -> None:
+    from ampform.kinematics import EuclideanNorm
+
+    vector = FourMomentumSymbol("v")
+    expr = EuclideanNorm(vector)
+    _append_to_docstring(type(expr), "\n\n" + 4 * " ")
+    _append_latex_doit_definition(expr, deep=False, inline=True)
+    _append_code_rendering(expr)
 
 
 def extend_InvariantMass() -> None:
@@ -337,11 +378,11 @@ def extend_Theta() -> None:
     _append_latex_doit_definition(expr)
 
 
-def extend_ThreeMomentumNorm() -> None:
-    from ampform.kinematics import ThreeMomentumNorm
+def extend_ThreeMomentum() -> None:
+    from ampform.kinematics import ThreeMomentum
 
     p = FourMomentumSymbol("p")
-    expr = ThreeMomentumNorm(p)
+    expr = ThreeMomentum(p)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
     _append_code_rendering(expr)
@@ -396,8 +437,8 @@ def __get_graphviz_state_transition_example(
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
 
-def extend_get_helicity_angle_label() -> None:
-    from ampform.kinematics import get_helicity_angle_label
+def extend_get_boost_chain_suffix() -> None:
+    from ampform.helicity.naming import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(
@@ -416,7 +457,7 @@ def extend_get_helicity_angle_label() -> None:
         label="one-to-five-topology-1",
     )
     _append_to_docstring(
-        get_helicity_angle_label,
+        get_boost_chain_suffix,
         f"""
 
     .. panels::
