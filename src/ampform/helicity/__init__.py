@@ -261,7 +261,17 @@ class HelicityModel:  # noqa: R701
         Constructed from `intensity` by substituting its amplitude symbols with
         the definitions with `amplitudes`.
         """
-        return self.intensity.evaluate().xreplace(self.amplitudes)
+
+        def unfold_poolsums(expr: sp.Expr) -> sp.Expr:
+            new_expr = expr
+            for node in sp.postorder_traversal(expr):
+                if isinstance(node, PoolSum):
+                    new_expr = new_expr.xreplace({node: node.evaluate()})
+            return new_expr
+
+        intensity = self.intensity.evaluate()
+        intensity = unfold_poolsums(intensity)
+        return intensity.subs(self.amplitudes)
 
     def rename_symbols(  # noqa: R701
         self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
