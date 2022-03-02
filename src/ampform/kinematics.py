@@ -30,6 +30,7 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.helicity.decay import (
     assert_isobar_topology,
     determine_attached_final_state,
+    get_parent_id,
     get_sibling_state_id,
     is_opposite_helicity_state,
     list_decay_chain_ids,
@@ -123,12 +124,23 @@ class HelicityAdapter:
                 )
                 self.__topologies.add(permuted_topology)
 
-    def create_expressions(self) -> Dict[str, sp.Expr]:
+    def create_expressions(
+        self, generate_wigner_angles: bool = False
+    ) -> Dict[str, sp.Expr]:
         output = {}
         for topology in self.__topologies:
-            four_momenta = create_four_momentum_symbols(topology)
-            output.update(compute_helicity_angles(four_momenta, topology))
-            output.update(compute_invariant_masses(four_momenta, topology))
+            momenta = create_four_momentum_symbols(topology)
+            output.update(compute_helicity_angles(momenta, topology))
+            output.update(compute_invariant_masses(momenta, topology))
+            if generate_wigner_angles:
+                wigner_rotation_ids = {
+                    i
+                    for i in topology.outgoing_edge_ids
+                    if get_parent_id(topology, i) != -1
+                }
+                for state_id in wigner_rotation_ids:
+                    angles = compute_wigner_angles(topology, momenta, state_id)
+                    output.update(angles)
         return output
 
 
