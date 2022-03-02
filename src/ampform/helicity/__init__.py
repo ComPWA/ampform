@@ -1132,7 +1132,7 @@ def formulate_helicity_rotation_chain(
         phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
         phi = sp.Symbol(phi_label, real=True)
         theta = sp.Symbol(theta_theta, real=True)
-        no_zero_spin = transition.states[state_id].particle.mass == 0.0
+        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(
@@ -1315,11 +1315,10 @@ def _create_spin_range(
     spin_projections = []
     projection = Decimal(-spin_magnitude)
     while projection <= spin_magnitude:
-        if no_zero_spin and projection == 0.0:
-            pass
-        else:
-            spin_projections.append(float(projection))
+        spin_projections.append(float(projection))
         projection += 1
+    if no_zero_spin and len(spin_projections) > 1:
+        spin_projections.remove(0.0)
     return spin_projections
 
 
