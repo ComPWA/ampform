@@ -614,28 +614,34 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         align_spin = self.align_spin
         if align_spin is None:
             align_spin = len(topology_groups) > 1
-        if not align_spin:
-            topology = next(iter(topology_groups))
-            amplitude_sum = _create_amplitude_base(topology)[
-                list(spin_projections)
-            ]
+        if align_spin:
+            amplitude = self.__formulate_aligned_amplitude(topology_groups)
         else:
-            amplitude_sum = sp.S.Zero
-            for topology, transitions in topology_groups.items():
-                base = _create_amplitude_base(topology)
-                helicities = [
-                    _get_opposite_helicity_sign(topology, i)
-                    * _create_helicity_symbol(topology, i)
-                    for i in outer_state_ids
-                ]
-                amplitude_symbol = base[helicities]
-                first_transition = transitions[0]
-                alignment_sum = formulate_spin_alignment(first_transition)
-                amplitude_sum += PoolSum(
-                    alignment_sum.expression * amplitude_symbol,
-                    *alignment_sum.indices,
-                )
-        return PoolSum(abs(amplitude_sum) ** 2, *spin_projections.items())
+            topology = next(iter(topology_groups))
+            indices = list(spin_projections)
+            amplitude = _create_amplitude_base(topology)[indices]
+        return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
+
+    def __formulate_aligned_amplitude(
+        self, topology_groups: Dict[Topology, List[StateTransition]]
+    ) -> sp.Expr:
+        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        amplitude = sp.S.Zero
+        for topology, transitions in topology_groups.items():
+            base = _create_amplitude_base(topology)
+            helicities = [
+                _get_opposite_helicity_sign(topology, i)
+                * _create_helicity_symbol(topology, i)
+                for i in outer_state_ids
+            ]
+            amplitude_symbol = base[helicities]
+            first_transition = transitions[0]
+            alignment_sum = formulate_spin_alignment(first_transition)
+            amplitude += PoolSum(
+                alignment_sum.expression * amplitude_symbol,
+                *alignment_sum.indices,
+            )
+        return amplitude
 
     def __register_amplitudes(
         self, transition_group: List[StateTransition]
