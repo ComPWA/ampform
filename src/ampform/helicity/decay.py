@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache, singledispatch
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -19,7 +19,7 @@ class StateWithID(State):
     @classmethod
     def from_transition(
         cls, transition: StateTransition, state_id: int
-    ) -> "StateWithID":
+    ) -> StateWithID:
         state = transition.states[state_id]
         return cls(
             id=state_id,
@@ -46,11 +46,11 @@ class TwoBodyDecay:
     """
 
     parent: StateWithID
-    children: Tuple[StateWithID, StateWithID]
+    children: tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
 
     @staticmethod
-    def create(obj) -> "TwoBodyDecay":
+    def create(obj) -> TwoBodyDecay:
         """Create a `TwoBodyDecay` instance from an arbitrary object.
 
         More implementations of :meth:`create` can be implemented with
@@ -62,7 +62,7 @@ class TwoBodyDecay:
     @classmethod
     def from_transition(
         cls, transition: StateTransition, node_id: int
-    ) -> "TwoBodyDecay":
+    ) -> TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
@@ -148,8 +148,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 
 @lru_cache(maxsize=None)
 def collect_topologies(
-    transitions: Tuple[StateTransition, ...]
-) -> List[Topology]:
+    transitions: tuple[StateTransition, ...]
+) -> list[Topology]:
     return sorted({t.topology for t in transitions})
 
 
@@ -183,7 +183,7 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
 
 def get_helicity_info(
     transition: StateTransition, node_id: int
-) -> Tuple[State, Tuple[State, State]]:
+) -> tuple[State, tuple[State, State]]:
     """Extract in- and outgoing states for a two-body decay node."""
     assert_two_body_decay(transition.topology, node_id)
     in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
@@ -196,7 +196,7 @@ def get_helicity_info(
     )
 
 
-def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
+def get_parent_id(topology: Topology, state_id: int) -> int | None:
     """Get the edge ID of the edge from which this state decayed.
 
     .. warning:: This only works on 1-to-:math:`n` isobar topologies.
@@ -225,7 +225,7 @@ def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
     return incoming_edge_ids[0]
 
 
-def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
+def list_decay_chain_ids(topology: Topology, state_id: int) -> list[int]:
     """Get the edge ID of the edge from which this state decayed.
 
     >>> from qrules.topology import create_isobar_topologies
@@ -242,7 +242,7 @@ def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
     """
     assert_isobar_topology(topology)
     parent_list = []
-    current_id: Optional[int] = state_id
+    current_id: int | None = state_id
     while current_id is not None:
         parent_list.append(current_id)
         current_id = get_parent_id(topology, current_id)
@@ -251,7 +251,7 @@ def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
 
 def get_sorted_states(
     transition: StateTransition, state_ids: Iterable[int]
-) -> List[State]:
+) -> list[State]:
     """Get a sorted list of `~qrules.transition.State` instances.
 
     In order to ensure correct naming of amplitude coefficients the list has to
@@ -285,7 +285,7 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
 
 def determine_attached_final_state(
     topology: Topology, state_id: int
-) -> List[int]:
+) -> list[int]:
     """Determine all final state particles of a transition.
 
     These are attached downward (forward in time) for a given edge (resembling

@@ -223,14 +223,10 @@ default_role = "py:obj"
 primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    (
-        "py:class",
-        "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
-    ),
-    ("py:class", "ampform.sympy._array_expressions.ArraySum"),
-    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "typing_extensions.Protocol"),
 ]
 

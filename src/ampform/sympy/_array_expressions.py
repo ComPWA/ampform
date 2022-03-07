@@ -12,7 +12,7 @@ from __future__ import annotations
 import string
 from collections import abc
 from itertools import zip_longest
-from typing import Iterable, List, Optional, Tuple, Type, Union, overload
+from typing import Iterable, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -34,7 +34,7 @@ from . import create_expression, make_commutative
 
 
 class ArrayElement(_ArrayExpr):
-    def __new__(cls, parent: sp.Expr, indices: Iterable) -> "ArrayElement":
+    def __new__(cls, parent: sp.Expr, indices: Iterable) -> ArrayElement:
         sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
         if any(
@@ -73,27 +73,27 @@ _ArrayExpr._iterable = False  # type: ignore[attr-defined]
 
 @overload
 def _array_symbol_getitem(
-    self: Type[ArraySymbol], key: Union[sp.Basic, int]
-) -> "ArrayElement":
+    self: type[ArraySymbol], key: sp.Basic | int
+) -> ArrayElement:
     ...
 
 
 @overload
-def _array_symbol_getitem(self: Type[ArraySymbol], key: slice) -> "ArraySlice":
+def _array_symbol_getitem(self: type[ArraySymbol], key: slice) -> ArraySlice:
     ...
 
 
 @overload
 def _array_symbol_getitem(  # type: ignore[misc]
-    self: Type[ArraySymbol], key: Tuple[Union[sp.Basic, int], ...]
-) -> "ArrayElement":
+    self: type[ArraySymbol], key: tuple[sp.Basic | int, ...]
+) -> ArrayElement:
     ...
 
 
 @overload
 def _array_symbol_getitem(
-    self: Type[ArraySymbol], key: Tuple[Union[sp.Basic, int, slice], ...]
-) -> "ArraySlice":
+    self: type[ArraySymbol], key: tuple[sp.Basic | int | slice, ...]
+) -> ArraySlice:
     ...
 
 
@@ -110,7 +110,7 @@ def _array_symbol_getitem(self, key):
 ArraySymbol.__getitem__ = _array_symbol_getitem  # type: ignore[assignment]
 
 
-def _normalize_index(idx, axis_size: Optional[sp.Expr]):
+def _normalize_index(idx, axis_size: sp.Expr | None):
     if (
         axis_size
         and axis_size.is_Integer
@@ -123,13 +123,13 @@ def _normalize_index(idx, axis_size: Optional[sp.Expr]):
 
 class ArraySlice(_ArrayExpr):
     parent: sp.Expr = property(lambda self: self.args[0])  # type: ignore[assignment]
-    indices: Tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
+    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
 
     def __new__(
         cls,
         parent: sp.Expr,
-        indices: Tuple[Union[sp.Basic, int, slice], ...],
-    ) -> "ArraySlice":
+        indices: tuple[sp.Basic | int | slice, ...],
+    ) -> ArraySlice:
         parent_shape = get_shape(parent)
         normalized_indices = []
         for idx, axis_size in zip_longest(indices, parent_shape):
@@ -143,7 +143,7 @@ class ArraySlice(_ArrayExpr):
         return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> Tuple[Union[sp.Basic, int], ...]:  # type: ignore[override]
+    def shape(self) -> tuple[sp.Basic | int, ...]:  # type: ignore[override]
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)
@@ -169,7 +169,7 @@ def _compute_slice_size(idx, axis_size):  # noqa: R701
 
 def normalize(  # noqa: R701
     i, parentsize
-) -> Tuple[sp.Basic, sp.Basic, sp.Basic]:
+) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
     if not isinstance(i, (tuple, list, sp.Tuple)):
@@ -269,11 +269,11 @@ StrPrinter._print_ArraySlice = _print_str_ArraySlice  # type: ignore[attr-define
 class ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
 
-    def __new__(cls, *terms: sp.Basic, **hints) -> "ArraySum":
+    def __new__(cls, *terms: sp.Basic, **hints) -> ArraySum:
         return create_expression(cls, *terms, **hints)
 
     @property
-    def terms(self) -> Tuple[sp.Basic, ...]:
+    def terms(self) -> tuple[sp.Basic, ...]:
         return self.args
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -334,8 +334,8 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
 @make_commutative
 class ArrayAxisSum(sp.Expr):
     def __new__(
-        cls, array: ArraySymbol, axis: Optional[int] = None, **hints
-    ) -> "ArrayAxisSum":
+        cls, array: ArraySymbol, axis: int | None = None, **hints
+    ) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             raise TypeError("Only single digits allowed for axis")
         return create_expression(cls, array, axis, **hints)
@@ -345,7 +345,7 @@ class ArrayAxisSum(sp.Expr):
         return self.args[0]  # type: ignore[return-value]
 
     @property
-    def axis(self) -> Optional[sp.Integer]:
+    def axis(self) -> sp.Integer | None:
         return self.args[1]  # type: ignore[return-value]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -373,11 +373,11 @@ class ArrayMultiplication(sp.Expr):
     :math:`n\times\times4` (:math:`n` four-momentum tuples).
     """
 
-    def __new__(cls, *tensors: sp.Expr, **hints) -> "ArrayMultiplication":
+    def __new__(cls, *tensors: sp.Expr, **hints) -> ArrayMultiplication:
         return create_expression(cls, *tensors, **hints)
 
     @property
-    def tensors(self) -> List[sp.Expr]:
+    def tensors(self) -> list[sp.Expr]:
         return self.args  # type: ignore[return-value]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -427,11 +427,11 @@ class MatrixMultiplication(sp.Expr):
     :math:`n\times\times4\times4` (:math:`n` four-momentum tuples).
     """
 
-    def __new__(cls, *tensors: sp.Basic, **hints) -> "MatrixMultiplication":
+    def __new__(cls, *tensors: sp.Basic, **hints) -> MatrixMultiplication:
         return create_expression(cls, *tensors, **hints)
 
     @property
-    def tensors(self) -> Tuple[sp.Basic, ...]:
+    def tensors(self) -> tuple[sp.Basic, ...]:
         return self.args
 
     def _latex(self, printer: LatexPrinter, *args) -> str:

@@ -1,7 +1,7 @@
 # pylint: disable=no-self-use, redefined-outer-name
 from __future__ import annotations
 
-from typing import Iterable, Sequence, Set, Union
+from typing import Iterable, Sequence
 
 import pytest
 import qrules
@@ -114,11 +114,11 @@ class TestEpemToDmD0Pip:
     )
     def test_angular_distributions(
         self,
-        angular_variables: Union[str, Sequence[str]],
+        angular_variables: str | Sequence[str],
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: Set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
@@ -204,11 +204,11 @@ class TestD1ToD0PiPi:
     )
     def test_angular_distributions(
         self,
-        angular_variables: Union[str, Sequence[str]],
+        angular_variables: str | Sequence[str],
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: Set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",

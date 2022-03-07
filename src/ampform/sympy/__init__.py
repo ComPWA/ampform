@@ -7,19 +7,7 @@ from __future__ import annotations
 import functools
 import itertools
 from abc import abstractmethod
-from typing import (
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    SupportsFloat,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Callable, Iterable, Sequence, SupportsFloat, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
@@ -56,16 +44,16 @@ class UnevaluatedExpression(sp.Expr):
     """
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
-    __slots__: Tuple[str] = ("_name",)
-    _name: Optional[str]
+    __slots__: tuple[str] = ("_name",)
+    _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
 
     def __new__(  # pylint: disable=unused-argument
-        cls: Type["DecoratedClass"],
+        cls: type[DecoratedClass],
         *args,
-        name: Optional[str] = None,
+        name: str | None = None,
         **hints,
-    ) -> "DecoratedClass":
+    ) -> DecoratedClass:
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
@@ -98,7 +86,7 @@ class UnevaluatedExpression(sp.Expr):
         obj._name = name
         return obj
 
-    def __getnewargs_ex__(self) -> Tuple[tuple, dict]:
+    def __getnewargs_ex__(self) -> tuple[tuple, dict]:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
         args = tuple(self.args)
@@ -192,7 +180,7 @@ DecoratedClass = TypeVar("DecoratedClass", bound=UnevaluatedExpression)
 
 def implement_expr(
     n_args: int,
-) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
+) -> Callable[[type[DecoratedClass]], type[DecoratedClass]]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
     Implement a :meth:`~object.__new__` and
@@ -201,8 +189,8 @@ def implement_expr(
     """
 
     def decorator(
-        decorated_class: Type[DecoratedClass],
-    ) -> Type[DecoratedClass]:
+        decorated_class: type[DecoratedClass],
+    ) -> type[DecoratedClass]:
         decorated_class = implement_new_method(n_args)(decorated_class)
         decorated_class = implement_doit_method(decorated_class)
         return decorated_class
@@ -212,7 +200,7 @@ def implement_expr(
 
 def implement_new_method(
     n_args: int,
-) -> Callable[[Type[DecoratedClass]], Type[DecoratedClass]]:
+) -> Callable[[type[DecoratedClass]], type[DecoratedClass]]:
     """Implement :meth:`UnevaluatedExpression.__new__` on a derived class.
 
     Implement a :meth:`~object.__new__` method for a class that derives from
@@ -220,14 +208,14 @@ def implement_new_method(
     """
 
     def decorator(
-        decorated_class: Type[DecoratedClass],
-    ) -> Type[DecoratedClass]:
+        decorated_class: type[DecoratedClass],
+    ) -> type[DecoratedClass]:
         def new_method(  # pylint: disable=unused-argument
-            cls: Type,
+            cls: type[DecoratedClass],
             *args: sp.Symbol,
             evaluate: bool = False,
             **hints,
-        ) -> bool:
+        ) -> DecoratedClass:
             if len(args) != n_args:
                 raise ValueError(
                     f"{n_args} parameters expected, got {len(args)}"
@@ -235,7 +223,7 @@ def implement_new_method(
             args = sp.sympify(args)
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return expr.evaluate()
+                return expr.evaluate()  # type: ignore[return-value]
             return expr
 
         decorated_class.__new__ = new_method  # type: ignore[assignment]
@@ -245,8 +233,8 @@ def implement_new_method(
 
 
 def implement_doit_method(
-    decorated_class: Type[DecoratedClass],
-) -> Type[DecoratedClass]:
+    decorated_class: type[DecoratedClass],
+) -> type[DecoratedClass]:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
     Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that
@@ -269,10 +257,10 @@ def implement_doit_method(
 
 def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
     subscript: str,
-) -> Callable[[Type[UnevaluatedExpression]], Type[UnevaluatedExpression]]:
+) -> Callable[[type[UnevaluatedExpression]], type[UnevaluatedExpression]]:
     def decorator(
-        decorated_class: Type[UnevaluatedExpression],
-    ) -> Type[UnevaluatedExpression]:
+        decorated_class: type[UnevaluatedExpression],
+    ) -> type[UnevaluatedExpression]:
         # pylint: disable=protected-access, unused-argument
         @functools.wraps(decorated_class.doit)
         def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
@@ -294,8 +282,8 @@ DecoratedExpr = TypeVar("DecoratedExpr", bound=sp.Expr)
 
 
 def make_commutative(
-    decorated_class: Type[DecoratedExpr],
-) -> Type[DecoratedExpr]:
+    decorated_class: type[DecoratedExpr],
+) -> type[DecoratedExpr]:
     """Set commutative and 'extended real' assumptions on expression class.
 
     .. seealso:: :doc:`sympy:guides/assumptions`
@@ -306,10 +294,10 @@ def make_commutative(
 
 
 def create_expression(
-    cls: Type[DecoratedExpr],
+    cls: type[DecoratedExpr],
     *args,
     evaluate: bool = False,
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs,
 ) -> DecoratedExpr:
     """Helper function for implementing `UnevaluatedExpression.__new__`."""
@@ -362,9 +350,9 @@ class PoolSum(UnevaluatedExpression):
     def __new__(
         cls,
         expression,
-        *indices: Tuple[sp.Symbol, Iterable[sp.Basic]],
+        *indices: tuple[sp.Symbol, Iterable[sp.Basic]],
         **hints,
-    ) -> "PoolSum":
+    ) -> PoolSum:
         converted_indices = []
         for idx_symbol, values in indices:
             values = tuple(values)
@@ -378,11 +366,11 @@ class PoolSum(UnevaluatedExpression):
         return self.args[0]  # type: ignore[return-value]
 
     @property
-    def indices(self) -> List[Tuple[sp.Symbol, Tuple[sp.Float, ...]]]:
+    def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
         return self.args[1:]  # type: ignore[return-value]
 
     @property
-    def free_symbols(self) -> Set[sp.Basic]:
+    def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     def evaluate(self) -> sp.Expr:
@@ -396,13 +384,13 @@ class PoolSum(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         indices = dict(self.indices)
-        sum_symbols: List[str] = []
+        sum_symbols: list[str] = []
         for idx, values in indices.items():
             sum_symbols.append(_render_sum_symbol(printer, idx, values))
         expression = printer._print(self.expression)
         return R" ".join(sum_symbols) + f"{{{expression}}}"
 
-    def cleanup(self) -> Union[sp.Expr, "PoolSum"]:
+    def cleanup(self) -> sp.Expr | PoolSum:
         """Remove redundant summations, like indices with one or no value.
 
         >>> x, i = sp.symbols("x i")

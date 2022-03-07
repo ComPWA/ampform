@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
 
 import sympy as sp
 
@@ -40,7 +39,7 @@ class RelativisticKMatrix(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels, return_t_hat: bool = False
-    ) -> Tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         # pylint: disable=no-member
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
@@ -121,7 +120,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+        phsp_factor: PhaseSpaceFactorProtocol | None = None,
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
@@ -149,7 +148,7 @@ class NonRelativisticKMatrix(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels,
-    ) -> Tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         t_matrix = k_matrix * (sp.eye(n_channels) - sp.I * k_matrix).inv()
         return t_matrix, k_matrix
@@ -209,7 +208,7 @@ class NonRelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels,
-    ) -> Tuple[
+    ) -> tuple[
         sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
     ]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
@@ -288,7 +287,7 @@ class RelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels, return_f_hat: bool = False
-    ) -> Tuple[
+    ) -> tuple[
         sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
     ]:
         # pylint: disable=no-member

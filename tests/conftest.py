@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Tuple
 
 import numpy as np
 import pytest
@@ -46,7 +45,7 @@ def reaction(request: SubRequest) -> ReactionInfo:
 
 
 @pytest.fixture(scope="session")
-def amplitude_model(reaction: ReactionInfo) -> Tuple[str, HelicityModel]:
+def amplitude_model(reaction: ReactionInfo) -> tuple[str, HelicityModel]:
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:
         model_builder.set_dynamics(
@@ -58,7 +57,7 @@ def amplitude_model(reaction: ReactionInfo) -> Tuple[str, HelicityModel]:
 
 # https://github.com/ComPWA/tensorwaves/blob/3d0ec44/tests/physics/helicity_formalism/test_helicity_angles.py#L61-L98
 @pytest.fixture(scope="session")
-def data_sample() -> Dict[int, np.ndarray]:
+def data_sample() -> dict[int, np.ndarray]:
     return {
         0: np.array(  # pi0
             [
