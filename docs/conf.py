@@ -400,7 +400,7 @@ thebe_config = {
 
 # Specify bibliography style
 @node
-def et_al(children, data, sep="", sep2=None, last_sep=None):  # type: ignore[no-untyped-def]
+def et_al(children, data, sep="", sep2=None, last_sep=None):
     if sep2 is None:
         sep2 = sep
     if last_sep is None:
@@ -417,7 +417,7 @@ def et_al(children, data, sep="", sep2=None, last_sep=None):  # type: ignore[no-
 
 
 @node
-def names(children, context, role, **kwargs):  # type: ignore[no-untyped-def]
+def names(children, context, role, **kwargs):
     """Return formatted names."""
     assert not children
     try:

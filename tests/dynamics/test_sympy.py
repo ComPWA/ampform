@@ -1,3 +1,5 @@
+# pylint: disable=W0223
+# https://stackoverflow.com/a/22224042
 import pickle
 
 import sympy as sp
@@ -22,7 +24,7 @@ class TestUnevaluatedExpression:
         assert expr == imported_expr
 
         # Pickle UnevaluatedExpression
-        expr = UnevaluatedExpression()
+        expr = UnevaluatedExpression()  # type: ignore[abstract]
         pickled_obj = pickle.dumps(expr)
         imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr

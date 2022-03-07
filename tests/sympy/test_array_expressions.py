@@ -1,5 +1,7 @@
 # pylint: disable=no-self-use
 # cspell:ignore doprint
+from functools import partial
+
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
@@ -28,7 +30,7 @@ class TestArraySum:
         assert sp.latex(array_sum) == R"x^{2} + \cos{\left(y \right)}"
 
     def test_latex_array_symbols(self):
-        p0, p1, p2, p3 = sp.symbols("p:4", cls=ArraySymbol)
+        p0, p1, p2, p3 = sp.symbols("p:4", cls=partial(ArraySymbol, shape=[]))
         array_sum = ArraySum(p0, p1, p2, p3)
         assert sp.latex(array_sum) == "{p}_{0123}"
 

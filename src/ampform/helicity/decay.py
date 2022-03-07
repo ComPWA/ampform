@@ -1,7 +1,7 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
 
 from functools import lru_cache, singledispatch
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -49,7 +49,7 @@ class TwoBodyDecay:
     interaction: InteractionProperties
 
     @staticmethod
-    def create(obj: Any) -> "TwoBodyDecay":
+    def create(obj) -> "TwoBodyDecay":
         """Create a `TwoBodyDecay` instance from an arbitrary object.
 
         More implementations of :meth:`create` can be implemented with
@@ -84,7 +84,7 @@ class TwoBodyDecay:
 
 
 @singledispatch
-def _create_two_body_decay(obj: Any) -> TwoBodyDecay:
+def _create_two_body_decay(obj) -> TwoBodyDecay:
     raise NotImplementedError(
         f"Cannot create a {TwoBodyDecay.__name__} from a {type(obj).__name__}"
     )

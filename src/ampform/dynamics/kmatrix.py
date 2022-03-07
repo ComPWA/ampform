@@ -11,7 +11,7 @@ the amplitude builder.
 
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import sympy as sp
 
@@ -29,12 +29,8 @@ class TMatrix(ABC):
     @classmethod
     @abstractmethod
     def formulate(
-        cls,
-        n_channels: int,
-        n_poles: Union[int, sp.Symbol],
-        parametrize: bool = True,
-        **kwargs: Any,
-    ) -> sp.Matrix:
+        cls, n_channels, n_poles, parametrize: bool = True, **kwargs
+    ) -> sp.MutableDenseMatrix:
         """Formulate :math:`K`-matrix with its own parametrization."""
 
 
@@ -42,11 +38,11 @@ class RelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
-        n_channels: int, return_t_hat: bool = False
-    ) -> Tuple[sp.Matrix, sp.Matrix]:
+        n_channels, return_t_hat: bool = False
+    ) -> Tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         # pylint: disable=no-member
         rho = _create_rho_matrix(n_channels)
-        sqrt_rho: sp.Matrix = sp.sqrt(rho).doit()
+        sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
         sqrt_rho_conj = sp.conjugate(sqrt_rho)
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         t_hat = k_matrix * (sp.eye(n_channels) - sp.I * rho * k_matrix).inv()
@@ -57,12 +53,8 @@ class RelativisticKMatrix(TMatrix):
 
     @classmethod
     def formulate(
-        cls,
-        n_channels: int,
-        n_poles: int,
-        parametrize: bool = True,
-        **kwargs: Any,
-    ) -> sp.Matrix:
+        cls, n_channels, n_poles, parametrize: bool = True, **kwargs
+    ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat in terms of K-hat`.
 
         Args:
@@ -116,21 +108,21 @@ class RelativisticKMatrix(TMatrix):
 
     @staticmethod
     def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
-        i: int,
-        j: int,
-        s: sp.Symbol,
+        i,
+        j,
+        s,
         pole_position: sp.IndexedBase,
         pole_width: sp.IndexedBase,
         m_a: sp.IndexedBase,
         m_b: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
-        n_poles: Union[int, sp.Symbol],
-        pole_id: Union[int, sp.Symbol],
-        angular_momentum: Union[int, sp.Symbol] = 0,
-        meson_radius: Union[int, sp.Symbol] = 1,
+        n_poles,
+        pole_id,
+        angular_momentum=0,
+        meson_radius=1,
         phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
     ) -> sp.Expr:
-        def residue_function(pole_id: int, i: int) -> sp.Expr:
+        def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
                 pole_position[pole_id]
                 * EnergyDependentWidth(
@@ -154,7 +146,9 @@ class RelativisticKMatrix(TMatrix):
 class NonRelativisticKMatrix(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def _create_matrices(n_channels: int) -> Tuple[sp.Matrix, sp.Matrix]:
+    def _create_matrices(
+        n_channels,
+    ) -> Tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         t_matrix = k_matrix * (sp.eye(n_channels) - sp.I * k_matrix).inv()
         return t_matrix, k_matrix
@@ -162,11 +156,11 @@ class NonRelativisticKMatrix(TMatrix):
     @classmethod
     def formulate(
         cls,
-        n_channels: int,
-        n_poles: int,
+        n_channels,
+        n_poles,
         parametrize: bool = True,
-        **kwargs: Any,
-    ) -> sp.Matrix:
+        **kwargs,
+    ) -> sp.MutableDenseMatrix:
         t_matrix, k_matrix = cls._create_matrices(n_channels)
         if not parametrize:
             return t_matrix
@@ -189,16 +183,16 @@ class NonRelativisticKMatrix(TMatrix):
 
     @staticmethod
     def parametrization(  # pylint: disable=too-many-arguments
-        i: int,
-        j: int,
-        s: sp.Symbol,
+        i,
+        j,
+        s,
         pole_position: sp.IndexedBase,
         pole_width: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
-        n_poles: Union[int, sp.Symbol],
-        pole_id: Union[int, sp.Symbol],
+        n_poles,
+        pole_id,
     ) -> sp.Expr:
-        def residue_function(pole_id: int, i: int) -> sp.Expr:
+        def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
                 pole_position[pole_id] * pole_width[pole_id, i]
             )
@@ -213,8 +207,10 @@ class NonRelativisticPVector(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
-        n_channels: int,
-    ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
+        n_channels,
+    ) -> Tuple[
+        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
+    ]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
         f_vector = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
@@ -223,11 +219,11 @@ class NonRelativisticPVector(TMatrix):
     @classmethod
     def formulate(
         cls,
-        n_channels: int,
-        n_poles: int,
+        n_channels,
+        n_poles,
         parametrize: bool = True,
-        **kwargs: Any,
-    ) -> sp.Matrix:
+        **kwargs,
+    ) -> sp.MutableDenseMatrix:
         f_vector, k_matrix, p_vector = cls._create_matrices(n_channels)
         if not parametrize:
             return f_vector
@@ -269,14 +265,14 @@ class NonRelativisticPVector(TMatrix):
 
     @staticmethod
     def parametrization(  # pylint: disable=too-many-arguments
-        i: int,
-        s: sp.Symbol,
+        i,
+        s,
         pole_position: sp.IndexedBase,
         pole_width: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
         beta_constant: sp.IndexedBase,
-        n_poles: Union[int, sp.Symbol],
-        pole_id: Union[int, sp.Symbol],
+        n_poles,
+        pole_id,
     ) -> sp.Expr:
         beta = beta_constant[pole_id]
         gamma = residue_constant[pole_id, i]
@@ -290,13 +286,15 @@ class RelativisticPVector(TMatrix):
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
-        n_channels: int, return_f_hat: bool = False
-    ) -> Tuple[sp.Matrix, sp.Matrix, sp.Matrix]:
+        n_channels, return_f_hat: bool = False
+    ) -> Tuple[
+        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
+    ]:
         # pylint: disable=no-member
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
-        sqrt_rho: sp.Matrix = sp.sqrt(rho).doit()
-        sqrt_rho_conj: sp.Matrix = sp.conjugate(sqrt_rho)
+        sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
+        sqrt_rho_conj: sp.MutableDenseMatrix = sp.conjugate(sqrt_rho)
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         k_hat = sqrt_rho_conj.inv() * k_matrix * sqrt_rho.inv()
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
@@ -308,12 +306,8 @@ class RelativisticPVector(TMatrix):
 
     @classmethod
     def formulate(  # pylint: disable=too-many-locals
-        cls,
-        n_channels: int,
-        n_poles: int,
-        parametrize: bool = True,
-        **kwargs: Any,
-    ) -> sp.Matrix:
+        cls, n_channels, n_poles, parametrize: bool = True, **kwargs
+    ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F in terms of P`.
 
         Args:
@@ -395,18 +389,18 @@ class RelativisticPVector(TMatrix):
 
     @staticmethod
     def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
-        i: int,
-        s: sp.Symbol,
+        i,
+        s,
         pole_position: sp.IndexedBase,
         pole_width: sp.IndexedBase,
         m_a: sp.IndexedBase,
         m_b: sp.IndexedBase,
         beta_constant: sp.IndexedBase,
         residue_constant: sp.IndexedBase,
-        n_poles: Union[int, sp.Symbol],
-        pole_id: Union[int, sp.Symbol],
-        angular_momentum: Union[int, sp.Symbol] = 0,
-        meson_radius: Union[int, sp.Symbol] = 1,
+        n_poles,
+        pole_id,
+        angular_momentum=0,
+        meson_radius=1,
     ) -> sp.Expr:
         beta = beta_constant[pole_id]
         gamma = residue_constant[pole_id, i]
@@ -423,7 +417,7 @@ class RelativisticPVector(TMatrix):
         )
 
 
-def _create_rho_matrix(n_channels: int) -> sp.Matrix:
+def _create_rho_matrix(n_channels) -> sp.MutableDenseMatrix:
     """Create a phase space matrix with :code:`n_channels`.
 
     >>> _create_rho_matrix(n_channels=2)
@@ -431,7 +425,7 @@ def _create_rho_matrix(n_channels: int) -> sp.Matrix:
     [rho0,    0],
     [   0, rho1]])
     """
-    rho_matrix: sp.Matrix = sp.zeros(n_channels, n_channels)
+    rho_matrix: sp.MutableDenseMatrix = sp.zeros(n_channels, n_channels)
     for i in range(n_channels):
         rho_matrix[i, i] = sp.Symbol(f"rho{i}")
     return rho_matrix

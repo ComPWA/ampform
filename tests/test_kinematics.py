@@ -2,7 +2,7 @@
 # cspell:ignore atol doprint
 import inspect
 import textwrap
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Type
 
 import numpy as np
 import pytest
@@ -38,6 +38,7 @@ from ampform.kinematics import (
     create_four_momentum_symbols,
     three_momentum_norm,
 )
+from ampform.sympy import NumPyPrintable
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
     ArraySlice,
@@ -67,7 +68,7 @@ def helicity_angles(
 
 class TestBoostMatrix:
     def test_boost_in_z_direction_reduces_to_z_boost(self):
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         expr = BoostMatrix(p)
         func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
@@ -115,7 +116,7 @@ class TestBoostMatrix:
     def test_boosting_back_gives_original_momentum(
         self, state_id: int, data_sample: Dict[int, np.ndarray]
     ):
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         boost = BoostMatrix(p)
         inverse_boost = BoostMatrix(NegativeMomentum(p))
         expr = ArrayMultiplication(inverse_boost, boost, p)
@@ -128,7 +129,7 @@ class TestBoostMatrix:
 
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         n_events = _ArraySize(p)
         beta = three_momentum_norm(p) / Energy(p)
         expr = BoostZMatrix(beta, n_events)
@@ -139,8 +140,8 @@ class TestBoostZMatrix:
         mass = 4.89897949
         assert pytest.approx(boosted_array[0]) == [mass, 0, 0, 0]
 
-        expr = InvariantMass(p)
-        func = sp.lambdify(p, expr.doit(), cse=True)
+        mass_expr = InvariantMass(p)
+        func = sp.lambdify(p, mass_expr.doit(), cse=True)
         mass_array = func(p_array)
         assert pytest.approx(mass_array[0]) == mass
 
@@ -193,7 +194,7 @@ class TestFourMomentumXYZ:
     ) -> Tuple[
         FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
     ]:
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         e = Energy(p)
         p_x = FourMomentumX(p)
         p_y = FourMomentumY(p)
@@ -213,7 +214,8 @@ class TestFourMomentumXYZ:
         assert sp.latex(p_x) == "{p}_x"
         assert sp.latex(p_y) == "{p}_y"
         assert sp.latex(p_z) == "{p}_z"
-        a, b = sp.symbols("A B", cls=ArraySymbol)
+        a = ArraySymbol("A", shape=[])
+        b = ArraySymbol("B", shape=[])
         expr = FourMomentumX(a + b)
         assert sp.latex(expr) == R"\left(A + B\right)_x"
 
@@ -234,7 +236,7 @@ class TestInvariantMass:
         state_id: int,
         expected_mass: float,
     ):
-        p = FourMomentumSymbol(f"p{state_id}")
+        p = FourMomentumSymbol(f"p{state_id}", shape=[])
         mass = InvariantMass(p)
         np_mass = sp.lambdify(p, mass.doit(), cse=True)
         four_momenta = data_sample[state_id]
@@ -246,7 +248,7 @@ class TestInvariantMass:
 class TestThreeMomentum:
     @property
     def p_norm(self) -> ThreeMomentum:
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         return ThreeMomentum(p)
 
     def test_latex(self):
@@ -260,8 +262,8 @@ class TestThreeMomentum:
 
 class TestPhi:
     @property
-    def phi(self) -> Theta:
-        p = FourMomentumSymbol("p")
+    def phi(self):
+        p = FourMomentumSymbol("p", shape=[])
         return Phi(p)
 
     def test_latex(self):
@@ -276,8 +278,8 @@ class TestPhi:
 
 class TestTheta:
     @property
-    def theta(self) -> Theta:
-        p = FourMomentumSymbol("p")
+    def theta(self):
+        p = FourMomentumSymbol("p", shape=[])
         return Theta(p)
 
     def test_latex(self):
@@ -295,7 +297,7 @@ class TestTheta:
 
 class TestNegativeMomentum:
     def test_same_as_inverse(self, data_sample: Dict[int, np.ndarray]):
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         expr = NegativeMomentum(p)
         func = sp.lambdify(p, expr.doit(), cse=True)
         for p_array in data_sample.values():
@@ -413,7 +415,7 @@ class TestOnesZerosArray:
     @pytest.mark.parametrize("shape", [10, (4, 2), [3, 5, 7]])
     def test_numpycode(self, array_type, shape):
         if array_type == "ones":
-            expr_class = _OnesArray
+            expr_class: Type[NumPyPrintable] = _OnesArray
             array_func = np.ones
         elif array_type == "zeros":
             expr_class = _ZerosArray

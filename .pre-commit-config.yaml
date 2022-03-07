@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.114
+    rev: 0.0.117
     hooks:
       - id: check-dev-files
         args:
@@ -107,7 +107,7 @@ repos:
       - id: nbqa-isort
       - id: nbqa-pyupgrade
         args:
-          - --py36-plus
+          - --py37-plus
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0
@@ -155,7 +155,7 @@ repos:
     hooks:
       - id: pyupgrade
         args:
-          - --py36-plus
+          - --py37-plus
 
   # The following tools have to be install locally, because they can also be
   # used by code editors (e.g. linting and format-on-save).
