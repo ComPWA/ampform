@@ -1,7 +1,8 @@
 """Build `~ampform.dynamics` with correct variable names and values."""
+from __future__ import annotations
 
 import sys
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import sympy as sp
 from attrs import field, frozen
@@ -39,7 +40,7 @@ class TwoBodyKinematicVariableSet:
     outgoing_state_mass2: sp.Symbol = field(validator=instance_of(sp.Symbol))
     helicity_theta: sp.Symbol = field(validator=instance_of(sp.Symbol))
     helicity_phi: sp.Symbol = field(validator=instance_of(sp.Symbol))
-    angular_momentum: Optional[int] = field(default=None)
+    angular_momentum: int | None = field(default=None)
 
 
 BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
@@ -66,21 +67,21 @@ class ResonanceDynamicsBuilder(Protocol):
 
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> "BuilderReturnType":
+    ) -> BuilderReturnType:
         """Formulate a dynamics `~sympy.core.expr.Expr` for this resonance."""
         ...
 
 
 def create_non_dynamic(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> "BuilderReturnType":
+) -> BuilderReturnType:
     # pylint: disable=unused-argument
     return (sp.S.One, {})
 
 
 def create_non_dynamic_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> "BuilderReturnType":
+) -> BuilderReturnType:
     """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
 
     Returns the `~sympy.functions.elementary.miscellaneous.sqrt` of a
@@ -132,7 +133,7 @@ class RelativisticBreitWignerBuilder:
         self,
         form_factor: bool = False,
         energy_dependent_width: bool = False,
-        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+        phsp_factor: PhaseSpaceFactorProtocol | None = None,
     ) -> None:
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
@@ -142,7 +143,7 @@ class RelativisticBreitWignerBuilder:
 
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> "BuilderReturnType":
+    ) -> BuilderReturnType:
         """Formulate a relativistic Breit-Wigner for this resonance."""
         if self.energy_dependent_width:
             expr, parameter_defaults = self.__energy_dependent_breit_wigner(
@@ -163,7 +164,7 @@ class RelativisticBreitWignerBuilder:
     @staticmethod
     def __simple_breit_wigner(
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> "BuilderReturnType":
+    ) -> BuilderReturnType:
         inv_mass = variable_pool.incoming_state_mass
         res_identifier = resonance.latex if resonance.latex else resonance.name
         res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
@@ -181,7 +182,7 @@ class RelativisticBreitWignerBuilder:
 
     def __energy_dependent_breit_wigner(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> "BuilderReturnType":
+    ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
                 "Angular momentum is not defined but is required in the"
@@ -217,7 +218,7 @@ class RelativisticBreitWignerBuilder:
 
     def __create_form_factor(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> "BuilderReturnType":
+    ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
                 "Angular momentum is not defined but is required in the"
@@ -247,7 +248,7 @@ class RelativisticBreitWignerBuilder:
     @staticmethod
     def __create_symbols(
         resonance: Particle,
-    ) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
+    ) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
         res_identifier = resonance.latex if resonance.latex else resonance.name
         res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
         res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")

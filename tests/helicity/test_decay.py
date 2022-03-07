@@ -1,6 +1,8 @@
 # pylint: disable=no-member, no-self-use
+from __future__ import annotations
+
 import itertools
-from typing import Iterable, Set
+from typing import Iterable
 
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
@@ -57,14 +59,14 @@ def test_is_opposite_helicity_state_state_sibling_is_opposite(n_final_states):
             )
 
 
-def __permutate_topologies(topologies: Iterable[Topology]) -> Set[Topology]:
+def __permutate_topologies(topologies: Iterable[Topology]) -> set[Topology]:
     permutated_topologies = set()
     for topology in topologies:
         permutated_topologies.update(__permutate_final_state_ids(topology))
     return permutated_topologies
 
 
-def __permutate_final_state_ids(topology: Topology) -> Set[Topology]:
+def __permutate_final_state_ids(topology: Topology) -> set[Topology]:
     permutated_topologies = set()
     final_state_ids = sorted(topology.outgoing_edge_ids)
     for permutation in itertools.permutations(final_state_ids):

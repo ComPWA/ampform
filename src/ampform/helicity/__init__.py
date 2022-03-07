@@ -5,6 +5,7 @@
 
     import sympy as sp
 """
+from __future__ import annotations
 
 import collections
 import logging
@@ -17,18 +18,13 @@ from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
     DefaultDict,
-    Dict,
     Generator,
     ItemsView,
     Iterable,
     Iterator,
     KeysView,
-    List,
     Mapping,
-    Optional,
     Sequence,
-    Set,
-    Tuple,
     TypeVar,
     Union,
     ValuesView,
@@ -58,7 +54,10 @@ from .decay import (
     TwoBodyDecay,
     collect_topologies,
     get_parent_id,
+    get_prefactor,
     get_sibling_state_id,
+    group_by_spin_projection,
+    group_by_topology,
     is_opposite_helicity_state,
 )
 from .naming import (
@@ -81,112 +80,10 @@ else:
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
-ParameterValue = Union[float, complex, int]
-"""Allowed value types for parameters."""
-
-
-class ParameterValues(abc.Mapping):
-    """Ordered mapping to `ParameterValue` with convenient getter and setter.
-
-    >>> a, b, c = sp.symbols("a b c")
-    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
-    >>> parameters[a]
-    0.0
-    >>> parameters["b"]
-    (1+1j)
-    >>> parameters["b"] = 3
-    >>> parameters[1]
-    3
-    >>> parameters[2]
-    -2
-    >>> parameters[2] = 3.14
-    >>> parameters[c]
-    3.14
-
-    .. automethod:: __getitem__
-    .. automethod:: __setitem__
-    """
-
-    def __init__(self, parameters: Mapping[sp.Symbol, ParameterValue]) -> None:
-        self.__parameters = dict(parameters)
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.__parameters})"
-
-    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
-        class_name = type(self).__name__
-        if cycle:
-            p.text(f"{class_name}(...)")
-        else:
-            with p.group(indent=2, open=f"{class_name}({{"):
-                p.breakable()
-                for par, value in self.items():
-                    p.pretty(par)
-                    p.text(": ")
-                    p.pretty(value)
-                    p.text(",")
-                    p.breakable()
-            p.text("})")
-
-    def __getitem__(self, key: Union[sp.Symbol, int, str]) -> "ParameterValue":
-        par = self._get_parameter(key)
-        return self.__parameters[par]
-
-    def __setitem__(
-        self, key: Union[sp.Symbol, int, str], value: "ParameterValue"
-    ) -> None:
-        par = self._get_parameter(key)
-        self.__parameters[par] = value
-
-    @singledispatchmethod
-    def _get_parameter(self, key: Union[sp.Symbol, int, str]) -> sp.Symbol:
-        # pylint: disable=no-self-use
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot find parameter for key type {type(key).__name__}"
-        )
-
-    @_get_parameter.register(sp.Symbol)
-    def _(self, par: sp.Symbol) -> sp.Symbol:
-        if par not in self.__parameters:
-            raise KeyError(f"{type(self).__name__} has no parameter {par}")
-        return par
-
-    @_get_parameter.register(str)
-    def _(self, name: str) -> sp.Symbol:
-        for parameter in self.__parameters:
-            if parameter.name == name:
-                return parameter
-        raise KeyError(f"No parameter available with name {name}")
-
-    @_get_parameter.register(int)
-    def _(self, key: int) -> sp.Symbol:
-        for i, parameter in enumerate(self.__parameters):
-            if i == key:
-                return parameter
-        raise KeyError(
-            f"Parameter mapping has {len(self)} parameters, but trying to get"
-            f" parameter number {key}"
-        )
-
-    def __len__(self) -> int:
-        return len(self.__parameters)
-
-    def __iter__(self) -> Iterator[sp.Symbol]:
-        return iter(self.__parameters)
-
-    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
-        return self.__parameters.items()
-
-    def keys(self) -> KeysView[sp.Symbol]:
-        return self.__parameters.keys()
-
-    def values(self) -> ValuesView[ParameterValue]:
-        return self.__parameters.values()
-
 
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr]
-) -> "OrderedDict[str, sp.Expr]":
+) -> OrderedDict[str, sp.Expr]:
     return collections.OrderedDict(
         [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
     )
@@ -194,7 +91,7 @@ def _order_component_mapping(
 
 def _order_symbol_mapping(
     mapping: Mapping[sp.Symbol, sp.Expr]
-) -> "OrderedDict[sp.Symbol, sp.Expr]":
+) -> OrderedDict[sp.Symbol, sp.Expr]:
     return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
@@ -207,7 +104,7 @@ def _order_symbol_mapping(
 
 def _order_amplitudes(
     mapping: Mapping[sp.Indexed, sp.Expr]
-) -> "OrderedDict[sp.Indexed,  sp.Expr]":
+) -> OrderedDict[sp.Indexed, sp.Expr]:
     return collections.OrderedDict(
         [
             (key, mapping[key])
@@ -216,11 +113,17 @@ def _order_amplitudes(
     )
 
 
+def _to_parameter_values(
+    mapping: Mapping[sp.Symbol, ParameterValue]
+) -> ParameterValues:
+    return ParameterValues(mapping)
+
+
 @frozen
 class HelicityModel:  # noqa: R701
     intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
-    amplitudes: "OrderedDict[sp.Indexed, sp.Expr]" = field(
+    amplitudes: OrderedDict[sp.Indexed, sp.Expr] = field(
         converter=_order_amplitudes
     )
     """Definitions for the amplitudes that appear in `intensity`.
@@ -231,7 +134,7 @@ class HelicityModel:  # noqa: R701
     provides the definitions for each of these. See also :ref:`TR-014
     <compwa-org:tr-014-solution-2>`.
     """
-    parameter_defaults: ParameterValues = field(converter=ParameterValues)
+    parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
     Keys are `~sympy.core.symbol.Symbol` instances from the main
@@ -240,11 +143,11 @@ class HelicityModel:  # noqa: R701
     natural sort order (:func:`.natural_sorting`). Values have been extracted
     from the input `~qrules.transition.ReactionInfo`.
     """
-    kinematic_variables: "OrderedDict[sp.Symbol, sp.Expr]" = field(
+    kinematic_variables: OrderedDict[sp.Symbol, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
-    components: "OrderedDict[str, sp.Expr]" = field(
+    components: OrderedDict[str, sp.Expr] = field(
         converter=_order_component_mapping
     )
     """A mapping for identifying main components in the :attr:`expression`.
@@ -276,8 +179,8 @@ class HelicityModel:  # noqa: R701
         return intensity.subs(self.amplitudes)
 
     def rename_symbols(  # noqa: R701
-        self, renames: Union[Iterable[Tuple[str, str]], Mapping[str, str]]
-    ) -> "HelicityModel":
+        self, renames: Iterable[tuple[str, str]] | Mapping[str, str]
+    ) -> HelicityModel:
         """Rename certain symbols in the model.
 
         Renames all `~sympy.core.symbol.Symbol` instance that appear in
@@ -325,8 +228,8 @@ class HelicityModel:  # noqa: R701
             },
         )
 
-    def __collect_symbols(self) -> Set[sp.Symbol]:
-        symbols: Set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
+    def __collect_symbols(self) -> set[sp.Symbol]:
+        symbols: set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
         symbols |= set(self.kinematic_variables)
         for expr in self.kinematic_variables.values():
             symbols |= expr.free_symbols  # type: ignore[misc]
@@ -371,12 +274,115 @@ class HelicityModel:  # noqa: R701
         )
 
 
+class ParameterValues(abc.Mapping):
+    """Ordered mapping to `ParameterValue` with convenient getter and setter.
+
+    >>> a, b, c = sp.symbols("a b c")
+    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
+    >>> parameters[a]
+    0.0
+    >>> parameters["b"]
+    (1+1j)
+    >>> parameters["b"] = 3
+    >>> parameters[1]
+    3
+    >>> parameters[2]
+    -2
+    >>> parameters[2] = 3.14
+    >>> parameters[c]
+    3.14
+
+    .. automethod:: __getitem__
+    .. automethod:: __setitem__
+    """
+
+    def __init__(self, parameters: Mapping[sp.Symbol, ParameterValue]) -> None:
+        self.__parameters = dict(parameters)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.__parameters})"
+
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
+        class_name = type(self).__name__
+        if cycle:
+            p.text(f"{class_name}(...)")
+        else:
+            with p.group(indent=2, open=f"{class_name}({{"):
+                p.breakable()
+                for par, value in self.items():
+                    p.pretty(par)
+                    p.text(": ")
+                    p.pretty(value)
+                    p.text(",")
+                    p.breakable()
+            p.text("})")
+
+    def __getitem__(self, key: sp.Symbol | int | str) -> ParameterValue:
+        par = self._get_parameter(key)
+        return self.__parameters[par]
+
+    def __setitem__(
+        self, key: sp.Symbol | int | str, value: ParameterValue
+    ) -> None:
+        par = self._get_parameter(key)
+        self.__parameters[par] = value
+
+    @singledispatchmethod
+    def _get_parameter(self, key: sp.Symbol | int | str) -> sp.Symbol:
+        # pylint: disable=no-self-use
+        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
+            f"Cannot find parameter for key type {type(key).__name__}"
+        )
+
+    @_get_parameter.register(sp.Symbol)
+    def _(self, par: sp.Symbol) -> sp.Symbol:
+        if par not in self.__parameters:
+            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+        return par
+
+    @_get_parameter.register(str)
+    def _(self, name: str) -> sp.Symbol:
+        for parameter in self.__parameters:
+            if parameter.name == name:
+                return parameter
+        raise KeyError(f"No parameter available with name {name}")
+
+    @_get_parameter.register(int)
+    def _(self, key: int) -> sp.Symbol:
+        for i, parameter in enumerate(self.__parameters):
+            if i == key:
+                return parameter
+        raise KeyError(
+            f"Parameter mapping has {len(self)} parameters, but trying to get"
+            f" parameter number {key}"
+        )
+
+    def __len__(self) -> int:
+        return len(self.__parameters)
+
+    def __iter__(self) -> Iterator[sp.Symbol]:
+        return iter(self.__parameters)
+
+    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
+        return self.__parameters.items()
+
+    def keys(self) -> KeysView[sp.Symbol]:
+        return self.__parameters.keys()
+
+    def values(self) -> ValuesView[ParameterValue]:
+        return self.__parameters.values()
+
+
+ParameterValue = Union[float, complex, int]
+"""Allowed value types for parameters."""
+
+
 @define
 class _HelicityModelIngredients:
-    parameter_defaults: Dict[sp.Symbol, ParameterValue] = field(factory=dict)
-    amplitudes: Dict[sp.Indexed, sp.Expr] = field(factory=dict)
-    components: Dict[str, sp.Expr] = field(factory=dict)
-    kinematic_variables: Dict[sp.Symbol, sp.Expr] = field(factory=dict)
+    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
+    components: dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
@@ -389,11 +395,11 @@ class DynamicsSelector(abc.Mapping):
     """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
 
     def __init__(
-        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+        self, transitions: ReactionInfo | Iterable[StateTransition]
     ) -> None:
         if isinstance(transitions, ReactionInfo):
             transitions = transitions.transitions
-        self.__choices: Dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
+        self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
         for transition in transitions:
             for node_id in transition.topology.nodes:
                 decay = TwoBodyDecay.from_transition(transition, node_id)
@@ -424,7 +430,7 @@ class DynamicsSelector(abc.Mapping):
     @assign.register(tuple)
     def _(
         self,
-        transition_node: Tuple[StateTransition, int],
+        transition_node: tuple[StateTransition, int],
         builder: ResonanceDynamicsBuilder,
     ) -> None:
         decay = TwoBodyDecay.create(transition_node)
@@ -448,7 +454,7 @@ class DynamicsSelector(abc.Mapping):
         return self.assign(particle.name, builder)
 
     def __getitem__(
-        self, __k: Union[TwoBodyDecay, Tuple[StateTransition, int]]
+        self, __k: TwoBodyDecay | tuple[StateTransition, int]
     ) -> ResonanceDynamicsBuilder:
         __k = TwoBodyDecay.create(__k)
         return self.__choices[__k]
@@ -494,7 +500,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         reaction: ReactionInfo,
-        stable_final_state_ids: Optional[Iterable[int]] = None,
+        stable_final_state_ids: Iterable[int] | None = None,
         scalar_initial_state_mass: bool = False,
     ) -> None:
         if len(reaction.transitions) < 1:
@@ -507,7 +513,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
-        self.align_spin: Optional[bool] = None
+        self.align_spin: bool | None = None
         """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
@@ -522,7 +528,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return self.__dynamics_choices
 
     @property
-    def stable_final_state_ids(self) -> Optional[Set[int]]:
+    def stable_final_state_ids(self) -> set[int] | None:
         # noqa: D403
         """IDs of the final states that should be considered stable.
 
@@ -532,7 +538,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return self.__stable_final_state_ids
 
     @stable_final_state_ids.setter
-    def stable_final_state_ids(self, value: Optional[Iterable[int]]) -> None:
+    def stable_final_state_ids(self, value: Iterable[int] | None) -> None:
         self.__stable_final_state_ids = None
         if value is not None:
             self.__stable_final_state_ids = set(value)
@@ -601,7 +607,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         # pylint: disable=too-many-locals
         outer_state_ids = _get_outer_state_ids(self.__reaction)
         spin_projections: DefaultDict[
-            sp.Symbol, Set[sp.Rational]
+            sp.Symbol, set[sp.Rational]
         ] = collections.defaultdict(set)
         spin_groups = group_by_spin_projection(self.__reaction.transitions)
         for group in spin_groups:
@@ -625,7 +631,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
     def __formulate_aligned_amplitude(
-        self, topology_groups: Dict[Topology, List[StateTransition]]
+        self, topology_groups: dict[Topology, list[StateTransition]]
     ) -> sp.Expr:
         outer_state_ids = _get_outer_state_ids(self.__reaction)
         amplitude = sp.S.Zero
@@ -653,7 +659,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return self.align_spin
 
     def __register_amplitudes(
-        self, transition_group: List[StateTransition]
+        self, transition_group: list[StateTransition]
     ) -> None:
         transition_by_topology = group_by_topology(transition_group)
         expression = sum(
@@ -668,7 +674,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_topology_amplitude(
         self, transitions: Sequence[StateTransition]
     ) -> sp.Expr:
-        sequential_expressions: List[sp.Expr] = []
+        sequential_expressions: list[sp.Expr] = []
         for transition in transitions:
             sequential_graphs = (
                 perform_external_edge_identical_particle_combinatorics(
@@ -691,7 +697,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_sequential_decay(
         self, transition: StateTransition
     ) -> sp.Expr:
-        partial_decays: List[sp.Expr] = [
+        partial_decays: list[sp.Expr] = [
             self._formulate_partial_decay(transition, node_id)
             for node_id in transition.topology.nodes
         ]
@@ -755,7 +761,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
-    ) -> Optional[float]:
+    ) -> float | None:
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
@@ -817,23 +823,21 @@ def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
 
 
 @singledispatch
-def _get_outer_state_ids(
-    obj: Union[ReactionInfo, StateTransition]
-) -> List[int]:
+def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
     raise NotImplementedError(
         f"Cannot get outer state IDs from a {type(obj).__name__}"
     )
 
 
 @_get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> List[int]:
+def _(transition: StateTransition) -> list[int]:
     outer_state_ids = list(transition.initial_states)
     outer_state_ids += sorted(transition.final_states)
     return outer_state_ids
 
 
 @_get_outer_state_ids.register(ReactionInfo)
-def _(reaction: ReactionInfo) -> List[int]:
+def _(reaction: ReactionInfo) -> list[int]:
     return _get_outer_state_ids(reaction.transitions[0])
 
 
@@ -1012,67 +1016,6 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
         beta=theta,
         gamma=0,
     )
-
-
-def get_prefactor(transition: StateTransition) -> float:
-    """Calculate the product of all prefactors defined in this transition.
-
-    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
-    """
-    prefactor = 1.0
-    for node_id in transition.topology.nodes:
-        interaction = transition.interactions[node_id]
-        if interaction and interaction.parity_prefactor is not None:
-            prefactor *= interaction.parity_prefactor
-    return prefactor
-
-
-def group_by_spin_projection(
-    transitions: Iterable[StateTransition],
-) -> List[List[StateTransition]]:
-    """Match final and initial states in groups.
-
-    Each `~qrules.transition.StateTransition` corresponds to a specific state
-    transition amplitude. This function groups together transitions, which have
-    the same initial and final state (including spin). This is needed to
-    determine the coherency of the individual amplitude parts.
-    """
-    transition_groups: DefaultDict[
-        Tuple[
-            Tuple[Tuple[str, float], ...],
-            Tuple[Tuple[str, float], ...],
-        ],
-        List[StateTransition],
-    ] = collections.defaultdict(list)
-    for transition in transitions:
-        initial_state = sorted(
-            (
-                transition.states[i].particle.name,
-                transition.states[i].spin_projection,
-            )
-            for i in transition.topology.incoming_edge_ids
-        )
-        final_state = sorted(
-            (
-                transition.states[i].particle.name,
-                transition.states[i].spin_projection,
-            )
-            for i in transition.topology.outgoing_edge_ids
-        )
-        group_key = (tuple(initial_state), tuple(final_state))
-        transition_groups[group_key].append(transition)
-
-    return list(transition_groups.values())
-
-
-def group_by_topology(
-    transitions: Iterable[StateTransition],
-) -> Dict[Topology, List[StateTransition]]:
-    """Group state transitions by different `~qrules.topology.Topology`."""
-    transition_groups = collections.defaultdict(list)
-    for transition in transitions:
-        transition_groups[transition.topology].append(transition)
-    return dict(transition_groups)
 
 
 def formulate_spin_alignment(
@@ -1330,7 +1273,7 @@ def __rationalize(value):
 
 def _create_spin_range(
     spin_magnitude, no_zero_spin: bool = False
-) -> List[float]:
+) -> list[float]:
     """Create a list of allowed spin projections.
 
     >>> _create_spin_range(0)
@@ -1368,7 +1311,7 @@ def _generate_kinematic_variable_set(
         get_invariant_mass_label(transition.topology, decay.children[1].id),
         real=True,
     )
-    angular_momentum: Optional[int] = decay.interaction.l_magnitude
+    angular_momentum: int | None = decay.interaction.l_magnitude
     if angular_momentum is None:
         if decay.parent.particle.spin.is_integer():
             angular_momentum = int(decay.parent.particle.spin)
@@ -1384,7 +1327,7 @@ def _generate_kinematic_variable_set(
 
 def _generate_kinematic_variables(
     transition: StateTransition, node_id: int
-) -> Tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
+) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
     """Generate symbol for invariant mass, phi angle, and theta angle."""
     decay = TwoBodyDecay.from_transition(transition, node_id)
     phi_label, theta_label = get_helicity_angle_label(

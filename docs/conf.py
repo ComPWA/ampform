@@ -165,9 +165,10 @@ autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
     "FourMomenta": "ampform.kinematics.FourMomenta",
     "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
-    "ParameterValue": "ampform.helicity.ParameterValue",
     "RangeDefinition": "symplot.RangeDefinition",
-    "Slider": "symplot.Slider",
+    # https://github.com/sphinx-doc/sphinx/pull/10183
+    # "ParameterValue": "ampform.helicity.ParameterValue",
+    # "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
@@ -223,14 +224,10 @@ default_role = "py:obj"
 primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    (
-        "py:class",
-        "sympy.tensor.array.expressions.array_expressions.ArraySymbol",
-    ),
-    ("py:class", "ampform.sympy._array_expressions.ArraySum"),
-    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
     ("py:class", "typing_extensions.Protocol"),
 ]
 

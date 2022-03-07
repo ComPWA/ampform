@@ -13,6 +13,7 @@ The package also provides other helpful functions, like
 :func:`substitute_indexed_symbols`, that are useful when visualizing
 `sympy` expressions.
 """
+from __future__ import annotations
 
 import inspect
 import logging
@@ -21,13 +22,10 @@ from collections import abc
 from typing import (
     TYPE_CHECKING,
     Callable,
-    Dict,
     Iterator,
     Mapping,
     Sequence,
-    Set,
     Tuple,
-    Type,
     TypeVar,
     Union,
 )
@@ -78,12 +76,12 @@ class SliderKwargs(abc.Mapping):
         }
 
     @property
-    def arg_to_symbol(self) -> Dict[str, str]:
+    def arg_to_symbol(self) -> dict[str, str]:
         """**Copy** of the internal translation `dict` for argument names."""
         return dict(self._arg_to_symbol)
 
     @property
-    def symbol_to_arg(self) -> Dict[str, str]:
+    def symbol_to_arg(self) -> dict[str, str]:
         """Inverted `dict` of `arg_to_symbol`."""
         return {symbol: arg for arg, symbol in self._arg_to_symbol.items()}
 
@@ -114,7 +112,7 @@ class SliderKwargs(abc.Mapping):
                     f'Slider "{name}" is not a valid ipywidgets slider'
                 )
 
-    def __getitem__(self, key: Union[str, sp.Symbol]) -> "Slider":
+    def __getitem__(self, key: str | sp.Symbol) -> Slider:
         """Get slider by symbol, symbol name, or argument name."""
         if isinstance(key, sp.Symbol):
             key = key.name
@@ -144,7 +142,7 @@ class SliderKwargs(abc.Mapping):
             f"arg_to_symbol={self._arg_to_symbol})"
         )
 
-    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
         class_name = type(self).__name__
         if cycle:
             p.text(f"{class_name}(...)")
@@ -161,7 +159,7 @@ class SliderKwargs(abc.Mapping):
             p.breakable()
             p.text(")")
 
-    def set_values(self, *args: Dict[str, float], **kwargs: float) -> None:
+    def set_values(self, *args: dict[str, float], **kwargs: float) -> None:
         """Set initial values for the sliders.
 
         Either use a `dict` as input, or use :term:`kwargs <python:keyword
@@ -180,7 +178,7 @@ class SliderKwargs(abc.Mapping):
                 continue
 
     def set_ranges(  # noqa: R701
-        self, *args: Dict[str, RangeDefinition], **kwargs: "RangeDefinition"
+        self, *args: dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
         """Set min, max and (optionally) the nr of steps for each slider.
 
@@ -224,7 +222,7 @@ class SliderKwargs(abc.Mapping):
 
 def _is_min_max(
     range_def: RangeDefinition,
-) -> "TypeGuard[Tuple[float, float]]":
+) -> TypeGuard[tuple[float, float]]:
     if len(range_def) == 2:
         return True
     return False
@@ -232,7 +230,7 @@ def _is_min_max(
 
 def _is_min_max_step(
     range_def: RangeDefinition,
-) -> "TypeGuard[Tuple[float, float, Union[float, int]]]":
+) -> TypeGuard[tuple[float, float, float | int]]:
     if len(range_def) == 3:
         return True
     return False
@@ -242,8 +240,8 @@ ValueType = TypeVar("ValueType")
 
 
 def _merge_args_kwargs(
-    *args: Dict[str, ValueType], **kwargs: ValueType
-) -> Dict[str, ValueType]:
+    *args: dict[str, ValueType], **kwargs: ValueType
+) -> dict[str, ValueType]:
     r"""Merge positional `dict` arguments and keyword arguments into one `dict`.
 
     >>> _merge_args_kwargs(x="X", y="Y")
@@ -261,8 +259,8 @@ def _merge_args_kwargs(
 
 
 def prepare_sliders(
-    expression: sp.Expr, plot_symbol: Union[sp.Symbol, Tuple[sp.Symbol, ...]]
-) -> Tuple[Callable, SliderKwargs]:
+    expression: sp.Expr, plot_symbol: sp.Symbol | tuple[sp.Symbol, ...]
+) -> tuple[Callable, SliderKwargs]:
     # cspell:ignore lambdifygenerated
     """Lambdify a `sympy` expression and create sliders for its arguments.
 
@@ -291,7 +289,7 @@ def prepare_sliders(
     return lambdified_expression, sliders
 
 
-def create_slider(symbol: sp.Symbol) -> "Slider":
+def create_slider(symbol: sp.Symbol) -> Slider:
     r"""Create an `int` or `float` slider, depending on Symbol assumptions.
 
     The description for the slider is rendered as LaTeX from the
@@ -310,11 +308,11 @@ def create_slider(symbol: sp.Symbol) -> "Slider":
 
 def _extract_slider_symbols(
     expression: sp.Expr,
-    plot_symbol: Union[sp.Symbol, Sequence[sp.Symbol]],
-) -> Tuple[sp.Symbol, ...]:
+    plot_symbol: sp.Symbol | Sequence[sp.Symbol],
+) -> tuple[sp.Symbol, ...]:
     """Extract sorted, remaining free symbols of a `sympy` expression."""
     plot_symbols = __safe_wrap_symbols(plot_symbol)
-    free_symbols: Set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     for symbol in plot_symbols:
         if symbol not in free_symbols:
             raise ValueError(
@@ -326,8 +324,8 @@ def _extract_slider_symbols(
 
 
 def __safe_wrap_symbols(
-    plot_symbol: Union[sp.Symbol, Sequence[sp.Symbol]]
-) -> Tuple[sp.Symbol, ...]:
+    plot_symbol: sp.Symbol | Sequence[sp.Symbol],
+) -> tuple[sp.Symbol, ...]:
     if isinstance(plot_symbol, abc.Sequence):
         return tuple(plot_symbol)
     if isinstance(plot_symbol, sp.Symbol):
@@ -339,7 +337,7 @@ def __safe_wrap_symbols(
 
 def partial_doit(
     expression: sp.Expr,
-    doit_classes: Union[Type[sp.Basic], Tuple[Type[sp.Basic], ...]],
+    doit_classes: type[sp.Basic] | tuple[type[sp.Basic], ...],
 ) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` up to a certain level.
 
@@ -369,7 +367,7 @@ def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
 
 
 def rename_symbols(
-    expression: sp.Expr, renames: Union[Callable[[str], str], Dict[str, str]]
+    expression: sp.Expr, renames: Callable[[str], str] | dict[str, str]
 ) -> sp.Expr:
     r"""Rename symbols in an expression.
 
@@ -384,8 +382,8 @@ def rename_symbols(
         ...
     KeyError: "No symbol with name 'non-existent' in expression"
     """
-    substitutions: Dict[sp.Symbol, sp.Symbol] = {}
-    free_symbols: Set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    substitutions: dict[sp.Symbol, sp.Symbol] = {}
+    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     if callable(renames):
         for old_symbol in free_symbols:
             new_name = renames(old_symbol.name)

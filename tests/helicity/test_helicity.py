@@ -1,7 +1,7 @@
 # pylint: disable=no-member, no-self-use
+from __future__ import annotations
 
 import logging
-from typing import Tuple
 
 import pytest
 import qrules
@@ -121,14 +121,14 @@ class TestHelicityAmplitudeBuilder:
 
 class TestHelicityModel:
     def test_rename_symbols_no_renames(
-        self, amplitude_model: Tuple[str, HelicityModel]
+        self, amplitude_model: tuple[str, HelicityModel]
     ):
         _, model = amplitude_model
         new_model = model.rename_symbols({})
         assert new_model == model
 
     def test_rename_parameters(
-        self, amplitude_model: Tuple[str, HelicityModel]
+        self, amplitude_model: tuple[str, HelicityModel]
     ):
         _, model = amplitude_model
         d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}")
@@ -160,7 +160,7 @@ class TestHelicityModel:
         )
 
     def test_rename_variables(
-        self, amplitude_model: Tuple[str, HelicityModel]
+        self, amplitude_model: tuple[str, HelicityModel]
     ):
         _, model = amplitude_model
         old_symbol = sp.Symbol("m_12", real=True)
@@ -179,7 +179,7 @@ class TestHelicityModel:
         )
 
     def test_assumptions_after_rename(
-        self, amplitude_model: Tuple[str, HelicityModel]
+        self, amplitude_model: tuple[str, HelicityModel]
     ):
         # pylint: disable=protected-access
         _, model = amplitude_model
@@ -193,7 +193,7 @@ class TestHelicityModel:
 
     def test_rename_symbols_warnings(
         self,
-        amplitude_model: Tuple[str, HelicityModel],
+        amplitude_model: tuple[str, HelicityModel],
         caplog: LogCaptureFixture,
     ):
         _, model = amplitude_model
@@ -204,7 +204,7 @@ class TestHelicityModel:
         assert old_name in caplog.records[-1].msg
         assert new_model == model
 
-    def test_sum_components(self, amplitude_model: Tuple[str, HelicityModel]):
+    def test_sum_components(self, amplitude_model: tuple[str, HelicityModel]):
         # pylint: disable=cell-var-from-loop, line-too-long
         _, model = amplitude_model
         from_intensities = model.sum_components(

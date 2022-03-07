@@ -1,7 +1,8 @@
-"""A collection of basic math operations, used in `ampform.dynamics`."""
 # cspell:ignore cmath compwa csqrt lambdifier
 # pylint: disable=no-member, protected-access, unused-argument, W0223
 # https://stackoverflow.com/a/22224042
+"""A collection of basic math operations, used in `ampform.dynamics`."""
+from __future__ import annotations
 
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
@@ -23,7 +24,7 @@ class ComplexSqrt(sp.Expr):
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
 
-    def __new__(cls, x: sp.Expr, *args, **kwargs) -> "ComplexSqrt":
+    def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt:
         x = sp.sympify(x)
         expr = sp.Expr.__new__(cls, x, *args, **kwargs)
         if hasattr(x, "free_symbols") and not x.free_symbols:

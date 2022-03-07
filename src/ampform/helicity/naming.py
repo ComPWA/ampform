@@ -1,8 +1,9 @@
 """Generate descriptions used in the `~ampform.helicity` formalism."""
+from __future__ import annotations
 
 import re
 from functools import lru_cache
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Iterable
 
 import sympy as sp
 from qrules.topology import Topology
@@ -18,11 +19,11 @@ from .decay import (
 
 class HelicityAmplitudeNameGenerator:
     def __init__(
-        self, transitions: Union[ReactionInfo, Iterable[StateTransition]]
+        self, transitions: ReactionInfo | Iterable[StateTransition]
     ) -> None:
         if isinstance(transitions, ReactionInfo):
             transitions = transitions.transitions
-        self.parity_partner_coefficient_mapping: Dict[str, str] = {}
+        self.parity_partner_coefficient_mapping: dict[str, str] = {}
         for transition in transitions:
             self.__register_amplitude_coefficient_name(transition)
 
@@ -72,7 +73,7 @@ class HelicityAmplitudeNameGenerator:
 
     def __generate_amplitude_coefficient_couple(
         self, transition: StateTransition, node_id: int
-    ) -> Tuple[str, str, str]:
+    ) -> tuple[str, str, str]:
         incoming_state, outgoing_states = get_helicity_info(
             transition, node_id
         )
@@ -99,7 +100,7 @@ class HelicityAmplitudeNameGenerator:
     def generate_amplitude_name(  # pylint: disable=no-self-use
         self,
         transition: StateTransition,
-        node_id: Optional[int] = None,
+        node_id: int | None = None,
     ) -> str:
         """Generates a unique name for the amplitude corresponding.
 
@@ -113,7 +114,7 @@ class HelicityAmplitudeNameGenerator:
             node_ids = transition.topology.nodes
         else:
             node_ids = frozenset({node_id})
-        names: List[str] = []
+        names: list[str] = []
         for i in node_ids:
             incoming_state, outgoing_states = get_helicity_info(transition, i)
             name = (
@@ -139,7 +140,7 @@ class HelicityAmplitudeNameGenerator:
         self, transition: StateTransition
     ) -> str:
         """Generate unique suffix for a sequential amplitude transition."""
-        coefficient_names: List[str] = []
+        coefficient_names: list[str] = []
         for node_id in transition.topology.nodes:
             suffix = self.generate_coefficient_name(transition, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
@@ -152,13 +153,13 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
     def generate_amplitude_name(
         self,
         transition: StateTransition,
-        node_id: Optional[int] = None,
+        node_id: int | None = None,
     ) -> str:
         if isinstance(node_id, int):
             node_ids = frozenset({node_id})
         else:
             node_ids = transition.topology.nodes
-        names: List[str] = []
+        names: list[str] = []
         for node in node_ids:
             helicity_name = super().generate_amplitude_name(transition, node)
             canonical_name = helicity_name.replace(
@@ -217,7 +218,7 @@ def generate_transition_label(transition: StateTransition) -> str:
 
 def get_helicity_angle_label(
     topology: Topology, state_id: int
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     r"""Generate a nested helicity angle label for :math:`\phi,\theta`.
 
     See :func:`get_boost_chain_suffix` for the meaning of the suffix.
@@ -342,7 +343,7 @@ def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
     return "".join(map(str, attached_final_state_ids))
 
 
-def natural_sorting(text: str) -> List[Union[float, str]]:
+def natural_sorting(text: str) -> list[float | str]:
     """Function that can be used for natural sort order in :func:`sorted`.
 
     See `natural sort order
@@ -358,7 +359,7 @@ def natural_sorting(text: str) -> List[Union[float, str]]:
     ]
 
 
-def __attempt_number_cast(text: str) -> Union[float, str]:
+def __attempt_number_cast(text: str) -> float | str:
     try:
         return float(text)
     except ValueError:

@@ -3,22 +3,12 @@
 # pylint: disable=unused-argument, W0223
 # https://stackoverflow.com/a/22224042
 """Classes and functions for relativistic four-momentum kinematics."""
+from __future__ import annotations
 
 import itertools
-import sys
 from collections import abc
 from functools import singledispatch
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Union,
-)
+from typing import Dict, Iterable, Mapping
 
 import attrs
 import sympy as sp
@@ -57,12 +47,6 @@ from ampform.sympy._array_expressions import (
 )
 from ampform.sympy.math import ComplexSqrt
 
-if TYPE_CHECKING:  # pragma: no cover
-    if sys.version_info < (3, 10):
-        from typing_extensions import TypeAlias
-    else:
-        from typing import TypeAlias
-
 
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
@@ -76,9 +60,7 @@ class HelicityAdapter:
 
     def __init__(
         self,
-        transitions: Union[
-            ReactionInfo, Iterable[Union[Topology, StateTransition]]
-        ],
+        transitions: (ReactionInfo | Iterable[Topology | StateTransition]),
     ) -> None:
         self.__topologies = _extract_topologies(transitions)
         for topology in self.__topologies:
@@ -103,7 +85,7 @@ class HelicityAdapter:
         self.__topologies.add(topology)
 
     @property
-    def registered_topologies(self) -> FrozenSet[Topology]:
+    def registered_topologies(self) -> frozenset[Topology]:
         return frozenset(self.__topologies)
 
     def permutate_registered_topologies(self) -> None:
@@ -126,7 +108,7 @@ class HelicityAdapter:
 
     def create_expressions(
         self, generate_wigner_angles: bool = False
-    ) -> Dict[str, sp.Expr]:
+    ) -> dict[str, sp.Expr]:
         output = {}
         for topology in self.__topologies:
             momenta = create_four_momentum_symbols(topology)
@@ -146,18 +128,18 @@ class HelicityAdapter:
 
 @singledispatch
 def _extract_topologies(
-    obj: Union[ReactionInfo, Iterable[Union[Topology, StateTransition]]]
-) -> Set[Topology]:
+    obj: ReactionInfo | Iterable[Topology | StateTransition],
+) -> set[Topology]:
     raise TypeError(f"Cannot extract topologies from a {type(obj).__name__}")
 
 
 @_extract_topologies.register(ReactionInfo)
-def _(transitions: ReactionInfo) -> Set[Topology]:
+def _(transitions: ReactionInfo) -> set[Topology]:
     return _extract_topologies(transitions.transitions)
 
 
 @_extract_topologies.register(abc.Iterable)
-def _(transitions: abc.Iterable) -> Set[Topology]:
+def _(transitions: abc.Iterable) -> set[Topology]:
     return {_get_topology(t) for t in transitions}
 
 
@@ -178,7 +160,7 @@ def _(obj: StateTransition) -> Topology:
     return obj.topology
 
 
-def create_four_momentum_symbols(topology: Topology) -> "FourMomenta":
+def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
     """Create a set of array-symbols for a `~qrules.topology.Topology`.
 
     >>> from qrules.topology import create_isobar_topologies
@@ -198,7 +180,7 @@ FourMomenta = Dict[int, "FourMomentumSymbol"]
 It's best to create a `dict` of `FourMomenta` with
 :func:`create_four_momentum_symbols`.
 """
-FourMomentumSymbol: "TypeAlias" = ArraySymbol
+FourMomentumSymbol = ArraySymbol
 r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
 The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
@@ -217,7 +199,7 @@ ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
 class Energy(UnevaluatedExpression):
     """Represents the energy-component of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "Energy":
+    def __new__(cls, momentum: sp.Basic, **hints) -> Energy:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -238,7 +220,7 @@ class Energy(UnevaluatedExpression):
 class FourMomentumX(UnevaluatedExpression):
     """Component :math:`x` of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "FourMomentumX":
+    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumX:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -255,7 +237,7 @@ class FourMomentumX(UnevaluatedExpression):
 class FourMomentumY(UnevaluatedExpression):
     """Component :math:`y` of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "FourMomentumY":
+    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumY:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -272,7 +254,7 @@ class FourMomentumY(UnevaluatedExpression):
 class FourMomentumZ(UnevaluatedExpression):
     """Component :math:`z` of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "FourMomentumZ":
+    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumZ:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -288,7 +270,7 @@ class FourMomentumZ(UnevaluatedExpression):
 class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
     """Spatial components of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "ThreeMomentum":
+    def __new__(cls, momentum: sp.Basic, **hints) -> ThreeMomentum:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -314,7 +296,7 @@ class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
 class EuclideanNorm(UnevaluatedExpression, NumPyPrintable):
     """Take the euclidean norm of an array over axis 1."""
 
-    def __new__(cls, vector: sp.Basic, **hints) -> "EuclideanNorm":
+    def __new__(cls, vector: sp.Basic, **hints) -> EuclideanNorm:
         return create_expression(cls, vector, **hints)
 
     @property
@@ -337,7 +319,7 @@ class EuclideanNorm(UnevaluatedExpression, NumPyPrintable):
 class EuclideanNormSquared(UnevaluatedExpression):
     """Take the squared euclidean norm of an array over axis 1."""
 
-    def __new__(cls, vector: sp.Basic, **hints) -> "EuclideanNormSquared":
+    def __new__(cls, vector: sp.Basic, **hints) -> EuclideanNormSquared:
         return create_expression(cls, vector, **hints)
 
     @property
@@ -364,7 +346,7 @@ def three_momentum_norm(momentum: sp.Basic) -> EuclideanNorm:
 class InvariantMass(UnevaluatedExpression):
     """Invariant mass of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "InvariantMass":
+    def __new__(cls, momentum: sp.Basic, **hints) -> InvariantMass:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -386,7 +368,7 @@ class InvariantMass(UnevaluatedExpression):
 class Phi(UnevaluatedExpression):
     r"""Azimuthal angle :math:`\phi` of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "Phi":
+    def __new__(cls, momentum: sp.Basic, **hints) -> Phi:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -407,7 +389,7 @@ class Phi(UnevaluatedExpression):
 class Theta(UnevaluatedExpression):
     r"""Polar (elevation) angle :math:`\theta` of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "Theta":
+    def __new__(cls, momentum: sp.Basic, **hints) -> Theta:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -428,7 +410,7 @@ class Theta(UnevaluatedExpression):
 class NegativeMomentum(UnevaluatedExpression):
     r"""Invert the spatial components of a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "NegativeMomentum":
+    def __new__(cls, momentum: sp.Basic, **hints) -> NegativeMomentum:
         return create_expression(cls, momentum, **hints)
 
     @property
@@ -449,11 +431,11 @@ class MinkowskiMetric(NumPyPrintable):
     # pylint: disable=no-self-use
     r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> "MinkowskiMetric":
+    def __new__(cls, momentum: sp.Basic, **hints) -> MinkowskiMetric:
         return create_expression(cls, momentum, **hints)
 
     @property
-    def _momentum(self) -> "MinkowskiMetric":
+    def _momentum(self) -> MinkowskiMetric:
         return self.args[0]  # type: ignore[return-value]
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -498,8 +480,8 @@ class BoostZMatrix(UnevaluatedExpression):
     """
 
     def __new__(
-        cls, beta: sp.Basic, n_events: Optional[sp.Expr] = None, **kwargs
-    ) -> "BoostZMatrix":
+        cls, beta: sp.Basic, n_events: sp.Expr | None = None, **kwargs
+    ) -> BoostZMatrix:
         if n_events is None:
             n_events = _ArraySize(beta)
         return create_expression(cls, beta, n_events, **kwargs)
@@ -516,7 +498,7 @@ class BoostZMatrix(UnevaluatedExpression):
             ]
         )
 
-    def evaluate(self) -> "_BoostZMatrixImplementation":
+    def evaluate(self) -> _BoostZMatrixImplementation:
         beta = self.args[0]
         gamma = 1 / sp.sqrt(1 - beta**2)  # type: ignore[operator]
         n_events = self.args[1]
@@ -538,10 +520,10 @@ class _BoostZMatrixImplementation(NumPyPrintable):
         beta: sp.Basic,
         gamma: sp.Basic,
         gamma_beta: sp.Basic,
-        ones: "_OnesArray",
-        zeros: "_ZerosArray",
+        ones: _OnesArray,
+        zeros: _ZerosArray,
         **hints,
-    ) -> "_BoostZMatrixImplementation":
+    ) -> _BoostZMatrixImplementation:
         return create_expression(
             cls, beta, gamma, gamma_beta, ones, zeros, **hints
         )
@@ -567,7 +549,7 @@ class _BoostZMatrixImplementation(NumPyPrintable):
 class BoostMatrix(UnevaluatedExpression):
     r"""Compute a rank-3 Lorentz boost matrix from a `FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **kwargs) -> "BoostMatrix":
+    def __new__(cls, momentum: sp.Basic, **kwargs) -> BoostMatrix:
         return create_expression(cls, momentum, **kwargs)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -602,7 +584,7 @@ class BoostMatrix(UnevaluatedExpression):
             ]
         )
 
-    def evaluate(self) -> "_BoostMatrixImplementation":
+    def evaluate(self) -> _BoostMatrixImplementation:
         momentum = self.args[0]
         energy = Energy(momentum)
         beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
@@ -644,7 +626,7 @@ class _BoostMatrixImplementation(NumPyPrintable):
         b23: sp.Basic,
         b33: sp.Basic,
         **kwargs,
-    ) -> "_BoostMatrixImplementation":
+    ) -> _BoostMatrixImplementation:
         return create_expression(
             cls,
             momentum,
@@ -689,8 +671,8 @@ class RotationYMatrix(UnevaluatedExpression):
     """
 
     def __new__(
-        cls, angle: sp.Basic, n_events: Optional[sp.Expr] = None, **hints
-    ) -> "RotationYMatrix":
+        cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
+    ) -> RotationYMatrix:
         if n_events is None:
             n_events = _ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
@@ -706,7 +688,7 @@ class RotationYMatrix(UnevaluatedExpression):
             ]
         )
 
-    def evaluate(self) -> "_RotationYMatrixImplementation":
+    def evaluate(self) -> _RotationYMatrixImplementation:
         angle = self.args[0]
         n_events = self.args[1]
         return _RotationYMatrixImplementation(
@@ -727,10 +709,10 @@ class _RotationYMatrixImplementation(NumPyPrintable):
         angle: sp.Basic,
         cos_angle: sp.Basic,
         sin_angle: sp.Basic,
-        ones: "_OnesArray",
-        zeros: "_ZerosArray",
+        ones: _OnesArray,
+        zeros: _ZerosArray,
         **hints,
-    ) -> "_RotationYMatrixImplementation":
+    ) -> _RotationYMatrixImplementation:
         return create_expression(
             cls, angle, cos_angle, sin_angle, ones, zeros, **hints
         )
@@ -764,8 +746,8 @@ class RotationZMatrix(UnevaluatedExpression):
     """
 
     def __new__(
-        cls, angle: sp.Basic, n_events: Optional[sp.Expr] = None, **hints
-    ) -> "RotationZMatrix":
+        cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
+    ) -> RotationZMatrix:
         if n_events is None:
             n_events = _ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
@@ -781,7 +763,7 @@ class RotationZMatrix(UnevaluatedExpression):
             ]
         )
 
-    def evaluate(self) -> "_RotationZMatrixImplementation":
+    def evaluate(self) -> _RotationZMatrixImplementation:
         angle = self.args[0]
         n_events = self.args[1]
         return _RotationZMatrixImplementation(
@@ -802,10 +784,10 @@ class _RotationZMatrixImplementation(NumPyPrintable):
         angle: sp.Basic,
         cos_angle: sp.Basic,
         sin_angle: sp.Basic,
-        ones: "_OnesArray",
-        zeros: "_ZerosArray",
+        ones: _OnesArray,
+        zeros: _ZerosArray,
         **hints,
-    ) -> "_RotationZMatrixImplementation":
+    ) -> _RotationZMatrixImplementation:
         return create_expression(
             cls, angle, cos_angle, sin_angle, ones, zeros, **hints
         )
@@ -829,7 +811,7 @@ class _RotationZMatrixImplementation(NumPyPrintable):
 
 
 class _OnesArray(NumPyPrintable):
-    def __new__(cls, shape, **kwargs) -> "_OnesArray":
+    def __new__(cls, shape, **kwargs) -> _OnesArray:
         return create_expression(cls, shape, **kwargs)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
@@ -839,7 +821,7 @@ class _OnesArray(NumPyPrintable):
 
 
 class _ZerosArray(NumPyPrintable):
-    def __new__(cls, shape, **kwargs) -> "_ZerosArray":
+    def __new__(cls, shape, **kwargs) -> _ZerosArray:
         return create_expression(cls, shape, **kwargs)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
@@ -849,7 +831,7 @@ class _ZerosArray(NumPyPrintable):
 
 
 class _ArraySize(NumPyPrintable):
-    def __new__(cls, array: sp.Basic, **kwargs) -> "_ArraySize":
+    def __new__(cls, array: sp.Basic, **kwargs) -> _ArraySize:
         return create_expression(cls, array, **kwargs)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
@@ -859,7 +841,7 @@ class _ArraySize(NumPyPrintable):
 
 def compute_helicity_angles(
     four_momenta: Mapping[int, sp.Expr], topology: Topology
-) -> Dict[str, sp.Expr]:
+) -> dict[str, sp.Expr]:
     """Formulate expressions for all helicity angles in a topology.
 
     Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles
@@ -887,8 +869,8 @@ def compute_helicity_angles(
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
         four_momenta: Mapping[int, sp.Expr], node_id: int
-    ) -> Dict[str, sp.Expr]:
-        helicity_angles: Dict[str, sp.Expr] = {}
+    ) -> dict[str, sp.Expr]:
+        helicity_angles: dict[str, sp.Expr] = {}
         child_state_ids = sorted(
             topology.get_edge_ids_outgoing_from_node(node_id)
         )
@@ -922,7 +904,7 @@ def compute_helicity_angles(
                     theta = Theta(four_momentum)
                     p3_norm = three_momentum_norm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
-                    new_momentum_pool: Dict[int, sp.Expr] = {
+                    new_momentum_pool: dict[int, sp.Expr] = {
                         k: ArrayMultiplication(
                             BoostZMatrix(beta, n_events),
                             RotationYMatrix(-theta, n_events),
@@ -961,21 +943,21 @@ def compute_helicity_angles(
 
 def _get_number_of_events(
     four_momenta: Mapping[int, sp.Expr],
-) -> "_ArraySize":
+) -> _ArraySize:
     sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
     return _ArraySize(sorted_momentum_symbols[0])
 
 
 def compute_invariant_masses(
-    four_momenta: "FourMomenta", topology: Topology
-) -> Dict[str, sp.Expr]:
+    four_momenta: FourMomenta, topology: Topology
+) -> dict[str, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
             f"Momentum IDs {set(four_momenta)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
-    invariant_masses: Dict[str, sp.Expr] = {}
+    invariant_masses: dict[str, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
         total_momentum = ArraySum(
@@ -988,8 +970,8 @@ def compute_invariant_masses(
 
 
 def compute_wigner_angles(
-    topology: Topology, momenta: "FourMomenta", state_id: int
-) -> Dict[str, sp.Expr]:
+    topology: Topology, momenta: FourMomenta, state_id: int
+) -> dict[str, sp.Expr]:
     """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
 
     Implementation of (B.2-4) in
@@ -1016,7 +998,7 @@ def compute_wigner_angles(
 
 
 def compute_wigner_rotation_matrix(
-    topology: Topology, momenta: "FourMomenta", state_id: int
+    topology: Topology, momenta: FourMomenta, state_id: int
 ) -> MatrixMultiplication:
     """Compute a Wigner rotation matrix.
 
@@ -1030,11 +1012,11 @@ def compute_wigner_rotation_matrix(
 
 
 def compute_boost_chain(
-    topology: Topology, momenta: "FourMomenta", state_id: int
-) -> List[BoostMatrix]:
+    topology: Topology, momenta: FourMomenta, state_id: int
+) -> list[BoostMatrix]:
     boost_matrices = []
     decay_chain_state_ids = __get_boost_chain_ids(topology, state_id)
-    boosted_momenta: Dict[int, sp.Expr] = {
+    boosted_momenta: dict[int, sp.Expr] = {
         i: get_four_momentum_sum(topology, momenta, i)
         for i in decay_chain_state_ids
     }
@@ -1049,7 +1031,7 @@ def compute_boost_chain(
     return boost_matrices
 
 
-def __get_boost_chain_ids(topology: Topology, state_id: int) -> List[int]:
+def __get_boost_chain_ids(topology: Topology, state_id: int) -> list[int]:
     """Get the state IDs from first resonance to this final state.
 
     >>> from qrules.topology import create_isobar_topologies
@@ -1070,8 +1052,8 @@ def __get_boost_chain_ids(topology: Topology, state_id: int) -> List[int]:
 
 
 def get_four_momentum_sum(
-    topology: Topology, momenta: "FourMomenta", state_id: int
-) -> Union[ArraySum, FourMomentumSymbol]:
+    topology: Topology, momenta: FourMomenta, state_id: int
+) -> ArraySum | FourMomentumSymbol:
     """Get the `FourMomentumSymbol` or sum of momenta for **any** edge ID.
 
     If the edge ID is a final state ID, return its `FourMomentumSymbol`. If

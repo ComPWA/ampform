@@ -1,8 +1,9 @@
 # pylint: disable=no-member, no-self-use, redefined-outer-name
 # cspell:ignore atol doprint
+from __future__ import annotations
+
 import inspect
 import textwrap
-from typing import Dict, List, Tuple, Type
 
 import numpy as np
 import pytest
@@ -48,8 +49,8 @@ from ampform.sympy._array_expressions import (
 
 @pytest.fixture(scope="session")
 def topology_and_momentum_symbols(
-    data_sample: Dict[int, np.ndarray]
-) -> Tuple[Topology, FourMomenta]:
+    data_sample: dict[int, np.ndarray]
+) -> tuple[Topology, FourMomenta]:
     n = len(data_sample)
     assert n == 4
     topologies = create_isobar_topologies(n)
@@ -60,8 +61,8 @@ def topology_and_momentum_symbols(
 
 @pytest.fixture(scope="session")
 def helicity_angles(
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta]
-) -> Dict[str, sp.Expr]:
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta]
+) -> dict[str, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
 
@@ -92,8 +93,8 @@ class TestBoostMatrix:
     def test_boost_into_rest_frame_gives_mass(
         self,
         state_id: int,
-        data_sample: Dict[int, np.ndarray],
-        topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+        data_sample: dict[int, np.ndarray],
+        topology_and_momentum_symbols: tuple[Topology, FourMomenta],
     ):
         # pylint: disable=too-many-locals
         pi0_mass = 0.135
@@ -114,7 +115,7 @@ class TestBoostMatrix:
 
     @pytest.mark.parametrize("state_id", [0, 2, 3])
     def test_boosting_back_gives_original_momentum(
-        self, state_id: int, data_sample: Dict[int, np.ndarray]
+        self, state_id: int, data_sample: dict[int, np.ndarray]
     ):
         p = FourMomentumSymbol("p", shape=[])
         boost = BoostMatrix(p)
@@ -191,7 +192,7 @@ class TestBoostZMatrix:
 class TestFourMomentumXYZ:
     def symbols(
         self,
-    ) -> Tuple[
+    ) -> tuple[
         FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
     ]:
         p = FourMomentumSymbol("p", shape=[])
@@ -232,7 +233,7 @@ class TestInvariantMass:
     )
     def test_numpy(
         self,
-        data_sample: Dict[int, np.ndarray],
+        data_sample: dict[int, np.ndarray],
         state_id: int,
         expected_mass: float,
     ):
@@ -296,7 +297,7 @@ class TestTheta:
 
 
 class TestNegativeMomentum:
-    def test_same_as_inverse(self, data_sample: Dict[int, np.ndarray]):
+    def test_same_as_inverse(self, data_sample: dict[int, np.ndarray]):
         p = FourMomentumSymbol("p", shape=[])
         expr = NegativeMomentum(p)
         func = sp.lambdify(p, expr.doit(), cse=True)
@@ -415,7 +416,7 @@ class TestOnesZerosArray:
     @pytest.mark.parametrize("shape", [10, (4, 2), [3, 5, 7]])
     def test_numpycode(self, array_type, shape):
         if array_type == "ones":
-            expr_class: Type[NumPyPrintable] = _OnesArray
+            expr_class: type[NumPyPrintable] = _OnesArray
             array_func = np.ones
         elif array_type == "zeros":
             expr_class = _ZerosArray
@@ -538,11 +539,11 @@ class TestOnesZerosArray:
 )
 def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
     use_cse: bool,
-    data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    data_sample: dict[int, np.ndarray],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
     angle_name: str,
     expected_values: np.ndarray,
-    helicity_angles: Dict[str, sp.Expr],
+    helicity_angles: dict[str, sp.Expr],
 ):
     _, momentum_symbols = topology_and_momentum_symbols
     four_momenta = data_sample.values()
@@ -553,7 +554,7 @@ def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
 
 
 def test_compute_invariant_masses_names(
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta]
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta]
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
@@ -569,8 +570,8 @@ def test_compute_invariant_masses_names(
 
 
 def test_compute_invariant_masses_single_mass(
-    data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    data_sample: dict[int, np.ndarray],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     momentum_values = data_sample.values()
@@ -586,8 +587,8 @@ def test_compute_invariant_masses_single_mass(
 @pytest.mark.parametrize("mass_name", ["m_23", "m_123", "m_0123"])
 def test_compute_invariant_masses(
     mass_name: str,
-    data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    data_sample: dict[int, np.ndarray],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     momentum_values = data_sample.values()
@@ -648,8 +649,8 @@ def _generate_numpy_code(expr: sp.Expr) -> str:
 )
 def test_compute_boost_chain(
     state_id: int,
-    expected: List[str],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    expected: list[str],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     boost_chain = compute_boost_chain(topology, momentum_symbols, state_id)
@@ -703,7 +704,7 @@ def test_compute_boost_chain(
 def test_compute_wigner_rotation_matrix(
     state_id: int,
     expected: str,
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momenta = topology_and_momentum_symbols
     expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
@@ -720,8 +721,8 @@ def test_compute_wigner_rotation_matrix(
 )
 def test_compute_wigner_rotation_matrix_numpy(
     state_id: int,
-    data_sample: Dict[int, np.ndarray],
-    topology_and_momentum_symbols: Tuple[Topology, FourMomenta],
+    data_sample: dict[int, np.ndarray],
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momenta = topology_and_momentum_symbols
     expr = compute_wigner_rotation_matrix(topology, momenta, state_id)

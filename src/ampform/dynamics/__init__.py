@@ -7,10 +7,11 @@
 .. seealso:: :doc:`/usage/dynamics` and
     :doc:`/usage/dynamics/analytic-continuation`
 """
+from __future__ import annotations
 
 import re
 import sys
-from typing import Dict, List, Optional, Sequence
+from typing import Sequence
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -57,20 +58,20 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     See also :ref:`usage/dynamics:Form factor`.
     """
     is_commutative = True
-    max_angular_momentum: Optional[int] = None
+    max_angular_momentum: int | None = None
     """Limit the maximum allowed angular momentum :math:`L`.
 
     This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol`
     and you are note interested in higher angular momenta.
     """
 
-    def __new__(cls, angular_momentum, z, **hints) -> "BlattWeisskopfSquared":
+    def __new__(cls, angular_momentum, z, **hints) -> BlattWeisskopfSquared:
         return create_expression(cls, angular_momentum, z, **hints)
 
     def evaluate(self) -> sp.Expr:
         angular_momentum: sp.Expr = self.args[0]  # type: ignore[assignment]
         z: sp.Expr = self.args[1]  # type: ignore[assignment]
-        cases: Dict[int, sp.Expr] = {
+        cases: dict[int, sp.Expr] = {
             0: sp.S.One,
             1: 2 * z / (z + 1),
             2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
@@ -170,7 +171,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactor":
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactor:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -203,7 +204,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorAbs":
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorAbs:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -233,7 +234,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorAnalytic":
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorAnalytic:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -264,7 +265,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorComplex":
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorComplex:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -336,10 +337,10 @@ class EnergyDependentWidth(UnevaluatedExpression):
         m_b,
         angular_momentum,
         meson_radius,
-        phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
-        name: Optional[str] = None,
+        phsp_factor: PhaseSpaceFactorProtocol | None = None,
+        name: str | None = None,
         evaluate: bool = False,
-    ) -> "EnergyDependentWidth":
+    ) -> EnergyDependentWidth:
         args = sp.sympify(
             (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
         )
@@ -409,7 +410,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> "BreakupMomentumSquared":
+    def __new__(cls, s, m_a, m_b, **hints) -> BreakupMomentumSquared:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -441,7 +442,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
+    phsp_factor: PhaseSpaceFactorProtocol | None = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
@@ -477,7 +478,7 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
     return "_{" + subscript + "}"
 
 
-def _determine_indices(symbol) -> List[int]:
+def _determine_indices(symbol) -> list[int]:
     r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
 
     >>> _determine_indices(sp.Symbol("m1"))

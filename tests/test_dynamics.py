@@ -1,5 +1,5 @@
 # pylint: disable=no-self-use, protected-access, too-many-arguments
-from typing import Set, Tuple
+from __future__ import annotations
 
 import sympy as sp
 from qrules import ParticleCollection
@@ -66,7 +66,7 @@ class TestEnergyDependentWidth:
 
 
 def test_generate(  # pylint: disable=too-many-locals
-    amplitude_model: Tuple[str, HelicityModel],
+    amplitude_model: tuple[str, HelicityModel],
     particle_database: ParticleCollection,
 ):
     formalism, model = amplitude_model
@@ -85,7 +85,7 @@ def test_generate(  # pylint: disable=too-many-locals
     assert len(total_intensity.free_symbols) == 5
 
     angle_value = 0
-    free_symbols: Set[sp.Symbol] = total_intensity.free_symbols  # type: ignore[assignment]
+    free_symbols: set[sp.Symbol] = total_intensity.free_symbols  # type: ignore[assignment]
     angle_substitutions = {
         s: angle_value
         for s in free_symbols

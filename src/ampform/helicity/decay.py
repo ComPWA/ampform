@@ -1,7 +1,9 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
+from __future__ import annotations
 
+import collections
 from functools import lru_cache, singledispatch
-from typing import Iterable, List, Optional, Tuple
+from typing import DefaultDict, Iterable
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -18,7 +20,7 @@ class StateWithID(State):
     @classmethod
     def from_transition(
         cls, transition: StateTransition, state_id: int
-    ) -> "StateWithID":
+    ) -> StateWithID:
         state = transition.states[state_id]
         return cls(
             id=state_id,
@@ -45,11 +47,11 @@ class TwoBodyDecay:
     """
 
     parent: StateWithID
-    children: Tuple[StateWithID, StateWithID]
+    children: tuple[StateWithID, StateWithID]
     interaction: InteractionProperties
 
     @staticmethod
-    def create(obj) -> "TwoBodyDecay":
+    def create(obj) -> TwoBodyDecay:
         """Create a `TwoBodyDecay` instance from an arbitrary object.
 
         More implementations of :meth:`create` can be implemented with
@@ -61,7 +63,7 @@ class TwoBodyDecay:
     @classmethod
     def from_transition(
         cls, transition: StateTransition, node_id: int
-    ) -> "TwoBodyDecay":
+    ) -> TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
@@ -147,8 +149,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 
 @lru_cache(maxsize=None)
 def collect_topologies(
-    transitions: Tuple[StateTransition, ...]
-) -> List[Topology]:
+    transitions: tuple[StateTransition, ...]
+) -> list[Topology]:
     return sorted({t.topology for t in transitions})
 
 
@@ -182,7 +184,7 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
 
 def get_helicity_info(
     transition: StateTransition, node_id: int
-) -> Tuple[State, Tuple[State, State]]:
+) -> tuple[State, tuple[State, State]]:
     """Extract in- and outgoing states for a two-body decay node."""
     assert_two_body_decay(transition.topology, node_id)
     in_edge_ids = transition.topology.get_edge_ids_ingoing_to_node(node_id)
@@ -195,7 +197,7 @@ def get_helicity_info(
     )
 
 
-def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
+def get_parent_id(topology: Topology, state_id: int) -> int | None:
     """Get the edge ID of the edge from which this state decayed.
 
     .. warning:: This only works on 1-to-:math:`n` isobar topologies.
@@ -224,7 +226,7 @@ def get_parent_id(topology: Topology, state_id: int) -> Optional[int]:
     return incoming_edge_ids[0]
 
 
-def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
+def list_decay_chain_ids(topology: Topology, state_id: int) -> list[int]:
     """Get the edge ID of the edge from which this state decayed.
 
     >>> from qrules.topology import create_isobar_topologies
@@ -241,7 +243,7 @@ def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
     """
     assert_isobar_topology(topology)
     parent_list = []
-    current_id: Optional[int] = state_id
+    current_id: int | None = state_id
     while current_id is not None:
         parent_list.append(current_id)
         current_id = get_parent_id(topology, current_id)
@@ -250,7 +252,7 @@ def list_decay_chain_ids(topology: Topology, state_id: int) -> List[int]:
 
 def get_sorted_states(
     transition: StateTransition, state_ids: Iterable[int]
-) -> List[State]:
+) -> list[State]:
     """Get a sorted list of `~qrules.transition.State` instances.
 
     In order to ensure correct naming of amplitude coefficients the list has to
@@ -284,7 +286,7 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
 
 def determine_attached_final_state(
     topology: Topology, state_id: int
-) -> List[int]:
+) -> list[int]:
     """Determine all final state particles of a transition.
 
     These are attached downward (forward in time) for a given edge (resembling
@@ -305,3 +307,64 @@ def determine_attached_final_state(
     return sorted(
         topology.get_originating_final_state_edge_ids(edge.ending_node_id)
     )
+
+
+def get_prefactor(transition: StateTransition) -> float:
+    """Calculate the product of all prefactors defined in this transition.
+
+    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
+    """
+    prefactor = 1.0
+    for node_id in transition.topology.nodes:
+        interaction = transition.interactions[node_id]
+        if interaction and interaction.parity_prefactor is not None:
+            prefactor *= interaction.parity_prefactor
+    return prefactor
+
+
+def group_by_spin_projection(
+    transitions: Iterable[StateTransition],
+) -> list[list[StateTransition]]:
+    """Match final and initial states in groups.
+
+    Each `~qrules.transition.StateTransition` corresponds to a specific state
+    transition amplitude. This function groups together transitions, which have
+    the same initial and final state (including spin). This is needed to
+    determine the coherency of the individual amplitude parts.
+    """
+    transition_groups: DefaultDict[
+        tuple[
+            tuple[tuple[str, float], ...],
+            tuple[tuple[str, float], ...],
+        ],
+        list[StateTransition],
+    ] = collections.defaultdict(list)
+    for transition in transitions:
+        initial_state = sorted(
+            (
+                transition.states[i].particle.name,
+                transition.states[i].spin_projection,
+            )
+            for i in transition.topology.incoming_edge_ids
+        )
+        final_state = sorted(
+            (
+                transition.states[i].particle.name,
+                transition.states[i].spin_projection,
+            )
+            for i in transition.topology.outgoing_edge_ids
+        )
+        group_key = (tuple(initial_state), tuple(final_state))
+        transition_groups[group_key].append(transition)
+
+    return list(transition_groups.values())
+
+
+def group_by_topology(
+    transitions: Iterable[StateTransition],
+) -> dict[Topology, list[StateTransition]]:
+    """Group state transitions by different `~qrules.topology.Topology`."""
+    transition_groups = collections.defaultdict(list)
+    for transition in transitions:
+        transition_groups[transition.topology].append(transition)
+    return dict(transition_groups)

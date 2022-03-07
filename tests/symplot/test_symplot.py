@@ -1,16 +1,9 @@
 # pylint: disable=eval-used, no-self-use, protected-access, redefined-outer-name
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Optional,
-    Pattern,
-    Type,
-    Union,
-    no_type_check,
-)
+from typing import Any, Callable, Pattern, no_type_check
 
 import pytest
 import sympy as sp
@@ -110,7 +103,7 @@ class TestSliderKwargs:
         slider_name: str,
         min_: float,
         max_: float,
-        n_steps: Optional[Union[float, int]],
+        n_steps: float | int | None,
         step_size: float,
         slider_kwargs: SliderKwargs,
     ) -> None:
@@ -203,9 +196,9 @@ class TestSliderKwargs:
     )
     def test_verify_arguments(
         self,
-        sliders: Dict[str, FloatSlider],
-        arg_to_symbol: Dict[str, str],
-        exception: Type[ValueError],
+        sliders: dict[str, FloatSlider],
+        arg_to_symbol: dict[str, str],
+        exception: type[ValueError],
         match: Pattern[str],
     ) -> None:
         with pytest.raises(exception, match=match):

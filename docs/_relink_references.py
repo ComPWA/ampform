@@ -7,8 +7,7 @@ rendered as clickable links.
 
 See also https://github.com/sphinx-doc/sphinx/issues/5868.
 """
-
-from typing import List
+from __future__ import annotations
 
 import sphinx.domains.python
 from docutils import nodes
@@ -16,27 +15,40 @@ from sphinx.addnodes import pending_xref
 from sphinx.environment import BuildEnvironment
 
 __TARGET_SUBSTITUTIONS = {
+    "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "ParameterValue": "ampform.helicity.ParameterValue",
+    "ReactionInfo": "qrules.transition.ReactionInfo",
+    "Slider": "symplot.Slider",
+    "State": "qrules.transition.State",
+    "StateTransition": "qrules.transition.StateTransition",
+    "Topology": "qrules.topology.Topology",
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "a set-like object providing a view on D's items": "typing.ItemsView",
     "a set-like object providing a view on D's keys": "typing.KeysView",
     "ampform.helicity._T": "typing.TypeVar",
     "an object providing a view on D's values": "typing.ValuesView",
+    "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
+    "sp.Float": "sympy.core.numbers.Float",
     "sp.Indexed": "sympy.tensor.indexed.Indexed",
+    "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
     "typing_extensions.Protocol": "typing.Protocol",
 }
 __REF_TYPE_SUBSTITUTIONS = {
+    "DecoratedClass": "obj",
+    "DecoratedExpr": "obj",
+    "FourMomenta": "obj",
+    "FourMomentumSymbol": "obj",
     "None": "obj",
-    "ParameterValue": "obj",
+    "RangeDefinition": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
     "ampform.helicity.ParameterValue": "obj",
     "ampform.kinematics.FourMomenta": "obj",
     "ampform.kinematics.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
     "ampform.sympy.DecoratedExpr": "obj",
-    "symplot.RangeDefinition": "obj",
     "symplot.Slider": "obj",
 }
 
@@ -97,7 +109,7 @@ def __get_env_kwargs(env: BuildEnvironment) -> dict:
     return {}
 
 
-def __create_nodes(env: BuildEnvironment, title: str) -> List[nodes.Node]:
+def __create_nodes(env: BuildEnvironment, title: str) -> list[nodes.Node]:
     short_name = title.split(".")[-1]
     if env.config.python_use_unqualified_type_names:
         return [
