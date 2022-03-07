@@ -83,7 +83,7 @@ jobs:
           author: GitHub <noreply@github.com>
           title: "ci: update pip constraints and pre-commit config"
           labels: |
-            🖱️ DX
+            🔨 Maintenance
           branch-suffix: timestamp
           delete-branch: true
           token: ${{ secrets.PAT }}
