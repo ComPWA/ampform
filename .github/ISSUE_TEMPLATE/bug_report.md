@@ -28,5 +28,5 @@ Bug resulted on the following system:
 
 - OS: <!-- e.g. macOS, WSL Ubuntu, ...-->
 - Version <!-- e.g. 10.15, 20.04, ... -->
-- Python version: <!-- e.g. 3.6, 3.7, ... -->
+- Python version: <!-- e.g. 3.7, 3.8, ... -->
 - Virtual environment: <!-- e.g. venv, Conda, pip user install, ... -->
