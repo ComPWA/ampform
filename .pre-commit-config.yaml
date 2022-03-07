@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.110
+    rev: 0.0.112
     hooks:
       - id: check-dev-files
         args:
@@ -98,7 +98,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.2.3
+    rev: 1.3.0
     hooks:
       - id: nbqa-black
         additional_dependencies:
@@ -146,7 +146,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.223
+    rev: v1.1.227
     hooks:
       - id: pyright
 
