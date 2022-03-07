@@ -54,7 +54,10 @@ from .decay import (
     TwoBodyDecay,
     collect_topologies,
     get_parent_id,
+    get_prefactor,
     get_sibling_state_id,
+    group_by_spin_projection,
+    group_by_topology,
     is_opposite_helicity_state,
 )
 from .naming import (
@@ -1013,67 +1016,6 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
         beta=theta,
         gamma=0,
     )
-
-
-def get_prefactor(transition: StateTransition) -> float:
-    """Calculate the product of all prefactors defined in this transition.
-
-    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
-    """
-    prefactor = 1.0
-    for node_id in transition.topology.nodes:
-        interaction = transition.interactions[node_id]
-        if interaction and interaction.parity_prefactor is not None:
-            prefactor *= interaction.parity_prefactor
-    return prefactor
-
-
-def group_by_spin_projection(
-    transitions: Iterable[StateTransition],
-) -> list[list[StateTransition]]:
-    """Match final and initial states in groups.
-
-    Each `~qrules.transition.StateTransition` corresponds to a specific state
-    transition amplitude. This function groups together transitions, which have
-    the same initial and final state (including spin). This is needed to
-    determine the coherency of the individual amplitude parts.
-    """
-    transition_groups: DefaultDict[
-        tuple[
-            tuple[tuple[str, float], ...],
-            tuple[tuple[str, float], ...],
-        ],
-        list[StateTransition],
-    ] = collections.defaultdict(list)
-    for transition in transitions:
-        initial_state = sorted(
-            (
-                transition.states[i].particle.name,
-                transition.states[i].spin_projection,
-            )
-            for i in transition.topology.incoming_edge_ids
-        )
-        final_state = sorted(
-            (
-                transition.states[i].particle.name,
-                transition.states[i].spin_projection,
-            )
-            for i in transition.topology.outgoing_edge_ids
-        )
-        group_key = (tuple(initial_state), tuple(final_state))
-        transition_groups[group_key].append(transition)
-
-    return list(transition_groups.values())
-
-
-def group_by_topology(
-    transitions: Iterable[StateTransition],
-) -> dict[Topology, list[StateTransition]]:
-    """Group state transitions by different `~qrules.topology.Topology`."""
-    transition_groups = collections.defaultdict(list)
-    for transition in transitions:
-        transition_groups[transition.topology].append(transition)
-    return dict(transition_groups)
 
 
 def formulate_spin_alignment(
