@@ -165,9 +165,10 @@ autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
     "FourMomenta": "ampform.kinematics.FourMomenta",
     "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
-    "ParameterValue": "ampform.helicity.ParameterValue",
     "RangeDefinition": "symplot.RangeDefinition",
-    "Slider": "symplot.Slider",
+    # https://github.com/sphinx-doc/sphinx/pull/10183
+    # "ParameterValue": "ampform.helicity.ParameterValue",
+    # "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True

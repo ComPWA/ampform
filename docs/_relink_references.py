@@ -16,7 +16,9 @@ from sphinx.environment import BuildEnvironment
 
 __TARGET_SUBSTITUTIONS = {
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "ParameterValue": "ampform.helicity.ParameterValue",
     "ReactionInfo": "qrules.transition.ReactionInfo",
+    "Slider": "symplot.Slider",
     "State": "qrules.transition.State",
     "StateTransition": "qrules.transition.StateTransition",
     "Topology": "qrules.topology.Topology",
@@ -40,16 +42,13 @@ __REF_TYPE_SUBSTITUTIONS = {
     "FourMomenta": "obj",
     "FourMomentumSymbol": "obj",
     "None": "obj",
-    "ParameterValue": "obj",
     "RangeDefinition": "obj",
-    "Slider": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
     "ampform.helicity.ParameterValue": "obj",
     "ampform.kinematics.FourMomenta": "obj",
     "ampform.kinematics.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
     "ampform.sympy.DecoratedExpr": "obj",
-    "symplot.Slider": "obj",
 }
 
 
