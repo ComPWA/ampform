@@ -184,7 +184,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 sqlalchemy==1.4.32
 stack-data==0.2.0
-sympy==1.10
+sympy==1.9
 terminado==0.13.2
 testpath==0.6.0
 toml==0.10.2
