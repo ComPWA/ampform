@@ -33,7 +33,7 @@ class TestRelativisticBreitWignerBuilder:
             outgoing_state_mass2=sp.Symbol("m2"),
             helicity_phi=sp.Symbol("phi"),
             helicity_theta=sp.Symbol("theta"),
-            angular_momentum=sp.Symbol("L", integer=True, negative=False),
+            angular_momentum=sp.Symbol("L", integer=True, negative=False),  # type: ignore[arg-type]
         )
 
     def test_simple_breit_wigner(

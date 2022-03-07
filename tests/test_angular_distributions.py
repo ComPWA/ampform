@@ -1,5 +1,5 @@
-# pylint: disable=redefined-outer-name,no-self-use
-from typing import Any, List, Optional, Sequence, Union
+# pylint: disable=no-self-use, redefined-outer-name
+from typing import Iterable, Sequence, Set, Union
 
 import pytest
 import qrules
@@ -11,9 +11,9 @@ from ampform import get_builder
 
 
 def calculate_sympy_integral(
-    intensity: Any,
-    integration_variables: List[sp.Symbol],
-    jacobi_determinant: Optional[Any] = None,
+    intensity,
+    integration_variables: Iterable[sp.Symbol],
+    jacobi_determinant=None,
 ) -> sp.Expr:
     if jacobi_determinant is None:
         for int_var in integration_variables:
@@ -116,7 +116,8 @@ class TestEpemToDmD0Pip:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        assert {s.name for s in sympy_model.free_symbols} == {
+        free_symbols: Set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
             "theta_0^02",
@@ -128,9 +129,7 @@ class TestEpemToDmD0Pip:
         # remove angular variable
         integration_variable_set = set(angular_variables)
         integration_variables = [
-            x
-            for x in sympy_model.free_symbols
-            if x.name not in integration_variable_set
+            x for x in free_symbols if x.name not in integration_variable_set
         ]
 
         # Note: using nsimplify with rational=True solves assertion failure due
@@ -207,7 +206,8 @@ class TestD1ToD0PiPi:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        assert {s.name for s in sympy_model.free_symbols} == {
+        free_symbols: Set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
             "theta_0^02",
@@ -219,9 +219,7 @@ class TestD1ToD0PiPi:
         # remove angular variable
         integration_variable_set = set(angular_variables)
         integration_variables = [
-            x
-            for x in sympy_model.free_symbols
-            if x.name not in integration_variable_set
+            x for x in free_symbols if x.name not in integration_variable_set
         ]
 
         # Note: using nsimplify with rational=True solves assertion failure due

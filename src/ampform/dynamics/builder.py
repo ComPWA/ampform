@@ -75,7 +75,7 @@ def create_non_dynamic(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> "BuilderReturnType":
     # pylint: disable=unused-argument
-    return (1, {})
+    return (sp.S.One, {})
 
 
 def create_non_dynamic_with_ff(

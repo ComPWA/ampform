@@ -1,5 +1,5 @@
 # pylint: disable=no-self-use, protected-access, too-many-arguments
-from typing import Tuple
+from typing import Set, Tuple
 
 import sympy as sp
 from qrules import ParticleCollection
@@ -85,9 +85,10 @@ def test_generate(  # pylint: disable=too-many-locals
     assert len(total_intensity.free_symbols) == 5
 
     angle_value = 0
+    free_symbols: Set[sp.Symbol] = total_intensity.free_symbols  # type: ignore[assignment]
     angle_substitutions = {
         s: angle_value
-        for s in total_intensity.free_symbols
+        for s in free_symbols
         if s.name.startswith("phi") or s.name.startswith("theta")
     }
     total_intensity = total_intensity.subs(angle_substitutions)
@@ -130,7 +131,7 @@ def test_generate(  # pylint: disable=too-many-locals
 
     amplitude = round_nested(amplitude, n_decimals=2)
     a = str(amplitude)
-    assert a == "0.06/(-m**2 - 0.06*I*sqrt(m**2 - 0.07)/Abs(m) + 0.98)"
+    assert a == "0.06/(m**2 + 0.06*I*sqrt(m**2 - 0.07)/Abs(m) - 0.98)"
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:

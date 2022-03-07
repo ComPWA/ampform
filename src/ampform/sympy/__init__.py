@@ -1,18 +1,19 @@
 # cspell:ignore mhash
-# pylint: disable=invalid-getnewargs-ex-returned, protected-access
+# pylint: disable=invalid-getnewargs-ex-returned, protected-access, W0223
+# https://stackoverflow.com/a/22224042
 """Tools that facilitate in building :mod:`sympy` expressions."""
 
 import functools
 import itertools
 from abc import abstractmethod
 from typing import (
-    Any,
     Callable,
     Iterable,
     List,
     Optional,
     Sequence,
     Set,
+    SupportsFloat,
     Tuple,
     Type,
     TypeVar,
@@ -60,9 +61,9 @@ class UnevaluatedExpression(sp.Expr):
 
     def __new__(  # pylint: disable=unused-argument
         cls: Type["DecoratedClass"],
-        *args: Any,
+        *args,
         name: Optional[str] = None,
-        **hints: Any,
+        **hints,
     ) -> "DecoratedClass":
         """Constructor for a class derived from `UnevaluatedExpression`.
 
@@ -91,7 +92,7 @@ class UnevaluatedExpression(sp.Expr):
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
         obj._args = args
-        obj._assumptions = cls.default_assumptions
+        obj._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
         obj._mhash = None
         obj._name = name
         return obj
@@ -124,7 +125,7 @@ class UnevaluatedExpression(sp.Expr):
             :meth:`~sympy.core.basic.Basic.doit` with :code:`deep=False`.
         """
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         r"""Provide a mathematical Latex representation for pretty printing.
 
         >>> from ampform.dynamics import BreakupMomentumSquared
@@ -180,12 +181,12 @@ class NumPyPrintable(sp.Expr):
     """
 
     @abstractmethod
-    def _numpycode(self, printer: NumPyPrinter, *args: Any) -> str:
+    def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         """Lambdify this `NumPyPrintable` class to NumPy code."""
 
 
 DecoratedClass = TypeVar("DecoratedClass", bound=UnevaluatedExpression)
-"""`~typing.TypeVar` for decorators like :func:`make_commutative`."""
+"""`~typing.TypeVar` for decorators like :func:`implement_doit_method`."""
 
 
 def implement_expr(
@@ -224,7 +225,7 @@ def implement_new_method(
             cls: Type,
             *args: sp.Symbol,
             evaluate: bool = False,
-            **hints: Any,
+            **hints,
         ) -> bool:
             if len(args) != n_args:
                 raise ValueError(
@@ -261,7 +262,7 @@ def implement_doit_method(
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method  # type: ignore[attr-defined]
+    decorated_class.doit = doit_method  # type: ignore[assignment]
     return decorated_class
 
 
@@ -273,9 +274,9 @@ def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
     ) -> Type[UnevaluatedExpression]:
         # pylint: disable=protected-access, unused-argument
         @functools.wraps(decorated_class.doit)
-        def _latex(self: sp.Expr, printer: LatexPrinter, *args: Any) -> str:
-            momentum = printer._print(self._momentum)
-            if printer._needs_mul_brackets(self._momentum):
+        def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
+            momentum = printer._print(self._momentum)  # type: ignore[attr-defined]
+            if printer._needs_mul_brackets(self._momentum):  # type: ignore[attr-defined]
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"
@@ -287,9 +288,13 @@ def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
     return decorator
 
 
+DecoratedExpr = TypeVar("DecoratedExpr", bound=sp.Expr)
+"""`~typing.TypeVar` for decorators like :func:`make_commutative`."""
+
+
 def make_commutative(
-    decorated_class: Type[DecoratedClass],
-) -> Type[DecoratedClass]:
+    decorated_class: Type[DecoratedExpr],
+) -> Type[DecoratedExpr]:
     """Set commutative and 'extended real' assumptions on expression class.
 
     .. seealso:: :doc:`sympy:guides/assumptions`
@@ -300,21 +305,23 @@ def make_commutative(
 
 
 def create_expression(
-    cls: Type[UnevaluatedExpression],
-    *args: Any,
+    cls: Type[DecoratedExpr],
+    *args,
     evaluate: bool = False,
     name: Optional[str] = None,
-    **kwargs: Any,
-) -> sp.Expr:
+    **kwargs,
+) -> DecoratedExpr:
     """Helper function for implementing `UnevaluatedExpression.__new__`."""
     args = sp.sympify(args)
-    expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
-    if evaluate:
-        return expr.evaluate()
-    return expr
+    if issubclass(cls, UnevaluatedExpression):
+        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
+        if evaluate:
+            return expr.evaluate()  # type: ignore[return-value]
+        return expr  # type: ignore[return-value]
+    return sp.Expr.__new__(cls, *args, **kwargs)  # type: ignore[return-value]
 
 
-def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
+def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     """Create a `~sympy.matrices.dense.Matrix` with symbols as elements.
 
     The `~sympy.matrices.expressions.MatrixSymbol` has some issues when one is
@@ -337,7 +344,6 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.Matrix:
 
 @implement_doit_method
 class PoolSum(UnevaluatedExpression):
-    # pylint: disable=line-too-long
     r"""Sum over indices where the values are taken from a domain set.
 
     >>> i, j, m, n = sp.symbols("i j m n")
@@ -354,9 +360,9 @@ class PoolSum(UnevaluatedExpression):
 
     def __new__(
         cls,
-        expression: sp.Expr,
-        *indices: Tuple[sp.Symbol, Iterable[sp.Float]],
-        **hints: Any,
+        expression,
+        *indices: Tuple[sp.Symbol, Iterable[sp.Basic]],
+        **hints,
     ) -> "PoolSum":
         converted_indices = []
         for idx_symbol, values in indices:
@@ -368,14 +374,14 @@ class PoolSum(UnevaluatedExpression):
 
     @property
     def expression(self) -> sp.Expr:
-        return self.args[0]
+        return self.args[0]  # type: ignore[return-value]
 
     @property
     def indices(self) -> List[Tuple[sp.Symbol, Tuple[sp.Float, ...]]]:
-        return self.args[1:]
+        return self.args[1:]  # type: ignore[return-value]
 
     @property
-    def free_symbols(self) -> Set[sp.Symbol]:
+    def free_symbols(self) -> Set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     def evaluate(self) -> sp.Expr:
@@ -387,7 +393,7 @@ class PoolSum(UnevaluatedExpression):
             ]
         )
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         indices = dict(self.indices)
         sum_symbols: List[str] = []
         for idx, values in indices.items():
@@ -426,7 +432,7 @@ class PoolSum(UnevaluatedExpression):
 
 
 def _render_sum_symbol(
-    printer: LatexPrinter, idx: sp.Symbol, values: Sequence[float]
+    printer: LatexPrinter, idx: sp.Symbol, values: Sequence[SupportsFloat]
 ) -> str:
     if len(values) == 0:
         return ""
@@ -435,7 +441,7 @@ def _render_sum_symbol(
         value = values[0]
         return Rf"\sum_{{{idx}={value}}}"
     if _is_regular_series(values):
-        sorted_values = sorted(values)
+        sorted_values = sorted(values, key=float)
         first_value = sorted_values[0]
         last_value = sorted_values[-1]
         return Rf"\sum_{{{idx}={first_value}}}^{{{last_value}}}"
@@ -443,7 +449,7 @@ def _render_sum_symbol(
     return Rf"\sum_{{{idx}\in\left\{{{idx_values}\right\}}}}"
 
 
-def _is_regular_series(values: Sequence[float]) -> bool:
+def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     """Check whether a set of values is a series with unit distances.
 
     >>> _is_regular_series([0, 1, 2])
@@ -461,9 +467,9 @@ def _is_regular_series(values: Sequence[float]) -> bool:
     """
     if len(values) <= 1:
         return False
-    sorted_values = sorted(values)
+    sorted_values = sorted(values, key=float)
     for val, next_val in zip(sorted_values, sorted_values[1:]):
-        difference = float(next_val - val)
+        difference = float(next_val) - float(val)
         if difference != 1.0:
             return False
     return True

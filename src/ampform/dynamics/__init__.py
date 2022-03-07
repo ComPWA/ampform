@@ -1,6 +1,7 @@
 # cspell:ignore Asner mhash
-# pylint: disable=arguments-differ
-# pylint: disable=protected-access, unbalanced-tuple-unpacking, unused-argument
+# pylint: disable=arguments-differ,protected-access,unbalanced-tuple-unpacking,
+# pylint: disable=unused-argument, W0223
+# https://stackoverflow.com/a/22224042
 """Lineshape functions that describe the dynamics of an interaction.
 
 .. seealso:: :doc:`/usage/dynamics` and
@@ -9,7 +10,7 @@
 
 import re
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -63,15 +64,14 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     and you are note interested in higher angular momenta.
     """
 
-    def __new__(
-        cls, angular_momentum: sp.Symbol, z: sp.Symbol, **hints: Any
-    ) -> "BlattWeisskopfSquared":
+    def __new__(cls, angular_momentum, z, **hints) -> "BlattWeisskopfSquared":
         return create_expression(cls, angular_momentum, z, **hints)
 
     def evaluate(self) -> sp.Expr:
-        angular_momentum, z = self.args
+        angular_momentum: sp.Expr = self.args[0]  # type: ignore[assignment]
+        z: sp.Expr = self.args[1]  # type: ignore[assignment]
         cases: Dict[int, sp.Expr] = {
-            0: 1,
+            0: sp.S.One,
             1: 2 * z / (z + 1),
             2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
             3: (
@@ -143,7 +143,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             ]
         )
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
         return Rf"B_{{{angular_momentum}}}^2\left({z}\right)"
 
@@ -156,9 +156,7 @@ class PhaseSpaceFactorProtocol(Protocol):
     `.PhaseSpaceFactorAnalytic`.
     """
 
-    def __call__(
-        self, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol
-    ) -> sp.Expr:
+    def __call__(self, s, m_a, m_b) -> sp.Expr:
         """Expected `~inspect.signature`."""
         ...  # pragma: no cover
 
@@ -172,9 +170,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(
-        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
-    ) -> "PhaseSpaceFactor":
+    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactor":
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -183,7 +179,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         denominator = _phase_space_factor_denominator(s)
         return sp.sqrt(q_squared) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
@@ -207,9 +203,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(
-        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
-    ) -> "PhaseSpaceFactorAbs":
+    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorAbs":
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -218,7 +212,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         denominator = _phase_space_factor_denominator(s)
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
@@ -239,18 +233,16 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(
-        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
-    ) -> "PhaseSpaceFactorAnalytic":
+    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorAnalytic":
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
         s, m_a, m_b = self.args
         rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-        s_threshold = (m_a + m_b) ** 2
+        s_threshold = (m_a + m_b) ** 2  # type: ignore[operator]
         return _analytic_continuation(rho_hat, s, s_threshold)
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
@@ -272,9 +264,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(
-        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
-    ) -> "PhaseSpaceFactorComplex":
+    def __new__(cls, s, m_a, m_b, **hints) -> "PhaseSpaceFactorComplex":
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -283,7 +273,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         denominator = _phase_space_factor_denominator(s)
         return ComplexSqrt(q_squared) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
@@ -295,9 +285,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         return Rf"{name}\left({s}\right)"
 
 
-def _analytic_continuation(
-    rho: sp.Symbol, s: sp.Symbol, s_threshold: sp.Symbol
-) -> sp.Expr:
+def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
     return sp.Piecewise(
         (
             sp.I * rho / sp.pi * sp.log(sp.Abs((1 + rho) / (1 - rho))),
@@ -314,7 +302,7 @@ def _analytic_continuation(
     )
 
 
-def _phase_space_factor_denominator(s: sp.Symbol) -> sp.Expr:
+def _phase_space_factor_denominator(s) -> sp.Mul:
     return 8 * sp.pi * sp.sqrt(s)
 
 
@@ -341,13 +329,13 @@ class EnergyDependentWidth(UnevaluatedExpression):
 
     def __new__(  # pylint: disable=too-many-arguments
         cls,
-        s: sp.Symbol,
-        mass0: sp.Symbol,
-        gamma0: sp.Symbol,
-        m_a: sp.Symbol,
-        m_b: sp.Symbol,
-        angular_momentum: sp.Symbol,
-        meson_radius: sp.Symbol,
+        s,
+        mass0,
+        gamma0,
+        m_a,
+        m_b,
+        angular_momentum,
+        meson_radius,
         phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
         name: Optional[str] = None,
         evaluate: bool = False,
@@ -360,13 +348,13 @@ class EnergyDependentWidth(UnevaluatedExpression):
         # Overwritting Basic.__new__ to store phase space factor type
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         expr = object.__new__(cls)
-        expr._assumptions = cls.default_assumptions
+        expr._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
         expr._mhash = None
         expr._args = args
         expr._name = name
         expr.phsp_factor = phsp_factor
         if evaluate:
-            return expr.evaluate()
+            return expr.evaluate()  # type: ignore[return-value]
         return expr
 
     def __getnewargs__(self) -> tuple:
@@ -377,18 +365,20 @@ class EnergyDependentWidth(UnevaluatedExpression):
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
         q_squared = BreakupMomentumSquared(s, m_a, m_b)
-        q0_squared = BreakupMomentumSquared(mass0**2, m_a, m_b)
+        q0_squared = BreakupMomentumSquared(mass0**2, m_a, m_b)  # type: ignore[operator]
         form_factor_sq = BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius**2
+            angular_momentum,
+            z=q_squared * meson_radius**2,  # type: ignore[operator]
         )
         form_factor0_sq = BlattWeisskopfSquared(
-            angular_momentum, z=q0_squared * meson_radius**2
+            angular_momentum,
+            z=q0_squared * meson_radius**2,  # type: ignore[operator]
         )
         rho = self.phsp_factor(s, m_a, m_b)
-        rho0 = self.phsp_factor(mass0**2, m_a, m_b)
+        rho0 = self.phsp_factor(mass0**2, m_a, m_b)  # type: ignore[operator]
         return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, _, width, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(width))
@@ -419,16 +409,14 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(
-        cls, s: sp.Symbol, m_a: sp.Symbol, m_b: sp.Symbol, **hints: Any
-    ) -> "BreakupMomentumSquared":
+    def __new__(cls, s, m_a, m_b, **hints) -> "BreakupMomentumSquared":
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
         s, m_a, m_b = self.args
-        return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)
+        return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)  # type: ignore[operator]
 
-    def _latex(self, printer: LatexPrinter, *args: Any) -> str:
+    def _latex(self, printer: LatexPrinter, *args) -> str:
         s, *_ = self.args
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
@@ -436,9 +424,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         return Rf"{name}\left({s}\right)"
 
 
-def relativistic_breit_wigner(
-    s: sp.Symbol, mass0: sp.Symbol, gamma0: sp.Symbol
-) -> sp.Expr:
+def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
     See :ref:`usage/dynamics:_Without_ form factor` and
@@ -448,13 +434,13 @@ def relativistic_breit_wigner(
 
 
 def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
-    s: sp.Symbol,
-    mass0: sp.Symbol,
-    gamma0: sp.Symbol,
-    m_a: sp.Symbol,
-    m_b: sp.Symbol,
-    angular_momentum: sp.Symbol,
-    meson_radius: sp.Symbol,
+    s,
+    mass0,
+    gamma0,
+    m_a,
+    m_b,
+    angular_momentum,
+    meson_radius,
     phsp_factor: Optional[PhaseSpaceFactorProtocol] = None,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
@@ -491,7 +477,7 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
     return "_{" + subscript + "}"
 
 
-def _determine_indices(symbol: Union[sp.Indexed, sp.Symbol]) -> List[int]:
+def _determine_indices(symbol) -> List[int]:
     r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
 
     >>> _determine_indices(sp.Symbol("m1"))

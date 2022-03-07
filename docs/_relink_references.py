@@ -35,6 +35,7 @@ __REF_TYPE_SUBSTITUTIONS = {
     "ampform.kinematics.FourMomenta": "obj",
     "ampform.kinematics.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
+    "ampform.sympy.DecoratedExpr": "obj",
     "symplot.RangeDefinition": "obj",
     "symplot.Slider": "obj",
 }

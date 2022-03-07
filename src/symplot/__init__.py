@@ -20,12 +20,12 @@ import sys
 from collections import abc
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
     Dict,
     Iterator,
     Mapping,
     Sequence,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -36,12 +36,9 @@ import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
 from sympy.printing.latex import translate
 
-try:
-    from IPython.lib.pretty import PrettyPrinter
-except ImportError:
-    PrettyPrinter = Any
-
 if TYPE_CHECKING:  # pragma: no cover
+    from IPython.lib.pretty import PrettyPrinter
+
     if sys.version_info >= (3, 10):
         from typing import TypeGuard  # pylint: disable=no-name-in-module
     else:
@@ -147,7 +144,7 @@ class SliderKwargs(abc.Mapping):
             f"arg_to_symbol={self._arg_to_symbol})"
         )
 
-    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
+    def _repr_pretty_(self, p: "PrettyPrinter", cycle: bool) -> None:
         class_name = type(self).__name__
         if cycle:
             p.text(f"{class_name}(...)")
@@ -306,7 +303,7 @@ def create_slider(symbol: sp.Symbol) -> "Slider":
     IntSlider(value=0, description='\\(n_{0}\\)')
     """
     description = Rf"\({sp.latex(symbol)}\)"
-    if symbol.is_integer:
+    if symbol.is_integer:  # type: ignore[attr-defined]
         return IntSlider(description=description)
     return FloatSlider(description=description)
 
@@ -317,7 +314,7 @@ def _extract_slider_symbols(
 ) -> Tuple[sp.Symbol, ...]:
     """Extract sorted, remaining free symbols of a `sympy` expression."""
     plot_symbols = __safe_wrap_symbols(plot_symbol)
-    free_symbols = set(expression.free_symbols)
+    free_symbols: Set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     for symbol in plot_symbols:
         if symbol not in free_symbols:
             raise ValueError(
@@ -388,17 +385,16 @@ def rename_symbols(
     KeyError: "No symbol with name 'non-existent' in expression"
     """
     substitutions: Dict[sp.Symbol, sp.Symbol] = {}
+    free_symbols: Set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     if callable(renames):
-        for old_symbol in expression.free_symbols:
+        for old_symbol in free_symbols:
             new_name = renames(old_symbol.name)
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     elif isinstance(renames, dict):
         for old_name, new_name in renames.items():
             # pylint: disable=cell-var-from-loop
-            matches = filter(
-                lambda s: s.name == old_name, expression.free_symbols
-            )
+            matches = filter(lambda s: s.name == old_name, free_symbols)
             try:
                 old_symbol = next(matches)
             except StopIteration:

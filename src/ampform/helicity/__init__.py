@@ -16,7 +16,6 @@ from difflib import get_close_matches
 from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
-    Any,
     DefaultDict,
     Dict,
     Generator,
@@ -30,6 +29,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypeVar,
     Union,
     ValuesView,
     overload,
@@ -207,7 +207,7 @@ def _order_symbol_mapping(
 
 def _order_amplitudes(
     mapping: Mapping[sp.Indexed, sp.Expr]
-) -> "OrderedDict[str,  sp.Expr]":
+) -> "OrderedDict[sp.Indexed,  sp.Expr]":
     return collections.OrderedDict(
         [
             (key, mapping[key])
@@ -326,10 +326,10 @@ class HelicityModel:  # noqa: R701
         )
 
     def __collect_symbols(self) -> Set[sp.Symbol]:
-        symbols: Set[sp.Symbol] = self.expression.free_symbols
+        symbols: Set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
         symbols |= set(self.kinematic_variables)
         for expr in self.kinematic_variables.values():
-            symbols |= expr.free_symbols
+            symbols |= expr.free_symbols  # type: ignore[misc]
         return symbols
 
     def sum_components(  # noqa: R701
@@ -363,7 +363,7 @@ class HelicityModel:  # noqa: R701
             )
             return intensity_sum + amplitude_sum
         if all(map(lambda c: c.startswith("I"), components)):
-            return sum(self.components[c] for c in components)
+            return sum(self.components[c] for c in components)  # type: ignore[return-value]
         if all(map(lambda c: c.startswith("A"), components)):
             return abs(sum(self.components[c] for c in components)) ** 2
         raise ValueError(
@@ -400,9 +400,7 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(
-        self, selection: Any, builder: ResonanceDynamicsBuilder
-    ) -> None:
+    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -620,7 +618,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             amplitude = self.__formulate_aligned_amplitude(topology_groups)
         else:
             indices = list(spin_projections)
-            amplitude = sum(
+            amplitude = sum(  # type: ignore[assignment]
                 _create_amplitude_base(topology)[indices]
                 for topology in topology_groups
             )
@@ -686,7 +684,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
         first_transition = transitions[0]
         symbol = _create_amplitude_symbol(first_transition)
-        expression = sum(sequential_expressions)
+        expression = sum(sequential_expressions)  # type: ignore[assignment]
         self.__ingredients.amplitudes[symbol] = expression
         return expression
 
@@ -720,7 +718,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Expr:
         decay = TwoBodyDecay.from_transition(transition, node_id)
         if decay not in self.__dynamics_choices:
-            return 1
+            return sp.S.One
 
         builder = self.__dynamics_choices[decay]
         variable_set = _generate_kinematic_variable_set(transition, node_id)
@@ -1241,12 +1239,12 @@ def formulate_wigner_rotation(
 
 
 def formulate_helicity_rotation(
-    spin_magnitude: Union[float, sp.Symbol],
-    spin_projection: Union[float, sp.Symbol],
-    m_prime: sp.Symbol,
-    alpha: sp.Symbol,
-    beta: sp.Symbol,
-    gamma: sp.Symbol,
+    spin_magnitude,
+    spin_projection,
+    m_prime,
+    alpha,
+    beta,
+    gamma,
     no_zero_spin: bool = False,
 ) -> PoolSum:
     r"""Formulate action of an Euler rotation on a spin state.
@@ -1311,24 +1309,27 @@ def formulate_helicity_rotation(
     )
 
 
+_BasicType = TypeVar("_BasicType", bound=sp.Basic)
+
+
 @overload
-def __rationalize(value: float) -> sp.Rational:
+def __rationalize(value: _BasicType) -> _BasicType:
     ...
 
 
 @overload
-def __rationalize(value: sp.Symbol) -> sp.Symbol:
+def __rationalize(value) -> sp.Rational:  # type: ignore[misc]
     ...
 
 
-def __rationalize(value):  # type:ignore[no-untyped-def]
-    if isinstance(value, sp.Symbol):
+def __rationalize(value):
+    if isinstance(value, sp.Basic):
         return value
     return sp.Rational(value)
 
 
 def _create_spin_range(
-    spin_magnitude: float, no_zero_spin: bool = False
+    spin_magnitude, no_zero_spin: bool = False
 ) -> List[float]:
     """Create a list of allowed spin projections.
 

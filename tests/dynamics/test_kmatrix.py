@@ -1,5 +1,6 @@
 # pylint: disable=no-self-use, protected-access
 import re
+from typing import Set
 
 import pytest
 import sympy as sp
@@ -40,8 +41,9 @@ class TestNonRelativisticKMatrix:
 
 
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
+    free_symbols: Set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     residue_constants = filter(
-        lambda s: s.name.startswith(R"\gamma_"), expression.free_symbols
+        lambda s: s.name.startswith(R"\gamma_"), free_symbols
     )
     return expression.xreplace({gamma: 1 for gamma in residue_constants})
 

@@ -9,7 +9,7 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 import inspect
 import logging
 import textwrap
-from typing import Callable, Dict, Optional, Type, Union
+from typing import Callable, Dict, Optional, Tuple, Type, Union
 
 import attrs
 
@@ -62,7 +62,7 @@ def extend_BlattWeisskopfSquared() -> None:
 def extend_BoostMatrix() -> None:
     from ampform.kinematics import BoostMatrix
 
-    p = FourMomentumSymbol("p")
+    p = FourMomentumSymbol("p", shape=[])
     expr = BoostMatrix(p)
     _append_to_docstring(
         BoostMatrix,
@@ -94,13 +94,13 @@ def extend_BoostZMatrix() -> None:
     from ampform.kinematics import BoostZMatrix
 
     beta, n_events = sp.symbols("beta n")
-    expr = BoostZMatrix(beta, n_events)
+    matrix = BoostZMatrix(beta, n_events)
     _append_to_docstring(
         BoostZMatrix,
         f"""\n
     This boost operates on a `FourMomentumSymbol` and looks like:
 
-    .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
+    .. math:: {sp.latex(matrix)} = {sp.latex(matrix.as_explicit())}
         :label: BoostZMatrix
     """,
     )
@@ -135,7 +135,7 @@ def extend_BoostZMatrix() -> None:
     """,
     )
     p, beta, phi, theta = sp.symbols("p beta phi theta")
-    expr = ArrayMultiplication(
+    multiplication = ArrayMultiplication(
         BoostZMatrix(beta, n_events=_ArraySize(p)),
         RotationYMatrix(theta, n_events=_ArraySize(p)),
         RotationZMatrix(phi, n_events=_ArraySize(p)),
@@ -144,14 +144,14 @@ def extend_BoostZMatrix() -> None:
     _append_to_docstring(
         BoostZMatrix,
         f"""\n
-    .. math:: {sp.latex(expr)}
+    .. math:: {sp.latex(multiplication)}
         :label: boost-in-z-direction
 
     which in :mod:`numpy` code becomes:
     """,
     )
     _append_code_rendering(
-        expr.doit(), use_cse=True, docstring_class=BoostZMatrix
+        multiplication.doit(), use_cse=True, docstring_class=BoostZMatrix
     )
 
 
@@ -188,7 +188,8 @@ def extend_EnergyDependentWidth() -> None:
     """,
     )
     L = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
+    symbols: Tuple[sp.Symbol, ...] = sp.symbols("s m0 Gamma0 m_a m_b")
+    s, m0, w0, m_a, m_b = symbols
     expr = EnergyDependentWidth(
         s=s,
         mass0=m0,
@@ -219,7 +220,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
 
     def _extend(component_class: Type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")
-        p = FourMomentumSymbol("p")
+        p = FourMomentumSymbol("p", shape=[])
         expr = component_class(p)
         _append_latex_doit_definition(expr, inline=True)
 
@@ -232,7 +233,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
 def extend_EuclideanNorm() -> None:
     from ampform.kinematics import EuclideanNorm
 
-    vector = FourMomentumSymbol("v")
+    vector = FourMomentumSymbol("v", shape=[])
     expr = EuclideanNorm(vector)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
@@ -242,7 +243,7 @@ def extend_EuclideanNorm() -> None:
 def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 
-    p = FourMomentumSymbol("p")
+    p = FourMomentumSymbol("p", shape=[])
     expr = InvariantMass(p)
     _append_latex_doit_definition(expr)
 
@@ -308,7 +309,7 @@ def extend_PhaseSpaceFactorComplex() -> None:
 def extend_Phi() -> None:
     from ampform.kinematics import Phi
 
-    p = FourMomentumSymbol("p")
+    p = FourMomentumSymbol("p", shape=[])
     expr = Phi(p)
     _append_latex_doit_definition(expr)
 
@@ -373,7 +374,7 @@ def extend_RotationZMatrix() -> None:
 def extend_Theta() -> None:
     from ampform.kinematics import Theta
 
-    p = FourMomentumSymbol("p")
+    p = FourMomentumSymbol("p", shape=[])
     expr = Theta(p)
     _append_latex_doit_definition(expr)
 
@@ -381,7 +382,7 @@ def extend_Theta() -> None:
 def extend_ThreeMomentum() -> None:
     from ampform.kinematics import ThreeMomentum
 
-    p = FourMomentumSymbol("p")
+    p = FourMomentumSymbol("p", shape=[])
     expr = ThreeMomentum(p)
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
