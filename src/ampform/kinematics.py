@@ -3,6 +3,7 @@
 # pylint: disable=unused-argument, W0223
 # https://stackoverflow.com/a/22224042
 """Classes and functions for relativistic four-momentum kinematics."""
+from __future__ import annotations
 
 import itertools
 import sys

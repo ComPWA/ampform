@@ -1,4 +1,6 @@
 # pylint: disable=no-self-use, protected-access
+from __future__ import annotations
+
 import re
 from typing import Set
 

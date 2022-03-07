@@ -7,6 +7,7 @@ rendered as clickable links.
 
 See also https://github.com/sphinx-doc/sphinx/issues/5868.
 """
+from __future__ import annotations
 
 from typing import List
 

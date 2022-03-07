@@ -1,5 +1,7 @@
 # pylint: disable=no-member, no-self-use, redefined-outer-name
 # cspell:ignore atol doprint
+from __future__ import annotations
+
 import inspect
 import textwrap
 from typing import Dict, List, Tuple, Type

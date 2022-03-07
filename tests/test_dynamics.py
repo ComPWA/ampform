@@ -1,4 +1,6 @@
 # pylint: disable=no-self-use, protected-access, too-many-arguments
+from __future__ import annotations
+
 from typing import Set, Tuple
 
 import sympy as sp

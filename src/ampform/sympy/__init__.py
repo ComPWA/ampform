@@ -2,6 +2,7 @@
 # pylint: disable=invalid-getnewargs-ex-returned, protected-access, W0223
 # https://stackoverflow.com/a/22224042
 """Tools that facilitate in building :mod:`sympy` expressions."""
+from __future__ import annotations
 
 import functools
 import itertools

@@ -1,4 +1,6 @@
 # pylint: disable=no-member, no-self-use
+from __future__ import annotations
+
 import itertools
 from typing import Iterable, Set
 

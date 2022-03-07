@@ -1,4 +1,6 @@
 # pylint: disable=eval-used, no-self-use, protected-access, redefined-outer-name
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
 from typing import (
