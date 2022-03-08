@@ -511,7 +511,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             )
         self.__reaction = reaction
         self.naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
-        """Name generator for amplitude names and coefficient names."""
+        """Name generator for amplitude names and coefficient names.
+
+        .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`.
+        """
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)

@@ -19,7 +19,10 @@ from .decay import (
 
 
 class NameGenerator(ABC):
-    """Name generator for amplitudes and coefficients in a `.HelicityModel`."""
+    """Name generator for amplitudes and coefficients in a `.HelicityModel`.
+
+    .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`
+    """
 
     @abstractmethod
     def generate_amplitude_name(
