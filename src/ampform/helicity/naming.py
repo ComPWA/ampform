@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Iterable
 
@@ -17,14 +18,83 @@ from .decay import (
 )
 
 
-class HelicityAmplitudeNameGenerator:
+class NameGenerator(ABC):
+    """Name generator for amplitudes and coefficients in a `.HelicityModel`.
+
+    .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`
+    """
+
+    @abstractmethod
+    def generate_amplitude_name(
+        self, transition: StateTransition, node_id: int | None = None
+    ) -> str:
+        """Generates a unique name for the amplitude corresponding.
+
+        That is, corresponging to the given
+        `~qrules.transition.StateTransition`. If ``node_id`` is given, it
+        generates a unique name for the partial amplitude corresponding to the
+        interaction node of the given `~qrules.transition.StateTransition`.
+        """
+
+    @abstractmethod
+    def generate_sequential_amplitude_suffix(
+        self, transition: StateTransition
+    ) -> str:
+        """Generate unique suffix for a sequential amplitude transition."""
+
+    @abstractmethod
+    def generate_coefficient_suffix(  # pylint: disable=no-self-use
+        self, transition: StateTransition, node_id: int
+    ) -> str:
+        """Generate partial amplitude coefficient name suffix."""
+
+    @property
+    @abstractmethod
+    def parity_partner_coefficient_mapping(self) -> dict[str, str]:
+        ...
+
+
+class HelicityAmplitudeNameGenerator(NameGenerator):
     def __init__(
-        self, transitions: ReactionInfo | Iterable[StateTransition]
+        self,
+        transitions: ReactionInfo | Iterable[StateTransition],
+        insert_parent_helicities: bool = False,
+        insert_child_helicities: bool = True,
     ) -> None:
         if isinstance(transitions, ReactionInfo):
             transitions = transitions.transitions
-        self.parity_partner_coefficient_mapping: dict[str, str] = {}
-        for transition in transitions:
+        self.__transitions = transitions
+        self.__insert_parent_helicities = insert_parent_helicities
+        self.__insert_child_helicities = insert_child_helicities
+        self._register_amplitude_coefficients()
+
+    @property
+    def parity_partner_coefficient_mapping(self) -> dict[str, str]:
+        return self.__parity_partner_coefficient_mapping
+
+    @property
+    def insert_parent_helicities(self) -> bool:
+        """Insert helicities of each parent state in the coefficient names."""
+        return self.__insert_parent_helicities
+
+    @insert_parent_helicities.setter
+    def insert_parent_helicities(self, value: bool) -> None:
+        self.__insert_parent_helicities = value
+        self._register_amplitude_coefficients()
+
+    @property
+    def insert_child_helicities(self) -> bool:
+        """Embed the helicity of each decay product in the coefficients."""
+        return self.__insert_child_helicities
+
+    @insert_child_helicities.setter
+    def insert_child_helicities(self, value: bool) -> None:
+        self.__insert_child_helicities = value
+        self._register_amplitude_coefficients()
+
+    def _register_amplitude_coefficients(self) -> None:
+        self.__parity_partner_coefficient_mapping: dict[str, str] = {}
+        for transition in self.__transitions:
             self.__register_amplitude_coefficient_name(transition)
 
     def __register_amplitude_coefficient_name(
@@ -44,30 +114,30 @@ class HelicityAmplitudeNameGenerator:
 
             if (
                 coefficient_suffix
-                not in self.parity_partner_coefficient_mapping
+                not in self.__parity_partner_coefficient_mapping
             ):
                 if (
                     parity_partner_coefficient_suffix
-                    in self.parity_partner_coefficient_mapping
+                    in self.__parity_partner_coefficient_mapping
                 ):
                     if (
                         parity_partner_coefficient_suffix
                         == priority_partner_coefficient_suffix
                     ):
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             coefficient_suffix
                         ] = parity_partner_coefficient_suffix
                     else:
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             parity_partner_coefficient_suffix
                         ] = coefficient_suffix
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             coefficient_suffix
                         ] = coefficient_suffix
 
                 else:
                     # if neither this coefficient nor its partner are registered just add it
-                    self.parity_partner_coefficient_mapping[
+                    self.__parity_partner_coefficient_mapping[
                         coefficient_suffix
                     ] = coefficient_suffix
 
@@ -77,7 +147,7 @@ class HelicityAmplitudeNameGenerator:
         incoming_state, outgoing_states = get_helicity_info(
             transition, node_id
         )
-        par_name_suffix = self.generate_coefficient_name(transition, node_id)
+        par_name_suffix = self.generate_coefficient_suffix(transition, node_id)
 
         pp_par_name_suffix = (
             _state_to_str(incoming_state, use_helicity=False)
@@ -102,13 +172,6 @@ class HelicityAmplitudeNameGenerator:
         transition: StateTransition,
         node_id: int | None = None,
     ) -> str:
-        """Generates a unique name for the amplitude corresponding.
-
-        That is, corresponging to the given
-        `~qrules.transition.StateTransition`. If ``node_id`` is given, it
-        generates a unique name for the partial amplitude corresponding to the
-        interaction node of the given `~qrules.transition.StateTransition`.
-        """
         name = ""
         if node_id is None:
             node_ids = transition.topology.nodes
@@ -125,24 +188,37 @@ class HelicityAmplitudeNameGenerator:
             names.append(name)
         return "; ".join(names)
 
-    def generate_coefficient_name(  # pylint: disable=no-self-use
+    def generate_coefficient_suffix(
         self, transition: StateTransition, node_id: int
     ) -> str:
-        """Generate partial amplitude coefficient name suffix."""
+        components = self._get_coefficient_components(transition, node_id)
+        return "".join(components)
+
+    def _get_coefficient_components(
+        self, transition: StateTransition, node_id: int
+    ) -> tuple[str, str, str]:
         in_hel_info, out_hel_info = get_helicity_info(transition, node_id)
         return (
-            _state_to_str(in_hel_info, use_helicity=False)
-            + R" \to "
-            + " ".join(_state_to_str(s) for s in out_hel_info)
+            _state_to_str(
+                in_hel_info,
+                use_helicity=self.insert_parent_helicities,
+            ),
+            R" \to ",
+            " ".join(
+                _state_to_str(
+                    state,
+                    use_helicity=self.insert_child_helicities,
+                )
+                for state in out_hel_info
+            ),
         )
 
     def generate_sequential_amplitude_suffix(
         self, transition: StateTransition
     ) -> str:
-        """Generate unique suffix for a sequential amplitude transition."""
         coefficient_names: list[str] = []
         for node_id in transition.topology.nodes:
-            suffix = self.generate_coefficient_name(transition, node_id)
+            suffix = self.generate_coefficient_suffix(transition, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
                 suffix = self.parity_partner_coefficient_mapping[suffix]
             coefficient_names.append(suffix)
@@ -150,6 +226,30 @@ class HelicityAmplitudeNameGenerator:
 
 
 class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
+    def __init__(
+        self,
+        transitions: ReactionInfo | Iterable[StateTransition],
+        insert_parent_helicities: bool = False,
+        insert_child_helicities: bool = False,
+        insert_ls_combinations: bool = True,
+    ) -> None:
+        self.__insert_ls_combinations = insert_ls_combinations
+        super().__init__(
+            transitions,
+            insert_parent_helicities=insert_parent_helicities,
+            insert_child_helicities=insert_child_helicities,
+        )
+
+    @property
+    def insert_ls_combinations(self) -> bool:
+        """Embed each :math:`LS`-combination in the coefficient names."""
+        return self.__insert_ls_combinations
+
+    @insert_ls_combinations.setter
+    def insert_ls_combinations(self, value: bool) -> None:
+        self.__insert_ls_combinations = value
+        self._register_amplitude_coefficients()
+
     def generate_amplitude_name(
         self,
         transition: StateTransition,
@@ -169,18 +269,16 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             names.append(canonical_name)
         return "; ".join(names)
 
-    def generate_coefficient_name(
+    def _get_coefficient_components(
         self, transition: StateTransition, node_id: int
-    ) -> str:
-        incoming_state, outgoing_states = get_helicity_info(
-            transition, node_id
-        )
+    ) -> tuple[str, str, str]:
+        components = super()._get_coefficient_components(transition, node_id)
+        if not self.insert_ls_combinations:
+            return components
         return (
-            _state_to_str(incoming_state, use_helicity=False)
-            + self.__generate_ls_arrow(transition, node_id)
-            + " ".join(
-                _state_to_str(s, use_helicity=False) for s in outgoing_states
-            )
+            components[0],
+            self.__generate_ls_arrow(transition, node_id),
+            components[2],
         )
 
     @staticmethod

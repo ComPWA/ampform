@@ -1,6 +1,16 @@
+from __future__ import annotations
+
+import pytest
 from qrules import ReactionInfo
 
-from ampform.helicity.naming import _render_float, generate_transition_label
+from ampform import get_builder
+from ampform.helicity import HelicityModel
+from ampform.helicity.naming import (
+    CanonicalAmplitudeNameGenerator,
+    HelicityAmplitudeNameGenerator,
+    _render_float,
+    generate_transition_label,
+)
 
 
 def test_generate_transition_label(reaction: ReactionInfo):
@@ -12,3 +22,83 @@ def test_generate_transition_label(reaction: ReactionInfo):
             Rf"J/\psi(1S)_{{{jpsi_spin}}} \to \gamma_{{{gamma_spin}}}"
             R" \pi^{0}_{0} \pi^{0}_{0}"
         )
+
+
+@pytest.mark.parametrize("parent_helicities", [False, True])
+@pytest.mark.parametrize("child_helicities", [False, True])
+@pytest.mark.parametrize("ls_combinations", [False, True])
+def test_coefficient_names(  # noqa: R701
+    reaction: ReactionInfo,
+    parent_helicities,
+    child_helicities,
+    ls_combinations,
+):
+    # pylint: disable=too-many-branches, too-many-statements
+    builder = get_builder(reaction)
+    assert isinstance(builder.naming, HelicityAmplitudeNameGenerator)
+    builder.naming.insert_parent_helicities = parent_helicities
+    builder.naming.insert_child_helicities = child_helicities
+    if ls_combinations:
+        if reaction.formalism == "helicity":
+            pytest.skip("No LS-combinations if using helicity formalism")
+    if isinstance(builder.naming, CanonicalAmplitudeNameGenerator):
+        builder.naming.insert_ls_combinations = ls_combinations
+    model = builder.formulate()
+
+    coefficients = get_coefficients(model)
+    n_resonances = len(reaction.get_intermediate_particles())
+    if reaction.formalism == "helicity":
+        if parent_helicities:
+            if child_helicities:
+                assert len(coefficients) == 4 * n_resonances
+            else:
+                assert len(coefficients) == 2 * n_resonances
+        else:
+            if child_helicities:
+                assert len(coefficients) == n_resonances
+            else:
+                assert len(coefficients) == n_resonances
+    elif reaction.formalism == "canonical-helicity":
+        if ls_combinations:
+            if parent_helicities:
+                if child_helicities:
+                    assert len(coefficients) == 8 * n_resonances
+                else:
+                    assert len(coefficients) == 4 * n_resonances
+            else:
+                if child_helicities:
+                    assert len(coefficients) == 4 * n_resonances
+                else:
+                    assert len(coefficients) == 2 * n_resonances
+        else:
+            if parent_helicities:
+                if child_helicities:
+                    assert len(coefficients) == 4 * n_resonances
+                else:
+                    assert len(coefficients) == 2 * n_resonances
+            else:
+                assert len(coefficients) == n_resonances
+
+    coefficient_name = coefficients[0]
+    if parent_helicities:
+        assert R"J/\psi(1S)_{-1}" in coefficient_name
+    else:
+        assert R"J/\psi(1S) " in coefficient_name
+
+    if child_helicities:
+        assert R"\gamma_{" in coefficient_name
+    else:
+        assert R"\gamma;" in coefficient_name
+
+    if ls_combinations:
+        assert R"\xrightarrow[S=1]{L=0}" in coefficient_name
+    else:
+        assert R"\to" in coefficient_name
+
+
+def get_coefficients(model: HelicityModel) -> list[str]:
+    return [
+        symbol.name
+        for symbol in model.parameter_defaults
+        if symbol.name.startswith("C_")
+    ]
