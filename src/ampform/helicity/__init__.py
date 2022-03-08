@@ -765,7 +765,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
-                raw_suffix = self.naming.generate_coefficient_name(
+                raw_suffix = self.naming.generate_coefficient_suffix(
                     transition, node_id
                 )
                 if (
