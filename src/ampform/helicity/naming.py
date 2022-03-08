@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Iterable
 
@@ -17,15 +18,52 @@ from .decay import (
 )
 
 
-class HelicityAmplitudeNameGenerator:
+class NameGenerator(ABC):
+    """Name generator for amplitudes and coefficients in a `.HelicityModel`."""
+
+    @abstractmethod
+    def generate_amplitude_name(
+        self, transition: StateTransition, node_id: int | None = None
+    ) -> str:
+        """Generates a unique name for the amplitude corresponding.
+
+        That is, corresponging to the given
+        `~qrules.transition.StateTransition`. If ``node_id`` is given, it
+        generates a unique name for the partial amplitude corresponding to the
+        interaction node of the given `~qrules.transition.StateTransition`.
+        """
+
+    @abstractmethod
+    def generate_sequential_amplitude_suffix(
+        self, transition: StateTransition
+    ) -> str:
+        """Generate unique suffix for a sequential amplitude transition."""
+
+    @abstractmethod
+    def generate_coefficient_name(  # pylint: disable=no-self-use
+        self, transition: StateTransition, node_id: int
+    ) -> str:
+        """Generate partial amplitude coefficient name suffix."""
+
+    @property
+    @abstractmethod
+    def parity_partner_coefficient_mapping(self) -> dict[str, str]:
+        ...
+
+
+class HelicityAmplitudeNameGenerator(NameGenerator):
     def __init__(
         self, transitions: ReactionInfo | Iterable[StateTransition]
     ) -> None:
         if isinstance(transitions, ReactionInfo):
             transitions = transitions.transitions
-        self.parity_partner_coefficient_mapping: dict[str, str] = {}
+        self.__parity_partner_coefficient_mapping: dict[str, str] = {}
         for transition in transitions:
             self.__register_amplitude_coefficient_name(transition)
+
+    @property
+    def parity_partner_coefficient_mapping(self) -> dict[str, str]:
+        return self.__parity_partner_coefficient_mapping
 
     def __register_amplitude_coefficient_name(
         self, transition: StateTransition
@@ -44,30 +82,30 @@ class HelicityAmplitudeNameGenerator:
 
             if (
                 coefficient_suffix
-                not in self.parity_partner_coefficient_mapping
+                not in self.__parity_partner_coefficient_mapping
             ):
                 if (
                     parity_partner_coefficient_suffix
-                    in self.parity_partner_coefficient_mapping
+                    in self.__parity_partner_coefficient_mapping
                 ):
                     if (
                         parity_partner_coefficient_suffix
                         == priority_partner_coefficient_suffix
                     ):
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             coefficient_suffix
                         ] = parity_partner_coefficient_suffix
                     else:
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             parity_partner_coefficient_suffix
                         ] = coefficient_suffix
-                        self.parity_partner_coefficient_mapping[
+                        self.__parity_partner_coefficient_mapping[
                             coefficient_suffix
                         ] = coefficient_suffix
 
                 else:
                     # if neither this coefficient nor its partner are registered just add it
-                    self.parity_partner_coefficient_mapping[
+                    self.__parity_partner_coefficient_mapping[
                         coefficient_suffix
                     ] = coefficient_suffix
 
@@ -102,13 +140,6 @@ class HelicityAmplitudeNameGenerator:
         transition: StateTransition,
         node_id: int | None = None,
     ) -> str:
-        """Generates a unique name for the amplitude corresponding.
-
-        That is, corresponging to the given
-        `~qrules.transition.StateTransition`. If ``node_id`` is given, it
-        generates a unique name for the partial amplitude corresponding to the
-        interaction node of the given `~qrules.transition.StateTransition`.
-        """
         name = ""
         if node_id is None:
             node_ids = transition.topology.nodes
@@ -128,7 +159,6 @@ class HelicityAmplitudeNameGenerator:
     def generate_coefficient_name(  # pylint: disable=no-self-use
         self, transition: StateTransition, node_id: int
     ) -> str:
-        """Generate partial amplitude coefficient name suffix."""
         in_hel_info, out_hel_info = get_helicity_info(transition, node_id)
         return (
             _state_to_str(in_hel_info, use_helicity=False)
@@ -139,12 +169,11 @@ class HelicityAmplitudeNameGenerator:
     def generate_sequential_amplitude_suffix(
         self, transition: StateTransition
     ) -> str:
-        """Generate unique suffix for a sequential amplitude transition."""
         coefficient_names: list[str] = []
         for node_id in transition.topology.nodes:
             suffix = self.generate_coefficient_name(transition, node_id)
-            if suffix in self.parity_partner_coefficient_mapping:
-                suffix = self.parity_partner_coefficient_mapping[suffix]
+            if suffix in self.__parity_partner_coefficient_mapping:
+                suffix = self.__parity_partner_coefficient_mapping[suffix]
             coefficient_names.append(suffix)
         return "; ".join(coefficient_names)
 
