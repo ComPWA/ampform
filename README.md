@@ -39,17 +39,21 @@ see
 
 ## Available features
 
-- **Automatic amplitude model building**: Convert state transition graphs from
-  [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
+- **Automatic amplitude model building**:<br /> Convert state transition graphs
+  from [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
   _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be
   _converted to any backend_ (see
   [`tensorwaves`](https://tensorwaves.rtfd.io)).
 - **Dynamics**
-  - Relativistic Breit-Wigner, optionally with form factors
-  - Symbolic _K_-matrix for an arbitrary number of poles and channels
-  - Symbolic _P_-vector for an arbitrary number of poles and channels
+  - [Relativistic Breit-Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),
+    optionally with form factors and/or
+    [energy-dependent width](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.EnergyDependentWidth)
+  - [Symbolic _K_-matrix](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#non-relativistic-k-matrix)
+    for an arbitrary number of poles and channels
+  - [Symbolic _P_-vector](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#p-vector)
+    for an arbitrary number of poles and channels
 - **Spin formalisms (for amplitude model generation)**
-  - Helicity formalism
+  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
   - Canonical formalism
   - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
     for generic, multi-body decays that feature different decay topologies
