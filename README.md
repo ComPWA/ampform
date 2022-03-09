@@ -51,6 +51,8 @@ see
 - **Spin formalisms (for amplitude model generation)**
   - Helicity formalism
   - Canonical formalism
+  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
+    for generic, multi-body decays that feature different decay topologies
 
 ## Contribute
 
