@@ -2,9 +2,6 @@
   "[bibtex]": {
     "editor.formatOnSave": false
   },
-  "[ipynb]": {
-    "editor.formatOnSave": false
-  },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
