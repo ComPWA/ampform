@@ -39,12 +39,11 @@ see
 
 ## Available features
 
-- **Automatic amplitude model building**:<br /> Convert state transition graphs
+- **Automatic amplitude model building**<br /> Convert state transition graphs
   from [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
   _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be
-  _converted to any backend_ (see
-  [`tensorwaves`](https://tensorwaves.rtfd.io)).
-- **Spin formalisms** (for amplitude model generation)
+  _converted to any backend_ (see [TensorWaves](https://tensorwaves.rtfd.io)).
+- **Spin formalisms**
   - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
   - Canonical formalism
   - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
