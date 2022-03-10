@@ -44,6 +44,11 @@ see
   _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be
   _converted to any backend_ (see
   [`tensorwaves`](https://tensorwaves.rtfd.io)).
+- **Spin formalisms** (for amplitude model generation)
+  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
+  - Canonical formalism
+  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
+    for generic, multi-body decays that feature different decay topologies
 - **Dynamics**
   - [Relativistic Breit-Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),
     optionally with form factors and/or
@@ -52,11 +57,6 @@ see
     for an arbitrary number of poles and channels
   - [Symbolic _P_-vector](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#p-vector)
     for an arbitrary number of poles and channels
-- **Spin formalisms (for amplitude model generation)**
-  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
-  - Canonical formalism
-  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
-    for generic, multi-body decays that feature different decay topologies
 
 ## Contribute
 
