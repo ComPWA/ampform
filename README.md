@@ -9,8 +9,8 @@
 
 [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/stable?filepath=docs/usage)
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/stable)
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/ComPWA/ampform)
-[![GitPod](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ComPWA/ampform)
+[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-open-blue?logo=visualstudiocode)](https://open.vscode.dev/ComPWA/ampform)
+[![GitPod](https://img.shields.io/badge/gitpod-open-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ComPWA/ampform)
 
 [![Documentation build status](https://readthedocs.org/projects/ampform/badge/?version=latest)](https://ampform.readthedocs.io)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComPWA/ampform/main.svg)](https://results.pre-commit.ci/latest/github/ComPWA/ampform/main)
@@ -39,18 +39,23 @@ see
 
 ## Available features
 
-- **Automatic amplitude model building**: Convert state transition graphs from
-  [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
+- **Automatic amplitude model building**<br /> Convert state transition graphs
+  from [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
   _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be
-  _converted to any backend_ (see
-  [`tensorwaves`](https://tensorwaves.rtfd.io)).
-- **Dynamics**
-  - Relativistic Breit-Wigner, optionally with form factors
-  - Symbolic _K_-matrix for an arbitrary number of poles and channels
-  - Symbolic _P_-vector for an arbitrary number of poles and channels
-- **Spin formalisms (for amplitude model generation)**
-  - Helicity formalism
+  _converted to any backend_ (see [TensorWaves](https://tensorwaves.rtfd.io)).
+- **Spin formalisms**
+  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
   - Canonical formalism
+  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
+    for generic, multi-body decays that feature different decay topologies
+- **Dynamics**
+  - [Relativistic Breit-Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),
+    optionally with form factors and/or
+    [energy-dependent width](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.EnergyDependentWidth)
+  - [Symbolic _K_-matrix](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#non-relativistic-k-matrix)
+    for an arbitrary number of poles and channels
+  - [Symbolic _P_-vector](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#p-vector)
+    for an arbitrary number of poles and channels
 
 ## Contribute
 
