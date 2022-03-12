@@ -520,6 +520,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__adapter = HelicityAdapter(reaction)
         self.align_spin: bool | None = None
         """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+        self.use_helicity_couplings: bool = False
+        """Use helicity couplings instead of amplitude coefficients.
+
+        Helicity couplings are a measure for the strength of each partial
+        two-body decay. Amplitude coefficients are the product of those
+        couplings.
+        """
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
 
@@ -708,11 +715,14 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         ]
         sequential_amplitudes = reduce(operator.mul, partial_decays)
 
-        coefficient = self.__generate_amplitude_coefficient(transition)
+        if self.use_helicity_couplings:
+            expression = sequential_amplitudes
+        else:
+            coefficient = self.__generate_amplitude_coefficient(transition)
+            expression = coefficient * sequential_amplitudes
         prefactor = self.__generate_amplitude_prefactor(transition)
-        expression = coefficient * sequential_amplitudes
         if prefactor is not None:
-            expression = prefactor * expression
+            expression *= prefactor
         subscript = self.naming.generate_amplitude_name(transition)
         self.__ingredients.components[f"A_{{{subscript}}}"] = expression
         return expression
@@ -722,6 +732,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Expr:
         wigner_d = formulate_wigner_d(transition, node_id)
         dynamics = self.__formulate_dynamics(transition, node_id)
+        if self.use_helicity_couplings:
+            coupling = self.__generate_helicity_coupling(transition, node_id)
+            return coupling * wigner_d * dynamics
         return wigner_d * dynamics
 
     def __formulate_dynamics(
@@ -762,13 +775,24 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients.parameter_defaults[symbol] = value
         return symbol
 
+    def __generate_helicity_coupling(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Symbol:
+        suffix = self.naming.generate_two_body_decay_suffix(
+            transition, node_id
+        )
+        symbol = sp.Symbol(f"H_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
+
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
     ) -> float | None:
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
-                raw_suffix = self.naming.generate_coefficient_suffix(
+                raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id
                 )
                 if (
