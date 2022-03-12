@@ -43,7 +43,7 @@ class NameGenerator(ABC):
         """Generate unique suffix for a sequential amplitude transition."""
 
     @abstractmethod
-    def generate_coefficient_suffix(  # pylint: disable=no-self-use
+    def generate_two_body_decay_suffix(
         self, transition: StateTransition, node_id: int
     ) -> str:
         """Generate partial amplitude coefficient name suffix."""
@@ -147,7 +147,9 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
         incoming_state, outgoing_states = get_helicity_info(
             transition, node_id
         )
-        par_name_suffix = self.generate_coefficient_suffix(transition, node_id)
+        par_name_suffix = self.generate_two_body_decay_suffix(
+            transition, node_id
+        )
 
         pp_par_name_suffix = (
             _state_to_str(incoming_state, use_helicity=False)
@@ -188,7 +190,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
             names.append(name)
         return "; ".join(names)
 
-    def generate_coefficient_suffix(
+    def generate_two_body_decay_suffix(
         self, transition: StateTransition, node_id: int
     ) -> str:
         components = self._get_coefficient_components(transition, node_id)
@@ -218,7 +220,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
     ) -> str:
         coefficient_names: list[str] = []
         for node_id in transition.topology.nodes:
-            suffix = self.generate_coefficient_suffix(transition, node_id)
+            suffix = self.generate_two_body_decay_suffix(transition, node_id)
             if suffix in self.parity_partner_coefficient_mapping:
                 suffix = self.parity_partner_coefficient_mapping[suffix]
             coefficient_names.append(suffix)
