@@ -182,7 +182,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 sqlalchemy==1.4.32
-sympy==1.10
+sympy==1.10.1
 terminado==0.13.3
 testpath==0.6.0
 toml==0.10.2
