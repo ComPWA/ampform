@@ -211,7 +211,6 @@ html_theme_options = {
     },
     "show_navbar_depth": 2,
     "show_toc_level": 2,
-    "theme_dev_mode": True,
 }
 html_title = "AmpForm"
 panels_add_bootstrap_css = False  # remove panels css to get wider main content
