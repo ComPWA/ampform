@@ -1281,7 +1281,9 @@ def formulate_helicity_rotation(
     )
 
 
-_BasicType = TypeVar("_BasicType", bound=sp.Basic)
+_BasicType = TypeVar(  # pylint: disable=invalid-name
+    "_BasicType", bound=sp.Basic
+)
 
 
 @overload

@@ -159,7 +159,6 @@ class PhaseSpaceFactorProtocol(Protocol):
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
         """Expected `~inspect.signature`."""
-        ...  # pragma: no cover
 
 
 @implement_doit_method
