@@ -69,7 +69,6 @@ class ResonanceDynamicsBuilder(Protocol):
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         """Formulate a dynamics `~sympy.core.expr.Expr` for this resonance."""
-        ...
 
 
 def create_non_dynamic(

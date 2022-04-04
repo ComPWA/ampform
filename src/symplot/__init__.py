@@ -236,7 +236,7 @@ def _is_min_max_step(
     return False
 
 
-ValueType = TypeVar("ValueType")
+ValueType = TypeVar("ValueType")  # pylint: disable=invalid-name
 
 
 def _merge_args_kwargs(
