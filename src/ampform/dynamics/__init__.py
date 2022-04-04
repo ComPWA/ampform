@@ -448,17 +448,32 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2021; Resonances; p.9`.
     """
+    form_factor = formulate_form_factor(
+        s, m_a, m_b, angular_momentum, meson_radius
+    )
+    energy_dependent_width = EnergyDependentWidth(
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
+    )
+    return (mass0 * gamma0 * form_factor) / (
+        mass0**2 - s - energy_dependent_width * mass0 * sp.I
+    )
+
+
+def formulate_form_factor(
+    s, m_a, m_b, angular_momentum, meson_radius
+) -> sp.Expr:
+    """Formulate a Blatt-Weisskopf form factor.
+
+    Returns the production process factor :math:`n_a` from Equation (50.26) in
+    :pdg-review:`2021; Resonances; p.9`, which features the
+    `~sympy.functions.elementary.miscellaneous.sqrt` of a
+    `.BlattWeisskopfSquared`.
+    """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     ff_squared = BlattWeisskopfSquared(
         angular_momentum, z=q_squared * meson_radius**2
     )
-    form_factor = sp.sqrt(ff_squared)
-    mass_dependent_width = EnergyDependentWidth(
-        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
-    )
-    return (mass0 * gamma0 * form_factor) / (
-        mass0**2 - s - mass_dependent_width * mass0 * sp.I
-    )
+    return sp.sqrt(ff_squared)
 
 
 def _indices_to_subscript(indices: Sequence[int]) -> str:

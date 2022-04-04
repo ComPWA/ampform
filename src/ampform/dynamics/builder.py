@@ -10,12 +10,11 @@ from attrs.validators import instance_of
 from qrules.particle import Particle
 
 from . import (
-    BlattWeisskopfSquared,
-    BreakupMomentumSquared,
     EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorAnalytic,
     PhaseSpaceFactorProtocol,
+    formulate_form_factor,
     relativistic_breit_wigner,
 )
 
@@ -83,29 +82,25 @@ def create_non_dynamic_with_ff(
 ) -> BuilderReturnType:
     """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
 
-    Returns the `~sympy.functions.elementary.miscellaneous.sqrt` of a
-    `.BlattWeisskopfSquared`.
+    See also :func:`.formulate_form_factor`.
     """
-    angular_momentum = variable_pool.angular_momentum
-    if angular_momentum is None:
+    if variable_pool.angular_momentum is None:
         raise ValueError(
             "Angular momentum is not defined but is required in the form"
             " factor!"
         )
-    q_squared = BreakupMomentumSquared(
+    res_identifier = resonance.latex if resonance.latex else resonance.name
+    meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
+    form_factor = formulate_form_factor(
         s=variable_pool.incoming_state_mass**2,
         m_a=variable_pool.outgoing_state_mass1,
         m_b=variable_pool.outgoing_state_mass2,
-    )
-    res_identifier = resonance.latex if resonance.latex else resonance.name
-    meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
-    form_factor_squared = BlattWeisskopfSquared(
-        angular_momentum,
-        z=q_squared * meson_radius**2,
+        angular_momentum=variable_pool.angular_momentum,
+        meson_radius=meson_radius,
     )
     return (
-        sp.sqrt(form_factor_squared),
-        {meson_radius: 1},
+        form_factor,
+        {meson_radius: sp.S.One},
     )
 
 
@@ -118,8 +113,8 @@ class RelativisticBreitWignerBuilder:
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function multiplied
-            by a Blatt-Weisskopf form factor, see Equation
-            :eq:`BlattWeisskopfSquared`.
+            by a Blatt-Weisskopf form factor (`.BlattWeisskopfSquared`), like
+            in Equation (50.26) on :pdg-review:`2021; Resonances; p.9`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
             denominator of the Breit-Wigner.
         phsp_factor: A class that complies with the
@@ -210,7 +205,7 @@ class RelativisticBreitWignerBuilder:
         parameter_defaults = {
             res_mass: resonance.mass,
             res_width: resonance.width,
-            meson_radius: 1,
+            meson_radius: sp.S.One,
         }
         return breit_wigner_expr, parameter_defaults
 
@@ -224,22 +219,16 @@ class RelativisticBreitWignerBuilder:
             )
 
         inv_mass = variable_pool.incoming_state_mass
-        angular_momentum = variable_pool.angular_momentum
-        res_mass, res_width, meson_radius = self.__create_symbols(resonance)
-
-        q_squared = BreakupMomentumSquared(
+        _, __, meson_radius = self.__create_symbols(resonance)
+        form_factor = formulate_form_factor(
             s=inv_mass**2,
             m_a=variable_pool.outgoing_state_mass1,
             m_b=variable_pool.outgoing_state_mass2,
+            angular_momentum=variable_pool.angular_momentum,
+            meson_radius=meson_radius,
         )
-        ff_squared = BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius**2
-        )
-        form_factor = sp.sqrt(ff_squared)
         parameter_defaults = {
-            res_mass: resonance.mass,
-            res_width: resonance.width,
-            meson_radius: 1,
+            meson_radius: sp.S.One,
         }
         return form_factor, parameter_defaults
 
