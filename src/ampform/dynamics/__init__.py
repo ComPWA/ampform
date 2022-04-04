@@ -45,8 +45,8 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     Note that equal powers of :math:`z` appear in the nominator and the
     denominator, while some sources have nominator :math:`1`, instead of
-    :math:`z^L`. Compare for instance :pdg-review:`2020; Resonances; p.6`, just
-    before Equation (49.20).
+    :math:`z^L`. Compare for instance Equation (50.27) in :pdg-review:`2021;
+    Resonances; p.9`.
 
     Each of these cases for :math:`L` has been taken from
     :cite:`pychyGekoppeltePartialwellenanalyseAnnihilationen2016`, p.59,
@@ -165,7 +165,7 @@ class PhaseSpaceFactorProtocol(Protocol):
 class PhaseSpaceFactor(UnevaluatedExpression):
     """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
-    See :pdg-review:`2020; Resonances; p.4`, Equation (49.8).
+    See :pdg-review:`2021; Resonances; p.6`, Equation (50.9).
     """
 
     is_commutative = True
@@ -310,7 +310,7 @@ def _phase_space_factor_denominator(s) -> sp.Mul:
 class EnergyDependentWidth(UnevaluatedExpression):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
-    See :pdg-review:`2020; Resonances; p.6` and
+    See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6). Default value for
     :code:`phsp_factor` is :meth:`PhaseSpaceFactor`.
 
@@ -446,7 +446,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
     See :ref:`usage/dynamics:_With_ form factor` and
-    :pdg-review:`2020; Resonances; p.6`.
+    :pdg-review:`2021; Resonances; p.9`.
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     ff_squared = BlattWeisskopfSquared(

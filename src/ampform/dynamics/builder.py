@@ -121,8 +121,7 @@ class RelativisticBreitWignerBuilder:
             by a Blatt-Weisskopf form factor, see Equation
             :eq:`BlattWeisskopfSquared`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
-            denominator of the Breit-Wigner. See
-            :pdg-review:`2020; Resonances; p.6`, Equation (49.21).
+            denominator of the Breit-Wigner.
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol` that is used in the energy-dependent
             width. Defaults to `.PhaseSpaceFactor`.
