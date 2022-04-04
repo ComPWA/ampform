@@ -240,6 +240,22 @@ def extend_EuclideanNorm() -> None:
     _append_code_rendering(expr)
 
 
+def extend_formulate_form_factor() -> None:
+    from ampform.dynamics import formulate_form_factor
+
+    s, m_a, m_b, L, d = sp.symbols("s m_a m_b L d")
+    form_factor = formulate_form_factor(
+        s, m_a, m_b, angular_momentum=L, meson_radius=d
+    )
+    _append_to_docstring(
+        formulate_form_factor,
+        f"""
+    .. math:: {sp.latex(form_factor)}
+        :label: formulate_form_factor
+    """,
+    )
+
+
 def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 

@@ -16,11 +16,10 @@ from abc import ABC, abstractmethod
 import sympy as sp
 
 from ampform.dynamics import (
-    BlattWeisskopfSquared,
-    BreakupMomentumSquared,
     EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
+    formulate_form_factor,
 )
 from ampform.sympy import create_symbol_matrix
 
@@ -406,11 +405,9 @@ class RelativisticPVector(TMatrix):
         gamma = residue_constant[pole_id, i]
         mass0 = pole_position[pole_id]
         width = pole_width[pole_id, i]
-        q_squared = BreakupMomentumSquared(s, m_a[i], m_b[i])
-        form_factor_squared = BlattWeisskopfSquared(
-            angular_momentum, z=q_squared * meson_radius**2
+        form_factor = formulate_form_factor(
+            s, m_a[i], m_b[i], angular_momentum, meson_radius
         )
-        form_factor = sp.sqrt(form_factor_squared)
         return sp.Sum(
             beta * gamma * mass0 * width * form_factor / (mass0**2 - s),
             (pole_id, 1, n_poles),
