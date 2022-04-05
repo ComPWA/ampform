@@ -11,8 +11,8 @@ from qrules.particle import Particle
 
 from . import (
     EnergyDependentWidth,
+    EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
-    PhaseSpaceFactorAnalytic,
     PhaseSpaceFactorProtocol,
     formulate_form_factor,
     relativistic_breit_wigner,
@@ -268,14 +268,14 @@ form factor and a 'normal' `.PhaseSpaceFactor`.
 create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
     energy_dependent_width=True,
     form_factor=True,
-    phsp_factor=PhaseSpaceFactorAnalytic,
+    phsp_factor=EqualMassPhaseSpaceFactor,
 ).__call__
 """
 Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_
 form factor and a 'analytic' phase space factor (see
-`.PhaseSpaceFactorAnalytic`).
+`.EqualMassPhaseSpaceFactor`).
 
 .. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
 """

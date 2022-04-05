@@ -177,6 +177,22 @@ def extend_ComplexSqrt() -> None:
     )
 
 
+def extend_EqualMassPhaseSpaceFactor() -> None:
+    from ampform.dynamics import EqualMassPhaseSpaceFactor, PhaseSpaceFactorAbs
+
+    s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
+    expr = EqualMassPhaseSpaceFactor(s, m_a, m_b)
+    _append_latex_doit_definition(expr)
+    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
+    _append_to_docstring(
+        EqualMassPhaseSpaceFactor,
+        f"""
+    with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
+    :eq:`PhaseSpaceFactorAbs`.
+    """,
+    )
+
+
 def extend_EnergyDependentWidth() -> None:
     from ampform.dynamics import EnergyDependentWidth
 
@@ -288,22 +304,6 @@ def extend_PhaseSpaceFactorAbs() -> None:
         PhaseSpaceFactorAbs,
         """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
-def extend_PhaseSpaceFactorAnalytic() -> None:
-    from ampform.dynamics import PhaseSpaceFactorAbs, PhaseSpaceFactorAnalytic
-
-    s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
-    expr = PhaseSpaceFactorAnalytic(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    _append_to_docstring(
-        PhaseSpaceFactorAnalytic,
-        f"""
-    with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
-    :eq:`PhaseSpaceFactorAbs`.
     """,
     )
 

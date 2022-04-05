@@ -7,7 +7,7 @@ import sympy as sp
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     EnergyDependentWidth,
-    PhaseSpaceFactorAnalytic,
+    EqualMassPhaseSpaceFactor,
 )
 from ampform.sympy import UnevaluatedExpression
 
@@ -43,7 +43,7 @@ class TestUnevaluatedExpression:
             m_b=m_a,
             angular_momentum=0,
             meson_radius=1,
-            phsp_factor=PhaseSpaceFactorAnalytic,
+            phsp_factor=EqualMassPhaseSpaceFactor,
             name="Gamma_1",
         )
         pickled_obj = pickle.dumps(expr)

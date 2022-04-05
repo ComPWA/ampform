@@ -154,7 +154,7 @@ class PhaseSpaceFactorProtocol(Protocol):
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance `.PhaseSpaceFactor` and
-    `.PhaseSpaceFactorAnalytic`.
+    `.EqualMassPhaseSpaceFactor`.
     """
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
@@ -180,8 +180,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return sp.sqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\rho" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
@@ -198,7 +197,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     This version of the phase space factor is often denoted as
     :math:`\hat{\rho}` and is used in analytic continuation
-    (`.PhaseSpaceFactorAnalytic`).
+    (`.EqualMassPhaseSpaceFactor`).
     """
 
     is_commutative = True
@@ -213,15 +212,14 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = R"\hat{\rho}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
 
 @implement_doit_method
-class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
+class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
@@ -233,7 +231,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorAnalytic:
+    def __new__(cls, s, m_a, m_b, **hints) -> EqualMassPhaseSpaceFactor:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:
@@ -243,11 +241,10 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = (
-            R"\rho^\mathrm{ac}" + subscript
+            R"\rho^\mathrm{eq}" + subscript
             if self._name is None
             else self._name
         )
@@ -274,8 +271,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         return ComplexSqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = (
             R"\rho^\mathrm{c}" + subscript
@@ -379,8 +375,8 @@ class EnergyDependentWidth(UnevaluatedExpression):
         return gamma0 * (form_factor_sq / form_factor0_sq) * (rho / rho0)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, _, width, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
+        width = printer._print(self.args[2])
         subscript = _indices_to_subscript(_determine_indices(width))
         name = Rf"\Gamma{subscript}" if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
@@ -417,8 +413,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)  # type: ignore[operator]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s, *_ = self.args
-        s = printer._print(s)
+        s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = "q^2" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
