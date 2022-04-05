@@ -322,6 +322,14 @@ def extend_PhaseSpaceFactorComplex() -> None:
     )
 
 
+def extend_PhaseSpaceFactorSWave() -> None:
+    from ampform.dynamics import PhaseSpaceFactorSWave
+
+    s, m_a, m_b = sp.symbols("s m_a m_b")
+    expr = PhaseSpaceFactorSWave(s, m_a, m_b)
+    _append_latex_doit_definition(expr, full_width=True)
+
+
 def extend_Phi() -> None:
     from ampform.kinematics import Phi
 
@@ -403,6 +411,26 @@ def extend_ThreeMomentum() -> None:
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
     _append_code_rendering(expr)
+
+
+def extend_chew_mandelstam_s_wave() -> None:
+    from ampform.dynamics import chew_mandelstam_s_wave
+
+    s, m_a, m_b = sp.symbols("s m_a m_b")
+    expr = chew_mandelstam_s_wave(s, m_a, m_b)
+    _append_to_docstring(
+        chew_mandelstam_s_wave,
+        Rf"""
+
+    .. math:: {sp.latex(expr)}
+        :class: full-width
+        :label: chew_mandelstam_s_wave
+
+    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
+
+    .. seealso:: :doc:`compwa-org:report/003`
+    """,
+    )
 
 
 def extend_formulate_clebsch_gordan_coefficients() -> None:
