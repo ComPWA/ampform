@@ -247,7 +247,7 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
         s = printer._print(s)
         subscript = _indices_to_subscript(_determine_indices(s))
         name = (
-            R"\rho^\mathrm{ac}" + subscript
+            R"\rho^\mathrm{eq}" + subscript
             if self._name is None
             else self._name
         )
