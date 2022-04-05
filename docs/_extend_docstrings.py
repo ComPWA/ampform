@@ -156,7 +156,7 @@ def extend_BoostZMatrix() -> None:
 
 
 def extend_BreakupMomentumSquared() -> None:
-    from ampform.dynamics import BreakupMomentumSquared
+    from ampform.dynamics.phasespace import BreakupMomentumSquared
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)
@@ -178,7 +178,10 @@ def extend_ComplexSqrt() -> None:
 
 
 def extend_EqualMassPhaseSpaceFactor() -> None:
-    from ampform.dynamics import EqualMassPhaseSpaceFactor, PhaseSpaceFactorAbs
+    from ampform.dynamics.phasespace import (
+        EqualMassPhaseSpaceFactor,
+        PhaseSpaceFactorAbs,
+    )
 
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
     expr = EqualMassPhaseSpaceFactor(s, m_a, m_b)
@@ -281,7 +284,7 @@ def extend_InvariantMass() -> None:
 
 
 def extend_PhaseSpaceFactor() -> None:
-    from ampform.dynamics import PhaseSpaceFactor
+    from ampform.dynamics.phasespace import PhaseSpaceFactor
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactor(s, m_a, m_b)
@@ -295,7 +298,7 @@ def extend_PhaseSpaceFactor() -> None:
 
 
 def extend_PhaseSpaceFactorAbs() -> None:
-    from ampform.dynamics import PhaseSpaceFactorAbs
+    from ampform.dynamics.phasespace import PhaseSpaceFactorAbs
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorAbs(s, m_a, m_b)
@@ -309,7 +312,7 @@ def extend_PhaseSpaceFactorAbs() -> None:
 
 
 def extend_PhaseSpaceFactorComplex() -> None:
-    from ampform.dynamics import PhaseSpaceFactorComplex
+    from ampform.dynamics.phasespace import PhaseSpaceFactorComplex
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = PhaseSpaceFactorComplex(s, m_a, m_b)
@@ -323,7 +326,7 @@ def extend_PhaseSpaceFactorComplex() -> None:
 
 
 def extend_PhaseSpaceFactorSWave() -> None:
-    from ampform.dynamics import PhaseSpaceFactorSWave
+    from ampform.dynamics.phasespace import PhaseSpaceFactorSWave
 
     s, m_a, m_b = sp.symbols("s m_a m_b")
     expr = PhaseSpaceFactorSWave(s, m_a, m_b)
@@ -414,7 +417,7 @@ def extend_ThreeMomentum() -> None:
 
 
 def extend_chew_mandelstam_s_wave() -> None:
-    from ampform.dynamics import chew_mandelstam_s_wave
+    from ampform.dynamics.phasespace import chew_mandelstam_s_wave
 
     s, m_a, m_b = sp.symbols("s m_a m_b")
     expr = chew_mandelstam_s_wave(s, m_a, m_b)
