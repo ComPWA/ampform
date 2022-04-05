@@ -1,6 +1,16 @@
 # pylint: disable=abstract-method, arguments-differ, protected-access
 # pylint: disable=unbalanced-tuple-unpacking
-"""Different phase space factors to handle analytic continuation."""
+"""Different parametrizations of phase space factors.
+
+Phase space factors are computed by integrating over the phase space element
+given by Equation (49.12) in :pdg-review:`2021; Kinematics; p.2`. See also
+Equation (50.9) on :pdg-review:`2021; Resonances; p.6`. This integral is not
+always easy to solve, which leads to different parametrizations.
+
+This module provides several parametrizations. They all comply with the
+`PhaseSpaceFactorProtocol`, so that they can be used in parametrizations like
+`.EnergyDependentWidth`.
+"""
 from __future__ import annotations
 
 import re
@@ -28,8 +38,16 @@ class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by `.EnergyDependentWidth`.
 
     Use this `~typing.Protocol` when defining other implementations of a phase
-    space factor. Compare for instance `.PhaseSpaceFactor` and
-    `.EqualMassPhaseSpaceFactor`.
+    space factor. Some implementations:
+
+    - `PhaseSpaceFactor`
+    - `PhaseSpaceFactorAbs`
+    - `PhaseSpaceFactorComplex`
+    - `PhaseSpaceFactorSWave`
+    - `EqualMassPhaseSpaceFactor`
+
+    Even `BreakupMomentumSquared` and :func:`chew_mandelstam_s_wave` comply
+    with this protocol, but are technically speaking not phase space factors.
     """
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
@@ -51,11 +69,13 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
-    frame of :math:`R`.
+    frame of :math:`R`. See Equation (49.17) on :pdg-review:`2021; Kinematics;
+    p.3`, as well as Equation (50.5) on :pdg-review:`2021; Resonances; p.5`.
 
     It's up to the caller in which way to take the square root of this break-up
-    momentum. See :doc:`/usage/dynamics/analytic-continuation` and
-    `.ComplexSqrt`.
+    momentum, because :math:`q^2` can have negative values for non-zero
+    :math:`m_a,m_b`. In this case, one may want to use `.ComplexSqrt` instead
+    of the standard :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
     """
 
     is_commutative = True
@@ -109,8 +129,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
     :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
 
     This version of the phase space factor is often denoted as
-    :math:`\hat{\rho}` and is used in analytic continuation
-    (`.EqualMassPhaseSpaceFactor`).
+    :math:`\hat{\rho}` and is used in `.EqualMassPhaseSpaceFactor`.
     """
 
     is_commutative = True
