@@ -218,6 +218,36 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return Rf"{name}\left({s}\right)"
 
 
+@implement_doit_method
+class PhaseSpaceFactorSWave(UnevaluatedExpression):
+    r"""Phase space factor using :func:`chew_mandelstam_s_wave`.
+
+    This `PhaseSpaceFactor` provides an analytic continuation for decay
+    products with both equal and unequal masses (compare
+    `EqualMassPhaseSpaceFactor`).
+    """
+
+    is_commutative = True
+
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorSWave:
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        chew_mandelstam = chew_mandelstam_s_wave(s, m_a, m_b)
+        return -sp.I * chew_mandelstam
+
+    def _latex(self, printer: LatexPrinter, *args) -> str:
+        s = printer._print(self.args[0])
+        subscript = _indices_to_subscript(_determine_indices(s))
+        name = (
+            R"\rho^\mathrm{CM}" + subscript
+            if self._name is None
+            else self._name
+        )
+        return Rf"{name}\left({s}\right)"
+
+
 def chew_mandelstam_s_wave(s, m_a, m_b):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
     q_squared = BreakupMomentumSquared(s, m_a, m_b)

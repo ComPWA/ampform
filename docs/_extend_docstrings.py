@@ -322,6 +322,14 @@ def extend_PhaseSpaceFactorComplex() -> None:
     )
 
 
+def extend_PhaseSpaceFactorSWave() -> None:
+    from ampform.dynamics import PhaseSpaceFactorSWave
+
+    s, m_a, m_b = sp.symbols("s m_a m_b")
+    expr = PhaseSpaceFactorSWave(s, m_a, m_b)
+    _append_latex_doit_definition(expr, full_width=True)
+
+
 def extend_Phi() -> None:
     from ampform.kinematics import Phi
 
@@ -417,6 +425,8 @@ def extend_chew_mandelstam_s_wave() -> None:
     .. math:: {sp.latex(expr)}
         :class: full-width
         :label: chew_mandelstam_s_wave
+
+    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
 
     .. seealso:: :doc:`compwa-org:report/003`
     """,
