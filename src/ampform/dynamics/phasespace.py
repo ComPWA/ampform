@@ -132,6 +132,36 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
 
 @implement_doit_method
+class PhaseSpaceFactorComplex(UnevaluatedExpression):
+    """Phase-space factor with `.ComplexSqrt`.
+
+    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
+    """
+
+    is_commutative = True
+
+    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorComplex:
+        return create_expression(cls, s, m_a, m_b, **hints)
+
+    def evaluate(self) -> sp.Expr:
+        s, m_a, m_b = self.args
+        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        denominator = _phase_space_factor_denominator(s)
+        return ComplexSqrt(q_squared) / denominator
+
+    def _latex(self, printer: LatexPrinter, *args) -> str:
+        s = printer._print(self.args[0])
+        subscript = _indices_to_subscript(_determine_indices(s))
+        name = (
+            R"\rho^\mathrm{c}" + subscript
+            if self._name is None
+            else self._name
+        )
+        return Rf"{name}\left({s}\right)"
+
+
+@implement_doit_method
 class PhaseSpaceFactorSWave(UnevaluatedExpression):
     r"""Phase space factor using :func:`chew_mandelstam_s_wave`.
 
@@ -212,36 +242,6 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
         subscript = _indices_to_subscript(_determine_indices(s))
         name = (
             R"\rho^\mathrm{eq}" + subscript
-            if self._name is None
-            else self._name
-        )
-        return Rf"{name}\left({s}\right)"
-
-
-@implement_doit_method
-class PhaseSpaceFactorComplex(UnevaluatedExpression):
-    """Phase-space factor with `.ComplexSqrt`.
-
-    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
-    defined behavior for defined for negative input values.
-    """
-
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorComplex:
-        return create_expression(cls, s, m_a, m_b, **hints)
-
-    def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        q_squared = BreakupMomentumSquared(s, m_a, m_b)
-        denominator = _phase_space_factor_denominator(s)
-        return ComplexSqrt(q_squared) / denominator
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
-        name = (
-            R"\rho^\mathrm{c}" + subscript
             if self._name is None
             else self._name
         )
