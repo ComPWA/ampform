@@ -33,7 +33,16 @@ class PhaseSpaceFactorProtocol(Protocol):
     """
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
-        """Expected `~inspect.signature`."""
+        """Expected `~inspect.signature`.
+
+        Args:
+            s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
+                Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
+                invariant mass of decaying particle :math:`R`.
+
+            m_a: Mass of decay product :math:`a`.
+            m_b: Mass of decay product :math:`b`.
+        """
 
 
 @implement_doit_method
@@ -43,14 +52,6 @@ class BreakupMomentumSquared(UnevaluatedExpression):
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
     absolute value of the momentum of both :math:`a` and :math:`b` in the rest
     frame of :math:`R`.
-
-    Args:
-        s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
-            Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
-            invariant mass of decaying particle :math:`R`.
-
-        m_a: Mass of decay product :math:`a`.
-        m_b: Mass of decay product :math:`b`.
 
     It's up to the caller in which way to take the square root of this break-up
     momentum. See :doc:`/usage/dynamics/analytic-continuation` and
