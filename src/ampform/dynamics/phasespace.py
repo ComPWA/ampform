@@ -53,7 +53,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         m_b: Mass of decay product :math:`b`.
 
     It's up to the caller in which way to take the square root of this break-up
-    momentum.See :doc:`/usage/dynamics/analytic-continuation` and
+    momentum. See :doc:`/usage/dynamics/analytic-continuation` and
     `.ComplexSqrt`.
     """
 
