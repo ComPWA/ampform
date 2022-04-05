@@ -154,7 +154,7 @@ class PhaseSpaceFactorProtocol(Protocol):
 
     Use this `~typing.Protocol` when defining other implementations of a phase
     space factor. Compare for instance `.PhaseSpaceFactor` and
-    `.PhaseSpaceFactorAnalytic`.
+    `.EqualMassPhaseSpaceFactor`.
     """
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
@@ -198,7 +198,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     This version of the phase space factor is often denoted as
     :math:`\hat{\rho}` and is used in analytic continuation
-    (`.PhaseSpaceFactorAnalytic`).
+    (`.EqualMassPhaseSpaceFactor`).
     """
 
     is_commutative = True
@@ -221,7 +221,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
 
 @implement_doit_method
-class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
+class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
@@ -233,7 +233,7 @@ class PhaseSpaceFactorAnalytic(UnevaluatedExpression):
 
     is_commutative = True
 
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorAnalytic:
+    def __new__(cls, s, m_a, m_b, **hints) -> EqualMassPhaseSpaceFactor:
         return create_expression(cls, s, m_a, m_b, **hints)
 
     def evaluate(self) -> sp.Expr:

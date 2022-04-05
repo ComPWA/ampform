@@ -7,8 +7,8 @@ from qrules import ParticleCollection
 from ampform.dynamics import (
     BlattWeisskopfSquared,
     EnergyDependentWidth,
+    EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
-    PhaseSpaceFactorAnalytic,
 )
 from ampform.helicity import HelicityModel
 
@@ -58,10 +58,10 @@ class TestEnergyDependentWidth:
             m_b=m_b,
             angular_momentum=angular_momentum,
             meson_radius=d,
-            phsp_factor=PhaseSpaceFactorAnalytic,
+            phsp_factor=EqualMassPhaseSpaceFactor,
             name="Gamma_1",
         )
-        assert width.phsp_factor is PhaseSpaceFactorAnalytic
+        assert width.phsp_factor is EqualMassPhaseSpaceFactor
         assert width._name == "Gamma_1"
 
 
