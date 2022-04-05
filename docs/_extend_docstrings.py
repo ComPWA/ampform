@@ -405,6 +405,24 @@ def extend_ThreeMomentum() -> None:
     _append_code_rendering(expr)
 
 
+def extend_chew_mandelstam_s_wave() -> None:
+    from ampform.dynamics import chew_mandelstam_s_wave
+
+    s, m_a, m_b = sp.symbols("s m_a m_b")
+    expr = chew_mandelstam_s_wave(s, m_a, m_b)
+    _append_to_docstring(
+        chew_mandelstam_s_wave,
+        Rf"""
+
+    .. math:: {sp.latex(expr)}
+        :class: full-width
+        :label: chew_mandelstam_s_wave
+
+    .. seealso:: :doc:`compwa-org:report/003`
+    """,
+    )
+
+
 def extend_formulate_clebsch_gordan_coefficients() -> None:
     from ampform.helicity import formulate_clebsch_gordan_coefficients
 

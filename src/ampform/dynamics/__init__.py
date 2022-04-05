@@ -218,6 +218,30 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return Rf"{name}\left({s}\right)"
 
 
+def chew_mandelstam_s_wave(s, m_a, m_b):
+    """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
+    q_squared = BreakupMomentumSquared(s, m_a, m_b)
+    q = ComplexSqrt(q_squared)
+    left_term = sp.Mul(
+        2 * q / sp.sqrt(s),
+        sp.log(
+            (m_a**2 + m_b**2 - s + 2 * sp.sqrt(s) * q) / (2 * m_a * m_b)
+        ),
+        evaluate=False,
+    )
+    right_term = (
+        (m_a**2 - m_b**2)
+        * (1 / s - 1 / (m_a + m_b) ** 2)
+        * sp.log(m_a / m_b)
+    )
+    # evaluate=False in order to keep same style as PDG
+    return sp.Mul(
+        1 / (16 * sp.pi**2),
+        left_term - right_term,
+        evaluate=False,
+    )
+
+
 @implement_doit_method
 class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
