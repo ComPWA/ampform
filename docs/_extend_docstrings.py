@@ -171,7 +171,7 @@ def extend_ComplexSqrt() -> None:
     _append_to_docstring(
         ComplexSqrt,
         Rf"""
-    .. math:: {sp.latex(expr)} = {sp.latex(expr.evaluate())}
+    .. math:: {sp.latex(expr)} = {sp.latex(expr.get_definition())}
         :label: ComplexSqrt
     """,
     )

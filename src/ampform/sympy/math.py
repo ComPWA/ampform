@@ -4,17 +4,19 @@
 """A collection of basic math operations, used in `ampform.dynamics`."""
 from __future__ import annotations
 
+from typing import overload
+
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
 from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.printer import Printer
 from sympy.printing.pycode import PythonCodePrinter
 
-from . import make_commutative
+from . import NumPyPrintable, create_expression, make_commutative
 
 
 @make_commutative
-class ComplexSqrt(sp.Expr):
+class ComplexSqrt(NumPyPrintable):
     """Square root that returns positive imaginary values for negative input.
 
     A special version :func:`~sympy.functions.elementary.miscellaneous.sqrt`
@@ -24,23 +26,20 @@ class ComplexSqrt(sp.Expr):
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
 
+    @overload
+    def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr:  # type: ignore[misc]
+        ...
+
+    @overload
     def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt:
+        ...
+
+    def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
-        expr = sp.Expr.__new__(cls, x, *args, **kwargs)
-        if hasattr(x, "free_symbols") and not x.free_symbols:
-            return expr.evaluate()
+        expr = create_expression(cls, x, *args, **kwargs)
+        if isinstance(x, sp.Number):
+            return expr.get_definition()
         return expr
-
-    def evaluate(self) -> sp.Expr:
-        x = self.args[0]
-        return self._evaluate_complex(x)  # type: ignore[arg-type]
-
-    @staticmethod
-    def _evaluate_complex(x: sp.Expr) -> sp.Piecewise:
-        return sp.Piecewise(
-            (sp.I * sp.sqrt(-x), x < 0),
-            (sp.sqrt(x), True),
-        )
 
     def _latex(self, printer: Printer, *args) -> str:
         x = printer._print(self.args[0])
@@ -59,9 +58,22 @@ class ComplexSqrt(sp.Expr):
         )
 
     def __print_complex(self, printer: Printer) -> str:
-        x = self.args[0]
-        expr = self._evaluate_complex(x)  # type: ignore[arg-type]
+        expr = self.get_definition()
         return printer._print(expr)
+
+    def get_definition(self) -> sp.Piecewise:
+        """Get a symbolic definition for this expression class.
+
+        .. note:: This class is `.NumPyPrintable`, so should not have an
+            :meth:`~.UnevaluatedExpression.evaluate` method (in order to block
+            :meth:`~sympy.core.basic.Basic.doit`). This method serves as an
+            equivalent to that.
+        """
+        x: sp.Expr = self.args[0]  # type: ignore[assignment]
+        return sp.Piecewise(
+            (sp.I * sp.sqrt(-x), x < 0),
+            (sp.sqrt(x), True),
+        )
 
 
 Lambdifier.builtin_functions_different["ComplexSqrt"] = "sqrt"
