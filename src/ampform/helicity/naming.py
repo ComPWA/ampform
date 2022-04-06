@@ -316,15 +316,18 @@ def generate_transition_label(transition: StateTransition) -> str:
     )
 
 
-def get_helicity_angle_label(
+def get_helicity_angle_symbols(
     topology: Topology, state_id: int
-) -> tuple[str, str]:
+) -> tuple[sp.Symbol, sp.Symbol]:
     r"""Generate a nested helicity angle label for :math:`\phi,\theta`.
 
     See :func:`get_boost_chain_suffix` for the meaning of the suffix.
     """
     suffix = get_boost_chain_suffix(topology, state_id)
-    return f"phi{suffix}", f"theta{suffix}"
+    return (
+        sp.Symbol(f"phi{suffix}", real=True),
+        sp.Symbol(f"theta{suffix}", real=True),
+    )
 
 
 @lru_cache(maxsize=None)

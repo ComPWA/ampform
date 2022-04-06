@@ -2,7 +2,13 @@
 # pylint: disable=arguments-differ, no-member, protected-access, too-many-lines
 # pylint: disable=unused-argument, W0223
 # https://stackoverflow.com/a/22224042
-"""Classes and functions for relativistic four-momentum kinematics."""
+"""Classes and functions for relativistic four-momentum kinematics.
+
+.. autolink-preface::
+
+    import sympy as sp
+    from ampform.kinematics import create_four_momentum_symbols
+"""
 from __future__ import annotations
 
 import itertools
@@ -26,7 +32,7 @@ from ampform.helicity.decay import (
     list_decay_chain_ids,
 )
 from ampform.helicity.naming import (
-    get_helicity_angle_label,
+    get_helicity_angle_symbols,
     get_helicity_suffix,
 )
 from ampform.sympy import (
@@ -54,8 +60,8 @@ class HelicityAdapter:
     The `.create_expressions` method forms the bridge between four-momentum
     data for the decay you are studying and the kinematic variables that are in
     the `.HelicityModel`. These are invariant mass (see
-    :func:`.get_invariant_mass_label`) and the :math:`\theta` and :math:`\phi`
-    helicity angles (see :func:`.get_helicity_angle_label`).
+    :func:`.get_invariant_mass_symbol`) and the :math:`\theta` and :math:`\phi`
+    helicity angles (see :func:`.get_helicity_angle_symbols`).
     """
 
     def __init__(
@@ -108,7 +114,7 @@ class HelicityAdapter:
 
     def create_expressions(
         self, generate_wigner_angles: bool = False
-    ) -> dict[str, sp.Expr]:
+    ) -> dict[sp.Symbol, sp.Expr]:
         output = {}
         for topology in self.__topologies:
             momenta = create_four_momentum_symbols(topology)
@@ -841,13 +847,13 @@ class _ArraySize(NumPyPrintable):
 
 def compute_helicity_angles(
     four_momenta: Mapping[int, sp.Expr], topology: Topology
-) -> dict[str, sp.Expr]:
+) -> dict[sp.Symbol, sp.Expr]:
     """Formulate expressions for all helicity angles in a topology.
 
     Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles
     appearing in a given `~qrules.topology.Topology`. The expressions are given
-    in terms of `FourMomenta` The expressions returned as values in a
-    `dict`, where the keys are defined by :func:`.get_helicity_angle_label`.
+    in terms of `FourMomenta` The expressions returned as values in a `dict`,
+    where the keys are defined by :func:`.get_helicity_angle_symbols`.
 
     Example
     -------
@@ -856,7 +862,8 @@ def compute_helicity_angles(
     >>> topology = topologies[0]
     >>> four_momenta = create_four_momentum_symbols(topology)
     >>> angles = compute_helicity_angles(four_momenta, topology)
-    >>> angles["theta_0"]
+    >>> theta_symbol = sp.Symbol("theta_0", real=True)
+    >>> angles[theta_symbol]
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
@@ -869,8 +876,8 @@ def compute_helicity_angles(
 
     def __recursive_helicity_angles(  # pylint: disable=too-many-locals
         four_momenta: Mapping[int, sp.Expr], node_id: int
-    ) -> dict[str, sp.Expr]:
-        helicity_angles: dict[str, sp.Expr] = {}
+    ) -> dict[sp.Symbol, sp.Expr]:
+        helicity_angles: dict[sp.Symbol, sp.Expr] = {}
         child_state_ids = sorted(
             topology.get_edge_ids_outgoing_from_node(node_id)
         )
@@ -881,11 +888,9 @@ def compute_helicity_angles(
             if is_opposite_helicity_state(topology, state_id):
                 state_id = child_state_ids[1]
             four_momentum: sp.Expr = four_momenta[state_id]
-            phi_label, theta_label = get_helicity_angle_label(
-                topology, state_id
-            )
-            helicity_angles[phi_label] = Phi(four_momentum)
-            helicity_angles[theta_label] = Theta(four_momentum)
+            phi, theta = get_helicity_angle_symbols(topology, state_id)
+            helicity_angles[phi] = Phi(four_momentum)
+            helicity_angles[theta] = Theta(four_momentum)
         for state_id in child_state_ids:
             edge = topology.edges[state_id]
             if edge.ending_node_id is not None:
@@ -900,15 +905,15 @@ def compute_helicity_angles(
                     )
 
                     # boost all of those momenta into this new subsystem
-                    phi = Phi(four_momentum)
-                    theta = Theta(four_momentum)
+                    phi_expr = Phi(four_momentum)
+                    theta_expr = Theta(four_momentum)
                     p3_norm = three_momentum_norm(four_momentum)
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool: dict[int, sp.Expr] = {
                         k: ArrayMultiplication(
                             BoostZMatrix(beta, n_events),
-                            RotationYMatrix(-theta, n_events),
-                            RotationZMatrix(-phi, n_events),
+                            RotationYMatrix(-theta_expr, n_events),
+                            RotationZMatrix(-phi_expr, n_events),
                             p,
                         )
                         for k, p in four_momenta.items()
@@ -918,11 +923,9 @@ def compute_helicity_angles(
                     # register current angle variables
                     if is_opposite_helicity_state(topology, state_id):
                         state_id = get_sibling_state_id(topology, state_id)
-                    phi_label, theta_label = get_helicity_angle_label(
-                        topology, state_id
-                    )
-                    helicity_angles[phi_label] = Phi(four_momentum)
-                    helicity_angles[theta_label] = Theta(four_momentum)
+                    phi, theta = get_helicity_angle_symbols(topology, state_id)
+                    helicity_angles[phi] = Phi(four_momentum)
+                    helicity_angles[theta] = Theta(four_momentum)
 
                     # call next recursion
                     angles = __recursive_helicity_angles(
@@ -950,28 +953,28 @@ def _get_number_of_events(
 
 def compute_invariant_masses(
     four_momenta: FourMomenta, topology: Topology
-) -> dict[str, sp.Expr]:
+) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
         raise ValueError(
             f"Momentum IDs {set(four_momenta)} do not match "
             f"final state edge IDs {set(topology.outgoing_edge_ids)}"
         )
-    invariant_masses: dict[str, sp.Expr] = {}
+    invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
         total_momentum = ArraySum(
             *[four_momenta[i] for i in attached_state_ids]
         )
-        invariant_mass = InvariantMass(total_momentum)
-        name = get_invariant_mass_label(topology, state_id)
-        invariant_masses[name] = invariant_mass
+        expr = InvariantMass(total_momentum)
+        symbol = get_invariant_mass_symbol(topology, state_id)
+        invariant_masses[symbol] = expr
     return invariant_masses
 
 
 def compute_wigner_angles(
     topology: Topology, momenta: FourMomenta, state_id: int
-) -> dict[str, sp.Expr]:
+) -> dict[sp.Symbol, sp.Expr]:
     """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
 
     Implementation of (B.2-4) in
@@ -986,14 +989,14 @@ def compute_wigner_angles(
     z_x = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 1))
     z_y = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 2))
     z_z = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 3))
-    alpha = sp.atan2(z_y, z_x)
-    beta = sp.acos(z_z)
-    gamma = sp.atan2(y_z, -x_z)
     suffix = get_helicity_suffix(topology, state_id)
+    alpha, beta, gamma = sp.symbols(
+        f"alpha{suffix} beta{suffix} gamma{suffix}", real=True
+    )
     return {
-        f"alpha{suffix}": alpha,
-        f"beta{suffix}": beta,
-        f"gamma{suffix}": gamma,
+        alpha: sp.atan2(z_y, z_x),
+        beta: sp.acos(z_z),
+        gamma: sp.atan2(y_z, -x_z),
     }
 
 
@@ -1074,7 +1077,7 @@ def get_four_momentum_sum(
     return ArraySum(*[momenta[i] for i in sub_momenta_ids])
 
 
-def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
+def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
     """Generate an invariant mass label for a state (edge on a topology).
 
     Example
@@ -1085,14 +1088,15 @@ def get_invariant_mass_label(topology: Topology, state_id: int) -> str:
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
-    >>> get_invariant_mass_label(topologies[0], state_id=5)
-    'm_034'
+    >>> get_invariant_mass_symbol(topologies[0], state_id=5)
+    m_034
 
-    Naturally, the 'invariant' mass label for a final state is just the mass of the
-    state itself:
+    Naturally, the 'invariant' mass label for a final state is just the mass of
+    the state itself:
 
-    >>> get_invariant_mass_label(topologies[0], state_id=1)
-    'm_1'
+    >>> get_invariant_mass_symbol(topologies[0], state_id=1)
+    m_1
     """
     final_state_ids = determine_attached_final_state(topology, state_id)
-    return f"m_{''.join(map(str, sorted(final_state_ids)))}"
+    mass_name = f"m_{''.join(map(str, sorted(final_state_ids)))}"
+    return sp.Symbol(mass_name, real=True)
