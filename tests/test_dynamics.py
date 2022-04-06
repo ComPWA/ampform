@@ -9,6 +9,8 @@ from ampform.dynamics import (
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
+    PhaseSpaceFactorSWave,
+    relativistic_breit_wigner_with_ff,
 )
 from ampform.helicity import HelicityModel
 
@@ -65,6 +67,31 @@ class TestEnergyDependentWidth:
         )
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
         assert width._name == "Gamma_1"
+
+    def test_phsp_factor(self):
+        # https://github.com/ComPWA/ampform/issues/267
+        m, m0, w0, m1, m2 = sp.symbols("m m0 Gamma0 m1 m2")
+        width = EnergyDependentWidth(
+            s=m**2,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m1,
+            m_b=m2,
+            angular_momentum=0,
+            meson_radius=1,
+            phsp_factor=PhaseSpaceFactor,
+        )
+        width_chew_mandelstam = EnergyDependentWidth(
+            s=m**2,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m1,
+            m_b=m2,
+            angular_momentum=0,
+            meson_radius=1,
+            phsp_factor=PhaseSpaceFactorSWave,
+        )
+        assert width.doit() != width_chew_mandelstam.doit()
 
 
 def test_generate(  # pylint: disable=too-many-locals
@@ -134,6 +161,32 @@ def test_generate(  # pylint: disable=too-many-locals
     amplitude = round_nested(amplitude, n_decimals=2)
     a = str(amplitude)
     assert a == "0.06/(m**2 - 0.98 + 0.06*I*sqrt(m**2 - 0.07)/m)"
+
+
+def test_relativistic_breit_wigner_with_ff_phsp_factor():
+    # https://github.com/ComPWA/ampform/issues/267
+    m, m0, w0, m1, m2 = sp.symbols("m m0 Gamma0 m1 m2")
+    breit_wigner = relativistic_breit_wigner_with_ff(
+        s=m**2,
+        mass0=m0,
+        gamma0=w0,
+        m_a=m1,
+        m_b=m2,
+        angular_momentum=0,
+        meson_radius=1,
+        phsp_factor=PhaseSpaceFactor,
+    )
+    breit_wigner_chew_mandelstam = relativistic_breit_wigner_with_ff(
+        s=m**2,
+        mass0=m0,
+        gamma0=w0,
+        m_a=m1,
+        m_b=m2,
+        angular_momentum=0,
+        meson_radius=1,
+        phsp_factor=PhaseSpaceFactorSWave,
+    )
+    assert breit_wigner.doit() != breit_wigner_chew_mandelstam.doit()
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
