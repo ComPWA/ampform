@@ -1099,4 +1099,4 @@ def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
     """
     final_state_ids = determine_attached_final_state(topology, state_id)
     mass_name = f"m_{''.join(map(str, sorted(final_state_ids)))}"
-    return sp.Symbol(mass_name, real=True)
+    return sp.Symbol(mass_name, nonnegative=True)

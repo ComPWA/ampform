@@ -41,8 +41,8 @@ class TestRelativisticBreitWignerBuilder:
 
         bw, parameters = builder(particle, variable_set)
         s = variable_set.incoming_state_mass**2
-        m0 = sp.Symbol("m_{N}")
-        w0 = sp.Symbol(R"\Gamma_{N}")
+        m0 = sp.Symbol("m_{N}", nonnegative=True)
+        w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
         assert bw == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)
         assert set(parameters) == {m0, w0}
         assert parameters[m0] == particle.mass
@@ -53,7 +53,7 @@ class TestRelativisticBreitWignerBuilder:
         m1 = variable_set.outgoing_state_mass1
         m2 = variable_set.outgoing_state_mass2
         L = variable_set.angular_momentum  # noqa: N806
-        d = sp.Symbol(R"d_{N}")
+        d = sp.Symbol(R"d_{N}", positive=True)
         form_factor = formulate_form_factor(
             s, m1, m2, angular_momentum=L, meson_radius=d
         )
@@ -72,12 +72,12 @@ class TestRelativisticBreitWignerBuilder:
 
         bw, parameters = builder(particle, variable_set)
         s = variable_set.incoming_state_mass**2
-        m0 = sp.Symbol("m_{N}")
-        w0 = sp.Symbol(R"\Gamma_{N}")
+        m0 = sp.Symbol("m_{N}", nonnegative=True)
+        w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
         m1 = variable_set.outgoing_state_mass1
         m2 = variable_set.outgoing_state_mass2
         L = variable_set.angular_momentum  # noqa: N806
-        d = sp.Symbol(R"d_{N}")
+        d = sp.Symbol(R"d_{N}", positive=True)
         w = EnergyDependentWidth(
             s, m0, w0, m_a=m1, m_b=m2, angular_momentum=L, meson_radius=d
         )
@@ -90,7 +90,6 @@ class TestRelativisticBreitWignerBuilder:
         builder.form_factor = True
         bw_with_ff, parameters = builder(particle, variable_set)
         L = variable_set.angular_momentum  # noqa: N806
-        d = sp.Symbol(R"d_{N}")
         form_factor = formulate_form_factor(
             s, m1, m2, angular_momentum=L, meson_radius=d
         )

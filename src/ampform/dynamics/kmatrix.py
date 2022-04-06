@@ -75,20 +75,20 @@ class RelativisticKMatrix(TMatrix):
         phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
             "phsp_factor", PhaseSpaceFactor
         )
-        s = sp.Symbol("s")
-        m_a = sp.IndexedBase("m_a")
-        m_b = sp.IndexedBase("m_b")
+        s = sp.Symbol("s", nonnegative=True)
+        m_a = sp.IndexedBase("m_a", nonnegative=True)
+        m_b = sp.IndexedBase("m_b", nonnegative=True)
         return t_matrix.xreplace(
             {
                 k_matrix[i, j]: cls.parametrization(
                     i=i,
                     j=j,
                     s=s,
-                    pole_position=sp.IndexedBase("m"),
-                    pole_width=sp.IndexedBase("Gamma"),
+                    pole_position=sp.IndexedBase("m", nonnegative=True),
+                    pole_width=sp.IndexedBase("Gamma", nonnegative=True),
                     m_a=m_a,
                     m_b=m_b,
-                    residue_constant=sp.IndexedBase("gamma"),
+                    residue_constant=sp.IndexedBase("gamma", nonnegative=True),
                     n_poles=n_poles,
                     pole_id=sp.Symbol("R", integer=True, positive=True),
                     angular_momentum=kwargs.get("angular_momentum", 0),
@@ -168,10 +168,10 @@ class NonRelativisticKMatrix(TMatrix):
                 k_matrix[i, j]: cls.parametrization(
                     i=i,
                     j=j,
-                    s=sp.Symbol("s"),
-                    pole_position=sp.IndexedBase("m"),
-                    pole_width=sp.IndexedBase("Gamma"),
-                    residue_constant=sp.IndexedBase("gamma"),
+                    s=sp.Symbol("s", nonnegative=True),
+                    pole_position=sp.IndexedBase("m", nonnegative=True),
+                    pole_width=sp.IndexedBase("Gamma", nonnegative=True),
+                    residue_constant=sp.IndexedBase("gamma", nonnegative=True),
                     n_poles=n_poles,
                     pole_id=sp.Symbol("R", integer=True, positive=True),
                 )
@@ -226,10 +226,10 @@ class NonRelativisticPVector(TMatrix):
         f_vector, k_matrix, p_vector = cls._create_matrices(n_channels)
         if not parametrize:
             return f_vector
-        s = sp.Symbol("s")
-        pole_position = sp.IndexedBase("m")
-        pole_width = sp.IndexedBase("Gamma")
-        residue_constant = sp.IndexedBase("gamma")
+        s = sp.Symbol("s", nonnegative=True)
+        pole_position = sp.IndexedBase("m", nonnegative=True)
+        pole_width = sp.IndexedBase("Gamma", nonnegative=True)
+        residue_constant = sp.IndexedBase("gamma", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         return f_vector.xreplace(
             {
@@ -250,11 +250,11 @@ class NonRelativisticPVector(TMatrix):
             {
                 p_vector[i]: cls.parametrization(
                     i=i,
-                    s=sp.Symbol("s"),
+                    s=sp.Symbol("s", nonnegative=True),
                     pole_position=pole_position,
                     pole_width=pole_width,
                     residue_constant=residue_constant,
-                    beta_constant=sp.IndexedBase("beta"),
+                    beta_constant=sp.IndexedBase("beta", nonnegative=True),
                     n_poles=n_poles,
                     pole_id=pole_id,
                 )
@@ -329,12 +329,12 @@ class RelativisticPVector(TMatrix):
         phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
             "phsp_factor", PhaseSpaceFactor
         )
-        s = sp.Symbol("s")
-        pole_position = sp.IndexedBase("m")
-        pole_width = sp.IndexedBase("Gamma")
-        residue_constant = sp.IndexedBase("gamma")
-        m_a = sp.IndexedBase("m_a")
-        m_b = sp.IndexedBase("m_b")
+        s = sp.Symbol("s", nonnegative=True)
+        pole_position = sp.IndexedBase("m", nonnegative=True)
+        pole_width = sp.IndexedBase("Gamma", nonnegative=True)
+        residue_constant = sp.IndexedBase("gamma", nonnegative=True)
+        m_a = sp.IndexedBase("m_a", nonnegative=True)
+        m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         angular_momentum = kwargs.get("angular_momentum", 0)
         meson_radius = kwargs.get("meson_radius", 1)
@@ -368,7 +368,7 @@ class RelativisticPVector(TMatrix):
                         pole_width=pole_width,
                         m_a=m_a,
                         m_b=m_b,
-                        beta_constant=sp.IndexedBase("beta"),
+                        beta_constant=sp.IndexedBase("beta", nonnegative=True),
                         residue_constant=residue_constant,
                         n_poles=n_poles,
                         pole_id=pole_id,
