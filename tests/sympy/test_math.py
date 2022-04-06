@@ -5,11 +5,25 @@ import sympy as sp
 
 from ampform.sympy.math import ComplexSqrt
 
+a, b = sp.symbols("a b")
+
 
 class TestComplexSqrt:
-    def test_evaluate(self):
+    @pytest.mark.parametrize(
+        "arg",
+        [
+            sp.Symbol("x"),
+            sp.Symbol("x", real=True),
+            sp.Symbol("x", positive=True),
+            a + b**2,
+        ],
+    )
+    def test_blocked_doit_for_expressions(self, arg):
+        assert ComplexSqrt(arg).doit() == ComplexSqrt(arg)
+
+    def test_get_definition(self):
         x = sp.Symbol("x")
-        expr = ComplexSqrt(x).evaluate()
+        expr = ComplexSqrt(x).get_definition()
         assert expr == sp.Piecewise(
             (sp.I * sp.sqrt(-x), x < 0),
             (sp.sqrt(x), True),
