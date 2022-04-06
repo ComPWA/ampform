@@ -39,7 +39,7 @@ class TwoBodyDecay:
        1-to-2 body decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
-       `.get_helicity_angle_label`, `.formulate_wigner_d`, and
+       `.get_helicity_angle_symbols`, `.formulate_wigner_d`, and
        `.formulate_clebsch_gordan_coefficients`).
 
     3. the `.TwoBodyDecay` is hashable, so that it can be used as a key (see

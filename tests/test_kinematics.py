@@ -62,7 +62,7 @@ def topology_and_momentum_symbols(
 @pytest.fixture(scope="session")
 def helicity_angles(
     topology_and_momentum_symbols: tuple[Topology, FourMomenta]
-) -> dict[str, sp.Expr]:
+) -> dict[sp.Symbol, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
 
@@ -543,11 +543,12 @@ def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
     topology_and_momentum_symbols: tuple[Topology, FourMomenta],
     angle_name: str,
     expected_values: np.ndarray,
-    helicity_angles: dict[str, sp.Expr],
+    helicity_angles: dict[sp.Symbol, sp.Expr],
 ):
     _, momentum_symbols = topology_and_momentum_symbols
     four_momenta = data_sample.values()
-    expr = helicity_angles[angle_name]
+    angle_symbol = sp.Symbol(angle_name, real=True)
+    expr = helicity_angles[angle_symbol]
     np_angle = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=use_cse)
     computed = np_angle(*four_momenta)
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
@@ -558,7 +559,8 @@ def test_compute_invariant_masses_names(
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
-    assert set(invariant_masses) == {
+    mass_names = set(map(str, invariant_masses))
+    assert set(mass_names) == {
         "m_0",
         "m_1",
         "m_2",
@@ -577,7 +579,8 @@ def test_compute_invariant_masses_single_mass(
     momentum_values = data_sample.values()
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
     for i in topology.outgoing_edge_ids:
-        expr = invariant_masses[f"m_{i}"]
+        symbol = sp.Symbol(f"m_{i}", real=True)
+        expr = invariant_masses[symbol]
         np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
         expected = __compute_mass(data_sample[i])
         computed = np_expr(*momentum_values)
@@ -594,7 +597,8 @@ def test_compute_invariant_masses(
     momentum_values = data_sample.values()
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
 
-    expr = invariant_masses[mass_name]
+    mass_symbol = sp.Symbol(mass_name, real=True)
+    expr = invariant_masses[mass_symbol]
     np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np.average(np_expr(*momentum_values))
     indices = map(int, mass_name[2:])

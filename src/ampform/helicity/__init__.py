@@ -47,7 +47,7 @@ from ampform.dynamics.builder import (
     TwoBodyKinematicVariableSet,
     create_non_dynamic,
 )
-from ampform.kinematics import HelicityAdapter, get_invariant_mass_label
+from ampform.kinematics import HelicityAdapter, get_invariant_mass_symbol
 from ampform.sympy import PoolSum
 
 from .decay import (
@@ -65,7 +65,7 @@ from .naming import (
     HelicityAmplitudeNameGenerator,
     NameGenerator,
     generate_transition_label,
-    get_helicity_angle_label,
+    get_helicity_angle_symbols,
     get_helicity_suffix,
     get_topology_identifier,
     natural_sorting,
@@ -586,13 +586,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
-        _str_kinematic_variables = self.__adapter.create_expressions(
+        kinematic_variables = self.__adapter.create_expressions(
             generate_wigner_angles=self.__is_align_spin
         )
-        kinematic_variables = {
-            sp.Symbol(var_name, real=True): expr
-            for var_name, expr in _str_kinematic_variables.items()
-        }
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
                 symbol = sp.Symbol(f"m_{state_id}", real=True)
@@ -1006,7 +1002,7 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
       `~qrules.transition.State.spin_projection` when following a constistent
       boosting procedure),
     - and :math:`\phi` and :math:`\theta` the helicity angles (see also
-      :func:`.get_helicity_angle_label`).
+      :func:`.get_helicity_angle_symbols`).
 
     Note that :math:`\lambda_2, \lambda_3` are ordered by their number of
     children, then by their state ID (see :class:`.TwoBodyDecay`).
@@ -1131,9 +1127,7 @@ def formulate_helicity_rotation_chain(
         idx_root_counter += 1
         if is_opposite_helicity_state(topology, state_id):
             state_id = get_sibling_state_id(topology, state_id)
-        phi_label, theta_theta = get_helicity_angle_label(topology, state_id)
-        phi = sp.Symbol(phi_label, real=True)
-        theta = sp.Symbol(theta_theta, real=True)
+        phi, theta = get_helicity_angle_symbols(topology, state_id)
         no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
         yield formulate_helicity_rotation(
             spin_magnitude,
@@ -1334,14 +1328,9 @@ def _generate_kinematic_variable_set(
 ) -> TwoBodyKinematicVariableSet:
     decay = TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
-    child1_mass = sp.Symbol(
-        get_invariant_mass_label(transition.topology, decay.children[0].id),
-        real=True,
-    )
-    child2_mass = sp.Symbol(
-        get_invariant_mass_label(transition.topology, decay.children[1].id),
-        real=True,
-    )
+    topology = transition.topology
+    child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
+    child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
     if angular_momentum is None:
         if decay.parent.particle.spin.is_integer():
@@ -1361,14 +1350,7 @@ def _generate_kinematic_variables(
 ) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
     """Generate symbol for invariant mass, phi angle, and theta angle."""
     decay = TwoBodyDecay.from_transition(transition, node_id)
-    phi_label, theta_label = get_helicity_angle_label(
-        transition.topology, decay.children[0].id
-    )
-    inv_mass_label = get_invariant_mass_label(
-        transition.topology, decay.parent.id
-    )
-    return (
-        sp.Symbol(inv_mass_label, real=True),
-        sp.Symbol(phi_label, real=True),
-        sp.Symbol(theta_label, real=True),
-    )
+    topology = transition.topology
+    phi, theta = get_helicity_angle_symbols(topology, decay.children[0].id)
+    invariant_mass = get_invariant_mass_symbol(topology, decay.parent.id)
+    return invariant_mass, phi, theta
