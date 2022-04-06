@@ -363,7 +363,7 @@ def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
     if len(idx.indices) > 1:
         base_name = translate(base_name)
         subscript = "_{" + subscript + "}"
-    return sp.Symbol(f"{base_name}{subscript}")
+    return sp.Symbol(f"{base_name}{subscript}", **idx.assumptions0)
 
 
 def rename_symbols(

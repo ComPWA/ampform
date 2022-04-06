@@ -90,7 +90,7 @@ def create_non_dynamic_with_ff(
             " factor!"
         )
     res_identifier = resonance.latex if resonance.latex else resonance.name
-    meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
+    meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
     form_factor = formulate_form_factor(
         s=variable_pool.incoming_state_mass**2,
         m_a=variable_pool.outgoing_state_mass1,
@@ -159,9 +159,9 @@ class RelativisticBreitWignerBuilder:
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         inv_mass = variable_pool.incoming_state_mass
-        res_identifier = resonance.latex if resonance.latex else resonance.name
-        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
-        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
+        identifier = resonance.latex if resonance.latex else resonance.name
+        res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
+        res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
         expression = relativistic_breit_wigner(
             s=inv_mass**2,
             mass0=res_mass,
@@ -236,10 +236,10 @@ class RelativisticBreitWignerBuilder:
     def __create_symbols(
         resonance: Particle,
     ) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
-        res_identifier = resonance.latex if resonance.latex else resonance.name
-        res_mass = sp.Symbol(f"m_{{{res_identifier}}}")
-        res_width = sp.Symbol(Rf"\Gamma_{{{res_identifier}}}")
-        meson_radius = sp.Symbol(f"d_{{{res_identifier}}}")
+        identifier = resonance.latex if resonance.latex else resonance.name
+        res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
+        res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
+        meson_radius = sp.Symbol(f"d_{{{identifier}}}", positive=True)
         return res_mass, res_width, meson_radius
 
 

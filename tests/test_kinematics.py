@@ -579,7 +579,7 @@ def test_compute_invariant_masses_single_mass(
     momentum_values = data_sample.values()
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
     for i in topology.outgoing_edge_ids:
-        symbol = sp.Symbol(f"m_{i}", real=True)
+        symbol = sp.Symbol(f"m_{i}", nonnegative=True)
         expr = invariant_masses[symbol]
         np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
         expected = __compute_mass(data_sample[i])
@@ -597,7 +597,7 @@ def test_compute_invariant_masses(
     momentum_values = data_sample.values()
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)
 
-    mass_symbol = sp.Symbol(mass_name, real=True)
+    mass_symbol = sp.Symbol(mass_name, nonnegative=True)
     expr = invariant_masses[mass_symbol]
     np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np.average(np_expr(*momentum_values))

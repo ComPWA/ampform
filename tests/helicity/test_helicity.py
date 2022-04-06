@@ -62,11 +62,12 @@ class TestHelicityAmplitudeBuilder:
         undefined_symbols = free_symbols - paremeters - variables
         assert not undefined_symbols
 
-        final_state_masses = set(sp.symbols("m_(0:3)", real=True))
+        final_state_masses = set(sp.symbols("m_(0:3)", nonnegative=True))
         stable_final_state_masses = set()
         if stable_final_state_ids is not None:
             stable_final_state_masses = {
-                sp.Symbol(f"m_{i}", real=True) for i in stable_final_state_ids
+                sp.Symbol(f"m_{i}", nonnegative=True)
+                for i in stable_final_state_ids
             }
         unstable_final_state_masses = (
             final_state_masses - stable_final_state_masses
@@ -107,7 +108,7 @@ class TestHelicityAmplitudeBuilder:
     def test_scalar_initial_state(self, reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.scalar_initial_state_mass is False
-        initial_state_mass = sp.Symbol("m_012", real=True)
+        initial_state_mass = sp.Symbol("m_012", nonnegative=True)
 
         model = builder.formulate()
         assert initial_state_mass in model.kinematic_variables
@@ -180,11 +181,11 @@ class TestHelicityModel:
         self, amplitude_model: tuple[str, HelicityModel]
     ):
         _, model = amplitude_model
-        d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}")
+        d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}", positive=True)
         assert {d1, d2} <= set(model.parameter_defaults)
         assert {d1, d2} <= model.expression.free_symbols
 
-        new_d = sp.Symbol("d")
+        new_d = sp.Symbol("d", positive=True)
         new_model = model.rename_symbols(
             {
                 d1.name: new_d.name,
@@ -212,11 +213,11 @@ class TestHelicityModel:
         self, amplitude_model: tuple[str, HelicityModel]
     ):
         _, model = amplitude_model
-        old_symbol = sp.Symbol("m_12", real=True)
+        old_symbol = sp.Symbol("m_12", nonnegative=True)
         assert old_symbol in model.kinematic_variables
         assert old_symbol in model.expression.free_symbols
 
-        new_symbol = sp.Symbol("m_{f_0}", real=True)
+        new_symbol = sp.Symbol("m_{f_0}", nonnegative=True)
         new_model = model.rename_symbols({old_symbol.name: new_symbol.name})
         assert old_symbol not in new_model.kinematic_variables
         assert old_symbol not in new_model.expression.free_symbols

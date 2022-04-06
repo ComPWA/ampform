@@ -591,13 +591,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
-                symbol = sp.Symbol(f"m_{state_id}", real=True)
+                symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
                 particle = self.__reaction.final_state[state_id]
                 self.__ingredients.parameter_defaults[symbol] = particle.mass
                 del kinematic_variables[symbol]
         if self.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.__reaction.final_state)))
-            symbol = sp.Symbol(f"m_{subscript}", real=True)
+            symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
             particle = self.__reaction.initial_state[-1]
             self.__ingredients.parameter_defaults[symbol] = particle.mass
             del kinematic_variables[symbol]

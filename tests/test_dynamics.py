@@ -34,7 +34,9 @@ class TestEnergyDependentWidth:
     @staticmethod
     def test_init():
         angular_momentum = sp.Symbol("L", integer=True)
-        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", real=True)
+        s, m0, w0, m_a, m_b, d = sp.symbols(
+            "s m0 Gamma0 m_a m_b d", nonnegative=True
+        )
         width = EnergyDependentWidth(
             s=s,
             mass0=m0,
@@ -97,15 +99,15 @@ def test_generate(  # pylint: disable=too-many-locals
     pi0 = particle_database["pi0"]
     total_intensity = total_intensity.subs(
         {
-            sp.Symbol("m_1", real=True): pi0.mass,
-            sp.Symbol("m_2", real=True): pi0.mass,
+            sp.Symbol("m_1", nonnegative=True): pi0.mass,
+            sp.Symbol("m_2", nonnegative=True): pi0.mass,
         },
         simultaneous=True,
     )
     assert len(total_intensity.free_symbols) == 1
 
     existing_symbol = next(iter(total_intensity.free_symbols))
-    m = sp.Symbol("m", real=True)
+    m = sp.Symbol("m", nonnegative=True)
     total_intensity = total_intensity.subs({existing_symbol: m})
 
     assert isinstance(total_intensity, sp.Mul)
@@ -131,7 +133,7 @@ def test_generate(  # pylint: disable=too-many-locals
 
     amplitude = round_nested(amplitude, n_decimals=2)
     a = str(amplitude)
-    assert a == "0.06/(m**2 + 0.06*I*sqrt(m**2 - 0.07)/Abs(m) - 0.98)"
+    assert a == "0.06/(m**2 - 0.98 + 0.06*I*sqrt(m**2 - 0.07)/m)"
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
