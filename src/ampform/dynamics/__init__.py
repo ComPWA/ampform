@@ -1,5 +1,6 @@
 # cspell:ignore asner mhash
-# pylint: disable=abstract-method, arguments-differ, protected-access
+# pylint: disable=abstract-method, arguments-differ
+# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Lineshape functions that describe the dynamics of an interaction.
 
 .. seealso:: :doc:`/usage/dynamics` and
@@ -200,14 +201,16 @@ class EnergyDependentWidth(UnevaluatedExpression):
             return expr.evaluate()  # type: ignore[return-value]
         return expr
 
-    def __getnewargs__(self) -> tuple:
+    def __getnewargs_ex__(self) -> tuple[tuple, dict]:
         # Pickling support, see
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L132-L133
-        return (*self.args, self.phsp_factor, self._name)
+        args = (*self.args, self.phsp_factor)
+        kwargs = {"name": self._name}
+        return args, kwargs
 
     def _hashable_content(self) -> tuple:
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
-        return (*self._args, self.phsp_factor, self._name)
+        return (*self.args, self.phsp_factor, self._name)
 
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
