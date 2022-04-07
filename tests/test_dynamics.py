@@ -1,6 +1,7 @@
 # pylint: disable=no-self-use, protected-access, too-many-arguments
 from __future__ import annotations
 
+import pytest
 import sympy as sp
 from qrules import ParticleCollection
 
@@ -9,6 +10,8 @@ from ampform.dynamics import (
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
+    PhaseSpaceFactorSWave,
+    relativistic_breit_wigner_with_ff,
 )
 from ampform.helicity import HelicityModel
 
@@ -134,6 +137,39 @@ def test_generate(  # pylint: disable=too-many-locals
     amplitude = round_nested(amplitude, n_decimals=2)
     a = str(amplitude)
     assert a == "0.06/(m**2 - 0.98 + 0.06*I*sqrt(m**2 - 0.07)/m)"
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        relativistic_breit_wigner_with_ff,
+        EnergyDependentWidth,
+    ],
+)
+def test_relativistic_breit_wigner_with_ff_phsp_factor(func):
+    # https://github.com/ComPWA/ampform/issues/267
+    m, m0, w0, m1, m2 = sp.symbols("m m0 Gamma0 m1 m2")
+    expr = func(
+        s=m**2,
+        mass0=m0,
+        gamma0=w0,
+        m_a=m1,
+        m_b=m2,
+        angular_momentum=0,
+        meson_radius=1,
+        phsp_factor=PhaseSpaceFactor,
+    )
+    expr_chew_mandelstam = func(
+        s=m**2,
+        mass0=m0,
+        gamma0=w0,
+        m_a=m1,
+        m_b=m2,
+        angular_momentum=0,
+        meson_radius=1,
+        phsp_factor=PhaseSpaceFactorSWave,
+    )
+    assert expr.doit() != expr_chew_mandelstam.doit()
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:

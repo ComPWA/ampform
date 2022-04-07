@@ -1,5 +1,6 @@
 # cspell:ignore asner mhash
-# pylint: disable=abstract-method, arguments-differ, protected-access
+# pylint: disable=abstract-method, arguments-differ
+# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Lineshape functions that describe the dynamics of an interaction.
 
 .. seealso:: :doc:`/usage/dynamics` and
@@ -189,7 +190,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
         # Overwritting Basic.__new__ to store phase space factor type
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L121-L127
         expr = object.__new__(cls)
         expr._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
         expr._mhash = None
@@ -200,9 +201,15 @@ class EnergyDependentWidth(UnevaluatedExpression):
             return expr.evaluate()  # type: ignore[return-value]
         return expr
 
-    def __getnewargs__(self) -> tuple:
+    def __getnewargs_ex__(self) -> tuple[tuple, dict]:
         # Pickling support, see
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L132-L133
+        args = (*self.args, self.phsp_factor)
+        kwargs = {"name": self._name}
+        return args, kwargs
+
+    def _hashable_content(self) -> tuple:
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         return (*self.args, self.phsp_factor, self._name)
 
     def evaluate(self) -> sp.Expr:
