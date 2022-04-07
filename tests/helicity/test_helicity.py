@@ -13,6 +13,7 @@ from ampform import get_builder
 from ampform.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
+    ParameterValue,
     ParameterValues,
     _generate_kinematic_variables,
     formulate_wigner_d,
@@ -170,6 +171,14 @@ class TestHelicityAmplitudeBuilder:
 
 
 class TestHelicityModel:
+    def test_parameter_defaults_item_types(
+        self, amplitude_model: tuple[str, HelicityModel]
+    ):
+        _, model = amplitude_model
+        for symbol, value in model.parameter_defaults.items():
+            assert isinstance(symbol, sp.Symbol)
+            assert isinstance(value, ParameterValue.__args__)  # type: ignore[attr-defined]
+
     def test_rename_symbols_no_renames(
         self, amplitude_model: tuple[str, HelicityModel]
     ):
