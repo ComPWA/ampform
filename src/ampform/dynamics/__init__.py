@@ -189,7 +189,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
         # Overwritting Basic.__new__ to store phase space factor type
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L121-L127
         expr = object.__new__(cls)
         expr._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
         expr._mhash = None
@@ -202,8 +202,12 @@ class EnergyDependentWidth(UnevaluatedExpression):
 
     def __getnewargs__(self) -> tuple:
         # Pickling support, see
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L132-L133
         return (*self.args, self.phsp_factor, self._name)
+
+    def _hashable_content(self) -> tuple:
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
+        return (*self._args, self.phsp_factor, self._name)
 
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args
