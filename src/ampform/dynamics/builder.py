@@ -100,7 +100,7 @@ def create_non_dynamic_with_ff(
     )
     return (
         form_factor,
-        {meson_radius: sp.S.One},
+        {meson_radius: 1},
     )
 
 
@@ -205,7 +205,7 @@ class RelativisticBreitWignerBuilder:
         parameter_defaults = {
             res_mass: resonance.mass,
             res_width: resonance.width,
-            meson_radius: sp.S.One,
+            meson_radius: 1,
         }
         return breit_wigner_expr, parameter_defaults
 
@@ -228,9 +228,9 @@ class RelativisticBreitWignerBuilder:
             meson_radius=meson_radius,
         )
         parameter_defaults = {
-            meson_radius: sp.S.One,
+            meson_radius: 1,
         }
-        return form_factor, parameter_defaults
+        return form_factor, parameter_defaults  # type: ignore[return-value]
 
     @staticmethod
     def __create_symbols(
