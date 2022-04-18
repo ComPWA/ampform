@@ -75,7 +75,7 @@ json5==0.9.6
 jsonschema==4.4.0
 jupyter-cache==0.4.3
 jupyter-client==7.2.2
-jupyter-core==4.9.2
+jupyter-core==4.10.0
 jupyter-server==1.16.0
 jupyter-server-mathjax==0.2.5
 jupyter-sphinx==0.3.2
@@ -120,13 +120,11 @@ pandocfilters==1.5.0
 parso==0.8.3
 particle==0.20.1
 pathspec==0.9.0
-pep517==0.12.0
 pep8-naming==0.12.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==9.1.0
-pip-tools==6.6.0
-platformdirs==2.5.1
+platformdirs==2.5.2
 pluggy==1.0.0
 pre-commit==2.18.1
 prometheus-client==0.14.1
@@ -213,5 +211,4 @@ wrapt==1.14.0
 zipp==3.8.0
 
 # The following packages are considered to be unsafe in a requirements file:
-# pip
 # setuptools
