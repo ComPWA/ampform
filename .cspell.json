@@ -31,6 +31,7 @@
         ".gitpod.*",
         ".mypy.ini",
         ".pre-commit-config.yaml",
+        ".prettierignore",
         ".pydocstyle*",
         ".pylintrc",
         ".readthedocs.yml",
