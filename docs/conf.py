@@ -85,6 +85,7 @@ subprocess.call(
             "sphinx-apidoc",
             f"../src/{PACKAGE}/",
             f"../src/{PACKAGE}/version.py",
+            f"../src/{PACKAGE}/io/latex.py",
             "-o api/",
             "--force",
             "--no-toc",

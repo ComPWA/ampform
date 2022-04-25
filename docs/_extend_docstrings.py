@@ -19,6 +19,7 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
+from ampform.io import aslatex
 from ampform.kinematics import FourMomentumSymbol, _ArraySize
 from ampform.sympy import NumPyPrintable
 from ampform.sympy._array_expressions import ArrayMultiplication
@@ -629,9 +630,7 @@ def _append_latex_doit_definition(
 
 
 def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
-    latex = sp.multiline_latex(
-        expr, expr.doit(deep=deep), environment="eqnarray"
-    )
+    latex = aslatex({expr: expr.doit(deep=deep)})
     return textwrap.indent(latex, prefix=8 * " ")
 
 

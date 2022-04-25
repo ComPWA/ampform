@@ -129,6 +129,7 @@
         "arccos",
         "asdict",
         "asdot",
+        "aslatex",
         "automodule",
         "Autoupdate",
         "axhline",
