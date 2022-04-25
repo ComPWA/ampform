@@ -8,6 +8,7 @@ filename =
 exclude =
     **/__pycache__
     **/_build
+    *.pyi
     /typings/**
 ignore =
     # False positive with attribute docstrings
