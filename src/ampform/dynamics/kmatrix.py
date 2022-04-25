@@ -1,6 +1,6 @@
 r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 
-See :doc:`/usage/dynamics/k-matrix`.
+.. seealso:: :doc:`/usage/dynamics/k-matrix`.
 
 This module is an implementation of :doc:`compwa-org:report/005`,
 :doc:`compwa-org:report/009`, and :doc:`compwa-org:report/010`. It works with
