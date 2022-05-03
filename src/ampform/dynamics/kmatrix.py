@@ -54,7 +54,7 @@ class RelativisticKMatrix(TMatrix):
     def formulate(
         cls, n_channels, n_poles, parametrize: bool = True, **kwargs
     ) -> sp.MutableDenseMatrix:
-        r"""Implementation of :eq:`T-hat in terms of K-hat`.
+        r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
 
         Args:
             n_channels: Number of coupled channels.
@@ -66,7 +66,7 @@ class RelativisticKMatrix(TMatrix):
             return_t_hat: Set to `True` if you want to get the
                 Lorentz-invariant :math:`\boldsymbol{\hat{T}}`-matrix instead
                 of the :math:`\boldsymbol{T}`-matrix from
-                Eq. :eq:`K-hat and T-hat`.
+                Eq. :eq:`K-hat-and-T-hat`.
         """
         return_t_hat: bool = kwargs.pop("return_t_hat", False)
         t_matrix, k_matrix = cls._create_matrices(n_channels, return_t_hat)
@@ -307,7 +307,7 @@ class RelativisticPVector(TMatrix):
     def formulate(  # pylint: disable=too-many-locals
         cls, n_channels, n_poles, parametrize: bool = True, **kwargs
     ) -> sp.MutableDenseMatrix:
-        r"""Implementation of :eq:`F in terms of P`.
+        r"""Implementation of :eq:`F-in-terms-of-P`.
 
         Args:
             n_channels: Number of coupled channels.
@@ -318,7 +318,7 @@ class RelativisticPVector(TMatrix):
 
             return_f_hat: Set to `True` if you want to get the
                 Lorentz-invariant :math:`\hat{F}`-vector instead of the
-                :math:`T`-vector from Eq. :eq:`invariant vectors`.
+                :math:`T`-vector from Eq. :eq:`invariant-vectors`.
         """
         return_f_hat: bool = kwargs.pop("return_f_hat", False)
         f_vector, k_matrix, p_vector = cls._create_matrices(
