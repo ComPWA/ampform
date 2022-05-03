@@ -332,29 +332,15 @@ linkcheck_ignore = [
 ]
 
 # Settings for myst_nb
-execution_timeout = -1
+nb_execution_timeout = -1
 nb_output_stderr = "remove"
-nb_render_priority = {
-    "html": (
-        "application/vnd.jupyter.widget-view+json",
-        "application/javascript",
-        "text/html",
-        "image/svg+xml",
-        "image/png",
-        "image/jpeg",
-        "text/markdown",
-        "text/latex",
-        "text/plain",
-    )
-}
-nb_render_priority["doctest"] = nb_render_priority["html"]
 
-jupyter_execute_notebooks = "off"
+nb_execution_mode = "off"
 EXECUTE_NB = False
 if "EXECUTE_NB" in os.environ:
     print("\033[93;1mWill run Jupyter notebooks!\033[0m")
     EXECUTE_NB = True
-    jupyter_execute_notebooks = "force"
+    nb_execution_mode = "force"
 
 # Settings for myst-parser
 myst_enable_extensions = [

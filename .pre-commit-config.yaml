@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.120
+    rev: 0.0.124
     hooks:
       - id: check-dev-files
         args:
@@ -122,11 +122,6 @@ repos:
             metadata.colab.name
             metadata.colab.provenance
             metadata.interpreter
-            metadata.language_info.codemirror_mode
-            metadata.language_info.file_extension
-            metadata.language_info.mimetype
-            metadata.language_info.nbconvert_exporter
-            metadata.language_info.pygments_lexer
             metadata.notify_time
             metadata.toc
             metadata.toc-autonumbering
@@ -146,7 +141,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.238
+    rev: v1.1.243
     hooks:
       - id: pyright
 
