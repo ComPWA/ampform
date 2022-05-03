@@ -233,7 +233,7 @@ class HelicityModel:  # noqa: R701
         symbols: set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
         symbols |= set(self.kinematic_variables)
         for expr in self.kinematic_variables.values():
-            symbols |= expr.free_symbols  # type: ignore[misc]
+            symbols |= expr.free_symbols  # type: ignore[arg-type]
         return symbols
 
     def sum_components(  # noqa: R701
