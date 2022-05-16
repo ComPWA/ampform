@@ -1,4 +1,5 @@
 {
+    "allowCompoundWords": true,
     "enableFiletypes": [
         "git-commit",
         "jupyter"
