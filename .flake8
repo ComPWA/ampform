@@ -35,6 +35,9 @@ ignore =
     W503
 extend-select =
     TI100
+per-file-ignores =
+    # unused imports for backward compatibility
+    src/ampform/dynamics/__init__.py:F401
 radon-max-cc = 8
 radon-no-assert = True
 rst-roles =
