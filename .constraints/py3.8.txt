@@ -5,11 +5,11 @@
 #    pip-compile --extra=dev --no-annotate --output-file=.constraints/py3.8.txt --strip-extras setup.py
 #
 alabaster==0.7.12
-anyio==3.5.0
+anyio==3.6.1
 aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
-astroid==2.11.4
+astroid==2.11.5
 asttokens==2.0.5
 attrs==21.4.0
 babel==2.10.1
@@ -24,7 +24,7 @@ charset-normalizer==2.0.12
 click==8.1.3
 colorama==0.4.4
 commonmark==0.9.1
-coverage==6.3.2
+coverage==6.3.3
 cycler==0.11.0
 debugpy==1.6.0
 decorator==5.1.1
@@ -36,13 +36,13 @@ entrypoints==0.4
 execnet==1.9.0
 executing==0.8.3
 fastjsonschema==2.15.3
-filelock==3.6.0
+filelock==3.7.0
 flake8==4.0.1
 flake8-blind-except==0.2.1
 flake8-bugbear==22.4.25
 flake8-builtins==1.5.3
-flake8-comprehensions==3.8.0
-flake8-future-annotations==0.0.4
+flake8-comprehensions==3.9.0
+flake8-future-annotations==0.0.5
 flake8-plugin-utils==1.3.2
 flake8-polyfill==1.0.2
 flake8-pytest-style==1.6.0
@@ -69,13 +69,13 @@ ipywidgets==7.7.0
 isort==5.10.1
 jedi==0.18.1
 jinja2==3.1.2
-json5==0.9.6
-jsonschema==4.4.0
+json5==0.9.8
+jsonschema==4.5.1
 jupyter-cache==0.5.0
-jupyter-client==7.3.0
+jupyter-client==7.3.1
 jupyter-core==4.10.0
 jupyter-server==1.17.0
-jupyterlab==3.4.0
+jupyterlab==3.4.2
 jupyterlab-code-formatter==1.4.11
 jupyterlab-markup==1.1.0
 jupyterlab-myst==0.1.6 ; python_version >= "3.7.0"
@@ -99,7 +99,7 @@ mpl-interactions==0.21.0
 mpmath==1.2.1
 mypy==0.950
 mypy-extensions==0.4.3
-myst-nb==0.14.0
+myst-nb==0.15.0
 myst-parser==0.17.2
 nbclassic==0.3.7
 nbclient==0.5.13
@@ -122,7 +122,7 @@ pickleshare==0.7.5
 pillow==9.1.0
 platformdirs==2.5.2
 pluggy==1.0.0
-pre-commit==2.18.1
+pre-commit==2.19.0
 prometheus-client==0.14.1
 prompt-toolkit==3.0.29
 psutil==5.9.0
@@ -138,8 +138,8 @@ pydata-sphinx-theme==0.8.1
 pydocstyle==6.1.1
 pyflakes==2.4.0
 pygments==2.12.0
-pylint==2.13.8
-pyparsing==3.0.8
+pylint==2.13.9
+pyparsing==3.0.9
 pyrsistent==0.18.1
 pytest==7.1.2
 pytest-cov==3.0.0
@@ -155,7 +155,7 @@ qrules==0.9.7
 radon==5.1.0
 requests==2.27.1
 restructuredtext-lint==1.4.0
-rich==12.3.0
+rich==12.4.1
 send2trash==1.8.0
 six==1.16.0
 sniffio==1.2.0
@@ -189,7 +189,7 @@ tomli==2.0.1
 tornado==6.1
 tox==3.25.0
 tqdm==4.64.0
-traitlets==5.1.1
+traitlets==5.2.0
 types-docutils==0.18.3
 types-pkg-resources==0.1.3
 types-requests==2.27.25
