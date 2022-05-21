@@ -29,6 +29,8 @@ jobs:
           pip install -c .constraints/py3.8.txt .[doc] tox
           sudo apt-get -y install graphviz pandoc
       - name: Build documentation and run notebooks
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: tox -e docnb
         # cspell:ignore docnb
       - name: Print error logs with color

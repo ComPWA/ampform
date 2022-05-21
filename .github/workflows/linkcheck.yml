@@ -27,6 +27,8 @@ jobs:
           pip install -c .constraints/py3.8.txt -e .[doc] tox
           sudo apt-get -y install graphviz pandoc
       - name: Check external links
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH=main
           if [[ "$GITHUB_HEAD_REF" != "" ]]; then
