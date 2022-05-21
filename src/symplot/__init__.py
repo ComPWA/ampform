@@ -282,7 +282,7 @@ def prepare_sliders(
     sliders_mapping = {
         symbol.name: create_slider(symbol) for symbol in slider_symbols
     }
-    symbols_names = map(lambda s: s.name, (*plot_symbols, *slider_symbols))
+    symbols_names = (s.name for s in (*plot_symbols, *slider_symbols))
     arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names))
     sliders = SliderKwargs(sliders_mapping, arg_to_symbol)

@@ -194,10 +194,7 @@ def normalize(  # noqa: R701
             raise IndexError()
 
     start, stop, step = tuple(
-        map(
-            lambda i: none if i is None else i,
-            (start, stop, step),
-        )
+        none if i is None else i for i in (start, stop, step)
     )
     return start, stop, step
 
@@ -277,9 +274,7 @@ class ArraySum(sp.Expr):
         return self.args
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        if all(
-            map(lambda i: isinstance(i, (sp.Symbol, ArraySymbol)), self.terms)
-        ):
+        if all(isinstance(i, (sp.Symbol, ArraySymbol)) for i in self.terms):
             names = set(map(_strip_subscript_superscript, self.terms))
             if len(names) == 1:
                 name = next(iter(names))
@@ -309,9 +304,7 @@ def _get_subscript(symbol: sp.Basic) -> str:
     else:
         text = symbol
     _, _, subscripts = split_super_sub(text)
-    stripped_subscripts: Iterable[str] = map(
-        lambda s: s.strip("{").strip("}"), subscripts
-    )
+    stripped_subscripts = (s.strip("{").strip("}") for s in subscripts)
     return " ".join(stripped_subscripts)
 
 
