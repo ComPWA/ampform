@@ -33,7 +33,7 @@ jobs:
           pip install -c .constraints/py${{ matrix.python-version }}.txt -e .[test]
       - name: Test with pytest-cov
         run: pytest --cov=ampform --cov-report=xml
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: test_output_${{ matrix.os }}_${{ matrix.python-version }}
@@ -79,7 +79,7 @@ jobs:
           pip install -c .constraints/py${{ matrix.python-version }}.txt -e .[test]
       - name: Run unit tests and doctests with pytest
         run: pytest -n auto
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: test_output_${{ matrix.os }}_${{ matrix.python-version }}
@@ -105,7 +105,7 @@ jobs:
           pip install -c .constraints/py${{ matrix.python-version }}.txt -e .[test]
       - name: Run slow tests
         run: pytest -n auto -m slow
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: test_output_slow
