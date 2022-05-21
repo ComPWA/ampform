@@ -3,10 +3,10 @@
 
 .. code-block:: python
 
-    import {{ basename }}
+  import {{ basename }}
 
 {% endif -%}
 .. automodule:: {{ qualname }}
 {%- for option in automodule_options %}
-   :{{ option }}:
+  :{{ option }}:
 {%- endfor %}
