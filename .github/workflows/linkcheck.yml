@@ -28,6 +28,7 @@ jobs:
           sudo apt-get -y install graphviz pandoc
       - name: Check external links
         env:
+          GITHUB_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH=main

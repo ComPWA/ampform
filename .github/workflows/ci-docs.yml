@@ -30,6 +30,7 @@ jobs:
           sudo apt-get -y install graphviz pandoc
       - name: Build documentation and run notebooks
         env:
+          GITHUB_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: tox -e docnb
         # cspell:ignore docnb
