@@ -256,8 +256,8 @@ class HelicityModel:  # noqa: R701
                     "Did you mean any of these?",
                     candidates,
                 )
-        if any(map(lambda c: c.startswith("I"), components)) and any(
-            map(lambda c: c.startswith("A"), components)
+        if any(c.startswith("I") for c in components) and any(
+            c.startswith("A") for c in components
         ):
             intensity_sum = self.sum_components(
                 components=filter(lambda c: c.startswith("I"), components),
@@ -266,9 +266,9 @@ class HelicityModel:  # noqa: R701
                 components=filter(lambda c: c.startswith("A"), components),
             )
             return intensity_sum + amplitude_sum
-        if all(map(lambda c: c.startswith("I"), components)):
+        if all(c.startswith("I") for c in components):
             return sum(self.components[c] for c in components)  # type: ignore[return-value]
-        if all(map(lambda c: c.startswith("A"), components)):
+        if all(c.startswith("A") for c in components):
             return abs(sum(self.components[c] for c in components)) ** 2
         raise ValueError(
             'Not all component names started with either "A" or "I"'
