@@ -2,22 +2,20 @@ root = true
 
 [*]
 end_of_line = lf
+indent_size = 2
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[Makefile]
-indent_style = tab
+[*.ipynb]
+indent_size = 1
 
 [*.{py,toml}]
 indent_size = 4
 
-[*.{json,yaml,yml}]
-indent_size = 2
-
-[*.{rst,inc}]
-indent_size = 2
-
 # when adding words through vscode, this is the resulting output format
 [.cspell.json]
+indent_size = 4
+
+[setup.cfg]
 indent_size = 4

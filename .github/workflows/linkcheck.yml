@@ -16,7 +16,7 @@ jobs:
     name: Check external links
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -24,15 +24,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -c .constraints/py3.8.txt -e .[doc]
+          pip install -c .constraints/py3.8.txt -e .[doc] tox
           sudo apt-get -y install graphviz pandoc
       - name: Check external links
-        working-directory: docs
         env:
-          REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH=main
           if [[ "$GITHUB_HEAD_REF" != "" ]]; then
             BRANCH=$GITHUB_HEAD_REF
           fi
-          READTHEDOCS_VERSION=$BRANCH make ignore-warnings=1 linkcheck
+          READTHEDOCS_VERSION=$BRANCH tox -e linkcheck

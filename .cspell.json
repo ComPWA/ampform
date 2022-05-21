@@ -44,7 +44,6 @@
         "docs/adr/*/*",
         "docs/conf.py",
         "labels.toml",
-        "Makefile",
         "pyproject.toml",
         "pyrightconfig.json",
         "pytest.ini",

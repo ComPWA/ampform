@@ -12,7 +12,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Determine dependency changes
@@ -41,7 +41,7 @@ jobs:
           - "3.9"
           - "3.10"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ComPWA/update-pip-constraints@main
         with:
           python-version: ${{ matrix.python-version }}
@@ -54,7 +54,7 @@ jobs:
       needs.diff.outputs.diff != ''
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ComPWA/update-pre-commit@main
 
   push:
@@ -68,7 +68,7 @@ jobs:
       - pip-constraints
       - pre-commit
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
         # GITHUB_TOKEN will not rerun checks after pushing to a PR branch

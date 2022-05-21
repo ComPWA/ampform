@@ -340,7 +340,7 @@ EXECUTE_NB = False
 if "EXECUTE_NB" in os.environ:
     print("\033[93;1mWill run Jupyter notebooks!\033[0m")
     EXECUTE_NB = True
-    nb_execution_mode = "force"
+    nb_execution_mode = "cache"
 
 # Settings for myst-parser
 myst_enable_extensions = [
