@@ -178,6 +178,24 @@ def extend_ComplexSqrt() -> None:
     )
 
 
+def extend_compute_third_mandelstam() -> None:
+    from ampform.kinematics.phasespace import compute_third_mandelstam
+
+    m0, m1, m2, m3 = sp.symbols("m:4")
+    s1, s2 = sp.symbols("sigma1 sigma2")
+    expr = compute_third_mandelstam(s1, s2, m0, m1, m2, m3)
+    _append_to_docstring(
+        compute_third_mandelstam,
+        Rf"""
+
+    .. math:: \sigma_3 = {sp.latex(expr)}
+        :label: compute_third_mandelstam
+
+    Note that this expression is symmetric in :math:`\sigma_{{1,2,3}}`.
+    """,
+    )
+
+
 def extend_EqualMassPhaseSpaceFactor() -> None:
     from ampform.dynamics.phasespace import (
         EqualMassPhaseSpaceFactor,
@@ -276,12 +294,59 @@ def extend_formulate_form_factor() -> None:
     )
 
 
+def extend_Kallen() -> None:
+    from ampform.kinematics.phasespace import Kallen
+
+    x, y, z = sp.symbols("x:z")
+    expr = Kallen(x, y, z)
+    _append_latex_doit_definition(expr)
+    _append_to_docstring(
+        Kallen,
+        """
+    .. seealso:: `.BreakupMomentumSquared`
+    """,
+    )
+
+
+def extend_Kibble() -> None:
+    from ampform.kinematics.phasespace import Kibble
+
+    m0, m1, m2, m3 = sp.symbols("m:4")
+    s1, s2, s3 = sp.symbols("sigma1:4")
+    expr = Kibble(s1, s2, s3, m0, m1, m2, m3)
+    _append_latex_doit_definition(expr)
+    _append_to_docstring(
+        Kibble,
+        R"""
+    with :math:`\lambda` defined by :eq:`Kallen`.
+    """,
+    )
+
+
 def extend_InvariantMass() -> None:
     from ampform.kinematics import InvariantMass
 
     p = FourMomentumSymbol("p", shape=[])
     expr = InvariantMass(p)
     _append_latex_doit_definition(expr)
+
+
+def extend_is_within_phasespace() -> None:
+    from ampform.kinematics.phasespace import is_within_phasespace
+
+    m0, m1, m2, m3 = sp.symbols("m:4")
+    s1, s2 = sp.symbols("sigma1 sigma2")
+    expr = is_within_phasespace(s1, s2, m0, m1, m2, m3)
+    _append_to_docstring(
+        is_within_phasespace,
+        Rf"""
+
+    .. math:: {sp.latex(expr)}
+        :label: is_within_phasespace
+
+    with :math:`\phi` defined by :eq:`Kibble`.
+    """,
+    )
 
 
 def extend_PhaseSpaceFactor() -> None:

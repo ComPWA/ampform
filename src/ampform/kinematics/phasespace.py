@@ -2,7 +2,7 @@
 # pylint: disable=too-many-arguments, unbalanced-tuple-unpacking
 """Functions for determining phase space boundaries.
 
-.. seealso:: :doc:`compwa-org:report/017`
+.. seealso:: :doc:`/usage/kinematics`
 """
 from __future__ import annotations
 
@@ -19,6 +19,8 @@ from ampform.sympy import (
 @make_commutative
 @implement_doit_method
 class Kibble(UnevaluatedExpression):
+    """Kibble function for determining the phase space region."""
+
     def __new__(
         cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints
     ) -> Kibble:
@@ -59,6 +61,7 @@ class Kallen(UnevaluatedExpression):
 def is_within_phasespace(
     sigma1, sigma2, m0, m1, m2, m3, outside_value=sp.nan
 ) -> sp.Piecewise:
+    """Determine whether a set of masses lie within phase space."""
     sigma3 = compute_third_mandelstam(sigma1, sigma2, m0, m1, m2, m3)
     kibble = Kibble(sigma1, sigma2, sigma3, m0, m1, m2, m3)
     return sp.Piecewise(
@@ -68,4 +71,5 @@ def is_within_phasespace(
 
 
 def compute_third_mandelstam(sigma1, sigma2, m0, m1, m2, m3) -> sp.Add:
+    """Compute the third Mandelstam variable in a three-body decay."""
     return m0**2 + m1**2 + m2**2 + m3**2 - sigma1 - sigma2
