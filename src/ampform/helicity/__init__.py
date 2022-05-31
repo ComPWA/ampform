@@ -52,7 +52,6 @@ from ampform.sympy import PoolSum
 
 from .decay import (
     TwoBodyDecay,
-    collect_topologies,
     get_parent_id,
     get_prefactor,
     get_sibling_state_id,
@@ -518,7 +517,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients = _HelicityModelIngredients()
         self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
-        self.align_spin: bool | None = None
+        self.align_spin: bool = False
         """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
         self.use_helicity_couplings: bool = False
         """Use helicity couplings instead of amplitude coefficients.
@@ -587,7 +586,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
         kinematic_variables = self.__adapter.create_expressions(
-            generate_wigner_angles=self.__is_align_spin
+            generate_wigner_angles=self.align_spin
         )
         if self.stable_final_state_ids is not None:
             for state_id in self.stable_final_state_ids:
@@ -628,7 +627,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     spin_projections[symbol].add(value)
 
         topology_groups = group_by_topology(self.__reaction.transitions)
-        if self.__is_align_spin:
+        if self.align_spin:
             amplitude = self.__formulate_aligned_amplitude(topology_groups)
         else:
             indices = list(spin_projections)
@@ -658,13 +657,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 *alignment_sum.indices,
             )
         return amplitude
-
-    @property
-    def __is_align_spin(self) -> bool:
-        if self.align_spin is None:
-            topologies = collect_topologies(self.__reaction.transitions)
-            return len(topologies) > 1
-        return self.align_spin
 
     def __register_amplitudes(
         self, transition_group: list[StateTransition]
