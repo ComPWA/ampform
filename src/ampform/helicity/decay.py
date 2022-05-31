@@ -147,13 +147,6 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     return tuple(state_fs_ids) > tuple(sibling_fs_ids)
 
 
-@lru_cache(maxsize=None)
-def collect_topologies(
-    transitions: tuple[StateTransition, ...]
-) -> list[Topology]:
-    return sorted({t.topology for t in transitions})
-
-
 def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     r"""Get the sibling state ID for a state in an isobar decay.
 
