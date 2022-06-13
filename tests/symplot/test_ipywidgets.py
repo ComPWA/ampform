@@ -1,4 +1,3 @@
-# pylint: disable=no-self-use
 """Behavior tests of `ipywidgets`."""
 
 from ipywidgets.widgets import FloatSlider

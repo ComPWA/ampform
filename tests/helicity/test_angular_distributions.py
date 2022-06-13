@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, redefined-outer-name
+# pylint: disable=redefined-outer-name
 from __future__ import annotations
 
 from typing import Iterable, Sequence

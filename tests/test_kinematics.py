@@ -1,4 +1,4 @@
-# pylint: disable=no-member, no-self-use, redefined-outer-name
+# pylint: disable=no-member redefined-outer-name
 # cspell:ignore atol doprint
 from __future__ import annotations
 

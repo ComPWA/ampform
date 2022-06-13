@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, no-self-use, too-many-locals
+# pylint: disable=invalid-name too-many-locals
 import pytest
 import sympy as sp
 from qrules.particle import Particle

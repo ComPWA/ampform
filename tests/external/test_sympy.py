@@ -1,4 +1,3 @@
-# pylint: disable=no-self-use
 import operator
 from copy import deepcopy
 from functools import reduce
