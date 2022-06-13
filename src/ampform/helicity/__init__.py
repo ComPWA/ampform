@@ -329,7 +329,6 @@ class ParameterValues(abc.Mapping):
 
     @singledispatchmethod
     def _get_parameter(self, key: sp.Symbol | int | str) -> sp.Symbol:
-        # pylint: disable=no-self-use
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot find parameter for key type {type(key).__name__}"
         )

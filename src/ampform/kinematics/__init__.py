@@ -434,7 +434,6 @@ class NegativeMomentum(UnevaluatedExpression):
 
 
 class MinkowskiMetric(NumPyPrintable):
-    # pylint: disable=no-self-use
     r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
 
     def __new__(cls, momentum: sp.Basic, **hints) -> MinkowskiMetric:

@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, protected-access, too-many-arguments
+# pylint: disable=protected-access too-many-arguments
 from __future__ import annotations
 
 import pytest

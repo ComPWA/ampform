@@ -1,4 +1,3 @@
-# pylint: disable=no-self-use
 # cspell:ignore doprint
 from functools import partial
 
