@@ -346,12 +346,11 @@ class ArrayAxisSum(sp.Expr):
 class ArrayMultiplication(sp.Expr):
     r"""Contract rank-:math:`n` arrays and a rank-:math`n-1` array.
 
-    This class is particularly useful to create a tensor product of rank-3
-    matrix array classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`,
-    with a rank-2 `.FourMomentumSymbol`. In that case, if :math:`n` is the
-    number of events, you would get a contraction of arrays of shape
-    :math:`n\times\times4\times4` (:math:`n` Lorentz matrices) to
-    :math:`n\times\times4` (:math:`n` four-momentum tuples).
+    This class is particularly useful to create a tensor product of rank-3 matrix array
+    classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`, with a rank-2
+    `.FourMomentumSymbol`. In that case, if :math:`n` is the number of events, you would
+    get a contraction of arrays of shape :math:`n\times\times4\times4` (:math:`n`
+    Lorentz matrices) to :math:`n\times\times4` (:math:`n` four-momentum tuples).
     """
 
     def __new__(cls, *tensors: sp.Expr, **hints) -> ArrayMultiplication:
@@ -400,12 +399,11 @@ class ArrayMultiplication(sp.Expr):
 class MatrixMultiplication(sp.Expr):
     r"""Contract rank-:math:`n` arrays and a rank-:math`n` array.
 
-    This class is particularly useful to create a tensor product of rank-3
-    matrix array classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`,
-    with a rank-3 `.FourMomentumSymbol`. In that case, if :math:`n` is the
-    number of events, you would get a contraction of arrays of shape
-    :math:`n\times\times4\times4` (:math:`n` Lorentz matrices) to
-    :math:`n\times\times4\times4` (:math:`n` four-momentum tuples).
+    This class is particularly useful to create a tensor product of rank-3 matrix array
+    classes, such as `.BoostZ`, `.RotationY`, and `.RotationZ`, with a rank-3
+    `.FourMomentumSymbol`. In that case, if :math:`n` is the number of events, you would
+    get a contraction of arrays of shape :math:`n\times\times4\times4` (:math:`n`
+    Lorentz matrices) to :math:`n\times\times4\times4` (:math:`n` four-momentum tuples).
     """
 
     def __new__(cls, *tensors: sp.Basic, **hints) -> MatrixMultiplication:

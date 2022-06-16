@@ -76,10 +76,10 @@ def extend_BoostMatrix() -> None:
     _append_to_docstring(
         BoostMatrix,
         """
-    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
-    a computational backend and it should operate on four-momentum arrays of
-    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
-    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in a
+    computational backend and it should operate on four-momentum arrays of rank-2. As
+    such, this boost matrix becomes a **rank-3** matrix. When using `NumPy
+    <https://numpy.org>`_ as backend, the computation looks as follows:
     """,
     )
     _append_code_rendering(
@@ -106,10 +106,10 @@ def extend_BoostZMatrix() -> None:
     _append_to_docstring(
         BoostZMatrix,
         """
-    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
-    a computational backend and it should operate on four-momentum arrays of
-    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
-    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in a
+    computational backend and it should operate on four-momentum arrays of rank-2. As
+    such, this boost matrix becomes a **rank-3** matrix. When using `NumPy
+    <https://numpy.org>`_ as backend, the computation looks as follows:
     """,
     )
     b = sp.Symbol("b")
@@ -125,12 +125,11 @@ def extend_BoostZMatrix() -> None:
         BoostZMatrix,
         """
     Note that this code was generated with :func:`sympy.lambdify
-    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True`. The repetition
-    of :func:`numpy.ones` is still bothersome, but these sub-nodes is also
-    extracted by :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the
-    expression is nested further down in an :doc:`expression tree
-    <sympy:tutorial/manipulation>`, for instance when boosting a
-    `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
+    <sympy.utilities.lambdify.lambdify>` with :code:`cse=True`. The repetition of
+    :func:`numpy.ones` is still bothersome, but these sub-nodes is also extracted by
+    :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the expression is nested further
+    down in an :doc:`expression tree <sympy:tutorial/manipulation>`, for instance when
+    boosting a `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
     """,
     )
     p, beta, phi, theta = sp.symbols("p beta phi theta")
@@ -239,9 +238,9 @@ def extend_EnergyDependentWidth() -> None:
     _append_to_docstring(
         EnergyDependentWidth,
         R"""
-    where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is
-    defined by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default)
-    defined by :eq:`PhaseSpaceFactor`.
+    where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is defined
+    by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default) defined by
+    :eq:`PhaseSpaceFactor`.
     """,
     )
 
@@ -406,8 +405,8 @@ def extend_RotationYMatrix() -> None:
     _append_to_docstring(
         RotationYMatrix,
         f"""\n
-    The matrix for a rotation over angle :math:`\\alpha` around the
-    :math:`y`-axis operating on `FourMomentumSymbol` looks like:
+    The matrix for a rotation over angle :math:`\\alpha` around the :math:`y`-axis
+    operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :label: RotationYMatrix
@@ -425,8 +424,8 @@ def extend_RotationZMatrix() -> None:
     _append_to_docstring(
         RotationZMatrix,
         f"""\n
-    The matrix for a rotation over angle :math:`\\alpha` around the
-    :math:`z`-axis operating on `FourMomentumSymbol` looks like:
+    The matrix for a rotation over angle :math:`\\alpha` around the :math:`z`-axis
+    operating on `FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :label: RotationZMatrix
@@ -435,10 +434,10 @@ def extend_RotationZMatrix() -> None:
     _append_to_docstring(
         RotationZMatrix,
         """
-    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in
-    a computational backend and it should operate on four-momentum arrays of
-    rank-2. As such, this boost matrix becomes a **rank-3** matrix. When using
-    `NumPy <https://numpy.org>`_ as backend, the computation looks as follows:
+    In `TensorWaves <https://tensorwaves.rtfd.io>`_, this class is expressed in a
+    computational backend and it should operate on four-momentum arrays of rank-2. As
+    such, this boost matrix becomes a **rank-3** matrix. When using `NumPy
+    <https://numpy.org>`_ as backend, the computation looks as follows:
     """,
     )
     a = sp.Symbol("a")
@@ -606,8 +605,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     _append_to_docstring(
         relativistic_breit_wigner_with_ff,
         Rf"""
-    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form
-    factor is:
+    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form factor is:
 
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff

@@ -54,11 +54,11 @@ from ampform.sympy.math import ComplexSqrt
 class HelicityAdapter:
     r"""Converter for four-momenta to kinematic variable data.
 
-    The `.create_expressions` method forms the bridge between four-momentum
-    data for the decay you are studying and the kinematic variables that are in
-    the `.HelicityModel`. These are invariant mass (see
-    :func:`.get_invariant_mass_symbol`) and the :math:`\theta` and :math:`\phi`
-    helicity angles (see :func:`.get_helicity_angle_symbols`).
+    The `.create_expressions` method forms the bridge between four-momentum data for the
+    decay you are studying and the kinematic variables that are in the `.HelicityModel`.
+    These are invariant mass (see :func:`.get_invariant_mass_symbol`) and the
+    :math:`\theta` and :math:`\phi` helicity angles (see
+    :func:`.get_helicity_angle_symbols`).
     """
 
     def __init__(
@@ -175,16 +175,14 @@ def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
 FourMomenta = Dict[int, "FourMomentumSymbol"]
 """A mapping of state IDs to their corresponding `FourMomentumSymbol`.
 
-It's best to create a `dict` of `FourMomenta` with
-:func:`create_four_momentum_symbols`.
+It's best to create a `dict` of `FourMomenta` with :func:`create_four_momentum_symbols`.
 """
 FourMomentumSymbol = ArraySymbol
 r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
-The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number
-of events. The four-momenta are assumed to be in the order
-:math:`\left(E,\vec{p}\right)`. See also `Energy`, `FourMomentumX`,
-`FourMomentumY`, and `FourMomentumZ`.
+The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number of
+events. The four-momenta are assumed to be in the order :math:`\left(E,\vec{p}\right)`.
+See also `Energy`, `FourMomentumX`, `FourMomentumY`, and `FourMomentumZ`.
 """
 
 
@@ -831,10 +829,10 @@ def compute_helicity_angles(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Formulate expressions for all helicity angles in a topology.
 
-    Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles
-    appearing in a given `~qrules.topology.Topology`. The expressions are given
-    in terms of `FourMomenta` The expressions returned as values in a `dict`,
-    where the keys are defined by :func:`.get_helicity_angle_symbols`.
+    Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles appearing in
+    a given `~qrules.topology.Topology`. The expressions are given in terms of
+    `FourMomenta` The expressions returned as values in a `dict`, where the keys are
+    defined by :func:`.get_helicity_angle_symbols`.
 
     Example
     -------
@@ -948,9 +946,8 @@ def compute_wigner_angles(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
 
-    Implementation of (B.2-4) in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, with :math:`x'_z` etc.
-    taken from the result of :func:`compute_wigner_rotation_matrix`.
+    Implementation of (B.2-4) in :cite:`marangottoHelicityAmplitudesGeneric2020`, with
+    :math:`x'_z` etc. taken from the result of :func:`compute_wigner_rotation_matrix`.
     """
     wigner_rotation_matrix = compute_wigner_rotation_matrix(topology, momenta, state_id)
     x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
@@ -974,8 +971,7 @@ def compute_wigner_rotation_matrix(
 ) -> MatrixMultiplication:
     """Compute a Wigner rotation matrix.
 
-    Implementation of Eq. (36) in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`.
+    Implementation of Eq. (36) in :cite:`marangottoHelicityAmplitudesGeneric2020`.
     """
     momentum = momenta[state_id]
     inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
@@ -1024,9 +1020,9 @@ def get_four_momentum_sum(
 ) -> ArraySum | FourMomentumSymbol:
     """Get the `FourMomentumSymbol` or sum of momenta for **any** edge ID.
 
-    If the edge ID is a final state ID, return its `FourMomentumSymbol`. If
-    it's an intermediate edge ID, return the sum of the momenta of the final
-    states to which it decays.
+    If the edge ID is a final state ID, return its `FourMomentumSymbol`. If it's an
+    intermediate edge ID, return the sum of the momenta of the final states to which it
+    decays.
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topology = create_isobar_topologies(3)[0]
@@ -1047,17 +1043,16 @@ def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
 
     Example
     -------
-    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant
-    mass of state :math:`5` is :math:`m_{034}`, because
-    :math:`p_5=p_0+p_3+p_4`:
+    In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant mass of
+    state :math:`5` is :math:`m_{034}`, because :math:`p_5=p_0+p_3+p_4`:
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
     >>> get_invariant_mass_symbol(topologies[0], state_id=5)
     m_034
 
-    Naturally, the 'invariant' mass label for a final state is just the mass of
-    the state itself:
+    Naturally, the 'invariant' mass label for a final state is just the mass of the
+    state itself:
 
     >>> get_invariant_mass_symbol(topologies[0], state_id=1)
     m_1

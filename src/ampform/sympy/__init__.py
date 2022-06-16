@@ -18,20 +18,20 @@ from sympy.printing.precedence import PRECEDENCE
 class UnevaluatedExpression(sp.Expr):
     """Base class for expression classes with an :meth:`evaluate` method.
 
-    Deriving from `~sympy.core.expr.Expr` allows us to keep expression trees
-    condense before unfolding them with their `~sympy.core.basic.Basic.doit`
-    method. This allows us to:
+    Deriving from `~sympy.core.expr.Expr` allows us to keep expression trees condense
+    before unfolding them with their `~sympy.core.basic.Basic.doit` method. This allows
+    us to:
 
-    1. condense the LaTeX representation of an expression tree by providing a
-       custom :meth:`_latex` method.
+    1. condense the LaTeX representation of an expression tree by providing a custom
+       :meth:`_latex` method.
     2. overwrite its printer methods (see `NumPyPrintable` and e.g.
        :doc:`compwa-org:report/001`).
 
-    The `UnevaluatedExpression` base class makes implementations of its derived
-    classes more secure by enforcing the developer to provide implementations
-    for these methods, so that SymPy mechanisms work correctly. Decorators like
-    :func:`implement_expr` and :func:`implement_doit_method` provide convenient
-    means to implement the missing methods.
+    The `UnevaluatedExpression` base class makes implementations of its derived classes
+    more secure by enforcing the developer to provide implementations for these methods,
+    so that SymPy mechanisms work correctly. Decorators like :func:`implement_expr` and
+    :func:`implement_doit_method` provide convenient means to implement the missing
+    methods.
 
     .. autolink-preface::
 
@@ -57,9 +57,9 @@ class UnevaluatedExpression(sp.Expr):
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
-        `~sympy.core.basic.Basic.args`, assumptions etc. Overwrite it in order
-        to further specify its signature. The function
-        :func:`create_expression` can be used in its implementation, like so:
+        `~sympy.core.basic.Basic.args`, assumptions etc. Overwrite it in order to
+        further specify its signature. The function :func:`create_expression` can be
+        used in its implementation, like so:
 
         >>> class MyExpression(UnevaluatedExpression):
         ...    def __new__(
@@ -137,34 +137,32 @@ class UnevaluatedExpression(sp.Expr):
 class NumPyPrintable(sp.Expr):
     r"""`~sympy.core.expr.Expr` class that can lambdify to NumPy code.
 
-    This interface for classes that derive from `sympy.Expr
-    <sympy.core.expr.Expr>` enforce the implementation of a :meth:`_numpycode`
-    method in case the class does not correctly
-    :func:`~sympy.utilities.lambdify.lambdify` to NumPy code. For more info on
+    This interface for classes that derive from `sympy.Expr <sympy.core.expr.Expr>`
+    enforce the implementation of a :meth:`_numpycode` method in case the class does not
+    correctly :func:`~sympy.utilities.lambdify.lambdify` to NumPy code. For more info on
     SymPy printers, see :doc:`sympy:modules/printing`.
 
-    Several computational frameworks try to converge their interface to that of
-    NumPy. See for instance `TensorFlow's NumPy API
+    Several computational frameworks try to converge their interface to that of NumPy.
+    See for instance `TensorFlow's NumPy API
     <https://www.tensorflow.org/guide/tf_numpy>`_ and `jax.numpy
-    <https://jax.readthedocs.io/en/latest/jax.numpy.html>`_. This fact is used
-    in `TensorWaves <https://tensorwaves.rtfd.io>`_ to
-    :func:`~sympy.utilities.lambdify.lambdify` SymPy expressions to these
-    different backends with the same lambdification code.
+    <https://jax.readthedocs.io/en/latest/jax.numpy.html>`_. This fact is used in
+    `TensorWaves <https://tensorwaves.rtfd.io>`_ to
+    :func:`~sympy.utilities.lambdify.lambdify` SymPy expressions to these different
+    backends with the same lambdification code.
 
-    .. note:: This interface differs from `UnevaluatedExpression` in that it
-        **should not** implement an :meth:`.evaluate` (and therefore a
+    .. note:: This interface differs from `UnevaluatedExpression` in that it **should
+        not** implement an :meth:`.evaluate` (and therefore a
         :meth:`~sympy.core.basic.Basic.doit`) method.
 
 
-    .. warning:: The implemented :meth:`_numpycode` method should countain as
-        little SymPy computations as possible. Instead, it should get most
-        information from its construction `~sympy.core.basic.Basic.args`, so
-        that SymPy can use printer tricks like
-        :func:`~sympy.simplify.cse_main.cse`, prior expanding with
-        :meth:`~sympy.core.basic.Basic.doit`, and other simplifications that
-        can make the generated code shorter. An example is the `.BoostZMatrix`
-        class, which takes :math:`\beta` as input instead of the
-        `.FourMomentumSymbol` from which :math:`\beta` is computed.
+    .. warning:: The implemented :meth:`_numpycode` method should countain as little
+        SymPy computations as possible. Instead, it should get most information from its
+        construction `~sympy.core.basic.Basic.args`, so that SymPy can use printer
+        tricks like :func:`~sympy.simplify.cse_main.cse`, prior expanding with
+        :meth:`~sympy.core.basic.Basic.doit`, and other simplifications that can make
+        the generated code shorter. An example is the `.BoostZMatrix` class, which takes
+        :math:`\beta` as input instead of the `.FourMomentumSymbol` from which
+        :math:`\beta` is computed.
 
     .. automethod:: _numpycode
     """
@@ -183,9 +181,8 @@ def implement_expr(
 ) -> Callable[[type[DecoratedClass]], type[DecoratedClass]]:
     """Decorator for classes that derive from `UnevaluatedExpression`.
 
-    Implement a :meth:`~object.__new__` and
-    :meth:`~sympy.core.basic.Basic.doit` method for a class that derives from
-    `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
+    Implement a :meth:`~object.__new__` and :meth:`~sympy.core.basic.Basic.doit` method
+    for a class that derives from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
 
     def decorator(
@@ -235,11 +232,11 @@ def implement_doit_method(
 ) -> type[DecoratedClass]:
     """Implement ``doit()`` method for an `UnevaluatedExpression` class.
 
-    Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that
-    derives from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`). A
+    Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that derives
+    from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`). A
     :meth:`~sympy.core.basic.Basic.doit` method is an extension of an
-    :meth:`~.UnevaluatedExpression.evaluate` method in the sense that it can
-    work recursively on deeper expression trees.
+    :meth:`~.UnevaluatedExpression.evaluate` method in the sense that it can work
+    recursively on deeper expression trees.
     """
 
     @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
@@ -317,8 +314,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     `~sympy.tensor.indexed.Indexed` instances.
 
     To convert these `~sympy.tensor.indexed.Indexed` instances to a
-    `~sympy.core.symbol.Symbol`, use
-    :func:`symplot.substitute_indexed_symbols`.
+    `~sympy.core.symbol.Symbol`, use :func:`symplot.substitute_indexed_symbols`.
 
     >>> create_symbol_matrix("A", m=2, n=3)
     Matrix([

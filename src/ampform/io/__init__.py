@@ -1,7 +1,7 @@
 """Input-output functions for `ampform` and `sympy` objects.
 
-.. tip:: This function are registered with :func:`functools.singledispatch`
-    and can be extended as follows:
+.. tip:: This function are registered with :func:`functools.singledispatch` and can be
+    extended as follows:
 
     >>> from ampform.io import aslatex
     >>> @aslatex.register(int)

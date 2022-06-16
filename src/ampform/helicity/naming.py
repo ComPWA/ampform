@@ -320,18 +320,17 @@ def get_helicity_angle_symbols(
 def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 
-    The generated subscripts describe the decay sequence from the right to the
-    left, separated by commas. Resonance edge IDs are expressed as a sum of the
-    final state IDs that lie below them (see
-    :func:`.determine_attached_final_state`). The generated label does not
-    state the top-most edge (the initial state).
+    The generated subscripts describe the decay sequence from the right to the left,
+    separated by commas. Resonance edge IDs are expressed as a sum of the final state
+    IDs that lie below them (see :func:`.determine_attached_final_state`). The generated
+    label does not state the top-most edge (the initial state).
 
     Example
     -------
-    The following two allowed isobar topologies for a **1-to-5-body** decay
-    illustrates how the naming scheme results in a unique label for each of the
-    **eight edges** in the decay topology. Note that label only uses final
-    state IDs, but still reflects the internal decay topology.
+    The following two allowed isobar topologies for a **1-to-5-body** decay illustrates
+    how the naming scheme results in a unique label for each of the **eight edges** in
+    the decay topology. Note that label only uses final state IDs, but still reflects
+    the internal decay topology.
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)

@@ -2,10 +2,10 @@
 # pylint: disable=unbalanced-tuple-unpacking
 """Different parametrizations of phase space factors.
 
-Phase space factors are computed by integrating over the phase space element
-given by Equation (49.12) in :pdg-review:`2021; Kinematics; p.2`. See also
-Equation (50.9) on :pdg-review:`2021; Resonances; p.6`. This integral is not
-always easy to solve, which leads to different parametrizations.
+Phase space factors are computed by integrating over the phase space element given by
+Equation (49.12) in :pdg-review:`2021; Kinematics; p.2`. See also Equation (50.9) on
+:pdg-review:`2021; Resonances; p.6`. This integral is not always easy to solve, which
+leads to different parametrizations.
 
 This module provides several parametrizations. They all comply with the
 `PhaseSpaceFactorProtocol`, so that they can be used in parametrizations like
@@ -37,8 +37,8 @@ else:
 class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by `.EnergyDependentWidth`.
 
-    Use this `~typing.Protocol` when defining other implementations of a phase
-    space factor. Some implementations:
+    Use this `~typing.Protocol` when defining other implementations of a phase space
+    factor. Some implementations:
 
     - `PhaseSpaceFactor`
     - `PhaseSpaceFactorAbs`
@@ -46,8 +46,8 @@ class PhaseSpaceFactorProtocol(Protocol):
     - `PhaseSpaceFactorSWave`
     - `EqualMassPhaseSpaceFactor`
 
-    Even `BreakupMomentumSquared` and :func:`chew_mandelstam_s_wave` comply
-    with this protocol, but are technically speaking not phase space factors.
+    Even `BreakupMomentumSquared` and :func:`chew_mandelstam_s_wave` comply with this
+    protocol, but are technically speaking not phase space factors.
     """
 
     def __call__(self, s, m_a, m_b) -> sp.Expr:
@@ -55,8 +55,8 @@ class PhaseSpaceFactorProtocol(Protocol):
 
         Args:
             s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
-                Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the
-                invariant mass of decaying particle :math:`R`.
+                Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the invariant
+                mass of decaying particle :math:`R`.
 
             m_a: Mass of decay product :math:`a`.
             m_b: Mass of decay product :math:`b`.
@@ -67,15 +67,15 @@ class PhaseSpaceFactorProtocol(Protocol):
 class BreakupMomentumSquared(UnevaluatedExpression):
     r"""Squared value of the two-body break-up momentum.
 
-    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the
-    absolute value of the momentum of both :math:`a` and :math:`b` in the rest
-    frame of :math:`R`. See Equation (49.17) on :pdg-review:`2021; Kinematics;
-    p.3`, as well as Equation (50.5) on :pdg-review:`2021; Resonances; p.5`.
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
+    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
+    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
+    on :pdg-review:`2021; Resonances; p.5`.
 
     It's up to the caller in which way to take the square root of this break-up
-    momentum, because :math:`q^2` can have negative values for non-zero
-    :math:`m_a,m_b`. In this case, one may want to use `.ComplexSqrt` instead
-    of the standard :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    momentum, because :math:`q^2` can have negative values for non-zero :math:`m_a,m_b`.
+    In this case, one may want to use `.ComplexSqrt` instead of the standard
+    :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
     """
 
     is_commutative = True
@@ -124,12 +124,11 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
     r"""Phase space factor square root over the absolute value.
 
     As opposed to `.PhaseSpaceFactor`, this takes the
-    `~sympy.functions.elementary.complexes.Abs` value of
-    `.BreakupMomentumSquared`, then the
-    :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentumSquared`, then
+    the :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
 
-    This version of the phase space factor is often denoted as
-    :math:`\hat{\rho}` and is used in `.EqualMassPhaseSpaceFactor`.
+    This version of the phase space factor is often denoted as :math:`\hat{\rho}` and is
+    used in `.EqualMassPhaseSpaceFactor`.
     """
 
     is_commutative = True
@@ -180,9 +179,8 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
 class PhaseSpaceFactorSWave(UnevaluatedExpression):
     r"""Phase space factor using :func:`chew_mandelstam_s_wave`.
 
-    This `PhaseSpaceFactor` provides an analytic continuation for decay
-    products with both equal and unequal masses (compare
-    `EqualMassPhaseSpaceFactor`).
+    This `PhaseSpaceFactor` provides an analytic continuation for decay products with
+    both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
     """
 
     is_commutative = True
@@ -229,8 +227,8 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
 
-    **Warning**: The PDG specifically derives this formula for a two-body decay
-    *with equal masses*.
+    **Warning**: The PDG specifically derives this formula for a two-body decay *with
+    equal masses*.
     """
 
     is_commutative = True

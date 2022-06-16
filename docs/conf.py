@@ -1,8 +1,7 @@
 """Configuration file for the Sphinx documentation builder.
 
-This file only contains a selection of the most common options. For a full
-list see the documentation:
-https://www.sphinx-doc.org/en/master/usage/configuration.html
+This file only contains a selection of the most common options. For a full list see the
+documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
 import os
@@ -358,8 +357,8 @@ myst_substitutions = {
     "run_interactive": f"""
 ```{{margin}}
 Run this notebook [on Binder]({BINDER_LINK}) or
-{{ref}}`locally on Jupyter Lab <compwa-org:develop:Jupyter Notebooks>` to
-interactively modify the parameters.
+{{ref}}`locally on Jupyter Lab <compwa-org:develop:Jupyter Notebooks>` to interactively
+modify the parameters.
 ```
 """,
 }

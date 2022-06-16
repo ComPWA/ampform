@@ -33,8 +33,8 @@ class TwoBodyDecay:
 
     This container class ensures that:
 
-    1. a selected node in a `~qrules.transition.StateTransition` is indeed a
-       1-to-2 body decay
+    1. a selected node in a `~qrules.transition.StateTransition` is indeed a 1-to-2 body
+       decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
        `.get_helicity_angle_symbols`, `.formulate_wigner_d`, and
@@ -104,8 +104,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     """Determine if an edge is an "opposite helicity" state.
 
     This function provides a deterministic way of identifying states in a
-    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state.
-    It enforces that:
+    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state. It enforces
+    that:
 
     1. state :code:`0` is never an opposite helicity state
     2. the sibling of an opposite helicity state is a helicity state.
@@ -122,16 +122,16 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     ...             topology, sibling_id
     ...         )
 
-    The Wigner-:math:`D` function for a two-particle state treats one helicity
-    with a negative sign. This sign originates from Eq.(13) in
+    The Wigner-:math:`D` function for a two-particle state treats one helicity with a
+    negative sign. This sign originates from Eq.(13) in
     :cite:`jacobGeneralTheoryCollisions1959` (see also Eq.(6) in
     :cite:`marangottoHelicityAmplitudesGeneric2020`). Following
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that
-    gets this minus sign the **"opposite helicity" state**. The other state is
-    called **helicity state**. The choice of (opposite) helicity state affects
-    not only the sign in the Wigner-:math:`D` function, but also the choice of
-    angles: the argument of the Wigner-:math:`D` function returned by
-    :func:`.formulate_wigner_d` are the angles of the helicity state.
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that gets this
+    minus sign the **"opposite helicity" state**. The other state is called **helicity
+    state**. The choice of (opposite) helicity state affects not only the sign in the
+    Wigner-:math:`D` function, but also the choice of angles: the argument of the
+    Wigner-:math:`D` function returned by :func:`.formulate_wigner_d` are the angles of
+    the helicity state.
     """
     sibling_id = get_sibling_state_id(topology, state_id)
     state_fs_ids = determine_attached_final_state(topology, state_id)
@@ -152,8 +152,8 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
               \
                2
 
-    The sibling state of :code:`1` is :code:`2` and the sibling state of
-    :code:`3` is :code:`4`.
+    The sibling state of :code:`1` is :code:`2` and the sibling state of :code:`3` is
+    :code:`4`.
     """
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
@@ -271,8 +271,8 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
 def determine_attached_final_state(topology: Topology, state_id: int) -> list[int]:
     """Determine all final state particles of a transition.
 
-    These are attached downward (forward in time) for a given edge (resembling
-    the root).
+    These are attached downward (forward in time) for a given edge (resembling the
+    root).
 
     Example
     -------

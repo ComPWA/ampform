@@ -2,16 +2,15 @@
 # pylint: disable=redefined-builtin
 """Create interactive plots for `sympy` expressions.
 
-The procedure to create interactive plots with for :mod:`sympy` expressions
-with :doc:`mpl-interactions <mpl_interactions:index>` has been extracted to
-this module.
+The procedure to create interactive plots with for :mod:`sympy` expressions with
+:doc:`mpl-interactions <mpl_interactions:index>` has been extracted to this module.
 
-The module is only available here, under the documentation. If this feature
-turns out to be popular, it can be published as an independent package.
+The module is only available here, under the documentation. If this feature turns out to
+be popular, it can be published as an independent package.
 
 The package also provides other helpful functions, like
-:func:`substitute_indexed_symbols`, that are useful when visualizing
-`sympy` expressions.
+:func:`substitute_indexed_symbols`, that are useful when visualizing `sympy`
+expressions.
 """
 from __future__ import annotations
 
@@ -55,9 +54,8 @@ RangeDefinition = Union[
 class SliderKwargs(abc.Mapping):
     """Wrapper around a `dict` of sliders that can serve as keyword arguments.
 
-    Sliders can be defined in :func:`~mpl_interactions.pyplot.interactive_plot`
-    through :term:`kwargs <python:keyword argument>`. This wrapper class can be
-    used for that.
+    Sliders can be defined in :func:`~mpl_interactions.pyplot.interactive_plot` through
+    :term:`kwargs <python:keyword argument>`. This wrapper class can be used for that.
 
     .. automethod:: __getitem__
     """
@@ -122,8 +120,8 @@ class SliderKwargs(abc.Mapping):
     def __iter__(self) -> Iterator[str]:
         """Iterate over the arguments of the `.LambdifiedExpression`.
 
-        This is useful for unpacking an instance of `SliderKwargs` as
-        :term:`kwargs <python:keyword argument>`.
+        This is useful for unpacking an instance of `SliderKwargs` as :term:`kwargs
+        <python:keyword argument>`.
         """
         return self._arg_to_symbol.__iter__()
 
@@ -174,9 +172,7 @@ class SliderKwargs(abc.Mapping):
     ) -> None:
         """Set min, max and (optionally) the nr of steps for each slider.
 
-        .. tip::
-            :code:`n_steps` becomes the step **size** if its value is
-            `float`.
+        .. tip:: :code:`n_steps` becomes the step **size** if its value is `float`.
         """
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
@@ -332,8 +328,8 @@ def partial_doit(
     ---------
     expression: the `~sympy.core.expr.Expr` on which you want to perform a
         :meth:`~sympy.core.basic.Basic.doit`.
-    doit_classes: types on which the :meth:`~sympy.core.basic.Basic.doit`
-        should be performed.
+    doit_classes: types on which the :meth:`~sympy.core.basic.Basic.doit` should be
+        performed.
     """
     new_expression = expression
     for node in sp.preorder_traversal(expression):
