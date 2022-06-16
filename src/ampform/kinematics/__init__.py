@@ -31,10 +31,7 @@ from ampform.helicity.decay import (
     is_opposite_helicity_state,
     list_decay_chain_ids,
 )
-from ampform.helicity.naming import (
-    get_helicity_angle_symbols,
-    get_helicity_suffix,
-)
+from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
 from ampform.sympy import (
     NumPyPrintable,
     UnevaluatedExpression,
@@ -106,8 +103,7 @@ class HelicityAdapter:
                 permuted_topology = attrs.evolve(
                     topology,
                     edges={
-                        id_mapping.get(i, i): edge
-                        for i, edge in topology.edges.items()
+                        id_mapping.get(i, i): edge for i, edge in topology.edges.items()
                     },
                 )
                 self.__topologies.add(permuted_topology)
@@ -151,9 +147,7 @@ def _(transitions: abc.Iterable) -> set[Topology]:
 
 @singledispatch
 def _get_topology(obj) -> Topology:
-    raise TypeError(
-        f"Cannot create a {Topology.__name__} from a {type(obj).__name__}"
-    )
+    raise TypeError(f"Cannot create a {Topology.__name__} from a {type(obj).__name__}")
 
 
 @_get_topology.register(Topology)
@@ -175,9 +169,7 @@ def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
     {0: p0, 1: p1, 2: p2}
     """
     n_final_states = len(topology.outgoing_edge_ids)
-    return {
-        i: FourMomentumSymbol(f"p{i}", shape=[]) for i in range(n_final_states)
-    }
+    return {i: FourMomentumSymbol(f"p{i}", shape=[]) for i in range(n_final_states)}
 
 
 FourMomenta = Dict[int, "FourMomentumSymbol"]
@@ -284,9 +276,7 @@ class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def evaluate(self) -> ArraySlice:
-        three_momentum = ArraySlice(
-            self._momentum, (slice(None), slice(1, None))
-        )
+        three_momentum = ArraySlice(self._momentum, (slice(None), slice(1, None)))
         return three_momentum
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -457,9 +447,7 @@ class MinkowskiMetric(NumPyPrintable):
         return R"\boldsymbol{\eta}"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
-        printer.module_imports[printer._module].update(
-            {"array", "ones", "zeros"}
-        )
+        printer.module_imports[printer._module].update({"array", "ones", "zeros"})
         momentum = printer._print(self._momentum)
         n_events = f"len({momentum})"
         zeros = f"zeros({n_events})"
@@ -529,9 +517,7 @@ class _BoostZMatrixImplementation(NumPyPrintable):
         zeros: _ZerosArray,
         **hints,
     ) -> _BoostZMatrixImplementation:
-        return create_expression(
-            cls, beta, gamma, gamma_beta, ones, zeros, **hints
-        )
+        return create_expression(cls, beta, gamma, gamma_beta, ones, zeros, **hints)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         beta = printer._print(self.args[0])
@@ -718,9 +704,7 @@ class _RotationYMatrixImplementation(NumPyPrintable):
         zeros: _ZerosArray,
         **hints,
     ) -> _RotationYMatrixImplementation:
-        return create_expression(
-            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
-        )
+        return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         angle, *_ = self.args
@@ -793,9 +777,7 @@ class _RotationZMatrixImplementation(NumPyPrintable):
         zeros: _ZerosArray,
         **hints,
     ) -> _RotationZMatrixImplementation:
-        return create_expression(
-            cls, angle, cos_angle, sin_angle, ones, zeros, **hints
-        )
+        return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         angle, *_ = self.args
@@ -877,12 +859,8 @@ def compute_helicity_angles(
         four_momenta: Mapping[int, sp.Expr], node_id: int
     ) -> dict[sp.Symbol, sp.Expr]:
         helicity_angles: dict[sp.Symbol, sp.Expr] = {}
-        child_state_ids = sorted(
-            topology.get_edge_ids_outgoing_from_node(node_id)
-        )
-        if all(
-            topology.edges[i].ending_node_id is None for i in child_state_ids
-        ):
+        child_state_ids = sorted(topology.get_edge_ids_outgoing_from_node(node_id))
+        if all(topology.edges[i].ending_node_id is None for i in child_state_ids):
             state_id = child_state_ids[0]
             if is_opposite_helicity_state(topology, state_id):
                 state_id = child_state_ids[1]
@@ -894,9 +872,7 @@ def compute_helicity_angles(
             edge = topology.edges[state_id]
             if edge.ending_node_id is not None:
                 # recursively determine all momenta ids in the list
-                sub_momenta_ids = determine_attached_final_state(
-                    topology, state_id
-                )
+                sub_momenta_ids = determine_attached_final_state(topology, state_id)
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
                     four_momentum = ArraySum(
@@ -938,9 +914,7 @@ def compute_helicity_angles(
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
     assert initial_state_edge.ending_node_id is not None
-    return __recursive_helicity_angles(
-        four_momenta, initial_state_edge.ending_node_id
-    )
+    return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 
 def _get_number_of_events(
@@ -962,9 +936,7 @@ def compute_invariant_masses(
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
-        total_momentum = ArraySum(
-            *[four_momenta[i] for i in attached_state_ids]
-        )
+        total_momentum = ArraySum(*[four_momenta[i] for i in attached_state_ids])
         expr = InvariantMass(total_momentum)
         symbol = get_invariant_mass_symbol(topology, state_id)
         invariant_masses[symbol] = expr
@@ -980,9 +952,7 @@ def compute_wigner_angles(
     :cite:`marangottoHelicityAmplitudesGeneric2020`, with :math:`x'_z` etc.
     taken from the result of :func:`compute_wigner_rotation_matrix`.
     """
-    wigner_rotation_matrix = compute_wigner_rotation_matrix(
-        topology, momenta, state_id
-    )
+    wigner_rotation_matrix = compute_wigner_rotation_matrix(topology, momenta, state_id)
     x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
     y_z = ArraySlice(wigner_rotation_matrix, (slice(None), 2, 3))
     z_x = ArraySlice(wigner_rotation_matrix, (slice(None), 3, 1))
@@ -1019,15 +989,13 @@ def compute_boost_chain(
     boost_matrices = []
     decay_chain_state_ids = __get_boost_chain_ids(topology, state_id)
     boosted_momenta: dict[int, sp.Expr] = {
-        i: get_four_momentum_sum(topology, momenta, i)
-        for i in decay_chain_state_ids
+        i: get_four_momentum_sum(topology, momenta, i) for i in decay_chain_state_ids
     }
     for current_state_id in decay_chain_state_ids:
         current_momentum = boosted_momenta[current_state_id]
         boost = BoostMatrix(current_momentum)
         boosted_momenta = {
-            i: ArrayMultiplication(boost, p)
-            for i, p in boosted_momenta.items()
+            i: ArrayMultiplication(boost, p) for i, p in boosted_momenta.items()
         }
         boost_matrices.append(boost)
     return boost_matrices
@@ -1045,9 +1013,7 @@ def __get_boost_chain_ids(topology: Topology, state_id: int) -> list[int]:
     >>> __get_boost_chain_ids(topology, state_id=2)
     [3, 2]
     """
-    decay_chain_state_ids = list(
-        reversed(list_decay_chain_ids(topology, state_id))
-    )
+    decay_chain_state_ids = list(reversed(list_decay_chain_ids(topology, state_id)))
     initial_state_id = next(iter(topology.incoming_edge_ids))
     decay_chain_state_ids.remove(initial_state_id)
     return decay_chain_state_ids

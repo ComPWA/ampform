@@ -16,9 +16,7 @@ class TestNonRelativisticKMatrix:
         [1, 2, pytest.param(3, marks=pytest.mark.slow)],
     )
     def test_breit_wigner(self, n_channels: int):
-        k_matrix = NonRelativisticKMatrix.formulate(
-            n_poles=1, n_channels=n_channels
-        )
+        k_matrix = NonRelativisticKMatrix.formulate(n_poles=1, n_channels=n_channels)
         breit_wigner = k_matrix[0, 0].doit().simplify()
         breit_wigner = substitute_indexed_symbols(breit_wigner)
         breit_wigner = _remove_residue_constants(breit_wigner)
@@ -43,9 +41,7 @@ class TestNonRelativisticKMatrix:
 
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
     free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
-    residue_constants = filter(
-        lambda s: s.name.startswith(R"\gamma_"), free_symbols
-    )
+    residue_constants = filter(lambda s: s.name.startswith(R"\gamma_"), free_symbols)
     return expression.xreplace({gamma: 1 for gamma in residue_constants})
 
 

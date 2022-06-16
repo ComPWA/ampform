@@ -38,16 +38,11 @@ def calculate_sympy_integral(
     )
 
 
-def normalize(
-    sympy_expression: sp.Expr, variable_names: Sequence[str]
-) -> sp.Expr:
+def normalize(sympy_expression: sp.Expr, variable_names: Sequence[str]) -> sp.Expr:
     variables = [sp.Symbol(x, real=True) for x in variable_names]
     normalization = sp.integrate(
         sympy_expression,
-        *(
-            (x, -sp.pi, sp.pi) if "phi" in x.name else (x, 0, sp.pi)
-            for x in variables
-        ),
+        *((x, -sp.pi, sp.pi) if "phi" in x.name else (x, 0, sp.pi) for x in variables),
     )
     return sp.trigsimp((sympy_expression / normalization).expand(trig=True))
 
@@ -96,9 +91,7 @@ class TestEpemToDmD0Pip:
             ),
             (  # cos(theta') distribution from D2*
                 "theta_0^02",
-                1
-                - (2 * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2 - 1)
-                ** 2,
+                1 - (2 * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2 - 1) ** 2,
             ),
             (  # phi' distribution of the D2* decay
                 "phi_0^02",
@@ -185,20 +178,15 @@ class TestD1ToD0PiPi:
             (  # theta distribution from D1 decay
                 "theta_02",
                 sp.Rational(5, 4)
-                + sp.Rational(3, 4)
-                * sp.cos(sp.Symbol("theta_02", real=True)) ** 2,
+                + sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_02", real=True)) ** 2,
             ),
             (  # theta distribution from D*
                 "theta_0^02",
-                1
-                - sp.Rational(3, 4)
-                * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2,
+                1 - sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2,
             ),
             (  # phi distribution of the D* decay
                 "phi_0^02",
-                1
-                - sp.Rational(4, 9)
-                * sp.cos(2 * sp.Symbol("phi_0^02", real=True)),
+                1 - sp.Rational(4, 9) * sp.cos(2 * sp.Symbol("phi_0^02", real=True)),
             ),
         ],
     )

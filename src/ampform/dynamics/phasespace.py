@@ -154,8 +154,8 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 class PhaseSpaceFactorComplex(UnevaluatedExpression):
     """Phase-space factor with `.ComplexSqrt`.
 
-    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have
-    defined behavior for defined for negative input values.
+    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have defined
+    behavior for defined for negative input values.
     """
 
     is_commutative = True
@@ -172,11 +172,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
-        name = (
-            R"\rho^\mathrm{c}" + subscript
-            if self._name is None
-            else self._name
-        )
+        name = R"\rho^\mathrm{c}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
 
@@ -202,11 +198,7 @@ class PhaseSpaceFactorSWave(UnevaluatedExpression):
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
-        name = (
-            R"\rho^\mathrm{CM}" + subscript
-            if self._name is None
-            else self._name
-        )
+        name = R"\rho^\mathrm{CM}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
 
@@ -216,15 +208,11 @@ def chew_mandelstam_s_wave(s, m_a, m_b):
     q = ComplexSqrt(q_squared)
     left_term = sp.Mul(
         2 * q / sp.sqrt(s),
-        sp.log(
-            (m_a**2 + m_b**2 - s + 2 * sp.sqrt(s) * q) / (2 * m_a * m_b)
-        ),
+        sp.log((m_a**2 + m_b**2 - s + 2 * sp.sqrt(s) * q) / (2 * m_a * m_b)),
         evaluate=False,
     )
     right_term = (
-        (m_a**2 - m_b**2)
-        * (1 / s - 1 / (m_a + m_b) ** 2)
-        * sp.log(m_a / m_b)
+        (m_a**2 - m_b**2) * (1 / s - 1 / (m_a + m_b) ** 2) * sp.log(m_a / m_b)
     )
     # evaluate=False in order to keep same style as PDG
     return sp.Mul(
@@ -259,11 +247,7 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
-        name = (
-            R"\rho^\mathrm{eq}" + subscript
-            if self._name is None
-            else self._name
-        )
+        name = R"\rho^\mathrm{eq}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
 

@@ -98,19 +98,14 @@ class SliderKwargs(abc.Mapping):
                 )
         for slider_name in sliders:
             if not isinstance(slider_name, str):
-                raise TypeError(
-                    f'Slider name "{slider_name}" is not of type str'
-                )
+                raise TypeError(f'Slider name "{slider_name}" is not of type str')
             if slider_name not in symbol_names:
                 raise ValueError(
-                    f'Slider with name "{slider_name}" is not covered by '
-                    "arg_to_symbol"
+                    f'Slider with name "{slider_name}" is not covered by arg_to_symbol'
                 )
         for name, slider in sliders.items():
             if not isinstance(slider, Slider.__args__):  # type: ignore[attr-defined]
-                raise TypeError(
-                    f'Slider "{name}" is not a valid ipywidgets slider'
-                )
+                raise TypeError(f'Slider "{name}" is not a valid ipywidgets slider')
 
     def __getitem__(self, key: str | sp.Symbol) -> Slider:
         """Get slider by symbol, symbol name, or argument name."""
@@ -162,19 +157,16 @@ class SliderKwargs(abc.Mapping):
     def set_values(self, *args: dict[str, float], **kwargs: float) -> None:
         """Set initial values for the sliders.
 
-        Either use a `dict` as input, or use :term:`kwargs <python:keyword
-        argument>` with slider names as the keywords (see
-        `.SliderKwargs.__getitem__`). This façade method exists in particular
-        for `.parameter_defaults`.
+        Either use a `dict` as input, or use :term:`kwargs <python:keyword argument>`
+        with slider names as the keywords (see `.SliderKwargs.__getitem__`). This façade
+        method exists in particular for `.parameter_defaults`.
         """
         value_mapping = _merge_args_kwargs(*args, **kwargs)
         for keyword, value in value_mapping.items():
             try:
                 self[keyword].value = value
             except KeyError:
-                logging.warning(
-                    f'There is no slider with name or symbol "{keyword}"'
-                )
+                logging.warning(f'There is no slider with name or symbol "{keyword}"')
                 continue
 
     def set_ranges(  # noqa: R701
@@ -190,8 +182,7 @@ class SliderKwargs(abc.Mapping):
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
                 raise TypeError(
-                    f'Range definition for slider "{slider_name}" is not a'
-                    " tuple"
+                    f'Range definition for slider "{slider_name}" is not a tuple'
                 )
             slider = self[slider_name]
             if _is_min_max(range_def):
@@ -279,9 +270,7 @@ def prepare_sliders(
         expression,
         modules="numpy",
     )
-    sliders_mapping = {
-        symbol.name: create_slider(symbol) for symbol in slider_symbols
-    }
+    sliders_mapping = {symbol.name: create_slider(symbol) for symbol in slider_symbols}
     symbols_names = (s.name for s in (*plot_symbols, *slider_symbols))
     arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names))
@@ -330,9 +319,7 @@ def __safe_wrap_symbols(
         return tuple(plot_symbol)
     if isinstance(plot_symbol, sp.Symbol):
         return (plot_symbol,)
-    raise TypeError(
-        f"Wrong plot_symbol input type {type(plot_symbol).__name__}"
-    )
+    raise TypeError(f"Wrong plot_symbol input type {type(plot_symbol).__name__}")
 
 
 def partial_doit(
@@ -351,9 +338,7 @@ def partial_doit(
     new_expression = expression
     for node in sp.preorder_traversal(expression):
         if isinstance(node, doit_classes):
-            new_expression = new_expression.xreplace(
-                {node: node.doit(deep=False)}
-            )
+            new_expression = new_expression.xreplace({node: node.doit(deep=False)})
     return new_expression
 
 
@@ -397,9 +382,7 @@ def rename_symbols(
                 old_symbol = next(matches)
             except StopIteration:
                 # pylint: disable=raise-missing-from
-                raise KeyError(
-                    f"No symbol with name '{old_name}' in expression"
-                )
+                raise KeyError(f"No symbol with name '{old_name}' in expression")
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     else:

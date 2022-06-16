@@ -63,9 +63,7 @@ try:  # Sphinx >=4.4.0
         env: BuildEnvironment = None,
         suppress_prefix: bool = False,
     ) -> pending_xref:
-        reftype, target, title, refspecific = parse_reftarget(
-            target, suppress_prefix
-        )
+        reftype, target, title, refspecific = parse_reftarget(target, suppress_prefix)
         target = __TARGET_SUBSTITUTIONS.get(target, target)
         reftype = __REF_TYPE_SUBSTITUTIONS.get(target, reftype)
         assert env is not None

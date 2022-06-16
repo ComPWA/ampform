@@ -75,8 +75,8 @@ repos:
       - id: docformatter
         args:
           - --in-place
-          - --wrap-descriptions=79
-          - --wrap-summaries=79
+          - --wrap-descriptions=88
+          - --wrap-summaries=88
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: 2.4.0

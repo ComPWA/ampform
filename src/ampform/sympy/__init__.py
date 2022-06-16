@@ -217,9 +217,7 @@ def implement_new_method(
             **hints,
         ) -> DecoratedClass:
             if len(args) != n_args:
-                raise ValueError(
-                    f"{n_args} parameters expected, got {len(args)}"
-                )
+                raise ValueError(f"{n_args} parameters expected, got {len(args)}")
             args = sp.sympify(args)
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:

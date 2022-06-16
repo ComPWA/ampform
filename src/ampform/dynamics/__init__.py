@@ -77,9 +77,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             1: 2 * z / (z + 1),
             2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
             3: (
-                277
-                * z**3
-                / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
+                277 * z**3 / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
             ),
             4: (
                 12746
@@ -92,12 +90,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             5: 998881
             * z**5
             / (
-                z**5
-                + 15 * z**4
-                + 315 * z**3
-                + 6300 * z**2
-                + 99225 * z
-                + 893025
+                z**5 + 15 * z**4 + 315 * z**3 + 6300 * z**2 + 99225 * z + 893025
             ),
             6: 118394977
             * z**6
@@ -184,9 +177,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
         name: str | None = None,
         evaluate: bool = False,
     ) -> EnergyDependentWidth:
-        args = sp.sympify(
-            (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
-        )
+        args = sp.sympify((s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius))
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
         # Overwritting Basic.__new__ to store phase space factor type
@@ -260,9 +251,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     See :ref:`usage/dynamics:_With_ form factor` and
     :pdg-review:`2021; Resonances; p.9`.
     """
-    form_factor = formulate_form_factor(
-        s, m_a, m_b, angular_momentum, meson_radius
-    )
+    form_factor = formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
@@ -271,9 +260,7 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def formulate_form_factor(
-    s, m_a, m_b, angular_momentum, meson_radius
-) -> sp.Expr:
+def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
     """Formulate a Blatt-Weisskopf form factor.
 
     Returns the production process factor :math:`n_a` from Equation (50.26) in

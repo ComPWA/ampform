@@ -23,7 +23,6 @@ exclude = '''
 )/
 '''
 include = '\.pyi?$'
-line-length = 79
 preview = true
 target-version = [
     "py37",
@@ -33,7 +32,6 @@ target-version = [
 ]
 
 [tool.isort]
-line_length = 79
 profile = "black"
 src_paths = [
     "src",
@@ -42,6 +40,9 @@ src_paths = [
 known_third_party = "THIRDPARTY,sympy"
 
 [tool.nbqa.addopts]
+black = [
+    "--line-length=85",
+]
 flake8 = [
     "--extend-ignore=E402,F821",
 ]

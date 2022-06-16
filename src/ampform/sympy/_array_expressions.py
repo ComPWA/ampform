@@ -72,9 +72,7 @@ _ArrayExpr._iterable = False  # type: ignore[attr-defined]
 
 
 @overload
-def _array_symbol_getitem(
-    self: type[ArraySymbol], key: sp.Basic | int
-) -> ArrayElement:
+def _array_symbol_getitem(self: type[ArraySymbol], key: sp.Basic | int) -> ArrayElement:
     ...
 
 
@@ -167,9 +165,7 @@ def _compute_slice_size(idx, axis_size):  # noqa: R701
     return size
 
 
-def normalize(  # noqa: R701
-    i, parentsize
-) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
+def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R701
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
     if not isinstance(i, (tuple, list, sp.Tuple)):
@@ -193,9 +189,7 @@ def normalize(  # noqa: R701
         if ((stop - start) * step < 1) == True:  # noqa: E712
             raise IndexError()
 
-    start, stop, step = tuple(
-        none if i is None else i for i in (start, stop, step)
-    )
+    start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
     return start, stop, step
 
 
@@ -208,9 +202,7 @@ def _print_latex_ArrayElement(  # noqa: N802
     return f"{{{parent}}}_{{{indices}}}"
 
 
-def _print_latex_ArraySlice(  # noqa: N802
-    self: LatexPrinter, expr: ArraySlice
-) -> str:
+def _print_latex_ArraySlice(self: LatexPrinter, expr: ArraySlice) -> str:  # noqa: N802
     shape = getattr(expr.parent, "shape", ())
     stringified_indices = []
     for idx, axis_size in zip_longest(expr.indices, shape):
@@ -222,17 +214,13 @@ def _print_latex_ArraySlice(  # noqa: N802
     return Rf"{parent}\left[{indices}\right]"
 
 
-def _print_str_ArrayElement(  # noqa: N802
-    self: StrPrinter, expr: ArrayElement
-) -> str:
+def _print_str_ArrayElement(self: StrPrinter, expr: ArrayElement) -> str:  # noqa: N802
     parent = self.parenthesize(expr.parent, PRECEDENCE["Func"], True)
     indices = ", ".join(self._print(i) for i in expr.indices)
     return f"{parent}[{indices}]"
 
 
-def _print_str_ArraySlice(  # noqa: N802
-    self: StrPrinter, expr: ArraySlice
-) -> str:
+def _print_str_ArraySlice(self: StrPrinter, expr: ArraySlice) -> str:  # noqa: N802
     shape = getattr(expr.parent, "shape", ())
     stringified_indices = []
     for idx, axis_size in zip_longest(expr.indices, shape):

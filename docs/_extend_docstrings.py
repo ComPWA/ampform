@@ -45,9 +45,7 @@ def extend_docstrings() -> None:
             continue
         function_arguments = inspect.signature(definition).parameters
         if len(function_arguments):
-            raise ValueError(
-                f"Local function {name} should not have a signature"
-            )
+            raise ValueError(f"Local function {name} should not have a signature")
         definition()
 
 
@@ -249,12 +247,7 @@ def extend_EnergyDependentWidth() -> None:
 
 
 def extend_Energy_and_FourMomentumXYZ() -> None:
-    from ampform.kinematics import (
-        Energy,
-        FourMomentumX,
-        FourMomentumY,
-        FourMomentumZ,
-    )
+    from ampform.kinematics import Energy, FourMomentumX, FourMomentumY, FourMomentumZ
 
     def _extend(component_class: Type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")
@@ -282,9 +275,7 @@ def extend_formulate_form_factor() -> None:
     from ampform.dynamics import formulate_form_factor
 
     s, m_a, m_b, L, d = sp.symbols("s m_a m_b L d")
-    form_factor = formulate_form_factor(
-        s, m_a, m_b, angular_momentum=L, meson_radius=d
-    )
+    form_factor = formulate_form_factor(s, m_a, m_b, angular_momentum=L, meson_radius=d)
     _append_to_docstring(
         formulate_form_factor,
         f"""
@@ -646,10 +637,7 @@ def _append_code_rendering(
     numpy_code = textwrap.dedent(numpy_code)
     numpy_code = textwrap.indent(numpy_code, prefix=8 * " ").strip()
     options = ""
-    if (
-        max(__get_text_width(import_statements), __get_text_width(numpy_code))
-        > 90
-    ):
+    if max(__get_text_width(import_statements), __get_text_width(numpy_code)) > 90:
         options += ":class: full-width\n"
     appended_text = f"""\n
     .. code-block:: python
@@ -699,9 +687,7 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
     return textwrap.indent(latex, prefix=8 * " ")
 
 
-def _append_to_docstring(
-    class_type: Union[Callable, Type], appended_text: str
-) -> None:
+def _append_to_docstring(class_type: Union[Callable, Type], appended_text: str) -> None:
     assert class_type.__doc__ is not None
     class_type.__doc__ += appended_text
 

@@ -18,9 +18,7 @@ class StateWithID(State):
     id: int  # noqa: A003
 
     @classmethod
-    def from_transition(
-        cls, transition: StateTransition, state_id: int
-    ) -> StateWithID:
+    def from_transition(cls, transition: StateTransition, state_id: int) -> StateWithID:
         state = transition.states[state_id]
         return cls(
             id=state_id,
@@ -61,16 +59,12 @@ class TwoBodyDecay:
         return _create_two_body_decay(obj)
 
     @classmethod
-    def from_transition(
-        cls, transition: StateTransition, node_id: int
-    ) -> TwoBodyDecay:
+    def from_transition(cls, transition: StateTransition, node_id: int) -> TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
         if len(in_state_ids) != 1 or len(out_state_ids) != 2:
-            raise ValueError(
-                f"Node {node_id} does not represent a 1-to-2 body decay!"
-            )
+            raise ValueError(f"Node {node_id} does not represent a 1-to-2 body decay!")
         ingoing_state_id = next(iter(in_state_ids))
         out_state_id1, out_state_id2, *_ = tuple(out_state_ids)
         if is_opposite_helicity_state(topology, out_state_id1):
@@ -102,9 +96,7 @@ def _(obj: tuple) -> TwoBodyDecay:
     if len(obj) == 2:
         if isinstance(obj[0], StateTransition) and isinstance(obj[1], int):
             return TwoBodyDecay.from_transition(*obj)
-    raise NotImplementedError(
-        f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
-    )
+    raise NotImplementedError(f"Cannot create a {TwoBodyDecay.__name__} from {obj}")
 
 
 @lru_cache(maxsize=None)
@@ -248,10 +240,9 @@ def get_sorted_states(
 ) -> list[State]:
     """Get a sorted list of `~qrules.transition.State` instances.
 
-    In order to ensure correct naming of amplitude coefficients the list has to
-    be sorted by name. The same coefficient names have to be created for two
-    transitions that only differ from a kinematic standpoint (swapped external
-    edges).
+    In order to ensure correct naming of amplitude coefficients the list has to be
+    sorted by name. The same coefficient names have to be created for two transitions
+    that only differ from a kinematic standpoint (swapped external edges).
     """
     states = [transition.states[i] for i in state_ids]
     return sorted(states, key=lambda s: s.particle.name)
@@ -277,9 +268,7 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
         )
 
 
-def determine_attached_final_state(
-    topology: Topology, state_id: int
-) -> list[int]:
+def determine_attached_final_state(topology: Topology, state_id: int) -> list[int]:
     """Determine all final state particles of a transition.
 
     These are attached downward (forward in time) for a given edge (resembling
@@ -297,9 +286,7 @@ def determine_attached_final_state(
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:
         return [state_id]
-    return sorted(
-        topology.get_originating_final_state_edge_ids(edge.ending_node_id)
-    )
+    return sorted(topology.get_originating_final_state_edge_ids(edge.ending_node_id))
 
 
 def get_prefactor(transition: StateTransition) -> float:
@@ -320,10 +307,10 @@ def group_by_spin_projection(
 ) -> list[list[StateTransition]]:
     """Match final and initial states in groups.
 
-    Each `~qrules.transition.StateTransition` corresponds to a specific state
-    transition amplitude. This function groups together transitions, which have
-    the same initial and final state (including spin). This is needed to
-    determine the coherency of the individual amplitude parts.
+    Each `~qrules.transition.StateTransition` corresponds to a specific state transition
+    amplitude. This function groups together transitions, which have the same initial
+    and final state (including spin). This is needed to determine the coherency of the
+    individual amplitude parts.
     """
     transition_groups: DefaultDict[
         tuple[

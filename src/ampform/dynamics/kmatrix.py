@@ -207,9 +207,7 @@ class NonRelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels,
-    ) -> tuple[
-        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
-    ]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
         f_vector = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
@@ -286,9 +284,7 @@ class RelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels, return_f_hat: bool = False
-    ) -> tuple[
-        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
-    ]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         # pylint: disable=no-member
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
@@ -321,9 +317,7 @@ class RelativisticPVector(TMatrix):
                 :math:`T`-vector from Eq. :eq:`invariant-vectors`.
         """
         return_f_hat: bool = kwargs.pop("return_f_hat", False)
-        f_vector, k_matrix, p_vector = cls._create_matrices(
-            n_channels, return_f_hat
-        )
+        f_vector, k_matrix, p_vector = cls._create_matrices(n_channels, return_f_hat)
         if not parametrize:
             return f_vector
         phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(

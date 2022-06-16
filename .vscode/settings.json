@@ -26,7 +26,7 @@
   "coverage-gutters.showGutterCoverage": false,
   "coverage-gutters.showLineCoverage": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [80],
+  "editor.rulers": [88],
   "files.watcherExclude": {
     "**/*_cache/**": true,
     "**/.eggs/**": true,
@@ -60,7 +60,7 @@
   "python.testing.pytestArgs": ["--color=no", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "rewrap.wrappingColumn": 79,
+  "rewrap.wrappingColumn": 88,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
     "*/.pydocstyle": true,

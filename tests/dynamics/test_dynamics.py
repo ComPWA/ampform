@@ -37,9 +37,7 @@ class TestEnergyDependentWidth:
     @staticmethod
     def test_init():
         angular_momentum = sp.Symbol("L", integer=True)
-        s, m0, w0, m_a, m_b, d = sp.symbols(
-            "s m0 Gamma0 m_a m_b d", nonnegative=True
-        )
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
         width = EnergyDependentWidth(
             s=s,
             mass0=m0,
@@ -49,9 +47,9 @@ class TestEnergyDependentWidth:
             angular_momentum=0,
             meson_radius=1,
         )
-        assert width.doit() == w0 * sp.sqrt(-(m_a**2) + s / 4) * sp.sqrt(
-            m0**2
-        ) / (sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2))
+        assert width.doit() == w0 * sp.sqrt(-(m_a**2) + s / 4) * sp.sqrt(m0**2) / (
+            sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2)
+        )
         assert width.phsp_factor is PhaseSpaceFactor
         assert width._name is None
 

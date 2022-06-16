@@ -28,10 +28,9 @@ else:  # pragma: no cover
 class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
-    This data container is inserted into a `.ResonanceDynamicsBuilder`, so that
-    it can build some lineshape expression from the `.dynamics` module. It also
-    allows to insert :doc:`custom dynamics </usage/dynamics/custom>` into the
-    amplitude model.
+    This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
+    build some lineshape expression from the `.dynamics` module. It also allows to
+    insert :doc:`custom dynamics </usage/dynamics/custom>` into the amplitude model.
     """
 
     incoming_state_mass: sp.Symbol = field(validator=instance_of(sp.Symbol))
@@ -86,8 +85,7 @@ def create_non_dynamic_with_ff(
     """
     if variable_pool.angular_momentum is None:
         raise ValueError(
-            "Angular momentum is not defined but is required in the form"
-            " factor!"
+            "Angular momentum is not defined but is required in the form factor!"
         )
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
@@ -178,8 +176,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the"
-                " form factor!"
+                "Angular momentum is not defined but is required in the form factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -214,8 +211,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the"
-                " form factor!"
+                "Angular momentum is not defined but is required in the form factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass

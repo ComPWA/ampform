@@ -192,9 +192,7 @@ class TestBoostZMatrix:
 class TestFourMomentumXYZ:
     def symbols(
         self,
-    ) -> tuple[
-        FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ
-    ]:
+    ) -> tuple[FourMomentumSymbol, Energy, FourMomentumX, FourMomentumY, FourMomentumZ]:
         p = FourMomentumSymbol("p", shape=[])
         e = Energy(p)
         p_x = FourMomentumX(p)
@@ -291,8 +289,7 @@ class TestTheta:
         theta = self.theta.doit()
         numpy_code = _generate_numpy_code(theta)
         assert (
-            numpy_code
-            == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
+            numpy_code == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
         )
 
 
@@ -673,8 +670,7 @@ def test_compute_boost_chain(
     [
         (
             0,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)),"
-            " BoostMatrix(p0))",
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)), BoostMatrix(p0))",
         ),
         (
             1,
@@ -685,23 +681,21 @@ def test_compute_boost_chain(
         ),
         (
             2,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)),"
-            " BoostMatrix(p1 + p2 + p3),"
-            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1 +"
+            " p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
             " p3)),"
             " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 +"
-            " p3), p2))))",
+            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+            " p2))))",
         ),
         (
             3,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)),"
-            " BoostMatrix(p1 + p2 + p3),"
-            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
+            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1 +"
+            " p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
             " p3)),"
             " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 +"
-            " p3), p3))))",
+            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+            " p3))))",
         ),
     ],
 )
@@ -735,9 +729,7 @@ def test_compute_wigner_rotation_matrix_numpy(
     wigner_matrix_array = func(*data_sample.values())
     assert wigner_matrix_array.shape == (len(momentum_array), 4, 4)
     if get_parent_id(topology, state_id) == -1:
-        product = np.einsum(
-            "...ij,...j->...j", wigner_matrix_array, momentum_array
-        )
+        product = np.einsum("...ij,...j->...j", wigner_matrix_array, momentum_array)
         assert pytest.approx(product) == momentum_array
     matrix_column_norms = np.linalg.norm(wigner_matrix_array, axis=1)
     assert pytest.approx(matrix_column_norms) == 1
