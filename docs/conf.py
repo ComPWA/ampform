@@ -13,7 +13,6 @@ import sys
 import requests
 
 # pyright: reportMissingImports=false
-from pkg_resources import get_distribution
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
@@ -30,6 +29,13 @@ from pybtex.style.template import (
     words,
 )
 
+if sys.version_info < (3, 8):
+    from importlib_metadata import PackageNotFoundError
+    from importlib_metadata import version as get_package_version
+else:
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as get_package_version
+
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
 PACKAGE = "ampform"
@@ -44,9 +50,11 @@ if BRANCH == "latest":
 if re.match(r"^\d+$", BRANCH):  # PR preview
     BRANCH = "stable"
 
-if os.path.exists(f"../src/{PACKAGE}/version.py"):
-    __RELEASE = get_distribution(PACKAGE).version
-    version = ".".join(__RELEASE.split(".")[:3])
+try:
+    __VERSION = get_package_version(PACKAGE)
+    version = ".".join(__VERSION.split(".")[:3])
+except PackageNotFoundError:
+    pass
 
 
 # -- Fetch logo --------------------------------------------------------------
@@ -121,7 +129,7 @@ extensions = [
     "sphinx_codeautolink",
     "sphinx_comments",
     "sphinx_copybutton",
-    "sphinx_panels",
+    "sphinx_design",
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
@@ -177,6 +185,7 @@ import numpy
 import numpy as np
 import sympy as sp
 from IPython.display import display
+
 """
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
 graphviz_output_format = "svg"
@@ -213,7 +222,6 @@ html_theme_options = {
     "show_toc_level": 2,
 }
 html_title = "AmpForm"
-panels_add_bootstrap_css = False  # remove panels css to get wider main content
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
