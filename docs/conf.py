@@ -129,7 +129,7 @@ extensions = [
     "sphinx_codeautolink",
     "sphinx_comments",
     "sphinx_copybutton",
-    "sphinx_panels",
+    "sphinx_design",
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
@@ -222,7 +222,6 @@ html_theme_options = {
     "show_toc_level": 2,
 }
 html_title = "AmpForm"
-panels_add_bootstrap_css = False  # remove panels css to get wider main content
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True

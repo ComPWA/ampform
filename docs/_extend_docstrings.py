@@ -550,13 +550,13 @@ def extend_get_boost_chain_suffix() -> None:
     )
     graphviz0 = _graphviz_to_image(
         dot0,
-        indent=6,
+        indent=8,
         caption=":code:`topologies[0]`",
         label="one-to-five-topology-0",
     )
     graphviz1 = _graphviz_to_image(
         dot1,
-        indent=6,
+        indent=8,
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
     )
@@ -564,12 +564,14 @@ def extend_get_boost_chain_suffix() -> None:
         get_boost_chain_suffix,
         f"""
 
-    .. panels::
-      :body: text-center
-      {graphviz0}
+    .. grid:: 1 2 2 2
+      :gutter: 2
 
-      ---
-      {graphviz1}
+      .. grid-item-card::
+        {graphviz0}
+
+      .. grid-item-card::
+        {graphviz1}
     """,
     )
 
