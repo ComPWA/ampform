@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.129
+    rev: 0.0.131
     hooks:
       - id: check-dev-files
         args:
@@ -133,7 +133,7 @@ repos:
             metadata.varInspector
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.6.2
+    rev: v2.7.1
     hooks:
       - id: prettier
 
@@ -143,7 +143,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.253
+    rev: v1.1.255
     hooks:
       - id: pyright
 
