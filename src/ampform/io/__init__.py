@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name protected-access unused-argument
 """Input-output functions for `ampform` and `sympy` objects.
 
 .. tip:: This function are registered with :func:`functools.singledispatch` and can be
@@ -70,3 +71,14 @@ def _(obj: Iterable) -> str:
         latex += Rf"  {item} \\" + "\n"
     latex += R"\end{array}"
     return latex
+
+
+def improve_latex_rendering() -> None:
+    """Improve LaTeX rendering of an `~sympy.tensor.indexed.Indexed` object."""
+
+    def _print_Indexed_latex(self, printer, *args):  # noqa: N802
+        base = printer._print(self.base)
+        indices = ", ".join(map(printer._print, self.indices))
+        return f"{base}_{{{indices}}}"
+
+    sp.Indexed._latex = _print_Indexed_latex  # type: ignore[attr-defined]
