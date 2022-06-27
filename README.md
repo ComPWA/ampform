@@ -24,25 +24,23 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort)
 
 AmpForm is a Python library of spin formalisms and dynamics with which you can
-automatically formulate symbolic amplitude models for Partial Wave Analysis.
-The resulting amplitude models are formulated with
-[SymPy](https://www.sympy.org/en/index.html) (a Computer Algebra System). This
-note only makes it easy to inspect and visualize the resulting amplitude
-models, but also means the amplitude models can be used as templates for faster
-computational back-ends (see
+automatically formulate symbolic amplitude models for Partial Wave Analysis. The
+resulting amplitude models are formulated with
+[SymPy](https://www.sympy.org/en/index.html) (a Computer Algebra System). This note only
+makes it easy to inspect and visualize the resulting amplitude models, but also means
+the amplitude models can be used as templates for faster computational back-ends (see
 [TensorWaves](https://github.com/ComPWA/tensorwaves))!
 
-Visit [ampform.rtfd.io](https://ampform.readthedocs.io) for several usage
-examples. For an overview of **upcoming releases and planned functionality**,
-see
+Visit [ampform.rtfd.io](https://ampform.readthedocs.io) for several usage examples. For
+an overview of **upcoming releases and planned functionality**, see
 [here](https://github.com/ComPWA/ampform/milestones?direction=asc&sort=title&state=open).
 
 ## Available features
 
-- **Automatic amplitude model building**<br /> Convert state transition graphs
-  from [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
-  _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be
-  _converted to any backend_ (see [TensorWaves](https://tensorwaves.rtfd.io)).
+- **Automatic amplitude model building**<br /> Convert state transition graphs from
+  [QRules](https://github.com/ComPWA/qrules) to an amplitude model that is
+  _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be _converted
+  to any backend_ (see [TensorWaves](https://tensorwaves.rtfd.io)).
 - **Spin formalisms**
   - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
   - Canonical formalism
