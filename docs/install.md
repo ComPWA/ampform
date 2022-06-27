@@ -24,9 +24,8 @@ conda install -c conda-forge ampform
 
 :::
 
-This installs the [latest release](https://github.com/ComPWA/ampform/releases)
-that you can find on the
-[`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
+This installs the [latest release](https://github.com/ComPWA/ampform/releases) that you
+can find on the [`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
 
 Optionally, you can install the dependencies required for
 {doc}`visualizing topologies <qrules:usage/visualize>` with the following
@@ -36,8 +35,8 @@ Optionally, you can install the dependencies required for
 pip install ampform[viz]  # installs ampform with graphviz
 ```
 
-The latest version on the [`main`](https://github.com/ComPWA/ampform/tree/main)
-branch can be installed as follows:
+The latest version on the [`main`](https://github.com/ComPWA/ampform/tree/main) branch
+can be installed as follows:
 
 ```shell
 python3 -m pip install git+https://github.com/ComPWA/ampform@main
@@ -46,17 +45,15 @@ python3 -m pip install git+https://github.com/ComPWA/ampform@main
 ## Editable installation
 
 It is highly recommend to use the more dynamic
-{ref}`'editable installation' <compwa-org:develop:Editable installation>`. This
-allows you to:
+{ref}`'editable installation' <compwa-org:develop:Editable installation>`. This allows
+you to:
 
-- exactly
-  {ref}`pin all dependencies <compwa-org:develop:Pinning dependency versions>`
+- exactly {ref}`pin all dependencies <compwa-org:develop:Pinning dependency versions>`
   to a specific version, so that your work is **reproducible**.
 - edit the source code of the framework and
   {doc}`help improving it <compwa-org:develop>`.
 
-For this, you first need to get the source code with
-[Git](https://git-scm.com):
+For this, you first need to get the source code with [Git](https://git-scm.com):
 
 ```shell
 git clone https://github.com/ComPWA/ampform.git
@@ -85,9 +82,9 @@ This installs the project in a Conda environment following the definitions in
    {ref}`here <compwa-org:develop:Virtual environment>`).
 
 2. Install the project as an
-   {ref}`'editable installation' <compwa-org:develop:Editable installation>`
-   with {ref}`additional packages <compwa-org:develop:Optional dependencies>`
-   for the developer and all dependencies pinned through
+   {ref}`'editable installation' <compwa-org:develop:Editable installation>` with
+   {ref}`additional packages <compwa-org:develop:Optional dependencies>` for the
+   developer and all dependencies pinned through
    [constraints files](https://pip.pypa.io/en/stable/user_guide/#constraints-files):
 
    ```shell
@@ -96,9 +93,9 @@ This installs the project in a Conda environment following the definitions in
 
 :::
 
-See {ref}`compwa-org:develop:Updating` for how to update the dependencies when
-new commits come in.
+See {ref}`compwa-org:develop:Updating` for how to update the dependencies when new
+commits come in.
 
-That's all! Have a look at {doc}`/usage` to try out the package. You can also
-have a look at {doc}`compwa-org:develop` for tips on how to work with this
-'editable' developer setup!
+That's all! Have a look at {doc}`/usage` to try out the package. You can also have a
+look at {doc}`compwa-org:develop` for tips on how to work with this 'editable' developer
+setup!

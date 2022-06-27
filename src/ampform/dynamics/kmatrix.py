@@ -3,10 +3,9 @@ r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 .. seealso:: :doc:`/usage/dynamics/k-matrix`.
 
 This module is an implementation of :doc:`compwa-org:report/005`,
-:doc:`compwa-org:report/009`, and :doc:`compwa-org:report/010`. It works with
-classes to keep the code organized and to enable caching of the matrix
-multiplications, but this might change once these dynamics are implemented into
-the amplitude builder.
+:doc:`compwa-org:report/009`, and :doc:`compwa-org:report/010`. It works with classes to
+keep the code organized and to enable caching of the matrix multiplications, but this
+might change once these dynamics are implemented into the amplitude builder.
 """
 from __future__ import annotations
 
@@ -59,14 +58,13 @@ class RelativisticKMatrix(TMatrix):
         Args:
             n_channels: Number of coupled channels.
             n_poles: Number of poles.
-            parametrize: Set to `False` if don't want to parametrize and
-                only get symbols for the matrix multiplication of
-                :math:`\boldsymbol{K}` and :math:`\boldsymbol{\rho}`.
+            parametrize: Set to `False` if don't want to parametrize and only get
+                symbols for the matrix multiplication of :math:`\boldsymbol{K}` and
+                :math:`\boldsymbol{\rho}`.
 
-            return_t_hat: Set to `True` if you want to get the
-                Lorentz-invariant :math:`\boldsymbol{\hat{T}}`-matrix instead
-                of the :math:`\boldsymbol{T}`-matrix from
-                Eq. :eq:`K-hat-and-T-hat`.
+            return_t_hat: Set to `True` if you want to get the Lorentz-invariant
+                :math:`\boldsymbol{\hat{T}}`-matrix instead of the
+                :math:`\boldsymbol{T}`-matrix from Eq. :eq:`K-hat-and-T-hat`.
         """
         return_t_hat: bool = kwargs.pop("return_t_hat", False)
         t_matrix, k_matrix = cls._create_matrices(n_channels, return_t_hat)
@@ -207,9 +205,7 @@ class NonRelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels,
-    ) -> tuple[
-        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
-    ]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
         f_vector = (sp.eye(n_channels) - sp.I * k_matrix).inv() * p_vector
@@ -286,9 +282,7 @@ class RelativisticPVector(TMatrix):
     @functools.lru_cache(maxsize=None)
     def _create_matrices(
         n_channels, return_f_hat: bool = False
-    ) -> tuple[
-        sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix
-    ]:
+    ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         # pylint: disable=no-member
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
@@ -312,18 +306,16 @@ class RelativisticPVector(TMatrix):
         Args:
             n_channels: Number of coupled channels.
             n_poles: Number of poles.
-            parametrize: Set to `False` if don't want to parametrize and
-                only get symbols for the matrix multiplication of
-                :math:`\boldsymbol{K}` and :math:`\boldsymbol{\rho}`.
+            parametrize: Set to `False` if don't want to parametrize and only get
+                symbols for the matrix multiplication of :math:`\boldsymbol{K}` and
+                :math:`\boldsymbol{\rho}`.
 
-            return_f_hat: Set to `True` if you want to get the
-                Lorentz-invariant :math:`\hat{F}`-vector instead of the
-                :math:`T`-vector from Eq. :eq:`invariant-vectors`.
+            return_f_hat: Set to `True` if you want to get theLorentz-invariant
+                :math:`\hat{F}`-vector instead of the :math:`T`-vector from Eq.
+                :eq:`invariant-vectors`.
         """
         return_f_hat: bool = kwargs.pop("return_f_hat", False)
-        f_vector, k_matrix, p_vector = cls._create_matrices(
-            n_channels, return_f_hat
-        )
+        f_vector, k_matrix, p_vector = cls._create_matrices(n_channels, return_f_hat)
         if not parametrize:
             return f_vector
         phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(

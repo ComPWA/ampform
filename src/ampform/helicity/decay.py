@@ -18,9 +18,7 @@ class StateWithID(State):
     id: int  # noqa: A003
 
     @classmethod
-    def from_transition(
-        cls, transition: StateTransition, state_id: int
-    ) -> StateWithID:
+    def from_transition(cls, transition: StateTransition, state_id: int) -> StateWithID:
         state = transition.states[state_id]
         return cls(
             id=state_id,
@@ -35,8 +33,8 @@ class TwoBodyDecay:
 
     This container class ensures that:
 
-    1. a selected node in a `~qrules.transition.StateTransition` is indeed a
-       1-to-2 body decay
+    1. a selected node in a `~qrules.transition.StateTransition` is indeed a 1-to-2 body
+       decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
        `.get_helicity_angle_symbols`, `.formulate_wigner_d`, and
@@ -61,16 +59,12 @@ class TwoBodyDecay:
         return _create_two_body_decay(obj)
 
     @classmethod
-    def from_transition(
-        cls, transition: StateTransition, node_id: int
-    ) -> TwoBodyDecay:
+    def from_transition(cls, transition: StateTransition, node_id: int) -> TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
         if len(in_state_ids) != 1 or len(out_state_ids) != 2:
-            raise ValueError(
-                f"Node {node_id} does not represent a 1-to-2 body decay!"
-            )
+            raise ValueError(f"Node {node_id} does not represent a 1-to-2 body decay!")
         ingoing_state_id = next(iter(in_state_ids))
         out_state_id1, out_state_id2, *_ = tuple(out_state_ids)
         if is_opposite_helicity_state(topology, out_state_id1):
@@ -102,9 +96,7 @@ def _(obj: tuple) -> TwoBodyDecay:
     if len(obj) == 2:
         if isinstance(obj[0], StateTransition) and isinstance(obj[1], int):
             return TwoBodyDecay.from_transition(*obj)
-    raise NotImplementedError(
-        f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
-    )
+    raise NotImplementedError(f"Cannot create a {TwoBodyDecay.__name__} from {obj}")
 
 
 @lru_cache(maxsize=None)
@@ -112,8 +104,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     """Determine if an edge is an "opposite helicity" state.
 
     This function provides a deterministic way of identifying states in a
-    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state.
-    It enforces that:
+    `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state. It enforces
+    that:
 
     1. state :code:`0` is never an opposite helicity state
     2. the sibling of an opposite helicity state is a helicity state.
@@ -130,16 +122,16 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     ...             topology, sibling_id
     ...         )
 
-    The Wigner-:math:`D` function for a two-particle state treats one helicity
-    with a negative sign. This sign originates from Eq.(13) in
+    The Wigner-:math:`D` function for a two-particle state treats one helicity with a
+    negative sign. This sign originates from Eq.(13) in
     :cite:`jacobGeneralTheoryCollisions1959` (see also Eq.(6) in
     :cite:`marangottoHelicityAmplitudesGeneric2020`). Following
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that
-    gets this minus sign the **"opposite helicity" state**. The other state is
-    called **helicity state**. The choice of (opposite) helicity state affects
-    not only the sign in the Wigner-:math:`D` function, but also the choice of
-    angles: the argument of the Wigner-:math:`D` function returned by
-    :func:`.formulate_wigner_d` are the angles of the helicity state.
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that gets this
+    minus sign the **"opposite helicity" state**. The other state is called **helicity
+    state**. The choice of (opposite) helicity state affects not only the sign in the
+    Wigner-:math:`D` function, but also the choice of angles: the argument of the
+    Wigner-:math:`D` function returned by :func:`.formulate_wigner_d` are the angles of
+    the helicity state.
     """
     sibling_id = get_sibling_state_id(topology, state_id)
     state_fs_ids = determine_attached_final_state(topology, state_id)
@@ -160,8 +152,8 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
               \
                2
 
-    The sibling state of :code:`1` is :code:`2` and the sibling state of
-    :code:`3` is :code:`4`.
+    The sibling state of :code:`1` is :code:`2` and the sibling state of :code:`3` is
+    :code:`4`.
     """
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
@@ -248,10 +240,9 @@ def get_sorted_states(
 ) -> list[State]:
     """Get a sorted list of `~qrules.transition.State` instances.
 
-    In order to ensure correct naming of amplitude coefficients the list has to
-    be sorted by name. The same coefficient names have to be created for two
-    transitions that only differ from a kinematic standpoint (swapped external
-    edges).
+    In order to ensure correct naming of amplitude coefficients the list has to be
+    sorted by name. The same coefficient names have to be created for two transitions
+    that only differ from a kinematic standpoint (swapped external edges).
     """
     states = [transition.states[i] for i in state_ids]
     return sorted(states, key=lambda s: s.particle.name)
@@ -277,13 +268,11 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
         )
 
 
-def determine_attached_final_state(
-    topology: Topology, state_id: int
-) -> list[int]:
+def determine_attached_final_state(topology: Topology, state_id: int) -> list[int]:
     """Determine all final state particles of a transition.
 
-    These are attached downward (forward in time) for a given edge (resembling
-    the root).
+    These are attached downward (forward in time) for a given edge (resembling the
+    root).
 
     Example
     -------
@@ -297,9 +286,7 @@ def determine_attached_final_state(
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:
         return [state_id]
-    return sorted(
-        topology.get_originating_final_state_edge_ids(edge.ending_node_id)
-    )
+    return sorted(topology.get_originating_final_state_edge_ids(edge.ending_node_id))
 
 
 def get_prefactor(transition: StateTransition) -> float:
@@ -320,10 +307,10 @@ def group_by_spin_projection(
 ) -> list[list[StateTransition]]:
     """Match final and initial states in groups.
 
-    Each `~qrules.transition.StateTransition` corresponds to a specific state
-    transition amplitude. This function groups together transitions, which have
-    the same initial and final state (including spin). This is needed to
-    determine the coherency of the individual amplitude parts.
+    Each `~qrules.transition.StateTransition` corresponds to a specific state transition
+    amplitude. This function groups together transitions, which have the same initial
+    and final state (including spin). This is needed to determine the coherency of the
+    individual amplitude parts.
     """
     transition_groups: DefaultDict[
         tuple[

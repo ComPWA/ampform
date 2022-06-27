@@ -21,9 +21,9 @@ def test_determine_attached_final_state():
         for i in topology.outgoing_edge_ids:
             assert determine_attached_final_state(topology, state_id=i) == [i]
         for i in topology.incoming_edge_ids:
-            assert determine_attached_final_state(
-                topology, state_id=i
-            ) == list(topology.outgoing_edge_ids)
+            assert determine_attached_final_state(topology, state_id=i) == list(
+                topology.outgoing_edge_ids
+            )
     # intermediate states
     topology = topologies[0]
     assert determine_attached_final_state(topology, state_id=4) == [0, 1]

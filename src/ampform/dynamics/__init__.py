@@ -3,8 +3,7 @@
 # pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics` and
-    :doc:`/usage/dynamics/analytic-continuation`
+.. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
 """
 from __future__ import annotations
 
@@ -40,21 +39,18 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
         z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
-            choice is :math:`z = (d q)^2` with :math:`d` the impact parameter
-            and :math:`q` the breakup-momentum (see
-            `.BreakupMomentumSquared`).
+            choice is :math:`z = (d q)^2` with :math:`d` the impact parameter and
+            :math:`q` the breakup-momentum (see `.BreakupMomentumSquared`).
 
-    Note that equal powers of :math:`z` appear in the nominator and the
-    denominator, while some sources have nominator :math:`1`, instead of
-    :math:`z^L`. Compare for instance Equation (50.27) in :pdg-review:`2021;
-    Resonances; p.9`.
+    Note that equal powers of :math:`z` appear in the nominator and the denominator,
+    while some sources have nominator :math:`1`, instead of :math:`z^L`. Compare for
+    instance Equation (50.27) in :pdg-review:`2021; Resonances; p.9`.
 
     Each of these cases for :math:`L` has been taken from
     :cite:`pychyGekoppeltePartialwellenanalyseAnnihilationen2016`, p.59,
     :cite:`chungPartialWaveAnalysis1995`, p.415, and
-    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of
-    where to use these Blatt-Weisskopf functions, see
-    :cite:`asnerDalitzPlotAnalysis2006`.
+    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of where to use
+    these Blatt-Weisskopf functions, see :cite:`asnerDalitzPlotAnalysis2006`.
 
     See also :ref:`usage/dynamics:Form factor`.
     """
@@ -62,8 +58,8 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
     max_angular_momentum: int | None = None
     """Limit the maximum allowed angular momentum :math:`L`.
 
-    This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol`
-    and you are note interested in higher angular momenta.
+    This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol` and you
+    are note interested in higher angular momenta.
     """
 
     def __new__(cls, angular_momentum, z, **hints) -> BlattWeisskopfSquared:
@@ -77,9 +73,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             1: 2 * z / (z + 1),
             2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
             3: (
-                277
-                * z**3
-                / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
+                277 * z**3 / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5))
             ),
             4: (
                 12746
@@ -92,12 +86,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             5: 998881
             * z**5
             / (
-                z**5
-                + 15 * z**4
-                + 315 * z**3
-                + 6300 * z**2
-                + 99225 * z
-                + 893025
+                z**5 + 15 * z**4 + 315 * z**3 + 6300 * z**2 + 99225 * z + 893025
             ),
             6: 118394977
             * z**6
@@ -158,12 +147,11 @@ class EnergyDependentWidth(UnevaluatedExpression):
     :cite:`asnerDalitzPlotAnalysis2006`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
-    Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the
-    sense that equal powers of :math:`z` appear in the nominator and the
-    denominator, while the definition in the PDG (as well as some other
-    sources), always have :math:`1` in the nominator of the Blatt-Weisskopf. In
-    that case, one needs an additional factor :math:`\left(q/q_0\right)^{2L}`
-    in the definition for :math:`\Gamma(m)`.
+    Note that the `.BlattWeisskopfSquared` of AmpForm is normalized in the sense that
+    equal powers of :math:`z` appear in the nominator and the denominator, while the
+    definition in the PDG (as well as some other sources), always have :math:`1` in the
+    nominator of the Blatt-Weisskopf. In that case, one needs an additional factor
+    :math:`\left(q/q_0\right)^{2L}` in the definition for :math:`\Gamma(m)`.
     """
 
     # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
@@ -184,9 +172,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
         name: str | None = None,
         evaluate: bool = False,
     ) -> EnergyDependentWidth:
-        args = sp.sympify(
-            (s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius)
-        )
+        args = sp.sympify((s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius))
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor
         # Overwritting Basic.__new__ to store phase space factor type
@@ -257,12 +243,10 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.BlattWeisskopfSquared` factor.
 
-    See :ref:`usage/dynamics:_With_ form factor` and
-    :pdg-review:`2021; Resonances; p.9`.
+    See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
+    p.9`.
     """
-    form_factor = formulate_form_factor(
-        s, m_a, m_b, angular_momentum, meson_radius
-    )
+    form_factor = formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
@@ -271,15 +255,12 @@ def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
     )
 
 
-def formulate_form_factor(
-    s, m_a, m_b, angular_momentum, meson_radius
-) -> sp.Expr:
+def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
     """Formulate a Blatt-Weisskopf form factor.
 
     Returns the production process factor :math:`n_a` from Equation (50.26) in
     :pdg-review:`2021; Resonances; p.9`, which features the
-    `~sympy.functions.elementary.miscellaneous.sqrt` of a
-    `.BlattWeisskopfSquared`.
+    `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
     ff_squared = BlattWeisskopfSquared(

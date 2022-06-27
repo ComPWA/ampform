@@ -35,9 +35,7 @@ import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
-from qrules.combinatorics import (
-    perform_external_edge_identical_particle_combinatorics,
-)
+from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
@@ -95,9 +93,7 @@ def _order_symbol_mapping(
     return collections.OrderedDict(
         [
             (symbol, mapping[symbol])
-            for symbol in sorted(
-                mapping, key=lambda s: natural_sorting(s.name)
-            )
+            for symbol in sorted(mapping, key=lambda s: natural_sorting(s.name))
         ]
     )
 
@@ -123,39 +119,35 @@ def _to_parameter_values(
 class HelicityModel:  # noqa: R701
     intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
-    amplitudes: OrderedDict[sp.Indexed, sp.Expr] = field(
-        converter=_order_amplitudes
-    )
+    amplitudes: OrderedDict[sp.Indexed, sp.Expr] = field(converter=_order_amplitudes)
     """Definitions for the amplitudes that appear in `intensity`.
 
-    The main `intensity` is a sum over amplitudes for each initial and final
-    state helicity combination. These amplitudes are indicated with as
-    `sp.Indexed <sympy.tensor.indexed.Indexed>` instances and this attribute
-    provides the definitions for each of these. See also :ref:`TR-014
+    The main `intensity` is a sum over amplitudes for each initial and final state
+    helicity combination. These amplitudes are indicated with as `sp.Indexed
+    <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
+    definitions for each of these. See also :ref:`TR-014
     <compwa-org:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
-    Keys are `~sympy.core.symbol.Symbol` instances from the main
-    :attr:`expression` that should be interpreted as parameters (as opposed to
-    `kinematic_variables`). The symbols are ordered alphabetically by name with
-    natural sort order (:func:`.natural_sorting`). Values have been extracted
-    from the input `~qrules.transition.ReactionInfo`.
+    Keys are `~sympy.core.symbol.Symbol` instances from the main :attr:`expression` that
+    should be interpreted as parameters (as opposed to `kinematic_variables`). The
+    symbols are ordered alphabetically by name with natural sort order
+    (:func:`.natural_sorting`). Values have been extracted from the input
+    `~qrules.transition.ReactionInfo`.
     """
     kinematic_variables: OrderedDict[sp.Symbol, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
-    components: OrderedDict[str, sp.Expr] = field(
-        converter=_order_component_mapping
-    )
+    components: OrderedDict[str, sp.Expr] = field(converter=_order_component_mapping)
     """A mapping for identifying main components in the :attr:`expression`.
 
     Keys are the component names (`str`), formatted as LaTeX, and values are
     sub-expressions in the main :attr:`expression`. The mapping is an
-    `~collections.OrderedDict` that orders the component names alphabetically
-    with natural sort order (:func:`.natural_sorting`).
+    `~collections.OrderedDict` that orders the component names alphabetically with
+    natural sort order (:func:`.natural_sorting`).
     """
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
 
@@ -163,8 +155,8 @@ class HelicityModel:  # noqa: R701
     def expression(self) -> sp.Expr:
         """Expression for the `intensity` with all amplitudes fully expressed.
 
-        Constructed from `intensity` by substituting its amplitude symbols with
-        the definitions with `amplitudes`.
+        Constructed from `intensity` by substituting its amplitude symbols with the
+        definitions with `amplitudes`.
         """
 
         def unfold_poolsums(expr: sp.Expr) -> sp.Expr:
@@ -183,17 +175,16 @@ class HelicityModel:  # noqa: R701
     ) -> HelicityModel:
         """Rename certain symbols in the model.
 
-        Renames all `~sympy.core.symbol.Symbol` instance that appear in
-        `expression`, `parameter_defaults`, `components`, and
-        `kinematic_variables`. This method can be used to :ref:`couple
-        parameters <usage/modify:Couple parameters>`.
+        Renames all `~sympy.core.symbol.Symbol` instance that appear in `expression`,
+        `parameter_defaults`, `components`, and `kinematic_variables`. This method can
+        be used to :ref:`couple parameters <usage/modify:Couple parameters>`.
 
         Args:
             renames: A mapping from old to new names.
 
         Returns:
-            A **new** instance of a `HelicityModel` with symbols in all
-            attributes renamed accordingly.
+            A **new** instance of a `HelicityModel` with symbols in all attributes
+            renamed accordingly.
         """
         renames = dict(renames)
         symbols = self.__collect_symbols()
@@ -202,9 +193,7 @@ class HelicityModel:  # noqa: R701
             if name not in symbol_names:
                 logging.warning(f"There is no symbol with name {name}")
         symbol_mapping = {
-            s: sp.Symbol(renames[s.name], **s.assumptions0)
-            if s.name in renames
-            else s
+            s: sp.Symbol(renames[s.name], **s.assumptions0) if s.name in renames else s
             for s in symbols
         }
         return attrs.evolve(
@@ -235,9 +224,7 @@ class HelicityModel:  # noqa: R701
             symbols |= expr.free_symbols  # type: ignore[arg-type]
         return symbols
 
-    def sum_components(  # noqa: R701
-        self, components: Iterable[str]
-    ) -> sp.Expr:
+    def sum_components(self, components: Iterable[str]) -> sp.Expr:  # noqa: R701
         """Coherently or incoherently add components of a helicity model."""
         components = list(components)  # copy
         for component in components:
@@ -246,9 +233,7 @@ class HelicityModel:  # noqa: R701
                 # pylint: disable=cell-var-from-loop
                 candidates = get_close_matches(
                     component,
-                    filter(
-                        lambda c: c.startswith(first_letter), self.components
-                    ),
+                    filter(lambda c: c.startswith(first_letter), self.components),
                 )
                 raise KeyError(
                     f'Component "{component}" not in model components. '
@@ -269,9 +254,7 @@ class HelicityModel:  # noqa: R701
             return sum(self.components[c] for c in components)  # type: ignore[return-value]
         if all(c.startswith("A") for c in components):
             return abs(sum(self.components[c] for c in components)) ** 2
-        raise ValueError(
-            'Not all component names started with either "A" or "I"'
-        )
+        raise ValueError('Not all component names started with either "A" or "I"')
 
 
 class ParameterValues(abc.Mapping):
@@ -321,9 +304,7 @@ class ParameterValues(abc.Mapping):
         par = self._get_parameter(key)
         return self.__parameters[par]
 
-    def __setitem__(
-        self, key: sp.Symbol | int | str, value: ParameterValue
-    ) -> None:
+    def __setitem__(self, key: sp.Symbol | int | str, value: ParameterValue) -> None:
         par = self._get_parameter(key)
         self.__parameters[par] = value
 
@@ -393,9 +374,7 @@ class _HelicityModelIngredients:
 class DynamicsSelector(abc.Mapping):
     """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
 
-    def __init__(
-        self, transitions: ReactionInfo | Iterable[StateTransition]
-    ) -> None:
+    def __init__(self, transitions: ReactionInfo | Iterable[StateTransition]) -> None:
         if isinstance(transitions, ReactionInfo):
             transitions = transitions.transitions
         self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
@@ -410,20 +389,17 @@ class DynamicsSelector(abc.Mapping):
 
         Currently, the following types of selections are implements:
 
-        - `str`: Select transition nodes by the name of the
-          `~.TwoBodyDecay.parent` `~qrules.particle.Particle`.
-        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition`
-          with a node ID: set dynamics for one specific transition node.
+        - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
+          `~qrules.particle.Particle`.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
+          node ID: set dynamics for one specific transition node.
         """
         raise NotImplementedError(
-            "Cannot set dynamics builder for selection type"
-            f" {type(selection).__name__}"
+            f"Cannot set dynamics builder for selection type {type(selection).__name__}"
         )
 
     @assign.register(TwoBodyDecay)
-    def _(
-        self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder
-    ) -> None:
+    def _(self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder) -> None:
         self.__choices[decay] = builder
 
     @assign.register(tuple)
@@ -444,9 +420,7 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = builder
                 found_particle = True
         if not found_particle:
-            logging.warning(
-                f'Model contains no resonance with name "{particle_name}"'
-            )
+            logging.warning(f'Model contains no resonance with name "{particle_name}"')
 
     @assign.register(Particle)
     def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
@@ -481,17 +455,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         reaction: The `~qrules.transition.ReactionInfo` from which to
             :meth:`formulate` an amplitude model.
         stable_final_state_ids: Put final state 'invariant' masses
-            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults`
-            (with a *scalar* suggested value) instead of
-            `~.HelicityModel.kinematic_variables` (which are expressions to
-            compute an event-wise array of invariant masses). This is useful
-            if final state particles are stable.
+            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults` (with a
+            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`
+            (which are expressions to compute an event-wise array of invariant masses).
+            This is useful if final state particles are stable.
         stable_final_state_ids: Put the invariant of the initial state
-            (:math:`m_{012\dots}`) under `.HelicityModel.parameter_defaults`
-            (with a *scalar* suggested value) instead of
-            `~.HelicityModel.kinematic_variables`. This is useful if
-            four-momenta were generated with or kinematically fit to a specific
-            initial state energy.
+            (:math:`m_{012\dots}`) under `.HelicityModel.parameter_defaults` (with a
+            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`.
+            This is useful if four-momenta were generated with or kinematically fit to a
+            specific initial state energy.
 
             .. seealso:: :ref:`usage/amplitude:Scalar masses`
     """
@@ -521,9 +493,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.use_helicity_couplings: bool = False
         """Use helicity couplings instead of amplitude coefficients.
 
-        Helicity couplings are a measure for the strength of each partial
-        two-body decay. Amplitude coefficients are the product of those
-        couplings.
+        Helicity couplings are a measure for the strength of each partial two-body
+        decay. Amplitude coefficients are the product of those couplings.
         """
         self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
         self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
@@ -552,9 +523,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__stable_final_state_ids = None
         if value is not None:
             self.__stable_final_state_ids = set(value)
-            if not self.__stable_final_state_ids <= set(
-                self.__reaction.final_state
-            ):
+            if not self.__stable_final_state_ids <= set(self.__reaction.final_state):
                 raise ValueError(
                     "Final state IDs are"
                     f" {sorted(self.__reaction.final_state)}, but trying to"
@@ -657,9 +626,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             )
         return amplitude
 
-    def __register_amplitudes(
-        self, transition_group: list[StateTransition]
-    ) -> None:
+    def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
         transition_by_topology = group_by_topology(transition_group)
         expression = sum(
             self.__formulate_topology_amplitude(transitions)
@@ -675,16 +642,12 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Expr:
         sequential_expressions: list[sp.Expr] = []
         for transition in transitions:
-            sequential_graphs = (
-                perform_external_edge_identical_particle_combinatorics(
-                    transition.to_graph()
-                )
+            sequential_graphs = perform_external_edge_identical_particle_combinatorics(
+                transition.to_graph()
             )
             for graph in sequential_graphs:
                 first_transition = StateTransition.from_graph(graph)
-                expression = self.__formulate_sequential_decay(
-                    first_transition
-                )
+                expression = self.__formulate_sequential_decay(first_transition)
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
@@ -693,9 +656,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients.amplitudes[symbol] = expression
         return expression
 
-    def __formulate_sequential_decay(
-        self, transition: StateTransition
-    ) -> sp.Expr:
+    def __formulate_sequential_decay(self, transition: StateTransition) -> sp.Expr:
         partial_decays: list[sp.Expr] = [
             self._formulate_partial_decay(transition, node_id)
             for node_id in transition.topology.nodes
@@ -752,9 +713,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Symbol:
         """Generate coefficient parameter for a sequential amplitude.
 
-        Generally, each partial amplitude of a sequential amplitude transition
-        should check itself if it or a parity partner is already defined. If so
-        a coupled coefficient is introduced.
+        Generally, each partial amplitude of a sequential amplitude transition should
+        check itself if it or a parity partner is already defined. If so a coupled
+        coefficient is introduced.
         """
         suffix = self.naming.generate_sequential_amplitude_suffix(transition)
         symbol = sp.Symbol(f"C_{{{suffix}}}")
@@ -765,9 +726,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __generate_helicity_coupling(
         self, transition: StateTransition, node_id: int
     ) -> sp.Symbol:
-        suffix = self.naming.generate_two_body_decay_suffix(
-            transition, node_id
-        )
+        suffix = self.naming.generate_two_body_decay_suffix(transition, node_id)
         symbol = sp.Symbol(f"H_{{{suffix}}}")
         value = complex(1, 0)
         self.__ingredients.parameter_defaults[symbol] = value
@@ -782,15 +741,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id
                 )
-                if (
-                    raw_suffix
-                    in self.naming.parity_partner_coefficient_mapping
-                ):
-                    coefficient_suffix = (
-                        self.naming.parity_partner_coefficient_mapping[
-                            raw_suffix
-                        ]
-                    )
+                if raw_suffix in self.naming.parity_partner_coefficient_mapping:
+                    coefficient_suffix = self.naming.parity_partner_coefficient_mapping[
+                        raw_suffix
+                    ]
                     if coefficient_suffix != raw_suffix:
                         return prefactor
         return None
@@ -799,16 +753,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
     outer_state_ids = _get_outer_state_ids(transition)
     helicities = tuple(
-        sp.Rational(transition.states[i].spin_projection)
-        for i in outer_state_ids
+        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
     )
     base = _create_amplitude_base(transition.topology)
     return base[helicities]
 
 
-def _get_opposite_helicity_sign(
-    topology: Topology, state_id: int
-) -> Literal[-1, 1]:
+def _get_opposite_helicity_sign(topology: Topology, state_id: int) -> Literal[-1, 1]:
     if state_id != -1 and is_opposite_helicity_state(topology, state_id):
         return -1
     return 1
@@ -840,9 +791,7 @@ def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
 
 @singledispatch
 def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    raise NotImplementedError(
-        f"Cannot get outer state IDs from a {type(obj).__name__}"
-    )
+    raise NotImplementedError(f"Cannot get outer state IDs from a {type(obj).__name__}")
 
 
 @_get_outer_state_ids.register(StateTransition)
@@ -860,10 +809,10 @@ def _(reaction: ReactionInfo) -> list[int]:
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     r"""Amplitude model generator for the canonical helicity formalism.
 
-    This class defines a full amplitude in the canonical formalism, using the
-    helicity formalism as a foundation. The key here is that we take the full
-    helicity intensity as a template, and just exchange the helicity amplitudes
-    :math:`F` as a sum of canonical amplitudes :math:`A`:
+    This class defines a full amplitude in the canonical formalism, using the helicity
+    formalism as a foundation. The key here is that we take the full helicity intensity
+    as a template, and just exchange the helicity amplitudes :math:`F` as a sum of
+    canonical amplitudes :math:`A`:
 
     .. math::
 
@@ -883,9 +832,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         amplitude = super()._formulate_partial_decay(transition, node_id)
-        cg_coefficients = formulate_clebsch_gordan_coefficients(
-            transition, node_id
-        )
+        cg_coefficients = formulate_clebsch_gordan_coefficients(transition, node_id)
         return cg_coefficients * amplitude
 
 
@@ -895,36 +842,35 @@ def formulate_clebsch_gordan_coefficients(
     r"""Compute the two Clebsch-Gordan coefficients for a state transition node.
 
     In the **canonical basis** (also called **partial wave basis**),
-    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>`
-    ensure that the projection of angular momentum is conserved
+    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
+    the projection of angular momentum is conserved
     (:cite:`kutschkeAngularDistributionCookbook1996`, p. 4). When calling
-    :func:`~qrules.generate_transitions` with
-    :code:`formalism="canonical-helicity"`, AmpForm formulates the amplitude in
-    the canonical basis from amplitudes in the helicity basis using the
-    transformation in :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). See
-    also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
+    :func:`~qrules.generate_transitions` with :code:`formalism="canonical-helicity"`,
+    AmpForm formulates the amplitude in the canonical basis from amplitudes in the
+    helicity basis using the transformation in :cite:`chungSpinFormalismsUpdated2014`,
+    Eq. (4.32). See also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
 
     This function produces the two Clebsch-Gordan coefficients in
-    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay
-    :math:`1 \to 2, 3`, we get:
+    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay :math:`1
+    \to 2, 3`, we get:
 
     .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
         :label: formulate_clebsch_gordan_coefficients
 
     with:
 
-    - :math:`s_i` the intrinsic `Spin.magnitude
-      <qrules.particle.Spin.magnitude>` of each state :math:`i`,
-    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products
-      (can be taken to be their `~qrules.transition.State.spin_projection` when
-      following a constistent boosting procedure),
+    - :math:`s_i` the intrinsic `Spin.magnitude <qrules.particle.Spin.magnitude>` of
+      each state :math:`i`,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products (can be
+      taken to be their `~qrules.transition.State.spin_projection` when following a
+      constistent boosting procedure),
     - :math:`\lambda=\lambda_{2}-\lambda_{3}`,
     - :math:`L` the *total* angular momentum of the final state pair
       (`~qrules.quantum_numbers.InteractionProperties.l_magnitude`),
     - :math:`S` the coupled spin magnitude of the final state pair
       (`~qrules.quantum_numbers.InteractionProperties.s_magnitude`),
-    - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle
-      j1,m1;j2,m2|j3,m3\rangle`, as in :doc:`sympy:modules/physics/quantum/cg`.
+    - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle j1,m1;j2,m2|j3,m3\rangle`, as
+      in :doc:`sympy:modules/physics/quantum/cg`.
 
     Example
     -------
@@ -976,30 +922,29 @@ def formulate_clebsch_gordan_coefficients(
 def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
 
-    Following :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (10). For a
-    two-body decay :math:`1 \to 2, 3`, we get
+    Following :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (10). For a two-body
+    decay :math:`1 \to 2, 3`, we get
 
     .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
         :label: formulate_wigner_d
 
     with:
 
-    - :math:`s_1` the `Spin.magnitude <qrules.particle.Spin.magnitude>` of the
-      decaying state,
-    - :math:`m_1` the `~qrules.transition.State.spin_projection` of the
-      decaying state,
-    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products in
-      in the restframe of :math:`1` (can be taken to be their intrinsic
-      `~qrules.transition.State.spin_projection` when following a constistent
-      boosting procedure),
+    - :math:`s_1` the `Spin.magnitude <qrules.particle.Spin.magnitude>` of the decaying
+      state,
+    - :math:`m_1` the `~qrules.transition.State.spin_projection` of the decaying state,
+    - :math:`\lambda_{2}, \lambda_{3}` the helicities of the decay products in in the
+      restframe of :math:`1` (can be taken to be their intrinsic
+      `~qrules.transition.State.spin_projection` when following a constistent boosting
+      procedure),
     - and :math:`\phi` and :math:`\theta` the helicity angles (see also
       :func:`.get_helicity_angle_symbols`).
 
-    Note that :math:`\lambda_2, \lambda_3` are ordered by their number of
-    children, then by their state ID (see :class:`.TwoBodyDecay`).
+    Note that :math:`\lambda_2, \lambda_3` are ordered by their number of children, then
+    by their state ID (see :class:`.TwoBodyDecay`).
 
-    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an
-    example of Wigner-:math:`D` functions in a *sequential* two-body decay.
+    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an example of
+    Wigner-:math:`D` functions in a *sequential* two-body decay.
 
     Example
     -------
@@ -1025,8 +970,7 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
         j=sp.Rational(decay.parent.particle.spin),
         m=sp.Rational(decay.parent.spin_projection),
         mp=sp.Rational(
-            decay.children[0].spin_projection
-            - decay.children[1].spin_projection
+            decay.children[0].spin_projection - decay.children[1].spin_projection
         ),
         alpha=-phi,
         beta=theta,
@@ -1042,16 +986,13 @@ def formulate_spin_alignment(
     Generate all Wigner-:math:`D` function combinations that appear in
     :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45), but for a generic
     multibody decay. Each element in the returned `list` is a `tuple` of
-    Wigner-:math:`D` functions that appear in the summation, for a specific set
-    of helicities were are summing over. To generate the full sum, make a
-    multiply the Wigner-:math:`D` functions in each `tuple` and sum over all
-    these products.
+    Wigner-:math:`D` functions that appear in the summation, for a specific set of
+    helicities were are summing over. To generate the full sum, make a multiply the
+    Wigner-:math:`D` functions in each `tuple` and sum over all these products.
     """
     rotations = PoolSum(1)
     for rotated_state_id in transition.final_states:
-        additional_rotations = formulate_rotation_chain(
-            transition, rotated_state_id
-        )
+        additional_rotations = formulate_rotation_chain(transition, rotated_state_id)
         rotations = __multiply_pool_sums([rotations, additional_rotations])
     return rotations
 
@@ -1064,11 +1005,10 @@ def formulate_rotation_chain(
 ) -> PoolSum:
     """Formulate the spin alignment sum for a specific chain.
 
-    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain
-    consists of a series of helicity rotations (see
-    :func:`formulate_helicity_rotation_chain`) plus a Wigner rotation (see
-    :func:`.formulate_wigner_rotation`) in case there is more than one helicity
-    rotation.
+    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain consists
+    of a series of helicity rotations (see :func:`formulate_helicity_rotation_chain`)
+    plus a Wigner rotation (see :func:`.formulate_wigner_rotation`) in case there is
+    more than one helicity rotation.
     """
     helicity_symbol = _create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
@@ -1096,10 +1036,10 @@ def formulate_helicity_rotation_chain(
 
     The helicity rotations are performed going through the decay
     `~qrules.topology.Topology` starting from the initial state up some
-    :code:`rotated_state_id`. Each rotation operates on the spin state and is
-    therefore formulated as a `~sympy.physics.quantum.spin.WignerD` function
-    (see :func:`.formulate_helicity_rotation`). See
-    {doc}`/usage/helicity/spin-alignment` for more info.
+    :code:`rotated_state_id`. Each rotation operates on the spin state and is therefore
+    formulated as a `~sympy.physics.quantum.spin.WignerD` function (see
+    :func:`.formulate_helicity_rotation`). See {doc}`/usage/helicity/spin-alignment` for
+    more info.
     """
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
@@ -1122,9 +1062,7 @@ def formulate_helicity_rotation_chain(
         no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
         yield formulate_helicity_rotation(
             spin_magnitude,
-            spin_projection=sp.Symbol(
-                f"{next_idx_root}{idx_suffix}", rational=True
-            ),
+            spin_projection=sp.Symbol(f"{next_idx_root}{idx_suffix}", rational=True),
             m_prime=sp.Symbol(f"{idx_root}{idx_suffix}", rational=True),
             alpha=phi,
             beta=theta,
@@ -1160,10 +1098,9 @@ def formulate_wigner_rotation(
 ) -> PoolSum:
     """Formulate the spin rotation matrices for a Wigner rotation.
 
-    A **Wigner rotation** is the 'average' rotation that results form a chain
-    of Lorentz boosts to a new reference frame with regard to a direct boost.
-    See :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially
-    Eq.(36).
+    A **Wigner rotation** is the 'average' rotation that results form a chain of Lorentz
+    boosts to a new reference frame with regard to a direct boost. See
+    :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially Eq.(36).
 
     Args:
         transition: The `~qrules.transition.StateTransition` in which you
@@ -1206,24 +1143,22 @@ def formulate_helicity_rotation(
 ) -> PoolSum:
     r"""Formulate action of an Euler rotation on a spin state.
 
-    When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler
-    angles <https://en.wikipedia.org/wiki/Euler_angles>`_
-    :math:`\alpha,\beta,\gamma`, the new state can be expressed in terms of
-    other spin states :math:`\left|s,m'\right\rangle` with the help of
-    Wigner-:math:`D` expansion coefficients:
+    When rotation a spin state :math:`\left|s,m\right\rangle` over `Euler angles
+    <https://en.wikipedia.org/wiki/Euler_angles>`_ :math:`\alpha,\beta,\gamma`, the new
+    state can be expressed in terms of other spin states :math:`\left|s,m'\right\rangle`
+    with the help of Wigner-:math:`D` expansion coefficients:
 
     .. math::
         :label: formulate_helicity_rotation
 
-        R(\alpha,\beta,\gamma)\left|s,m\right\rangle
-        = \sum^s_{m'=-s} D^s_{m',m}\left(\alpha,\beta,\gamma\right)
-        \left|s,m'\right\rangle
+        R(\alpha,\beta,\gamma)\left|s,m\right\rangle = \sum^s_{m'=-s}
+        D^s_{m',m}\left(\alpha,\beta,\gamma\right) \left|s,m'\right\rangle
 
     See :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(B.5).
 
-    This function gives the summation over these Wigner-:math:`D` functions and
-    can be used for spin alignment following
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45).
+    This function gives the summation over these Wigner-:math:`D` functions and can be
+    used for spin alignment following :cite:`marangottoHelicityAmplitudesGeneric2020`,
+    Eq.(45).
 
     Args:
         spin_magnitude: Spin magnitude :math:`s` of spin state that is being
@@ -1231,8 +1166,8 @@ def formulate_helicity_rotation(
         spin_projection: Spin projection component :math:`m` of the spin state
             that is being rotated.
         m_prime: A index `~sympy.core.symbol.Symbol` or
-            `~sympy.core.symbol.Dummy` that represents :math:`m'` helicities in
-            Eq. :eq:`formulate_helicity_rotation`.
+            `~sympy.core.symbol.Dummy` that represents :math:`m'` helicities in Eq.
+            :eq:`formulate_helicity_rotation`.
 
         alpha: First Euler angle.
         beta: Second Euler angle.
@@ -1250,9 +1185,7 @@ def formulate_helicity_rotation(
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
-    helicities = map(
-        sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin)
-    )
+    helicities = map(sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin))
     return PoolSum(
         Wigner.D(
             j=__rationalize(spin_magnitude),
@@ -1266,9 +1199,7 @@ def formulate_helicity_rotation(
     )
 
 
-_BasicType = TypeVar(  # pylint: disable=invalid-name
-    "_BasicType", bound=sp.Basic
-)
+_BasicType = TypeVar("_BasicType", bound=sp.Basic)  # pylint: disable=invalid-name
 
 
 @overload
@@ -1287,9 +1218,7 @@ def __rationalize(value):
     return sp.Rational(value)
 
 
-def _create_spin_range(
-    spin_magnitude, no_zero_spin: bool = False
-) -> list[float]:
+def _create_spin_range(spin_magnitude, no_zero_spin: bool = False) -> list[float]:
     """Create a list of allowed spin projections.
 
     >>> _create_spin_range(0)

@@ -30,16 +30,14 @@ class NameGenerator(ABC):
     ) -> str:
         """Generates a unique name for the amplitude corresponding.
 
-        That is, corresponging to the given
-        `~qrules.transition.StateTransition`. If ``node_id`` is given, it
-        generates a unique name for the partial amplitude corresponding to the
-        interaction node of the given `~qrules.transition.StateTransition`.
+        That is, corresponging to the given `~qrules.transition.StateTransition`. If
+        ``node_id`` is given, it generates a unique name for the partial amplitude
+        corresponding to the interaction node of the given
+        `~qrules.transition.StateTransition`.
         """
 
     @abstractmethod
-    def generate_sequential_amplitude_suffix(
-        self, transition: StateTransition
-    ) -> str:
+    def generate_sequential_amplitude_suffix(self, transition: StateTransition) -> str:
         """Generate unique suffix for a sequential amplitude transition."""
 
     @abstractmethod
@@ -105,17 +103,12 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
                 coefficient_suffix,
                 parity_partner_coefficient_suffix,
                 priority_partner_coefficient_suffix,
-            ) = self.__generate_amplitude_coefficient_couple(
-                transition, node_id
-            )
+            ) = self.__generate_amplitude_coefficient_couple(transition, node_id)
 
             if transition.interactions[node_id].parity_prefactor is None:
                 continue
 
-            if (
-                coefficient_suffix
-                not in self.__parity_partner_coefficient_mapping
-            ):
+            if coefficient_suffix not in self.__parity_partner_coefficient_mapping:
                 if (
                     parity_partner_coefficient_suffix
                     in self.__parity_partner_coefficient_mapping
@@ -144,19 +137,14 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
     def __generate_amplitude_coefficient_couple(
         self, transition: StateTransition, node_id: int
     ) -> tuple[str, str, str]:
-        incoming_state, outgoing_states = get_helicity_info(
-            transition, node_id
-        )
-        par_name_suffix = self.generate_two_body_decay_suffix(
-            transition, node_id
-        )
+        incoming_state, outgoing_states = get_helicity_info(transition, node_id)
+        par_name_suffix = self.generate_two_body_decay_suffix(transition, node_id)
 
         pp_par_name_suffix = (
             _state_to_str(incoming_state, use_helicity=False)
             + R" \to "
             + " ".join(
-                _state_to_str(s, make_parity_partner=True)
-                for s in outgoing_states
+                _state_to_str(s, make_parity_partner=True) for s in outgoing_states
             )
         )
 
@@ -215,9 +203,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
             ),
         )
 
-    def generate_sequential_amplitude_suffix(
-        self, transition: StateTransition
-    ) -> str:
+    def generate_sequential_amplitude_suffix(self, transition: StateTransition) -> str:
         coefficient_names: list[str] = []
         for node_id in transition.topology.nodes:
             suffix = self.generate_two_body_decay_suffix(transition, node_id)
@@ -334,18 +320,17 @@ def get_helicity_angle_symbols(
 def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 
-    The generated subscripts describe the decay sequence from the right to the
-    left, separated by commas. Resonance edge IDs are expressed as a sum of the
-    final state IDs that lie below them (see
-    :func:`.determine_attached_final_state`). The generated label does not
-    state the top-most edge (the initial state).
+    The generated subscripts describe the decay sequence from the right to the left,
+    separated by commas. Resonance edge IDs are expressed as a sum of the final state
+    IDs that lie below them (see :func:`.determine_attached_final_state`). The generated
+    label does not state the top-most edge (the initial state).
 
     Example
     -------
-    The following two allowed isobar topologies for a **1-to-5-body** decay
-    illustrates how the naming scheme results in a unique label for each of the
-    **eight edges** in the decay topology. Note that label only uses final
-    state IDs, but still reflects the internal decay topology.
+    The following two allowed isobar topologies for a **1-to-5-body** decay illustrates
+    how the naming scheme results in a unique label for each of the **eight edges** in
+    the decay topology. Note that label only uses final state IDs, but still reflects
+    the internal decay topology.
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
@@ -440,9 +425,7 @@ def get_topology_identifier(topology: Topology) -> str:
 
 
 def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
-    attached_final_state_ids = determine_attached_final_state(
-        topology, state_id
-    )
+    attached_final_state_ids = determine_attached_final_state(topology, state_id)
     return "".join(map(str, attached_final_state_ids))
 
 

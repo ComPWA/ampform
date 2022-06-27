@@ -21,12 +21,8 @@ from ampform.sympy import (
 class Kibble(UnevaluatedExpression):
     """Kibble function for determining the phase space region."""
 
-    def __new__(
-        cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints
-    ) -> Kibble:
-        return create_expression(
-            cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints
-        )
+    def __new__(cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints) -> Kibble:
+        return create_expression(cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints)
 
     def evaluate(self) -> Kallen:
         sigma1, sigma2, sigma3, m0, m1, m2, m3 = self.args

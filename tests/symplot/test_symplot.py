@@ -131,9 +131,7 @@ class TestSliderKwargs:
             ValueError, match=r"shape \(min, max\) nor \(min, max, n_steps\)"
         ):
             slider_kwargs.set_ranges({"alpha": (0.0, 0.1, 100, 200)})
-        with pytest.raises(
-            ValueError, match=r"Number of steps has to be positive"
-        ):
+        with pytest.raises(ValueError, match=r"Number of steps has to be positive"):
             slider_kwargs.set_ranges({"n": (0, 10, -1)})
 
     def test_set_values(

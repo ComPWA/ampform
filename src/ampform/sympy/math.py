@@ -19,10 +19,10 @@ from . import NumPyPrintable, create_expression, make_commutative
 class ComplexSqrt(NumPyPrintable):
     """Square root that returns positive imaginary values for negative input.
 
-    A special version :func:`~sympy.functions.elementary.miscellaneous.sqrt`
-    that renders nicely as LaTeX and and can be used as a handle for lambdify
-    printers. See :doc:`compwa-org:report/000`, :doc:`compwa-org:report/001`,
-    and :doc:`sympy:modules/printing` for how to implement a custom
+    A special version :func:`~sympy.functions.elementary.miscellaneous.sqrt` that
+    renders nicely as LaTeX and and can be used as a handle for lambdify printers. See
+    :doc:`compwa-org:report/000`, :doc:`compwa-org:report/001`, and
+    :doc:`sympy:modules/printing` for how to implement a custom
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
 
@@ -66,8 +66,8 @@ class ComplexSqrt(NumPyPrintable):
 
         .. note:: This class is `.NumPyPrintable`, so should not have an
             :meth:`~.UnevaluatedExpression.evaluate` method (in order to block
-            :meth:`~sympy.core.basic.Basic.doit`). This method serves as an
-            equivalent to that.
+            :meth:`~sympy.core.basic.Basic.doit`). This method serves as an equivalent
+            to that.
         """
         x: sp.Expr = self.args[0]  # type: ignore[assignment]
         return sp.Piecewise(

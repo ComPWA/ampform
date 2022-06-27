@@ -23,9 +23,7 @@ from ampform.helicity import (
 
 class TestHelicityAmplitudeBuilder:
     @pytest.mark.parametrize("permutate_topologies", [False, True])
-    @pytest.mark.parametrize(
-        "stable_final_state_ids", [None, (1, 2), (0, 1, 2)]
-    )
+    @pytest.mark.parametrize("stable_final_state_ids", [None, (1, 2), (0, 1, 2)])
     def test_formulate(
         self,
         permutate_topologies,
@@ -67,12 +65,9 @@ class TestHelicityAmplitudeBuilder:
         stable_final_state_masses = set()
         if stable_final_state_ids is not None:
             stable_final_state_masses = {
-                sp.Symbol(f"m_{i}", nonnegative=True)
-                for i in stable_final_state_ids
+                sp.Symbol(f"m_{i}", nonnegative=True) for i in stable_final_state_ids
             }
-        unstable_final_state_masses = (
-            final_state_masses - stable_final_state_masses
-        )
+        unstable_final_state_masses = final_state_masses - stable_final_state_masses
         assert stable_final_state_masses <= paremeters
         assert unstable_final_state_masses <= variables
 
@@ -101,9 +96,7 @@ class TestHelicityAmplitudeBuilder:
         assert builder.stable_final_state_ids is None
         builder.stable_final_state_ids = (1, 2)  # type: ignore[assignment]
         assert builder.stable_final_state_ids == {1, 2}
-        with pytest.raises(
-            ValueError, match=r"^Final state IDs are \[0, 1, 2\].*"
-        ):
+        with pytest.raises(ValueError, match=r"^Final state IDs are \[0, 1, 2\].*"):
             builder.stable_final_state_ids = [1, 2, 3]  # type: ignore[assignment]
 
     def test_scalar_initial_state(self, reaction: ReactionInfo):
@@ -186,9 +179,7 @@ class TestHelicityModel:
         new_model = model.rename_symbols({})
         assert new_model == model
 
-    def test_rename_parameters(
-        self, amplitude_model: tuple[str, HelicityModel]
-    ):
+    def test_rename_parameters(self, amplitude_model: tuple[str, HelicityModel]):
         _, model = amplitude_model
         d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}", positive=True)
         assert {d1, d2} <= set(model.parameter_defaults)
@@ -209,18 +200,10 @@ class TestHelicityModel:
             len(new_model.expression.free_symbols)
             == len(model.expression.free_symbols) - 1
         )
-        assert (
-            len(new_model.parameter_defaults)
-            == len(model.parameter_defaults) - 1
-        )
-        assert (
-            model.expression.xreplace({d1: new_d, d2: new_d})
-            == new_model.expression
-        )
+        assert len(new_model.parameter_defaults) == len(model.parameter_defaults) - 1
+        assert model.expression.xreplace({d1: new_d, d2: new_d}) == new_model.expression
 
-    def test_rename_variables(
-        self, amplitude_model: tuple[str, HelicityModel]
-    ):
+    def test_rename_variables(self, amplitude_model: tuple[str, HelicityModel]):
         _, model = amplitude_model
         old_symbol = sp.Symbol("m_12", nonnegative=True)
         assert old_symbol in model.kinematic_variables
@@ -233,13 +216,10 @@ class TestHelicityModel:
         assert new_symbol in new_model.kinematic_variables
         assert new_symbol in new_model.expression.free_symbols
         assert (
-            model.expression.xreplace({old_symbol: new_symbol})
-            == new_model.expression
+            model.expression.xreplace({old_symbol: new_symbol}) == new_model.expression
         )
 
-    def test_assumptions_after_rename(
-        self, amplitude_model: tuple[str, HelicityModel]
-    ):
+    def test_assumptions_after_rename(self, amplitude_model: tuple[str, HelicityModel]):
         # pylint: disable=protected-access
         _, model = amplitude_model
         old = "m_{f_{0}(980)}"
@@ -372,9 +352,7 @@ def test_formulate_wigner_d(
     if reaction.formalism == "canonical-helicity":
         transition *= 2
     transitions = [
-        t
-        for t in reaction.transitions
-        if t.states[3].particle.name == "f(0)(980)"
+        t for t in reaction.transitions if t.states[3].particle.name == "f(0)(980)"
     ]
     some_transition = transitions[transition]
     wigner_d = formulate_wigner_d(some_transition, node_id)

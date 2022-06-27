@@ -28,10 +28,9 @@ else:  # pragma: no cover
 class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
-    This data container is inserted into a `.ResonanceDynamicsBuilder`, so that
-    it can build some lineshape expression from the `.dynamics` module. It also
-    allows to insert :doc:`custom dynamics </usage/dynamics/custom>` into the
-    amplitude model.
+    This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
+    build some lineshape expression from the `.dynamics` module. It also allows to
+    insert :doc:`custom dynamics </usage/dynamics/custom>` into the amplitude model.
     """
 
     incoming_state_mass: sp.Symbol = field(validator=instance_of(sp.Symbol))
@@ -45,21 +44,19 @@ class TwoBodyKinematicVariableSet:
 BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
 """Type that a `.ResonanceDynamicsBuilder` should return.
 
-The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>`
-that describes the dynamics for the resonance. The second element are suggested
-parameter values (see :attr:`.parameter_defaults`) for the
-`~sympy.core.symbol.Symbol` instances that appear in the `sympy.Expr
-<sympy.core.expr.Expr>`.
+The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>` that
+describes the dynamics for the resonance. The second element are suggested parameter
+values (see :attr:`.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances
+that appear in the `sympy.Expr <sympy.core.expr.Expr>`.
 """
 
 
 class ResonanceDynamicsBuilder(Protocol):
     """Protocol that is used by `.set_dynamics`.
 
-    Follow this `~typing.Protocol` when defining a builder function that is to
-    be used by `.set_dynamics`. For an example, see the source code
-    `.create_relativistic_breit_wigner`, which creates a
-    `.relativistic_breit_wigner`.
+    Follow this `~typing.Protocol` when defining a builder function that is to be used
+    by `.set_dynamics`. For an example, see the source code
+    `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
 
     .. seealso:: :doc:`/usage/dynamics/custom`
     """
@@ -86,8 +83,7 @@ def create_non_dynamic_with_ff(
     """
     if variable_pool.angular_momentum is None:
         raise ValueError(
-            "Angular momentum is not defined but is required in the form"
-            " factor!"
+            "Angular momentum is not defined but is required in the form factor!"
         )
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
@@ -107,19 +103,18 @@ def create_non_dynamic_with_ff(
 class RelativisticBreitWignerBuilder:
     """Factory for building relativistic Breit-Wigner expressions.
 
-    The :meth:`__call__` of this builder complies with the
-    `.ResonanceDynamicsBuilder`, so instances of this class can be used in
-    :meth:`.set_dynamics`.
+    The :meth:`__call__` of this builder complies with the `.ResonanceDynamicsBuilder`,
+    so instances of this class can be used in :meth:`.set_dynamics`.
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function multiplied
-            by a Blatt-Weisskopf form factor (`.BlattWeisskopfSquared`), like
-            in Equation (50.26) on :pdg-review:`2021; Resonances; p.9`.
+            by a Blatt-Weisskopf form factor (`.BlattWeisskopfSquared`), like in
+            Equation (50.26) on :pdg-review:`2021; Resonances; p.9`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
             denominator of the Breit-Wigner.
         phsp_factor: A class that complies with the
-            `.PhaseSpaceFactorProtocol` that is used in the energy-dependent
-            width. Defaults to `.PhaseSpaceFactor`.
+            `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
+            Defaults to `.PhaseSpaceFactor`.
     """
 
     def __init__(
@@ -178,8 +173,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the"
-                " form factor!"
+                "Angular momentum is not defined but is required in the form factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -214,8 +208,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             raise ValueError(
-                "Angular momentum is not defined but is required in the"
-                " form factor!"
+                "Angular momentum is not defined but is required in the form factor!"
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -249,8 +242,8 @@ create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
 """
 Create a `.relativistic_breit_wigner` for a two-body decay.
 
-This is a convenience function for a `RelativisticBreitWignerBuilder` _without_
-form factor.
+This is a convenience function for a `RelativisticBreitWignerBuilder` _without_ form
+factor.
 """
 
 create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
@@ -261,8 +254,8 @@ create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
 """
 Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.
 
-This is a convenience function for a `RelativisticBreitWignerBuilder` _with_
-form factor and a 'normal' `.PhaseSpaceFactor`.
+This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
+and a 'normal' `.PhaseSpaceFactor`.
 """
 
 create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
@@ -273,9 +266,8 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
 """
 Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
-This is a convenience function for a `RelativisticBreitWignerBuilder` _with_
-form factor and a 'analytic' phase space factor (see
-`.EqualMassPhaseSpaceFactor`).
+This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
+and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
 .. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
 """
