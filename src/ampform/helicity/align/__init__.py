@@ -26,7 +26,7 @@ class NoAlignment(SpinAlignment):
     def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:
         outer_state_ids = get_outer_state_ids(reaction)
         topology_groups = group_by_topology(reaction.transitions)
-        indices = [create_spin_projection_symbol(i) for i in sorted(outer_state_ids)]
+        indices = [create_spin_projection_symbol(i) for i in outer_state_ids]
         amplitude_symbols = [
             create_amplitude_base(topology)[indices] for topology in topology_groups
         ]
