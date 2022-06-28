@@ -1,4 +1,4 @@
-# pylint: disable=abstract-method arguments-differ protected-access
+# pylint: disable=abstract-method arguments-differ invalid-name protected-access
 """Angle computations for (boosted) :mod:`.lorentz` vectors."""
 from __future__ import annotations
 
@@ -42,6 +42,7 @@ from .lorentz import (
     compute_boost_chain,
     three_momentum_norm,
 )
+from .phasespace import Kallen
 
 
 @implement_doit_method
@@ -223,3 +224,204 @@ def compute_wigner_rotation_matrix(
     inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
     boost_chain = compute_boost_chain(topology, momenta, state_id)
     return MatrixMultiplication(inverted_direct_boost, *boost_chain)
+
+
+def formulate_scattering_angle(
+    state_id: int, sibling_id: int
+) -> tuple[sp.Symbol, sp.acos]:
+    r"""Formulate the scattering angle in the rest frame of the resonance.
+
+    Compute the :math:`\theta_{ij}` scattering angle as formulated in `Eq (A1)
+    in the DPD paper
+    <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
+    :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`. The angle is that
+    between particle :math:`i` and spectator particle :math:`k` in the rest
+    frame of the isobar resonance :math:`(ij)`.
+    """
+    if not {state_id, sibling_id} <= {1, 2, 3}:
+        raise ValueError("Child IDs need to be one of 1, 2, 3")
+    if {state_id, sibling_id} in {(2, 1), (3, 2), (1, 3)}:
+        raise NotImplementedError(
+            f"Cannot compute scattering angle θ{state_id}{sibling_id}"
+        )
+    if state_id == sibling_id:
+        raise ValueError(f"IDs of the decay products cannot be equal: {state_id}")
+    symbol = sp.Symbol(f"theta_{state_id}{sibling_id}", real=True)
+    spectator_id = next(iter({1, 2, 3} - {state_id, sibling_id}))
+    m0 = sp.Symbol("m0", nonnegative=True)
+    mi = sp.Symbol(f"m{state_id}", nonnegative=True)
+    mj = sp.Symbol(f"m{sibling_id}", nonnegative=True)
+    mk = sp.Symbol(f"m{spectator_id}", nonnegative=True)
+    sj = sp.Symbol(f"sigma{sibling_id}", nonnegative=True)
+    sk = sp.Symbol(f"sigma{spectator_id}", nonnegative=True)
+    theta = sp.acos(
+        (
+            2 * sk * (sj - mk**2 - mi**2)
+            - (sk + mi**2 - mj**2) * (m0**2 - sk - mk**2)
+        )
+        / (
+            sp.sqrt(Kallen(m0**2, mk**2, sk))
+            * sp.sqrt(Kallen(sk, mi**2, mj**2))
+        )
+    )
+    return symbol, theta
+
+
+def formulate_theta_hat_angle(
+    isobar_id: int, aligned_subsystem: int
+) -> tuple[sp.Symbol, sp.acos]:
+    r"""Formulate an expression for :math:`\hat\theta_{i(j)}`."""
+    allowed_ids = {1, 2, 3}
+    if not {isobar_id, aligned_subsystem} <= allowed_ids:
+        raise ValueError(
+            f"Child IDs need to be one of {', '.join(map(str, allowed_ids))}"
+        )
+    symbol = sp.Symbol(Rf"\hat\theta_{isobar_id}({aligned_subsystem})", real=True)
+    if isobar_id == aligned_subsystem:
+        return symbol, sp.S.Zero
+    if (isobar_id, aligned_subsystem) in {(3, 1), (1, 2), (2, 3)}:
+        remaining_id = next(iter(allowed_ids - {isobar_id, aligned_subsystem}))
+        m0 = sp.Symbol("m0", nonnegative=True)
+        mi = sp.Symbol(f"m{isobar_id}", nonnegative=True)
+        mj = sp.Symbol(f"m{aligned_subsystem}", nonnegative=True)
+        si = sp.Symbol(f"sigma{isobar_id}", nonnegative=True)
+        sj = sp.Symbol(f"sigma{aligned_subsystem}", nonnegative=True)
+        sk = sp.Symbol(f"sigma{remaining_id}", nonnegative=True)
+        theta = sp.acos(
+            (
+                (m0**2 + mi**2 - si) * (m0**2 + mj**2 - sj)
+                - 2 * m0**2 * (sk - mi**2 - mj**2)
+            )
+            / (
+                sp.sqrt(Kallen(m0**2, mj**2, sj))
+                * sp.sqrt(Kallen(m0**2, si, mi**2))
+            )
+        )
+        return symbol, theta
+    _, theta = formulate_theta_hat_angle(
+        isobar_id=aligned_subsystem,
+        aligned_subsystem=isobar_id,
+    )
+    return symbol, -theta
+
+
+def formulate_zeta_angle(  # noqa: R701
+    rotated_state: int,
+    aligned_subsystem: int,
+    reference_subsystem: int,
+) -> tuple[sp.Symbol, sp.acos]:
+    r"""Formulate expression for the alignment angle :math:`\zeta^i_{j(k)}`."""
+    # pylint: disable=too-many-locals too-many-return-statements
+    zeta_symbol = sp.Symbol(
+        Rf"\zeta^{rotated_state}_{{{aligned_subsystem}({reference_subsystem})}}",
+        real=True,
+    )
+    if rotated_state == 0:
+        _, theta = formulate_theta_hat_angle(aligned_subsystem, reference_subsystem)
+        return zeta_symbol, theta
+    if reference_subsystem == 0:
+        _, zeta_expr = formulate_zeta_angle(
+            rotated_state, aligned_subsystem, rotated_state
+        )
+        return zeta_symbol, zeta_expr
+    if aligned_subsystem == reference_subsystem:
+        return zeta_symbol, sp.S.Zero
+    m0, m1, m2, m3 = sp.symbols("m:4", nonnegative=True)
+    s1, s2, s3 = sp.symbols("sigma1:4", nonnegative=True)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (1, 1, 3):
+        cos_zeta_expr = (
+            2 * m1**2 * (s2 - m0**2 - m2**2)
+            + (m0**2 + m1**2 - s1) * (s3 - m1**2 - m2**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m1**2, s1))
+            * sp.sqrt(Kallen(s3, m1**2, m2**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (1, 2, 1):
+        cos_zeta_expr = (
+            2 * m1**2 * (s3 - m0**2 - m3**2)
+            + (m0**2 + m1**2 - s1) * (s2 - m1**2 - m3**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m1**2, s1))
+            * sp.sqrt(Kallen(s2, m1**2, m3**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 2, 1):
+        cos_zeta_expr = (
+            2 * m2**2 * (s3 - m0**2 - m3**2)
+            + (m0**2 + m2**2 - s2) * (s1 - m2**2 - m3**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m2**2, s2))
+            * sp.sqrt(Kallen(s1, m2**2, m3**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 3, 2):
+        cos_zeta_expr = (
+            2 * m2**2 * (s1 - m0**2 - m1**2)
+            + (m0**2 + m2**2 - s2) * (s3 - m2**2 - m1**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m2**2, s2))
+            * sp.sqrt(Kallen(s3, m2**2, m1**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 3, 2):
+        cos_zeta_expr = (
+            2 * m3**2 * (s1 - m0**2 - m1**2)
+            + (m0**2 + m3**2 - s3) * (s2 - m3**2 - m1**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m3**2, s3))
+            * sp.sqrt(Kallen(s2, m3**2, m1**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 1, 3):
+        cos_zeta_expr = (
+            2 * m3**2 * (s2 - m0**2 - m2**2)
+            + (m0**2 + m3**2 - s3) * (s1 - m3**2 - m2**2)
+        ) / (
+            sp.sqrt(Kallen(m0**2, m3**2, s3))
+            * sp.sqrt(Kallen(s1, m3**2, m2**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) in {  # Eq (A10)
+        (1, 2, 3),
+        (2, 3, 1),
+        (3, 1, 2),
+    }:
+        mi, si = _create_mass_mandelstam_pair(rotated_state)
+        mj, sj = _create_mass_mandelstam_pair(aligned_subsystem)
+        mk, sk = _create_mass_mandelstam_pair(reference_subsystem)
+        cos_zeta_expr = (
+            2 * mi**2 * (mj**2 + mk**2 - si)
+            + (sj - mi**2 - mk**2) * (sk - mi**2 - mj**2)
+        ) / (
+            sp.sqrt(Kallen(sj, mk**2, mi**2))
+            * sp.sqrt(Kallen(sk, mi**2, mj**2))
+        )
+        return zeta_symbol, sp.acos(cos_zeta_expr)
+    if (rotated_state, aligned_subsystem, reference_subsystem) in {
+        (1, 3, 1),
+        (2, 1, 2),
+        (3, 2, 3),
+        # Eq (A8)
+        (1, 1, 2),
+        (2, 2, 3),
+        (3, 3, 1),
+        # Eq (A11)
+        (1, 3, 2),
+        (2, 1, 3),
+        (3, 2, 1),
+    }:
+        _, zeta_expr = formulate_zeta_angle(
+            rotated_state=rotated_state,
+            aligned_subsystem=reference_subsystem,
+            reference_subsystem=aligned_subsystem,
+        )
+        return zeta_symbol, -zeta_expr
+    raise NotImplementedError(
+        "No expression for"
+        f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"
+    )
+
+
+def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Symbol]:
+    return sp.symbols(f"m{i} sigma{i}", nonnegative=True)

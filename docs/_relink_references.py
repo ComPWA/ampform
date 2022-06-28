@@ -36,6 +36,7 @@ __TARGET_SUBSTITUTIONS = {
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Rational": "sympy.core.numbers.Rational",
     "sp.Symbol": "sympy.core.symbol.Symbol",
+    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
     "typing.Literal[-1, 1]": "typing.Literal",
     "typing_extensions.Protocol": "typing.Protocol",
