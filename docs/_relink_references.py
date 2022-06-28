@@ -34,6 +34,7 @@ __TARGET_SUBSTITUTIONS = {
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
+    "typing.Literal[-1, 1]": "typing.Literal",
     "typing_extensions.Protocol": "typing.Protocol",
 }
 __REF_TYPE_SUBSTITUTIONS = {
