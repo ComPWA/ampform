@@ -12,10 +12,9 @@ import logging
 import operator
 import sys
 from collections import OrderedDict, abc
-from functools import reduce, singledispatch
+from functools import reduce
 from typing import (
     TYPE_CHECKING,
-    DefaultDict,
     ItemsView,
     Iterable,
     Iterator,
@@ -32,7 +31,6 @@ from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
-from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -44,7 +42,7 @@ from ampform.kinematics import HelicityAdapter
 from ampform.kinematics.lorentz import get_invariant_mass_symbol
 from ampform.sympy import PoolSum
 
-from .align.axisangle import formulate_axis_angle_alignment, get_opposite_helicity_sign
+from .align import NoAlignment, SpinAlignment
 from .decay import (
     TwoBodyDecay,
     get_prefactor,
@@ -55,11 +53,10 @@ from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
-    create_helicity_symbol,
-    create_spin_projection_symbol,
+    collect_spin_projections,
+    create_amplitude_symbol,
     generate_transition_label,
     get_helicity_angle_symbols,
-    get_topology_identifier,
     natural_sorting,
 )
 
@@ -330,7 +327,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__reaction = reaction
         self.__adapter = HelicityAdapter(reaction)
         self.__config = BuilderConfiguration(
-            align_spin=False,
+            spin_alignment=NoAlignment(),
             scalar_initial_state_mass=False,
             stable_final_state_ids=None,
             use_helicity_couplings=False,
@@ -363,9 +360,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
-        kinematic_variables = self.adapter.create_expressions(
-            generate_wigner_angles=self.config.align_spin
-        )
+        kinematic_variables = self.adapter.create_expressions()
+        alignment_symbols = self.config.spin_alignment.define_symbols(self.reaction)
+        kinematic_variables.update(alignment_symbols)
         if self.config.stable_final_state_ids is not None:
             for state_id in self.config.stable_final_state_ids:
                 symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
@@ -390,51 +387,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __formulate_top_expression(self) -> PoolSum:
         # pylint: disable=too-many-locals
-        outer_state_ids = _get_outer_state_ids(self.reaction)
-        spin_projections: DefaultDict[
-            sp.Symbol, set[sp.Rational]
-        ] = collections.defaultdict(set)
         spin_groups = group_by_spin_projection(self.reaction.transitions)
         for group in spin_groups:
             self.__register_amplitudes(group)
-            for transition in group:
-                for i in outer_state_ids:
-                    state = transition.states[i]
-                    symbol = create_spin_projection_symbol(i)
-                    value = sp.Rational(state.spin_projection)
-                    spin_projections[symbol].add(value)
 
-        topology_groups = group_by_topology(self.reaction.transitions)
-        if self.config.align_spin:
-            amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
-        else:
-            indices = list(spin_projections)
-            amplitude = sum(  # type: ignore[assignment]
-                _create_amplitude_base(topology)[indices]
-                for topology in topology_groups
-            )
+        amplitude = self.config.spin_alignment.formulate_amplitude(self.reaction)
+        spin_projections = collect_spin_projections(self.reaction)
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
-
-    def __formulate_axis_angle_amplitude(
-        self, topology_groups: dict[Topology, list[StateTransition]]
-    ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.reaction)
-        amplitude = sp.S.Zero
-        for topology, transitions in topology_groups.items():
-            base = _create_amplitude_base(topology)
-            helicities = [
-                get_opposite_helicity_sign(topology, i)
-                * create_helicity_symbol(topology, i)
-                for i in outer_state_ids
-            ]
-            amplitude_symbol = base[helicities]
-            first_transition = transitions[0]
-            alignment_sum = formulate_axis_angle_alignment(first_transition)
-            amplitude += PoolSum(
-                alignment_sum.expression * amplitude_symbol,
-                *alignment_sum.indices,
-            )
-        return amplitude
 
     def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
         transition_by_topology = group_by_topology(transition_group)
@@ -461,7 +420,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
-        symbol = _create_amplitude_symbol(first_transition)
+        symbol = create_amplitude_symbol(first_transition)
         expression = sum(sequential_expressions)  # type: ignore[assignment]
         self.__ingredients.amplitudes[symbol] = expression
         return expression
@@ -600,8 +559,8 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    align_spin: bool = field(validator=instance_of(bool))
-    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[misc]
+    """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
 
@@ -721,37 +680,6 @@ class _HelicityModelIngredients:
         self.amplitudes = {}
         self.components = {}
         self.kinematic_variables = {}
-
-
-def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
-    outer_state_ids = _get_outer_state_ids(transition)
-    helicities = tuple(
-        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
-    )
-    base = _create_amplitude_base(transition.topology)
-    return base[helicities]
-
-
-def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
-    superscript = get_topology_identifier(topology)
-    return sp.IndexedBase(f"A^{superscript}", complex=True)
-
-
-@singledispatch
-def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    raise NotImplementedError(f"Cannot get outer state IDs from a {type(obj).__name__}")
-
-
-@_get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> list[int]:
-    outer_state_ids = list(transition.initial_states)
-    outer_state_ids += sorted(transition.final_states)
-    return outer_state_ids
-
-
-@_get_outer_state_ids.register(ReactionInfo)
-def _(reaction: ReactionInfo) -> list[int]:
-    return _get_outer_state_ids(reaction.transitions[0])
 
 
 def formulate_isobar_cg_coefficients(

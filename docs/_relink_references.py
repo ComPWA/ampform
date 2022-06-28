@@ -34,6 +34,7 @@ __TARGET_SUBSTITUTIONS = {
     "sp.Float": "sympy.core.numbers.Float",
     "sp.Indexed": "sympy.tensor.indexed.Indexed",
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
+    "sp.Rational": "sympy.core.numbers.Rational",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
     "typing.Literal[-1, 1]": "typing.Literal",

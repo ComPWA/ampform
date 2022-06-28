@@ -12,24 +12,74 @@ from typing import Generator, Sequence, TypeVar, overload
 
 import sympy as sp
 from qrules.topology import Topology
-from qrules.transition import StateTransition
+from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.helicity.decay import (
+    get_outer_state_ids,
     get_parent_id,
     get_sibling_state_id,
+    group_by_topology,
     is_opposite_helicity_state,
 )
 from ampform.helicity.naming import (
+    create_amplitude_base,
+    create_helicity_symbol,
     create_spin_projection_symbol,
     get_helicity_angle_symbols,
     get_helicity_suffix,
 )
+from ampform.kinematics.angles import compute_wigner_angles
+from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
+
+from . import SpinAlignment
 
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
     from typing_extensions import Literal
+
+
+class AxisAngleAlignment(SpinAlignment):
+    """Alignment amplitudes with the "axis-angle" method.
+
+    See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+    <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
+    """
+
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:
+        topology_groups = group_by_topology(reaction.transitions)
+        outer_state_ids = get_outer_state_ids(reaction)
+        amplitude = sp.S.Zero
+        for topology, transitions in topology_groups.items():
+            base = create_amplitude_base(topology)
+            helicities = [
+                get_opposite_helicity_sign(topology, i)
+                * create_helicity_symbol(topology, i)
+                for i in outer_state_ids
+            ]
+            amplitude_symbol = base[helicities]
+            first_transition = transitions[0]
+            alignment_sum = formulate_axis_angle_alignment(first_transition)
+            amplitude += PoolSum(
+                alignment_sum.expression * amplitude_symbol,
+                *alignment_sum.indices,
+            )
+        return amplitude
+
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:
+        wigner_angles = {}
+        for topology in group_by_topology(reaction.transitions):
+            momenta = create_four_momentum_symbols(topology)
+            wigner_rotation_ids = {
+                i
+                for i in topology.outgoing_edge_ids
+                if get_parent_id(topology, i) != -1
+            }
+            for state_id in wigner_rotation_ids:
+                angles = compute_wigner_angles(topology, momenta, state_id)
+                wigner_angles.update(angles)
+        return wigner_angles
 
 
 def formulate_axis_angle_alignment(transition: StateTransition) -> PoolSum:

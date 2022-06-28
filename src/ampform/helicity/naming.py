@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from functools import lru_cache
-from typing import Iterable
+from typing import DefaultDict, Iterable
 
 import sympy as sp
 from qrules.topology import Topology
@@ -14,7 +15,9 @@ from .decay import (
     assert_isobar_topology,
     determine_attached_final_state,
     get_helicity_info,
+    get_outer_state_ids,
     get_sorted_states,
+    group_by_spin_projection,
 )
 
 
@@ -277,6 +280,20 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         return Rf" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
 
 
+def create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
+    outer_state_ids = get_outer_state_ids(transition)
+    helicities = tuple(
+        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
+    )
+    base = create_amplitude_base(transition.topology)
+    return base[helicities]
+
+
+def create_amplitude_base(topology: Topology) -> sp.IndexedBase:
+    superscript = get_topology_identifier(topology)
+    return sp.IndexedBase(f"A^{superscript}", complex=True)
+
+
 def generate_transition_label(transition: StateTransition) -> str:
     r"""Generate a label for a coherent intensity, including spin projection.
 
@@ -504,3 +521,19 @@ def create_spin_projection_symbol(state_id: int) -> sp.Symbol:
     else:
         suffix = str(state_id)
     return sp.Symbol(f"m{suffix}", rational=True)
+
+
+def collect_spin_projections(
+    reaction: ReactionInfo,
+) -> dict[sp.Symbol, set[sp.Rational]]:
+    outer_state_ids = get_outer_state_ids(reaction)
+    spin_projections: DefaultDict[sp.Symbol, set[sp.Rational]] = defaultdict(set)
+    spin_groups = group_by_spin_projection(reaction.transitions)
+    for group in spin_groups:
+        for transition in group:
+            for i in outer_state_ids:
+                state = transition.states[i]
+                symbol = create_spin_projection_symbol(i)
+                value = sp.Rational(state.spin_projection)
+                spin_projections[symbol].add(value)
+    return dict(spin_projections)
