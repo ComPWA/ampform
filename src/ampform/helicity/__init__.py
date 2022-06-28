@@ -12,7 +12,7 @@ import logging
 import operator
 import sys
 from collections import OrderedDict, abc
-from functools import reduce, singledispatch
+from functools import reduce
 from typing import (
     TYPE_CHECKING,
     DefaultDict,
@@ -47,6 +47,7 @@ from ampform.sympy import PoolSum
 from .align.axisangle import formulate_axis_angle_alignment, get_opposite_helicity_sign
 from .decay import (
     TwoBodyDecay,
+    get_outer_state_ids,
     get_prefactor,
     group_by_spin_projection,
     group_by_topology,
@@ -55,11 +56,12 @@ from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
+    create_amplitude_base,
+    create_amplitude_symbol,
     create_helicity_symbol,
     create_spin_projection_symbol,
     generate_transition_label,
     get_helicity_angle_symbols,
-    get_topology_identifier,
     natural_sorting,
 )
 
@@ -390,7 +392,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __formulate_top_expression(self) -> PoolSum:
         # pylint: disable=too-many-locals
-        outer_state_ids = _get_outer_state_ids(self.reaction)
+        outer_state_ids = get_outer_state_ids(self.reaction)
         spin_projections: DefaultDict[
             sp.Symbol, set[sp.Rational]
         ] = collections.defaultdict(set)
@@ -410,18 +412,17 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         else:
             indices = list(spin_projections)
             amplitude = sum(  # type: ignore[assignment]
-                _create_amplitude_base(topology)[indices]
-                for topology in topology_groups
+                create_amplitude_base(topology)[indices] for topology in topology_groups
             )
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
     def __formulate_axis_angle_amplitude(
         self, topology_groups: dict[Topology, list[StateTransition]]
     ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.reaction)
+        outer_state_ids = get_outer_state_ids(self.reaction)
         amplitude = sp.S.Zero
         for topology, transitions in topology_groups.items():
-            base = _create_amplitude_base(topology)
+            base = create_amplitude_base(topology)
             helicities = [
                 get_opposite_helicity_sign(topology, i)
                 * create_helicity_symbol(topology, i)
@@ -461,7 +462,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
-        symbol = _create_amplitude_symbol(first_transition)
+        symbol = create_amplitude_symbol(first_transition)
         expression = sum(sequential_expressions)  # type: ignore[assignment]
         self.__ingredients.amplitudes[symbol] = expression
         return expression
@@ -721,37 +722,6 @@ class _HelicityModelIngredients:
         self.amplitudes = {}
         self.components = {}
         self.kinematic_variables = {}
-
-
-def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
-    outer_state_ids = _get_outer_state_ids(transition)
-    helicities = tuple(
-        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
-    )
-    base = _create_amplitude_base(transition.topology)
-    return base[helicities]
-
-
-def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
-    superscript = get_topology_identifier(topology)
-    return sp.IndexedBase(f"A^{superscript}", complex=True)
-
-
-@singledispatch
-def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    raise NotImplementedError(f"Cannot get outer state IDs from a {type(obj).__name__}")
-
-
-@_get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> list[int]:
-    outer_state_ids = list(transition.initial_states)
-    outer_state_ids += sorted(transition.final_states)
-    return outer_state_ids
-
-
-@_get_outer_state_ids.register(ReactionInfo)
-def _(reaction: ReactionInfo) -> list[int]:
-    return _get_outer_state_ids(reaction.transitions[0])
 
 
 def formulate_isobar_cg_coefficients(

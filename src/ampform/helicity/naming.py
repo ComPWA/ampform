@@ -14,6 +14,7 @@ from .decay import (
     assert_isobar_topology,
     determine_attached_final_state,
     get_helicity_info,
+    get_outer_state_ids,
     get_sorted_states,
 )
 
@@ -275,6 +276,20 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         angular_momentum = sp.Rational(interaction.l_magnitude)
         coupled_spin = sp.Rational(interaction.s_magnitude)
         return Rf" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
+
+
+def create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
+    outer_state_ids = get_outer_state_ids(transition)
+    helicities = tuple(
+        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
+    )
+    base = create_amplitude_base(transition.topology)
+    return base[helicities]
+
+
+def create_amplitude_base(topology: Topology) -> sp.IndexedBase:
+    superscript = get_topology_identifier(topology)
+    return sp.IndexedBase(f"A^{superscript}", complex=True)
 
 
 def generate_transition_label(transition: StateTransition) -> str:
