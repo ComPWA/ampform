@@ -171,8 +171,8 @@ autodoc_default_options = {
 autodoc_member_order = "bysource"
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
-    "FourMomenta": "ampform.kinematics.FourMomenta",
-    "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
+    "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
+    "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "RangeDefinition": "symplot.RangeDefinition",
     # https://github.com/sphinx-doc/sphinx/pull/10183
     # "ParameterValue": "ampform.helicity.ParameterValue",
@@ -331,6 +331,7 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 # Settings for linkcheck
 linkcheck_anchors = False
 linkcheck_ignore = [
+    "http://www.curtismeyer.com",
     "https://doi.org/10.1093/ptep/ptaa104",
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
     "https://hss-opus.ub.ruhr-uni-bochum.de",

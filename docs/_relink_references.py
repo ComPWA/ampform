@@ -15,6 +15,8 @@ from sphinx.addnodes import pending_xref
 from sphinx.environment import BuildEnvironment
 
 __TARGET_SUBSTITUTIONS = {
+    "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
+    "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
     "ParameterValue": "ampform.helicity.ParameterValue",
     "ReactionInfo": "qrules.transition.ReactionInfo",
@@ -34,19 +36,18 @@ __TARGET_SUBSTITUTIONS = {
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Symbol": "sympy.core.symbol.Symbol",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
+    "typing.Literal[-1, 1]": "typing.Literal",
     "typing_extensions.Protocol": "typing.Protocol",
 }
 __REF_TYPE_SUBSTITUTIONS = {
     "DecoratedClass": "obj",
     "DecoratedExpr": "obj",
-    "FourMomenta": "obj",
-    "FourMomentumSymbol": "obj",
     "None": "obj",
     "RangeDefinition": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
     "ampform.helicity.ParameterValue": "obj",
-    "ampform.kinematics.FourMomenta": "obj",
-    "ampform.kinematics.FourMomentumSymbol": "obj",
+    "ampform.kinematics.lorentz.FourMomenta": "obj",
+    "ampform.kinematics.lorentz.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
     "ampform.sympy.DecoratedExpr": "obj",
     "symplot.Slider": "obj",
