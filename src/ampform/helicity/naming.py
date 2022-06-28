@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from functools import lru_cache
-from typing import Iterable
+from typing import DefaultDict, Iterable
 
 import sympy as sp
 from qrules.topology import Topology
@@ -16,6 +17,7 @@ from .decay import (
     get_helicity_info,
     get_outer_state_ids,
     get_sorted_states,
+    group_by_spin_projection,
 )
 
 
@@ -519,3 +521,19 @@ def create_spin_projection_symbol(state_id: int) -> sp.Symbol:
     else:
         suffix = str(state_id)
     return sp.Symbol(f"m{suffix}", rational=True)
+
+
+def collect_spin_projections(
+    reaction: ReactionInfo,
+) -> dict[sp.Symbol, set[sp.Rational]]:
+    outer_state_ids = get_outer_state_ids(reaction)
+    spin_projections: DefaultDict[sp.Symbol, set[sp.Rational]] = defaultdict(set)
+    spin_groups = group_by_spin_projection(reaction.transitions)
+    for group in spin_groups:
+        for transition in group:
+            for i in outer_state_ids:
+                state = transition.states[i]
+                symbol = create_spin_projection_symbol(i)
+                value = sp.Rational(state.spin_projection)
+                spin_projections[symbol].add(value)
+    return dict(spin_projections)

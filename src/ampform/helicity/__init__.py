@@ -15,7 +15,6 @@ from collections import OrderedDict, abc
 from functools import reduce
 from typing import (
     TYPE_CHECKING,
-    DefaultDict,
     ItemsView,
     Iterable,
     Iterator,
@@ -32,7 +31,6 @@ from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
-from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
@@ -44,10 +42,9 @@ from ampform.kinematics import HelicityAdapter
 from ampform.kinematics.lorentz import get_invariant_mass_symbol
 from ampform.sympy import PoolSum
 
-from .align.axisangle import formulate_axis_angle_alignment, get_opposite_helicity_sign
+from .align import axisangle, sum_amplitudes
 from .decay import (
     TwoBodyDecay,
-    get_outer_state_ids,
     get_prefactor,
     group_by_spin_projection,
     group_by_topology,
@@ -56,10 +53,8 @@ from .naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
-    create_amplitude_base,
+    collect_spin_projections,
     create_amplitude_symbol,
-    create_helicity_symbol,
-    create_spin_projection_symbol,
     generate_transition_label,
     get_helicity_angle_symbols,
     natural_sorting,
@@ -392,50 +387,16 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __formulate_top_expression(self) -> PoolSum:
         # pylint: disable=too-many-locals
-        outer_state_ids = get_outer_state_ids(self.reaction)
-        spin_projections: DefaultDict[
-            sp.Symbol, set[sp.Rational]
-        ] = collections.defaultdict(set)
         spin_groups = group_by_spin_projection(self.reaction.transitions)
         for group in spin_groups:
             self.__register_amplitudes(group)
-            for transition in group:
-                for i in outer_state_ids:
-                    state = transition.states[i]
-                    symbol = create_spin_projection_symbol(i)
-                    value = sp.Rational(state.spin_projection)
-                    spin_projections[symbol].add(value)
 
-        topology_groups = group_by_topology(self.reaction.transitions)
         if self.config.align_spin:
-            amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
+            amplitude = axisangle.align_amplitude(self.reaction)
         else:
-            indices = list(spin_projections)
-            amplitude = sum(  # type: ignore[assignment]
-                create_amplitude_base(topology)[indices] for topology in topology_groups
-            )
+            amplitude = sum_amplitudes(self.reaction)
+        spin_projections = collect_spin_projections(self.reaction)
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
-
-    def __formulate_axis_angle_amplitude(
-        self, topology_groups: dict[Topology, list[StateTransition]]
-    ) -> sp.Expr:
-        outer_state_ids = get_outer_state_ids(self.reaction)
-        amplitude = sp.S.Zero
-        for topology, transitions in topology_groups.items():
-            base = create_amplitude_base(topology)
-            helicities = [
-                get_opposite_helicity_sign(topology, i)
-                * create_helicity_symbol(topology, i)
-                for i in outer_state_ids
-            ]
-            amplitude_symbol = base[helicities]
-            first_transition = transitions[0]
-            alignment_sum = formulate_axis_angle_alignment(first_transition)
-            amplitude += PoolSum(
-                alignment_sum.expression * amplitude_symbol,
-                *alignment_sum.indices,
-            )
-        return amplitude
 
     def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
         transition_by_topology = group_by_topology(transition_group)

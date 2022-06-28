@@ -12,14 +12,18 @@ from typing import Generator, Sequence, TypeVar, overload
 
 import sympy as sp
 from qrules.topology import Topology
-from qrules.transition import StateTransition
+from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.helicity.decay import (
+    get_outer_state_ids,
     get_parent_id,
     get_sibling_state_id,
+    group_by_topology,
     is_opposite_helicity_state,
 )
 from ampform.helicity.naming import (
+    create_amplitude_base,
+    create_helicity_symbol,
     create_spin_projection_symbol,
     get_helicity_angle_symbols,
     get_helicity_suffix,
@@ -30,6 +34,27 @@ if sys.version_info >= (3, 8):
     from typing import Literal
 else:
     from typing_extensions import Literal
+
+
+def align_amplitude(reaction: ReactionInfo) -> sp.Expr:
+    topology_groups = group_by_topology(reaction.transitions)
+    outer_state_ids = get_outer_state_ids(reaction)
+    amplitude = sp.S.Zero
+    for topology, transitions in topology_groups.items():
+        base = create_amplitude_base(topology)
+        helicities = [
+            get_opposite_helicity_sign(topology, i)
+            * create_helicity_symbol(topology, i)
+            for i in outer_state_ids
+        ]
+        amplitude_symbol = base[helicities]
+        first_transition = transitions[0]
+        alignment_sum = formulate_axis_angle_alignment(first_transition)
+        amplitude += PoolSum(
+            alignment_sum.expression * amplitude_symbol,
+            *alignment_sum.indices,
+        )
+    return amplitude
 
 
 def formulate_axis_angle_alignment(transition: StateTransition) -> PoolSum:
