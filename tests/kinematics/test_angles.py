@@ -21,8 +21,10 @@ from ampform.kinematics.angles import (
 from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
 from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
 
-m0, m1, m2, m3 = sp.symbols("m:4", nonnegative=True)
-s1, s2, s3 = sp.symbols("sigma1:4", nonnegative=True)
+m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
+s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2
+s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2
+s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2
 
 
 @pytest.fixture(scope="session")
@@ -351,9 +353,9 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
         s2: 3.0,
         s3: s3_expr,
     }
-    ζ1 = float(zeta1.doit().xreplace(masses).xreplace(masses))
-    ζ2 = float(zeta2.doit().xreplace(masses).xreplace(masses))
-    ζ3 = float(zeta3.doit().xreplace(masses).xreplace(masses))
+    ζ1 = float(zeta1.doit().subs(masses))
+    ζ2 = float(zeta2.doit().subs(masses))
+    ζ3 = float(zeta3.doit().subs(masses))
     np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 

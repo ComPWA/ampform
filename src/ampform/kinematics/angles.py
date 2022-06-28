@@ -248,12 +248,12 @@ def formulate_scattering_angle(
         raise ValueError(f"IDs of the decay products cannot be equal: {state_id}")
     symbol = sp.Symbol(f"theta_{state_id}{sibling_id}", real=True)
     spectator_id = next(iter({1, 2, 3} - {state_id, sibling_id}))
-    m0 = sp.Symbol("m0", nonnegative=True)
-    mi = sp.Symbol(f"m{state_id}", nonnegative=True)
-    mj = sp.Symbol(f"m{sibling_id}", nonnegative=True)
-    mk = sp.Symbol(f"m{spectator_id}", nonnegative=True)
-    sj = sp.Symbol(f"sigma{sibling_id}", nonnegative=True)
-    sk = sp.Symbol(f"sigma{spectator_id}", nonnegative=True)
+    m0 = sp.Symbol("m_0", nonnegative=True)
+    mi = sp.Symbol(f"m_{state_id}", nonnegative=True)
+    mj = sp.Symbol(f"m_{sibling_id}", nonnegative=True)
+    mk = sp.Symbol(f"m_{spectator_id}", nonnegative=True)
+    sj = sp.Symbol(f"m_{__get_id_complement(sibling_id)}", nonnegative=True) ** 2
+    sk = sp.Symbol(f"m_{__get_id_complement(spectator_id)}", nonnegative=True) ** 2
     theta = sp.acos(
         (
             2 * sk * (sj - mk**2 - mi**2)
@@ -281,12 +281,15 @@ def formulate_theta_hat_angle(
         return symbol, sp.S.Zero
     if (isobar_id, aligned_subsystem) in {(3, 1), (1, 2), (2, 3)}:
         remaining_id = next(iter(allowed_ids - {isobar_id, aligned_subsystem}))
-        m0 = sp.Symbol("m0", nonnegative=True)
-        mi = sp.Symbol(f"m{isobar_id}", nonnegative=True)
-        mj = sp.Symbol(f"m{aligned_subsystem}", nonnegative=True)
-        si = sp.Symbol(f"sigma{isobar_id}", nonnegative=True)
-        sj = sp.Symbol(f"sigma{aligned_subsystem}", nonnegative=True)
-        sk = sp.Symbol(f"sigma{remaining_id}", nonnegative=True)
+        m0 = sp.Symbol("m_0", nonnegative=True)
+        mi = sp.Symbol(f"m_{isobar_id}", nonnegative=True)
+        mj = sp.Symbol(f"m_{aligned_subsystem}", nonnegative=True)
+        si = sp.Symbol(f"m_{__get_id_complement(isobar_id)}", nonnegative=True) ** 2
+        sj = (
+            sp.Symbol(f"m_{__get_id_complement(aligned_subsystem)}", nonnegative=True)
+            ** 2
+        )
+        sk = sp.Symbol(f"m_{__get_id_complement(remaining_id)}", nonnegative=True) ** 2
         theta = sp.acos(
             (
                 (m0**2 + mi**2 - si) * (m0**2 + mj**2 - sj)
@@ -326,8 +329,10 @@ def formulate_zeta_angle(  # noqa: R701
         return zeta_symbol, zeta_expr
     if aligned_subsystem == reference_subsystem:
         return zeta_symbol, sp.S.Zero
-    m0, m1, m2, m3 = sp.symbols("m:4", nonnegative=True)
-    s1, s2, s3 = sp.symbols("sigma1:4", nonnegative=True)
+    m0, m1, m2, m3 = sp.symbols("m_(:4)", nonnegative=True)
+    s1 = sp.Symbol("m_23", nonnegative=True) ** 2
+    s2 = sp.Symbol("m_13", nonnegative=True) ** 2
+    s3 = sp.Symbol("m_12", nonnegative=True) ** 2
     if (rotated_state, aligned_subsystem, reference_subsystem) == (1, 1, 3):
         cos_zeta_expr = (
             2 * m1**2 * (s2 - m0**2 - m2**2)
@@ -423,5 +428,11 @@ def formulate_zeta_angle(  # noqa: R701
     )
 
 
-def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Symbol]:
-    return sp.symbols(f"m{i} sigma{i}", nonnegative=True)
+def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Pow]:
+    m_i, m_jk = sp.symbols(f"m_{i} m_{__get_id_complement(i)}", nonnegative=True)
+    return m_i, m_jk**2
+
+
+def __get_id_complement(state_id: int) -> str:
+    complement = tuple(sorted({1, 2, 3} - {state_id}))
+    return "".join(map(str, complement))
