@@ -7,7 +7,6 @@ See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
 from __future__ import annotations
 
 import sys
-from decimal import Decimal
 from typing import Generator, Sequence, TypeVar, overload
 
 import sympy as sp
@@ -33,6 +32,7 @@ from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
 
 from . import SpinAlignment
+from ._spin import create_spin_range
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -274,7 +274,7 @@ def formulate_helicity_rotation(
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
-    helicities = map(sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin))
+    helicities = map(sp.Rational, create_spin_range(spin_magnitude, no_zero_spin))
     return PoolSum(
         Wigner.D(
             j=__rationalize(spin_magnitude),
@@ -321,31 +321,6 @@ def __rationalize(value):
     if isinstance(value, sp.Basic):
         return value
     return sp.Rational(value)
-
-
-def _create_spin_range(spin_magnitude, no_zero_spin: bool = False) -> list[float]:
-    """Create a list of allowed spin projections.
-
-    >>> _create_spin_range(0)
-    [0.0]
-    >>> _create_spin_range(0.5)
-    [-0.5, 0.5]
-    >>> _create_spin_range(1)
-    [-1.0, 0.0, 1.0]
-    >>> _create_spin_range(1, no_zero_spin=True)
-    [-1.0, 1.0]
-    >>> projections = _create_spin_range(5)
-    >>> list(map(int, projections))
-    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
-    """
-    spin_projections = []
-    projection = Decimal(-spin_magnitude)
-    while projection <= spin_magnitude:
-        spin_projections.append(float(projection))
-        projection += 1
-    if no_zero_spin and len(spin_projections) > 1:
-        spin_projections.remove(0.0)
-    return spin_projections
 
 
 __GREEK_INDEX_NAMES = ("lambda", "mu", "nu", "xi", "alpha", "beta", "gamma")
