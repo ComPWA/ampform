@@ -351,139 +351,6 @@ ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
 
-@define
-class _HelicityModelIngredients:
-    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
-    amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
-    components: dict[str, sp.Expr] = field(factory=dict)
-    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
-
-    def reset(self) -> None:
-        self.parameter_defaults = {}
-        self.amplitudes = {}
-        self.components = {}
-        self.kinematic_variables = {}
-
-
-class DynamicsSelector(abc.Mapping):
-    """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
-
-    def __init__(self, transitions: ReactionInfo | Iterable[StateTransition]) -> None:
-        if isinstance(transitions, ReactionInfo):
-            transitions = transitions.transitions
-        self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
-        for transition in transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                self.__choices[decay] = create_non_dynamic
-
-    @singledispatchmethod
-    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
-        """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
-
-        Currently, the following types of selections are implements:
-
-        - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
-          `~qrules.particle.Particle`.
-        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
-          node ID: set dynamics for one specific transition node.
-        """
-        raise NotImplementedError(
-            f"Cannot set dynamics builder for selection type {type(selection).__name__}"
-        )
-
-    @assign.register(TwoBodyDecay)
-    def _(self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder) -> None:
-        self.__choices[decay] = builder
-
-    @assign.register(tuple)
-    def _(
-        self,
-        transition_node: tuple[StateTransition, int],
-        builder: ResonanceDynamicsBuilder,
-    ) -> None:
-        decay = TwoBodyDecay.create(transition_node)
-        return self.assign(decay, builder)
-
-    @assign.register(str)
-    def _(self, particle_name: str, builder: ResonanceDynamicsBuilder) -> None:
-        found_particle = False
-        for decay in self.__choices:
-            decaying_particle = decay.parent.particle
-            if decaying_particle.name == particle_name:
-                self.__choices[decay] = builder
-                found_particle = True
-        if not found_particle:
-            logging.warning(f'Model contains no resonance with name "{particle_name}"')
-
-    @assign.register(Particle)
-    def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
-        return self.assign(particle.name, builder)
-
-    def __getitem__(
-        self, __k: TwoBodyDecay | tuple[StateTransition, int]
-    ) -> ResonanceDynamicsBuilder:
-        __k = TwoBodyDecay.create(__k)
-        return self.__choices[__k]
-
-    def __len__(self) -> int:
-        return len(self.__choices)
-
-    def __iter__(self) -> Iterator[TwoBodyDecay]:
-        return iter(self.__choices)
-
-    def items(self) -> ItemsView[TwoBodyDecay, ResonanceDynamicsBuilder]:
-        return self.__choices.items()
-
-    def keys(self) -> KeysView[TwoBodyDecay]:
-        return self.__choices.keys()
-
-    def values(self) -> ValuesView[ResonanceDynamicsBuilder]:
-        return self.__choices.values()
-
-
-def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
-    if values is None:
-        return None
-    return set(values)
-
-
-@define
-class BuilderConfiguration:
-    """Configuration class for a `.HelicityAmplitudeBuilder`."""
-
-    align_spin: bool = field(validator=instance_of(bool))
-    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
-    scalar_initial_state_mass: bool = field(validator=instance_of(bool))
-    r"""Add initial state mass as scalar value to `.parameter_defaults`.
-
-    Put the invariant of the initial state (:math:`m_{012\dots}`) under
-    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
-    `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
-    with or kinematically fit to a specific initial state energy.
-
-    .. seealso:: :ref:`usage/amplitude:Scalar masses`
-    """
-    stable_final_state_ids: set[int] | None = field(
-        converter=_to_optional_set,
-        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
-    )
-    r"""IDs of the final states that should be considered stable.
-
-    Put final state 'invariant' masses (:math:`m_0, m_1, \dots`) under
-    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
-    `~.HelicityModel.kinematic_variables` (which are expressions to compute an
-    event-wise array of invariant masses). This is useful if final state particles are
-    stable.
-    """
-    use_helicity_couplings: bool = field(validator=instance_of(bool))
-    """Use helicity couplings instead of amplitude coefficients.
-
-    Helicity couplings are a measure for the strength of each partial two-body decay.
-    Amplitude coefficients are the product of those couplings.
-    """
-
-
 class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     """Amplitude model generator for the helicity formalism."""
 
@@ -731,6 +598,169 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return None
 
 
+class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
+    r"""Amplitude model generator for the canonical helicity formalism.
+
+    This class defines a full amplitude in the canonical formalism, using the helicity
+    formalism as a foundation. The key here is that we take the full helicity intensity
+    as a template, and just exchange the helicity amplitudes :math:`F` as a sum of
+    canonical amplitudes :math:`A`:
+
+    .. math::
+
+        F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
+
+    Here, :math:`C` stands for `Clebsch-Gordan factor
+    <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
+
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
+    """
+
+    def __init__(self, reaction: ReactionInfo) -> None:
+        super().__init__(reaction)
+        self._naming = CanonicalAmplitudeNameGenerator(reaction)
+
+    def _formulate_partial_decay(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Expr:
+        amplitude = super()._formulate_partial_decay(transition, node_id)
+        cg_coefficients = formulate_isobar_cg_coefficients(transition, node_id)
+        return cg_coefficients * amplitude
+
+
+def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
+    if values is None:
+        return None
+    return set(values)
+
+
+@define
+class BuilderConfiguration:
+    """Configuration class for a `.HelicityAmplitudeBuilder`."""
+
+    align_spin: bool = field(validator=instance_of(bool))
+    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+    scalar_initial_state_mass: bool = field(validator=instance_of(bool))
+    r"""Add initial state mass as scalar value to `.parameter_defaults`.
+
+    Put the invariant of the initial state (:math:`m_{012\dots}`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
+    with or kinematically fit to a specific initial state energy.
+
+    .. seealso:: :ref:`usage/amplitude:Scalar masses`
+    """
+    stable_final_state_ids: set[int] | None = field(
+        converter=_to_optional_set,
+        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
+    )
+    r"""IDs of the final states that should be considered stable.
+
+    Put final state 'invariant' masses (:math:`m_0, m_1, \dots`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables` (which are expressions to compute an
+    event-wise array of invariant masses). This is useful if final state particles are
+    stable.
+    """
+    use_helicity_couplings: bool = field(validator=instance_of(bool))
+    """Use helicity couplings instead of amplitude coefficients.
+
+    Helicity couplings are a measure for the strength of each partial two-body decay.
+    Amplitude coefficients are the product of those couplings.
+    """
+
+
+class DynamicsSelector(abc.Mapping):
+    """Configure which `.ResonanceDynamicsBuilder` to use for each node."""
+
+    def __init__(self, transitions: ReactionInfo | Iterable[StateTransition]) -> None:
+        if isinstance(transitions, ReactionInfo):
+            transitions = transitions.transitions
+        self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
+        for transition in transitions:
+            for node_id in transition.topology.nodes:
+                decay = TwoBodyDecay.from_transition(transition, node_id)
+                self.__choices[decay] = create_non_dynamic
+
+    @singledispatchmethod
+    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
+        """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
+
+        Currently, the following types of selections are implements:
+
+        - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
+          `~qrules.particle.Particle`.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
+          node ID: set dynamics for one specific transition node.
+        """
+        raise NotImplementedError(
+            f"Cannot set dynamics builder for selection type {type(selection).__name__}"
+        )
+
+    @assign.register(TwoBodyDecay)
+    def _(self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder) -> None:
+        self.__choices[decay] = builder
+
+    @assign.register(tuple)
+    def _(
+        self,
+        transition_node: tuple[StateTransition, int],
+        builder: ResonanceDynamicsBuilder,
+    ) -> None:
+        decay = TwoBodyDecay.create(transition_node)
+        return self.assign(decay, builder)
+
+    @assign.register(str)
+    def _(self, particle_name: str, builder: ResonanceDynamicsBuilder) -> None:
+        found_particle = False
+        for decay in self.__choices:
+            decaying_particle = decay.parent.particle
+            if decaying_particle.name == particle_name:
+                self.__choices[decay] = builder
+                found_particle = True
+        if not found_particle:
+            logging.warning(f'Model contains no resonance with name "{particle_name}"')
+
+    @assign.register(Particle)
+    def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
+        return self.assign(particle.name, builder)
+
+    def __getitem__(
+        self, __k: TwoBodyDecay | tuple[StateTransition, int]
+    ) -> ResonanceDynamicsBuilder:
+        __k = TwoBodyDecay.create(__k)
+        return self.__choices[__k]
+
+    def __len__(self) -> int:
+        return len(self.__choices)
+
+    def __iter__(self) -> Iterator[TwoBodyDecay]:
+        return iter(self.__choices)
+
+    def items(self) -> ItemsView[TwoBodyDecay, ResonanceDynamicsBuilder]:
+        return self.__choices.items()
+
+    def keys(self) -> KeysView[TwoBodyDecay]:
+        return self.__choices.keys()
+
+    def values(self) -> ValuesView[ResonanceDynamicsBuilder]:
+        return self.__choices.values()
+
+
+@define
+class _HelicityModelIngredients:
+    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
+    components: dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
+
+    def reset(self) -> None:
+        self.parameter_defaults = {}
+        self.amplitudes = {}
+        self.components = {}
+        self.kinematic_variables = {}
+
+
 def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
     outer_state_ids = _get_outer_state_ids(transition)
     helicities = tuple(
@@ -760,36 +790,6 @@ def _(transition: StateTransition) -> list[int]:
 @_get_outer_state_ids.register(ReactionInfo)
 def _(reaction: ReactionInfo) -> list[int]:
     return _get_outer_state_ids(reaction.transitions[0])
-
-
-class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
-    r"""Amplitude model generator for the canonical helicity formalism.
-
-    This class defines a full amplitude in the canonical formalism, using the helicity
-    formalism as a foundation. The key here is that we take the full helicity intensity
-    as a template, and just exchange the helicity amplitudes :math:`F` as a sum of
-    canonical amplitudes :math:`A`:
-
-    .. math::
-
-        F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
-
-    Here, :math:`C` stands for `Clebsch-Gordan factor
-    <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
-
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
-    """
-
-    def __init__(self, reaction: ReactionInfo) -> None:
-        super().__init__(reaction)
-        self._naming = CanonicalAmplitudeNameGenerator(reaction)
-
-    def _formulate_partial_decay(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Expr:
-        amplitude = super()._formulate_partial_decay(transition, node_id)
-        cg_coefficients = formulate_isobar_cg_coefficients(transition, node_id)
-        return cg_coefficients * amplitude
 
 
 def formulate_isobar_cg_coefficients(
