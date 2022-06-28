@@ -1,4 +1,4 @@
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel line-too-long
 """Generate an amplitude model with the helicity formalism.
 
 .. autolink-preface::
@@ -30,7 +30,7 @@ from typing import (
 import attrs
 import sympy as sp
 from attrs import define, field, frozen
-from attrs.validators import instance_of
+from attrs.validators import deep_iterable, instance_of, optional
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
 from qrules.topology import Topology
@@ -442,56 +442,68 @@ class DynamicsSelector(abc.Mapping):
         return self.__choices.values()
 
 
-class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
-    r"""Amplitude model generator for the helicity formalism.
+def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
+    if values is None:
+        return None
+    return set(values)
 
-    Args:
-        reaction: The `~qrules.transition.ReactionInfo` from which to
-            :meth:`formulate` an amplitude model.
-        stable_final_state_ids: Put final state 'invariant' masses
-            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults` (with a
-            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`
-            (which are expressions to compute an event-wise array of invariant masses).
-            This is useful if final state particles are stable.
-        stable_final_state_ids: Put the invariant of the initial state
-            (:math:`m_{012\dots}`) under `.HelicityModel.parameter_defaults` (with a
-            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`.
-            This is useful if four-momenta were generated with or kinematically fit to a
-            specific initial state energy.
 
-            .. seealso:: :ref:`usage/amplitude:Scalar masses`
+@define
+class BuilderConfiguration:
+    """Configuration class for a `.HelicityAmplitudeBuilder`."""
+
+    align_spin: bool = field(validator=instance_of(bool))
+    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+    scalar_initial_state_mass: bool = field(validator=instance_of(bool))
+    r"""Add initial state mass as scalar value to `.parameter_defaults`.
+
+    Put the invariant of the initial state (:math:`m_{012\dots}`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
+    with or kinematically fit to a specific initial state energy.
+
+    .. seealso:: :ref:`usage/amplitude:Scalar masses`
+    """
+    stable_final_state_ids: set[int] | None = field(
+        converter=_to_optional_set,
+        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
+    )
+    r"""IDs of the final states that should be considered stable.
+
+    Put final state 'invariant' masses (:math:`m_0, m_1, \dots`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables` (which are expressions to compute an
+    event-wise array of invariant masses). This is useful if final state particles are
+    stable.
+    """
+    use_helicity_couplings: bool = field(validator=instance_of(bool))
+    """Use helicity couplings instead of amplitude coefficients.
+
+    Helicity couplings are a measure for the strength of each partial two-body decay.
+    Amplitude coefficients are the product of those couplings.
     """
 
-    def __init__(
-        self,
-        reaction: ReactionInfo,
-        stable_final_state_ids: Iterable[int] | None = None,
-        scalar_initial_state_mass: bool = False,
-    ) -> None:
+
+class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+    """Amplitude model generator for the helicity formalism."""
+
+    def __init__(self, reaction: ReactionInfo) -> None:
         if len(reaction.transitions) < 1:
             raise ValueError(
                 f"At least one {StateTransition.__name__} required to"
                 " genenerate an amplitude model!"
             )
         self.__reaction = reaction
-        self.naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
-        """Name generator for amplitude names and coefficient names.
-
-        .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`.
-        """
-        self.__ingredients = _HelicityModelIngredients()
-        self.__dynamics_choices = DynamicsSelector(reaction)
         self.__adapter = HelicityAdapter(reaction)
-        self.align_spin: bool = False
-        """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
-        self.use_helicity_couplings: bool = False
-        """Use helicity couplings instead of amplitude coefficients.
-
-        Helicity couplings are a measure for the strength of each partial two-body
-        decay. Amplitude coefficients are the product of those couplings.
-        """
-        self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
-        self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
+        self.__config = BuilderConfiguration(
+            align_spin=False,
+            scalar_initial_state_mass=False,
+            stable_final_state_ids=None,
+            use_helicity_couplings=False,
+        )
+        self.__dynamics_choices = DynamicsSelector(reaction)
+        self._naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
+        self.__ingredients = _HelicityModelIngredients()
 
     @property
     def adapter(self) -> HelicityAdapter:
@@ -499,45 +511,20 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return self.__adapter
 
     @property
+    def config(self) -> BuilderConfiguration:
+        return self.__config
+
+    @property
     def dynamics_choices(self) -> DynamicsSelector:
         return self.__dynamics_choices
 
     @property
-    def stable_final_state_ids(self) -> set[int] | None:
-        # noqa: D403
-        """IDs of the final states that should be considered stable.
-
-        The 'invariant' mass symbols for these final states will be inserted as
-        **scalar** values into the `.parameter_defaults`.
-        """
-        return self.__stable_final_state_ids
-
-    @stable_final_state_ids.setter
-    def stable_final_state_ids(self, value: Iterable[int] | None) -> None:
-        self.__stable_final_state_ids = None
-        if value is not None:
-            self.__stable_final_state_ids = set(value)
-            if not self.__stable_final_state_ids <= set(self.__reaction.final_state):
-                raise ValueError(
-                    "Final state IDs are"
-                    f" {sorted(self.__reaction.final_state)}, but trying to"
-                    " set stable final state IDs"
-                    f" {self.__stable_final_state_ids}"
-                )
+    def naming(self) -> NameGenerator:
+        return self._naming
 
     @property
-    def scalar_initial_state_mass(self) -> bool:
-        """Add initial state mass as scalar value to `.parameter_defaults`.
-
-        .. seealso:: :ref:`usage/amplitude:Scalar masses`
-        """
-        return self.__scalar_initial_state_mass
-
-    @scalar_initial_state_mass.setter
-    def scalar_initial_state_mass(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError
-        self.__scalar_initial_state_mass = value
+    def reaction(self) -> ReactionInfo:
+        return self.__reaction
 
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
@@ -548,15 +535,15 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
         kinematic_variables = self.__adapter.create_expressions(
-            generate_wigner_angles=self.align_spin
+            generate_wigner_angles=self.config.align_spin
         )
-        if self.stable_final_state_ids is not None:
-            for state_id in self.stable_final_state_ids:
+        if self.config.stable_final_state_ids is not None:
+            for state_id in self.config.stable_final_state_ids:
                 symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
                 particle = self.__reaction.final_state[state_id]
                 self.__ingredients.parameter_defaults[symbol] = particle.mass
                 del kinematic_variables[symbol]
-        if self.scalar_initial_state_mass:
+        if self.config.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.__reaction.final_state)))
             symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
             particle = self.__reaction.initial_state[-1]
@@ -589,7 +576,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     spin_projections[symbol].add(value)
 
         topology_groups = group_by_topology(self.__reaction.transitions)
-        if self.align_spin:
+        if self.config.align_spin:
             amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
         else:
             indices = list(spin_projections)
@@ -657,7 +644,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         ]
         sequential_amplitudes = reduce(operator.mul, partial_decays)
 
-        if self.use_helicity_couplings:
+        if self.config.use_helicity_couplings:
             expression = sequential_amplitudes
         else:
             coefficient = self.__generate_amplitude_coefficient(transition)
@@ -674,7 +661,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> sp.Expr:
         wigner_d = formulate_isobar_wigner_d(transition, node_id)
         dynamics = self.__formulate_dynamics(transition, node_id)
-        if self.use_helicity_couplings:
+        if self.config.use_helicity_couplings:
             coupling = self.__generate_helicity_coupling(transition, node_id)
             return coupling * wigner_d * dynamics
         return wigner_d * dynamics
@@ -795,7 +782,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
     def __init__(self, reaction: ReactionInfo) -> None:
         super().__init__(reaction)
-        self.naming = CanonicalAmplitudeNameGenerator(reaction)
+        self._naming = CanonicalAmplitudeNameGenerator(reaction)
 
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
