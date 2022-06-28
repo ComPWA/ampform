@@ -1,4 +1,4 @@
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel line-too-long
 """Generate an amplitude model with the helicity formalism.
 
 .. autolink-preface::
@@ -30,7 +30,7 @@ from typing import (
 import attrs
 import sympy as sp
 from attrs import define, field, frozen
-from attrs.validators import instance_of
+from attrs.validators import deep_iterable, instance_of, optional
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
 from qrules.topology import Topology
@@ -351,18 +351,323 @@ ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
 
-@define
-class _HelicityModelIngredients:
-    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
-    amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
-    components: dict[str, sp.Expr] = field(factory=dict)
-    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
+class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+    """Amplitude model generator for the helicity formalism."""
 
-    def reset(self) -> None:
-        self.parameter_defaults = {}
-        self.amplitudes = {}
-        self.components = {}
-        self.kinematic_variables = {}
+    def __init__(self, reaction: ReactionInfo) -> None:
+        if len(reaction.transitions) < 1:
+            raise ValueError(
+                f"At least one {StateTransition.__name__} required to"
+                " genenerate an amplitude model!"
+            )
+        self.__reaction = reaction
+        self.__adapter = HelicityAdapter(reaction)
+        self.__config = BuilderConfiguration(
+            align_spin=False,
+            scalar_initial_state_mass=False,
+            stable_final_state_ids=None,
+            use_helicity_couplings=False,
+        )
+        self.__dynamics_choices = DynamicsSelector(reaction)
+        self._naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
+        self.__ingredients = _HelicityModelIngredients()
+
+    @property
+    def adapter(self) -> HelicityAdapter:
+        """Converter for computing kinematic variables from four-momenta."""
+        return self.__adapter
+
+    @property
+    def config(self) -> BuilderConfiguration:
+        return self.__config
+
+    @property
+    def dynamics_choices(self) -> DynamicsSelector:
+        return self.__dynamics_choices
+
+    @property
+    def naming(self) -> NameGenerator:
+        return self._naming
+
+    @property
+    def reaction(self) -> ReactionInfo:
+        return self.__reaction
+
+    def set_dynamics(
+        self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
+    ) -> None:
+        self.dynamics_choices.assign(particle_name, dynamics_builder)
+
+    def formulate(self) -> HelicityModel:
+        self.__ingredients.reset()
+        main_intensity = self.__formulate_top_expression()
+        kinematic_variables = self.adapter.create_expressions(
+            generate_wigner_angles=self.config.align_spin
+        )
+        if self.config.stable_final_state_ids is not None:
+            for state_id in self.config.stable_final_state_ids:
+                symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
+                particle = self.reaction.final_state[state_id]
+                self.__ingredients.parameter_defaults[symbol] = particle.mass
+                del kinematic_variables[symbol]
+        if self.config.scalar_initial_state_mass:
+            subscript = "".join(map(str, sorted(self.reaction.final_state)))
+            symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
+            particle = self.reaction.initial_state[-1]
+            self.__ingredients.parameter_defaults[symbol] = particle.mass
+            del kinematic_variables[symbol]
+
+        return HelicityModel(
+            intensity=main_intensity,
+            amplitudes=self.__ingredients.amplitudes,
+            parameter_defaults=self.__ingredients.parameter_defaults,
+            kinematic_variables=kinematic_variables,
+            components=self.__ingredients.components,
+            reaction_info=self.reaction,
+        )
+
+    def __formulate_top_expression(self) -> PoolSum:
+        # pylint: disable=too-many-locals
+        outer_state_ids = _get_outer_state_ids(self.reaction)
+        spin_projections: DefaultDict[
+            sp.Symbol, set[sp.Rational]
+        ] = collections.defaultdict(set)
+        spin_groups = group_by_spin_projection(self.reaction.transitions)
+        for group in spin_groups:
+            self.__register_amplitudes(group)
+            for transition in group:
+                for i in outer_state_ids:
+                    state = transition.states[i]
+                    symbol = create_spin_projection_symbol(i)
+                    value = sp.Rational(state.spin_projection)
+                    spin_projections[symbol].add(value)
+
+        topology_groups = group_by_topology(self.reaction.transitions)
+        if self.config.align_spin:
+            amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
+        else:
+            indices = list(spin_projections)
+            amplitude = sum(  # type: ignore[assignment]
+                _create_amplitude_base(topology)[indices]
+                for topology in topology_groups
+            )
+        return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
+
+    def __formulate_axis_angle_amplitude(
+        self, topology_groups: dict[Topology, list[StateTransition]]
+    ) -> sp.Expr:
+        outer_state_ids = _get_outer_state_ids(self.reaction)
+        amplitude = sp.S.Zero
+        for topology, transitions in topology_groups.items():
+            base = _create_amplitude_base(topology)
+            helicities = [
+                get_opposite_helicity_sign(topology, i)
+                * create_helicity_symbol(topology, i)
+                for i in outer_state_ids
+            ]
+            amplitude_symbol = base[helicities]
+            first_transition = transitions[0]
+            alignment_sum = formulate_axis_angle_alignment(first_transition)
+            amplitude += PoolSum(
+                alignment_sum.expression * amplitude_symbol,
+                *alignment_sum.indices,
+            )
+        return amplitude
+
+    def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
+        transition_by_topology = group_by_topology(transition_group)
+        expression = sum(
+            self.__formulate_topology_amplitude(transitions)
+            for transitions in transition_by_topology.values()
+        )
+        first_transition = transition_group[0]
+        graph_group_label = generate_transition_label(first_transition)
+        component_name = f"I_{{{graph_group_label}}}"
+        self.__ingredients.components[component_name] = abs(expression) ** 2
+
+    def __formulate_topology_amplitude(
+        self, transitions: Sequence[StateTransition]
+    ) -> sp.Expr:
+        sequential_expressions: list[sp.Expr] = []
+        for transition in transitions:
+            sequential_graphs = perform_external_edge_identical_particle_combinatorics(
+                transition.to_graph()
+            )
+            for graph in sequential_graphs:
+                first_transition = StateTransition.from_graph(graph)
+                expression = self.__formulate_sequential_decay(first_transition)
+                sequential_expressions.append(expression)
+
+        first_transition = transitions[0]
+        symbol = _create_amplitude_symbol(first_transition)
+        expression = sum(sequential_expressions)  # type: ignore[assignment]
+        self.__ingredients.amplitudes[symbol] = expression
+        return expression
+
+    def __formulate_sequential_decay(self, transition: StateTransition) -> sp.Expr:
+        partial_decays: list[sp.Expr] = [
+            self._formulate_partial_decay(transition, node_id)
+            for node_id in transition.topology.nodes
+        ]
+        sequential_amplitudes = reduce(operator.mul, partial_decays)
+
+        if self.config.use_helicity_couplings:
+            expression = sequential_amplitudes
+        else:
+            coefficient = self.__generate_amplitude_coefficient(transition)
+            expression = coefficient * sequential_amplitudes
+        prefactor = self.__generate_amplitude_prefactor(transition)
+        if prefactor is not None:
+            expression *= prefactor
+        subscript = self.naming.generate_amplitude_name(transition)
+        self.__ingredients.components[f"A_{{{subscript}}}"] = expression
+        return expression
+
+    def _formulate_partial_decay(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Expr:
+        wigner_d = formulate_isobar_wigner_d(transition, node_id)
+        dynamics = self.__formulate_dynamics(transition, node_id)
+        if self.config.use_helicity_couplings:
+            coupling = self.__generate_helicity_coupling(transition, node_id)
+            return coupling * wigner_d * dynamics
+        return wigner_d * dynamics
+
+    def __formulate_dynamics(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Expr:
+        decay = TwoBodyDecay.from_transition(transition, node_id)
+        if decay not in self.dynamics_choices:
+            return sp.S.One
+
+        builder = self.dynamics_choices[decay]
+        variable_set = _generate_kinematic_variable_set(transition, node_id)
+        expression, parameters = builder(decay.parent.particle, variable_set)
+        for par, value in parameters.items():
+            if par in self.__ingredients.parameter_defaults:
+                previous_value = self.__ingredients.parameter_defaults[par]
+                if value != previous_value:
+                    logging.warning(
+                        f'New default value {value} for parameter "{par.name}"'
+                        " is inconsistent with existing value"
+                        f" {previous_value}"
+                    )
+            self.__ingredients.parameter_defaults[par] = value
+
+        return expression
+
+    def __generate_amplitude_coefficient(
+        self, transition: StateTransition
+    ) -> sp.Symbol:
+        """Generate coefficient parameter for a sequential amplitude.
+
+        Generally, each partial amplitude of a sequential amplitude transition should
+        check itself if it or a parity partner is already defined. If so a coupled
+        coefficient is introduced.
+        """
+        suffix = self.naming.generate_sequential_amplitude_suffix(transition)
+        symbol = sp.Symbol(f"C_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
+
+    def __generate_helicity_coupling(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Symbol:
+        suffix = self.naming.generate_two_body_decay_suffix(transition, node_id)
+        symbol = sp.Symbol(f"H_{{{suffix}}}")
+        value = complex(1, 0)
+        self.__ingredients.parameter_defaults[symbol] = value
+        return symbol
+
+    def __generate_amplitude_prefactor(
+        self, transition: StateTransition
+    ) -> float | None:
+        prefactor = get_prefactor(transition)
+        if prefactor != 1.0:
+            for node_id in transition.topology.nodes:
+                raw_suffix = self.naming.generate_two_body_decay_suffix(
+                    transition, node_id
+                )
+                if raw_suffix in self.naming.parity_partner_coefficient_mapping:
+                    coefficient_suffix = self.naming.parity_partner_coefficient_mapping[
+                        raw_suffix
+                    ]
+                    if coefficient_suffix != raw_suffix:
+                        return prefactor
+        return None
+
+
+class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
+    r"""Amplitude model generator for the canonical helicity formalism.
+
+    This class defines a full amplitude in the canonical formalism, using the helicity
+    formalism as a foundation. The key here is that we take the full helicity intensity
+    as a template, and just exchange the helicity amplitudes :math:`F` as a sum of
+    canonical amplitudes :math:`A`:
+
+    .. math::
+
+        F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
+
+    Here, :math:`C` stands for `Clebsch-Gordan factor
+    <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
+
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
+    """
+
+    def __init__(self, reaction: ReactionInfo) -> None:
+        super().__init__(reaction)
+        self._naming = CanonicalAmplitudeNameGenerator(reaction)
+
+    def _formulate_partial_decay(
+        self, transition: StateTransition, node_id: int
+    ) -> sp.Expr:
+        amplitude = super()._formulate_partial_decay(transition, node_id)
+        cg_coefficients = formulate_isobar_cg_coefficients(transition, node_id)
+        return cg_coefficients * amplitude
+
+
+def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
+    if values is None:
+        return None
+    return set(values)
+
+
+@define
+class BuilderConfiguration:
+    """Configuration class for a `.HelicityAmplitudeBuilder`."""
+
+    align_spin: bool = field(validator=instance_of(bool))
+    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+    scalar_initial_state_mass: bool = field(validator=instance_of(bool))
+    r"""Add initial state mass as scalar value to `.parameter_defaults`.
+
+    Put the invariant of the initial state (:math:`m_{012\dots}`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
+    with or kinematically fit to a specific initial state energy.
+
+    .. seealso:: :ref:`usage/amplitude:Scalar masses`
+    """
+    stable_final_state_ids: set[int] | None = field(
+        converter=_to_optional_set,
+        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
+    )
+    r"""IDs of the final states that should be considered stable.
+
+    Put final state 'invariant' masses (:math:`m_0, m_1, \dots`) under
+    `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
+    `~.HelicityModel.kinematic_variables` (which are expressions to compute an
+    event-wise array of invariant masses). This is useful if final state particles are
+    stable.
+    """
+    use_helicity_couplings: bool = field(validator=instance_of(bool))
+    """Use helicity couplings instead of amplitude coefficients.
+
+    Helicity couplings are a measure for the strength of each partial two-body decay.
+    Amplitude coefficients are the product of those couplings.
+    """
 
 
 class DynamicsSelector(abc.Mapping):
@@ -442,306 +747,18 @@ class DynamicsSelector(abc.Mapping):
         return self.__choices.values()
 
 
-class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
-    r"""Amplitude model generator for the helicity formalism.
+@define
+class _HelicityModelIngredients:
+    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
+    components: dict[str, sp.Expr] = field(factory=dict)
+    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
 
-    Args:
-        reaction: The `~qrules.transition.ReactionInfo` from which to
-            :meth:`formulate` an amplitude model.
-        stable_final_state_ids: Put final state 'invariant' masses
-            (:math:`m_0, m_1, \dots`) under `.HelicityModel.parameter_defaults` (with a
-            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`
-            (which are expressions to compute an event-wise array of invariant masses).
-            This is useful if final state particles are stable.
-        stable_final_state_ids: Put the invariant of the initial state
-            (:math:`m_{012\dots}`) under `.HelicityModel.parameter_defaults` (with a
-            *scalar* suggested value) instead of `~.HelicityModel.kinematic_variables`.
-            This is useful if four-momenta were generated with or kinematically fit to a
-            specific initial state energy.
-
-            .. seealso:: :ref:`usage/amplitude:Scalar masses`
-    """
-
-    def __init__(
-        self,
-        reaction: ReactionInfo,
-        stable_final_state_ids: Iterable[int] | None = None,
-        scalar_initial_state_mass: bool = False,
-    ) -> None:
-        if len(reaction.transitions) < 1:
-            raise ValueError(
-                f"At least one {StateTransition.__name__} required to"
-                " genenerate an amplitude model!"
-            )
-        self.__reaction = reaction
-        self.naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
-        """Name generator for amplitude names and coefficient names.
-
-        .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`.
-        """
-        self.__ingredients = _HelicityModelIngredients()
-        self.__dynamics_choices = DynamicsSelector(reaction)
-        self.__adapter = HelicityAdapter(reaction)
-        self.align_spin: bool = False
-        """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
-        self.use_helicity_couplings: bool = False
-        """Use helicity couplings instead of amplitude coefficients.
-
-        Helicity couplings are a measure for the strength of each partial two-body
-        decay. Amplitude coefficients are the product of those couplings.
-        """
-        self.stable_final_state_ids = stable_final_state_ids  # type: ignore[assignment]
-        self.scalar_initial_state_mass = scalar_initial_state_mass  # type: ignore[assignment]
-
-    @property
-    def adapter(self) -> HelicityAdapter:
-        """Converter for computing kinematic variables from four-momenta."""
-        return self.__adapter
-
-    @property
-    def dynamics_choices(self) -> DynamicsSelector:
-        return self.__dynamics_choices
-
-    @property
-    def stable_final_state_ids(self) -> set[int] | None:
-        # noqa: D403
-        """IDs of the final states that should be considered stable.
-
-        The 'invariant' mass symbols for these final states will be inserted as
-        **scalar** values into the `.parameter_defaults`.
-        """
-        return self.__stable_final_state_ids
-
-    @stable_final_state_ids.setter
-    def stable_final_state_ids(self, value: Iterable[int] | None) -> None:
-        self.__stable_final_state_ids = None
-        if value is not None:
-            self.__stable_final_state_ids = set(value)
-            if not self.__stable_final_state_ids <= set(self.__reaction.final_state):
-                raise ValueError(
-                    "Final state IDs are"
-                    f" {sorted(self.__reaction.final_state)}, but trying to"
-                    " set stable final state IDs"
-                    f" {self.__stable_final_state_ids}"
-                )
-
-    @property
-    def scalar_initial_state_mass(self) -> bool:
-        """Add initial state mass as scalar value to `.parameter_defaults`.
-
-        .. seealso:: :ref:`usage/amplitude:Scalar masses`
-        """
-        return self.__scalar_initial_state_mass
-
-    @scalar_initial_state_mass.setter
-    def scalar_initial_state_mass(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError
-        self.__scalar_initial_state_mass = value
-
-    def set_dynamics(
-        self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
-    ) -> None:
-        self.__dynamics_choices.assign(particle_name, dynamics_builder)
-
-    def formulate(self) -> HelicityModel:
-        self.__ingredients.reset()
-        main_intensity = self.__formulate_top_expression()
-        kinematic_variables = self.__adapter.create_expressions(
-            generate_wigner_angles=self.align_spin
-        )
-        if self.stable_final_state_ids is not None:
-            for state_id in self.stable_final_state_ids:
-                symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
-                particle = self.__reaction.final_state[state_id]
-                self.__ingredients.parameter_defaults[symbol] = particle.mass
-                del kinematic_variables[symbol]
-        if self.scalar_initial_state_mass:
-            subscript = "".join(map(str, sorted(self.__reaction.final_state)))
-            symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
-            particle = self.__reaction.initial_state[-1]
-            self.__ingredients.parameter_defaults[symbol] = particle.mass
-            del kinematic_variables[symbol]
-
-        return HelicityModel(
-            intensity=main_intensity,
-            amplitudes=self.__ingredients.amplitudes,
-            parameter_defaults=self.__ingredients.parameter_defaults,
-            kinematic_variables=kinematic_variables,
-            components=self.__ingredients.components,
-            reaction_info=self.__reaction,
-        )
-
-    def __formulate_top_expression(self) -> PoolSum:
-        # pylint: disable=too-many-locals
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
-        spin_projections: DefaultDict[
-            sp.Symbol, set[sp.Rational]
-        ] = collections.defaultdict(set)
-        spin_groups = group_by_spin_projection(self.__reaction.transitions)
-        for group in spin_groups:
-            self.__register_amplitudes(group)
-            for transition in group:
-                for i in outer_state_ids:
-                    state = transition.states[i]
-                    symbol = create_spin_projection_symbol(i)
-                    value = sp.Rational(state.spin_projection)
-                    spin_projections[symbol].add(value)
-
-        topology_groups = group_by_topology(self.__reaction.transitions)
-        if self.align_spin:
-            amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
-        else:
-            indices = list(spin_projections)
-            amplitude = sum(  # type: ignore[assignment]
-                _create_amplitude_base(topology)[indices]
-                for topology in topology_groups
-            )
-        return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
-
-    def __formulate_axis_angle_amplitude(
-        self, topology_groups: dict[Topology, list[StateTransition]]
-    ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
-        amplitude = sp.S.Zero
-        for topology, transitions in topology_groups.items():
-            base = _create_amplitude_base(topology)
-            helicities = [
-                get_opposite_helicity_sign(topology, i)
-                * create_helicity_symbol(topology, i)
-                for i in outer_state_ids
-            ]
-            amplitude_symbol = base[helicities]
-            first_transition = transitions[0]
-            alignment_sum = formulate_axis_angle_alignment(first_transition)
-            amplitude += PoolSum(
-                alignment_sum.expression * amplitude_symbol,
-                *alignment_sum.indices,
-            )
-        return amplitude
-
-    def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
-        transition_by_topology = group_by_topology(transition_group)
-        expression = sum(
-            self.__formulate_topology_amplitude(transitions)
-            for transitions in transition_by_topology.values()
-        )
-        first_transition = transition_group[0]
-        graph_group_label = generate_transition_label(first_transition)
-        component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = abs(expression) ** 2
-
-    def __formulate_topology_amplitude(
-        self, transitions: Sequence[StateTransition]
-    ) -> sp.Expr:
-        sequential_expressions: list[sp.Expr] = []
-        for transition in transitions:
-            sequential_graphs = perform_external_edge_identical_particle_combinatorics(
-                transition.to_graph()
-            )
-            for graph in sequential_graphs:
-                first_transition = StateTransition.from_graph(graph)
-                expression = self.__formulate_sequential_decay(first_transition)
-                sequential_expressions.append(expression)
-
-        first_transition = transitions[0]
-        symbol = _create_amplitude_symbol(first_transition)
-        expression = sum(sequential_expressions)  # type: ignore[assignment]
-        self.__ingredients.amplitudes[symbol] = expression
-        return expression
-
-    def __formulate_sequential_decay(self, transition: StateTransition) -> sp.Expr:
-        partial_decays: list[sp.Expr] = [
-            self._formulate_partial_decay(transition, node_id)
-            for node_id in transition.topology.nodes
-        ]
-        sequential_amplitudes = reduce(operator.mul, partial_decays)
-
-        if self.use_helicity_couplings:
-            expression = sequential_amplitudes
-        else:
-            coefficient = self.__generate_amplitude_coefficient(transition)
-            expression = coefficient * sequential_amplitudes
-        prefactor = self.__generate_amplitude_prefactor(transition)
-        if prefactor is not None:
-            expression *= prefactor
-        subscript = self.naming.generate_amplitude_name(transition)
-        self.__ingredients.components[f"A_{{{subscript}}}"] = expression
-        return expression
-
-    def _formulate_partial_decay(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Expr:
-        wigner_d = formulate_isobar_wigner_d(transition, node_id)
-        dynamics = self.__formulate_dynamics(transition, node_id)
-        if self.use_helicity_couplings:
-            coupling = self.__generate_helicity_coupling(transition, node_id)
-            return coupling * wigner_d * dynamics
-        return wigner_d * dynamics
-
-    def __formulate_dynamics(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Expr:
-        decay = TwoBodyDecay.from_transition(transition, node_id)
-        if decay not in self.__dynamics_choices:
-            return sp.S.One
-
-        builder = self.__dynamics_choices[decay]
-        variable_set = _generate_kinematic_variable_set(transition, node_id)
-        expression, parameters = builder(decay.parent.particle, variable_set)
-        for par, value in parameters.items():
-            if par in self.__ingredients.parameter_defaults:
-                previous_value = self.__ingredients.parameter_defaults[par]
-                if value != previous_value:
-                    logging.warning(
-                        f'New default value {value} for parameter "{par.name}"'
-                        " is inconsistent with existing value"
-                        f" {previous_value}"
-                    )
-            self.__ingredients.parameter_defaults[par] = value
-
-        return expression
-
-    def __generate_amplitude_coefficient(
-        self, transition: StateTransition
-    ) -> sp.Symbol:
-        """Generate coefficient parameter for a sequential amplitude.
-
-        Generally, each partial amplitude of a sequential amplitude transition should
-        check itself if it or a parity partner is already defined. If so a coupled
-        coefficient is introduced.
-        """
-        suffix = self.naming.generate_sequential_amplitude_suffix(transition)
-        symbol = sp.Symbol(f"C_{{{suffix}}}")
-        value = complex(1, 0)
-        self.__ingredients.parameter_defaults[symbol] = value
-        return symbol
-
-    def __generate_helicity_coupling(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Symbol:
-        suffix = self.naming.generate_two_body_decay_suffix(transition, node_id)
-        symbol = sp.Symbol(f"H_{{{suffix}}}")
-        value = complex(1, 0)
-        self.__ingredients.parameter_defaults[symbol] = value
-        return symbol
-
-    def __generate_amplitude_prefactor(
-        self, transition: StateTransition
-    ) -> float | None:
-        prefactor = get_prefactor(transition)
-        if prefactor != 1.0:
-            for node_id in transition.topology.nodes:
-                raw_suffix = self.naming.generate_two_body_decay_suffix(
-                    transition, node_id
-                )
-                if raw_suffix in self.naming.parity_partner_coefficient_mapping:
-                    coefficient_suffix = self.naming.parity_partner_coefficient_mapping[
-                        raw_suffix
-                    ]
-                    if coefficient_suffix != raw_suffix:
-                        return prefactor
-        return None
+    def reset(self) -> None:
+        self.parameter_defaults = {}
+        self.amplitudes = {}
+        self.components = {}
+        self.kinematic_variables = {}
 
 
 def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
@@ -773,36 +790,6 @@ def _(transition: StateTransition) -> list[int]:
 @_get_outer_state_ids.register(ReactionInfo)
 def _(reaction: ReactionInfo) -> list[int]:
     return _get_outer_state_ids(reaction.transitions[0])
-
-
-class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
-    r"""Amplitude model generator for the canonical helicity formalism.
-
-    This class defines a full amplitude in the canonical formalism, using the helicity
-    formalism as a foundation. The key here is that we take the full helicity intensity
-    as a template, and just exchange the helicity amplitudes :math:`F` as a sum of
-    canonical amplitudes :math:`A`:
-
-    .. math::
-
-        F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
-
-    Here, :math:`C` stands for `Clebsch-Gordan factor
-    <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
-
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
-    """
-
-    def __init__(self, reaction: ReactionInfo) -> None:
-        super().__init__(reaction)
-        self.naming = CanonicalAmplitudeNameGenerator(reaction)
-
-    def _formulate_partial_decay(
-        self, transition: StateTransition, node_id: int
-    ) -> sp.Expr:
-        amplitude = super()._formulate_partial_decay(transition, node_id)
-        cg_coefficients = formulate_isobar_cg_coefficients(transition, node_id)
-        return cg_coefficients * amplitude
 
 
 def formulate_isobar_cg_coefficients(
