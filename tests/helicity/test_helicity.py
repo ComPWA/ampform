@@ -241,34 +241,6 @@ class TestHelicityModel:
         assert old_name in caplog.records[-1].msg
         assert new_model == model
 
-    def test_sum_components(self, amplitude_model: tuple[str, HelicityModel]):
-        # pylint: disable=cell-var-from-loop, line-too-long
-        _, model = amplitude_model
-        from_intensities = model.sum_components(
-            components=filter(lambda c: c.startswith("I"), model.components),
-        )
-        assert from_intensities == model.expression
-        for spin_jpsi in ["-1", "+1"]:
-            for spin_gamma in ["-1", "+1"]:
-                jpsi_with_spin = Rf"J/\psi(1S)_{{{spin_jpsi}}}"
-                gamma_with_spin = Rf"\gamma_{{{spin_gamma}}}"
-                from_amplitudes = model.sum_components(
-                    components=filter(
-                        lambda c: c.startswith("A")
-                        and jpsi_with_spin in c
-                        and gamma_with_spin in c,
-                        model.components,
-                    )
-                )
-                selected_intensities = filter(
-                    lambda c: c.startswith("I")
-                    and jpsi_with_spin in c
-                    and gamma_with_spin in c,
-                    model.components,
-                )
-                selected_intensity = next(selected_intensities)
-                assert from_amplitudes == model.components[selected_intensity]
-
     @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
     def test_amplitudes(self, formalism: str):
         reaction = qrules.generate_transitions(
