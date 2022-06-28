@@ -42,7 +42,7 @@ from ampform.kinematics import HelicityAdapter
 from ampform.kinematics.lorentz import get_invariant_mass_symbol
 from ampform.sympy import PoolSum
 
-from .align import axisangle, sum_amplitudes
+from .align import NoAlignment, SpinAlignment
 from .decay import (
     TwoBodyDecay,
     get_prefactor,
@@ -327,7 +327,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self.__reaction = reaction
         self.__adapter = HelicityAdapter(reaction)
         self.__config = BuilderConfiguration(
-            align_spin=False,
+            spin_alignment=NoAlignment(),
             scalar_initial_state_mass=False,
             stable_final_state_ids=None,
             use_helicity_couplings=False,
@@ -360,9 +360,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
-        kinematic_variables = self.adapter.create_expressions(
-            generate_wigner_angles=self.config.align_spin
-        )
+        kinematic_variables = self.adapter.create_expressions()
+        alignment_symbols = self.config.spin_alignment.define_symbols(self.reaction)
+        kinematic_variables.update(alignment_symbols)
         if self.config.stable_final_state_ids is not None:
             for state_id in self.config.stable_final_state_ids:
                 symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
@@ -391,10 +391,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         for group in spin_groups:
             self.__register_amplitudes(group)
 
-        if self.config.align_spin:
-            amplitude = axisangle.align_amplitude(self.reaction)
-        else:
-            amplitude = sum_amplitudes(self.reaction)
+        amplitude = self.config.spin_alignment.formulate_amplitude(self.reaction)
         spin_projections = collect_spin_projections(self.reaction)
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
@@ -562,8 +559,8 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    align_spin: bool = field(validator=instance_of(bool))
-    """(De)activate :doc:`spin alignment </usage/helicity/spin-alignment>`."""
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[misc]
+    """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
 

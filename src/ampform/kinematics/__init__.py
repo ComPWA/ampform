@@ -17,9 +17,9 @@ import sympy as sp
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.helicity.decay import assert_isobar_topology, get_parent_id
+from ampform.helicity.decay import assert_isobar_topology
 
-from .angles import compute_helicity_angles, compute_wigner_angles
+from .angles import compute_helicity_angles
 from .lorentz import compute_invariant_masses, create_four_momentum_symbols
 
 
@@ -80,23 +80,12 @@ class HelicityAdapter:
                 )
                 self.__topologies.add(permuted_topology)
 
-    def create_expressions(
-        self, generate_wigner_angles: bool = False
-    ) -> dict[sp.Symbol, sp.Expr]:
+    def create_expressions(self) -> dict[sp.Symbol, sp.Expr]:
         output = {}
         for topology in self.__topologies:
             momenta = create_four_momentum_symbols(topology)
             output.update(compute_helicity_angles(momenta, topology))
             output.update(compute_invariant_masses(momenta, topology))
-            if generate_wigner_angles:
-                wigner_rotation_ids = {
-                    i
-                    for i in topology.outgoing_edge_ids
-                    if get_parent_id(topology, i) != -1
-                }
-                for state_id in wigner_rotation_ids:
-                    angles = compute_wigner_angles(topology, momenta, state_id)
-                    output.update(angles)
         return output
 
 
