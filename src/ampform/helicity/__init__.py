@@ -335,7 +335,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             stable_final_state_ids=None,
             use_helicity_couplings=False,
         )
-        self.__dynamics_choices = DynamicsSelector(reaction)
+        self.__dynamics = DynamicsSelector(reaction)
         self._naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
         self.__ingredients = _HelicityModelIngredients()
 
@@ -349,8 +349,8 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         return self.__config
 
     @property
-    def dynamics_choices(self) -> DynamicsSelector:
-        return self.__dynamics_choices
+    def dynamics(self) -> DynamicsSelector:
+        return self.__dynamics
 
     @property
     def naming(self) -> NameGenerator:
@@ -359,11 +359,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     @property
     def reaction(self) -> ReactionInfo:
         return self.__reaction
-
-    def set_dynamics(
-        self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
-    ) -> None:
-        self.dynamics_choices.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
@@ -504,10 +499,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         decay = TwoBodyDecay.from_transition(transition, node_id)
-        if decay not in self.dynamics_choices:
+        if decay not in self.dynamics:
             return sp.S.One
 
-        builder = self.dynamics_choices[decay]
+        builder = self.dynamics[decay]
         variable_set = _generate_kinematic_variable_set(transition, node_id)
         expression, parameters = builder(decay.parent.particle, variable_set)
         for par, value in parameters.items():
