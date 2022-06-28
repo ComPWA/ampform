@@ -20,7 +20,7 @@ import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.io import aslatex
-from ampform.kinematics import FourMomentumSymbol, _ArraySize
+from ampform.kinematics.lorentz import FourMomentumSymbol, _ArraySize
 from ampform.sympy import NumPyPrintable
 from ampform.sympy._array_expressions import ArrayMultiplication
 
@@ -59,14 +59,14 @@ def extend_BlattWeisskopfSquared() -> None:
 
 
 def extend_BoostMatrix() -> None:
-    from ampform.kinematics import BoostMatrix
+    from ampform.kinematics.lorentz import BoostMatrix
 
     p = FourMomentumSymbol("p", shape=[])
     expr = BoostMatrix(p)
     _append_to_docstring(
         BoostMatrix,
         f"""\n
-    This boost operates on a `FourMomentumSymbol` and looks like:
+    This boost operates on a `.FourMomentumSymbol` and looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :class: full-width
@@ -90,14 +90,14 @@ def extend_BoostMatrix() -> None:
 
 
 def extend_BoostZMatrix() -> None:
-    from ampform.kinematics import BoostZMatrix
+    from ampform.kinematics.lorentz import BoostZMatrix
 
     beta, n_events = sp.symbols("beta n")
     matrix = BoostZMatrix(beta, n_events)
     _append_to_docstring(
         BoostZMatrix,
         f"""\n
-    This boost operates on a `FourMomentumSymbol` and looks like:
+    This boost operates on a `.FourMomentumSymbol` and looks like:
 
     .. math:: {sp.latex(matrix)} = {sp.latex(matrix.as_explicit())}
         :label: BoostZMatrix
@@ -119,7 +119,7 @@ def extend_BoostZMatrix() -> None:
         docstring_class=BoostZMatrix,
     )
 
-    from ampform.kinematics import RotationYMatrix, RotationZMatrix
+    from ampform.kinematics.lorentz import RotationYMatrix, RotationZMatrix
 
     _append_to_docstring(
         BoostZMatrix,
@@ -246,7 +246,12 @@ def extend_EnergyDependentWidth() -> None:
 
 
 def extend_Energy_and_FourMomentumXYZ() -> None:
-    from ampform.kinematics import Energy, FourMomentumX, FourMomentumY, FourMomentumZ
+    from ampform.kinematics.lorentz import (
+        Energy,
+        FourMomentumX,
+        FourMomentumY,
+        FourMomentumZ,
+    )
 
     def _extend(component_class: Type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")
@@ -261,7 +266,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
 
 
 def extend_EuclideanNorm() -> None:
-    from ampform.kinematics import EuclideanNorm
+    from ampform.kinematics.lorentz import EuclideanNorm
 
     vector = FourMomentumSymbol("v", shape=[])
     expr = EuclideanNorm(vector)
@@ -314,7 +319,7 @@ def extend_Kibble() -> None:
 
 
 def extend_InvariantMass() -> None:
-    from ampform.kinematics import InvariantMass
+    from ampform.kinematics.lorentz import InvariantMass
 
     p = FourMomentumSymbol("p", shape=[])
     expr = InvariantMass(p)
@@ -390,7 +395,7 @@ def extend_PhaseSpaceFactorSWave() -> None:
 
 
 def extend_Phi() -> None:
-    from ampform.kinematics import Phi
+    from ampform.kinematics.angles import Phi
 
     p = FourMomentumSymbol("p", shape=[])
     expr = Phi(p)
@@ -398,7 +403,7 @@ def extend_Phi() -> None:
 
 
 def extend_RotationYMatrix() -> None:
-    from ampform.kinematics import RotationYMatrix
+    from ampform.kinematics.lorentz import RotationYMatrix
 
     angle, n_events = sp.symbols("alpha n")
     expr = RotationYMatrix(angle, n_events)
@@ -406,7 +411,7 @@ def extend_RotationYMatrix() -> None:
         RotationYMatrix,
         f"""\n
     The matrix for a rotation over angle :math:`\\alpha` around the :math:`y`-axis
-    operating on `FourMomentumSymbol` looks like:
+    operating on `.FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :label: RotationYMatrix
@@ -417,15 +422,15 @@ def extend_RotationYMatrix() -> None:
 
 
 def extend_RotationZMatrix() -> None:
-    from ampform.kinematics import RotationZMatrix
+    from ampform.kinematics.lorentz import RotationZMatrix
 
     angle, n_events = sp.symbols("alpha n")
     expr = RotationZMatrix(angle, n_events)
     _append_to_docstring(
         RotationZMatrix,
         f"""\n
-    The matrix for a rotation over angle :math:`\\alpha` around the :math:`z`-axis
-    operating on `FourMomentumSymbol` looks like:
+    The matrix for a rotation over angle :math:`\\alpha` around the
+    :math:`z`-axis operating on `.FourMomentumSymbol` looks like:
 
     .. math:: {sp.latex(expr)} = {sp.latex(expr.as_explicit())}
         :label: RotationZMatrix
@@ -455,7 +460,7 @@ def extend_RotationZMatrix() -> None:
 
 
 def extend_Theta() -> None:
-    from ampform.kinematics import Theta
+    from ampform.kinematics.angles import Theta
 
     p = FourMomentumSymbol("p", shape=[])
     expr = Theta(p)
@@ -463,7 +468,7 @@ def extend_Theta() -> None:
 
 
 def extend_ThreeMomentum() -> None:
-    from ampform.kinematics import ThreeMomentum
+    from ampform.kinematics.lorentz import ThreeMomentum
 
     p = FourMomentumSymbol("p", shape=[])
     expr = ThreeMomentum(p)

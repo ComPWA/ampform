@@ -41,7 +41,8 @@ from ampform.dynamics.builder import (
     TwoBodyKinematicVariableSet,
     create_non_dynamic,
 )
-from ampform.kinematics import HelicityAdapter, get_invariant_mass_symbol
+from ampform.kinematics import HelicityAdapter
+from ampform.kinematics.lorentz import get_invariant_mass_symbol
 from ampform.sympy import PoolSum
 
 from .align.axisangle import formulate_axis_angle_alignment, get_opposite_helicity_sign

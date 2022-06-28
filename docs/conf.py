@@ -171,8 +171,8 @@ autodoc_default_options = {
 autodoc_member_order = "bysource"
 autodoc_type_aliases = {
     "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
-    "FourMomenta": "ampform.kinematics.FourMomenta",
-    "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
+    "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
+    "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "RangeDefinition": "symplot.RangeDefinition",
     # https://github.com/sphinx-doc/sphinx/pull/10183
     # "ParameterValue": "ampform.helicity.ParameterValue",
