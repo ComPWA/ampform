@@ -41,7 +41,7 @@ class TwoBodyDecay:
        `.formulate_isobar_cg_coefficients`).
 
     3. the `.TwoBodyDecay` is hashable, so that it can be used as a key (see
-       `.set_dynamics`.)
+       `.DynamicsSelector.assign`.)
     """
 
     parent: StateWithID

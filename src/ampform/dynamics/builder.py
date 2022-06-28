@@ -29,7 +29,7 @@ class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
     This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
-    build some lineshape expression from the `.dynamics` module. It also allows to
+    build some lineshape expression from the :mod:`.dynamics` module. It also allows to
     insert :doc:`custom dynamics </usage/dynamics/custom>` into the amplitude model.
     """
 
@@ -52,10 +52,10 @@ that appear in the `sympy.Expr <sympy.core.expr.Expr>`.
 
 
 class ResonanceDynamicsBuilder(Protocol):
-    """Protocol that is used by `.set_dynamics`.
+    """Protocol that is used by `.DynamicsSelector.assign`.
 
     Follow this `~typing.Protocol` when defining a builder function that is to be used
-    by `.set_dynamics`. For an example, see the source code
+    by `.DynamicsSelector.assign`. For an example, see the source code
     `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
 
     .. seealso:: :doc:`/usage/dynamics/custom`
@@ -104,7 +104,7 @@ class RelativisticBreitWignerBuilder:
     """Factory for building relativistic Breit-Wigner expressions.
 
     The :meth:`__call__` of this builder complies with the `.ResonanceDynamicsBuilder`,
-    so instances of this class can be used in :meth:`.set_dynamics`.
+    so instances of this class can be used in :meth:`.DynamicsSelector.assign`.
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function multiplied
