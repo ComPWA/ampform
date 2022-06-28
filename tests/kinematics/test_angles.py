@@ -14,8 +14,17 @@ from ampform.kinematics.angles import (
     Theta,
     compute_helicity_angles,
     compute_wigner_rotation_matrix,
+    formulate_scattering_angle,
+    formulate_theta_hat_angle,
+    formulate_zeta_angle,
 )
 from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
+from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
+
+m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
+s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2
+s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2
+s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2
 
 
 @pytest.fixture(scope="session")
@@ -253,6 +262,101 @@ def test_compute_wigner_rotation_matrix_numpy(
         assert pytest.approx(product) == momentum_array
     matrix_column_norms = np.linalg.norm(wigner_matrix_array, axis=1)
     assert pytest.approx(matrix_column_norms) == 1
+
+
+def test_formulate_scattering_angle():
+    assert formulate_scattering_angle(2, 3)[1] == sp.acos(
+        (
+            2 * s1 * (-(m1**2) - m2**2 + s3)
+            - (m0**2 - m1**2 - s1) * (m2**2 - m3**2 + s1)
+        )
+        / (
+            sp.sqrt(Kallen(m0**2, m1**2, s1))
+            * sp.sqrt(Kallen(s1, m2**2, m3**2))
+        )
+    )
+    assert formulate_scattering_angle(3, 1)[1] == sp.acos(
+        (
+            2 * s2 * (-(m2**2) - m3**2 + s1)
+            - (m0**2 - m2**2 - s2) * (-(m1**2) + m3**2 + s2)
+        )
+        / (
+            sp.sqrt(Kallen(m0**2, m2**2, s2))
+            * sp.sqrt(Kallen(s2, m3**2, m1**2))
+        )
+    )
+
+
+def test_formulate_theta_hat_angle():
+    assert formulate_theta_hat_angle(1, 2)[1] == sp.acos(
+        (
+            (m0**2 + m1**2 - s1) * (m0**2 + m2**2 - s2)
+            - 2 * m0**2 * (s3 - m1**2 - m2**2)
+        )
+        / (
+            sp.sqrt(Kallen(m0**2, m2**2, s2))
+            * sp.sqrt(Kallen(m0**2, s1, m1**2))
+        )
+    )
+    assert formulate_theta_hat_angle(1, 2)[1] == -formulate_theta_hat_angle(2, 1)[1]
+    for i in [1, 2, 3]:
+        assert formulate_theta_hat_angle(i, i)[1] == 0
+
+
+def test_formulate_zeta_angle_equation_a6():
+    """Test Eq.
+
+    (A6), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=10.
+    """
+    for i in [1, 2, 3]:
+        for k in [1, 2, 3]:
+            _, ζi_k0 = formulate_zeta_angle(i, k, 0)
+            _, ζi_ki = formulate_zeta_angle(i, k, i)
+            _, ζi_kk = formulate_zeta_angle(i, k, k)
+            assert ζi_ki == ζi_k0
+            assert ζi_kk == 0
+
+
+@pytest.mark.parametrize(
+    ("zeta1", "zeta2", "zeta3"),
+    [
+        (
+            formulate_zeta_angle(1, 2, 3)[1],
+            formulate_zeta_angle(1, 2, 1)[1],
+            formulate_zeta_angle(1, 1, 3)[1],
+        ),
+        (
+            formulate_zeta_angle(2, 3, 1)[1],
+            formulate_zeta_angle(2, 3, 2)[1],
+            formulate_zeta_angle(2, 2, 1)[1],
+        ),
+        (
+            formulate_zeta_angle(3, 1, 2)[1],
+            formulate_zeta_angle(3, 1, 3)[1],
+            formulate_zeta_angle(3, 3, 2)[1],
+        ),
+    ],
+)
+def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp.Expr):
+    """Test Eq.
+
+    (A9), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=11.
+    """
+    # pylint: disable=invalid-name non-ascii-name
+    s3_expr = compute_third_mandelstam(s1, s2, m0, m1, m2, m3)
+    masses = {
+        m0: 2.3,
+        m1: 0.94,
+        m2: 0.14,
+        m3: 0.49,
+        s1: 1.2,
+        s2: 3.0,
+        s3: s3_expr,
+    }
+    ζ1 = float(zeta1.doit().subs(masses))
+    ζ2 = float(zeta2.doit().subs(masses))
+    ζ3 = float(zeta3.doit().subs(masses))
+    np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 
 def _generate_numpy_code(expr: sp.Expr) -> str:

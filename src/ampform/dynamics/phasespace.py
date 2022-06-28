@@ -13,17 +13,16 @@ This module provides several parametrizations. They all comply with the
 """
 from __future__ import annotations
 
-import re
 import sys
 from typing import Sequence
 
 import sympy as sp
-from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
 
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
+    determine_indices,
     implement_doit_method,
 )
 from ampform.sympy.math import ComplexSqrt
@@ -89,7 +88,7 @@ class BreakupMomentumSquared(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = "q^2" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -114,7 +113,7 @@ class PhaseSpaceFactor(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = R"\rho" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -144,7 +143,7 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = R"\hat{\rho}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -170,7 +169,7 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = R"\rho^\mathrm{c}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -195,7 +194,7 @@ class PhaseSpaceFactorSWave(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = R"\rho^\mathrm{CM}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -244,7 +243,7 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = R"\rho^\mathrm{eq}" + subscript if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
@@ -284,33 +283,3 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
         return ""
     subscript = ",".join(map(str, indices))
     return "_{" + subscript + "}"
-
-
-def _determine_indices(symbol) -> list[int]:
-    r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
-
-    >>> _determine_indices(sp.Symbol("m1"))
-    [1]
-    >>> _determine_indices(sp.Symbol("m_a2"))
-    [2]
-    >>> _determine_indices(sp.Symbol(R"\alpha_{i2, 5}"))
-    [2, 5]
-    >>> _determine_indices(sp.Symbol("m"))
-    []
-
-    `~sympy.tensor.indexed.Indexed` instances can also be handled:
-    >>> m_a = sp.IndexedBase("m_a")
-    >>> _determine_indices(m_a[0])
-    [0]
-    """
-    _, _, subscripts = split_super_sub(sp.latex(symbol))
-    if not subscripts:
-        return []
-    subscript: str = subscripts[-1]
-    subscript = re.sub(r"[^0-9^\,]", "", subscript)
-    subscript = f"[{subscript}]"
-    try:
-        indices = eval(subscript)  # pylint: disable=eval-used
-    except SyntaxError:
-        return []
-    return list(indices)
