@@ -396,24 +396,24 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def set_dynamics(
         self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
     ) -> None:
-        self.__dynamics_choices.assign(particle_name, dynamics_builder)
+        self.dynamics_choices.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
-        kinematic_variables = self.__adapter.create_expressions(
+        kinematic_variables = self.adapter.create_expressions(
             generate_wigner_angles=self.config.align_spin
         )
         if self.config.stable_final_state_ids is not None:
             for state_id in self.config.stable_final_state_ids:
                 symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
-                particle = self.__reaction.final_state[state_id]
+                particle = self.reaction.final_state[state_id]
                 self.__ingredients.parameter_defaults[symbol] = particle.mass
                 del kinematic_variables[symbol]
         if self.config.scalar_initial_state_mass:
-            subscript = "".join(map(str, sorted(self.__reaction.final_state)))
+            subscript = "".join(map(str, sorted(self.reaction.final_state)))
             symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
-            particle = self.__reaction.initial_state[-1]
+            particle = self.reaction.initial_state[-1]
             self.__ingredients.parameter_defaults[symbol] = particle.mass
             del kinematic_variables[symbol]
 
@@ -423,16 +423,16 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             parameter_defaults=self.__ingredients.parameter_defaults,
             kinematic_variables=kinematic_variables,
             components=self.__ingredients.components,
-            reaction_info=self.__reaction,
+            reaction_info=self.reaction,
         )
 
     def __formulate_top_expression(self) -> PoolSum:
         # pylint: disable=too-many-locals
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = _get_outer_state_ids(self.reaction)
         spin_projections: DefaultDict[
             sp.Symbol, set[sp.Rational]
         ] = collections.defaultdict(set)
-        spin_groups = group_by_spin_projection(self.__reaction.transitions)
+        spin_groups = group_by_spin_projection(self.reaction.transitions)
         for group in spin_groups:
             self.__register_amplitudes(group)
             for transition in group:
@@ -442,7 +442,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                     value = sp.Rational(state.spin_projection)
                     spin_projections[symbol].add(value)
 
-        topology_groups = group_by_topology(self.__reaction.transitions)
+        topology_groups = group_by_topology(self.reaction.transitions)
         if self.config.align_spin:
             amplitude = self.__formulate_axis_angle_amplitude(topology_groups)
         else:
@@ -456,7 +456,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def __formulate_axis_angle_amplitude(
         self, topology_groups: dict[Topology, list[StateTransition]]
     ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = _get_outer_state_ids(self.reaction)
         amplitude = sp.S.Zero
         for topology, transitions in topology_groups.items():
             base = _create_amplitude_base(topology)
@@ -537,10 +537,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         decay = TwoBodyDecay.from_transition(transition, node_id)
-        if decay not in self.__dynamics_choices:
+        if decay not in self.dynamics_choices:
             return sp.S.One
 
-        builder = self.__dynamics_choices[decay]
+        builder = self.dynamics_choices[decay]
         variable_set = _generate_kinematic_variable_set(transition, node_id)
         expression, parameters = builder(decay.parent.particle, variable_set)
         for par, value in parameters.items():
