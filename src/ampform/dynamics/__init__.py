@@ -13,6 +13,7 @@ from sympy.printing.latex import LatexPrinter
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
+    determine_indices,
     implement_doit_method,
 )
 
@@ -25,7 +26,6 @@ from .phasespace import (
     PhaseSpaceFactorComplex,
     PhaseSpaceFactorProtocol,
     PhaseSpaceFactorSWave,
-    _determine_indices,
     _indices_to_subscript,
 )
 
@@ -217,7 +217,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
         width = printer._print(self.args[2])
-        subscript = _indices_to_subscript(_determine_indices(width))
+        subscript = _indices_to_subscript(determine_indices(width))
         name = Rf"\Gamma{subscript}" if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 
