@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import collections
+import sys
 from functools import lru_cache, singledispatch
 from typing import DefaultDict, Iterable
 
@@ -9,6 +10,11 @@ from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, State, StateTransition
+
+if sys.version_info < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 
 @frozen
@@ -167,6 +173,23 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     return next(iter(out_state_ids))
 
 
+@lru_cache(maxsize=None)
+def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
+    assert_three_body_decay(topology)
+    decay_products = topology.get_edge_ids_outgoing_from_node(1)
+    spectator_id_candidates = topology.outgoing_edge_ids - decay_products
+    return next(iter(spectator_id_candidates))  # type: ignore[arg-type]
+
+
+@lru_cache(maxsize=None)
+def get_decay_product_ids(
+    topology: Topology,
+) -> tuple[Literal[1, 2, 3], Literal[1, 2, 3]]:
+    assert_three_body_decay(topology)
+    decay_products = topology.get_edge_ids_outgoing_from_node(1)
+    return tuple(sorted(decay_products))  # type: ignore[return-value]
+
+
 def get_helicity_info(
     transition: StateTransition, node_id: int
 ) -> tuple[State, tuple[State, State]]:
@@ -251,6 +274,22 @@ def get_sorted_states(
 def assert_isobar_topology(topology: Topology) -> None:
     for node_id in topology.nodes:
         assert_two_body_decay(topology, node_id)
+
+
+@lru_cache(maxsize=None)
+def assert_three_body_decay(topology: Topology) -> None:
+    n_initial = len(topology.incoming_edge_ids)
+    n_final = len(topology.outgoing_edge_ids)
+    if n_initial != 1 or n_final != 3:
+        raise ValueError(
+            "Only three-body decays are supported. This is a"
+            f" {n_initial}-to-{n_final} decay."
+        )
+    if topology.incoming_edge_ids != {0} or topology.outgoing_edge_ids != {1, 2, 3}:
+        raise ValueError(
+            "Please use `qrules.topology.Topology.relabel_edges()` to relabel the final"
+            " states IDs to [1, 2, 3] and the initial state ID to 0."
+        )
 
 
 def assert_two_body_decay(topology: Topology, node_id: int) -> None:

@@ -162,6 +162,7 @@
         "nsimplify",
         "numpycode",
         "pandoc",
+        "pbar",
         "pcolormesh",
         "penwidth",
         "permalinks",

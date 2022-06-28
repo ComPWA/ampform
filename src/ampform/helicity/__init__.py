@@ -39,8 +39,13 @@ from ampform.dynamics.builder import (
     create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter
-from ampform.kinematics.lorentz import get_invariant_mass_symbol
-from ampform.sympy import PoolSum
+from ampform.kinematics.lorentz import (
+    InvariantMass,
+    create_four_momentum_symbols,
+    get_invariant_mass_symbol,
+)
+from ampform.sympy import PoolSum, determine_indices
+from ampform.sympy._array_expressions import ArraySum
 
 from .align import NoAlignment, SpinAlignment
 from .decay import (
@@ -357,24 +362,54 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def reaction(self) -> ReactionInfo:
         return self.__reaction
 
-    def formulate(self) -> HelicityModel:
+    def formulate(self) -> HelicityModel:  # noqa: R701
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
         kinematic_variables = self.adapter.create_expressions()
-        alignment_symbols = self.config.spin_alignment.define_symbols(self.reaction)
-        kinematic_variables.update(alignment_symbols)
         if self.config.stable_final_state_ids is not None:
             for state_id in self.config.stable_final_state_ids:
-                symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
+                mass_symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
                 particle = self.reaction.final_state[state_id]
-                self.__ingredients.parameter_defaults[symbol] = particle.mass
-                del kinematic_variables[symbol]
+                self.__ingredients.parameter_defaults[mass_symbol] = particle.mass
+                del kinematic_variables[mass_symbol]
         if self.config.scalar_initial_state_mass:
             subscript = "".join(map(str, sorted(self.reaction.final_state)))
-            symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
-            particle = self.reaction.initial_state[-1]
-            self.__ingredients.parameter_defaults[symbol] = particle.mass
-            del kinematic_variables[symbol]
+            mass_symbol = sp.Symbol(f"m_{subscript}", nonnegative=True)
+            particle = next(iter(self.reaction.initial_state.values()))
+            self.__ingredients.parameter_defaults[mass_symbol] = particle.mass
+            del kinematic_variables[mass_symbol]
+
+        alignment_symbols = self.config.spin_alignment.define_symbols(self.reaction)
+        p = create_four_momentum_symbols(self.reaction.transitions[0].topology)
+        for angle_symbol, angle_expr in alignment_symbols.items():
+            angle_expr = angle_expr.xreplace(kinematic_variables)
+            remaining_mass_symbols = [
+                s
+                for s in sorted(angle_expr.free_symbols, key=str)
+                if isinstance(s, sp.Symbol)
+                if s.name.startswith("m_")
+                if s.is_nonnegative  # type: ignore[attr-defined]
+            ]
+            for mass_symbol in remaining_mass_symbols:
+                indices = _get_final_state_ids(mass_symbol)
+                if set(indices) == set(self.reaction.initial_state):
+                    if self.config.scalar_initial_state_mass:
+                        self.__ingredients.parameter_defaults[
+                            mass_symbol
+                        ] = self.reaction.initial_state[0].mass
+                        continue
+                    indices = tuple(sorted(self.reaction.final_state))
+                if (
+                    len(indices) == 1
+                    and self.config.stable_final_state_ids is not None
+                    and indices[0] in self.config.stable_final_state_ids
+                ):
+                    continue
+                momentum = ArraySum(*[p[i] for i in sorted(indices)])
+                kinematic_variables[mass_symbol] = InvariantMass(momentum)
+            angle_expr = angle_expr.xreplace(kinematic_variables)
+            alignment_symbols[angle_symbol] = angle_expr
+        kinematic_variables.update(alignment_symbols)
 
         return HelicityModel(
             intensity=main_intensity,
@@ -822,6 +857,21 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
         beta=theta,
         gamma=0,
     )
+
+
+def _get_final_state_ids(mass: sp.Symbol) -> tuple[int, ...]:
+    """Extract the final state IDs from a mass symbol.
+
+    >>> _get_final_state_ids(sp.Symbol("m_1"))
+    (1,)
+    >>> _get_final_state_ids(sp.Symbol("m_123"))
+    (1, 2, 3)
+    """
+    subscript_indices = determine_indices(mass)
+    if len(subscript_indices) != 1:
+        raise ValueError(f"Could not determine indices from mass symbol {mass}")
+    subscript = str(subscript_indices[0])
+    return tuple(int(s) for s in subscript)
 
 
 def _generate_kinematic_variable_set(
