@@ -37,8 +37,8 @@ class TwoBodyDecay:
        decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
-       `.get_helicity_angle_symbols`, `.formulate_wigner_d`, and
-       `.formulate_clebsch_gordan_coefficients`).
+       `.get_helicity_angle_symbols`, `.formulate_isobar_wigner_d`, and
+       `.formulate_isobar_cg_coefficients`).
 
     3. the `.TwoBodyDecay` is hashable, so that it can be used as a key (see
        `.set_dynamics`.)
@@ -130,8 +130,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     minus sign the **"opposite helicity" state**. The other state is called **helicity
     state**. The choice of (opposite) helicity state affects not only the sign in the
     Wigner-:math:`D` function, but also the choice of angles: the argument of the
-    Wigner-:math:`D` function returned by :func:`.formulate_wigner_d` are the angles of
-    the helicity state.
+    Wigner-:math:`D` function returned by :func:`.formulate_isobar_wigner_d` are the
+    angles of the helicity state.
     """
     sibling_id = get_sibling_state_id(topology, state_id)
     state_fs_ids = determine_attached_final_state(topology, state_id)

@@ -16,7 +16,7 @@ from ampform.helicity import (
     ParameterValue,
     ParameterValues,
     _generate_kinematic_variables,
-    formulate_wigner_d,
+    formulate_isobar_wigner_d,
     group_by_spin_projection,
 )
 
@@ -346,7 +346,7 @@ def test_generate_kinematic_variables(
         (2, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
     ],
 )
-def test_formulate_wigner_d(
+def test_formulate_isobar_wigner_d(
     reaction: ReactionInfo, transition: int, node_id: int, expected: str
 ):
     if reaction.formalism == "canonical-helicity":
@@ -355,7 +355,7 @@ def test_formulate_wigner_d(
         t for t in reaction.transitions if t.states[3].particle.name == "f(0)(980)"
     ]
     some_transition = transitions[transition]
-    wigner_d = formulate_wigner_d(some_transition, node_id)
+    wigner_d = formulate_isobar_wigner_d(some_transition, node_id)
     assert str(wigner_d) == expected
 
 

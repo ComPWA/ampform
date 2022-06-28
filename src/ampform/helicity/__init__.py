@@ -672,7 +672,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
-        wigner_d = formulate_wigner_d(transition, node_id)
+        wigner_d = formulate_isobar_wigner_d(transition, node_id)
         dynamics = self.__formulate_dynamics(transition, node_id)
         if self.use_helicity_couplings:
             coupling = self.__generate_helicity_coupling(transition, node_id)
@@ -801,14 +801,14 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
         amplitude = super()._formulate_partial_decay(transition, node_id)
-        cg_coefficients = formulate_clebsch_gordan_coefficients(transition, node_id)
+        cg_coefficients = formulate_isobar_cg_coefficients(transition, node_id)
         return cg_coefficients * amplitude
 
 
-def formulate_clebsch_gordan_coefficients(
+def formulate_isobar_cg_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    r"""Compute the two Clebsch-Gordan coefficients for a state transition node.
+    r"""Compute the two Clebsch-Gordan coefficients for an isobar node.
 
     In the **canonical basis** (also called **partial wave basis**),
     :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
@@ -824,7 +824,7 @@ def formulate_clebsch_gordan_coefficients(
     \to 2, 3`, we get:
 
     .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
-        :label: formulate_clebsch_gordan_coefficients
+        :label: formulate_isobar_cg_coefficients
 
     with:
 
@@ -849,7 +849,7 @@ def formulate_clebsch_gordan_coefficients(
     ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
     >>> transition = reaction.transitions[1]  # angular momentum 2
-    >>> formulate_clebsch_gordan_coefficients(transition, node_id=0)
+    >>> formulate_isobar_cg_coefficients(transition, node_id=0)
     CG(1, -1, 0, 0, 1, -1)*CG(2, 0, 1, -1, 1, -1)
 
     .. math::
@@ -888,14 +888,14 @@ def formulate_clebsch_gordan_coefficients(
     return sp.Mul(cg_ls, cg_ss, evaluate=False)
 
 
-def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
-    r"""Compute `~sympy.physics.quantum.spin.WignerD` for a transition node.
+def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
+    r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
     Following :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (10). For a two-body
     decay :math:`1 \to 2, 3`, we get
 
     .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
-        :label: formulate_wigner_d
+        :label: formulate_isobar_wigner_d
 
     with:
 
@@ -923,7 +923,7 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     ...     final_state=[("gamma", [-1]), "f(0)(980)"],
     ... )
     >>> transition = reaction.transitions[0]
-    >>> formulate_wigner_d(transition, node_id=0)
+    >>> formulate_isobar_wigner_d(transition, node_id=0)
     WignerD(1, 1, -1, -phi_0, theta_0, 0)
 
     .. math::
