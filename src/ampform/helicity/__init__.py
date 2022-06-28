@@ -12,7 +12,6 @@ import logging
 import operator
 import sys
 from collections import OrderedDict, abc
-from difflib import get_close_matches
 from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
@@ -217,38 +216,6 @@ class HelicityModel:  # noqa: R701
         for expr in self.kinematic_variables.values():
             symbols |= expr.free_symbols  # type: ignore[arg-type]
         return symbols
-
-    def sum_components(self, components: Iterable[str]) -> sp.Expr:  # noqa: R701
-        """Coherently or incoherently add components of a helicity model."""
-        components = list(components)  # copy
-        for component in components:
-            if component not in self.components:
-                first_letter = component[0]
-                # pylint: disable=cell-var-from-loop
-                candidates = get_close_matches(
-                    component,
-                    filter(lambda c: c.startswith(first_letter), self.components),
-                )
-                raise KeyError(
-                    f'Component "{component}" not in model components. '
-                    "Did you mean any of these?",
-                    candidates,
-                )
-        if any(c.startswith("I") for c in components) and any(
-            c.startswith("A") for c in components
-        ):
-            intensity_sum = self.sum_components(
-                components=filter(lambda c: c.startswith("I"), components),
-            )
-            amplitude_sum = self.sum_components(
-                components=filter(lambda c: c.startswith("A"), components),
-            )
-            return intensity_sum + amplitude_sum
-        if all(c.startswith("I") for c in components):
-            return sum(self.components[c] for c in components)  # type: ignore[return-value]
-        if all(c.startswith("A") for c in components):
-            return abs(sum(self.components[c] for c in components)) ** 2
-        raise ValueError('Not all component names started with either "A" or "I"')
 
 
 class ParameterValues(abc.Mapping):
