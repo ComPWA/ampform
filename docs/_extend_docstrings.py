@@ -497,22 +497,22 @@ def extend_chew_mandelstam_s_wave() -> None:
     )
 
 
-def extend_formulate_clebsch_gordan_coefficients() -> None:
-    from ampform.helicity import formulate_clebsch_gordan_coefficients
+def extend_formulate_isobar_cg_coefficients() -> None:
+    from ampform.helicity import formulate_isobar_cg_coefficients
 
     _append_to_docstring(
-        formulate_clebsch_gordan_coefficients,
+        formulate_isobar_cg_coefficients,
         __get_graphviz_state_transition_example(
             formalism="canonical-helicity", transition_number=1
         ),
     )
 
 
-def extend_formulate_wigner_d() -> None:
-    from ampform.helicity import formulate_wigner_d
+def extend_formulate_isobar_wigner_d() -> None:
+    from ampform.helicity import formulate_isobar_wigner_d
 
     _append_to_docstring(
-        formulate_wigner_d,
+        formulate_isobar_wigner_d,
         __get_graphviz_state_transition_example("helicity"),
     )
 
