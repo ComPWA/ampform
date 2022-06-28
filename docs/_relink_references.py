@@ -48,6 +48,7 @@ __REF_TYPE_SUBSTITUTIONS = {
     "RangeDefinition": "obj",
     "ampform.dynamics.builder.BuilderReturnType": "obj",
     "ampform.helicity.ParameterValue": "obj",
+    "ampform.helicity.align.dpd.T": "obj",
     "ampform.kinematics.lorentz.FourMomenta": "obj",
     "ampform.kinematics.lorentz.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
