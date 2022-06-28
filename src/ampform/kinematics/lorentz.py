@@ -36,8 +36,8 @@ def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
     >>> create_four_momentum_symbols(topologies[0])
     {0: p0, 1: p1, 2: p2}
     """
-    n_final_states = len(topology.outgoing_edge_ids)
-    return {i: FourMomentumSymbol(f"p{i}", shape=[]) for i in range(n_final_states)}
+    final_state_ids = sorted(topology.outgoing_edge_ids)
+    return {i: FourMomentumSymbol(f"p{i}", shape=[]) for i in final_state_ids}
 
 
 FourMomenta = Dict[int, "FourMomentumSymbol"]
