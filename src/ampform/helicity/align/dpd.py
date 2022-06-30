@@ -19,6 +19,7 @@ from sympy.physics.quantum.spin import Rotation as Wigner
 
 from ampform._qrules import get_qrules_version
 from ampform.helicity.align import SpinAlignment
+from ampform.helicity.align._spin import create_spin_range
 from ampform.helicity.decay import (
     get_outer_state_ids,
     get_spectator_id,
@@ -85,13 +86,13 @@ def _formulate_aligned_amplitude(  # noqa: PLR0914
             * wigner_generator(j2, _λ2, λ2, 2, spectator_id)
             * wigner_generator(j3, _λ3, λ3, 3, spectator_id)
         ]
-    outer_helicities = _collect_outer_state_helicities(reaction)
+    allowed_helicities = _compute_allowed_helicities(reaction)
     amp_expr = PoolSum(
         sp.Add(*aligned_amplitudes),
-        (_λ0, outer_helicities[0]),
-        (_λ1, outer_helicities[1]),
-        (_λ2, outer_helicities[2]),
-        (_λ3, outer_helicities[3]),
+        (_λ0, allowed_helicities[0]),
+        (_λ1, allowed_helicities[1]),
+        (_λ2, allowed_helicities[2]),
+        (_λ3, allowed_helicities[3]),
     )
     return amp_expr, wigner_generator.angle_definitions
 
@@ -185,14 +186,14 @@ def __get_default_relabel_mapping() -> dict[int, int]:
     return {i - 1: i for i in range(5)}
 
 
-def _collect_outer_state_helicities(
-    reaction: ReactionInfo,
-) -> dict[int, list[sp.Rational]]:
-    outer_state_ids = get_outer_state_ids(reaction)
+def _compute_allowed_helicities(reaction: ReactionInfo) -> dict[int, list[sp.Rational]]:
+    some_transition = reaction.transitions[0]
+    outer_state_ids = sorted(get_outer_state_ids(reaction))
+    outer_particles = {i: some_transition.states[i].particle for i in outer_state_ids}
     return {
         i: sorted({
-            sp.Rational(transition.states[i].spin_projection)
-            for transition in reaction.transitions
+            sp.Rational(helicity)
+            for helicity in create_spin_range(p.spin, no_zero_spin=p.mass == 0.0)
         })
-        for i in outer_state_ids
+        for i, p in outer_particles.items()
     }
