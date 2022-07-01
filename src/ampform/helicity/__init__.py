@@ -831,9 +831,9 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
 
     See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an example of
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source
-    choses :math:`\Omega=(\phi,\theta,0)` as argument to the Wigner-:math:`D` function,
-    just like the original paper by Jacob & Wick
-    :cite:`jacobGeneralTheoryCollisions1959`.
+    chose :math:`\Omega=(\phi,\theta,-\phi)` as argument to the (conjugated)
+    Wigner-:math:`D` function, just like the original paper by Jacob & Wick
+    :cite:`jacobGeneralTheoryCollisions1959`, Eq. (24).
 
     Example
     -------
