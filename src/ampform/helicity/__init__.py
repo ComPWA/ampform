@@ -804,8 +804,12 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
     Following :cite:`chungSpinFormalismsUpdated2014`, `Eq. (4.16)
-    <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_. For a two-body decay :math:`1
-    \to 2, 3`, we get
+    <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_, but taking the complex
+    conjugate by flipping the sign of the azimuthal angle :math:`\phi` (see relation
+    between Wigner-:math:`D` and Wigner-:math:`d` in `Eq. (A.1)
+    <https://suchung.web.cern.ch/spinfm1.pdf#page=83>`_).
+
+    For a two-body decay :math:`1 \to 2, 3`, this gives us:
 
     .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(\phi,\theta,0)
         :label: formulate_isobar_wigner_d
@@ -840,7 +844,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     ... )
     >>> transition = reaction.transitions[0]
     >>> formulate_isobar_wigner_d(transition, node_id=0)
-    WignerD(1, 1, -1, phi_0, theta_0, 0)
+    WignerD(1, 1, -1, -phi_0, theta_0, 0)
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
@@ -852,7 +856,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
         mp=sp.Rational(
             decay.children[0].spin_projection - decay.children[1].spin_projection
         ),
-        alpha=phi,
+        alpha=-phi,  # complex conjugate
         beta=theta,
         gamma=0,
     )

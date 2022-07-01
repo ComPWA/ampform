@@ -308,12 +308,12 @@ def test_generate_kinematic_variables(
 @pytest.mark.parametrize(
     ("transition", "node_id", "expected"),
     [
-        (0, 0, "WignerD(1, -1, -1, phi_0, theta_0, 0)"),
-        (0, 1, "WignerD(0, 0, 0, phi_1^12, theta_1^12, 0)"),
-        (1, 0, "WignerD(1, -1, 1, phi_0, theta_0, 0)"),
-        (1, 1, "WignerD(0, 0, 0, phi_1^12, theta_1^12, 0)"),
-        (2, 0, "WignerD(1, 1, -1, phi_0, theta_0, 0)"),
-        (2, 1, "WignerD(0, 0, 0, phi_1^12, theta_1^12, 0)"),
+        (0, 0, "WignerD(1, -1, -1, -phi_0, theta_0, 0)"),
+        (0, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
+        (1, 0, "WignerD(1, -1, 1, -phi_0, theta_0, 0)"),
+        (1, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
+        (2, 0, "WignerD(1, 1, -1, -phi_0, theta_0, 0)"),
+        (2, 1, "WignerD(0, 0, 0, -phi_1^12, theta_1^12, 0)"),
     ],
 )
 def test_formulate_isobar_wigner_d(
