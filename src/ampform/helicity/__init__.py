@@ -811,7 +811,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
 
     For a two-body decay :math:`1 \to 2, 3`, this gives us:
 
-    .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(\phi,\theta,0)
+    .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
         :label: formulate_isobar_wigner_d
 
     with:
