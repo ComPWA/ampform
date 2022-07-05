@@ -372,13 +372,11 @@ def rename_symbols(
             substitutions[old_symbol] = new_symbol
     elif isinstance(renames, dict):
         for old_name, new_name in renames.items():
-            # pylint: disable=cell-var-from-loop
-            matches = filter(lambda s: s.name == old_name, free_symbols)
+            matches = (s for s in free_symbols if s.name == old_name)
             try:
                 old_symbol = next(matches)
-            except StopIteration:
-                # pylint: disable=raise-missing-from
-                raise KeyError(f"No symbol with name '{old_name}' in expression")
+            except StopIteration as e:
+                raise KeyError(f"No symbol with name '{old_name}' in expression") from e
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     else:
