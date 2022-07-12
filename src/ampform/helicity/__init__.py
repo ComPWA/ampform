@@ -233,7 +233,10 @@ class HelicityModel:  # noqa: R701
                 # pylint: disable=cell-var-from-loop
                 candidates = get_close_matches(
                     component,
-                    filter(lambda c: c.startswith(first_letter), self.components),
+                    filter(
+                        lambda c: c.startswith(first_letter),  # noqa: B023
+                        self.components,
+                    ),
                 )
                 raise KeyError(
                     f'Component "{component}" not in model components. '

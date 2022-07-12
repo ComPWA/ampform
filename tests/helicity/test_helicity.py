@@ -257,15 +257,15 @@ class TestHelicityModel:
                 from_amplitudes = model.sum_components(
                     components=filter(
                         lambda c: c.startswith("A")
-                        and jpsi_with_spin in c
-                        and gamma_with_spin in c,
+                        and jpsi_with_spin in c  # noqa: B023
+                        and gamma_with_spin in c,  # noqa: B023
                         model.components,
                     )
                 )
                 selected_intensities = filter(
                     lambda c: c.startswith("I")
-                    and jpsi_with_spin in c
-                    and gamma_with_spin in c,
+                    and jpsi_with_spin in c  # noqa: B023
+                    and gamma_with_spin in c,  # noqa: B023
                     model.components,
                 )
                 selected_intensity = next(selected_intensities)
