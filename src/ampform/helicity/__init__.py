@@ -450,13 +450,13 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                 transition.to_graph()
             )
             for graph in sequential_graphs:
-                first_transition = StateTransition.from_graph(graph)
-                expression = self.__formulate_sequential_decay(first_transition)
+                sequential_transition = StateTransition.from_graph(graph)
+                expression = self.__formulate_sequential_decay(sequential_transition)
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
         symbol = create_amplitude_symbol(first_transition)
-        expression = sum(sequential_expressions)  # type: ignore[assignment]
+        expression = sp.Add(*sequential_expressions)
         self.__ingredients.amplitudes[symbol] = expression
         return expression
 
