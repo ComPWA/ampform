@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.3.1
+    rev: v6.3.2
     hooks:
       - id: cspell
 
@@ -113,7 +113,7 @@ repos:
           - --py37-plus
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.5.0
+    rev: 0.6.0
     hooks:
       - id: nbstripout
         args:
@@ -144,7 +144,7 @@ repos:
       - id: pydocstyle
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.262
+    rev: v1.1.263
     hooks:
       - id: pyright
 
