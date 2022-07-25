@@ -1,5 +1,5 @@
 ci:
-  autoupdate_commit_msg: "ci: autoupdate pre-commit hooks"
+  autoupdate_commit_msg: "ci: update pip constraints and pre-commit config"
   autoupdate_schedule: quarterly # already done by requirements-cron.yml
   skip:
     # local hooks
