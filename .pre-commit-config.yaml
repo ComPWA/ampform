@@ -1,5 +1,5 @@
 ci:
-  autoupdate_commit_msg: "ci: autoupdate pre-commit hooks"
+  autoupdate_commit_msg: "ci: update pip constraints and pre-commit config"
   autoupdate_schedule: quarterly # already done by requirements-cron.yml
   skip:
     # local hooks
@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.3.1
+    rev: v6.3.2
     hooks:
       - id: cspell
 
@@ -82,6 +82,7 @@ repos:
     rev: 2.4.0
     hooks:
       - id: editorconfig-checker
+        name: editorconfig-checker
         exclude: >
           (?x)^(
             .*\.ipynb|
@@ -90,15 +91,34 @@ repos:
             LICENSE
           )$
 
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: flake8
+        language: system
+        types:
+          - python
+
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
       - id: isort
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.32.0
+    rev: v0.32.1
     hooks:
       - id: markdownlint
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        require_serial: true
+        types:
+          - python
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.4.0
@@ -113,7 +133,7 @@ repos:
           - --py37-plus
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.5.0
+    rev: 0.6.0
     hooks:
       - id: nbstripout
         args:
@@ -143,38 +163,8 @@ repos:
     hooks:
       - id: pydocstyle
 
-  - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.262
-    hooks:
-      - id: pyright
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.2
-    hooks:
-      - id: pyupgrade
-        args:
-          - --py37-plus
-
-  # The following tools have to be install locally, because they can also be
-  # used by code editors (e.g. linting and format-on-save).
-
   - repo: local
     hooks:
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: system
-        types:
-          - python
-
-      - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        require_serial: true
-        types:
-          - python
-
       - id: pylint
         name: pylint
         entry: pylint
@@ -185,3 +175,15 @@ repos:
         require_serial: true
         types:
           - python
+
+  - repo: https://github.com/ComPWA/mirrors-pyright
+    rev: v1.1.263
+    hooks:
+      - id: pyright
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.37.2
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py37-plus
