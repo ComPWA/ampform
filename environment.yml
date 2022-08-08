@@ -9,3 +9,5 @@ dependencies:
       - |
         -c .constraints/py3.8.txt
         -e .[dev]
+variables:
+  PYTHONHASHSEED: 0
