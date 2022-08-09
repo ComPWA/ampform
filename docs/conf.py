@@ -338,16 +338,21 @@ linkcheck_ignore = [
     "https://suchung.web.cern.ch",
 ]
 
+
 # Settings for myst_nb
+def get_execution_mode() -> str:
+    if "FORCE_EXECUTE_NB" in os.environ:
+        print("\033[93;1mWill run ALL Jupyter notebooks!\033[0m")
+        return "force"
+    if "EXECUTE_NB" in os.environ:
+        return "cache"
+    return "off"
+
+
+nb_execution_mode = get_execution_mode()
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
-
-nb_execution_mode = "off"
-EXECUTE_NB = False
-if "EXECUTE_NB" in os.environ:
-    print("\033[93;1mWill run Jupyter notebooks!\033[0m")
-    EXECUTE_NB = True
-    nb_execution_mode = "cache"
+EXECUTE_NB = nb_execution_mode != "off"
 
 # Settings for myst-parser
 myst_enable_extensions = [

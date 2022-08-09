@@ -540,7 +540,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __generate_amplitude_prefactor(
         self, transition: StateTransition
-    ) -> float | None:
+    ) -> sp.Rational | None:
         prefactor = get_prefactor(transition)
         if prefactor != 1.0:
             for node_id in transition.topology.nodes:
@@ -552,7 +552,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
                         raw_suffix
                     ]
                     if coefficient_suffix != raw_suffix:
-                        return prefactor
+                        return sp.Rational(prefactor)
         return None
 
 
