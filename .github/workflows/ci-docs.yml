@@ -46,6 +46,14 @@ jobs:
             echo
             cat "$log_file"
           done
+          for log_file in $(ls /tmp/sphinx-*.log); do
+            for i in $(seq 6); do echo; done
+            printf '%45s\n' | tr ' ' =
+            echo "$log_file"
+            printf '%45s\n' | tr ' ' =
+            echo
+            cat "$log_file"
+          done
       - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
