@@ -55,7 +55,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
 
@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.8.0
+    rev: v6.8.1
     hooks:
       - id: cspell
 
@@ -177,7 +177,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.267
+    rev: v1.1.269
     hooks:
       - id: pyright
 
