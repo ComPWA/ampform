@@ -203,28 +203,34 @@ def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
         ),
         (
             1,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
-            " BoostMatrix(p1 + p2 + p3),"
-            " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-            " p1)))",
+            (
+                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
+                " BoostMatrix(p1 + p2 + p3),"
+                " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                " p1)))"
+            ),
         ),
         (
             2,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1 +"
-            " p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
-            " p3)),"
-            " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-            " p2))))",
+            (
+                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1"
+                " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
+                " p3), p2 + p3)),"
+                " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+                " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                " p2))))"
+            ),
         ),
         (
             3,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1 +"
-            " p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3), p2 +"
-            " p3)),"
-            " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-            " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-            " p3))))",
+            (
+                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1"
+                " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
+                " p3), p2 + p3)),"
+                " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+                " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                " p3))))"
+            ),
         ),
     ],
 )

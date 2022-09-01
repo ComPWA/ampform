@@ -377,6 +377,11 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
+suppress_warnings = [
+    # skipping unknown output mime type: application/json
+    # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127
+    "mystnb.unknown_mime_type",
+]
 
 # Settings for sphinx_comments
 comments_config = {

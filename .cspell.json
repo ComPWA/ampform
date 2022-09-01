@@ -2,6 +2,7 @@
     "allowCompoundWords": true,
     "enableFiletypes": [
         "git-commit",
+        "julia",
         "jupyter"
     ],
     "flagWords": [
@@ -44,6 +45,9 @@
         "docs/adr/*/*",
         "docs/conf.py",
         "labels.toml",
+        "Makefile",
+        "Manifest.toml",
+        "Project.toml",
         "pyproject.toml",
         "pyrightconfig.json",
         "pytest.ini",

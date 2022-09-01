@@ -128,8 +128,8 @@ def extend_BoostZMatrix() -> None:
     <sympy.utilities.lambdify.lambdify>` with :code:`cse=True`. The repetition of
     :func:`numpy.ones` is still bothersome, but these sub-nodes is also extracted by
     :func:`sympy.cse <sympy.simplify.cse_main.cse>` if the expression is nested further
-    down in an :doc:`expression tree <sympy:tutorial/manipulation>`, for instance when
-    boosting a `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
+    down in an :doc:`expression tree <sympy:tutorials/intro-tutorial/manipulation>`, for
+    instance when boosting a `.FourMomentumSymbol` :math:`p` in the :math:`z`-direction:
     """,
     )
     p, beta, phi, theta = sp.symbols("p beta phi theta")
