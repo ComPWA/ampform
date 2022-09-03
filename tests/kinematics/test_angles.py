@@ -22,9 +22,9 @@ from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
 from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
 
 m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
-s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2
-s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2
-s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2
+s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2  # type: ignore[assignment]
+s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2  # type: ignore[assignment]
+s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2  # type: ignore[assignment]
 
 
 @pytest.fixture(scope="session")

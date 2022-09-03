@@ -216,8 +216,8 @@ class EnergyDependentWidth(UnevaluatedExpression):
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
-        width = printer._print(self.args[2])
-        subscript = _indices_to_subscript(determine_indices(width))
+        gamma0 = self.args[2]
+        subscript = _indices_to_subscript(determine_indices(gamma0))
         name = Rf"\Gamma{subscript}" if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
 

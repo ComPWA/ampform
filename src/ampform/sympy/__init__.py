@@ -421,17 +421,17 @@ def _render_sum_symbol(
 ) -> str:
     if len(values) == 0:
         return ""
-    idx = printer._print(idx)
+    idx_latex = printer._print(idx)
     if len(values) == 1:
         value = values[0]
-        return Rf"\sum_{{{idx}={value}}}"
+        return Rf"\sum_{{{idx_latex}={value}}}"
     if _is_regular_series(values):
         sorted_values = sorted(values, key=float)
         first_value = sorted_values[0]
         last_value = sorted_values[-1]
-        return Rf"\sum_{{{idx}={first_value}}}^{{{last_value}}}"
+        return Rf"\sum_{{{idx_latex}={first_value}}}^{{{last_value}}}"
     idx_values = ",".join(map(printer._print, values))
-    return Rf"\sum_{{{idx}\in\left\{{{idx_values}\right\}}}}"
+    return Rf"\sum_{{{idx_latex}\in\left\{{{idx_values}\right\}}}}"
 
 
 def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
@@ -460,7 +460,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     return True
 
 
-def determine_indices(symbol: sp.Symbol) -> list[int]:
+def determine_indices(symbol: sp.Basic) -> list[int]:
     r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
 
     >>> determine_indices(sp.Symbol("m1"))

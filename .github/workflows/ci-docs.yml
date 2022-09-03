@@ -32,27 +32,6 @@ jobs:
           GITHUB_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: tox -e docnb
-        # cspell:ignore docnb
-      - name: Print error logs with color
-        if: ${{ failure() }}
-        # cspell:ignore printf
-        run: |
-          for log_file in $(ls docs/_build/html/reports/*); do
-            for i in $(seq 6); do echo; done
-            printf '%45s\n' | tr ' ' =
-            echo "$log_file"
-            printf '%45s\n' | tr ' ' =
-            echo
-            cat "$log_file"
-          done
-          for log_file in $(ls /tmp/sphinx-*.log); do
-            for i in $(seq 6); do echo; done
-            printf '%45s\n' | tr ' ' =
-            echo "$log_file"
-            printf '%45s\n' | tr ' ' =
-            echo
-            cat "$log_file"
-          done
       - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
