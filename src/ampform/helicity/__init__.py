@@ -430,7 +430,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
         amplitude = self.config.spin_alignment.formulate_amplitude(self.reaction)
         spin_projections = collect_spin_projections(self.reaction)
-        return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
+        return PoolSum(sp.Abs(amplitude) ** 2, *spin_projections.items())
 
     def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:
         transition_by_topology = group_by_topology(transition_group)
@@ -441,7 +441,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         first_transition = transition_group[0]
         graph_group_label = generate_transition_label(first_transition)
         component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = abs(expression) ** 2
+        self.__ingredients.components[component_name] = sp.Abs(expression) ** 2
 
     def __formulate_topology_amplitude(
         self, transitions: Sequence[StateTransition]

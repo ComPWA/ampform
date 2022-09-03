@@ -314,15 +314,13 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
 
 @make_commutative
 class ArrayAxisSum(sp.Expr):
-    def __new__(
-        cls, array: ArraySymbol, axis: int | None = None, **hints
-    ) -> ArrayAxisSum:
+    def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             raise TypeError("Only single digits allowed for axis")
         return create_expression(cls, array, axis, **hints)
 
     @property
-    def array(self) -> ArraySymbol:
+    def array(self) -> sp.Expr:
         return self.args[0]  # type: ignore[return-value]
 
     @property
