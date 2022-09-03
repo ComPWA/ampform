@@ -349,6 +349,7 @@ def get_execution_mode() -> str:
 
 
 nb_execution_mode = get_execution_mode()
+nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
 EXECUTE_NB = nb_execution_mode != "off"

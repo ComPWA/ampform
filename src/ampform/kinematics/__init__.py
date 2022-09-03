@@ -705,9 +705,9 @@ class _RotationYMatrixImplementation(NumPyPrintable):
         return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        angle, *_ = self.args
-        angle = printer._print(angle)
-        return Rf"\boldsymbol{{R_y}}\left({angle}\right)"
+        angle_symbol, *_ = self.args
+        angle_latex = printer._print(angle_symbol)
+        return Rf"\boldsymbol{{R_y}}\left({angle_latex}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -778,9 +778,9 @@ class _RotationZMatrixImplementation(NumPyPrintable):
         return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        angle, *_ = self.args
-        angle = printer._print(angle)
-        return Rf"\boldsymbol{{R_z}}\left({angle}\right)"
+        angle_symbol, *_ = self.args
+        angle_latex = printer._print(angle_symbol)
+        return Rf"\boldsymbol{{R_z}}\left({angle_latex}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")

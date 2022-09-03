@@ -258,7 +258,7 @@ class HelicityModel:  # noqa: R701
         if all(c.startswith("I") for c in components):
             return sum(self.components[c] for c in components)  # type: ignore[return-value]
         if all(c.startswith("A") for c in components):
-            return abs(sum(self.components[c] for c in components)) ** 2
+            return sp.Abs(sum(self.components[c] for c in components)) ** 2
         raise ValueError('Not all component names started with either "A" or "I"')
 
 
@@ -640,7 +640,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         first_transition = transition_group[0]
         graph_group_label = generate_transition_label(first_transition)
         component_name = f"I_{{{graph_group_label}}}"
-        self.__ingredients.components[component_name] = abs(expression) ** 2
+        self.__ingredients.components[component_name] = sp.Abs(expression) ** 2
 
     def __formulate_topology_amplitude(
         self, transitions: Sequence[StateTransition]

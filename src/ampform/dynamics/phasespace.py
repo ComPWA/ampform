@@ -88,10 +88,11 @@ class BreakupMomentumSquared(UnevaluatedExpression):
         return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)  # type: ignore[operator]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
+        s = self.args[0]
+        s_latex = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
         name = "q^2" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 @implement_doit_method
@@ -113,10 +114,11 @@ class PhaseSpaceFactor(UnevaluatedExpression):
         return sp.sqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(_determine_indices(s_symbol))
         name = R"\rho" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 @implement_doit_method
@@ -143,10 +145,11 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(_determine_indices(s_symbol))
         name = R"\hat{\rho}" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 @implement_doit_method
@@ -169,10 +172,11 @@ class PhaseSpaceFactorComplex(UnevaluatedExpression):
         return ComplexSqrt(q_squared) / denominator
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(_determine_indices(s_symbol))
         name = R"\rho^\mathrm{c}" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 @implement_doit_method
@@ -194,10 +198,11 @@ class PhaseSpaceFactorSWave(UnevaluatedExpression):
         return -sp.I * chew_mandelstam
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(_determine_indices(s_symbol))
         name = R"\rho^\mathrm{CM}" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 def chew_mandelstam_s_wave(s, m_a, m_b):
@@ -243,10 +248,11 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(_determine_indices(s_symbol))
         name = R"\rho^\mathrm{eq}" + subscript if self._name is None else self._name
-        return Rf"{name}\left({s}\right)"
+        return Rf"{name}\left({s_latex}\right)"
 
 
 def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
