@@ -41,6 +41,7 @@ if TYPE_CHECKING:  # pragma: no cover
     else:
         from typing_extensions import TypeGuard
 
+_LOGGER = logging.getLogger(__name__)
 
 Slider = Union[FloatSlider, IntSlider]
 """Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
@@ -164,7 +165,7 @@ class SliderKwargs(abc.Mapping):
             try:
                 self[keyword].value = value
             except KeyError:
-                logging.warning(f'There is no slider with name or symbol "{keyword}"')
+                _LOGGER.warning(f'There is no slider with name or symbol "{keyword}"')
                 continue
 
     def set_ranges(  # noqa: R701

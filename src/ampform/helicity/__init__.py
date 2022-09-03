@@ -78,6 +78,8 @@ else:
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr]
@@ -191,7 +193,7 @@ class HelicityModel:  # noqa: R701
         symbol_names = {s.name for s in symbols}
         for name in renames:
             if name not in symbol_names:
-                logging.warning(f"There is no symbol with name {name}")
+                _LOGGER.warning(f"There is no symbol with name {name}")
         symbol_mapping = {
             s: sp.Symbol(renames[s.name], **s.assumptions0) if s.name in renames else s
             for s in symbols
@@ -423,7 +425,7 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = builder
                 found_particle = True
         if not found_particle:
-            logging.warning(f'Model contains no resonance with name "{particle_name}"')
+            _LOGGER.warning(f'Model contains no resonance with name "{particle_name}"')
 
     @assign.register(Particle)
     def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
@@ -702,7 +704,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
             if par in self.__ingredients.parameter_defaults:
                 previous_value = self.__ingredients.parameter_defaults[par]
                 if value != previous_value:
-                    logging.warning(
+                    _LOGGER.warning(
                         f'New default value {value} for parameter "{par.name}"'
                         " is inconsistent with existing value"
                         f" {previous_value}"
