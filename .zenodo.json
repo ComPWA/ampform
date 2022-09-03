@@ -3,6 +3,10 @@
   "creators": [
     {
       "affiliation": "Ruhr University Bochum",
+      "name": "Fritsch, Miriam"
+    },
+    {
+      "affiliation": "Ruhr University Bochum",
       "name": "Pfl\u00fcger, Stefan"
     },
     {
@@ -11,19 +15,19 @@
     },
     {
       "affiliation": "Ruhr University Bochum",
-      "name": "Fritsch, Miriam"
-    },
-    {
-      "affiliation": "Johannes Gutenberg University Mainz",
-      "name": "Gradl, Wolfgang"
+      "name": "J\u00e4ger, Sebastian"
     },
     {
       "affiliation": "Ruhr University Bochum",
       "name": "Wollenberg, Leonard"
     },
     {
-      "affiliation": "Ruhr University Bochum",
-      "name": "J\u00e4ger, Sebastian"
+      "affiliation": "Johannes Gutenberg University Mainz",
+      "name": "Gradl, Wolfgang"
+    },
+    {
+      "affiliation": "GSI Helmholtzzentrum f\u00fcr Schwerionenforschung",
+      "name": "Peters, Klaus"
     }
   ],
   "description": "<p>AmpForm is a Python library of spin formalisms and dynamics with which you can automatically formulate symbolic amplitude models for Partial Wave Analysis. The resulting amplitude models are formulated with <a href=\"https://www.sympy.org/en/index.html\">SymPy</a> (a Computer Algebra System). This not only makes it easy to inspect and visualize the resulting amplitude models, but also means the amplitude models can be used as templates for faster computational back-ends (see <a href=\"https://github.com/ComPWA/tensorwaves\">TensorWaves</a>).</p>",
