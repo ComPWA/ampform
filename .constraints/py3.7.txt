@@ -123,7 +123,7 @@ pluggy==1.0.0
 pre-commit==2.20.0
 prometheus-client==0.14.1
 prompt-toolkit==3.0.31
-psutil==5.9.1
+psutil==5.9.2
 ptyprocess==0.7.0
 py==1.11.0
 pybtex==0.24.0
@@ -199,7 +199,7 @@ urllib3==1.26.12
 virtualenv==20.15.1 ; python_version < "3.8.0"
 wcwidth==0.2.5
 webencodings==0.5.1
-websocket-client==1.4.0
+websocket-client==1.4.1
 wheel==0.37.1
 widgetsnbextension==4.0.3
 wrapt==1.14.1
