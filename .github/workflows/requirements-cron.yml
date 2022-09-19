@@ -2,32 +2,12 @@ name: Requirements (scheduled)
 
 on:
   schedule:
-    - cron: "0 2 * * 1"
+    - cron: "0 3 1 */1 *"
   workflow_dispatch:
 
 jobs:
-  is-even-week:
-    name: Check week number is even
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Determine if week number is even
-        run: |
-          if [[ $GITHUB_EVENT_NAME == "workflow_dispatch" ]]; then
-            echo ::set-output name=is-even-week::"-1"
-          else
-            WEEK_NUMBER=$(date +"%-U")
-            IS_EVEN_WEEK="$(($WEEK_NUMBER % 2 == 0))"
-            echo "This is week $WEEK_NUMBER. Is even week: $IS_EVEN_WEEK"
-            echo ::set-output name=is-even-week::"$IS_EVEN_WEEK"
-          fi
-        id: is-even-week
-    outputs:
-      is-even-week: ${{ steps.is-even-week.outputs.is-even-week }}
-
   pip-constraints:
     name: Update pip constraints files
-    needs: is-even-week
-    if: needs.is-even-week.outputs.is-even-week != 0
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -45,8 +25,6 @@ jobs:
 
   pre-commit:
     name: pre-commit autoupdate
-    needs: is-even-week
-    if: needs.is-even-week.outputs.is-even-week != 0
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3

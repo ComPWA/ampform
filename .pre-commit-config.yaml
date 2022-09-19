@@ -41,11 +41,11 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.144
+    rev: 0.0.145
     hooks:
       - id: check-dev-files
         args:
-          - --pin-requirements=biweekly
+          - --pin-requirements=monthly
       - id: fix-nbformat-version
       - id: format-setup-cfg
       - id: set-nb-cells
