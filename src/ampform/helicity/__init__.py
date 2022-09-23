@@ -206,7 +206,7 @@ class HelicityModel:  # noqa: R701
                 for amp, expr in self.amplitudes.items()
             },
             parameter_defaults={
-                symbol_mapping[par]: value
+                symbol_mapping.get(par, par): value
                 for par, value in self.parameter_defaults.items()
             },
             components={
@@ -214,7 +214,7 @@ class HelicityModel:  # noqa: R701
                 for name, expr in self.components.items()
             },
             kinematic_variables={
-                symbol_mapping[var]: expr.xreplace(symbol_mapping)
+                symbol_mapping.get(var, var): expr.xreplace(symbol_mapping)
                 for var, expr in self.kinematic_variables.items()
             },
         )

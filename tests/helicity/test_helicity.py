@@ -10,6 +10,7 @@ from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
 
 from ampform import get_builder
+from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
 from ampform.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
@@ -202,6 +203,32 @@ class TestHelicityModel:
         )
         assert len(new_model.parameter_defaults) == len(model.parameter_defaults) - 1
         assert model.expression.xreplace({d1: new_d, d2: new_d}) == new_model.expression
+
+    @pytest.mark.parametrize("stable_final_states", [False, True])
+    def test_rename_all_parameters_with_stable_final_state(  # noqa: R701
+        self,
+        reaction: ReactionInfo,
+        stable_final_states: bool,
+    ):
+        builder = get_builder(reaction)
+        for name in reaction.get_intermediate_particles().names:
+            builder.set_dynamics(name, create_relativistic_breit_wigner_with_ff)
+        if stable_final_states:
+            builder.stable_final_state_ids = set(reaction.final_state)
+        original_model = builder.formulate()
+        renames = {
+            par.name: Rf"{{{par.name}}}_\mathrm{{renamed}}"
+            for par in original_model.parameter_defaults
+        }
+        new_model = original_model.rename_symbols(renames)
+        for par in original_model.parameter_defaults:
+            if par.name.startswith("m_") and par.name[-1] in {"0", "1", "2"}:
+                continue
+            assert par not in new_model.parameter_defaults
+        for par in new_model.parameter_defaults:
+            if par.name.startswith("m_") and par.name[-1] in {"0", "1", "2"}:
+                continue
+            assert par.name.endswith(R"_\mathrm{renamed}")
 
     def test_rename_variables(self, amplitude_model: tuple[str, HelicityModel]):
         _, model = amplitude_model
