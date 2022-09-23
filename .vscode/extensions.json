@@ -11,6 +11,7 @@
     "github.vscode-pull-request-github",
     "ms-python.python",
     "ms-python.vscode-pylance",
+    "ms-toolsai.vscode-jupyter-cell-tags",
     "ms-vsliveshare.vsliveshare",
     "redhat.vscode-yaml",
     "ryanluker.vscode-coverage-gutters",
