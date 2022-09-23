@@ -18,8 +18,10 @@ jobs:
     steps:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
-          any_of: Bug,💡 Feature,⚠️ Interface,📝 Docs,🔨 Maintenance,🖱️ DX,📖 Physics
-          none_of: Epic,❌ Won't fix,💫 Good first issue
+          any_of:
+            🐛 Bug,💡 Feature,⚙️ Enhancement,⚠️ Interface,❗ Behavior,📝 Docs,🔨
+            Maintenance,🖱️ DX
+          none_of: Epic,💫 Good first issue
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
   check-title:
@@ -27,6 +29,5 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
-      - name: Install Dependencies
-        run: npm install @commitlint/config-conventional
+      - run: npm install @commitlint/config-conventional
       - uses: JulienKode/pull-request-name-linter-action@v0.5.0
