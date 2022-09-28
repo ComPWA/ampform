@@ -67,6 +67,30 @@ class TestEnergyDependentWidth:
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
         assert width._name == "Gamma_1"
 
+    def test_doit_and_subs(self):
+        s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b", nonnegative=True)
+        parameters = {
+            m0: 1.44,
+            w0: 0.35,
+            m_a: 0.938,
+            m_b: 0.548,
+        }
+        width = EnergyDependentWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m_a,
+            m_b=m_a,
+            angular_momentum=0,
+            meson_radius=1,
+            phsp_factor=PhaseSpaceFactorSWave,
+        )
+        subs_first = round_nested(width.subs(parameters).doit(), n_decimals=3)
+        doit_first = round_nested(width.doit().subs(parameters), n_decimals=3)
+        subs_first = round_nested(subs_first, n_decimals=3)
+        doit_first = round_nested(doit_first, n_decimals=3)
+        assert str(subs_first) == str(doit_first)
+
 
 def test_generate(  # pylint: disable=too-many-locals
     amplitude_model: tuple[str, HelicityModel],
