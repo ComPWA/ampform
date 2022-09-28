@@ -67,7 +67,8 @@ class TestEnergyDependentWidth:
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
         assert width._name == "Gamma_1"
 
-    def test_doit_and_subs(self):
+    @pytest.mark.parametrize("method", ["subs", "xreplace"])
+    def test_doit_and_subs(self, method: str):
         s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b", nonnegative=True)
         parameters = {
             m0: 1.44,
@@ -85,11 +86,15 @@ class TestEnergyDependentWidth:
             meson_radius=1,
             phsp_factor=PhaseSpaceFactorSWave,
         )
-        subs_first = round_nested(width.subs(parameters).doit(), n_decimals=3)
-        doit_first = round_nested(width.doit().subs(parameters), n_decimals=3)
+        subs_first = round_nested(_subs(width, parameters, method).doit(), n_decimals=3)
+        doit_first = round_nested(_subs(width.doit(), parameters, method), n_decimals=3)
         subs_first = round_nested(subs_first, n_decimals=3)
         doit_first = round_nested(doit_first, n_decimals=3)
         assert str(subs_first) == str(doit_first)
+
+
+def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
+    return getattr(obj, method)(replacements)
 
 
 def test_generate(  # pylint: disable=too-many-locals
