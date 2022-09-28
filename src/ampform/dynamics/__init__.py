@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import sympy as sp
+from sympy.core.basic import _aresame
 from sympy.printing.latex import LatexPrinter
 
 from ampform.sympy import (
@@ -220,6 +221,22 @@ class EnergyDependentWidth(UnevaluatedExpression):
         subscript = _indices_to_subscript(determine_indices(gamma0))
         name = Rf"\Gamma{subscript}" if self._name is None else self._name
         return Rf"{name}\left({s}\right)"
+
+    def _eval_subs(self, old, new):
+        # https://github.com/ComPWA/sympy/blob/bd0cf9a/sympy/core/basic.py#L1074-L1104
+        hit = False
+        new_args = list(self.args)
+        for i, arg in enumerate(self.args):
+            if not hasattr(arg, "_eval_subs"):
+                continue
+            arg = arg._subs(old, new)
+            if not _aresame(arg, new_args[i]):
+                hit = True
+                new_args[i] = arg
+        if hit:
+            # pylint: disable=no-value-for-parameter
+            return self.func(*new_args, self.phsp_factor, self._name)
+        return self
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
