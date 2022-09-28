@@ -67,6 +67,35 @@ class TestEnergyDependentWidth:
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
         assert width._name == "Gamma_1"
 
+    @pytest.mark.parametrize("method", ["subs", "xreplace"])
+    def test_doit_and_subs(self, method: str):
+        s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b", nonnegative=True)
+        parameters = {
+            m0: 1.44,
+            w0: 0.35,
+            m_a: 0.938,
+            m_b: 0.548,
+        }
+        width = EnergyDependentWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m_a,
+            m_b=m_a,
+            angular_momentum=0,
+            meson_radius=1,
+            phsp_factor=PhaseSpaceFactorSWave,
+        )
+        subs_first = round_nested(_subs(width, parameters, method).doit(), n_decimals=3)
+        doit_first = round_nested(_subs(width.doit(), parameters, method), n_decimals=3)
+        subs_first = round_nested(subs_first, n_decimals=3)
+        doit_first = round_nested(doit_first, n_decimals=3)
+        assert str(subs_first) == str(doit_first)
+
+
+def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
+    return getattr(obj, method)(replacements)
+
 
 def test_generate(  # pylint: disable=too-many-locals
     amplitude_model: tuple[str, HelicityModel],
@@ -171,11 +200,14 @@ def test_relativistic_breit_wigner_with_ff_phsp_factor(func):
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
+    no_sqrt_expr = expression
     for node in sp.preorder_traversal(expression):
         if node.free_symbols:
             continue
-        if isinstance(node, (float, sp.Float)):
-            expression = expression.subs(node, round(node, n_decimals))
         if isinstance(node, sp.Pow) and node.args[1] == 1 / 2:
-            expression = expression.subs(node, round(node.n(), n_decimals))
-    return expression
+            no_sqrt_expr = no_sqrt_expr.xreplace({node: node.n()})
+    rounded_expr = no_sqrt_expr
+    for node in sp.preorder_traversal(no_sqrt_expr):
+        if isinstance(node, (float, sp.Float)):
+            rounded_expr = rounded_expr.xreplace({node: round(node, n_decimals)})
+    return rounded_expr
