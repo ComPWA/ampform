@@ -238,6 +238,27 @@ class EnergyDependentWidth(UnevaluatedExpression):
             return self.func(*new_args, self.phsp_factor, self._name)
         return self
 
+    def _xreplace(self, rule):
+        # https://github.com/sympy/sympy/blob/bd0cf9a/sympy/core/basic.py#L1190-L1210
+        if self in rule:
+            return rule[self], True
+        if rule:
+            new_args = []
+            hit = False
+            for a in self.args:
+                _xreplace = getattr(a, "_xreplace", None)
+                if _xreplace is not None:
+                    a_xr = _xreplace(rule)
+                    new_args.append(a_xr[0])
+                    hit |= a_xr[1]
+                else:
+                    new_args.append(a)
+            new_args = tuple(new_args)
+            if hit:
+                # pylint: disable=no-value-for-parameter
+                return self.func(*new_args, self.phsp_factor, self._name), True
+        return self, False
+
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
