@@ -171,11 +171,14 @@ def test_relativistic_breit_wigner_with_ff_phsp_factor(func):
 
 
 def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
+    no_sqrt_expr = expression
     for node in sp.preorder_traversal(expression):
         if node.free_symbols:
             continue
-        if isinstance(node, (float, sp.Float)):
-            expression = expression.subs(node, round(node, n_decimals))
         if isinstance(node, sp.Pow) and node.args[1] == 1 / 2:
-            expression = expression.subs(node, round(node.n(), n_decimals))
-    return expression
+            no_sqrt_expr = no_sqrt_expr.xreplace({node: node.n()})
+    rounded_expr = no_sqrt_expr
+    for node in sp.preorder_traversal(no_sqrt_expr):
+        if isinstance(node, (float, sp.Float)):
+            rounded_expr = rounded_expr.xreplace({node: round(node, n_decimals)})
+    return rounded_expr
