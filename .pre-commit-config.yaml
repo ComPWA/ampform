@@ -65,11 +65,11 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.9.0
+    rev: v6.12.0
     hooks:
       - id: cspell
 
-  - repo: https://github.com/myint/docformatter
+  - repo: https://github.com/PyCQA/docformatter
     rev: v1.5.0
     hooks:
       - id: docformatter
@@ -121,7 +121,7 @@ repos:
           - python
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.0
+    rev: 1.5.2
     hooks:
       - id: nbqa-black
         additional_dependencies:
@@ -133,7 +133,7 @@ repos:
           - --py37-plus
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.6.0
+    rev: 0.6.1
     hooks:
       - id: nbstripout
         args:
@@ -177,12 +177,12 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.271
+    rev: v1.1.273
     hooks:
       - id: pyright
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.38.0
+    rev: v2.38.2
     hooks:
       - id: pyupgrade
         args:
