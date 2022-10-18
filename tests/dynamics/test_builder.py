@@ -89,6 +89,7 @@ class TestRelativisticBreitWignerBuilder:
 
         builder.form_factor = True
         bw_with_ff, parameters = builder(particle, variable_set)
+        #  pyright: reportConstantRedefinition=false
         L = variable_set.angular_momentum  # noqa: N806
         form_factor = formulate_form_factor(
             s, m1, m2, angular_momentum=L, meson_radius=d
