@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 
 import pytest
 import sympy as sp
@@ -22,8 +23,8 @@ from ampform.sympy import _warn_about_unsafe_hash, get_readable_hash
     ],
 )
 def test_get_readable_hash(assumptions, expected_hash, caplog: LogCaptureFixture):
-    if os.environ.get("RUNNER_OS") == "macOS":
-        pytest.skip("Cannot run this test on macOS")
+    if sys.version_info < (3, 8):
+        pytest.skip("Cannot run this test on Python 3.7")
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
@@ -43,8 +44,6 @@ def test_get_readable_hash(assumptions, expected_hash, caplog: LogCaptureFixture
 
 
 def test_get_readable_hash_energy_dependent_width():
-    if os.environ.get("RUNNER_OS") == "macOS":
-        pytest.skip("Cannot run this test on macOS")
     angular_momentum = sp.Symbol("L", integer=True)
     s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
     expr = EnergyDependentWidth(
@@ -60,7 +59,10 @@ def test_get_readable_hash_energy_dependent_width():
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None:
         pytest.skip("PYTHONHASHSEED has been set, but is not 0")
-    assert h == "pythonhashseed-0+5847558977249966029"
+    if sys.version_info < (3, 8):
+        assert h == "pythonhashseed-0+6939334787254793397"
+    else:
+        assert h == "pythonhashseed-0+5847558977249966029"
 
 
 def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
@@ -68,8 +70,9 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
     if python_hash_seed != "0":
         pytest.skip("PYTHONHASHSEED is not 0")
     formalism, model = amplitude_model
-    if os.environ.get("RUNNER_OS") == "macOS":
+    if sys.version_info < (3, 8):
         # https://github.com/ComPWA/ampform/actions/runs/3277058875/jobs/5393849802
+        # https://github.com/ComPWA/ampform/actions/runs/3277143883/jobs/5394043014
         expected_hash = {
             "canonical-helicity": "pythonhashseed-0-6040455869260657745",
             "helicity": "pythonhashseed-0-1928646339459384503",
