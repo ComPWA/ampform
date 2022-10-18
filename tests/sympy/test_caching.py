@@ -65,7 +65,7 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
         pytest.skip("PYTHONHASHSEED is not 0")
     formalism, model = amplitude_model
     expected_hash = {
-        "helicity": "pythonhashseed-0+7234046307916118541",
-        "canonical-helicity": "pythonhashseed-0+5410851290893792717",
+        "canonical-helicity": "pythonhashseed-0-7143983882032045549",
+        "helicity": "pythonhashseed-0+3357246175053927117",
     }[formalism]
     assert get_readable_hash(model.expression) == expected_hash
