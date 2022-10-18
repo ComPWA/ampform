@@ -5,14 +5,22 @@
 from __future__ import annotations
 
 import functools
+import hashlib
 import itertools
+import logging
+import os
+import pickle
 from abc import abstractmethod
+from os.path import abspath, dirname, expanduser
+from textwrap import dedent
 from typing import Callable, Iterable, Sequence, SupportsFloat, TypeVar
 
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -92,6 +100,11 @@ class UnevaluatedExpression(sp.Expr):
         args = tuple(self.args)
         kwargs = {"name": self._name}
         return args, kwargs
+
+    def _hashable_content(self) -> tuple:
+        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
+        # name is converted to string because unstable hash for None
+        return (*super()._hashable_content(), str(self._name))
 
     @abstractmethod
     def evaluate(self) -> sp.Expr:
@@ -456,3 +469,74 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
         if difference != 1.0:
             return False
     return True
+
+
+def perform_cached_doit(
+    unevaluated_expr: sp.Expr, directory: str | None = None
+) -> sp.Expr:
+    """Perform :meth:`~sympy.core.basic.Basic.doit` cache the result to disk.
+
+    The cached result is fetched from disk if the hash of the original expression is the
+    same as the hash embedded in the filename.
+
+    Args:
+        unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
+            :meth:`~sympy.core.basic.Basic.doit`.
+        directory: The directory in which to cache the result. If `None`, the cache
+            directory will be put under the home directory.
+
+    .. tip:: For a faster cache, set `PYTHONHASHSEED
+        <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
+        fixed value.
+    """
+    if directory is None:
+        home_directory = expanduser("~")
+        directory = abspath(f"{home_directory}/.sympy-cache")
+    h = get_readable_hash(unevaluated_expr)
+    filename = f"{directory}/{h}.pkl"
+    os.makedirs(dirname(filename), exist_ok=True)
+    if os.path.exists(filename):
+        with open(filename, "rb") as f:
+            return pickle.load(f)
+    _LOGGER.warning(
+        f"Cached expression file {filename} not found, performing doit()..."
+    )
+    unfolded_expr = unevaluated_expr.doit()
+    with open(filename, "wb") as f:
+        pickle.dump(unfolded_expr, f)
+    return unfolded_expr
+
+
+def get_readable_hash(obj) -> str:
+    python_hash_seed = _get_python_hash_seed()
+    if python_hash_seed is not None:
+        return f"pythonhashseed-{python_hash_seed}{hash(obj):+}"
+    b = _to_bytes(obj)
+    return hashlib.sha256(b).hexdigest()
+
+
+def _to_bytes(obj) -> bytes:
+    if isinstance(obj, sp.Expr):
+        # Using the str printer is slower and not necessarily unique,
+        # but pickle.dumps() does not always result in the same bytes stream.
+        _warn_about_unsafe_hash()
+        return str(obj).encode()
+    return pickle.dumps(obj)
+
+
+def _get_python_hash_seed() -> int | None:
+    python_hash_seed = os.environ.get("PYTHONHASHSEED", "")
+    if python_hash_seed is not None and python_hash_seed.isdigit():
+        return int(python_hash_seed)
+    return None
+
+
+@functools.lru_cache(maxsize=None)  # warn once
+def _warn_about_unsafe_hash():
+    message = """
+    PYTHONHASHSEED has not been set. For faster and safer hashing of SymPy expressions,
+    set the PYTHONHASHSEED environment variable to a fixed value and rerun the program.
+    See https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED
+    """
+    message = dedent(message).replace("\n", " ").strip()
+    _LOGGER.warning(message)

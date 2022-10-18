@@ -170,7 +170,7 @@ class HelicityModel:  # noqa: R701
 
         intensity = self.intensity.evaluate()
         intensity = unfold_poolsums(intensity)
-        return intensity.subs(self.amplitudes)
+        return intensity.xreplace(self.amplitudes)
 
     def rename_symbols(  # noqa: R701
         self, renames: Iterable[tuple[str, str]] | Mapping[str, str]

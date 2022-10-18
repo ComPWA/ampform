@@ -716,7 +716,7 @@ def _graphviz_to_image(  # pylint: disable=too-many-arguments
         options = {}
     global _GRAPHVIZ_COUNTER  # pylint: disable=global-statement
     output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
-    _GRAPHVIZ_COUNTER += 1
+    _GRAPHVIZ_COUNTER += 1  # pyright: reportConstantRedefinition=false
     graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)
     restructuredtext = "\n"
     if label:

@@ -12,7 +12,10 @@ import sys
 
 import requests
 
+# pyright: reportConstantRedefinition=false
 # pyright: reportMissingImports=false
+# pyright: reportUntypedBaseClass=false
+# pyright: reportUntypedFunctionDecorator=false
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text

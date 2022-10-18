@@ -197,7 +197,8 @@ class EnergyDependentWidth(UnevaluatedExpression):
 
     def _hashable_content(self) -> tuple:
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
-        return (*self.args, self.phsp_factor, self._name)
+        # phsp_factor is converted to string because of unstable hash for classes
+        return (*super()._hashable_content(), str(self.phsp_factor))
 
     def evaluate(self) -> sp.Expr:
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius = self.args

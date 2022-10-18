@@ -1,4 +1,6 @@
 name: pytest
+env:
+  PYTHONHASHSEED: "0"
 
 on:
   push:
