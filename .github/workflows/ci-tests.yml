@@ -35,6 +35,8 @@ jobs:
           pip install -c .constraints/py${{ matrix.python-version }}.txt -e .[test]
       - name: Test with pytest-cov
         run: pytest --cov=ampform --cov-report=xml
+        env:
+          PYTHONHASHSEED: "0"
       - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
