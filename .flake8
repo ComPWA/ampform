@@ -1,65 +1,66 @@
 [flake8]
 application-import-names =
-    ampform
+  ampform
 filename =
-    ./docs/*.py
-    ./src/*.py
-    ./tests/*.py
+  ./docs/*.py
+  ./src/*.py
+  ./tests/*.py
 exclude =
-    **/__pycache__
-    **/_build
-    *.pyi
-    /typings/**
+  **/__pycache__
+  **/_build
+  *.pyi
+  /typings/**
 ignore =
-    # False positive with attribute docstrings
-    B018
-    # https://github.com/psf/black#slices
-    E203
-    # allowed by black
-    E231
-    # https://github.com/psf/black#line-length
-    E501
-    # should be possible to use {} in latex strings
-    FS003
-    # block quote ends without a blank line (black formatting)
-    RST201
-    # missing pygments
-    RST299
-    # unexpected indentation (related to google style docstring)
-    RST301
-    # false-positive error in math directive
-    RST307
-    # enforce type ignore with mypy error codes (combined --extend-select=TI100)
-    TI1
-    # https://github.com/psf/black#line-breaks--binary-operators
-    W503
+  # False positive with attribute docstrings
+  B018
+  # https://github.com/psf/black#slices
+  E203
+  # allowed by black
+  E231
+  # https://github.com/psf/black#line-length
+  E501
+  # should be possible to use {} in latex strings
+  FS003
+  # block quote ends without a blank line (black formatting)
+  RST201
+  # missing pygments
+  RST299
+  # unexpected indentation (related to google style docstring)
+  RST301
+  # false-positive error in math directive
+  RST307
+  # enforce type ignore with mypy error codes (combined --extend-select=TI100)
+  TI1
+  # https://github.com/psf/black#line-breaks--binary-operators
+  W503
 extend-select =
-    TI100
+  TI100
 per-file-ignores =
-    # unused imports for backward compatibility
-    src/ampform/dynamics/__init__.py:F401
-    # λ symbols for DPD paper
-    src/ampform/helicity/align/dpd.py:N806
+  # unused imports for backward compatibility
+  src/ampform/dynamics/__init__.py:F401
+  # λ symbols for DPD paper
+  src/ampform/helicity/align/dpd.py:N806
+  tests/sympy/test_caching.py:C408
 radon-max-cc = 8
 radon-no-assert = True
 rst-roles =
-    attr
-    cite
-    class
-    doc
-    download
-    eq
-    file
-    func
-    meth
-    mod
-    pdg-review
-    ref
-    term
+  attr
+  cite
+  class
+  doc
+  download
+  eq
+  file
+  func
+  meth
+  mod
+  pdg-review
+  ref
+  term
 rst-directives =
-    autolink-preface
-    automethod
-    deprecated
-    envvar
-    exception
-    seealso
+  autolink-preface
+  automethod
+  deprecated
+  envvar
+  exception
+  seealso
