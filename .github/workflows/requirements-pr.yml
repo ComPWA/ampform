@@ -91,7 +91,7 @@ jobs:
           git checkout -b ${GITHUB_HEAD_REF}
           if [[ $(git status -s) ]]; then
             git add -A
-            git commit -m "MAINT: update pip constraints and pre-commit config"
+            git commit -m "MAINT: update pip constraints and pre-commit"
             git config pull.rebase true
             git pull origin ${GITHUB_HEAD_REF}
             git push origin HEAD:${GITHUB_HEAD_REF}

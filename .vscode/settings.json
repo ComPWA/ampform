@@ -2,6 +2,9 @@
   "[bibtex]": {
     "editor.formatOnSave": false
   },
+  "[git-commit]": {
+    "rewrap.wrappingColumn": 72
+  },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
