@@ -1,5 +1,5 @@
 ci:
-  autoupdate_commit_msg: "MAINT: update pip constraints and pre-commit config"
+  autoupdate_commit_msg: "MAINT: update pip constraints and pre-commit"
   autoupdate_schedule: quarterly # already done by requirements-cron.yml
   skip:
     # local hooks
@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.146
+    rev: 0.0.149
     hooks:
       - id: check-dev-files
         args:
@@ -55,7 +55,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
 
@@ -65,7 +65,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.12.0
+    rev: v6.13.0
     hooks:
       - id: cspell
 
@@ -121,7 +121,7 @@ repos:
           - python
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.2
+    rev: 1.5.3
     hooks:
       - id: nbqa-black
         additional_dependencies:
@@ -154,7 +154,7 @@ repos:
             metadata.varInspector
             metadata.vscode
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.0
+    rev: v3.0.0-alpha.4
     hooks:
       - id: prettier
 
@@ -177,12 +177,12 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.273
+    rev: v1.1.277
     hooks:
       - id: pyright
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.0.0
+    rev: v3.2.0
     hooks:
       - id: pyupgrade
         args:
