@@ -55,10 +55,10 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: "MAINT: update pip constraints and pre-commit config"
+          commit-message: "MAINT: update pip constraints and pre-commit"
           committer: GitHub <noreply@github.com>
           author: GitHub <noreply@github.com>
-          title: "MAINT: update pip constraints and pre-commit config"
+          title: "MAINT: update pip constraints and pre-commit"
           labels: |
             🔨 Maintenance
           branch-suffix: timestamp
