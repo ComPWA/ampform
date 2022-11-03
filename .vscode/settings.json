@@ -36,6 +36,7 @@
     "**/.git/**": true,
     "**/.tox/**": true
   },
+  "flake8.importStrategy": "fromEnvironment",
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
   "github-actions.workflows.pinned.workflows": [
@@ -56,7 +57,7 @@
   "python.formatting.provider": "black",
   "python.linting.banditEnabled": false,
   "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Enabled": false,
   "python.linting.mypyEnabled": true,
   "python.linting.pydocstyleEnabled": true,
   "python.linting.pylamaEnabled": false,
