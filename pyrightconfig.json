@@ -1,6 +1,13 @@
 {
-  "exclude": [".git", ".tox", "docs/_build", "docs/adr"],
-  "include": ["docs", "src", "tests"],
+  "exclude": [
+    "**/__pycache__",
+    "**/_build",
+    "**/.git",
+    "**/.ipynb_checkpoints",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.tox"
+  ],
   "reportGeneralTypeIssues": false,
   "reportIncompatibleMethodOverride": false,
   "reportMissingParameterType": false,
