@@ -22,6 +22,7 @@ vscode:
     - esbenp.prettier-vscode
     - executablebookproject.myst-highlight
     - github.vscode-pull-request-github
+    - ms-python.pylint
     - ms-python.python
     - ms-python.vscode-pylance
     - ms-toolsai.vscode-jupyter-cell-tags
