@@ -596,7 +596,7 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[misc]
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[type-abstract]  # noqa: TI002
     """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
