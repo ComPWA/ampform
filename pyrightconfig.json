@@ -24,6 +24,7 @@
   "reportUnnecessaryComparison": false,
   "reportUnnecessaryContains": false,
   "reportUnnecessaryIsInstance": false,
+  "reportUntypedFunctionDecorator": false,
   "reportUnusedClass": true,
   "reportUnusedFunction": true,
   "reportUnusedImport": true,

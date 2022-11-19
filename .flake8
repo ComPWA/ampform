@@ -17,6 +17,8 @@ ignore =
   E203
   # allowed by black
   E231
+  # already covered by black
+  E302
   # https://github.com/psf/black#line-length
   E501
   # should be possible to use {} in latex strings
