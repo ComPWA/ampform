@@ -35,11 +35,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -c .constraints/py3.8.txt -e .[sty]
       - name: Run non-local pre-commit hooks
-        run: |
+        run: |-
           pre-commit run flake8 -a --color always
           pre-commit run mypy -a --color always
           pre-commit run pylint -a --color always
       - name: Run pre-commit hooks that don't work on pre-commit.ci
-        run: |
+        run: |-
           pre-commit run editorconfig-checker -a --color always
           pre-commit run pyright -a --color always
