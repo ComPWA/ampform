@@ -18,8 +18,9 @@ jobs:
           fetch-depth: 0
       - name: Determine dependency changes
         run: |
-          DIFF="$(git diff origin/main --color -- .constraints .pre-commit-config.yaml setup.cfg)"
-          echo ::set-output name=diff::"${DIFF}"
+          echo 'diff<<EOF' >> $GITHUB_OUTPUT
+          git diff origin/main --color -- .constraints .pre-commit-config.yaml setup.cfg >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
         id: diff
     outputs:
       diff: ${{ steps.diff.outputs.diff }}
