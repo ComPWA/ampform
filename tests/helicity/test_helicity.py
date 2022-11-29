@@ -299,7 +299,9 @@ class TestHelicityModel:
 class TestParameterValues:
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
     def test_subs_xreplace(self, subs_method: str):
-        a, b, x, y = sp.symbols("a b x y")
+        base = sp.IndexedBase("b")
+        a, x, y = sp.symbols("a x y")
+        b: sp.Indexed = base[1, 2]
         expr: sp.Expr = a * x + b * y
         parameters = ParameterValues({a: 2, b: -3})
         if subs_method == "subs":
