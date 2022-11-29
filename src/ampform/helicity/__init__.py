@@ -223,6 +223,10 @@ class HelicityModel:  # noqa: R701
 class ParameterValues(abc.Mapping):
     """Ordered mapping to `ParameterValue` with convenient getter and setter.
 
+    This class makes it possible to search through a mapping of :mod:`sympy` symbols to
+    their values (a "parameter mapping") by symbol name or by index in the (ordered)
+    dictionary.
+
     >>> a, b, c = sp.symbols("a b c")
     >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
     >>> parameters[a]
