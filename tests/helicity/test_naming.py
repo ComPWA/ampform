@@ -98,7 +98,7 @@ def test_coefficient_names(  # noqa: R701
 
 def get_coefficients(model: HelicityModel) -> list[str]:
     return [
-        symbol.name
+        str(symbol)
         for symbol in model.parameter_defaults
-        if symbol.name.startswith("C_")
+        if str(symbol).startswith("C_")
     ]

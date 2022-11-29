@@ -106,9 +106,7 @@ def _order_amplitudes(
     )
 
 
-def _to_parameter_values(
-    mapping: Mapping[sp.Symbol, ParameterValue]
-) -> ParameterValues:
+def _to_parameter_values(mapping: Mapping[sp.Basic, ParameterValue]) -> ParameterValues:
     return ParameterValues(mapping)
 
 
@@ -128,7 +126,7 @@ class HelicityModel:  # noqa: R701
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
-    Keys are `~sympy.core.symbol.Symbol` instances from the main :attr:`expression` that
+    Keys are `~sympy.core.symbol.Basic` instances from the main :attr:`expression` that
     should be interpreted as parameters (as opposed to `kinematic_variables`). The
     symbols are ordered alphabetically by name with natural sort order
     (:func:`.natural_sorting`). Values have been extracted from the input
@@ -201,7 +199,7 @@ class HelicityModel:  # noqa: R701
                 for amp, expr in self.amplitudes.items()
             },
             parameter_defaults={
-                symbol_mapping.get(par, par): value
+                symbol_mapping.get(par, par): value  # type: ignore[call-overload]
                 for par, value in self.parameter_defaults.items()
             },
             components={
@@ -244,7 +242,7 @@ class ParameterValues(abc.Mapping):
     .. automethod:: __setitem__
     """
 
-    def __init__(self, parameters: Mapping[sp.Symbol, ParameterValue]) -> None:
+    def __init__(self, parameters: Mapping[sp.Basic, ParameterValue]) -> None:
         self.__parameters = dict(parameters)
 
     def __repr__(self) -> str:
@@ -265,35 +263,35 @@ class ParameterValues(abc.Mapping):
                     p.breakable()
             p.text("})")
 
-    def __getitem__(self, key: sp.Symbol | int | str) -> ParameterValue:
+    def __getitem__(self, key: sp.Basic | int | str) -> ParameterValue:
         par = self._get_parameter(key)
         return self.__parameters[par]
 
-    def __setitem__(self, key: sp.Symbol | int | str, value: ParameterValue) -> None:
+    def __setitem__(self, key: sp.Basic | int | str, value: ParameterValue) -> None:
         par = self._get_parameter(key)
         self.__parameters[par] = value
 
     @singledispatchmethod
-    def _get_parameter(self, key: sp.Symbol | int | str) -> sp.Symbol:
+    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
             f"Cannot find parameter for key type {type(key).__name__}"
         )
 
-    @_get_parameter.register(sp.Symbol)
-    def _(self, par: sp.Symbol) -> sp.Symbol:
+    @_get_parameter.register(sp.Basic)
+    def _(self, par: sp.Basic) -> sp.Basic:
         if par not in self.__parameters:
             raise KeyError(f"{type(self).__name__} has no parameter {par}")
         return par
 
     @_get_parameter.register(str)
-    def _(self, name: str) -> sp.Symbol:
+    def _(self, name: str) -> sp.Basic:
         for parameter in self.__parameters:
-            if parameter.name == name:
+            if str(parameter) == name:
                 return parameter
         raise KeyError(f"No parameter available with name {name}")
 
     @_get_parameter.register(int)
-    def _(self, key: int) -> sp.Symbol:
+    def _(self, key: int) -> sp.Basic:
         for i, parameter in enumerate(self.__parameters):
             if i == key:
                 return parameter
@@ -305,13 +303,13 @@ class ParameterValues(abc.Mapping):
     def __len__(self) -> int:
         return len(self.__parameters)
 
-    def __iter__(self) -> Iterator[sp.Symbol]:
+    def __iter__(self) -> Iterator[sp.Basic]:
         return iter(self.__parameters)
 
-    def items(self) -> ItemsView[sp.Symbol, ParameterValue]:
+    def items(self) -> ItemsView[sp.Basic, ParameterValue]:
         return self.__parameters.items()
 
-    def keys(self) -> KeysView[sp.Symbol]:
+    def keys(self) -> KeysView[sp.Basic]:
         return self.__parameters.keys()
 
     def values(self) -> ValuesView[ParameterValue]:
@@ -707,7 +705,7 @@ class DynamicsSelector(abc.Mapping):
 
 @define
 class _HelicityModelIngredients:
-    parameter_defaults: dict[sp.Symbol, ParameterValue] = field(factory=dict)
+    parameter_defaults: dict[sp.Basic, ParameterValue] = field(factory=dict)
     amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: dict[str, sp.Expr] = field(factory=dict)
     kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
