@@ -126,7 +126,7 @@ class HelicityModel:  # noqa: R701
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
-    Keys are `~sympy.core.symbol.Basic` instances from the main :attr:`expression` that
+    Keys are `~sympy.core.basic.Basic` instances from the main :attr:`expression` that
     should be interpreted as parameters (as opposed to `kinematic_variables`). The
     symbols are ordered alphabetically by name with natural sort order
     (:func:`.natural_sorting`). Values have been extracted from the input
