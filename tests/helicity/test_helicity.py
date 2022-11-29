@@ -122,8 +122,8 @@ class TestHelicityAmplitudeBuilder:
         builder.use_helicity_couplings = True
         coupling_model = builder.formulate()
 
-        coefficient_names = {p.name for p in coeff_model.parameter_defaults}
-        coupling_names = {p.name for p in coupling_model.parameter_defaults}
+        coefficient_names = {str(p) for p in coeff_model.parameter_defaults}
+        coupling_names = {str(p) for p in coupling_model.parameter_defaults}
         if reaction.formalism == "canonical-helicity":
             assert len(coefficient_names) == 4
             assert coefficient_names == {
@@ -217,18 +217,18 @@ class TestHelicityModel:
             builder.stable_final_state_ids = set(reaction.final_state)
         original_model = builder.formulate()
         renames = {
-            par.name: Rf"{{{par.name}}}_\mathrm{{renamed}}"
+            str(par): Rf"{{{str(par)}}}_\mathrm{{renamed}}"
             for par in original_model.parameter_defaults
         }
         new_model = original_model.rename_symbols(renames)
         for par in original_model.parameter_defaults:
-            if par.name.startswith("m_") and par.name[-1] in {"0", "1", "2"}:
+            if str(par).startswith("m_") and str(par)[-1] in {"0", "1", "2"}:
                 continue
             assert par not in new_model.parameter_defaults
         for par in new_model.parameter_defaults:
-            if par.name.startswith("m_") and par.name[-1] in {"0", "1", "2"}:
+            if str(par).startswith("m_") and str(par)[-1] in {"0", "1", "2"}:
                 continue
-            assert par.name.endswith(R"_\mathrm{renamed}")
+            assert str(par).endswith(R"_\mathrm{renamed}")
 
     def test_rename_variables(self, amplitude_model: tuple[str, HelicityModel]):
         _, model = amplitude_model
@@ -329,7 +329,9 @@ class TestHelicityModel:
 class TestParameterValues:
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
     def test_subs_xreplace(self, subs_method: str):
-        a, b, x, y = sp.symbols("a b x y")
+        base = sp.IndexedBase("b")
+        a, x, y = sp.symbols("a x y")
+        b: sp.Indexed = base[1, 2]
         expr: sp.Expr = a * x + b * y
         parameters = ParameterValues({a: 2, b: -3})
         if subs_method == "subs":
