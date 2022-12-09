@@ -41,11 +41,13 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.159
+    rev: 0.0.161
     hooks:
       - id: check-dev-files
         args:
           - --pin-requirements=monthly
+          - --repo-name=ampform
+          - --repo-title=AmpForm
       - id: fix-nbformat-version
       - id: format-setup-cfg
       - id: set-nb-cells
@@ -55,7 +57,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 22.12.0
     hooks:
       - id: black
 
@@ -65,7 +67,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.14.1
+    rev: v6.16.0
     hooks:
       - id: cspell
 
@@ -79,7 +81,7 @@ repos:
           - --wrap-summaries=88
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.6.1
+    rev: 2.6.2
     hooks:
       - id: editorconfig-checker
         name: editorconfig-checker
@@ -177,12 +179,12 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.281
+    rev: v1.1.283
     hooks:
       - id: pyright
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.2
+    rev: v3.3.1
     hooks:
       - id: pyupgrade
         args:
