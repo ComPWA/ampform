@@ -35,3 +35,5 @@ template: |
   _See all documentation for this version [here](https://ampform.rtfd.io/en/$NEXT_PATCH_VERSION)._
 
   $CHANGES
+
+  _The full changelog as commits can be found [here](https://github.com/ComPWA/ampform/compare/$PREVIOUS_TAG...$NEXT_PATCH_VERSION)._

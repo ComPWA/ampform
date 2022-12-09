@@ -45,6 +45,7 @@ REPO_NAME = "ampform"
 copyright = "2020, ComPWA"  # noqa: A001
 author = "Common Partial Wave Analysis"
 
+
 # https://docs.readthedocs.io/en/stable/builds.html
 def get_branch_name() -> str:
     branch_name = os.environ.get("READTHEDOCS_VERSION", "stable")
@@ -248,6 +249,7 @@ nitpick_ignore = [
 
 # Intersphinx settings
 version_remapping = {
+    "ipywidgets": {"8.0.3": "8.0.2"},
     "matplotlib": {"3.5.1": "3.5.0"},
 }
 
