@@ -45,6 +45,7 @@ REPO_NAME = "ampform"
 copyright = "2020, ComPWA"  # noqa: A001
 author = "Common Partial Wave Analysis"
 
+
 # https://docs.readthedocs.io/en/stable/builds.html
 def get_branch_name() -> str:
     branch_name = os.environ.get("READTHEDOCS_VERSION", "stable")
