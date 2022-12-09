@@ -249,6 +249,7 @@ nitpick_ignore = [
 
 # Intersphinx settings
 version_remapping = {
+    "ipywidgets": {"8.0.3": "8.0.2"},
     "matplotlib": {"3.5.1": "3.5.0"},
 }
 
