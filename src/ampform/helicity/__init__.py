@@ -120,8 +120,8 @@ class HelicityModel:  # noqa: R701
     The main `intensity` is a sum over amplitudes for each initial and final state
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
-    definitions for each of these. See also :ref:`TR-014
-    <compwa-org:tr-014-solution-2>`.
+    definitions for each of these. See also :ref:`TR-014 <compwa-
+    org:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
@@ -139,8 +139,8 @@ class HelicityModel:  # noqa: R701
     components: OrderedDict[str, sp.Expr] = field(converter=_order_component_mapping)
     """A mapping for identifying main components in the :attr:`expression`.
 
-    Keys are the component names (`str`), formatted as LaTeX, and values are
-    sub-expressions in the main :attr:`expression`. The mapping is an
+    Keys are the component names (`str`), formatted as LaTeX, and values are sub-
+    expressions in the main :attr:`expression`. The mapping is an
     `~collections.OrderedDict` that orders the component names alphabetically with
     natural sort order (:func:`.natural_sorting`).
     """
@@ -618,9 +618,8 @@ class BuilderConfiguration:
 
     Put final state 'invariant' masses (:math:`m_0, m_1, \dots`) under
     `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
-    `~.HelicityModel.kinematic_variables` (which are expressions to compute an
-    event-wise array of invariant masses). This is useful if final state particles are
-    stable.
+    `~.HelicityModel.kinematic_variables` (which are expressions to compute an event-
+    wise array of invariant masses). This is useful if final state particles are stable.
     """
     use_helicity_couplings: bool = field(validator=instance_of(bool))
     """Use helicity couplings instead of amplitude coefficients.
