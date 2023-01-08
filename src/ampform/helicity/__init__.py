@@ -260,9 +260,9 @@ class ParameterValues(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}({{"):
                 p.breakable()
                 for par, value in self.items():
-                    p.pretty(par)
+                    p.pretty(par)  # type: ignore[attr-defined]
                     p.text(": ")
-                    p.pretty(value)
+                    p.pretty(value)  # type: ignore[attr-defined]
                     p.text(",")
                     p.breakable()
             p.text("})")

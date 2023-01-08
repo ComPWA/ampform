@@ -144,11 +144,11 @@ class SliderKwargs(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}("):
                 p.breakable()
                 p.text("sliders=")
-                p.pretty(self._sliders)
+                p.pretty(self._sliders)  # type: ignore[attr-defined]
                 p.text(",")
                 p.breakable()
                 p.text("arg_to_symbol=")
-                p.pretty(self._arg_to_symbol)
+                p.pretty(self._arg_to_symbol)  # type: ignore[attr-defined]
                 p.text(",")
             p.breakable()
             p.text(")")
