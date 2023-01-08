@@ -41,7 +41,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.162
+    rev: 0.0.163
     hooks:
       - id: check-dev-files
         args:
@@ -108,7 +108,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.32.2
+    rev: v0.33.0
     hooks:
       - id: markdownlint
 
@@ -161,7 +161,7 @@ repos:
       - id: prettier
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.2.2
+    rev: 6.2.3
     hooks:
       - id: pydocstyle
 

@@ -9,7 +9,7 @@ anyio==3.6.2
 aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
-astroid==2.12.14
+astroid==2.13.2
 asttokens==2.2.1
 attrs==22.2.0
 babel==2.11.0
@@ -28,7 +28,7 @@ colorama==0.4.6
 comm==0.1.2
 commonmark==0.9.1
 contourpy==1.0.6
-coverage==7.0.3
+coverage==7.0.4
 cycler==0.11.0
 debugpy==1.6.5
 decorator==5.1.1
@@ -64,7 +64,7 @@ idna==3.4
 imagesize==1.4.1
 importlib-metadata==6.0.0
 importlib-resources==5.10.2
-iniconfig==1.1.1
+iniconfig==2.0.0
 ipykernel==6.19.4
 ipympl==0.9.2
 ipython==8.8.0
@@ -115,7 +115,7 @@ nodeenv==1.7.0
 notebook==6.5.2
 notebook-shim==0.2.2
 numpy==1.24.1
-packaging==22.0
+packaging==23.0
 pandocfilters==1.5.0
 parso==0.8.3
 particle==0.21.1
@@ -139,7 +139,7 @@ pycodestyle==2.10.0
 pycparser==2.21
 pydantic==1.10.4
 pydata-sphinx-theme==0.8.1
-pydocstyle==6.2.2
+pydocstyle==6.2.3
 pyflakes==3.0.1
 pygments==2.14.0
 pylint==2.15.9
@@ -168,13 +168,13 @@ soupsieve==2.3.2.post1
 sphinx==4.5.0
 sphinx-autobuild==2021.3.14
 sphinx-book-theme==0.3.3
-sphinx-codeautolink==0.12.1
+sphinx-codeautolink==0.13.0
 sphinx-comments==0.0.3
 sphinx-copybutton==0.5.1
 sphinx-design==0.3.0
 sphinx-thebe==0.2.0
 sphinx-togglebutton==0.3.2
-sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-applehelp==1.0.3
 sphinxcontrib-bibtex==2.5.0
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-hep-pdgref==0.1.4
