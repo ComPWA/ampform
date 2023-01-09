@@ -57,7 +57,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.6.0
+    rev: 1.6.1
     hooks:
       - id: nbqa-black
         additional_dependencies:
