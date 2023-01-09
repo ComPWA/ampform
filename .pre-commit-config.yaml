@@ -155,6 +155,7 @@ repos:
             metadata.toc-showtags
             metadata.varInspector
             metadata.vscode
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.0-alpha.4
     hooks:
