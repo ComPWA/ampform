@@ -40,10 +40,11 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: "6535183"
+    rev: 796e3ed
     hooks:
       - id: check-dev-files
         args:
+          - --doc-apt-packages=graphviz
           - --pin-requirements=monthly
           - --repo-name=ampform
           - --repo-title=AmpForm
