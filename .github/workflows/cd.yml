@@ -7,47 +7,12 @@ on:
       - released
 
 jobs:
-  push:
-    name: Push to version branches
+  milestone:
     if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Configure Git credentials
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: Push to stable branch
-        run: |
-          git push origin HEAD:refs/heads/stable --force
-      - name: Push to matching minor version branch
-        env:
-          TAG: ${{ github.ref_name }}
-        run: |
-          re='^([0-9]+)\.([0-9]+)\.[0-9]+'
-          if [[ $TAG =~ $re ]]; then
-            MINOR_VERSION_BRANCH="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.x"
-            git push origin HEAD:refs/heads/$MINOR_VERSION_BRANCH --force
-          fi
-
+    uses: ComPWA/actions/.github/workflows/close-milestone.yml@dev
   pypi:
-    name: Publish to PyPI
     if: startsWith(github.ref, 'refs/tags')
-    needs: push
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.8"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-      - name: Build and publish
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/*
+    uses: ComPWA/actions/.github/workflows/publish-to-pypi.yml@dev
+  push:
+    if: startsWith(github.ref, 'refs/tags') && !github.event.release.prerelease
+    uses: ComPWA/actions/.github/workflows/push-to-version-branches.yml@dev

@@ -1,0 +1,30 @@
+name: CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONHASHSEED: "0"
+
+on:
+  push:
+    branches:
+      - main
+      - epic/*
+  pull_request:
+    branches:
+      - main
+      - epic/*
+  workflow_dispatch:
+
+jobs:
+  doc:
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@dev
+  pytest:
+    uses: ComPWA/actions/.github/workflows/pytest.yml@dev
+    with:
+      coverage-target: ampform
+      macos-python-version: "3.7"
+  style:
+    uses: ComPWA/actions/.github/workflows/pre-commit.yml@dev
