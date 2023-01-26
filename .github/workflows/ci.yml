@@ -22,8 +22,7 @@ jobs:
   doc:
     uses: ComPWA/actions/.github/workflows/ci-docs.yml@dev
     with:
-      apt-packages:
-        - graphviz
+      apt-packages: graphviz
   pytest:
     uses: ComPWA/actions/.github/workflows/pytest.yml@dev
     with:

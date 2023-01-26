@@ -40,7 +40,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 796e3ed
+    rev: a365a0a
     hooks:
       - id: check-dev-files
         args:
