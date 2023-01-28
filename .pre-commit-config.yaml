@@ -83,15 +83,6 @@ repos:
     hooks:
       - id: cspell
 
-  - repo: https://github.com/myint/docformatter
-    rev: v1.5.1
-    hooks:
-      - id: docformatter
-        args:
-          - --in-place
-          - --wrap-descriptions=88
-          - --wrap-summaries=88
-
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: 2.6.2
     hooks:
