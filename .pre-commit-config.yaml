@@ -57,7 +57,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.3
+    rev: 1.6.1
     hooks:
       - id: nbqa-black
         additional_dependencies:
@@ -74,26 +74,17 @@ repos:
       - id: black
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.12.1
+    rev: 1.13.0
     hooks:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.16.0
+    rev: v6.19.2
     hooks:
       - id: cspell
 
-  - repo: https://github.com/myint/docformatter
-    rev: v1.5.0
-    hooks:
-      - id: docformatter
-        args:
-          - --in-place
-          - --wrap-descriptions=88
-          - --wrap-summaries=88
-
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.6.2
+    rev: 2.7.1
     hooks:
       - id: editorconfig-checker
         name: editorconfig-checker
@@ -115,12 +106,12 @@ repos:
           - python
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.11.4
     hooks:
       - id: isort
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.32.2
+    rev: v0.33.0
     hooks:
       - id: markdownlint
 
@@ -155,13 +146,14 @@ repos:
             metadata.toc-showtags
             metadata.varInspector
             metadata.vscode
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.0-alpha.4
     hooks:
       - id: prettier
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.1.1
+    rev: 6.3.0
     hooks:
       - id: pydocstyle
 
@@ -179,7 +171,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.283
+    rev: v1.1.291
     hooks:
       - id: pyright
 
