@@ -125,8 +125,8 @@ class HelicityModel:  # noqa: R701
     The main `intensity` is a sum over amplitudes for each initial and final state
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
-    definitions for each of these. See also :ref:`TR-014
-    <compwa-org:tr-014-solution-2>`.
+    definitions for each of these. See also
+    :ref:`TR-014 <compwa-org:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
@@ -144,8 +144,8 @@ class HelicityModel:  # noqa: R701
     components: OrderedDict[str, sp.Expr] = field(converter=_order_component_mapping)
     """A mapping for identifying main components in the :attr:`expression`.
 
-    Keys are the component names (`str`), formatted as LaTeX, and values are
-    sub-expressions in the main :attr:`expression`. The mapping is an
+    Keys are the component names (`str`), formatted as LaTeX, and values are sub-
+    expressions in the main :attr:`expression`. The mapping is an
     `~collections.OrderedDict` that orders the component names alphabetically with
     natural sort order (:func:`.natural_sorting`).
     """
@@ -239,8 +239,10 @@ class HelicityModel:  # noqa: R701
                     ),
                 )
                 raise KeyError(
-                    f'Component "{component}" not in model components. '
-                    "Did you mean any of these?",
+                    (
+                        f'Component "{component}" not in model components. '
+                        "Did you mean any of these?"
+                    ),
                     candidates,
                 )
         if any(c.startswith("I") for c in components) and any(
@@ -300,9 +302,9 @@ class ParameterValues(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}({{"):
                 p.breakable()
                 for par, value in self.items():
-                    p.pretty(par)
+                    p.pretty(par)  # type: ignore[attr-defined]
                     p.text(": ")
-                    p.pretty(value)
+                    p.pretty(value)  # type: ignore[attr-defined]
                     p.text(",")
                     p.breakable()
             p.text("})")

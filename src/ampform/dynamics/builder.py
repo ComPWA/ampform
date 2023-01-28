@@ -239,8 +239,7 @@ class RelativisticBreitWignerBuilder:
 create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
     form_factor=False
 ).__call__
-"""
-Create a `.relativistic_breit_wigner` for a two-body decay.
+"""Create a `.relativistic_breit_wigner` for a two-body decay.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _without_ form
 factor.
@@ -251,8 +250,7 @@ create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
     form_factor=True,
     phsp_factor=PhaseSpaceFactor,
 ).__call__
-"""
-Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.
+"""Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'normal' `.PhaseSpaceFactor`.
@@ -263,8 +261,7 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
     form_factor=True,
     phsp_factor=EqualMassPhaseSpaceFactor,
 ).__call__
-"""
-Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
+"""Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
