@@ -74,17 +74,17 @@ repos:
       - id: black
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.12.1
+    rev: 1.13.0
     hooks:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.17.1
+    rev: v6.19.2
     hooks:
       - id: cspell
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.6.2
+    rev: 2.7.1
     hooks:
       - id: editorconfig-checker
         name: editorconfig-checker
@@ -153,7 +153,7 @@ repos:
       - id: prettier
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.2.3
+    rev: 6.3.0
     hooks:
       - id: pydocstyle
 
@@ -171,7 +171,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.287
+    rev: v1.1.291
     hooks:
       - id: pyright
 
