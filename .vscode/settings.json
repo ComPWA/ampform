@@ -75,6 +75,7 @@
   },
   "telemetry.telemetryLevel": "off",
   "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "./.github/workflows/requirements.yml",
     "https://raw.githubusercontent.com/readthedocs/readthedocs.org/master/readthedocs/rtd_tests/fixtures/spec/v2/schema.yml": ".readthedocs.yml"
   }
 }

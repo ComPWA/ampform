@@ -7,7 +7,6 @@ ci:
     - mypy
     - pylint
     # hooks that don't work on pre-commit.ci
-    - editorconfig-checker
     - pyright
 
 repos:
@@ -41,10 +40,11 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.164
+    rev: 0.0.166
     hooks:
       - id: check-dev-files
         args:
+          - --doc-apt-packages=graphviz
           - --pin-requirements=monthly
           - --repo-name=ampform
           - --repo-title=AmpForm
