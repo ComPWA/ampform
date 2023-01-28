@@ -7,7 +7,6 @@ ci:
     - mypy
     - pylint
     # hooks that don't work on pre-commit.ci
-    - editorconfig-checker
     - pyright
 
 repos:
@@ -41,10 +40,11 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.161
+    rev: 0.0.166
     hooks:
       - id: check-dev-files
         args:
+          - --doc-apt-packages=graphviz
           - --pin-requirements=monthly
           - --repo-name=ampform
           - --repo-title=AmpForm
@@ -55,6 +55,18 @@ repos:
           - --add-install-cell
           - --additional-packages=IPython
           - --extras-require=doc,viz
+
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.5.3
+    hooks:
+      - id: nbqa-black
+        additional_dependencies:
+          - black>=22.1.0
+      - id: nbqa-flake8
+      - id: nbqa-isort
+      - id: nbqa-pyupgrade
+        args:
+          - --py37-plus
 
   - repo: https://github.com/psf/black
     rev: 22.12.0
@@ -121,18 +133,6 @@ repos:
         require_serial: true
         types:
           - python
-
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.3
-    hooks:
-      - id: nbqa-black
-        additional_dependencies:
-          - black>=22.1.0
-      - id: nbqa-flake8
-      - id: nbqa-isort
-      - id: nbqa-pyupgrade
-        args:
-          - --py37-plus
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.6.1

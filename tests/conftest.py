@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import pytest
 import qrules
-from _pytest.config import Config
 from _pytest.fixtures import SubRequest
 from qrules import ParticleCollection, ReactionInfo, load_default_particles
 from qrules.settings import NumberOfThreads
@@ -25,11 +24,6 @@ NumberOfThreads.set(1)
 @pytest.fixture(scope="session")
 def particle_database() -> ParticleCollection:
     return load_default_particles()
-
-
-@pytest.fixture(scope="session")
-def output_dir(pytestconfig: Config) -> str:
-    return f"{pytestconfig.rootpath}/tests/output/"
 
 
 @pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
