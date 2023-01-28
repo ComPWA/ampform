@@ -25,16 +25,16 @@ on:
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@dev
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@v1
     with:
       apt-packages: graphviz
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   pytest:
-    uses: ComPWA/actions/.github/workflows/pytest.yml@dev
+    uses: ComPWA/actions/.github/workflows/pytest.yml@v1
     with:
       coverage-target: ampform
       macos-python-version: "3.7"
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   style:
     if: inputs.specific-pip-packages == ''
-    uses: ComPWA/actions/.github/workflows/pre-commit.yml@dev
+    uses: ComPWA/actions/.github/workflows/pre-commit.yml@v1
