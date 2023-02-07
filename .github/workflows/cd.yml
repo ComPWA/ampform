@@ -12,7 +12,9 @@ jobs:
     uses: ComPWA/actions/.github/workflows/close-milestone.yml@v1
   pypi:
     if: startsWith(github.ref, 'refs/tags')
+    secrets: inherit
     uses: ComPWA/actions/.github/workflows/publish-to-pypi.yml@v1
   push:
     if: startsWith(github.ref, 'refs/tags') && !github.event.release.prerelease
+    secrets: inherit
     uses: ComPWA/actions/.github/workflows/push-to-version-branches.yml@v1
