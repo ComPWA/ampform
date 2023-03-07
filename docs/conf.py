@@ -344,6 +344,7 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
+    "https://doi.org/10.1002/andp.19955070504",  # 403 for onlinelibrary.wiley.com
     "https://doi.org/10.1093/ptep/ptaa104",
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
     "https://hss-opus.ub.ruhr-uni-bochum.de",
