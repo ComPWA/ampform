@@ -1,7 +1,7 @@
 exclude = [
-    "Cargo.toml",
-    "Manifest.toml",
-    "Project.toml",
+    "**/Cargo.toml",
+    "**/Manifest.toml",
+    "**/Project.toml",
     "labels*.toml",
 ]
 
