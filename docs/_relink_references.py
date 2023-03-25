@@ -64,7 +64,7 @@ try:  # Sphinx >=4.4.0
 
     def _new_type_to_xref(
         target: str,
-        env: BuildEnvironment = None,  # type: ignore[assignment]
+        env: BuildEnvironment | None = None,  # type: ignore[assignment]
         suppress_prefix: bool = False,
     ) -> pending_xref:
         reftype, target, title, refspecific = parse_reftarget(target, suppress_prefix)
@@ -85,7 +85,7 @@ except ImportError:  # Sphinx <4.4.0
     # https://github.com/sphinx-doc/sphinx/blob/v4.3.2/sphinx/domains/python.py#L83-L107
     def _new_type_to_xref(
         target: str,
-        env: BuildEnvironment = None,  # type: ignore[assignment]
+        env: BuildEnvironment | None = None,  # type: ignore[assignment]
         suppress_prefix: bool = False,
     ) -> pending_xref:
         # pylint: disable=unused-argument

@@ -13,7 +13,6 @@ github:
 
 vscode:
   extensions:
-    - bungcip.better-toml
     - christian-kohler.path-intellisense
     - davidanson.vscode-markdownlint
     - eamodio.gitlens
@@ -28,11 +27,12 @@ vscode:
     - ms-python.python
     - ms-python.vscode-pylance
     - ms-toolsai.vscode-jupyter-cell-tags
+    - ms-vscode.live-server
     - ms-vsliveshare.vsliveshare
     - redhat.vscode-yaml
     - ryanluker.vscode-coverage-gutters
     - stkb.rewrap
     - streetsidesoftware.code-spell-checker
-    - travisillig.vscode-json-stable-stringify
+    - tamasfe.even-better-toml
     - tyriar.sort-lines
     - yzhang.markdown-all-in-one
