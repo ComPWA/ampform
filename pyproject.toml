@@ -1,8 +1,8 @@
 [build-system]
 requires = [
-    "setuptools>=36.2.1", # environment markers
-    "setuptools_scm",
-    "wheel",
+  "setuptools>=36.2.1", # environment markers
+  "setuptools_scm",
+  "wheel",
 ]
 
 [tool.setuptools_scm]
@@ -24,26 +24,13 @@ exclude = '''
 '''
 include = '\.pyi?$'
 preview = true
-target-version = [
-    "py37",
-    "py38",
-    "py39",
-    "py310",
-    "py311",
-]
+target-version = ["py37", "py38", "py39", "py310", "py311"]
 
 [tool.isort]
 profile = "black"
-src_paths = [
-    "src",
-    "tests",
-]
+src_paths = ["src", "tests"]
 known_third_party = "THIRDPARTY,sympy"
 
 [tool.nbqa.addopts]
-black = [
-    "--line-length=85",
-]
-flake8 = [
-    "--extend-ignore=E402,F821",
-]
+black = ["--line-length=85"]
+flake8 = ["--extend-ignore=E402,F821"]
