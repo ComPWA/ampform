@@ -20,6 +20,7 @@ vscode:
     - editorconfig.editorconfig
     - esbenp.prettier-vscode
     - executablebookproject.myst-highlight
+    - github.vscode-github-actions
     - github.vscode-pull-request-github
     - ms-python.flake8
     - ms-python.isort

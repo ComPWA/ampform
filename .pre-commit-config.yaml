@@ -181,3 +181,8 @@ repos:
       - id: pyupgrade
         args:
           - --py37-plus
+
+  - repo: https://github.com/ComPWA/mirrors-taplo
+    rev: v0.8.0
+    hooks:
+      - id: taplo
