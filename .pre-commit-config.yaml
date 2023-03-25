@@ -40,7 +40,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.168
+    rev: 0.0.169
     hooks:
       - id: check-dev-files
         args:
@@ -57,7 +57,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.6.3
+    rev: 1.6.4
     hooks:
       - id: nbqa-black
         additional_dependencies:
@@ -79,7 +79,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.28.0
+    rev: v6.30.1
     hooks:
       - id: cspell
 
@@ -171,7 +171,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.296
+    rev: v1.1.300
     hooks:
       - id: pyright
 
