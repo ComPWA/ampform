@@ -204,6 +204,7 @@ html_css_files = [
 if AUTODOC_INSERT_SIGNATURE_LINEBREAKS:
     html_css_files.append("linebreaks-api.css")
 html_favicon = "_static/favicon.ico"
+html_last_updated_fmt = "%-d %B %Y"
 html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
