@@ -212,6 +212,7 @@ html_sourcelink_suffix = ""
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
+    "logo": {"text": project},
     "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
     "repository_branch": BRANCH,
     "path_to_docs": "docs",
@@ -230,7 +231,7 @@ html_theme_options = {
     "show_navbar_depth": 2,
     "show_toc_level": 2,
 }
-html_title = "AmpForm"
+html_title = project
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
