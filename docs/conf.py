@@ -212,6 +212,45 @@ html_sourcelink_suffix = ""
 html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
+    "icon_links": [
+        {
+            "name": "Common Partial Wave Analysis",
+            "url": "https://compwa-org.rtfd.io",
+            "icon": "_static/favicon.ico",
+            "type": "local",
+        },
+        {
+            "name": "GitHub",
+            "url": f"https://github.com/ComPWA/{REPO_NAME}",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "PyPI",
+            "url": f"https://pypi.org/project/{PACKAGE}",
+            "icon": "fa-brands fa-python",
+        },
+        {
+            "name": "Conda",
+            "url": f"https://anaconda.org/conda-forge/{PACKAGE}",
+            "icon": "https://avatars.githubusercontent.com/u/22454001?s=100",
+            "type": "url",
+        },
+        {
+            "name": "Launch on Binder",
+            "url": (
+                f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs"
+            ),
+            "icon": "https://mybinder.readthedocs.io/en/latest/_static/favicon.png",
+            "type": "url",
+        },
+        {
+            "name": "Launch on Colaboratory",
+            "url": f"https://colab.research.google.com/github/ComPWA/{REPO_NAME}/blob/{BRANCH}",
+            "icon": "https://avatars.githubusercontent.com/u/33467679?s=100",
+            "type": "url",
+        },
+    ],
+    "logo": {"text": project},
     "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
     "repository_branch": BRANCH,
     "path_to_docs": "docs",
@@ -230,7 +269,7 @@ html_theme_options = {
     "show_navbar_depth": 2,
     "show_toc_level": 2,
 }
-html_title = "AmpForm"
+html_title = project
 pygments_style = "sphinx"
 todo_include_todos = False
 viewcode_follow_imported_members = True
