@@ -83,16 +83,14 @@ repos:
       - id: cspell
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.7.1
+    rev: "2.7.1"
     hooks:
       - id: editorconfig-checker
-        name: editorconfig-checker
-        exclude: >
+        name: editorconfig
+        alias: ec
+        exclude: >-
           (?x)^(
-            .*\.ipynb|
-            .*\.md|
-            .*\.py|
-            LICENSE
+            .*\.py
           )$
 
   - repo: local
@@ -133,6 +131,7 @@ repos:
           - |
             cell.metadata.code_folding
             cell.metadata.id
+            cell.metadata.user_expressions
             metadata.celltoolbar
             metadata.colab.name
             metadata.colab.provenance
