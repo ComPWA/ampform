@@ -3,6 +3,7 @@
 This file only contains a selection of the most common options. For a full list see the
 documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
+from __future__ import annotations
 
 import os
 import re
@@ -288,12 +289,12 @@ nitpick_ignore = [
 
 
 # Intersphinx settings
-version_remapping = {
+version_remapping: dict[str, dict[str, str]] = {
     "ipywidgets": {
-        "8.0.3": "8.0.2",
-        "8.0.4": "8.0.2",
+        "8.0.3": "8.0.5",
+        "8.0.4": "8.0.5",
+        "8.0.6": "8.0.5",
     },
-    "matplotlib": {"3.5.1": "3.5.0"},
 }
 
 
