@@ -39,11 +39,7 @@
   "flake8.importStrategy": "fromEnvironment",
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
-  "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/linkcheck.yml",
-    ".github/workflows/ci-docs.yml",
-    ".github/workflows/ci-tests.yml"
-  ],
+  "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
   "isort.check": true,
   "isort.importStrategy": "fromEnvironment",
   "json.schemas": [
