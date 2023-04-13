@@ -14,6 +14,10 @@ on:
       - epic/*
       - "[0-9]+.[0-9]+.x"
   pull_request:
+    branches:
+      - main
+      - epic/*
+      - "[0-9]+.[0-9]+.x"
   workflow_dispatch:
     inputs:
       specific-pip-packages:
