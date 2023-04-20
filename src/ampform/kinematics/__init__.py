@@ -17,9 +17,11 @@ from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.helicity.decay import assert_isobar_topology
-
-from .angles import compute_helicity_angles
-from .lorentz import compute_invariant_masses, create_four_momentum_symbols
+from ampform.kinematics.angles import compute_helicity_angles
+from ampform.kinematics.lorentz import (
+    compute_invariant_masses,
+    create_four_momentum_symbols,
+)
 
 if TYPE_CHECKING:
     import sympy as sp

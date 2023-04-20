@@ -16,6 +16,7 @@ from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition, StateTransitionCollection
 from sympy.physics.quantum.spin import Rotation as Wigner
 
+from ampform.helicity.align import SpinAlignment
 from ampform.helicity.decay import (
     get_outer_state_ids,
     get_spectator_id,
@@ -24,8 +25,6 @@ from ampform.helicity.decay import (
 from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
-
-from . import SpinAlignment
 
 if sys.version_info < (3, 8):
     from typing_extensions import Literal

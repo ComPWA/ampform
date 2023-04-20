@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
 
 import sympy as sp
 
+from ampform.helicity import SpinAlignment
+from ampform.helicity.align._spin import create_spin_range
 from ampform.helicity.decay import (
     get_outer_state_ids,
     get_parent_id,
@@ -26,9 +28,6 @@ from ampform.helicity.naming import (
 from ampform.kinematics.angles import compute_wigner_angles
 from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
-
-from . import SpinAlignment
-from ._spin import create_spin_range
 
 if TYPE_CHECKING:
     import sys

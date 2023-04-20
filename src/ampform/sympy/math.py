@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, overload
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
 
-from . import NumPyPrintable, create_expression, make_commutative
+from ampform.sympy import NumPyPrintable, create_expression, make_commutative
 
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter

@@ -11,20 +11,7 @@ from ampform.helicity.decay import (
     is_opposite_helicity_state,
 )
 from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
-from ampform.sympy._array_expressions import (
-    ArrayMultiplication,
-    ArraySlice,
-    ArraySum,
-    MatrixMultiplication,
-)
-
-from .lorentz import (
+from ampform.kinematics.lorentz import (
     BoostMatrix,
     BoostZMatrix,
     Energy,
@@ -39,7 +26,19 @@ from .lorentz import (
     compute_boost_chain,
     three_momentum_norm,
 )
-from .phasespace import Kallen
+from ampform.kinematics.phasespace import Kallen
+from ampform.sympy import (
+    UnevaluatedExpression,
+    create_expression,
+    implement_doit_method,
+    make_commutative,
+)
+from ampform.sympy._array_expressions import (
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySum,
+    MatrixMultiplication,
+)
 
 if TYPE_CHECKING:
     from qrules.topology import Topology

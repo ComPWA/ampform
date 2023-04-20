@@ -25,7 +25,7 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
-from . import create_expression, make_commutative
+from ampform.sympy import create_expression, make_commutative
 
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter

@@ -10,15 +10,8 @@ from typing import TYPE_CHECKING
 import sympy as sp
 from sympy.core.basic import _aresame
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    determine_indices,
-    implement_doit_method,
-)
-
 # pyright: reportUnusedImport=false
-from .phasespace import (
+from ampform.dynamics.phasespace import (
     BreakupMomentumSquared,
     EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
@@ -27,6 +20,12 @@ from .phasespace import (
     PhaseSpaceFactorProtocol,
     PhaseSpaceFactorSWave,  # noqa: F401
     _indices_to_subscript,
+)
+from ampform.sympy import (
+    UnevaluatedExpression,
+    create_expression,
+    determine_indices,
+    implement_doit_method,
 )
 
 if TYPE_CHECKING:

@@ -10,7 +10,7 @@ set as good as possible.
 
 from qrules import ReactionInfo
 
-from .helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
+from ampform.helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
 
 
 def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:

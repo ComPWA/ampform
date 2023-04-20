@@ -37,23 +37,14 @@ from ampform.dynamics.builder import (
     TwoBodyKinematicVariableSet,
     create_non_dynamic,
 )
-from ampform.kinematics import HelicityAdapter
-from ampform.kinematics.lorentz import (
-    InvariantMass,
-    create_four_momentum_symbols,
-    get_invariant_mass_symbol,
-)
-from ampform.sympy import PoolSum, determine_indices
-from ampform.sympy._array_expressions import ArraySum
-
-from .align import NoAlignment, SpinAlignment
-from .decay import (
+from ampform.helicity.align import NoAlignment, SpinAlignment
+from ampform.helicity.decay import (
     TwoBodyDecay,
     get_prefactor,
     group_by_spin_projection,
     group_by_topology,
 )
-from .naming import (
+from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
@@ -63,6 +54,14 @@ from .naming import (
     get_helicity_angle_symbols,
     natural_sorting,
 )
+from ampform.kinematics import HelicityAdapter
+from ampform.kinematics.lorentz import (
+    InvariantMass,
+    create_four_momentum_symbols,
+    get_invariant_mass_symbol,
+)
+from ampform.sympy import PoolSum, determine_indices
+from ampform.sympy._array_expressions import ArraySum
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
