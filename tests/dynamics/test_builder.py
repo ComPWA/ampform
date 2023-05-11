@@ -76,10 +76,10 @@ class TestRelativisticBreitWignerBuilder:
         w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
         m1 = variable_set.outgoing_state_mass1
         m2 = variable_set.outgoing_state_mass2
-        L = variable_set.angular_momentum  # noqa: N806
+        ang_mom = variable_set.angular_momentum
         d = sp.Symbol(R"d_{N}", positive=True)
         w = EnergyDependentWidth(
-            s, m0, w0, m_a=m1, m_b=m2, angular_momentum=L, meson_radius=d
+            s, m0, w0, m_a=m1, m_b=m2, angular_momentum=ang_mom, meson_radius=d
         )
         assert bw == w0 * m0 / (-sp.I * w * m0 - s + m0**2)
         assert set(parameters) == {m0, w0, d}
@@ -89,10 +89,9 @@ class TestRelativisticBreitWignerBuilder:
 
         builder.form_factor = True
         bw_with_ff, parameters = builder(particle, variable_set)
-        #  pyright: reportConstantRedefinition=false
-        L = variable_set.angular_momentum  # noqa: N806
+        ang_mom = variable_set.angular_momentum
         form_factor = formulate_form_factor(
-            s, m1, m2, angular_momentum=L, meson_radius=d
+            s, m1, m2, angular_momentum=ang_mom, meson_radius=d
         )
         assert bw_with_ff / bw == form_factor
         assert set(parameters) == {m0, w0, d}

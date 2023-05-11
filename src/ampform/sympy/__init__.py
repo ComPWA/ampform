@@ -263,7 +263,7 @@ def implement_doit_method(
     return decorated_class
 
 
-def _implement_latex_subscript(  # pyright: reportUnusedFunction=false
+def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
     subscript: str,
 ) -> Callable[[type[UnevaluatedExpression]], type[UnevaluatedExpression]]:
     def decorator(
