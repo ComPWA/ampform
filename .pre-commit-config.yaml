@@ -169,7 +169,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.306
+    rev: v1.1.307
     hooks:
       - id: pyright
 
