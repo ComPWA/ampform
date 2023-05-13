@@ -26,7 +26,7 @@
 AmpForm is a Python library of spin formalisms and dynamics with which you can
 automatically formulate symbolic amplitude models for Partial Wave Analysis. The
 resulting amplitude models are formulated with
-[SymPy](https://www.sympy.org/en/index.html) (a Computer Algebra System). This note only
+[SymPy](https://www.sympy.org/en/index.html) (a Computer Algebra System). This not only
 makes it easy to inspect and visualize the resulting amplitude models, but also means
 the amplitude models can be used as templates for faster computational back-ends (see
 [TensorWaves](https://github.com/ComPWA/tensorwaves))!
