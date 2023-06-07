@@ -129,6 +129,7 @@ repos:
         args:
           - --extra-keys
           - |
+            cell.attachments
             cell.metadata.code_folding
             cell.metadata.id
             cell.metadata.user_expressions
