@@ -35,7 +35,7 @@ jobs:
     uses: ComPWA/actions/.github/workflows/pytest.yml@v1
     with:
       coverage-target: ampform
-      macos-python-version: "3.7"
+      macos-python-version: "3.9"
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   style:
     if: inputs.specific-pip-packages == ''
