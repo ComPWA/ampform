@@ -56,7 +56,7 @@ def _(obj: Mapping) -> str:
         raise ValueError("Need at least one dictionary item")
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
+        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"  # pyright: ignore
     latex += R"\end{array}"
     return latex
 
@@ -68,7 +68,7 @@ def _(obj: Iterable) -> str:
         raise ValueError("Need at least one item to render as LaTeX")
     latex = R"\begin{array}{c}" + "\n"
     for item in map(aslatex, obj):
-        latex += Rf"  {item} \\" + "\n"
+        latex += Rf"  {item} \\" + "\n"  # pyright: ignore
     latex += R"\end{array}"
     return latex
 
