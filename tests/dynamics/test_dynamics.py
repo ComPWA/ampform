@@ -1,4 +1,3 @@
-# pylint: disable=protected-access too-many-arguments
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -102,7 +101,7 @@ def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
     return getattr(obj, method)(replacements)
 
 
-def test_generate(  # pylint: disable=too-many-locals
+def test_generate(
     amplitude_model: tuple[str, HelicityModel],
     particle_database: ParticleCollection,
 ):

@@ -1,5 +1,3 @@
-# pylint: disable=abstract-method, arguments-differ, protected-access
-# pylint: disable=unbalanced-tuple-unpacking
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by

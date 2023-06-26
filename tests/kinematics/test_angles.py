@@ -1,5 +1,3 @@
-# cspell:ignore atol doprint
-# pylint: disable=redefined-outer-name
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -181,7 +179,7 @@ class TestTheta:
         ),
     ],
 )
-def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
+def test_compute_helicity_angles(
     use_cse: bool,
     data_sample: dict[int, np.ndarray],
     topology_and_momentum_symbols: tuple[Topology, FourMomenta],
@@ -195,6 +193,7 @@ def test_compute_helicity_angles(  # pylint: disable=too-many-arguments
     expr = helicity_angles[angle_symbol]
     np_angle = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=use_cse)
     computed = np_angle(*four_momenta)
+    # cspell:ignore atol
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
 
 
@@ -352,7 +351,6 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
 
     (A9), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=11.
     """
-    # pylint: disable=invalid-name non-ascii-name
     s3_expr = compute_third_mandelstam(s1, s2, m0, m1, m2, m3)
     masses = {
         m0: 2.3,
@@ -370,5 +368,6 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
 
 
 def _generate_numpy_code(expr: sp.Expr) -> str:
+    # cspell:ignore doprint
     printer = NumPyPrinter()
     return printer.doprint(expr)

@@ -1,7 +1,5 @@
-# cspell:ignore mhash
-# pylint: disable=invalid-getnewargs-ex-returned, protected-access, W0223
-# https://stackoverflow.com/a/22224042
 """Tools that facilitate in building :mod:`sympy` expressions."""
+# cspell:ignore mhash
 from __future__ import annotations
 
 import functools
@@ -60,7 +58,7 @@ class UnevaluatedExpression(sp.Expr):
     _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
 
-    def __new__(  # pylint: disable=unused-argument
+    def __new__(
         cls: type[DecoratedClass],
         *args,
         name: str | None = None,
@@ -223,7 +221,7 @@ def implement_new_method(
     def decorator(
         decorated_class: type[DecoratedClass],
     ) -> type[DecoratedClass]:
-        def new_method(  # pylint: disable=unused-argument
+        def new_method(
             cls: type[DecoratedClass],
             *args: sp.Symbol,
             evaluate: bool = False,
@@ -273,7 +271,6 @@ def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
     def decorator(
         decorated_class: type[UnevaluatedExpression],
     ) -> type[UnevaluatedExpression]:
-        # pylint: disable=protected-access, unused-argument
         @functools.wraps(decorated_class.doit)
         def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
             momentum = printer._print(self._momentum)  # type: ignore[attr-defined]
@@ -502,7 +499,7 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # pylint: disable=eval-used
+        indices = eval(subscript)
     except SyntaxError:
         return []
     return list(indices)

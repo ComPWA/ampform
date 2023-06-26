@@ -1,5 +1,3 @@
-# pylint: disable=W0223
-# https://stackoverflow.com/a/22224042
 import pickle
 
 import sympy as sp

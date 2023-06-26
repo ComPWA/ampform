@@ -1,4 +1,3 @@
-# pylint: disable=eval-used protected-access redefined-outer-name
 from __future__ import annotations
 
 import logging
@@ -98,7 +97,7 @@ class TestSliderKwargs:
             ("alpha", 8, 10, 0.5, 0.5),
         ],
     )
-    def test_set_ranges(  # pylint: disable=too-many-arguments
+    def test_set_ranges(
         self,
         slider_name: str,
         min_: float,

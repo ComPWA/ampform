@@ -57,7 +57,6 @@ class DalitzPlotDecomposition(SpinAlignment):
 def _formulate_aligned_amplitude(
     reaction: ReactionInfo, reference_subsystem: Literal[1, 2, 3]
 ) -> tuple[sp.Expr, dict[sp.Symbol, sp.Expr]]:
-    # pylint: disable=invalid-name, too-many-locals
     wigner_generator = _DPDAlignmentWignerGenerator(reference_subsystem)
     outer_state_ids = get_outer_state_ids(reaction)
     λ0, λ1, λ2, λ3 = (create_spin_projection_symbol(i) for i in outer_state_ids)
@@ -102,7 +101,6 @@ class _DPDAlignmentWignerGenerator:
         rotated_state: Literal[0, 1, 2, 3],
         aligned_subsystem: Literal[1, 2, 3],
     ) -> sp.Rational | WignerD:
-        # pylint: disable=too-many-arguments
         if j == 0:
             return sp.Rational(1)
         zeta, zeta_expr = formulate_zeta_angle(

@@ -38,7 +38,6 @@ def test_coefficient_names(
     child_helicities,
     ls_combinations,
 ):
-    # pylint: disable=too-many-branches, too-many-statements
     builder = get_builder(reaction)
     assert isinstance(builder.naming, HelicityAmplitudeNameGenerator)
     builder.naming.insert_parent_helicities = parent_helicities

@@ -1,4 +1,3 @@
-# pylint: disable=import-outside-toplevel too-many-arguments
 """Spin alignment with the "axis-angle" method.
 
 See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
@@ -153,7 +152,6 @@ def formulate_helicity_rotation_chain(
         parent_id = get_parent_id(topology, state_id)
         if parent_id is None:
             return
-        # pylint: disable=stop-iteration-return
         nonlocal idx_root_counter
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
@@ -308,7 +306,7 @@ def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
     return PoolSum(product, *combined_indices)
 
 
-_BasicType = TypeVar("_BasicType", bound=sp.Basic)  # pylint: disable=invalid-name
+_BasicType = TypeVar("_BasicType", bound=sp.Basic)
 
 
 @overload

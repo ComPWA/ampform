@@ -1,10 +1,8 @@
-# cspell:ignore asner mhash
-# pylint: disable=abstract-method, arguments-differ
-# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Lineshape functions that describe the dynamics of an interaction.
 
 .. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
 """
+# cspell:ignore asner mhash
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -175,7 +173,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
     phsp_factor: PhaseSpaceFactorProtocol
     is_commutative = True
 
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         s,
         mass0,
@@ -250,7 +248,6 @@ class EnergyDependentWidth(UnevaluatedExpression):
                 hit = True
                 new_args[i] = arg
         if hit:
-            # pylint: disable=no-value-for-parameter
             return self.func(*new_args, self.phsp_factor, self._name)
         return self
 
@@ -271,7 +268,6 @@ class EnergyDependentWidth(UnevaluatedExpression):
                     new_args.append(a)
             new_args = tuple(new_args)
             if hit:
-                # pylint: disable=no-value-for-parameter
                 return self.func(*new_args, self.phsp_factor, self._name), True
         return self, False
 
@@ -285,7 +281,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
+def relativistic_breit_wigner_with_ff(
     s,
     mass0,
     gamma0,

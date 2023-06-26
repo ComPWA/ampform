@@ -38,7 +38,6 @@ class RelativisticKMatrix(TMatrix):
     def _create_matrices(
         n_channels, return_t_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
-        # pylint: disable=no-member
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
         sqrt_rho_conj = sp.conjugate(sqrt_rho)
@@ -104,7 +103,7 @@ class RelativisticKMatrix(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
+    def parametrization(
         i,
         j,
         s,
@@ -179,7 +178,7 @@ class NonRelativisticKMatrix(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments
+    def parametrization(
         i,
         j,
         s,
@@ -259,7 +258,7 @@ class NonRelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments
+    def parametrization(
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -283,7 +282,6 @@ class RelativisticPVector(TMatrix):
     def _create_matrices(
         n_channels, return_f_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
-        # pylint: disable=no-member
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
@@ -298,7 +296,7 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # pylint: disable=too-many-locals
+    def formulate(
         cls, n_channels, n_poles, parametrize: bool = True, **kwargs
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.
@@ -379,7 +377,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
+    def parametrization(
         i,
         s,
         pole_position: sp.IndexedBase,

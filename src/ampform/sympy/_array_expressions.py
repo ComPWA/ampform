@@ -1,7 +1,3 @@
-# cspell:ignore sympified
-# pylint: disable=arguments-differ, line-too-long, protected-access
-# pylint: disable=singleton-comparison, unused-argument, W0223
-# https://stackoverflow.com/a/22224042
 """Temporary module for SymPy :code:`ArraySlice` and related classes.
 
 This module can be removed once `sympy/sympy#22265
@@ -37,6 +33,7 @@ if TYPE_CHECKING:
 
 class ArrayElement(_ArrayExpr):
     def __new__(cls, parent: sp.Expr, indices: Iterable) -> ArrayElement:
+        # cspell:ignore sympified
         sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
         if any(
@@ -196,7 +193,6 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
     return start, stop, step
 
 
-# pylint: disable=invalid-name
 def _print_latex_ArrayElement(  # noqa: N802
     self: LatexPrinter, expr: ArrayElement
 ) -> str:

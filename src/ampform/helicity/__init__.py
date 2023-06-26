@@ -1,4 +1,3 @@
-# pylint: disable=import-outside-toplevel line-too-long
 """Generate an amplitude model with the helicity formalism.
 
 .. autolink-preface::
@@ -326,7 +325,7 @@ ParameterValue = Union[float, complex, int]
 """Allowed value types for parameters."""
 
 
-class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+class HelicityAmplitudeBuilder:
     """Amplitude model generator for the helicity formalism."""
 
     def __init__(self, reaction: ReactionInfo) -> None:
@@ -428,7 +427,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
 
     def __formulate_top_expression(self) -> PoolSum:
-        # pylint: disable=too-many-locals
         spin_groups = group_by_spin_projection(self.reaction.transitions)
         for group in spin_groups:
             self.__register_amplitudes(group)

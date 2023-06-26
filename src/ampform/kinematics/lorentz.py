@@ -1,4 +1,3 @@
-# pylint: disable=abstract-method arguments-differ protected-access unused-argument
 """Symbolic implementations for Lorentz vectors and boosts."""
 from __future__ import annotations
 
@@ -338,7 +337,7 @@ class BoostZMatrix(UnevaluatedExpression):
 
 
 class _BoostZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         beta: sp.Basic,
         gamma: sp.Basic,
@@ -433,7 +432,7 @@ class BoostMatrix(UnevaluatedExpression):
 
 
 class _BoostMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments,too-many-locals
+    def __new__(
         cls,
         momentum: sp.Basic,
         b00: sp.Basic,
@@ -469,7 +468,6 @@ class _BoostMatrixImplementation(NumPyPrintable):
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
-        # pylint: disable=too-many-locals, unbalanced-tuple-unpacking
         _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
         return f"""array(
             [
@@ -525,7 +523,7 @@ class RotationYMatrix(UnevaluatedExpression):
 
 
 class _RotationYMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,
@@ -598,7 +596,7 @@ class RotationZMatrix(UnevaluatedExpression):
 
 
 class _RotationZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,

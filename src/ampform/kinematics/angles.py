@@ -1,4 +1,3 @@
-# pylint: disable=abstract-method arguments-differ invalid-name protected-access
 """Angle computations for (boosted) :mod:`.lorentz` vectors."""
 from __future__ import annotations
 
@@ -120,7 +119,7 @@ def compute_helicity_angles(
 
     n_events = _get_number_of_events(four_momenta)
 
-    def __recursive_helicity_angles(  # pylint: disable=too-many-locals
+    def __recursive_helicity_angles(
         four_momenta: Mapping[int, sp.Expr], node_id: int
     ) -> dict[sp.Symbol, sp.Expr]:
         helicity_angles: dict[sp.Symbol, sp.Expr] = {}
@@ -317,7 +316,6 @@ def formulate_zeta_angle(
     reference_subsystem: int,
 ) -> tuple[sp.Symbol, sp.acos]:
     r"""Formulate expression for the alignment angle :math:`\zeta^i_{j(k)}`."""
-    # pylint: disable=too-many-locals too-many-return-statements
     zeta_symbol = sp.Symbol(
         Rf"\zeta^{rotated_state}_{{{aligned_subsystem}({reference_subsystem})}}",
         real=True,

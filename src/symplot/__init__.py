@@ -1,5 +1,3 @@
-# cspell:ignore rpartition
-# pylint: disable=redefined-builtin
 """Create interactive plots for `sympy` expressions.
 
 The procedure to create interactive plots with for :mod:`sympy` expressions with
@@ -38,7 +36,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from IPython.lib.pretty import PrettyPrinter
 
     if sys.version_info >= (3, 10):
-        from typing import TypeGuard  # pylint: disable=no-name-in-module
+        from typing import TypeGuard
     else:
         from typing_extensions import TypeGuard
 
@@ -228,7 +226,7 @@ def _is_min_max_step(
     return False
 
 
-ValueType = TypeVar("ValueType")  # pylint: disable=invalid-name
+ValueType = TypeVar("ValueType")
 
 
 def _merge_args_kwargs(

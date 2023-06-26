@@ -1,4 +1,3 @@
-# pylint: disable=no-member
 from __future__ import annotations
 
 import logging
@@ -34,7 +33,6 @@ class TestHelicityAmplitudeBuilder:
         reaction: ReactionInfo,
         stable_final_state_ids,
     ):
-        # pylint: disable=too-many-locals
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
             n_parameters = 4
@@ -248,7 +246,6 @@ class TestHelicityModel:
         )
 
     def test_assumptions_after_rename(self, amplitude_model: tuple[str, HelicityModel]):
-        # pylint: disable=protected-access
         _, model = amplitude_model
         old = "m_{f_{0}(980)}"
         new = "m"

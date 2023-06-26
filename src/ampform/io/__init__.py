@@ -1,4 +1,3 @@
-# pylint: disable=invalid-name protected-access unused-argument
 """Input-output functions for `ampform` and `sympy` objects.
 
 .. tip:: This function are registered with :func:`functools.singledispatch` and can be
