@@ -73,7 +73,7 @@ except PackageNotFoundError:
 def fetch_logo(url: str, output_path: str) -> None:
     if os.path.exists(output_path):
         return
-    online_content = requests.get(url, allow_redirects=True)
+    online_content = requests.get(url, allow_redirects=True, timeout=10)
     with open(output_path, "wb") as stream:
         stream.write(online_content.content)
 
@@ -111,7 +111,7 @@ subprocess.call(
             "--separate",
         ]
     ),
-    shell=True,
+    shell=True,  # noqa: S602
 )
 
 # -- General configuration ---------------------------------------------------
@@ -315,7 +315,7 @@ def get_version(package_name: str) -> str:
         if not line:
             continue
         line_segments = tuple(line.split("=="))
-        if len(line_segments) != 2:
+        if len(line_segments) != 2:  # noqa: PLR2004
             continue
         _, installed_version, *_ = line_segments
         installed_version = installed_version.strip()
@@ -468,12 +468,11 @@ def et_al(children, data, sep="", sep2=None, last_sep=None):
     parts = [part for part in _format_list(children, data) if part]
     if len(parts) <= 1:
         return Text(*parts)
-    elif len(parts) == 2:
+    if len(parts) == 2:  # noqa: PLR2004
         return Text(sep2).join(parts)
-    elif len(parts) == 3:
+    if len(parts) == 3:  # noqa: PLR2004
         return Text(last_sep).join([Text(sep).join(parts[:-1]), parts[-1]])
-    else:
-        return Text(parts[0], Tag("em", " et al"))
+    return Text(parts[0], Tag("em", " et al"))
 
 
 @node
@@ -482,8 +481,8 @@ def names(children, context, role, **kwargs):
     assert not children
     try:
         persons = context["entry"].persons[role]
-    except KeyError:
-        raise FieldIsMissing(role, context["entry"])
+    except KeyError as exc:
+        raise FieldIsMissing(role, context["entry"]) from exc
 
     style = context["style"]
     formatted_names = [
@@ -500,8 +499,7 @@ class MyStyle(UnsrtStyle):
         formatted_names = names(role, sep=", ", sep2=" and ", last_sep=", and ")
         if as_sentence:
             return sentence[formatted_names]
-        else:
-            return formatted_names
+        return formatted_names
 
     def format_eprint(self, e: Entry) -> Node:
         if "doi" in e.fields:

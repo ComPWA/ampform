@@ -32,7 +32,7 @@ def test_generate_transition_label(reaction: ReactionInfo):
 @pytest.mark.parametrize("parent_helicities", [False, True])
 @pytest.mark.parametrize("child_helicities", [False, True])
 @pytest.mark.parametrize("ls_combinations", [False, True])
-def test_coefficient_names(
+def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
     reaction: ReactionInfo,
     parent_helicities,
     child_helicities,
@@ -57,7 +57,7 @@ def test_coefficient_names(
             else:
                 assert len(coefficients) == 2 * n_resonances
         else:
-            if child_helicities:
+            if child_helicities:  # noqa: PLR5501
                 assert len(coefficients) == n_resonances
             else:
                 assert len(coefficients) == n_resonances
@@ -69,12 +69,12 @@ def test_coefficient_names(
                 else:
                     assert len(coefficients) == 4 * n_resonances
             else:
-                if child_helicities:
+                if child_helicities:  # noqa: PLR5501
                     assert len(coefficients) == 4 * n_resonances
                 else:
                     assert len(coefficients) == 2 * n_resonances
         else:
-            if parent_helicities:
+            if parent_helicities:  # noqa: PLR5501
                 if child_helicities:
                     assert len(coefficients) == 4 * n_resonances
                 else:

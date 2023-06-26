@@ -545,7 +545,7 @@ class HelicityAmplitudeBuilder:
         self, transition: StateTransition
     ) -> sp.Rational | None:
         prefactor = get_prefactor(transition)
-        if prefactor != 1.0:
+        if prefactor != 1.0:  # noqa: PLR2004
             for node_id in transition.topology.nodes:
                 raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id

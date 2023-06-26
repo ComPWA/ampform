@@ -71,7 +71,7 @@ class TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-        if len(in_state_ids) != 1 or len(out_state_ids) != 2:
+        if len(in_state_ids) != 1 or len(out_state_ids) != 2:  # noqa: PLR2004
             msg = f"Node {node_id} does not represent a 1-to-2 body decay!"
             raise ValueError(msg)
         ingoing_state_id = next(iter(in_state_ids))
@@ -101,8 +101,9 @@ def _(obj: TwoBodyDecay) -> TwoBodyDecay:
 
 @_create_two_body_decay.register(tuple)
 def _(obj: tuple) -> TwoBodyDecay:
-    if len(obj) == 2:
-        if isinstance(obj[0], StateTransition) and isinstance(obj[1], int):
+    if len(obj) == 2:  # noqa: PLR2004
+        transition, node_id = obj
+        if isinstance(transition, StateTransition) and isinstance(node_id, int):
             return TwoBodyDecay.from_transition(*obj)
     msg = f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
     raise NotImplementedError(msg)
@@ -284,7 +285,7 @@ def assert_isobar_topology(topology: Topology) -> None:
 def assert_three_body_decay(topology: Topology) -> None:
     n_initial = len(topology.incoming_edge_ids)
     n_final = len(topology.outgoing_edge_ids)
-    if n_initial != 1 or n_final != 3:
+    if n_initial != 1 or n_final != 3:  # noqa: PLR2004
         msg = (
             "Only three-body decays are supported. This is a"
             f" {n_initial}-to-{n_final} decay."
@@ -307,7 +308,7 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
         )
         raise ValueError(msg)
     child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-    if len(child_state_ids) != 2:
+    if len(child_state_ids) != 2:  # noqa: PLR2004
         msg = (
             f"Node {node_id} decays to {len(child_state_ids)} states, so this is not an"
             " isobar decay"

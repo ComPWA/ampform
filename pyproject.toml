@@ -197,6 +197,8 @@ ignore = [
     "D407",
     "D416",
     "E501",
+    "PLR0913",
+    "PLW2901",
     "SIM108",
 ]
 show-fixes = true
@@ -214,6 +216,8 @@ known-third-party = ["sympy"]
 "docs/*" = [
     "E402",
     "INP001",
+    "N802",
+    "N806",
     "S101",
     "S113",
     "T201",

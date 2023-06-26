@@ -173,7 +173,7 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
             i += parentsize
         i = (i, i + 1, 1)
     i = list(i)
-    if len(i) == 2:
+    if len(i) == 2:  # noqa: PLR2004
         i.append(1)
     start, stop, step = i
     start = start or 0

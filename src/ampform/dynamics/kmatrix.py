@@ -49,7 +49,7 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(
+    def formulate(  # noqa: D417
         cls, n_channels, n_poles, parametrize: bool = True, **kwargs
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
@@ -296,7 +296,7 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(
+    def formulate(  # noqa: D417
         cls, n_channels, n_poles, parametrize: bool = True, **kwargs
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.

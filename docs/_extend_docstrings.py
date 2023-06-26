@@ -3,11 +3,12 @@
 This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 # pyright: reportMissingImports=false
+from __future__ import annotations
 
 import inspect
 import logging
 import textwrap
-from typing import Callable, Dict, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Callable
 
 import attrs
 
@@ -19,8 +20,10 @@ from sympy.printing.numpy import NumPyPrinter
 
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import FourMomentumSymbol, _ArraySize
-from ampform.sympy import NumPyPrintable
 from ampform.sympy._array_expressions import ArrayMultiplication
+
+if TYPE_CHECKING:
+    from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
 
@@ -222,7 +225,7 @@ def extend_EnergyDependentWidth() -> None:
     """,
     )
     L = sp.Symbol("L", integer=True)
-    symbols: Tuple[sp.Symbol, ...] = sp.symbols("s m0 Gamma0 m_a m_b")
+    symbols: tuple[sp.Symbol, ...] = sp.symbols("s m0 Gamma0 m_a m_b")
     s, m0, w0, m_a, m_b = symbols
     expr = EnergyDependentWidth(
         s=s,
@@ -252,7 +255,7 @@ def extend_Energy_and_FourMomentumXYZ() -> None:
         FourMomentumZ,
     )
 
-    def _extend(component_class: Type[sp.Expr]) -> None:
+    def _extend(component_class: type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")
         p = FourMomentumSymbol("p", shape=[])
         expr = component_class(p)
@@ -626,7 +629,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
 def _append_code_rendering(
     expr: NumPyPrintable,
     use_cse: bool = False,
-    docstring_class: Optional[type] = None,
+    docstring_class: type | None = None,
 ) -> None:
     printer = NumPyPrinter()
     if use_cse:
@@ -641,7 +644,11 @@ def _append_code_rendering(
     numpy_code = textwrap.dedent(numpy_code)
     numpy_code = textwrap.indent(numpy_code, prefix=8 * " ").strip()
     options = ""
-    if max(__get_text_width(import_statements), __get_text_width(numpy_code)) > 90:
+    max_width = 90
+    if (
+        max(__get_text_width(import_statements), __get_text_width(numpy_code))
+        > max_width
+    ):
         options += ":class: full-width\n"
     appended_text = f"""\n
     .. code-block:: python
@@ -691,7 +698,7 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
     return textwrap.indent(latex, prefix=8 * " ")
 
 
-def _append_to_docstring(class_type: Union[Callable, Type], appended_text: str) -> None:
+def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
     assert class_type.__doc__ is not None
     class_type.__doc__ += appended_text
 
@@ -710,15 +717,15 @@ _IMAGE_DIR = "_images"
 
 def _graphviz_to_image(
     dot: str,
-    options: Optional[Dict[str, str]] = None,
-    format: str = "svg",
+    options: dict[str, str] | None = None,
+    format: str = "svg",  # noqa: A002
     indent: int = 0,
     caption: str = "",
     label: str = "",
 ) -> str:
     if options is None:
         options = {}
-    global _GRAPHVIZ_COUNTER
+    global _GRAPHVIZ_COUNTER  # noqa: PLW0603
     output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
     _GRAPHVIZ_COUNTER += 1  # pyright: ignore[reportConstantRedefinition]
     graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)

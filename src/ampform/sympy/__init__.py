@@ -468,7 +468,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in zip(sorted_values, sorted_values[1:]):
         difference = float(next_val) - float(val)
-        if difference != 1.0:
+        if difference != 1.0:  # noqa: PLR2004
             return False
     return True
 
@@ -499,7 +499,7 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)
+        indices = eval(subscript)  # noqa: PGH001
     except SyntaxError:
         return []
     return list(indices)
@@ -531,7 +531,7 @@ def perform_cached_doit(
     os.makedirs(dirname(filename), exist_ok=True)
     if os.path.exists(filename):
         with open(filename, "rb") as f:
-            return pickle.load(f)
+            return pickle.load(f)  # noqa: S301
     _LOGGER.warning(
         f"Cached expression file {filename} not found, performing doit()..."
     )

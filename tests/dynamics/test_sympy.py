@@ -18,19 +18,19 @@ class TestUnevaluatedExpression:
         # Pickle simple SymPy expression
         expr = z * angular_momentum
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)
+        imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr
 
         # Pickle UnevaluatedExpression
         expr = UnevaluatedExpression()  # type: ignore[abstract]
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)
+        imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr
 
         # Pickle classes derived from UnevaluatedExpression
         expr = BlattWeisskopfSquared(angular_momentum, z=z)
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)
+        imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr
 
         expr = EnergyDependentWidth(
@@ -45,5 +45,5 @@ class TestUnevaluatedExpression:
             name="Gamma_1",
         )
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)
+        imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr

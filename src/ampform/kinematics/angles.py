@@ -177,13 +177,13 @@ def compute_helicity_angles(
 
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
-    assert initial_state_edge.ending_node_id is not None  # noqa: S101
+    if initial_state_edge.ending_node_id is None:
+        msg = "Edge does not end in a node"
+        raise ValueError(msg)
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 
-def _get_number_of_events(
-    four_momenta: Mapping[int, sp.Expr],
-) -> _ArraySize:
+def _get_number_of_events(four_momenta: Mapping[int, sp.Expr]) -> _ArraySize:
     sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
     return _ArraySize(sorted_momentum_symbols[0])
 
@@ -310,7 +310,7 @@ def formulate_theta_hat_angle(
     return symbol, -theta
 
 
-def formulate_zeta_angle(
+def formulate_zeta_angle(  # noqa: C901, PLR0911
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
