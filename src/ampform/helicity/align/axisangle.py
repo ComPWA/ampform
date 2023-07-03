@@ -6,7 +6,6 @@ See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
 """
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
 
 import sympy as sp
@@ -33,14 +32,15 @@ from . import SpinAlignment
 from ._spin import create_spin_range
 
 if TYPE_CHECKING:
+    import sys
+
     from qrules.topology import Topology
     from qrules.transition import ReactionInfo, StateTransition
-    from typing_extensions import Literal
 
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    pass
+    if sys.version_info >= (3, 8):
+        from typing import Literal
+    else:
+        from typing_extensions import Literal
 
 
 class AxisAngleAlignment(SpinAlignment):

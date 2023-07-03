@@ -22,8 +22,12 @@ from ampform.sympy import (
 # pyright: reportUnusedImport=false
 from .phasespace import (
     BreakupMomentumSquared,
+    EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,  # noqa: F401
+    PhaseSpaceFactorComplex,  # noqa: F401
     PhaseSpaceFactorProtocol,
+    PhaseSpaceFactorSWave,  # noqa: F401
     _indices_to_subscript,
 )
 

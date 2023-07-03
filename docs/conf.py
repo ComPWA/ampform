@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 import requests
 
@@ -38,6 +39,9 @@ if sys.version_info < (3, 8):
 else:
     from importlib.metadata import PackageNotFoundError
     from importlib.metadata import version as get_package_version
+
+if TYPE_CHECKING:
+    from pybtex.database import Entry
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
@@ -81,19 +85,14 @@ with contextlib.suppress(requests.exceptions.ConnectionError):
         url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
         output_path=LOGO_PATH,
     )
-
 if os.path.exists(LOGO_PATH):
     html_logo = LOGO_PATH
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-from typing import TYPE_CHECKING
 
 from _extend_docstrings import extend_docstrings
 from _relink_references import relink_references
-
-if TYPE_CHECKING:
-    from pybtex.database import Entry
 
 extend_docstrings()
 relink_references()
@@ -187,7 +186,6 @@ autodoc_type_aliases = {
     "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
     "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "RangeDefinition": "symplot.RangeDefinition",
-    # https://github.com/sphinx-doc/sphinx/pull/10183
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
@@ -283,7 +281,7 @@ primary_domain = "py"
 nitpicky = True  # warn if cross-references are missing
 nitpick_ignore = [
     ("py:class", "ArraySum"),
-    ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
+    ("py:class", "MatrixMultiplication"),
     ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
     ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
     ("py:class", "typing_extensions.Protocol"),

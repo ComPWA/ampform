@@ -220,6 +220,7 @@ known-third-party = ["sympy"]
 ]
 "setup.py" = ["D100"]
 "tests/*" = [
+    "C408",
     "D",
     "INP001",
     "PGH001",

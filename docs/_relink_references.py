@@ -19,10 +19,15 @@ if TYPE_CHECKING:
     from sphinx.environment import BuildEnvironment
 
 __TARGET_SUBSTITUTIONS = {
+    "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
     "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
     "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "LatexPrinter": "sympy.printing.printer.Printer",
+    "Literal[(-1, 1)]": "typing.Literal",
+    "NumPyPrinter": "sympy.printing.printer.Printer",
     "ParameterValue": "ampform.helicity.ParameterValue",
+    "Particle": "qrules.particle.Particle",
     "ReactionInfo": "qrules.transition.ReactionInfo",
     "Slider": "symplot.Slider",
     "State": "qrules.transition.State",

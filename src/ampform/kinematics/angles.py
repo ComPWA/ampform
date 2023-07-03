@@ -178,7 +178,7 @@ def compute_helicity_angles(
 
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
-    assert initial_state_edge.ending_node_id is not None
+    assert initial_state_edge.ending_node_id is not None  # noqa: S101
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 

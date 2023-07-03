@@ -290,10 +290,7 @@ def _get_subscript(symbol: sp.Basic) -> str:
     >>> _get_subscript(sp.Symbol("p^2_{0,0}"))
     '0,0'
     """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
+    text = sp.latex(symbol) if isinstance(symbol, sp.Basic) else symbol
     _, _, subscripts = split_super_sub(text)
     stripped_subscripts = (s.strip("{").strip("}") for s in subscripts)
     return " ".join(stripped_subscripts)
@@ -307,10 +304,7 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
     >>> _strip_subscript_superscript(sp.Symbol("p^2_{0,0}"))
     'p'
     """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
+    text = sp.latex(symbol) if isinstance(symbol, sp.Basic) else symbol
     name, _, _ = split_super_sub(text)
     return name
 

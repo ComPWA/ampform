@@ -8,14 +8,19 @@ import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
 
-from . import (
+from ampform.dynamics import (
     EnergyDependentWidth,
-    EqualMassPhaseSpaceFactor,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorProtocol,
     formulate_form_factor,
     relativistic_breit_wigner,
 )
+from ampform.dynamics.phasespace import (
+    EqualMassPhaseSpaceFactor,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorProtocol,
+)
+
+if TYPE_CHECKING:
+    from qrules.particle import Particle
 
 if TYPE_CHECKING:
     from qrules.particle import Particle
