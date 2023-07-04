@@ -53,38 +53,38 @@ show_error_codes = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["tests.*"]
 check_untyped_defs = true
 disallow_incomplete_defs = false
 disallow_untyped_defs = false
+module = ["tests.*"]
 
 [[tool.mypy.overrides]]
-module = ["typings.*"]
 ignore_errors = true
+module = ["typings.*"]
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["IPython.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["graphviz.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["ipywidgets.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["numpy.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["pybtex.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["sphinx.*"]
 ignore_missing_imports = true
+module = ["sphinx.*"]
 
 [tool.pyright]
 exclude = [
@@ -139,20 +139,21 @@ filterwarnings = [
     "ignore:The .* argument to NotebookFile is deprecated.*:pytest.PytestRemovedIn8Warning",
     "ignore:The distutils package is deprecated.*:DeprecationWarning",
     "ignore:The distutils.* module is deprecated.*:DeprecationWarning",
-    'ignore:Widget\..* is deprecated\.:DeprecationWarning',
     "ignore:unclosed .*:ResourceWarning",
+    'ignore:Widget\..* is deprecated\.:DeprecationWarning',
 ]
+markers = ["slow: marks tests as slow (select with '-m slow')"]
 norecursedirs = [
     ".ipynb_checkpoints",
     "_build",
 ]
-markers = ["slow: marks tests as slow (select with '-m slow')"]
 testpaths = [
     "src",
     "tests",
 ]
 
 [tool.ruff]
+extend-exclude = ["typings"]
 extend-select = [
     "A",
     "B",
@@ -199,13 +200,12 @@ ignore = [
     "SIM108",
 ]
 show-fixes = true
-target-version = "py37"
-task-tags = ["cspell"]
 src = [
     "src",
     "tests",
 ]
-extend-exclude = ["typings"]
+target-version = "py37"
+task-tags = ["cspell"]
 
 [tool.ruff.per-file-ignores]
 "docs/*" = [
