@@ -37,7 +37,7 @@ dill==0.3.6
 distlib==0.3.6
 docutils==0.19
 entrypoints==0.4
-exceptiongroup==1.1.1
+exceptiongroup==1.1.2
 execnet==1.9.0
 fastjsonschema==2.17.1
 filelock==3.12.2
@@ -73,7 +73,7 @@ jupyter-server==1.24.0
 jupyter-server-fileid==0.9.0
 jupyter-server-ydoc==0.8.0
 jupyter-ydoc==0.2.4
-jupyterlab==3.6.4
+jupyterlab==3.6.5
 jupyterlab-code-formatter==2.2.1
 jupyterlab-myst==1.2.0 ; python_version >= "3.7.0"
 jupyterlab-pygments==0.2.2
@@ -92,9 +92,9 @@ mccabe==0.7.0
 mdit-py-plugins==0.3.5
 mdurl==0.1.2
 mistune==3.0.1
-mpl-interactions==0.22.3
+mpl-interactions==0.23.1
 mpmath==1.3.0
-mypy==1.4.0
+mypy==1.4.1
 mypy-extensions==1.0.0
 myst-nb==0.17.2
 myst-parser==0.18.1
@@ -111,13 +111,13 @@ numpy==1.21.6
 packaging==23.1
 pandocfilters==1.5.0
 parso==0.8.3
-particle==0.22.1
+particle==0.23.0
 pathspec==0.11.1
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==9.5.0
 pkgutil-resolve-name==1.3.10
-platformdirs==3.7.0
+platformdirs==3.8.0
 pluggy==1.2.0
 pre-commit==2.21.0
 prometheus-client==0.17.0
@@ -128,14 +128,14 @@ py==1.11.0
 pybtex==0.24.0
 pybtex-docutils==1.0.2
 pycparser==2.21
-pydantic==1.10.9
+pydantic==1.10.10
 pydata-sphinx-theme==0.13.3
 pydocstyle==6.3.0
 pygments==2.15.1
 pylint==2.17.4
 pyparsing==3.1.0
 pyrsistent==0.19.3
-pytest==7.3.2
+pytest==7.4.0
 pytest-cov==4.1.0
 pytest-profiling==1.7.0
 pytest-xdist==3.3.1
@@ -191,14 +191,14 @@ types-pkg-resources==0.1.3
 types-requests==2.31.0.1
 types-setuptools==68.0.0.0
 types-urllib3==1.26.25.13
-typing-extensions==4.6.3 ; python_version < "3.8.0"
+typing-extensions==4.7.1 ; python_version < "3.8.0"
 uri-template==1.3.0
 urllib3==2.0.3
 virtualenv==20.21.1 ; python_version < "3.8.0"
 wcwidth==0.2.6
 webcolors==1.13
 webencodings==0.5.1
-websocket-client==1.6.0
+websocket-client==1.6.1
 wheel==0.40.0
 widgetsnbextension==4.0.7
 wrapt==1.15.0
