@@ -12,7 +12,6 @@ import textwrap
 from typing import Callable, Dict, Optional, Tuple, Type, Union
 
 import attrs
-
 # sphinx.ext.graphviz does not work well on RTD
 import graphviz
 import qrules
@@ -194,10 +193,8 @@ def extend_compute_third_mandelstam() -> None:
 
 
 def extend_EqualMassPhaseSpaceFactor() -> None:
-    from ampform.dynamics.phasespace import (
-        EqualMassPhaseSpaceFactor,
-        PhaseSpaceFactorAbs,
-    )
+    from ampform.dynamics.phasespace import (EqualMassPhaseSpaceFactor,
+                                             PhaseSpaceFactorAbs)
 
     s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
     expr = EqualMassPhaseSpaceFactor(s, m_a, m_b)
@@ -246,12 +243,8 @@ def extend_EnergyDependentWidth() -> None:
 
 
 def extend_Energy_and_FourMomentumXYZ() -> None:
-    from ampform.kinematics.lorentz import (
-        Energy,
-        FourMomentumX,
-        FourMomentumY,
-        FourMomentumZ,
-    )
+    from ampform.kinematics.lorentz import (Energy, FourMomentumX,
+                                            FourMomentumY, FourMomentumZ)
 
     def _extend(component_class: Type[sp.Expr]) -> None:
         _append_to_docstring(component_class, "\n\n")

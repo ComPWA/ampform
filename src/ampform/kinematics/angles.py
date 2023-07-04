@@ -8,40 +8,20 @@ import sympy as sp
 from qrules.topology import Topology
 from sympy.printing.latex import LatexPrinter
 
-from ampform.helicity.decay import (
-    determine_attached_final_state,
-    get_sibling_state_id,
-    is_opposite_helicity_state,
-)
-from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
-from ampform.sympy._array_expressions import (
-    ArrayMultiplication,
-    ArraySlice,
-    ArraySum,
-    MatrixMultiplication,
-)
+from ampform.helicity.decay import (determine_attached_final_state,
+                                    get_sibling_state_id,
+                                    is_opposite_helicity_state)
+from ampform.helicity.naming import (get_helicity_angle_symbols,
+                                     get_helicity_suffix)
+from ampform.sympy import (UnevaluatedExpression, create_expression,
+                           implement_doit_method, make_commutative)
+from ampform.sympy._array_expressions import (ArrayMultiplication, ArraySlice,
+                                              ArraySum, MatrixMultiplication)
 
-from .lorentz import (
-    BoostMatrix,
-    BoostZMatrix,
-    Energy,
-    FourMomenta,
-    FourMomentumX,
-    FourMomentumY,
-    FourMomentumZ,
-    NegativeMomentum,
-    RotationYMatrix,
-    RotationZMatrix,
-    _ArraySize,
-    compute_boost_chain,
-    three_momentum_norm,
-)
+from .lorentz import (BoostMatrix, BoostZMatrix, Energy, FourMomenta,
+                      FourMomentumX, FourMomentumY, FourMomentumZ,
+                      NegativeMomentum, RotationYMatrix, RotationZMatrix,
+                      _ArraySize, compute_boost_chain, three_momentum_norm)
 from .phasespace import Kallen
 
 

@@ -11,15 +11,11 @@ from qrules import ReactionInfo
 
 from ampform import get_builder
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
-from ampform.helicity import (
-    HelicityAmplitudeBuilder,
-    HelicityModel,
-    ParameterValue,
-    ParameterValues,
-    _generate_kinematic_variables,
-    formulate_isobar_wigner_d,
-    group_by_spin_projection,
-)
+from ampform.helicity import (HelicityAmplitudeBuilder, HelicityModel,
+                              ParameterValue, ParameterValues,
+                              _generate_kinematic_variables,
+                              formulate_isobar_wigner_d,
+                              group_by_spin_projection)
 
 
 class TestHelicityAmplitudeBuilder:

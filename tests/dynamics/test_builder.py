@@ -4,10 +4,8 @@ import sympy as sp
 from qrules.particle import Particle
 
 from ampform.dynamics import EnergyDependentWidth, formulate_form_factor
-from ampform.dynamics.builder import (
-    RelativisticBreitWignerBuilder,
-    TwoBodyKinematicVariableSet,
-)
+from ampform.dynamics.builder import (RelativisticBreitWignerBuilder,
+                                      TwoBodyKinematicVariableSet)
 
 
 class TestRelativisticBreitWignerBuilder:

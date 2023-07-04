@@ -12,7 +12,6 @@ import subprocess
 import sys
 
 import requests
-
 # pyright: reportMissingImports=false
 # pyright: reportUntypedBaseClass=false
 # pyright: reportUntypedFunctionDecorator=false
@@ -20,17 +19,8 @@ from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
-from pybtex.style.template import (
-    FieldIsMissing,
-    Node,
-    _format_list,
-    field,
-    href,
-    join,
-    node,
-    sentence,
-    words,
-)
+from pybtex.style.template import (FieldIsMissing, Node, _format_list, field,
+                                   href, join, node, sentence, words)
 
 if sys.version_info < (3, 8):
     from importlib_metadata import PackageNotFoundError

@@ -19,12 +19,8 @@ from typing import Sequence
 import sympy as sp
 from sympy.printing.latex import LatexPrinter
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    determine_indices,
-    implement_doit_method,
-)
+from ampform.sympy import (UnevaluatedExpression, create_expression,
+                           determine_indices, implement_doit_method)
 from ampform.sympy.math import ComplexSqrt
 
 if sys.version_info >= (3, 8):

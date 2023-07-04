@@ -24,11 +24,9 @@ from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
-from sympy.tensor.array.expressions.array_expressions import (
-    ArraySymbol,
-    _ArrayExpr,
-    get_shape,
-)
+from sympy.tensor.array.expressions.array_expressions import (ArraySymbol,
+                                                              _ArrayExpr,
+                                                              get_shape)
 
 from . import create_expression, make_commutative
 

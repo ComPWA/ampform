@@ -9,14 +9,9 @@ from attrs import field, frozen
 from attrs.validators import instance_of
 from qrules.particle import Particle
 
-from . import (
-    EnergyDependentWidth,
-    EqualMassPhaseSpaceFactor,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorProtocol,
-    formulate_form_factor,
-    relativistic_breit_wigner,
-)
+from . import (EnergyDependentWidth, EqualMassPhaseSpaceFactor,
+               PhaseSpaceFactor, PhaseSpaceFactorProtocol,
+               formulate_form_factor, relativistic_breit_wigner)
 
 if sys.version_info >= (3, 8):
     from typing import Protocol

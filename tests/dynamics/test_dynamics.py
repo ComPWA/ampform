@@ -5,14 +5,10 @@ import pytest
 import sympy as sp
 from qrules import ParticleCollection
 
-from ampform.dynamics import (
-    BlattWeisskopfSquared,
-    EnergyDependentWidth,
-    EqualMassPhaseSpaceFactor,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorSWave,
-    relativistic_breit_wigner_with_ff,
-)
+from ampform.dynamics import (BlattWeisskopfSquared, EnergyDependentWidth,
+                              EqualMassPhaseSpaceFactor, PhaseSpaceFactor,
+                              PhaseSpaceFactorSWave,
+                              relativistic_breit_wigner_with_ff)
 from ampform.helicity import HelicityModel
 
 

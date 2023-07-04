@@ -11,14 +11,9 @@ import sympy as sp
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, State, StateTransition
 
-from .decay import (
-    assert_isobar_topology,
-    determine_attached_final_state,
-    get_helicity_info,
-    get_outer_state_ids,
-    get_sorted_states,
-    group_by_spin_projection,
-)
+from .decay import (assert_isobar_topology, determine_attached_final_state,
+                    get_helicity_info, get_outer_state_ids, get_sorted_states,
+                    group_by_spin_projection)
 
 
 class NameGenerator(ABC):

@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
 
-from ampform.kinematics.lorentz import FourMomenta, create_four_momentum_symbols
+from ampform.kinematics.lorentz import (FourMomenta,
+                                        create_four_momentum_symbols)
 
 
 @pytest.fixture(scope="session")

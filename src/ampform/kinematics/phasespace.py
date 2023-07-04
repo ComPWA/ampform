@@ -8,12 +8,8 @@ from __future__ import annotations
 
 import sympy as sp
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
+from ampform.sympy import (UnevaluatedExpression, create_expression,
+                           implement_doit_method, make_commutative)
 
 
 @make_commutative

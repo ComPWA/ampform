@@ -9,15 +9,11 @@ from qrules.topology import Topology
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.helicity.decay import get_parent_id
-from ampform.kinematics.angles import (
-    Phi,
-    Theta,
-    compute_helicity_angles,
-    compute_wigner_rotation_matrix,
-    formulate_scattering_angle,
-    formulate_theta_hat_angle,
-    formulate_zeta_angle,
-)
+from ampform.kinematics.angles import (Phi, Theta, compute_helicity_angles,
+                                       compute_wigner_rotation_matrix,
+                                       formulate_scattering_angle,
+                                       formulate_theta_hat_angle,
+                                       formulate_zeta_angle)
 from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
 from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
 

@@ -5,12 +5,9 @@ from qrules import ReactionInfo
 
 from ampform import get_builder
 from ampform.helicity import HelicityModel
-from ampform.helicity.naming import (
-    CanonicalAmplitudeNameGenerator,
-    HelicityAmplitudeNameGenerator,
-    _render_float,
-    generate_transition_label,
-)
+from ampform.helicity.naming import (CanonicalAmplitudeNameGenerator,
+                                     HelicityAmplitudeNameGenerator,
+                                     _render_float, generate_transition_label)
 
 
 def test_generate_transition_label(reaction: ReactionInfo):

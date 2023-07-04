@@ -9,22 +9,14 @@ from qrules.topology import Topology
 from sympy.printing.latex import LatexPrinter
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.helicity.decay import determine_attached_final_state, list_decay_chain_ids
-from ampform.sympy import (
-    NumPyPrintable,
-    UnevaluatedExpression,
-    _implement_latex_subscript,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
-from ampform.sympy._array_expressions import (
-    ArrayAxisSum,
-    ArrayMultiplication,
-    ArraySlice,
-    ArraySum,
-    ArraySymbol,
-)
+from ampform.helicity.decay import (determine_attached_final_state,
+                                    list_decay_chain_ids)
+from ampform.sympy import (NumPyPrintable, UnevaluatedExpression,
+                           _implement_latex_subscript, create_expression,
+                           implement_doit_method, make_commutative)
+from ampform.sympy._array_expressions import (ArrayAxisSum,
+                                              ArrayMultiplication, ArraySlice,
+                                              ArraySum, ArraySymbol)
 from ampform.sympy.math import ComplexSqrt
 
 

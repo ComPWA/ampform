@@ -4,11 +4,8 @@ import pickle
 
 import sympy as sp
 
-from ampform.dynamics import (
-    BlattWeisskopfSquared,
-    EnergyDependentWidth,
-    EqualMassPhaseSpaceFactor,
-)
+from ampform.dynamics import (BlattWeisskopfSquared, EnergyDependentWidth,
+                              EqualMassPhaseSpaceFactor)
 from ampform.sympy import UnevaluatedExpression
 
 

@@ -4,7 +4,8 @@ from functools import partial
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.sympy._array_expressions import ArrayMultiplication, ArraySum, ArraySymbol
+from ampform.sympy._array_expressions import (ArrayMultiplication, ArraySum,
+                                              ArraySymbol)
 
 
 class TestArrayMultiplication:

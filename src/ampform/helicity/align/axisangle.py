@@ -13,20 +13,14 @@ import sympy as sp
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.helicity.decay import (
-    get_outer_state_ids,
-    get_parent_id,
-    get_sibling_state_id,
-    group_by_topology,
-    is_opposite_helicity_state,
-)
-from ampform.helicity.naming import (
-    create_amplitude_base,
-    create_helicity_symbol,
-    create_spin_projection_symbol,
-    get_helicity_angle_symbols,
-    get_helicity_suffix,
-)
+from ampform.helicity.decay import (get_outer_state_ids, get_parent_id,
+                                    get_sibling_state_id, group_by_topology,
+                                    is_opposite_helicity_state)
+from ampform.helicity.naming import (create_amplitude_base,
+                                     create_helicity_symbol,
+                                     create_spin_projection_symbol,
+                                     get_helicity_angle_symbols,
+                                     get_helicity_suffix)
 from ampform.kinematics.angles import compute_wigner_angles
 from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum

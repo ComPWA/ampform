@@ -18,16 +18,8 @@ import inspect
 import logging
 import sys
 from collections import abc
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Iterator,
-    Mapping,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (TYPE_CHECKING, Callable, Iterator, Mapping, Sequence,
+                    Tuple, TypeVar, Union)
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider

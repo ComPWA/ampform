@@ -11,24 +11,14 @@ import sympy as sp
 from sympy.core.basic import _aresame
 from sympy.printing.latex import LatexPrinter
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    determine_indices,
-    implement_doit_method,
-)
+from ampform.sympy import (UnevaluatedExpression, create_expression,
+                           determine_indices, implement_doit_method)
 
 # pyright: reportUnusedImport=false
-from .phasespace import (
-    BreakupMomentumSquared,
-    EqualMassPhaseSpaceFactor,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,
-    PhaseSpaceFactorComplex,
-    PhaseSpaceFactorProtocol,
-    PhaseSpaceFactorSWave,
-    _indices_to_subscript,
-)
+from .phasespace import (BreakupMomentumSquared, EqualMassPhaseSpaceFactor,
+                         PhaseSpaceFactor, PhaseSpaceFactorAbs,
+                         PhaseSpaceFactorComplex, PhaseSpaceFactorProtocol,
+                         PhaseSpaceFactorSWave, _indices_to_subscript)
 
 
 @implement_doit_method

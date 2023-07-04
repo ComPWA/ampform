@@ -14,12 +14,8 @@ from abc import ABC, abstractmethod
 
 import sympy as sp
 
-from ampform.dynamics import (
-    EnergyDependentWidth,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorProtocol,
-    formulate_form_factor,
-)
+from ampform.dynamics import (EnergyDependentWidth, PhaseSpaceFactor,
+                              PhaseSpaceFactorProtocol, formulate_form_factor)
 from ampform.sympy import create_symbol_matrix
 
 

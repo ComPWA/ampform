@@ -13,17 +13,16 @@ github:
 
 vscode:
   extensions:
+    - charliermarsh.ruff
     - christian-kohler.path-intellisense
     - davidanson.vscode-markdownlint
     - eamodio.gitlens
     - editorconfig.editorconfig
     - esbenp.prettier-vscode
     - executablebookproject.myst-highlight
+    - garaioag.garaio-vscode-unwanted-recommendations
     - github.vscode-github-actions
     - github.vscode-pull-request-github
-    - ms-python.flake8
-    - ms-python.isort
-    - ms-python.pylint
     - ms-python.python
     - ms-python.vscode-pylance
     - ms-toolsai.vscode-jupyter-cell-tags

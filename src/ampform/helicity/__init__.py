@@ -13,57 +13,36 @@ import operator
 import sys
 from collections import OrderedDict, abc
 from functools import reduce
-from typing import (
-    TYPE_CHECKING,
-    ItemsView,
-    Iterable,
-    Iterator,
-    KeysView,
-    Mapping,
-    Sequence,
-    Union,
-    ValuesView,
-)
+from typing import (TYPE_CHECKING, ItemsView, Iterable, Iterator, KeysView,
+                    Mapping, Sequence, Union, ValuesView)
 
 import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
-from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
+from qrules.combinatorics import \
+    perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.dynamics.builder import (
-    ResonanceDynamicsBuilder,
-    TwoBodyKinematicVariableSet,
-    create_non_dynamic,
-)
+from ampform.dynamics.builder import (ResonanceDynamicsBuilder,
+                                      TwoBodyKinematicVariableSet,
+                                      create_non_dynamic)
 from ampform.kinematics import HelicityAdapter
-from ampform.kinematics.lorentz import (
-    InvariantMass,
-    create_four_momentum_symbols,
-    get_invariant_mass_symbol,
-)
+from ampform.kinematics.lorentz import (InvariantMass,
+                                        create_four_momentum_symbols,
+                                        get_invariant_mass_symbol)
 from ampform.sympy import PoolSum, determine_indices
 from ampform.sympy._array_expressions import ArraySum
 
 from .align import NoAlignment, SpinAlignment
-from .decay import (
-    TwoBodyDecay,
-    get_prefactor,
-    group_by_spin_projection,
-    group_by_topology,
-)
-from .naming import (
-    CanonicalAmplitudeNameGenerator,
-    HelicityAmplitudeNameGenerator,
-    NameGenerator,
-    collect_spin_projections,
-    create_amplitude_symbol,
-    generate_transition_label,
-    get_helicity_angle_symbols,
-    natural_sorting,
-)
+from .decay import (TwoBodyDecay, get_prefactor, group_by_spin_projection,
+                    group_by_topology)
+from .naming import (CanonicalAmplitudeNameGenerator,
+                     HelicityAmplitudeNameGenerator, NameGenerator,
+                     collect_spin_projections, create_amplitude_symbol,
+                     generate_transition_label, get_helicity_angle_symbols,
+                     natural_sorting)
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
