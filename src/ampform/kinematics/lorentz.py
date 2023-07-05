@@ -2,22 +2,32 @@
 """Symbolic implementations for Lorentz vectors and boosts."""
 from __future__ import annotations
 
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
 
 import sympy as sp
-from qrules.topology import Topology
-from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 
-from ampform.helicity.decay import (determine_attached_final_state,
-                                    list_decay_chain_ids)
-from ampform.sympy import (NumPyPrintable, UnevaluatedExpression,
-                           _implement_latex_subscript, create_expression,
-                           implement_doit_method, make_commutative)
-from ampform.sympy._array_expressions import (ArrayAxisSum,
-                                              ArrayMultiplication, ArraySlice,
-                                              ArraySum, ArraySymbol)
+from ampform.helicity.decay import determine_attached_final_state, list_decay_chain_ids
+from ampform.sympy import (
+    NumPyPrintable,
+    UnevaluatedExpression,
+    _implement_latex_subscript,
+    create_expression,
+    implement_doit_method,
+    make_commutative,
+)
+from ampform.sympy._array_expressions import (
+    ArrayAxisSum,
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySum,
+    ArraySymbol,
+)
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+    from sympy.printing.latex import LatexPrinter
+    from sympy.printing.numpy import NumPyPrinter
 
 
 def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
@@ -139,8 +149,7 @@ class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def evaluate(self) -> ArraySlice:
-        three_momentum = ArraySlice(self._momentum, (slice(None), slice(1, None)))
-        return three_momentum
+        return ArraySlice(self._momentum, (slice(None), slice(1, None)))
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         momentum = printer._print(self._momentum)
@@ -711,9 +720,9 @@ def compute_invariant_masses(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
+        msg = f"Momentum IDs {set(four_momenta)} do not match final state edge IDs {set(topology.outgoing_edge_ids)}"
         raise ValueError(
-            f"Momentum IDs {set(four_momenta)} do not match "
-            f"final state edge IDs {set(topology.outgoing_edge_ids)}"
+            msg
         )
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:

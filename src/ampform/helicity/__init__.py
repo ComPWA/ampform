@@ -13,36 +13,57 @@ import operator
 import sys
 from collections import OrderedDict, abc
 from functools import reduce
-from typing import (TYPE_CHECKING, ItemsView, Iterable, Iterator, KeysView,
-                    Mapping, Sequence, Union, ValuesView)
+from typing import (
+    TYPE_CHECKING,
+    ItemsView,
+    Iterable,
+    Iterator,
+    KeysView,
+    Mapping,
+    Sequence,
+    Union,
+    ValuesView,
+)
 
 import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
-from qrules.combinatorics import \
-    perform_external_edge_identical_particle_combinatorics
+from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.dynamics.builder import (ResonanceDynamicsBuilder,
-                                      TwoBodyKinematicVariableSet,
-                                      create_non_dynamic)
+from ampform.dynamics.builder import (
+    ResonanceDynamicsBuilder,
+    TwoBodyKinematicVariableSet,
+    create_non_dynamic,
+)
 from ampform.kinematics import HelicityAdapter
-from ampform.kinematics.lorentz import (InvariantMass,
-                                        create_four_momentum_symbols,
-                                        get_invariant_mass_symbol)
+from ampform.kinematics.lorentz import (
+    InvariantMass,
+    create_four_momentum_symbols,
+    get_invariant_mass_symbol,
+)
 from ampform.sympy import PoolSum, determine_indices
 from ampform.sympy._array_expressions import ArraySum
 
 from .align import NoAlignment, SpinAlignment
-from .decay import (TwoBodyDecay, get_prefactor, group_by_spin_projection,
-                    group_by_topology)
-from .naming import (CanonicalAmplitudeNameGenerator,
-                     HelicityAmplitudeNameGenerator, NameGenerator,
-                     collect_spin_projections, create_amplitude_symbol,
-                     generate_transition_label, get_helicity_angle_symbols,
-                     natural_sorting)
+from .decay import (
+    TwoBodyDecay,
+    get_prefactor,
+    group_by_spin_projection,
+    group_by_topology,
+)
+from .naming import (
+    CanonicalAmplitudeNameGenerator,
+    HelicityAmplitudeNameGenerator,
+    NameGenerator,
+    collect_spin_projections,
+    create_amplitude_symbol,
+    generate_transition_label,
+    get_helicity_angle_symbols,
+    natural_sorting,
+)
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
@@ -90,7 +111,7 @@ def _to_parameter_values(mapping: Mapping[sp.Basic, ParameterValue]) -> Paramete
 
 
 @frozen
-class HelicityModel:  # noqa: R701
+class HelicityModel:
     intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
     amplitudes: OrderedDict[sp.Indexed, sp.Expr] = field(converter=_order_amplitudes)
@@ -144,7 +165,7 @@ class HelicityModel:  # noqa: R701
         intensity = unfold_poolsums(intensity)
         return intensity.xreplace(self.amplitudes)
 
-    def rename_symbols(  # noqa: R701
+    def rename_symbols(
         self, renames: Iterable[tuple[str, str]] | Mapping[str, str]
     ) -> HelicityModel:
         """Rename certain symbols in the model.
@@ -256,14 +277,16 @@ class ParameterValues(abc.Mapping):
 
     @singledispatchmethod
     def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
+        msg = f"Cannot find parameter for key type {type(key).__name__}"
         raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot find parameter for key type {type(key).__name__}"
+            msg
         )
 
     @_get_parameter.register(sp.Basic)
     def _(self, par: sp.Basic) -> sp.Basic:
         if par not in self.__parameters:
-            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+            msg = f"{type(self).__name__} has no parameter {par}"
+            raise KeyError(msg)
         return par
 
     @_get_parameter.register(str)
@@ -271,16 +294,17 @@ class ParameterValues(abc.Mapping):
         for parameter in self.__parameters:
             if str(parameter) == name:
                 return parameter
-        raise KeyError(f"No parameter available with name {name}")
+        msg = f"No parameter available with name {name}"
+        raise KeyError(msg)
 
     @_get_parameter.register(int)
     def _(self, key: int) -> sp.Basic:
         for i, parameter in enumerate(self.__parameters):
             if i == key:
                 return parameter
+        msg = f"Parameter mapping has {len(self)} parameters, but trying to get parameter number {key}"
         raise KeyError(
-            f"Parameter mapping has {len(self)} parameters, but trying to get"
-            f" parameter number {key}"
+            msg
         )
 
     def __len__(self) -> int:
@@ -308,9 +332,9 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, reaction: ReactionInfo) -> None:
         if len(reaction.transitions) < 1:
+            msg = f"At least one {StateTransition.__name__} required to genenerate an amplitude model!"
             raise ValueError(
-                f"At least one {StateTransition.__name__} required to"
-                " genenerate an amplitude model!"
+                msg
             )
         self.__reaction = reaction
         self.__adapter = HelicityAdapter(reaction)
@@ -345,7 +369,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
     def reaction(self) -> ReactionInfo:
         return self.__reaction
 
-    def formulate(self) -> HelicityModel:  # noqa: R701
+    def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
         kinematic_variables = self.adapter.create_expressions()
@@ -577,7 +601,7 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[type-abstract]  # noqa: TI002
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[type-abstract]
     """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
@@ -631,8 +655,9 @@ class DynamicsSelector(abc.Mapping):
         - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
           node ID: set dynamics for one specific transition node.
         """
+        msg = f"Cannot set dynamics builder for selection type {type(selection).__name__}"
         raise NotImplementedError(
-            f"Cannot set dynamics builder for selection type {type(selection).__name__}"
+            msg
         )
 
     @assign.register(TwoBodyDecay)
@@ -856,7 +881,8 @@ def _get_final_state_ids(mass: sp.Symbol) -> tuple[int, ...]:
     """
     subscript_indices = determine_indices(mass)
     if len(subscript_indices) != 1:
-        raise ValueError(f"Could not determine indices from mass symbol {mass}")
+        msg = f"Could not determine indices from mass symbol {mass}"
+        raise ValueError(msg)
     subscript = str(subscript_indices[0])
     return tuple(int(s) for s in subscript)
 
@@ -870,9 +896,8 @@ def _generate_kinematic_variable_set(
     child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
     child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
-    if angular_momentum is None:
-        if decay.parent.particle.spin.is_integer():
-            angular_momentum = int(decay.parent.particle.spin)
+    if angular_momentum is None and decay.parent.particle.spin.is_integer():
+        angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
         outgoing_state_mass1=child1_mass,

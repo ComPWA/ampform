@@ -53,7 +53,8 @@ def _(obj: sp.Basic) -> str:
 @aslatex.register(abc.Mapping)
 def _(obj: Mapping) -> str:
     if len(obj) == 0:
-        raise ValueError("Need at least one dictionary item")
+        msg = "Need at least one dictionary item"
+        raise ValueError(msg)
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
         latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"  # pyright: ignore
@@ -65,7 +66,8 @@ def _(obj: Mapping) -> str:
 def _(obj: Iterable) -> str:
     obj = list(obj)
     if len(obj) == 0:
-        raise ValueError("Need at least one item to render as LaTeX")
+        msg = "Need at least one item to render as LaTeX"
+        raise ValueError(msg)
     latex = R"\begin{array}{c}" + "\n"
     for item in map(aslatex, obj):
         latex += Rf"  {item} \\" + "\n"  # pyright: ignore

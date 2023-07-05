@@ -16,16 +16,25 @@ from __future__ import annotations
 
 import inspect
 import logging
-import sys
 from collections import abc
-from typing import (TYPE_CHECKING, Callable, Iterator, Mapping, Sequence,
-                    Tuple, TypeVar, Union)
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Iterator,
+    Mapping,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
 from sympy.printing.latex import translate
 
 if TYPE_CHECKING:  # pragma: no cover
+    import sys
+
     from IPython.lib.pretty import PrettyPrinter
 
     if sys.version_info >= (3, 10):
@@ -83,31 +92,32 @@ class SliderKwargs(abc.Mapping):
         symbol_names = set(arg_to_symbol.values())
         for arg_name in arg_to_symbol:
             if not arg_name.isidentifier():
+                msg = f'Argument "{arg_name}" in arg_to_symbol is not a valid identifier for a Python variable'
                 raise ValueError(
-                    f'Argument "{arg_name}" in arg_to_symbol is not a'
-                    " valid identifier for a Python variable"
+                    msg
                 )
         for slider_name in sliders:
             if not isinstance(slider_name, str):
-                raise TypeError(f'Slider name "{slider_name}" is not of type str')
+                msg = f'Slider name "{slider_name}" is not of type str'
+                raise TypeError(msg)
             if slider_name not in symbol_names:
+                msg = f'Slider with name "{slider_name}" is not covered by arg_to_symbol'
                 raise ValueError(
-                    f'Slider with name "{slider_name}" is not covered by arg_to_symbol'
+                    msg
                 )
         for name, slider in sliders.items():
             if not isinstance(slider, Slider.__args__):  # type: ignore[attr-defined]
-                raise TypeError(f'Slider "{name}" is not a valid ipywidgets slider')
+                msg = f'Slider "{name}" is not a valid ipywidgets slider'
+                raise TypeError(msg)
 
     def __getitem__(self, key: str | sp.Symbol) -> Slider:
         """Get slider by symbol, symbol name, or argument name."""
         if isinstance(key, sp.Symbol):
             key = key.name
-        if key in self._arg_to_symbol:
-            slider_name = self._arg_to_symbol[key]
-        else:
-            slider_name = key
+        slider_name = self._arg_to_symbol.get(key, key)
         if slider_name not in self._sliders:
-            raise KeyError(f'"{key}" is neither an argument nor a symbol name')
+            msg = f'"{key}" is neither an argument nor a symbol name'
+            raise KeyError(msg)
         return self._sliders[slider_name]
 
     def __iter__(self) -> Iterator[str]:
@@ -160,7 +170,7 @@ class SliderKwargs(abc.Mapping):
                 _LOGGER.warning(f'There is no slider with name or symbol "{keyword}"')
                 continue
 
-    def set_ranges(  # noqa: R701
+    def set_ranges(
         self, *args: dict[str, RangeDefinition], **kwargs: RangeDefinition
     ) -> None:
         """Set min, max and (optionally) the nr of steps for each slider.
@@ -170,8 +180,9 @@ class SliderKwargs(abc.Mapping):
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
+                msg = f'Range definition for slider "{slider_name}" is not a tuple'
                 raise TypeError(
-                    f'Range definition for slider "{slider_name}" is not a tuple'
+                    msg
                 )
             slider = self[slider_name]
             if _is_min_max(range_def):
@@ -180,15 +191,16 @@ class SliderKwargs(abc.Mapping):
             elif _is_min_max_step(range_def):
                 min_, max_, n_steps = range_def
                 if n_steps <= 0:
-                    raise ValueError("Number of steps has to be positive")
+                    msg = "Number of steps has to be positive"
+                    raise ValueError(msg)
                 if isinstance(n_steps, float):
                     step_size = n_steps
                 else:
                     step_size = (max_ - min_) / n_steps
             else:
+                msg = f'Range definition {range_def} for slider "{slider_name}" is neither of shape (min, max) nor (min, max, n_steps)'
                 raise ValueError(
-                    f'Range definition {range_def} for slider "{slider_name}"'
-                    " is neither of shape (min, max) nor (min, max, n_steps)"
+                    msg
                 )
             if min_ > slider.max:
                 slider.max = max_
@@ -232,7 +244,8 @@ def _merge_args_kwargs(
     output_dict = {}
     for arg in args:
         if not isinstance(arg, abc.Mapping):
-            raise TypeError("Positional arguments have to be of type dict")
+            msg = "Positional arguments have to be of type dict"
+            raise TypeError(msg)
         output_dict.update(arg)
     output_dict.update(kwargs)
     return output_dict
@@ -293,8 +306,9 @@ def _extract_slider_symbols(
     free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     for symbol in plot_symbols:
         if symbol not in free_symbols:
+            msg = f"Expression does not contain a free symbol named {symbol}"
             raise ValueError(
-                f"Expression does not contain a free symbol named {symbol}"
+                msg
             )
         free_symbols.remove(symbol)
     ordered_symbols = sorted(free_symbols, key=lambda s: s.name)
@@ -308,7 +322,8 @@ def __safe_wrap_symbols(
         return tuple(plot_symbol)
     if isinstance(plot_symbol, sp.Symbol):
         return (plot_symbol,)
-    raise TypeError(f"Wrong plot_symbol input type {type(plot_symbol).__name__}")
+    msg = f"Wrong plot_symbol input type {type(plot_symbol).__name__}"
+    raise TypeError(msg)
 
 
 def partial_doit(
@@ -369,11 +384,13 @@ def rename_symbols(
             try:
                 old_symbol = next(matches)
             except StopIteration as e:
-                raise KeyError(f"No symbol with name '{old_name}' in expression") from e
+                msg = f"No symbol with name '{old_name}' in expression"
+                raise KeyError(msg) from e
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     else:
-        raise TypeError(f"Cannot rename from type {type(renames).__name__}")
+        msg = f"Cannot rename from type {type(renames).__name__}"
+        raise TypeError(msg)
     return expression.xreplace(substitutions)
 
 

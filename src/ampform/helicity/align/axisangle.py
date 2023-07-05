@@ -7,20 +7,24 @@ See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
 from __future__ import annotations
 
 import sys
-from typing import Generator, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
 
 import sympy as sp
-from qrules.topology import Topology
-from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.helicity.decay import (get_outer_state_ids, get_parent_id,
-                                    get_sibling_state_id, group_by_topology,
-                                    is_opposite_helicity_state)
-from ampform.helicity.naming import (create_amplitude_base,
-                                     create_helicity_symbol,
-                                     create_spin_projection_symbol,
-                                     get_helicity_angle_symbols,
-                                     get_helicity_suffix)
+from ampform.helicity.decay import (
+    get_outer_state_ids,
+    get_parent_id,
+    get_sibling_state_id,
+    group_by_topology,
+    is_opposite_helicity_state,
+)
+from ampform.helicity.naming import (
+    create_amplitude_base,
+    create_helicity_symbol,
+    create_spin_projection_symbol,
+    get_helicity_angle_symbols,
+    get_helicity_suffix,
+)
 from ampform.kinematics.angles import compute_wigner_angles
 from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
@@ -28,10 +32,15 @@ from ampform.sympy import PoolSum
 from . import SpinAlignment
 from ._spin import create_spin_range
 
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+    from qrules.transition import ReactionInfo, StateTransition
+    from typing_extensions import Literal
+
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
-    from typing_extensions import Literal
+    pass
 
 
 class AxisAngleAlignment(SpinAlignment):
@@ -290,7 +299,8 @@ def get_opposite_helicity_sign(topology: Topology, state_id: int) -> Literal[-1,
 
 def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
     if len(sum_expressions) == 0:
-        raise ValueError(f"Product needs at least one {PoolSum.__name__}")
+        msg = f"Product needs at least one {PoolSum.__name__}"
+        raise ValueError(msg)
     product = sp.Mul(*[pool_sum.expression for pool_sum in sum_expressions])
     combined_indices = []
     for pool_sum in sum_expressions:

@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 import qrules
-from _pytest.fixtures import SubRequest
-from qrules.transition import ReactionInfo
 
 import ampform
-from ampform.helicity.align.dpd import (DalitzPlotDecomposition,
-                                        _collect_outer_state_helicities,
-                                        relabel_edge_ids)
+from ampform.helicity.align.dpd import (
+    DalitzPlotDecomposition,
+    _collect_outer_state_helicities,
+    relabel_edge_ids,
+)
 from ampform.kinematics.lorentz import create_four_momentum_symbol
+
+if TYPE_CHECKING:
+    from _pytest.fixtures import SubRequest
+    from qrules.transition import ReactionInfo
 
 
 class TestDalitzPlotDecomposition:

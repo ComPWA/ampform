@@ -10,10 +10,9 @@ from __future__ import annotations
 import itertools
 from collections import abc
 from functools import singledispatch
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 import attrs
-import sympy as sp
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
@@ -21,6 +20,9 @@ from ampform.helicity.decay import assert_isobar_topology
 
 from .angles import compute_helicity_angles
 from .lorentz import compute_invariant_masses, create_four_momentum_symbols
+
+if TYPE_CHECKING:
+    import sympy as sp
 
 
 class HelicityAdapter:
@@ -50,12 +52,14 @@ class HelicityAdapter:
         if self.__topologies:
             existing = next(iter(self.__topologies))
             if topology.incoming_edge_ids != existing.incoming_edge_ids:
+                msg = "Initial state ID mismatch those of existing topologies"
                 raise ValueError(
-                    "Initial state ID mismatch those of existing topologies"
+                    msg
                 )
             if topology.outgoing_edge_ids != existing.outgoing_edge_ids:
+                msg = "Final state IDs mismatch those of existing topologies"
                 raise ValueError(
-                    "Final state IDs mismatch those of existing topologies"
+                    msg
                 )
         self.__topologies.add(topology)
 
@@ -93,7 +97,8 @@ class HelicityAdapter:
 def _extract_topologies(
     obj: ReactionInfo | Iterable[Topology | StateTransition],
 ) -> set[Topology]:
-    raise TypeError(f"Cannot extract topologies from a {type(obj).__name__}")
+    msg = f"Cannot extract topologies from a {type(obj).__name__}"
+    raise TypeError(msg)
 
 
 @_extract_topologies.register(ReactionInfo)
@@ -108,7 +113,8 @@ def _(transitions: abc.Iterable) -> set[Topology]:
 
 @singledispatch
 def _get_topology(obj) -> Topology:
-    raise TypeError(f"Cannot create a {Topology.__name__} from a {type(obj).__name__}")
+    msg = f"Cannot create a {Topology.__name__} from a {type(obj).__name__}"
+    raise TypeError(msg)
 
 
 @_get_topology.register(Topology)

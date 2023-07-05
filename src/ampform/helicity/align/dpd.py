@@ -13,14 +13,15 @@ import sympy as sp
 from attrs import define, field
 from attrs.validators import in_
 from qrules.topology import Topology
-from qrules.transition import (ReactionInfo, StateTransition,
-                               StateTransitionCollection)
+from qrules.transition import ReactionInfo, StateTransition, StateTransitionCollection
 from sympy.physics.quantum.spin import Rotation as Wigner
 
-from ampform.helicity.decay import (get_outer_state_ids, get_spectator_id,
-                                    group_by_topology)
-from ampform.helicity.naming import (create_amplitude_base,
-                                     create_spin_projection_symbol)
+from ampform.helicity.decay import (
+    get_outer_state_ids,
+    get_spectator_id,
+    group_by_topology,
+)
+from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
 
@@ -117,7 +118,8 @@ T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topol
 
 @singledispatch
 def relabel_edge_ids(obj: T) -> T:
-    raise NotImplementedError(f"Cannot relabel edge IDs of a {type(obj).__name__}")
+    msg = f"Cannot relabel edge IDs of a {type(obj).__name__}"
+    raise NotImplementedError(msg)
 
 
 @relabel_edge_ids.register(ReactionInfo)

@@ -12,7 +12,7 @@ from __future__ import annotations
 import string
 from collections import abc
 from itertools import zip_longest
-from typing import Iterable, overload
+from typing import TYPE_CHECKING, Iterable, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -20,15 +20,19 @@ from sympy.core.sympify import _sympify
 from sympy.functions.elementary.integers import floor
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
-from sympy.tensor.array.expressions.array_expressions import (ArraySymbol,
-                                                              _ArrayExpr,
-                                                              get_shape)
+from sympy.tensor.array.expressions.array_expressions import (
+    ArraySymbol,
+    _ArrayExpr,
+    get_shape,
+)
 
 from . import create_expression, make_commutative
+
+if TYPE_CHECKING:
+    from sympy.printing.numpy import NumPyPrinter
 
 
 class ArrayElement(_ArrayExpr):
@@ -39,14 +43,13 @@ class ArrayElement(_ArrayExpr):
             (i >= s) == True  # noqa: E712
             for i, s in zip(sympified_indices, parent_shape)
         ):
-            raise ValueError("shape is out of bounds")
+            msg = "shape is out of bounds"
+            raise ValueError(msg)
         if len(parent_shape):
             if len(sympified_indices) > len(parent_shape):
+                msg = f"Too many indices for {cls.__name__}: parent {type(parent).__name__} is {len(parent_shape)}-dimensional, but {len(sympified_indices)} indices were given"
                 raise IndexError(
-                    f"Too many indices for {cls.__name__}: parent"
-                    f" {type(parent).__name__} is"
-                    f" {len(parent_shape)}-dimensional, but"
-                    f" {len(sympified_indices)} indices were given"
+                    msg
                 )
             normalized_indices = [
                 _normalize_index(i, axis_size)
@@ -148,7 +151,7 @@ class ArraySlice(_ArrayExpr):
         return tuple(shape)
 
 
-def _compute_slice_size(idx, axis_size):  # noqa: R701
+def _compute_slice_size(idx, axis_size):
     if idx is None:
         return axis_size
     if not isinstance(idx, sp.Tuple):
@@ -163,7 +166,7 @@ def _compute_slice_size(idx, axis_size):  # noqa: R701
     return size
 
 
-def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R701
+def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
     if not isinstance(i, (tuple, list, sp.Tuple)):
@@ -185,7 +188,7 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R7
         step = step or 1
 
         if ((stop - start) * step < 1) == True:  # noqa: E712
-            raise IndexError()
+            raise IndexError
 
     start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
     return start, stop, step
@@ -314,7 +317,8 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
 class ArrayAxisSum(sp.Expr):
     def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
-            raise TypeError("Only single digits allowed for axis")
+            msg = "Only single digits allowed for axis"
+            raise TypeError(msg)
         return create_expression(cls, array, axis, **hints)
 
     @property

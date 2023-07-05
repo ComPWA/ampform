@@ -14,14 +14,20 @@ This module provides several parametrizations. They all comply with the
 from __future__ import annotations
 
 import sys
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import sympy as sp
-from sympy.printing.latex import LatexPrinter
 
-from ampform.sympy import (UnevaluatedExpression, create_expression,
-                           determine_indices, implement_doit_method)
+from ampform.sympy import (
+    UnevaluatedExpression,
+    create_expression,
+    determine_indices,
+    implement_doit_method,
+)
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
 
 if sys.version_info >= (3, 8):
     from typing import Protocol

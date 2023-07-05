@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from qrules import ReactionInfo
 
 from ampform import get_builder
-from ampform.helicity import HelicityModel
-from ampform.helicity.naming import (CanonicalAmplitudeNameGenerator,
-                                     HelicityAmplitudeNameGenerator,
-                                     _render_float, generate_transition_label)
+from ampform.helicity.naming import (
+    CanonicalAmplitudeNameGenerator,
+    HelicityAmplitudeNameGenerator,
+    _render_float,
+    generate_transition_label,
+)
+
+if TYPE_CHECKING:
+    from qrules import ReactionInfo
+
+    from ampform.helicity import HelicityModel
 
 
 def test_generate_transition_label(reaction: ReactionInfo):
@@ -24,7 +32,7 @@ def test_generate_transition_label(reaction: ReactionInfo):
 @pytest.mark.parametrize("parent_helicities", [False, True])
 @pytest.mark.parametrize("child_helicities", [False, True])
 @pytest.mark.parametrize("ls_combinations", [False, True])
-def test_coefficient_names(  # noqa: R701
+def test_coefficient_names(
     reaction: ReactionInfo,
     parent_helicities,
     child_helicities,
@@ -35,9 +43,8 @@ def test_coefficient_names(  # noqa: R701
     assert isinstance(builder.naming, HelicityAmplitudeNameGenerator)
     builder.naming.insert_parent_helicities = parent_helicities
     builder.naming.insert_child_helicities = child_helicities
-    if ls_combinations:
-        if reaction.formalism == "helicity":
-            pytest.skip("No LS-combinations if using helicity formalism")
+    if ls_combinations and reaction.formalism == "helicity":
+        pytest.skip("No LS-combinations if using helicity formalism")
     if isinstance(builder.naming, CanonicalAmplitudeNameGenerator):
         builder.naming.insert_ls_combinations = ls_combinations
     model = builder.formulate()

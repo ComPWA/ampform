@@ -2,20 +2,28 @@
 # pylint: disable=redefined-outer-name
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import sympy as sp
-from qrules.topology import Topology
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.helicity.decay import get_parent_id
-from ampform.kinematics.angles import (Phi, Theta, compute_helicity_angles,
-                                       compute_wigner_rotation_matrix,
-                                       formulate_scattering_angle,
-                                       formulate_theta_hat_angle,
-                                       formulate_zeta_angle)
+from ampform.kinematics.angles import (
+    Phi,
+    Theta,
+    compute_helicity_angles,
+    compute_wigner_rotation_matrix,
+    formulate_scattering_angle,
+    formulate_theta_hat_angle,
+    formulate_zeta_angle,
+)
 from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
 from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
 
 m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
 s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2  # type: ignore[assignment]

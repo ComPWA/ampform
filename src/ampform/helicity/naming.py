@@ -5,15 +5,22 @@ import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import lru_cache
-from typing import DefaultDict, Iterable
+from typing import TYPE_CHECKING, Iterable
 
 import sympy as sp
-from qrules.topology import Topology
 from qrules.transition import ReactionInfo, State, StateTransition
 
-from .decay import (assert_isobar_topology, determine_attached_final_state,
-                    get_helicity_info, get_outer_state_ids, get_sorted_states,
-                    group_by_spin_projection)
+from .decay import (
+    assert_isobar_topology,
+    determine_attached_final_state,
+    get_helicity_info,
+    get_outer_state_ids,
+    get_sorted_states,
+    group_by_spin_projection,
+)
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
 
 
 class NameGenerator(ABC):
@@ -522,7 +529,7 @@ def collect_spin_projections(
     reaction: ReactionInfo,
 ) -> dict[sp.Symbol, set[sp.Rational]]:
     outer_state_ids = get_outer_state_ids(reaction)
-    spin_projections: DefaultDict[sp.Symbol, set[sp.Rational]] = defaultdict(set)
+    spin_projections: defaultdict[sp.Symbol, set[sp.Rational]] = defaultdict(set)
     spin_groups = group_by_spin_projection(reaction.transitions)
     for group in spin_groups:
         for transition in group:

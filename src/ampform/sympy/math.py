@@ -4,15 +4,17 @@
 """A collection of basic math operations, used in `ampform.dynamics`."""
 from __future__ import annotations
 
-from typing import overload
+from typing import TYPE_CHECKING, overload
 
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
-from sympy.printing.numpy import NumPyPrinter
-from sympy.printing.printer import Printer
-from sympy.printing.pycode import PythonCodePrinter
 
 from . import NumPyPrintable, create_expression, make_commutative
+
+if TYPE_CHECKING:
+    from sympy.printing.numpy import NumPyPrinter
+    from sympy.printing.printer import Printer
+    from sympy.printing.pycode import PythonCodePrinter
 
 
 @make_commutative

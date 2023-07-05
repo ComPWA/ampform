@@ -2,20 +2,27 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import pytest
 import qrules
 import sympy as sp
-from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
 
 from ampform import get_builder
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
-from ampform.helicity import (HelicityAmplitudeBuilder, HelicityModel,
-                              ParameterValue, ParameterValues,
-                              _generate_kinematic_variables,
-                              formulate_isobar_wigner_d,
-                              group_by_spin_projection)
+from ampform.helicity import (
+    HelicityAmplitudeBuilder,
+    HelicityModel,
+    ParameterValue,
+    ParameterValues,
+    _generate_kinematic_variables,
+    formulate_isobar_wigner_d,
+    group_by_spin_projection,
+)
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
 
 
 class TestHelicityAmplitudeBuilder:
@@ -199,7 +206,7 @@ class TestHelicityModel:
         assert model.expression.xreplace({d1: new_d, d2: new_d}) == new_model.expression
 
     @pytest.mark.parametrize("stable_final_states", [False, True])
-    def test_rename_all_parameters_with_stable_final_state(  # noqa: R701
+    def test_rename_all_parameters_with_stable_final_state(
         self,
         reaction: ReactionInfo,
         stable_final_states: bool,
@@ -211,7 +218,7 @@ class TestHelicityModel:
             builder.config.stable_final_state_ids = set(reaction.final_state)
         original_model = builder.formulate()
         renames = {
-            str(par): Rf"{{{str(par)}}}_\mathrm{{renamed}}"
+            str(par): Rf"{{{par!s}}}_\mathrm{{renamed}}"
             for par in original_model.parameter_defaults
         }
         new_model = original_model.rename_symbols(renames)

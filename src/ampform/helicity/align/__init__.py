@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import sympy as sp
-from qrules.transition import ReactionInfo
 
 from ampform.helicity.decay import get_outer_state_ids, group_by_topology
-from ampform.helicity.naming import (create_amplitude_base,
-                                     create_spin_projection_symbol)
+from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
+
+if TYPE_CHECKING:
+    from qrules.transition import ReactionInfo
 
 
 class SpinAlignment(ABC):

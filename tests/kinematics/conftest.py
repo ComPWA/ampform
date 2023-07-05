@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
+
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
 
-from ampform.kinematics.lorentz import (FourMomenta,
-                                        create_four_momentum_symbols)
+from ampform.kinematics.lorentz import FourMomenta, create_four_momentum_symbols
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 @pytest.fixture(scope="session")

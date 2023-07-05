@@ -3,27 +3,45 @@ from __future__ import annotations
 
 import inspect
 import textwrap
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import sympy as sp
 from numpy.lib.scimath import sqrt as complex_sqrt
-from qrules.topology import Topology
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.kinematics.lorentz import (BoostMatrix, BoostZMatrix, Energy,
-                                        FourMomenta, FourMomentumSymbol,
-                                        FourMomentumX, FourMomentumY,
-                                        FourMomentumZ, InvariantMass,
-                                        NegativeMomentum, RotationYMatrix,
-                                        RotationZMatrix, ThreeMomentum,
-                                        _ArraySize, _OnesArray, _ZerosArray,
-                                        compute_boost_chain,
-                                        compute_invariant_masses,
-                                        three_momentum_norm)
-from ampform.sympy import NumPyPrintable
-from ampform.sympy._array_expressions import (ArrayMultiplication, ArraySlice,
-                                              ArraySymbol)
+from ampform.kinematics.lorentz import (
+    BoostMatrix,
+    BoostZMatrix,
+    Energy,
+    FourMomenta,
+    FourMomentumSymbol,
+    FourMomentumX,
+    FourMomentumY,
+    FourMomentumZ,
+    InvariantMass,
+    NegativeMomentum,
+    RotationYMatrix,
+    RotationZMatrix,
+    ThreeMomentum,
+    _ArraySize,
+    _OnesArray,
+    _ZerosArray,
+    compute_boost_chain,
+    compute_invariant_masses,
+    three_momentum_norm,
+)
+from ampform.sympy._array_expressions import (
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySymbol,
+)
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+
+    from ampform.sympy import NumPyPrintable
 
 
 class TestBoostMatrix:

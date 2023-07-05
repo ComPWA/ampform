@@ -5,6 +5,7 @@ documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import shutil
@@ -12,15 +13,24 @@ import subprocess
 import sys
 
 import requests
+
 # pyright: reportMissingImports=false
 # pyright: reportUntypedBaseClass=false
 # pyright: reportUntypedFunctionDecorator=false
-from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
-from pybtex.style.template import (FieldIsMissing, Node, _format_list, field,
-                                   href, join, node, sentence, words)
+from pybtex.style.template import (
+    FieldIsMissing,
+    Node,
+    _format_list,
+    field,
+    href,
+    join,
+    node,
+    sentence,
+    words,
+)
 
 if sys.version_info < (3, 8):
     from importlib_metadata import PackageNotFoundError
@@ -66,20 +76,24 @@ def fetch_logo(url: str, output_path: str) -> None:
 
 
 LOGO_PATH = "_static/logo.svg"
-try:
+with contextlib.suppress(requests.exceptions.ConnectionError):
     fetch_logo(
         url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
         output_path=LOGO_PATH,
     )
-except requests.exceptions.ConnectionError:
-    pass
+
 if os.path.exists(LOGO_PATH):
     html_logo = LOGO_PATH
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings  # noqa: E402
-from _relink_references import relink_references  # noqa: E402
+from typing import TYPE_CHECKING
+
+from _extend_docstrings import extend_docstrings
+from _relink_references import relink_references
+
+if TYPE_CHECKING:
+    from pybtex.database import Entry
 
 extend_docstrings()
 relink_references()
@@ -174,8 +188,6 @@ autodoc_type_aliases = {
     "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
     "RangeDefinition": "symplot.RangeDefinition",
     # https://github.com/sphinx-doc/sphinx/pull/10183
-    # "ParameterValue": "ampform.helicity.ParameterValue",
-    # "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
@@ -325,8 +337,9 @@ def get_minor_version(package_name: str) -> str:
         return installed_version
     matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
     if matches is None:
+        msg = f"Could not find documentation for {package_name} v{installed_version}"
         raise ValueError(
-            f"Could not find documentation for {package_name} v{installed_version}"
+            msg
         )
     return matches[1]
 

@@ -2,16 +2,23 @@
 from __future__ import annotations
 
 import sys
-from typing import Dict, Tuple
+from typing import TYPE_CHECKING, Dict, Tuple
 
 import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
-from qrules.particle import Particle
 
-from . import (EnergyDependentWidth, EqualMassPhaseSpaceFactor,
-               PhaseSpaceFactor, PhaseSpaceFactorProtocol,
-               formulate_form_factor, relativistic_breit_wigner)
+from . import (
+    EnergyDependentWidth,
+    EqualMassPhaseSpaceFactor,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorProtocol,
+    formulate_form_factor,
+    relativistic_breit_wigner,
+)
+
+if TYPE_CHECKING:
+    from qrules.particle import Particle
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
@@ -77,8 +84,9 @@ def create_non_dynamic_with_ff(
     See also :func:`.formulate_form_factor`.
     """
     if variable_pool.angular_momentum is None:
+        msg = "Angular momentum is not defined but is required in the form factor!"
         raise ValueError(
-            "Angular momentum is not defined but is required in the form factor!"
+            msg
         )
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
@@ -167,8 +175,9 @@ class RelativisticBreitWignerBuilder:
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
+            msg = "Angular momentum is not defined but is required in the form factor!"
             raise ValueError(
-                "Angular momentum is not defined but is required in the form factor!"
+                msg
             )
 
         inv_mass = variable_pool.incoming_state_mass
@@ -202,8 +211,9 @@ class RelativisticBreitWignerBuilder:
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
+            msg = "Angular momentum is not defined but is required in the form factor!"
             raise ValueError(
-                "Angular momentum is not defined but is required in the form factor!"
+                msg
             )
 
         inv_mass = variable_pool.incoming_state_mass

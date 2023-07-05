@@ -14,13 +14,15 @@ import re
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
 from textwrap import dedent
-from typing import Callable, Iterable, Sequence, SupportsFloat, TypeVar
+from typing import TYPE_CHECKING, Callable, Iterable, Sequence, SupportsFloat, TypeVar
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
-from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
+    from sympy.printing.numpy import NumPyPrinter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -204,8 +206,7 @@ def implement_expr(
         decorated_class: type[DecoratedClass],
     ) -> type[DecoratedClass]:
         decorated_class = implement_new_method(n_args)(decorated_class)
-        decorated_class = implement_doit_method(decorated_class)
-        return decorated_class
+        return implement_doit_method(decorated_class)
 
     return decorator
 
@@ -229,7 +230,8 @@ def implement_new_method(
             **hints,
         ) -> DecoratedClass:
             if len(args) != n_args:
-                raise ValueError(f"{n_args} parameters expected, got {len(args)}")
+                msg = f"{n_args} parameters expected, got {len(args)}"
+                raise ValueError(msg)
             args = sp.sympify(args)
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
@@ -366,7 +368,8 @@ class PoolSum(UnevaluatedExpression):
         for idx_symbol, values in indices:
             values = tuple(values)
             if len(values) == 0:
-                raise ValueError(f"No values provided for index {idx_symbol}")
+                msg = f"No values provided for index {idx_symbol}"
+                raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         return create_expression(cls, expression, *converted_indices, **hints)
 

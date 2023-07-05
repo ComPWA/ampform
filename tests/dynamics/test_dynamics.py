@@ -1,15 +1,24 @@
 # pylint: disable=protected-access too-many-arguments
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 import sympy as sp
-from qrules import ParticleCollection
 
-from ampform.dynamics import (BlattWeisskopfSquared, EnergyDependentWidth,
-                              EqualMassPhaseSpaceFactor, PhaseSpaceFactor,
-                              PhaseSpaceFactorSWave,
-                              relativistic_breit_wigner_with_ff)
-from ampform.helicity import HelicityModel
+from ampform.dynamics import (
+    BlattWeisskopfSquared,
+    EnergyDependentWidth,
+    EqualMassPhaseSpaceFactor,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorSWave,
+    relativistic_breit_wigner_with_ff,
+)
+
+if TYPE_CHECKING:
+    from qrules import ParticleCollection
+
+    from ampform.helicity import HelicityModel
 
 
 class TestBlattWeisskopfSquared:

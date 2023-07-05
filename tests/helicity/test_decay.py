@@ -7,9 +7,11 @@ from typing import Iterable
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
 
-from ampform.helicity.decay import (determine_attached_final_state,
-                                    get_sibling_state_id,
-                                    is_opposite_helicity_state)
+from ampform.helicity.decay import (
+    determine_attached_final_state,
+    get_sibling_state_id,
+    is_opposite_helicity_state,
+)
 
 
 def test_determine_attached_final_state():
