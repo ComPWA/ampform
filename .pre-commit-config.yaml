@@ -37,7 +37,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.184
+    rev: 0.0.186
     hooks:
       - id: check-dev-files
         args:
@@ -150,7 +150,7 @@ repos:
           - --py37-plus
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.276
+    rev: v0.0.277
     hooks:
       - id: ruff
         args:

@@ -13,7 +13,6 @@ aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 arrow==1.2.3
-astroid==2.15.5
 asttokens==2.2.1
 attrs==23.1.0
 babel==2.12.1
@@ -37,7 +36,6 @@ debugpy==1.6.7
 decorator==5.1.1
 defusedxml==0.7.1
 deprecated==1.2.14
-dill==0.3.6
 distlib==0.3.6
 docutils==0.19
 exceptiongroup==1.1.2
@@ -45,17 +43,6 @@ execnet==1.9.0
 executing==1.2.0
 fastjsonschema==2.17.1
 filelock==3.12.2
-flake8==6.0.0 ; python_version >= "3.8.0"
-flake8-blind-except==0.2.1 ; python_version >= "3.8.0"
-flake8-bugbear==23.6.5 ; python_version >= "3.8.0"
-flake8-builtins==2.1.0 ; python_version >= "3.8.0"
-flake8-comprehensions==3.13.0 ; python_version >= "3.8.0"
-flake8-future-annotations==1.1.0 ; python_version >= "3.8.0"
-flake8-plugin-utils==1.3.3
-flake8-pytest-style==1.7.2 ; python_version >= "3.8.0"
-flake8-rst-docstrings==0.3.0 ; python_version >= "3.8.0"
-flake8-type-ignore==0.1.0.post2 ; python_version >= "3.8.0"
-flake8-use-fstring==1.4 ; python_version >= "3.8.0"
 fonttools==4.40.0
 fqdn==1.5.1
 gprof2dot==2022.7.29
@@ -72,9 +59,8 @@ ipykernel==6.24.0
 ipympl==0.9.3
 ipython==8.14.0
 ipython-genutils==0.2.0
-ipywidgets==8.0.6
+ipywidgets==8.0.7
 isoduration==20.11.0
-isort==5.12.0
 jedi==0.18.2
 jinja2==3.1.2
 json5==0.9.14
@@ -91,20 +77,18 @@ jupyter-server-ydoc==0.8.0
 jupyter-ydoc==0.2.4
 jupyterlab==3.6.5
 jupyterlab-code-formatter==2.2.1
-jupyterlab-myst==2.0.0 ; python_version >= "3.7.0"
+jupyterlab-myst==2.0.1 ; python_version >= "3.7.0"
 jupyterlab-pygments==0.2.2
 jupyterlab-server==2.23.0
-jupyterlab-widgets==3.0.7
+jupyterlab-widgets==3.0.8
 kiwisolver==1.4.4
 latexcodec==2.0.1
-lazy-object-proxy==1.9.0
 livereload==2.6.3
 mando==0.7.1
 markdown-it-py==2.2.0
 markupsafe==2.1.3
 matplotlib==3.7.1
 matplotlib-inline==0.1.6
-mccabe==0.7.0
 mdit-py-plugins==0.3.5
 mdurl==0.1.2
 mistune==3.0.1
@@ -130,7 +114,6 @@ pandocfilters==1.5.0
 parso==0.8.3
 particle==0.23.0
 pathspec==0.11.1
-pep8-naming==0.13.3 ; python_version >= "3.8.0"
 pexpect==4.8.0
 pickleshare==0.7.5
 pillow==10.0.0
@@ -138,20 +121,16 @@ platformdirs==3.8.0
 pluggy==1.2.0
 pre-commit==3.3.3
 prometheus-client==0.17.0
-prompt-toolkit==3.0.38
+prompt-toolkit==3.0.39
 psutil==5.9.5
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pybtex==0.24.0
 pybtex-docutils==1.0.2
-pycodestyle==2.10.0
 pycparser==2.21
-pydantic==1.10.10
+pydantic==1.10.11
 pydata-sphinx-theme==0.13.3
-pydocstyle==6.3.0
-pyflakes==3.0.1
 pygments==2.15.1
-pylint==2.17.4
 pyparsing==3.1.0
 pyproject-api==1.5.2
 pyrsistent==0.19.3
@@ -167,10 +146,10 @@ pyzmq==25.1.0
 qrules==0.9.8
 radon==6.0.1
 requests==2.31.0
-restructuredtext-lint==1.4.0
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rich==13.4.2
+ruff==0.0.277
 send2trash==1.8.2
 six==1.16.0
 sniffio==1.3.0
@@ -200,7 +179,6 @@ tabulate==0.9.0
 terminado==0.17.1
 tinycss2==1.2.1
 tomli==2.0.1
-tomlkit==0.11.8
 tornado==6.3.2
 tox==4.6.3
 tqdm==4.65.0
@@ -208,7 +186,7 @@ traitlets==5.9.0
 types-docutils==0.20.0.1
 types-pkg-resources==0.1.3
 types-requests==2.31.0.1
-types-setuptools==68.0.0.0
+types-setuptools==68.0.0.1
 types-urllib3==1.26.25.13
 typing-extensions==4.7.1
 uri-template==1.3.0
@@ -219,7 +197,7 @@ webcolors==1.13
 webencodings==0.5.1
 websocket-client==1.6.1
 wheel==0.40.0
-widgetsnbextension==4.0.7
+widgetsnbextension==4.0.8
 wrapt==1.15.0
 y-py==0.5.9
 ypy-websocket==0.8.2
