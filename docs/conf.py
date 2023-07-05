@@ -338,9 +338,7 @@ def get_minor_version(package_name: str) -> str:
     matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
     if matches is None:
         msg = f"Could not find documentation for {package_name} v{installed_version}"
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
     return matches[1]
 
 

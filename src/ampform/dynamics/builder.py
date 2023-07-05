@@ -85,9 +85,7 @@ def create_non_dynamic_with_ff(
     """
     if variable_pool.angular_momentum is None:
         msg = "Angular momentum is not defined but is required in the form factor!"
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
     form_factor = formulate_form_factor(
@@ -176,9 +174,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             msg = "Angular momentum is not defined but is required in the form factor!"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
         inv_mass = variable_pool.incoming_state_mass
         m_a = variable_pool.outgoing_state_mass1
@@ -212,9 +208,7 @@ class RelativisticBreitWignerBuilder:
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
             msg = "Angular momentum is not defined but is required in the form factor!"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
         inv_mass = variable_pool.incoming_state_mass
         _, __, meson_radius = self.__create_symbols(resonance)

@@ -720,10 +720,11 @@ def compute_invariant_masses(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
-        msg = f"Momentum IDs {set(four_momenta)} do not match final state edge IDs {set(topology.outgoing_edge_ids)}"
-        raise ValueError(
-            msg
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)

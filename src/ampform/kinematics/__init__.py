@@ -53,14 +53,10 @@ class HelicityAdapter:
             existing = next(iter(self.__topologies))
             if topology.incoming_edge_ids != existing.incoming_edge_ids:
                 msg = "Initial state ID mismatch those of existing topologies"
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
             if topology.outgoing_edge_ids != existing.outgoing_edge_ids:
                 msg = "Final state IDs mismatch those of existing topologies"
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
         self.__topologies.add(topology)
 
     @property

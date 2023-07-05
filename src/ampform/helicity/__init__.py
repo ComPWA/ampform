@@ -278,9 +278,7 @@ class ParameterValues(abc.Mapping):
     @singledispatchmethod
     def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
         msg = f"Cannot find parameter for key type {type(key).__name__}"
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            msg
-        )
+        raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
     @_get_parameter.register(sp.Basic)
     def _(self, par: sp.Basic) -> sp.Basic:
@@ -302,10 +300,11 @@ class ParameterValues(abc.Mapping):
         for i, parameter in enumerate(self.__parameters):
             if i == key:
                 return parameter
-        msg = f"Parameter mapping has {len(self)} parameters, but trying to get parameter number {key}"
-        raise KeyError(
-            msg
+        msg = (
+            f"Parameter mapping has {len(self)} parameters, but trying to get parameter"
+            f" number {key}"
         )
+        raise KeyError(msg)
 
     def __len__(self) -> int:
         return len(self.__parameters)
@@ -332,10 +331,11 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, reaction: ReactionInfo) -> None:
         if len(reaction.transitions) < 1:
-            msg = f"At least one {StateTransition.__name__} required to genenerate an amplitude model!"
-            raise ValueError(
-                msg
+            msg = (
+                f"At least one {StateTransition.__name__} required to genenerate an"
+                " amplitude model!"
             )
+            raise ValueError(msg)
         self.__reaction = reaction
         self.__adapter = HelicityAdapter(reaction)
         self.__config = BuilderConfiguration(
@@ -655,10 +655,10 @@ class DynamicsSelector(abc.Mapping):
         - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
           node ID: set dynamics for one specific transition node.
         """
-        msg = f"Cannot set dynamics builder for selection type {type(selection).__name__}"
-        raise NotImplementedError(
-            msg
+        msg = (
+            f"Cannot set dynamics builder for selection type {type(selection).__name__}"
         )
+        raise NotImplementedError(msg)
 
     @assign.register(TwoBodyDecay)
     def _(self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder) -> None:

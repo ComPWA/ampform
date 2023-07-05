@@ -92,19 +92,20 @@ class SliderKwargs(abc.Mapping):
         symbol_names = set(arg_to_symbol.values())
         for arg_name in arg_to_symbol:
             if not arg_name.isidentifier():
-                msg = f'Argument "{arg_name}" in arg_to_symbol is not a valid identifier for a Python variable'
-                raise ValueError(
-                    msg
+                msg = (
+                    f'Argument "{arg_name}" in arg_to_symbol is not a valid identifier'
+                    " for a Python variable"
                 )
+                raise ValueError(msg)
         for slider_name in sliders:
             if not isinstance(slider_name, str):
                 msg = f'Slider name "{slider_name}" is not of type str'
                 raise TypeError(msg)
             if slider_name not in symbol_names:
-                msg = f'Slider with name "{slider_name}" is not covered by arg_to_symbol'
-                raise ValueError(
-                    msg
+                msg = (
+                    f'Slider with name "{slider_name}" is not covered by arg_to_symbol'
                 )
+                raise ValueError(msg)
         for name, slider in sliders.items():
             if not isinstance(slider, Slider.__args__):  # type: ignore[attr-defined]
                 msg = f'Slider "{name}" is not a valid ipywidgets slider'
@@ -181,9 +182,7 @@ class SliderKwargs(abc.Mapping):
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
                 msg = f'Range definition for slider "{slider_name}" is not a tuple'
-                raise TypeError(
-                    msg
-                )
+                raise TypeError(msg)
             slider = self[slider_name]
             if _is_min_max(range_def):
                 min_, max_ = range_def
@@ -198,10 +197,11 @@ class SliderKwargs(abc.Mapping):
                 else:
                     step_size = (max_ - min_) / n_steps
             else:
-                msg = f'Range definition {range_def} for slider "{slider_name}" is neither of shape (min, max) nor (min, max, n_steps)'
-                raise ValueError(
-                    msg
+                msg = (
+                    f'Range definition {range_def} for slider "{slider_name}" is'
+                    " neither of shape (min, max) nor (min, max, n_steps)"
                 )
+                raise ValueError(msg)
             if min_ > slider.max:
                 slider.max = max_
                 slider.min = min_
@@ -307,9 +307,7 @@ def _extract_slider_symbols(
     for symbol in plot_symbols:
         if symbol not in free_symbols:
             msg = f"Expression does not contain a free symbol named {symbol}"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
         free_symbols.remove(symbol)
     ordered_symbols = sorted(free_symbols, key=lambda s: s.name)
     return tuple(ordered_symbols)

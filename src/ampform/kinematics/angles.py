@@ -112,10 +112,11 @@ def compute_helicity_angles(
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
-        msg = f"Momentum IDs {set(four_momenta)} do not match final state edge IDs {set(topology.outgoing_edge_ids)}"
-        raise ValueError(
-            msg
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
 
     n_events = _get_number_of_events(four_momenta)
 
@@ -245,9 +246,7 @@ def formulate_scattering_angle(
         raise ValueError(msg)
     if {state_id, sibling_id} in {(2, 1), (3, 2), (1, 3)}:
         msg = f"Cannot compute scattering angle θ{state_id}{sibling_id}"
-        raise NotImplementedError(
-            msg
-        )
+        raise NotImplementedError(msg)
     if state_id == sibling_id:
         msg = f"IDs of the decay products cannot be equal: {state_id}"
         raise ValueError(msg)
@@ -279,9 +278,7 @@ def formulate_theta_hat_angle(
     allowed_ids = {1, 2, 3}
     if not {isobar_id, aligned_subsystem} <= allowed_ids:
         msg = f"Child IDs need to be one of {', '.join(map(str, allowed_ids))}"
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
     symbol = sp.Symbol(Rf"\hat\theta_{isobar_id}({aligned_subsystem})", real=True)
     if isobar_id == aligned_subsystem:
         return symbol, sp.S.Zero
@@ -426,10 +423,11 @@ def formulate_zeta_angle(
             reference_subsystem=aligned_subsystem,
         )
         return zeta_symbol, -zeta_expr
-    msg = f"No expression for ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"
-    raise NotImplementedError(
-        msg
+    msg = (
+        "No expression for"
+        f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"
     )
+    raise NotImplementedError(msg)
 
 
 def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Pow]:

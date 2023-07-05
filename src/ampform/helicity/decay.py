@@ -91,9 +91,7 @@ class TwoBodyDecay:
 @singledispatch
 def _create_two_body_decay(obj) -> TwoBodyDecay:
     msg = f"Cannot create a {TwoBodyDecay.__name__} from a {type(obj).__name__}"
-    raise NotImplementedError(
-        msg
-    )
+    raise NotImplementedError(msg)
 
 
 @_create_two_body_decay.register(TwoBodyDecay)
@@ -169,9 +167,7 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
         msg = f"State {state_id} is an incoming edge and does not have siblings."
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
     out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
     out_state_ids.remove(state_id)
     if len(out_state_ids) != 1:
@@ -289,30 +285,34 @@ def assert_three_body_decay(topology: Topology) -> None:
     n_initial = len(topology.incoming_edge_ids)
     n_final = len(topology.outgoing_edge_ids)
     if n_initial != 1 or n_final != 3:
-        msg = f"Only three-body decays are supported. This is a {n_initial}-to-{n_final} decay."
-        raise ValueError(
-            msg
+        msg = (
+            "Only three-body decays are supported. This is a"
+            f" {n_initial}-to-{n_final} decay."
         )
+        raise ValueError(msg)
     if topology.incoming_edge_ids != {0} or topology.outgoing_edge_ids != {1, 2, 3}:
-        msg = "Please use `qrules.topology.Topology.relabel_edges()` to relabel the final states IDs to [1, 2, 3] and the initial state ID to 0."
-        raise ValueError(
-            msg
+        msg = (
+            "Please use `qrules.topology.Topology.relabel_edges()` to relabel the final"
+            " states IDs to [1, 2, 3] and the initial state ID to 0."
         )
+        raise ValueError(msg)
 
 
 def assert_two_body_decay(topology: Topology, node_id: int) -> None:
     parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
     if len(parent_state_ids) != 1:
-        msg = f"Node {node_id} has {len(parent_state_ids)} parent states, so this is not an isobar decay"
-        raise ValueError(
-            msg
+        msg = (
+            f"Node {node_id} has {len(parent_state_ids)} parent states, so this is not"
+            " an isobar decay"
         )
+        raise ValueError(msg)
     child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
     if len(child_state_ids) != 2:
-        msg = f"Node {node_id} decays to {len(child_state_ids)} states, so this is not an isobar decay"
-        raise ValueError(
-            msg
+        msg = (
+            f"Node {node_id} decays to {len(child_state_ids)} states, so this is not an"
+            " isobar decay"
         )
+        raise ValueError(msg)
 
 
 def determine_attached_final_state(topology: Topology, state_id: int) -> list[int]:

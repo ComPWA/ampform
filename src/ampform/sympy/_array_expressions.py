@@ -47,10 +47,12 @@ class ArrayElement(_ArrayExpr):
             raise ValueError(msg)
         if len(parent_shape):
             if len(sympified_indices) > len(parent_shape):
-                msg = f"Too many indices for {cls.__name__}: parent {type(parent).__name__} is {len(parent_shape)}-dimensional, but {len(sympified_indices)} indices were given"
-                raise IndexError(
-                    msg
+                msg = (
+                    f"Too many indices for {cls.__name__}: parent"
+                    f" {type(parent).__name__} is {len(parent_shape)}-dimensional, but"
+                    f" {len(sympified_indices)} indices were given"
                 )
+                raise IndexError(msg)
             normalized_indices = [
                 _normalize_index(i, axis_size)
                 for i, axis_size in zip(indices, parent_shape)

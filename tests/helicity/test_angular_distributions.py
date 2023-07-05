@@ -157,10 +157,11 @@ class TestD1ToD0PiPi:
             R"D^{*}(2010)^{+} \to D^{0}_{0} \pi^{+}_{0}}"
         )
         if coefficient not in amplitude_model.parameter_defaults:
-            msg = f"Coefficient {coefficient} does not exist in parameter defaults. Choose any of {list(amplitude_model.parameter_defaults)}"
-            raise KeyError(
-                msg
+            msg = (
+                f"Coefficient {coefficient} does not exist in parameter defaults."
+                f" Choose any of {list(amplitude_model.parameter_defaults)}"
             )
+            raise KeyError(msg)
         amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(
