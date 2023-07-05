@@ -207,6 +207,9 @@ src = [
 target-version = "py37"
 task-tags = ["cspell"]
 
+[tool.ruff.isort]
+known-third-party = ["sympy"]
+
 [tool.ruff.per-file-ignores]
 "docs/*" = [
     "E402",
