@@ -32,20 +32,9 @@ target-version = [
     "py39",
 ]
 
-[tool.nbqa.addopts]
-black = ["--line-length=85"]
-ruff = [
-    "--extend-ignore=B018",
-    "--extend-ignore=C90",
-    "--extend-ignore=D",
-    "--extend-ignore=N806",
-    "--extend-ignore=N816",
-    "--extend-ignore=PLR09",
-    "--extend-ignore=PLR2004",
-    "--extend-ignore=PLW0602",
-    "--extend-ignore=PLW0603",
-    "--line-length=85",
-]
+[tool.coverage.run]
+branch = true
+source = ["src"]
 
 [tool.mypy]
 exclude = "_build"
@@ -86,6 +75,21 @@ module = ["pybtex.*"]
 ignore_missing_imports = true
 module = ["sphinx.*"]
 
+[tool.nbqa.addopts]
+black = ["--line-length=85"]
+ruff = [
+    "--extend-ignore=B018",
+    "--extend-ignore=C90",
+    "--extend-ignore=D",
+    "--extend-ignore=N806",
+    "--extend-ignore=N816",
+    "--extend-ignore=PLR09",
+    "--extend-ignore=PLR2004",
+    "--extend-ignore=PLW0602",
+    "--extend-ignore=PLW0603",
+    "--line-length=85",
+]
+
 [tool.pyright]
 exclude = [
     "**/.git",
@@ -118,10 +122,6 @@ reportUnusedFunction = true
 reportUnusedImport = true
 reportUnusedVariable = true
 typeCheckingMode = "strict"
-
-[tool.coverage.run]
-branch = true
-source = ["src"]
 
 [tool.pytest.ini_options]
 addopts = '''
