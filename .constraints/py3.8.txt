@@ -9,11 +9,11 @@ aiofiles==22.1.0
 aiosqlite==0.19.0
 alabaster==0.7.13
 anyio==3.7.1
-aquirdturtle-collapsible-headings==3.1.0
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 arrow==1.2.3
 asttokens==2.2.1
+async-lru==2.0.2
 attrs==23.1.0
 babel==2.12.1
 backcall==0.2.0
@@ -71,12 +71,10 @@ jupyter-cache==0.6.1
 jupyter-client==8.3.0
 jupyter-core==5.3.1
 jupyter-events==0.6.3
+jupyter-lsp==2.2.0
 jupyter-server==2.7.0
-jupyter-server-fileid==0.9.0
 jupyter-server-terminals==0.4.4
-jupyter-server-ydoc==0.8.0
-jupyter-ydoc==0.2.4
-jupyterlab==3.6.5
+jupyterlab==4.0.2
 jupyterlab-code-formatter==2.2.1
 jupyterlab-myst==2.0.1 ; python_version >= "3.7.0"
 jupyterlab-pygments==0.2.2
@@ -98,14 +96,12 @@ mypy==1.4.1
 mypy-extensions==1.0.0
 myst-nb==0.17.2
 myst-parser==0.18.1
-nbclassic==1.0.0
 nbclient==0.5.13
 nbconvert==7.6.0
 nbformat==5.9.0
 nbmake==1.2.1
 nest-asyncio==1.5.6
 nodeenv==1.8.0
-notebook==6.5.4
 notebook-shim==0.2.3
 numpy==1.24.4
 overrides==7.3.1
