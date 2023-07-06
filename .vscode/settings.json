@@ -66,7 +66,6 @@
   "ruff.organizeImports": true,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
-    "*/.pydocstyle": true,
     ".constraints/*.txt": true
   },
   "yaml.schemas": {
