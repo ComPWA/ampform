@@ -77,7 +77,7 @@ class TestSliderKwargs:
     def test_repr(
         self, repr_function: Callable[[Any], str], slider_kwargs: SliderKwargs
     ) -> None:
-        from_repr: SliderKwargs = eval(repr_function(slider_kwargs))
+        from_repr: SliderKwargs = eval(repr_function(slider_kwargs))  # noqa: S307
         assert set(from_repr) == set(slider_kwargs)
         for slider_name in slider_kwargs:
             slider = slider_kwargs[slider_name]

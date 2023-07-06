@@ -19,16 +19,13 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorProtocol,
 )
 
-if TYPE_CHECKING:
-    from qrules.particle import Particle
-
-if TYPE_CHECKING:
-    from qrules.particle import Particle
-
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:  # pragma: no cover
     from typing_extensions import Protocol
+
+if TYPE_CHECKING:
+    from qrules.particle import Particle
 
 
 @frozen
