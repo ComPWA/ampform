@@ -79,6 +79,7 @@ module = ["sphinx.*"]
 black = ["--line-length=85"]
 ruff = [
     "--extend-ignore=B018",
+    "--extend-ignore=C408",
     "--extend-ignore=C90",
     "--extend-ignore=D",
     "--extend-ignore=N806",
