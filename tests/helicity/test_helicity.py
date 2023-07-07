@@ -1,12 +1,11 @@
-# pylint: disable=no-member
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import pytest
 import qrules
 import sympy as sp
-from _pytest.logging import LogCaptureFixture
 from qrules import ReactionInfo
 
 from ampform import get_builder
@@ -21,6 +20,9 @@ from ampform.helicity import (
     group_by_spin_projection,
 )
 
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+
 
 class TestHelicityAmplitudeBuilder:
     @pytest.mark.parametrize("permutate_topologies", [False, True])
@@ -31,7 +33,6 @@ class TestHelicityAmplitudeBuilder:
         reaction: ReactionInfo,
         stable_final_state_ids,
     ):
-        # pylint: disable=too-many-locals
         if reaction.formalism == "canonical-helicity":
             n_amplitudes = 16
             n_parameters = 4
@@ -205,7 +206,7 @@ class TestHelicityModel:
         assert model.expression.xreplace({d1: new_d, d2: new_d}) == new_model.expression
 
     @pytest.mark.parametrize("stable_final_states", [False, True])
-    def test_rename_all_parameters_with_stable_final_state(  # noqa: R701
+    def test_rename_all_parameters_with_stable_final_state(
         self,
         reaction: ReactionInfo,
         stable_final_states: bool,
@@ -217,7 +218,7 @@ class TestHelicityModel:
             builder.stable_final_state_ids = set(reaction.final_state)
         original_model = builder.formulate()
         renames = {
-            str(par): Rf"{{{str(par)}}}_\mathrm{{renamed}}"
+            str(par): Rf"{{{par!s}}}_\mathrm{{renamed}}"
             for par in original_model.parameter_defaults
         }
         new_model = original_model.rename_symbols(renames)
@@ -247,7 +248,6 @@ class TestHelicityModel:
         )
 
     def test_assumptions_after_rename(self, amplitude_model: tuple[str, HelicityModel]):
-        # pylint: disable=protected-access
         _, model = amplitude_model
         old = "m_{f_{0}(980)}"
         new = "m"
@@ -271,7 +271,6 @@ class TestHelicityModel:
         assert new_model == model
 
     def test_sum_components(self, amplitude_model: tuple[str, HelicityModel]):
-        # pylint: disable=cell-var-from-loop, line-too-long
         _, model = amplitude_model
         from_intensities = model.sum_components(
             components=filter(lambda c: c.startswith("I"), model.components),
@@ -284,15 +283,15 @@ class TestHelicityModel:
                 from_amplitudes = model.sum_components(
                     components=filter(
                         lambda c: c.startswith("A")
-                        and jpsi_with_spin in c  # noqa: B023
-                        and gamma_with_spin in c,  # noqa: B023
+                        and jpsi_with_spin in c
+                        and gamma_with_spin in c,
                         model.components,
                     )
                 )
                 selected_intensities = filter(
                     lambda c: c.startswith("I")
-                    and jpsi_with_spin in c  # noqa: B023
-                    and gamma_with_spin in c,  # noqa: B023
+                    and jpsi_with_spin in c
+                    and gamma_with_spin in c,
                     model.components,
                 )
                 selected_intensity = next(selected_intensities)

@@ -1,7 +1,4 @@
 # cspell:ignore einsum
-# pylint: disable=arguments-differ, no-member, protected-access, too-many-lines
-# pylint: disable=unused-argument, W0223
-# https://stackoverflow.com/a/22224042
 """Classes and functions for relativistic four-momentum kinematics.
 
 .. autolink-preface::
@@ -14,14 +11,12 @@ from __future__ import annotations
 import itertools
 from collections import abc
 from functools import singledispatch
-from typing import Dict, Iterable, Mapping
+from typing import TYPE_CHECKING, Dict, Iterable, Mapping
 
 import attrs
 import sympy as sp
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
-from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 
 from ampform.helicity.decay import (
     assert_isobar_topology,
@@ -49,6 +44,10 @@ from ampform.sympy._array_expressions import (
     MatrixMultiplication,
 )
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
+    from sympy.printing.numpy import NumPyPrinter
 
 
 class HelicityAdapter:
@@ -78,13 +77,11 @@ class HelicityAdapter:
         if self.__topologies:
             existing = next(iter(self.__topologies))
             if topology.incoming_edge_ids != existing.incoming_edge_ids:
-                raise ValueError(
-                    "Initial state ID mismatch those of existing topologies"
-                )
+                msg = "Initial state ID mismatch those of existing topologies"
+                raise ValueError(msg)
             if topology.outgoing_edge_ids != existing.outgoing_edge_ids:
-                raise ValueError(
-                    "Final state IDs mismatch those of existing topologies"
-                )
+                msg = "Final state IDs mismatch those of existing topologies"
+                raise ValueError(msg)
         self.__topologies.add(topology)
 
     @property
@@ -132,7 +129,8 @@ class HelicityAdapter:
 def _extract_topologies(
     obj: ReactionInfo | Iterable[Topology | StateTransition],
 ) -> set[Topology]:
-    raise TypeError(f"Cannot extract topologies from a {type(obj).__name__}")
+    msg = f"Cannot extract topologies from a {type(obj).__name__}"
+    raise TypeError(msg)
 
 
 @_extract_topologies.register(ReactionInfo)
@@ -147,7 +145,8 @@ def _(transitions: abc.Iterable) -> set[Topology]:
 
 @singledispatch
 def _get_topology(obj) -> Topology:
-    raise TypeError(f"Cannot create a {Topology.__name__} from a {type(obj).__name__}")
+    msg = f"Cannot create a {Topology.__name__} from a {type(obj).__name__}"
+    raise TypeError(msg)
 
 
 @_get_topology.register(Topology)
@@ -274,8 +273,7 @@ class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def evaluate(self) -> ArraySlice:
-        three_momentum = ArraySlice(self._momentum, (slice(None), slice(1, None)))
-        return three_momentum
+        return ArraySlice(self._momentum, (slice(None), slice(1, None)))
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         momentum = printer._print(self._momentum)
@@ -506,7 +504,7 @@ class BoostZMatrix(UnevaluatedExpression):
 
 
 class _BoostZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         beta: sp.Basic,
         gamma: sp.Basic,
@@ -601,7 +599,7 @@ class BoostMatrix(UnevaluatedExpression):
 
 
 class _BoostMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments,too-many-locals
+    def __new__(
         cls,
         momentum: sp.Basic,
         b00: sp.Basic,
@@ -637,7 +635,6 @@ class _BoostMatrixImplementation(NumPyPrintable):
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
-        # pylint: disable=too-many-locals, unbalanced-tuple-unpacking
         _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
         return f"""array(
             [
@@ -693,7 +690,7 @@ class RotationYMatrix(UnevaluatedExpression):
 
 
 class _RotationYMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,
@@ -766,7 +763,7 @@ class RotationZMatrix(UnevaluatedExpression):
 
 
 class _RotationZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,
@@ -846,14 +843,15 @@ def compute_helicity_angles(
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
-        raise ValueError(
-            f"Momentum IDs {set(four_momenta)} do not match "
-            f"final state edge IDs {set(topology.outgoing_edge_ids)}"
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
 
     n_events = _get_number_of_events(four_momenta)
 
-    def __recursive_helicity_angles(  # pylint: disable=too-many-locals
+    def __recursive_helicity_angles(
         four_momenta: Mapping[int, sp.Expr], node_id: int
     ) -> dict[sp.Symbol, sp.Expr]:
         helicity_angles: dict[sp.Symbol, sp.Expr] = {}
@@ -911,7 +909,7 @@ def compute_helicity_angles(
 
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
-    assert initial_state_edge.ending_node_id is not None
+    assert initial_state_edge.ending_node_id is not None  # noqa: S101
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 
@@ -927,10 +925,11 @@ def compute_invariant_masses(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
-        raise ValueError(
-            f"Momentum IDs {set(four_momenta)} do not match "
-            f"final state edge IDs {set(topology.outgoing_edge_ids)}"
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)

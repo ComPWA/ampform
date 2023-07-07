@@ -3,20 +3,20 @@
 This file only contains a selection of the most common options. For a full list see the
 documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
+# pyright: reportMissingImports=false
+# pyright: reportUntypedBaseClass=false
+# pyright: reportUntypedFunctionDecorator=false
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import shutil
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 import requests
-
-# pyright: reportMissingImports=false
-# pyright: reportUntypedBaseClass=false
-# pyright: reportUntypedFunctionDecorator=false
-from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
@@ -38,6 +38,9 @@ if sys.version_info < (3, 8):
 else:
     from importlib.metadata import PackageNotFoundError
     from importlib.metadata import version as get_package_version
+
+if TYPE_CHECKING:
+    from pybtex.database import Entry
 
 # -- Project information -----------------------------------------------------
 project = "AmpForm"
@@ -70,26 +73,25 @@ except PackageNotFoundError:
 def fetch_logo(url: str, output_path: str) -> None:
     if os.path.exists(output_path):
         return
-    online_content = requests.get(url, allow_redirects=True)
+    online_content = requests.get(url, allow_redirects=True, timeout=10)
     with open(output_path, "wb") as stream:
         stream.write(online_content.content)
 
 
 LOGO_PATH = "_static/logo.svg"
-try:
+with contextlib.suppress(requests.exceptions.ConnectionError):
     fetch_logo(
         url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
         output_path=LOGO_PATH,
     )
-except requests.exceptions.ConnectionError:
-    pass
 if os.path.exists(LOGO_PATH):
     html_logo = LOGO_PATH
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings  # noqa: E402
-from _relink_references import relink_references  # noqa: E402
+
+from _extend_docstrings import extend_docstrings
+from _relink_references import relink_references
 
 extend_docstrings()
 relink_references()
@@ -109,7 +111,7 @@ subprocess.call(
             "--separate",
         ]
     ),
-    shell=True,
+    shell=True,  # noqa: S602
 )
 
 # -- General configuration ---------------------------------------------------
@@ -183,9 +185,6 @@ autodoc_type_aliases = {
     "FourMomenta": "ampform.kinematics.FourMomenta",
     "FourMomentumSymbol": "ampform.kinematics.FourMomentumSymbol",
     "RangeDefinition": "symplot.RangeDefinition",
-    # https://github.com/sphinx-doc/sphinx/pull/10183
-    # "ParameterValue": "ampform.helicity.ParameterValue",
-    # "Slider": "symplot.Slider",
 }
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
@@ -316,7 +315,7 @@ def get_version(package_name: str) -> str:
         if not line:
             continue
         line_segments = tuple(line.split("=="))
-        if len(line_segments) != 2:
+        if len(line_segments) != 2:  # noqa: PLR2004
             continue
         _, installed_version, *_ = line_segments
         installed_version = installed_version.strip()
@@ -335,9 +334,8 @@ def get_minor_version(package_name: str) -> str:
         return installed_version
     matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
     if matches is None:
-        raise ValueError(
-            f"Could not find documentation for {package_name} v{installed_version}"
-        )
+        msg = f"Could not find documentation for {package_name} v{installed_version}"
+        raise ValueError(msg)
     return matches[1]
 
 
@@ -470,12 +468,11 @@ def et_al(children, data, sep="", sep2=None, last_sep=None):
     parts = [part for part in _format_list(children, data) if part]
     if len(parts) <= 1:
         return Text(*parts)
-    elif len(parts) == 2:
+    if len(parts) == 2:  # noqa: PLR2004
         return Text(sep2).join(parts)
-    elif len(parts) == 3:
+    if len(parts) == 3:  # noqa: PLR2004
         return Text(last_sep).join([Text(sep).join(parts[:-1]), parts[-1]])
-    else:
-        return Text(parts[0], Tag("em", " et al"))
+    return Text(parts[0], Tag("em", " et al"))
 
 
 @node
@@ -484,8 +481,8 @@ def names(children, context, role, **kwargs):
     assert not children
     try:
         persons = context["entry"].persons[role]
-    except KeyError:
-        raise FieldIsMissing(role, context["entry"])
+    except KeyError as exc:
+        raise FieldIsMissing(role, context["entry"]) from exc
 
     style = context["style"]
     formatted_names = [
@@ -502,8 +499,7 @@ class MyStyle(UnsrtStyle):
         formatted_names = names(role, sep=", ", sep2=" and ", last_sep=", and ")
         if as_sentence:
             return sentence[formatted_names]
-        else:
-            return formatted_names
+        return formatted_names
 
     def format_eprint(self, e: Entry) -> Node:
         if "doi" in e.fields:

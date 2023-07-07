@@ -1,5 +1,3 @@
-# pylint: disable=arguments-differ, abstract-method, protected-access,
-# pylint: disable=too-many-arguments, unbalanced-tuple-unpacking
 """Functions for determining phase space boundaries.
 
 .. seealso:: :doc:`/usage/kinematics`

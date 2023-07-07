@@ -10,7 +10,7 @@ set as good as possible.
 
 from qrules import ReactionInfo
 
-from .helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
+from ampform.helicity import CanonicalAmplitudeBuilder, HelicityAmplitudeBuilder
 
 
 def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
@@ -21,15 +21,13 @@ def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
     """
     formalism = reaction.formalism
     if formalism is None:
-        raise ValueError(
-            f"{ReactionInfo.__name__} does not have a formalism type:\n{reaction}"
-        )
+        msg = f"{ReactionInfo.__name__} does not have a formalism type:\n{reaction}"
+        raise ValueError(msg)
     if formalism == "helicity":
         amplitude_builder = HelicityAmplitudeBuilder(reaction)
     elif formalism in ["canonical-helicity", "canonical"]:
         amplitude_builder = CanonicalAmplitudeBuilder(reaction)
     else:
-        raise NotImplementedError(
-            f'No amplitude generator for formalism type "{formalism}"'
-        )
+        msg = f'No amplitude generator for formalism type "{formalism}"'
+        raise NotImplementedError(msg)
     return amplitude_builder

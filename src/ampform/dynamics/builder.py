@@ -2,26 +2,30 @@
 from __future__ import annotations
 
 import sys
-from typing import Dict, Tuple
+from typing import TYPE_CHECKING, Dict, Tuple
 
 import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
-from qrules.particle import Particle
 
-from . import (
+from ampform.dynamics import (
     EnergyDependentWidth,
+    formulate_form_factor,
+    relativistic_breit_wigner,
+)
+from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
-    formulate_form_factor,
-    relativistic_breit_wigner,
 )
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:  # pragma: no cover
     from typing_extensions import Protocol
+
+if TYPE_CHECKING:
+    from qrules.particle import Particle
 
 
 @frozen
@@ -70,7 +74,6 @@ class ResonanceDynamicsBuilder(Protocol):
 def create_non_dynamic(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> BuilderReturnType:
-    # pylint: disable=unused-argument
     return (sp.S.One, {})
 
 
@@ -82,9 +85,8 @@ def create_non_dynamic_with_ff(
     See also :func:`.formulate_form_factor`.
     """
     if variable_pool.angular_momentum is None:
-        raise ValueError(
-            "Angular momentum is not defined but is required in the form factor!"
-        )
+        msg = "Angular momentum is not defined but is required in the form factor!"
+        raise ValueError(msg)
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
     form_factor = formulate_form_factor(
@@ -172,9 +174,8 @@ class RelativisticBreitWignerBuilder:
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
-            raise ValueError(
-                "Angular momentum is not defined but is required in the form factor!"
-            )
+            msg = "Angular momentum is not defined but is required in the form factor!"
+            raise ValueError(msg)
 
         inv_mass = variable_pool.incoming_state_mass
         m_a = variable_pool.outgoing_state_mass1
@@ -207,9 +208,8 @@ class RelativisticBreitWignerBuilder:
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         if variable_pool.angular_momentum is None:
-            raise ValueError(
-                "Angular momentum is not defined but is required in the form factor!"
-            )
+            msg = "Angular momentum is not defined but is required in the form factor!"
+            raise ValueError(msg)
 
         inv_mass = variable_pool.incoming_state_mass
         _, __, meson_radius = self.__create_symbols(resonance)

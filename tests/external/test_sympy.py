@@ -11,7 +11,6 @@ class TestFunction:
         f = sp.Function("h")
         g = sp.Function("h")
         assert f is g
-        # pylint: disable=not-callable
         assert f(x) is g(x)
         f = sp.Function("h")(x)
         g = sp.Function("h")(x)
@@ -29,10 +28,9 @@ class TestSymbol:
         assert hash(x) == hash(y)
 
     def test_name(self):
-        # pylint: disable=no-member
         x = sp.Symbol("x; weird-spacing\t.,")
         f = sp.Function("  f.^")
-        g = sp.Function("g")(x)  # pylint: disable=not-callable
+        g = sp.Function("g")(x)
         assert x.name == "x; weird-spacing	.,"
         # cspell:ignore srepr
         assert sp.srepr(x) == "Symbol('x; weird-spacing\\t.,')"

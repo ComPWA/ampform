@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import collections
 from functools import lru_cache, singledispatch
-from typing import DefaultDict, Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from attrs import frozen
-from qrules.quantum_numbers import InteractionProperties
-from qrules.topology import Topology
 from qrules.transition import State, StateTransition
+
+if TYPE_CHECKING:
+    from qrules.quantum_numbers import InteractionProperties
+    from qrules.topology import Topology
 
 
 @frozen
@@ -63,8 +65,9 @@ class TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-        if len(in_state_ids) != 1 or len(out_state_ids) != 2:
-            raise ValueError(f"Node {node_id} does not represent a 1-to-2 body decay!")
+        if len(in_state_ids) != 1 or len(out_state_ids) != 2:  # noqa: PLR2004
+            msg = f"Node {node_id} does not represent a 1-to-2 body decay!"
+            raise ValueError(msg)
         ingoing_state_id = next(iter(in_state_ids))
         out_state_id1, out_state_id2, *_ = tuple(out_state_ids)
         if is_opposite_helicity_state(topology, out_state_id1):
@@ -81,9 +84,8 @@ class TwoBodyDecay:
 
 @singledispatch
 def _create_two_body_decay(obj) -> TwoBodyDecay:
-    raise NotImplementedError(
-        f"Cannot create a {TwoBodyDecay.__name__} from a {type(obj).__name__}"
-    )
+    msg = f"Cannot create a {TwoBodyDecay.__name__} from a {type(obj).__name__}"
+    raise NotImplementedError(msg)
 
 
 @_create_two_body_decay.register(TwoBodyDecay)
@@ -93,10 +95,12 @@ def _(obj: TwoBodyDecay) -> TwoBodyDecay:
 
 @_create_two_body_decay.register(tuple)
 def _(obj: tuple) -> TwoBodyDecay:
-    if len(obj) == 2:
-        if isinstance(obj[0], StateTransition) and isinstance(obj[1], int):
+    if len(obj) == 2:  # noqa: PLR2004
+        transition, node_id = obj
+        if isinstance(transition, StateTransition) and isinstance(node_id, int):
             return TwoBodyDecay.from_transition(*obj)
-    raise NotImplementedError(f"Cannot create a {TwoBodyDecay.__name__} from {obj}")
+    msg = f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
+    raise NotImplementedError(msg)
 
 
 @lru_cache(maxsize=None)
@@ -157,13 +161,13 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     """
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
-        raise ValueError(
-            f"State {state_id} is an incoming edge and does not have siblings."
-        )
+        msg = f"State {state_id} is an incoming edge and does not have siblings."
+        raise ValueError(msg)
     out_state_ids = topology.get_edge_ids_outgoing_from_node(parent_node)
     out_state_ids.remove(state_id)
     if len(out_state_ids) != 1:
-        raise ValueError("Not an isobar decay")
+        msg = "Not an isobar decay"
+        raise ValueError(msg)
     return next(iter(out_state_ids))
 
 
@@ -207,7 +211,8 @@ def get_parent_id(topology: Topology, state_id: int) -> int | None:
         topology.get_edge_ids_ingoing_to_node(edge.originating_node_id)
     )
     if len(incoming_edge_ids) != 1:
-        raise ValueError(f"{StateTransition.__name__} is not an isobar decay")
+        msg = f"{StateTransition.__name__} is not an isobar decay"
+        raise ValueError(msg)
     return incoming_edge_ids[0]
 
 
@@ -256,16 +261,18 @@ def assert_isobar_topology(topology: Topology) -> None:
 def assert_two_body_decay(topology: Topology, node_id: int) -> None:
     parent_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
     if len(parent_state_ids) != 1:
-        raise ValueError(
-            f"Node {node_id} has {len(parent_state_ids)} parent states,"
-            " so this is not an isobar decay"
+        msg = (
+            f"Node {node_id} has {len(parent_state_ids)} parent states, so this is not"
+            " an isobar decay"
         )
+        raise ValueError(msg)
     child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-    if len(child_state_ids) != 2:
-        raise ValueError(
-            f"Node {node_id} decays to {len(child_state_ids)} states,"
-            " so this is not an isobar decay"
+    if len(child_state_ids) != 2:  # noqa: PLR2004
+        msg = (
+            f"Node {node_id} decays to {len(child_state_ids)} states, so this is not an"
+            " isobar decay"
         )
+        raise ValueError(msg)
 
 
 def determine_attached_final_state(topology: Topology, state_id: int) -> list[int]:
@@ -312,7 +319,7 @@ def group_by_spin_projection(
     and final state (including spin). This is needed to determine the coherency of the
     individual amplitude parts.
     """
-    transition_groups: DefaultDict[
+    transition_groups: collections.defaultdict[
         tuple[
             tuple[tuple[str, float], ...],
             tuple[tuple[str, float], ...],

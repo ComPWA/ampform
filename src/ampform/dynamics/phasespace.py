@@ -1,5 +1,3 @@
-# pylint: disable=abstract-method, arguments-differ, protected-access
-# pylint: disable=unbalanced-tuple-unpacking
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by
@@ -15,11 +13,10 @@ from __future__ import annotations
 
 import re
 import sys
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
-from sympy.printing.latex import LatexPrinter
 
 from ampform.sympy import (
     UnevaluatedExpression,
@@ -27,6 +24,9 @@ from ampform.sympy import (
     implement_doit_method,
 )
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
 
 if sys.version_info >= (3, 8):
     from typing import Protocol
@@ -316,7 +316,7 @@ def _determine_indices(symbol) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # pylint: disable=eval-used
+        indices = eval(subscript)  # noqa: PGH001, S307
     except SyntaxError:
         return []
     return list(indices)

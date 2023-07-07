@@ -1,4 +1,3 @@
-# pylint: disable=invalid-name protected-access unused-argument
 """Input-output functions for `ampform` and `sympy` objects.
 
 .. tip:: This function are registered with :func:`functools.singledispatch` and can be
@@ -53,10 +52,11 @@ def _(obj: sp.Basic) -> str:
 @aslatex.register(abc.Mapping)
 def _(obj: Mapping) -> str:
     if len(obj) == 0:
-        raise ValueError("Need at least one dictionary item")
-    latex = R"\begin{array}{rcl}" + "\n"
+        msg = "Need at least one dictionary item"
+        raise ValueError(msg)
+    latex = R"\begin{array}{rcl}" + "\n"  # noqa: ISC003
     for lhs, rhs in obj.items():
-        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"  # pyright: ignore
+        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"  # noqa: ISC003
     latex += R"\end{array}"
     return latex
 
@@ -65,10 +65,11 @@ def _(obj: Mapping) -> str:
 def _(obj: Iterable) -> str:
     obj = list(obj)
     if len(obj) == 0:
-        raise ValueError("Need at least one item to render as LaTeX")
-    latex = R"\begin{array}{c}" + "\n"
+        msg = "Need at least one item to render as LaTeX"
+        raise ValueError(msg)
+    latex = R"\begin{array}{c}" + "\n"  # noqa: ISC003
     for item in map(aslatex, obj):
-        latex += Rf"  {item} \\" + "\n"  # pyright: ignore
+        latex += Rf"  {item} \\" + "\n"  # noqa: ISC003
     latex += R"\end{array}"
     return latex
 

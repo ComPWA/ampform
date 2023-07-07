@@ -1,34 +1,35 @@
-# cspell:ignore asner mhash
-# pylint: disable=abstract-method, arguments-differ
-# pylint: disable=invalid-getnewargs-ex-returned, protected-access
 """Lineshape functions that describe the dynamics of an interaction.
 
 .. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
 """
+# cspell:ignore asner
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import sympy as sp
 from sympy.core.basic import _aresame
-from sympy.printing.latex import LatexPrinter
 
+# pyright: reportUnusedImport=false
+from ampform.dynamics.phasespace import (
+    BreakupMomentumSquared,
+    EqualMassPhaseSpaceFactor,  # noqa: F401
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,  # noqa: F401
+    PhaseSpaceFactorComplex,  # noqa: F401
+    PhaseSpaceFactorProtocol,
+    PhaseSpaceFactorSWave,  # noqa: F401
+    _determine_indices,
+    _indices_to_subscript,
+)
 from ampform.sympy import (
     UnevaluatedExpression,
     create_expression,
     implement_doit_method,
 )
 
-# pyright: reportUnusedImport=false
-from .phasespace import (
-    BreakupMomentumSquared,
-    EqualMassPhaseSpaceFactor,
-    PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,
-    PhaseSpaceFactorComplex,
-    PhaseSpaceFactorProtocol,
-    PhaseSpaceFactorSWave,
-    _determine_indices,
-    _indices_to_subscript,
-)
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
 
 
 @implement_doit_method
@@ -171,7 +172,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
     phsp_factor: PhaseSpaceFactorProtocol
     is_commutative = True
 
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         s,
         mass0,
@@ -191,7 +192,7 @@ class EnergyDependentWidth(UnevaluatedExpression):
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L121-L127
         expr = object.__new__(cls)
         expr._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
-        expr._mhash = None
+        expr._mhash = None  # cspell:ignore mhash
         expr._args = args
         expr._name = name
         expr.phsp_factor = phsp_factor
@@ -246,7 +247,6 @@ class EnergyDependentWidth(UnevaluatedExpression):
                 hit = True
                 new_args[i] = arg
         if hit:
-            # pylint: disable=no-value-for-parameter
             return self.func(*new_args, self.phsp_factor, self._name)
         return self
 
@@ -267,7 +267,6 @@ class EnergyDependentWidth(UnevaluatedExpression):
                     new_args.append(a)
             new_args = tuple(new_args)
             if hit:
-                # pylint: disable=no-value-for-parameter
                 return self.func(*new_args, self.phsp_factor, self._name), True
         return self, False
 
@@ -281,7 +280,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(  # pylint: disable=too-many-arguments
+def relativistic_breit_wigner_with_ff(
     s,
     mass0,
     gamma0,

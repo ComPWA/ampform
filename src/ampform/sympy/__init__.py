@@ -1,7 +1,5 @@
-# cspell:ignore mhash
-# pylint: disable=invalid-getnewargs-ex-returned, protected-access, W0223
-# https://stackoverflow.com/a/22224042
 """Tools that facilitate in building :mod:`sympy` expressions."""
+# cspell:ignore mhash
 from __future__ import annotations
 
 import functools
@@ -13,12 +11,14 @@ import pickle
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
 from textwrap import dedent
-from typing import Callable, Iterable, Sequence, SupportsFloat, TypeVar
+from typing import TYPE_CHECKING, Callable, Iterable, Sequence, SupportsFloat, TypeVar
 
 import sympy as sp
-from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
+    from sympy.printing.numpy import NumPyPrinter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class UnevaluatedExpression(sp.Expr):
     _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
 
-    def __new__(  # pylint: disable=unused-argument
+    def __new__(
         cls: type[DecoratedClass],
         *args,
         name: str | None = None,
@@ -202,8 +202,7 @@ def implement_expr(
         decorated_class: type[DecoratedClass],
     ) -> type[DecoratedClass]:
         decorated_class = implement_new_method(n_args)(decorated_class)
-        decorated_class = implement_doit_method(decorated_class)
-        return decorated_class
+        return implement_doit_method(decorated_class)
 
     return decorator
 
@@ -220,14 +219,15 @@ def implement_new_method(
     def decorator(
         decorated_class: type[DecoratedClass],
     ) -> type[DecoratedClass]:
-        def new_method(  # pylint: disable=unused-argument
+        def new_method(
             cls: type[DecoratedClass],
             *args: sp.Symbol,
             evaluate: bool = False,
             **hints,
         ) -> DecoratedClass:
             if len(args) != n_args:
-                raise ValueError(f"{n_args} parameters expected, got {len(args)}")
+                msg = f"{n_args} parameters expected, got {len(args)}"
+                raise ValueError(msg)
             args = sp.sympify(args)
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
@@ -269,7 +269,6 @@ def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
     def decorator(
         decorated_class: type[UnevaluatedExpression],
     ) -> type[UnevaluatedExpression]:
-        # pylint: disable=protected-access, unused-argument
         @functools.wraps(decorated_class.doit)
         def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
             momentum = printer._print(self._momentum)  # type: ignore[attr-defined]
@@ -364,7 +363,8 @@ class PoolSum(UnevaluatedExpression):
         for idx_symbol, values in indices:
             values = tuple(values)
             if len(values) == 0:
-                raise ValueError(f"No values provided for index {idx_symbol}")
+                msg = f"No values provided for index {idx_symbol}"
+                raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         return create_expression(cls, expression, *converted_indices, **hints)
 
@@ -466,7 +466,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in zip(sorted_values, sorted_values[1:]):
         difference = float(next_val) - float(val)
-        if difference != 1.0:
+        if difference != 1.0:  # noqa: PLR2004
             return False
     return True
 
@@ -497,7 +497,7 @@ def perform_cached_doit(
     os.makedirs(dirname(filename), exist_ok=True)
     if os.path.exists(filename):
         with open(filename, "rb") as f:
-            return pickle.load(f)
+            return pickle.load(f)  # noqa: S301
     _LOGGER.warning(
         f"Cached expression file {filename} not found, performing doit()..."
     )

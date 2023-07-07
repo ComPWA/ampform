@@ -32,14 +32,208 @@ target-version = [
     "py39",
 ]
 
-[tool.isort]
-known_third_party = "THIRDPARTY,sympy"
-profile = "black"
-src_paths = [
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.mypy]
+exclude = "_build"
+show_error_codes = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+check_untyped_defs = true
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+module = ["tests.*"]
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = ["typings.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["IPython.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["graphviz.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["ipywidgets.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["numpy.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["pybtex.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["sphinx.*"]
+
+[tool.nbqa.addopts]
+black = ["--line-length=85"]
+ruff = [
+    "--extend-ignore=B018",
+    "--extend-ignore=C408",
+    "--extend-ignore=C90",
+    "--extend-ignore=D",
+    "--extend-ignore=N806",
+    "--extend-ignore=N816",
+    "--extend-ignore=PLR09",
+    "--extend-ignore=PLR2004",
+    "--extend-ignore=PLW0602",
+    "--extend-ignore=PLW0603",
+    "--extend-ignore=S301",    # allow pickle
+    "--line-length=85",
+]
+
+[tool.pyright]
+exclude = [
+    "**/.git",
+    "**/.ipynb_checkpoints",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.tox",
+    "**/__pycache__",
+    "**/_build",
+]
+reportGeneralTypeIssues = false
+reportIncompatibleMethodOverride = false
+reportMissingParameterType = false
+reportMissingTypeArgument = false
+reportMissingTypeStubs = false
+reportOverlappingOverload = false
+reportPrivateImportUsage = false
+reportPrivateUsage = false
+reportUnboundVariable = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+reportUnnecessaryComparison = false
+reportUnnecessaryContains = false
+reportUnnecessaryIsInstance = false
+reportUntypedFunctionDecorator = false
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedImport = true
+reportUnusedVariable = true
+typeCheckingMode = "strict"
+
+[tool.pytest.ini_options]
+addopts = '''
+--color=yes
+--doctest-continue-on-failure
+--doctest-modules
+--durations=3
+--ignore=docs/abbreviate_signature.py
+--ignore=docs/conf.py
+-m "not slow"'''
+filterwarnings = [
+    "error",
+    "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
+    "ignore:Passing a schema to Validator.iter_errors is deprecated.*:DeprecationWarning",
+    "ignore:The .* argument to NotebookFile is deprecated.*:pytest.PytestRemovedIn8Warning",
+    "ignore:The distutils package is deprecated.*:DeprecationWarning",
+    "ignore:The distutils.* module is deprecated.*:DeprecationWarning",
+    "ignore:unclosed .*:ResourceWarning",
+    'ignore:Widget\..* is deprecated\.:DeprecationWarning',
+]
+markers = ["slow: marks tests as slow (select with '-m slow')"]
+norecursedirs = [
+    ".ipynb_checkpoints",
+    "_build",
+]
+testpaths = [
     "src",
     "tests",
 ]
 
-[tool.nbqa.addopts]
-black = ["--line-length=85"]
-flake8 = ["--extend-ignore=E402,F821"]
+[tool.ruff]
+extend-exclude = ["typings"]
+extend-select = [
+    "A",
+    "B",
+    "BLE",
+    "C4",
+    "C90",
+    "D",
+    "EM",
+    "ERA",
+    "FA",
+    "I",
+    "ICN",
+    "INP",
+    "ISC",
+    "N",
+    "NPY",
+    "PGH",
+    "PIE",
+    "PL",
+    "Q",
+    "RET",
+    "RSE",
+    "RUF",
+    "S",
+    "SIM",
+    "T20",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+]
+ignore = [
+    "D101",
+    "D102",
+    "D103",
+    "D105",
+    "D107",
+    "D203",
+    "D213",
+    "D407",
+    "D416",
+    "E501",
+    "PLR0913",
+    "PLW2901",
+    "SIM108",
+]
+show-fixes = true
+src = [
+    "src",
+    "tests",
+]
+target-version = "py37"
+task-tags = ["cspell"]
+
+[tool.ruff.isort]
+known-third-party = ["sympy"]
+
+[tool.ruff.per-file-ignores]
+"docs/*" = [
+    "E402",
+    "INP001",
+    "N802",
+    "N806",
+    "S101",
+    "S113",
+    "T201",
+]
+"setup.py" = ["D100"]
+"tests/*" = [
+    "C408",
+    "D",
+    "INP001",
+    "PGH001",
+    "PLR0913",
+    "PLR2004",
+    "S101",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"

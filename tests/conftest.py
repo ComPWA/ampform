@@ -1,18 +1,21 @@
-# pylint: disable=redefined-outer-name
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import qrules
-from _pytest.fixtures import SubRequest
 from qrules import ParticleCollection, ReactionInfo, load_default_particles
 from qrules.settings import NumberOfThreads
 
 from ampform import get_builder
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
-from ampform.helicity import HelicityModel
+
+if TYPE_CHECKING:
+    from _pytest.fixtures import SubRequest
+
+    from ampform.helicity import HelicityModel
 
 logging.getLogger().setLevel(level=logging.ERROR)
 

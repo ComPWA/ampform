@@ -1,4 +1,3 @@
-# pylint: disable=import-outside-toplevel, too-many-arguments, too-many-lines
 """Generate an amplitude model with the helicity formalism.
 
 .. autolink-preface::
@@ -17,7 +16,6 @@ from difflib import get_close_matches
 from functools import reduce, singledispatch
 from typing import (
     TYPE_CHECKING,
-    DefaultDict,
     Generator,
     ItemsView,
     Iterable,
@@ -37,13 +35,22 @@ from attrs import define, field, frozen
 from attrs.validators import instance_of
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
-from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
     create_non_dynamic,
+)
+from ampform.helicity.naming import (
+    CanonicalAmplitudeNameGenerator,
+    HelicityAmplitudeNameGenerator,
+    NameGenerator,
+    generate_transition_label,
+    get_helicity_angle_symbols,
+    get_helicity_suffix,
+    get_topology_identifier,
+    natural_sorting,
 )
 from ampform.kinematics import HelicityAdapter, get_invariant_mass_symbol
 from ampform.sympy import PoolSum
@@ -57,26 +64,17 @@ from .decay import (
     group_by_topology,
     is_opposite_helicity_state,
 )
-from .naming import (
-    CanonicalAmplitudeNameGenerator,
-    HelicityAmplitudeNameGenerator,
-    NameGenerator,
-    generate_transition_label,
-    get_helicity_angle_symbols,
-    get_helicity_suffix,
-    get_topology_identifier,
-    natural_sorting,
-)
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod
     from typing import Literal
 else:
     from singledispatchmethod import singledispatchmethod
-    from typing_extensions import Literal
+    from typing_extensions import Literal  # noqa: TCH002
 
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
+    from qrules.topology import Topology
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +114,7 @@ def _to_parameter_values(mapping: Mapping[sp.Basic, ParameterValue]) -> Paramete
 
 
 @frozen
-class HelicityModel:  # noqa: R701
+class HelicityModel:
     intensity: PoolSum = field(validator=instance_of(PoolSum))
     """Main expression describing the intensity over `kinematic_variables`."""
     amplitudes: OrderedDict[sp.Indexed, sp.Expr] = field(converter=_order_amplitudes)
@@ -170,7 +168,7 @@ class HelicityModel:  # noqa: R701
         intensity = unfold_poolsums(intensity)
         return intensity.xreplace(self.amplitudes)
 
-    def rename_symbols(  # noqa: R701
+    def rename_symbols(
         self, renames: Iterable[tuple[str, str]] | Mapping[str, str]
     ) -> HelicityModel:
         """Rename certain symbols in the model.
@@ -224,25 +222,25 @@ class HelicityModel:  # noqa: R701
             symbols |= expr.free_symbols  # type: ignore[arg-type]
         return symbols
 
-    def sum_components(self, components: Iterable[str]) -> sp.Expr:  # noqa: R701
+    def sum_components(self, components: Iterable[str]) -> sp.Expr:
         """Coherently or incoherently add components of a helicity model."""
         components = list(components)  # copy
         for component in components:
             if component not in self.components:
                 first_letter = component[0]
-                # pylint: disable=cell-var-from-loop
                 candidates = get_close_matches(
                     component,
                     filter(
-                        lambda c: c.startswith(first_letter),  # noqa: B023
+                        lambda c: c.startswith(first_letter),
                         self.components,
                     ),
                 )
+                msg = (
+                    f'Component "{component}" not in model components. Did you mean any'
+                    " of these?"
+                )
                 raise KeyError(
-                    (
-                        f'Component "{component}" not in model components. '
-                        "Did you mean any of these?"
-                    ),
+                    (msg),
                     candidates,
                 )
         if any(c.startswith("I") for c in components) and any(
@@ -259,7 +257,8 @@ class HelicityModel:  # noqa: R701
             return sum(self.components[c] for c in components)  # type: ignore[return-value]
         if all(c.startswith("A") for c in components):
             return sp.Abs(sum(self.components[c] for c in components)) ** 2
-        raise ValueError('Not all component names started with either "A" or "I"')
+        msg = 'Not all component names started with either "A" or "I"'
+        raise ValueError(msg)
 
 
 class ParameterValues(abc.Mapping):
@@ -319,14 +318,14 @@ class ParameterValues(abc.Mapping):
 
     @singledispatchmethod
     def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
-        raise KeyError(  # no TypeError because of sympy.core.expr.Expr.xreplace
-            f"Cannot find parameter for key type {type(key).__name__}"
-        )
+        msg = f"Cannot find parameter for key type {type(key).__name__}"
+        raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
     @_get_parameter.register(sp.Basic)
     def _(self, par: sp.Basic) -> sp.Basic:
         if par not in self.__parameters:
-            raise KeyError(f"{type(self).__name__} has no parameter {par}")
+            msg = f"{type(self).__name__} has no parameter {par}"
+            raise KeyError(msg)
         return par
 
     @_get_parameter.register(str)
@@ -334,17 +333,19 @@ class ParameterValues(abc.Mapping):
         for parameter in self.__parameters:
             if str(parameter) == name:
                 return parameter
-        raise KeyError(f"No parameter available with name {name}")
+        msg = f"No parameter available with name {name}"
+        raise KeyError(msg)
 
     @_get_parameter.register(int)
     def _(self, key: int) -> sp.Basic:
         for i, parameter in enumerate(self.__parameters):
             if i == key:
                 return parameter
-        raise KeyError(
-            f"Parameter mapping has {len(self)} parameters, but trying to get"
-            f" parameter number {key}"
+        msg = (
+            f"Parameter mapping has {len(self)} parameters, but trying to get parameter"
+            f" number {key}"
         )
+        raise KeyError(msg)
 
     def __len__(self) -> int:
         return len(self.__parameters)
@@ -403,9 +404,10 @@ class DynamicsSelector(abc.Mapping):
         - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
           node ID: set dynamics for one specific transition node.
         """
-        raise NotImplementedError(
+        msg = (
             f"Cannot set dynamics builder for selection type {type(selection).__name__}"
         )
+        raise NotImplementedError(msg)
 
     @assign.register(TwoBodyDecay)
     def _(self, decay: TwoBodyDecay, builder: ResonanceDynamicsBuilder) -> None:
@@ -457,7 +459,7 @@ class DynamicsSelector(abc.Mapping):
         return self.__choices.values()
 
 
-class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
+class HelicityAmplitudeBuilder:
     r"""Amplitude model generator for the helicity formalism.
 
     Args:
@@ -484,10 +486,11 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         scalar_initial_state_mass: bool = False,
     ) -> None:
         if len(reaction.transitions) < 1:
-            raise ValueError(
-                f"At least one {StateTransition.__name__} required to"
-                " genenerate an amplitude model!"
+            msg = (
+                f"At least one {StateTransition.__name__} required to genenerate an"
+                " amplitude model!"
             )
+            raise ValueError(msg)
         self.__reaction = reaction
         self.naming: NameGenerator = HelicityAmplitudeNameGenerator(reaction)
         """Name generator for amplitude names and coefficient names.
@@ -519,7 +522,6 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
 
     @property
     def stable_final_state_ids(self) -> set[int] | None:
-        # noqa: D403
         """IDs of the final states that should be considered stable.
 
         The 'invariant' mass symbols for these final states will be inserted as
@@ -533,12 +535,12 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         if value is not None:
             self.__stable_final_state_ids = set(value)
             if not self.__stable_final_state_ids <= set(self.__reaction.final_state):
-                raise ValueError(
-                    "Final state IDs are"
-                    f" {sorted(self.__reaction.final_state)}, but trying to"
-                    " set stable final state IDs"
+                msg = (
+                    f"Final state IDs are {sorted(self.__reaction.final_state)}, but"
+                    " trying to set stable final state IDs"
                     f" {self.__stable_final_state_ids}"
                 )
+                raise ValueError(msg)
 
     @property
     def scalar_initial_state_mass(self) -> bool:
@@ -588,11 +590,10 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         )
 
     def __formulate_top_expression(self) -> PoolSum:
-        # pylint: disable=too-many-locals
         outer_state_ids = _get_outer_state_ids(self.__reaction)
-        spin_projections: DefaultDict[
-            sp.Symbol, set[sp.Rational]
-        ] = collections.defaultdict(set)
+        spin_projections: collections.defaultdict[sp.Symbol, set[sp.Rational]] = (
+            collections.defaultdict(set)
+        )
         spin_groups = group_by_spin_projection(self.__reaction.transitions)
         for group in spin_groups:
             self.__register_amplitudes(group)
@@ -745,7 +746,7 @@ class HelicityAmplitudeBuilder:  # pylint: disable=too-many-instance-attributes
         self, transition: StateTransition
     ) -> sp.Rational | None:
         prefactor = get_prefactor(transition)
-        if prefactor != 1.0:
+        if prefactor != 1.0:  # noqa: PLR2004
             for node_id in transition.topology.nodes:
                 raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id
@@ -800,7 +801,8 @@ def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
 
 @singledispatch
 def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    raise NotImplementedError(f"Cannot get outer state IDs from a {type(obj).__name__}")
+    msg = f"Cannot get outer state IDs from a {type(obj).__name__}"
+    raise NotImplementedError(msg)
 
 
 @_get_outer_state_ids.register(StateTransition)
@@ -1065,7 +1067,6 @@ def formulate_helicity_rotation_chain(
         parent_id = get_parent_id(topology, state_id)
         if parent_id is None:
             return
-        # pylint: disable=stop-iteration-return
         nonlocal idx_root_counter
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
@@ -1073,7 +1074,9 @@ def formulate_helicity_rotation_chain(
         if is_opposite_helicity_state(topology, state_id):
             state_id = get_sibling_state_id(topology, state_id)
         phi, theta = get_helicity_angle_symbols(topology, state_id)
-        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
+        no_zero_spin = (
+            transition.states[rotated_state_id].particle.mass == 0.0  # noqa: PLR2004
+        )
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(f"{next_idx_root}{idx_suffix}", rational=True),
@@ -1096,7 +1099,8 @@ def formulate_helicity_rotation_chain(
 
 def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
     if len(sum_expressions) == 0:
-        raise ValueError(f"Product needs at least one {PoolSum.__name__}")
+        msg = f"Product needs at least one {PoolSum.__name__}"
+        raise ValueError(msg)
     product = sp.Mul(*[pool_sum.expression for pool_sum in sum_expressions])
     combined_indices = []
     for pool_sum in sum_expressions:
@@ -1129,7 +1133,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
-    no_zero_spin = state.particle.mass == 0.0
+    no_zero_spin = state.particle.mass == 0.0  # noqa: PLR2004
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     if helicity_symbol is None:
         spin_projection = state.spin_projection
@@ -1213,7 +1217,7 @@ def formulate_helicity_rotation(
     )
 
 
-_BasicType = TypeVar("_BasicType", bound=sp.Basic)  # pylint: disable=invalid-name
+_BasicType = TypeVar("_BasicType", bound=sp.Basic)
 
 
 @overload
@@ -1266,9 +1270,8 @@ def _generate_kinematic_variable_set(
     child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
     child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
-    if angular_momentum is None:
-        if decay.parent.particle.spin.is_integer():
-            angular_momentum = int(decay.parent.particle.spin)
+    if angular_momentum is None and decay.parent.particle.spin.is_integer():
+        angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
         outgoing_state_mass1=child1_mass,

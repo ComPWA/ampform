@@ -1,4 +1,3 @@
-# pylint: disable=eval-used protected-access redefined-outer-name
 from __future__ import annotations
 
 import logging
@@ -78,7 +77,7 @@ class TestSliderKwargs:
     def test_repr(
         self, repr_function: Callable[[Any], str], slider_kwargs: SliderKwargs
     ) -> None:
-        from_repr: SliderKwargs = eval(repr_function(slider_kwargs))
+        from_repr: SliderKwargs = eval(repr_function(slider_kwargs))  # noqa: S307
         assert set(from_repr) == set(slider_kwargs)
         for slider_name in slider_kwargs:
             slider = slider_kwargs[slider_name]
@@ -98,7 +97,7 @@ class TestSliderKwargs:
             ("alpha", 8, 10, 0.5, 0.5),
         ],
     )
-    def test_set_ranges(  # pylint: disable=too-many-arguments
+    def test_set_ranges(
         self,
         slider_name: str,
         min_: float,

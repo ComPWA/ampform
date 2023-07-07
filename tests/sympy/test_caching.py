@@ -3,20 +3,23 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 import sympy as sp
-from _pytest.logging import LogCaptureFixture
 
 from ampform.dynamics import EnergyDependentWidth
-from ampform.helicity import HelicityModel
 from ampform.sympy import _warn_about_unsafe_hash, get_readable_hash
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+
+    from ampform.helicity import HelicityModel
 
 
 @pytest.mark.parametrize(
     ("assumptions", "expected_hash"),
     [
-        # pylint: disable=use-dict-literal
         (dict(), "pythonhashseed-0+7459658071388516764"),
         (dict(real=True), "pythonhashseed-0+3665410414623666716"),
         (dict(rational=True), "pythonhashseed-0-7926839224244779605"),
@@ -32,7 +35,6 @@ def test_get_readable_hash(assumptions, expected_hash, caplog: LogCaptureFixture
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None or not python_hash_seed.isdigit():
         assert h[:7] == "bbc9833"
-        # pylint: disable=too-many-function-args
         if _warn_about_unsafe_hash.cache_info().hits == 0:
             assert "PYTHONHASHSEED has not been set." in caplog.text
             caplog.clear()

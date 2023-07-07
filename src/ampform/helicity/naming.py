@@ -4,18 +4,20 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 import sympy as sp
-from qrules.topology import Topology
 from qrules.transition import ReactionInfo, State, StateTransition
 
-from .decay import (
+from ampform.helicity.decay import (
     assert_isobar_topology,
     determine_attached_final_state,
     get_helicity_info,
     get_sorted_states,
 )
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
 
 
 class NameGenerator(ABC):
