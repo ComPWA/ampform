@@ -19,9 +19,11 @@ beautifulsoup4==4.12.2
 black==23.3.0
 bleach==6.0.0
 cached-property==1.5.2
+cachetools==5.3.1
 certifi==2023.5.7
 cffi==1.15.1
 cfgv==3.3.1
+chardet==5.1.0
 charset-normalizer==3.1.0
 click==8.1.4
 colorama==0.4.6
@@ -117,7 +119,6 @@ prometheus-client==0.17.0
 prompt-toolkit==3.0.39
 psutil==5.9.5
 ptyprocess==0.7.0
-py==1.11.0
 pybtex==0.24.0
 pybtex-docutils==1.0.2
 pycparser==2.21
@@ -125,6 +126,7 @@ pydantic==1.10.11
 pydata-sphinx-theme==0.13.3
 pygments==2.15.1
 pyparsing==3.1.0
+pyproject-api==1.5.3
 pyrsistent==0.19.3
 pytest==7.4.0
 pytest-cov==4.1.0
@@ -172,7 +174,7 @@ terminado==0.17.1
 tinycss2==1.2.1
 tomli==2.0.1
 tornado==6.2
-tox==3.28.0 ; python_version < "3.8.0"
+tox==4.6.4
 tqdm==4.65.0
 traitlets==5.9.0
 typed-ast==1.5.5
