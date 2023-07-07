@@ -1,7 +1,3 @@
-# cspell:ignore sympified
-# pylint: disable=arguments-differ, line-too-long, protected-access
-# pylint: disable=singleton-comparison, unused-argument, W0223
-# https://stackoverflow.com/a/22224042
 """Temporary module for SymPy :code:`ArraySlice` and related classes.
 
 This module can be removed once `sympy/sympy#22265
@@ -12,7 +8,7 @@ from __future__ import annotations
 import string
 from collections import abc
 from itertools import zip_longest
-from typing import Iterable, overload
+from typing import TYPE_CHECKING, Iterable, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -20,7 +16,6 @@ from sympy.core.sympify import _sympify
 from sympy.functions.elementary.integers import floor
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
@@ -30,26 +25,31 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
-from . import create_expression, make_commutative
+from ampform.sympy import create_expression, make_commutative
+
+if TYPE_CHECKING:
+    from sympy.printing.numpy import NumPyPrinter
 
 
 class ArrayElement(_ArrayExpr):
     def __new__(cls, parent: sp.Expr, indices: Iterable) -> ArrayElement:
+        # cspell:ignore sympified
         sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
         if any(
             (i >= s) == True  # noqa: E712
             for i, s in zip(sympified_indices, parent_shape)
         ):
-            raise ValueError("shape is out of bounds")
+            msg = "shape is out of bounds"
+            raise ValueError(msg)
         if len(parent_shape):
             if len(sympified_indices) > len(parent_shape):
-                raise IndexError(
+                msg = (
                     f"Too many indices for {cls.__name__}: parent"
-                    f" {type(parent).__name__} is"
-                    f" {len(parent_shape)}-dimensional, but"
+                    f" {type(parent).__name__} is {len(parent_shape)}-dimensional, but"
                     f" {len(sympified_indices)} indices were given"
                 )
+                raise IndexError(msg)
             normalized_indices = [
                 _normalize_index(i, axis_size)
                 for i, axis_size in zip(indices, parent_shape)
@@ -150,7 +150,7 @@ class ArraySlice(_ArrayExpr):
         return tuple(shape)
 
 
-def _compute_slice_size(idx, axis_size):  # noqa: R701
+def _compute_slice_size(idx, axis_size):
     if idx is None:
         return axis_size
     if not isinstance(idx, sp.Tuple):
@@ -165,7 +165,7 @@ def _compute_slice_size(idx, axis_size):  # noqa: R701
     return size
 
 
-def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R701
+def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
     if not isinstance(i, (tuple, list, sp.Tuple)):
@@ -173,7 +173,7 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R7
             i += parentsize
         i = (i, i + 1, 1)
     i = list(i)
-    if len(i) == 2:
+    if len(i) == 2:  # noqa: PLR2004
         i.append(1)
     start, stop, step = i
     start = start or 0
@@ -187,13 +187,12 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:  # noqa: R7
         step = step or 1
 
         if ((stop - start) * step < 1) == True:  # noqa: E712
-            raise IndexError()
+            raise IndexError
 
     start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
     return start, stop, step
 
 
-# pylint: disable=invalid-name
 def _print_latex_ArrayElement(  # noqa: N802
     self: LatexPrinter, expr: ArrayElement
 ) -> str:
@@ -287,10 +286,7 @@ def _get_subscript(symbol: sp.Basic) -> str:
     >>> _get_subscript(sp.Symbol("p^2_{0,0}"))
     '0,0'
     """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
+    text = sp.latex(symbol) if isinstance(symbol, sp.Basic) else symbol
     _, _, subscripts = split_super_sub(text)
     stripped_subscripts = (s.strip("{").strip("}") for s in subscripts)
     return " ".join(stripped_subscripts)
@@ -304,10 +300,7 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
     >>> _strip_subscript_superscript(sp.Symbol("p^2_{0,0}"))
     'p'
     """
-    if isinstance(symbol, sp.Basic):
-        text = sp.latex(symbol)
-    else:
-        text = symbol
+    text = sp.latex(symbol) if isinstance(symbol, sp.Basic) else symbol
     name, _, _ = split_super_sub(text)
     return name
 
@@ -316,7 +309,8 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
 class ArrayAxisSum(sp.Expr):
     def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
-            raise TypeError("Only single digits allowed for axis")
+            msg = "Only single digits allowed for axis"
+            raise TypeError(msg)
         return create_expression(cls, array, axis, **hints)
 
     @property

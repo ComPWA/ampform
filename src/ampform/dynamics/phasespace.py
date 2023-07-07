@@ -1,5 +1,3 @@
-# pylint: disable=abstract-method, arguments-differ, protected-access
-# pylint: disable=unbalanced-tuple-unpacking
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by
@@ -14,10 +12,9 @@ This module provides several parametrizations. They all comply with the
 from __future__ import annotations
 
 import sys
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import sympy as sp
-from sympy.printing.latex import LatexPrinter
 
 from ampform.sympy import (
     UnevaluatedExpression,
@@ -26,6 +23,9 @@ from ampform.sympy import (
     implement_doit_method,
 )
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from sympy.printing.latex import LatexPrinter
 
 if sys.version_info >= (3, 8):
     from typing import Protocol

@@ -38,7 +38,6 @@ class RelativisticKMatrix(TMatrix):
     def _create_matrices(
         n_channels, return_t_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
-        # pylint: disable=no-member
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
         sqrt_rho_conj = sp.conjugate(sqrt_rho)
@@ -50,8 +49,15 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(
-        cls, n_channels, n_poles, parametrize: bool = True, **kwargs
+    def formulate(  # type: ignore[override]  # noqa: D417
+        cls,
+        n_channels,
+        n_poles,
+        parametrize: bool = True,
+        return_t_hat: bool = False,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        angular_momentum=0,
+        meson_radius=1,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
 
@@ -66,13 +72,9 @@ class RelativisticKMatrix(TMatrix):
                 :math:`\boldsymbol{\hat{T}}`-matrix instead of the
                 :math:`\boldsymbol{T}`-matrix from Eq. :eq:`K-hat-and-T-hat`.
         """
-        return_t_hat: bool = kwargs.pop("return_t_hat", False)
         t_matrix, k_matrix = cls._create_matrices(n_channels, return_t_hat)
         if not parametrize:
             return t_matrix
-        phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
-            "phsp_factor", PhaseSpaceFactor
-        )
         s = sp.Symbol("s", nonnegative=True)
         m_a = sp.IndexedBase("m_a", nonnegative=True)
         m_b = sp.IndexedBase("m_b", nonnegative=True)
@@ -89,8 +91,8 @@ class RelativisticKMatrix(TMatrix):
                     residue_constant=sp.IndexedBase("gamma", nonnegative=True),
                     n_poles=n_poles,
                     pole_id=sp.Symbol("R", integer=True, positive=True),
-                    angular_momentum=kwargs.get("angular_momentum", 0),
-                    meson_radius=kwargs.get("meson_radius", 1),
+                    angular_momentum=angular_momentum,
+                    meson_radius=meson_radius,
                     phsp_factor=phsp_factor,
                 )
                 for i in range(n_channels)
@@ -104,7 +106,7 @@ class RelativisticKMatrix(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
+    def parametrization(
         i,
         j,
         s,
@@ -179,7 +181,7 @@ class NonRelativisticKMatrix(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments
+    def parametrization(
         i,
         j,
         s,
@@ -259,7 +261,7 @@ class NonRelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments
+    def parametrization(
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -283,7 +285,6 @@ class RelativisticPVector(TMatrix):
     def _create_matrices(
         n_channels, return_f_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
-        # pylint: disable=no-member
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
@@ -298,8 +299,15 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # pylint: disable=too-many-locals
-        cls, n_channels, n_poles, parametrize: bool = True, **kwargs
+    def formulate(  # type: ignore[override]  # noqa: D417
+        cls,
+        n_channels,
+        n_poles,
+        parametrize: bool = True,
+        return_f_hat: bool = False,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        angular_momentum=0,
+        meson_radius=1,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.
 
@@ -314,13 +322,9 @@ class RelativisticPVector(TMatrix):
                 :math:`\hat{F}`-vector instead of the :math:`T`-vector from Eq.
                 :eq:`invariant-vectors`.
         """
-        return_f_hat: bool = kwargs.pop("return_f_hat", False)
         f_vector, k_matrix, p_vector = cls._create_matrices(n_channels, return_f_hat)
         if not parametrize:
             return f_vector
-        phsp_factor: PhaseSpaceFactorProtocol = kwargs.get(
-            "phsp_factor", PhaseSpaceFactor
-        )
         s = sp.Symbol("s", nonnegative=True)
         pole_position = sp.IndexedBase("m", nonnegative=True)
         pole_width = sp.IndexedBase("Gamma", nonnegative=True)
@@ -328,8 +332,6 @@ class RelativisticPVector(TMatrix):
         m_a = sp.IndexedBase("m_a", nonnegative=True)
         m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
-        angular_momentum = kwargs.get("angular_momentum", 0)
-        meson_radius = kwargs.get("meson_radius", 1)
         return (
             f_vector.xreplace(
                 {
@@ -379,7 +381,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # pylint: disable=too-many-arguments, too-many-locals
+    def parametrization(
         i,
         s,
         pole_position: sp.IndexedBase,

@@ -1,12 +1,9 @@
-# pylint: disable=abstract-method arguments-differ invalid-name protected-access
 """Angle computations for (boosted) :mod:`.lorentz` vectors."""
 from __future__ import annotations
 
-from typing import Mapping
+from typing import TYPE_CHECKING, Mapping
 
 import sympy as sp
-from qrules.topology import Topology
-from sympy.printing.latex import LatexPrinter
 
 from ampform.helicity.decay import (
     determine_attached_final_state,
@@ -14,20 +11,7 @@ from ampform.helicity.decay import (
     is_opposite_helicity_state,
 )
 from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
-from ampform.sympy._array_expressions import (
-    ArrayMultiplication,
-    ArraySlice,
-    ArraySum,
-    MatrixMultiplication,
-)
-
-from .lorentz import (
+from ampform.kinematics.lorentz import (
     BoostMatrix,
     BoostZMatrix,
     Energy,
@@ -42,7 +26,23 @@ from .lorentz import (
     compute_boost_chain,
     three_momentum_norm,
 )
-from .phasespace import Kallen
+from ampform.kinematics.phasespace import Kallen
+from ampform.sympy import (
+    UnevaluatedExpression,
+    create_expression,
+    implement_doit_method,
+    make_commutative,
+)
+from ampform.sympy._array_expressions import (
+    ArrayMultiplication,
+    ArraySlice,
+    ArraySum,
+    MatrixMultiplication,
+)
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+    from sympy.printing.latex import LatexPrinter
 
 
 @implement_doit_method
@@ -110,14 +110,15 @@ def compute_helicity_angles(
     Theta(p1 + p2)
     """
     if topology.outgoing_edge_ids != set(four_momenta):
-        raise ValueError(
-            f"Momentum IDs {set(four_momenta)} do not match "
-            f"final state edge IDs {set(topology.outgoing_edge_ids)}"
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
 
     n_events = _get_number_of_events(four_momenta)
 
-    def __recursive_helicity_angles(  # pylint: disable=too-many-locals
+    def __recursive_helicity_angles(
         four_momenta: Mapping[int, sp.Expr], node_id: int
     ) -> dict[sp.Symbol, sp.Expr]:
         helicity_angles: dict[sp.Symbol, sp.Expr] = {}
@@ -175,13 +176,13 @@ def compute_helicity_angles(
 
     initial_state_id = next(iter(topology.incoming_edge_ids))
     initial_state_edge = topology.edges[initial_state_id]
-    assert initial_state_edge.ending_node_id is not None
+    if initial_state_edge.ending_node_id is None:
+        msg = "Edge does not end in a node"
+        raise ValueError(msg)
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 
-def _get_number_of_events(
-    four_momenta: Mapping[int, sp.Expr],
-) -> _ArraySize:
+def _get_number_of_events(four_momenta: Mapping[int, sp.Expr]) -> _ArraySize:
     sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
     return _ArraySize(sorted_momentum_symbols[0])
 
@@ -239,13 +240,14 @@ def formulate_scattering_angle(
     frame of the isobar resonance :math:`(ij)`.
     """
     if not {state_id, sibling_id} <= {1, 2, 3}:
-        raise ValueError("Child IDs need to be one of 1, 2, 3")
+        msg = "Child IDs need to be one of 1, 2, 3"
+        raise ValueError(msg)
     if {state_id, sibling_id} in {(2, 1), (3, 2), (1, 3)}:
-        raise NotImplementedError(
-            f"Cannot compute scattering angle θ{state_id}{sibling_id}"
-        )
+        msg = f"Cannot compute scattering angle θ{state_id}{sibling_id}"
+        raise NotImplementedError(msg)
     if state_id == sibling_id:
-        raise ValueError(f"IDs of the decay products cannot be equal: {state_id}")
+        msg = f"IDs of the decay products cannot be equal: {state_id}"
+        raise ValueError(msg)
     symbol = sp.Symbol(f"theta_{state_id}{sibling_id}", real=True)
     spectator_id = next(iter({1, 2, 3} - {state_id, sibling_id}))
     m0 = sp.Symbol("m_0", nonnegative=True)
@@ -273,9 +275,8 @@ def formulate_theta_hat_angle(
     r"""Formulate an expression for :math:`\hat\theta_{i(j)}`."""
     allowed_ids = {1, 2, 3}
     if not {isobar_id, aligned_subsystem} <= allowed_ids:
-        raise ValueError(
-            f"Child IDs need to be one of {', '.join(map(str, allowed_ids))}"
-        )
+        msg = f"Child IDs need to be one of {', '.join(map(str, allowed_ids))}"
+        raise ValueError(msg)
     symbol = sp.Symbol(Rf"\hat\theta_{isobar_id}({aligned_subsystem})", real=True)
     if isobar_id == aligned_subsystem:
         return symbol, sp.S.Zero
@@ -308,13 +309,12 @@ def formulate_theta_hat_angle(
     return symbol, -theta
 
 
-def formulate_zeta_angle(  # noqa: R701
+def formulate_zeta_angle(  # noqa: C901, PLR0911
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
 ) -> tuple[sp.Symbol, sp.acos]:
     r"""Formulate expression for the alignment angle :math:`\zeta^i_{j(k)}`."""
-    # pylint: disable=too-many-locals too-many-return-statements
     zeta_symbol = sp.Symbol(
         Rf"\zeta^{rotated_state}_{{{aligned_subsystem}({reference_subsystem})}}",
         real=True,
@@ -407,11 +407,9 @@ def formulate_zeta_angle(  # noqa: R701
         (1, 3, 1),
         (2, 1, 2),
         (3, 2, 3),
-        # Eq (A8)
         (1, 1, 2),
         (2, 2, 3),
         (3, 3, 1),
-        # Eq (A11)
         (1, 3, 2),
         (2, 1, 3),
         (3, 2, 1),
@@ -422,10 +420,11 @@ def formulate_zeta_angle(  # noqa: R701
             reference_subsystem=aligned_subsystem,
         )
         return zeta_symbol, -zeta_expr
-    raise NotImplementedError(
+    msg = (
         "No expression for"
         f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"
     )
+    raise NotImplementedError(msg)
 
 
 def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Pow]:

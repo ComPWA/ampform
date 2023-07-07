@@ -25,7 +25,7 @@ def create_spin_range(
     spin_projections = []
     projection = Decimal(-spin_magnitude_float)
     while projection <= spin_magnitude_float:
-        if projection == -0.0:
+        if projection == -0.0:  # noqa: PLR2004
             projection = Decimal(0.0)
         spin_projections.append(float(projection))
         projection += 1

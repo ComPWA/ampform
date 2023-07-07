@@ -1,4 +1,3 @@
-# cspell:ignore doprint
 from functools import partial
 
 import sympy as sp
@@ -36,5 +35,6 @@ class TestArraySum:
 
 
 def _generate_numpy_code(expr: sp.Expr) -> str:
+    # cspell:ignore doprint
     printer = NumPyPrinter()
     return printer.doprint(expr)

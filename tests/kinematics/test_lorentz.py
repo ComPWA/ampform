@@ -1,14 +1,13 @@
-# cspell:ignore atol doprint
 from __future__ import annotations
 
 import inspect
 import textwrap
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import sympy as sp
 from numpy.lib.scimath import sqrt as complex_sqrt
-from qrules.topology import Topology
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics.lorentz import (
@@ -32,12 +31,16 @@ from ampform.kinematics.lorentz import (
     compute_invariant_masses,
     three_momentum_norm,
 )
-from ampform.sympy import NumPyPrintable
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
     ArraySlice,
     ArraySymbol,
 )
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+
+    from ampform.sympy import NumPyPrintable
 
 
 class TestBoostMatrix:
@@ -69,7 +72,6 @@ class TestBoostMatrix:
         data_sample: dict[int, np.ndarray],
         topology_and_momentum_symbols: tuple[Topology, FourMomenta],
     ):
-        # pylint: disable=too-many-locals
         pi0_mass = 0.135
         masses = {0: pi0_mass, 1: 0, 2: pi0_mass, 3: pi0_mass}
         _, momenta = topology_and_momentum_symbols
@@ -395,6 +397,7 @@ def test_compute_invariant_masses_single_mass(
         np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
         expected = __compute_mass(data_sample[i])
         computed = np_expr(*momentum_values)
+        # cspell:ignore atol
         np.testing.assert_allclose(computed, expected, atol=1e-5)
 
 
@@ -475,5 +478,6 @@ def test_compute_boost_chain(
 
 
 def _generate_numpy_code(expr: sp.Expr) -> str:
+    # cspell:ignore doprint
     printer = NumPyPrinter()
     return printer.doprint(expr)

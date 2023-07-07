@@ -1,13 +1,15 @@
-# pylint: disable=protected-access
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import pytest
-import sympy as sp
 
 from ampform.dynamics.kmatrix import NonRelativisticKMatrix
 from symplot import rename_symbols, substitute_indexed_symbols
+
+if TYPE_CHECKING:
+    import sympy as sp
 
 
 class TestNonRelativisticKMatrix:

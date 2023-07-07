@@ -1,18 +1,18 @@
-# cspell:ignore cmath compwa csqrt lambdifier
-# pylint: disable=no-member, protected-access, unused-argument, W0223
-# https://stackoverflow.com/a/22224042
 """A collection of basic math operations, used in `ampform.dynamics`."""
+# cspell:ignore Lambdifier
 from __future__ import annotations
 
-from typing import overload
+from typing import TYPE_CHECKING, overload
 
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
-from sympy.printing.numpy import NumPyPrinter
-from sympy.printing.printer import Printer
-from sympy.printing.pycode import PythonCodePrinter
 
-from . import NumPyPrintable, create_expression, make_commutative
+from ampform.sympy import NumPyPrintable, create_expression, make_commutative
+
+if TYPE_CHECKING:
+    from sympy.printing.numpy import NumPyPrinter
+    from sympy.printing.printer import Printer
+    from sympy.printing.pycode import PythonCodePrinter
 
 
 @make_commutative
@@ -49,6 +49,7 @@ class ComplexSqrt(NumPyPrintable):
         return self.__print_complex(printer)
 
     def _pythoncode(self, printer: PythonCodePrinter, *args) -> str:
+        # cspell:ignore csqrt
         printer.module_imports["cmath"].add("sqrt as csqrt")
         x = printer._print(self.args[0])
         return (

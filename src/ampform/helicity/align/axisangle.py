@@ -1,4 +1,3 @@
-# pylint: disable=import-outside-toplevel too-many-arguments
 """Spin alignment with the "axis-angle" method.
 
 See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
@@ -6,13 +5,12 @@ See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
 """
 from __future__ import annotations
 
-import sys
-from typing import Generator, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
 
 import sympy as sp
-from qrules.topology import Topology
-from qrules.transition import ReactionInfo, StateTransition
 
+from ampform.helicity import SpinAlignment
+from ampform.helicity.align._spin import create_spin_range
 from ampform.helicity.decay import (
     get_outer_state_ids,
     get_parent_id,
@@ -31,13 +29,16 @@ from ampform.kinematics.angles import compute_wigner_angles
 from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
 
-from . import SpinAlignment
-from ._spin import create_spin_range
+if TYPE_CHECKING:
+    import sys
 
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
+    from qrules.topology import Topology
+    from qrules.transition import ReactionInfo, StateTransition
+
+    if sys.version_info >= (3, 8):
+        from typing import Literal
+    else:
+        from typing_extensions import Literal
 
 
 class AxisAngleAlignment(SpinAlignment):
@@ -150,7 +151,6 @@ def formulate_helicity_rotation_chain(
         parent_id = get_parent_id(topology, state_id)
         if parent_id is None:
             return
-        # pylint: disable=stop-iteration-return
         nonlocal idx_root_counter
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         next_idx_root = __GREEK_INDEX_NAMES[idx_root_counter + 1]
@@ -158,7 +158,9 @@ def formulate_helicity_rotation_chain(
         if is_opposite_helicity_state(topology, state_id):
             state_id = get_sibling_state_id(topology, state_id)
         phi, theta = get_helicity_angle_symbols(topology, state_id)
-        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
+        no_zero_spin = (
+            transition.states[rotated_state_id].particle.mass == 0.0  # noqa: PLR2004
+        )
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(f"{next_idx_root}{idx_suffix}", rational=True),
@@ -204,7 +206,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
-    no_zero_spin = state.particle.mass == 0.0
+    no_zero_spin = state.particle.mass == 0.0  # noqa: PLR2004
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     if helicity_symbol is None:
         spin_projection = state.spin_projection
@@ -296,7 +298,8 @@ def get_opposite_helicity_sign(topology: Topology, state_id: int) -> Literal[-1,
 
 def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
     if len(sum_expressions) == 0:
-        raise ValueError(f"Product needs at least one {PoolSum.__name__}")
+        msg = f"Product needs at least one {PoolSum.__name__}"
+        raise ValueError(msg)
     product = sp.Mul(*[pool_sum.expression for pool_sum in sum_expressions])
     combined_indices = []
     for pool_sum in sum_expressions:
@@ -304,7 +307,7 @@ def __multiply_pool_sums(sum_expressions: Sequence[PoolSum]) -> PoolSum:
     return PoolSum(product, *combined_indices)
 
 
-_BasicType = TypeVar("_BasicType", bound=sp.Basic)  # pylint: disable=invalid-name
+_BasicType = TypeVar("_BasicType", bound=sp.Basic)
 
 
 @overload

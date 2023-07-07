@@ -16,6 +16,7 @@ from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition, StateTransitionCollection
 from sympy.physics.quantum.spin import Rotation as Wigner
 
+from ampform.helicity.align import SpinAlignment
 from ampform.helicity.decay import (
     get_outer_state_ids,
     get_spectator_id,
@@ -24,8 +25,6 @@ from ampform.helicity.decay import (
 from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
-
-from . import SpinAlignment
 
 if sys.version_info < (3, 8):
     from typing_extensions import Literal
@@ -57,7 +56,6 @@ class DalitzPlotDecomposition(SpinAlignment):
 def _formulate_aligned_amplitude(
     reaction: ReactionInfo, reference_subsystem: Literal[1, 2, 3]
 ) -> tuple[sp.Expr, dict[sp.Symbol, sp.Expr]]:
-    # pylint: disable=invalid-name, too-many-locals
     wigner_generator = _DPDAlignmentWignerGenerator(reference_subsystem)
     outer_state_ids = get_outer_state_ids(reaction)
     λ0, λ1, λ2, λ3 = (create_spin_projection_symbol(i) for i in outer_state_ids)
@@ -102,7 +100,6 @@ class _DPDAlignmentWignerGenerator:
         rotated_state: Literal[0, 1, 2, 3],
         aligned_subsystem: Literal[1, 2, 3],
     ) -> sp.Rational | WignerD:
-        # pylint: disable=too-many-arguments
         if j == 0:
             return sp.Rational(1)
         zeta, zeta_expr = formulate_zeta_angle(
@@ -118,7 +115,8 @@ T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topol
 
 @singledispatch
 def relabel_edge_ids(obj: T) -> T:
-    raise NotImplementedError(f"Cannot relabel edge IDs of a {type(obj).__name__}")
+    msg = f"Cannot relabel edge IDs of a {type(obj).__name__}"
+    raise NotImplementedError(msg)
 
 
 @relabel_edge_ids.register(ReactionInfo)

@@ -1,13 +1,9 @@
-# pylint: disable=abstract-method arguments-differ protected-access unused-argument
 """Symbolic implementations for Lorentz vectors and boosts."""
 from __future__ import annotations
 
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
 
 import sympy as sp
-from qrules.topology import Topology
-from sympy.printing.latex import LatexPrinter
-from sympy.printing.numpy import NumPyPrinter
 
 from ampform.helicity.decay import determine_attached_final_state, list_decay_chain_ids
 from ampform.sympy import (
@@ -26,6 +22,11 @@ from ampform.sympy._array_expressions import (
     ArraySymbol,
 )
 from ampform.sympy.math import ComplexSqrt
+
+if TYPE_CHECKING:
+    from qrules.topology import Topology
+    from sympy.printing.latex import LatexPrinter
+    from sympy.printing.numpy import NumPyPrinter
 
 
 def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
@@ -147,8 +148,7 @@ class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def evaluate(self) -> ArraySlice:
-        three_momentum = ArraySlice(self._momentum, (slice(None), slice(1, None)))
-        return three_momentum
+        return ArraySlice(self._momentum, (slice(None), slice(1, None)))
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         momentum = printer._print(self._momentum)
@@ -337,7 +337,7 @@ class BoostZMatrix(UnevaluatedExpression):
 
 
 class _BoostZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         beta: sp.Basic,
         gamma: sp.Basic,
@@ -432,7 +432,7 @@ class BoostMatrix(UnevaluatedExpression):
 
 
 class _BoostMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments,too-many-locals
+    def __new__(
         cls,
         momentum: sp.Basic,
         b00: sp.Basic,
@@ -468,7 +468,6 @@ class _BoostMatrixImplementation(NumPyPrintable):
         return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
-        # pylint: disable=too-many-locals, unbalanced-tuple-unpacking
         _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
         return f"""array(
             [
@@ -524,7 +523,7 @@ class RotationYMatrix(UnevaluatedExpression):
 
 
 class _RotationYMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,
@@ -597,7 +596,7 @@ class RotationZMatrix(UnevaluatedExpression):
 
 
 class _RotationZMatrixImplementation(NumPyPrintable):
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         angle: sp.Basic,
         cos_angle: sp.Basic,
@@ -719,10 +718,11 @@ def compute_invariant_masses(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
     if topology.outgoing_edge_ids != set(four_momenta):
-        raise ValueError(
-            f"Momentum IDs {set(four_momenta)} do not match "
-            f"final state edge IDs {set(topology.outgoing_edge_ids)}"
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(topology.outgoing_edge_ids)}"
         )
+        raise ValueError(msg)
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
     for state_id in topology.edges:
         attached_state_ids = determine_attached_final_state(topology, state_id)
