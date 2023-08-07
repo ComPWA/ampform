@@ -28,6 +28,9 @@ on:
 jobs:
   doc:
     uses: ComPWA/actions/.github/workflows/ci-docs.yml@v1
+    permissions:
+      pages: write
+      id-token: write
     with:
       apt-packages: graphviz
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
