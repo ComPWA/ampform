@@ -23,6 +23,7 @@ vscode:
     - garaioag.garaio-vscode-unwanted-recommendations
     - github.vscode-github-actions
     - github.vscode-pull-request-github
+    - ms-python.black-formatter
     - ms-python.mypy-type-checker
     - ms-python.python
     - ms-python.vscode-pylance
