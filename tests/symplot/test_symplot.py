@@ -14,7 +14,7 @@ from ipywidgets.widgets.widget_int import IntSlider
 from symplot import RangeDefinition, Slider, SliderKwargs
 
 
-@pytest.mark.skipif("GITHUB_ACTION" in os.environ)
+@pytest.mark.skipif("GITHUB_ACTION" in os.environ, reason="ipywidgets instable")
 class TestSliderKwargs:
     @pytest.fixture()
     def slider_kwargs(self) -> SliderKwargs:
