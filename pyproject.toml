@@ -90,6 +90,7 @@ ruff = [
     "--extend-ignore=PLW0602",
     "--extend-ignore=PLW0603",
     "--extend-ignore=S301",    # allow pickle
+    "--extend-ignore=TCH002",
     "--line-length=85",
 ]
 
