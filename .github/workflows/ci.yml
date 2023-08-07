@@ -39,7 +39,6 @@ jobs:
     with:
       coverage-target: ampform
       macos-python-version: "3.9"
-      multithreaded: false
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   style:
     if: inputs.specific-pip-packages == ''

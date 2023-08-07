@@ -43,7 +43,6 @@ repos:
         args:
           - --doc-apt-packages=graphviz
           - --pin-requirements=monthly
-          - --pytest-single-threaded
           - --repo-name=ampform
           - --repo-title=AmpForm
       - id: fix-nbformat-version
