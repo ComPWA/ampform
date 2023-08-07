@@ -56,7 +56,7 @@ def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
                 assert len(coefficients) == 4 * n_resonances
             else:
                 assert len(coefficients) == 2 * n_resonances
-        else:
+        else:  # noqa: PLR5501
             if child_helicities:
                 assert len(coefficients) == n_resonances
             else:
@@ -68,12 +68,12 @@ def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
                     assert len(coefficients) == 8 * n_resonances
                 else:
                     assert len(coefficients) == 4 * n_resonances
-            else:
+            else:  # noqa: PLR5501
                 if child_helicities:
                     assert len(coefficients) == 4 * n_resonances
                 else:
                     assert len(coefficients) == 2 * n_resonances
-        else:
+        else:  # noqa: PLR5501
             if parent_helicities:
                 if child_helicities:
                     assert len(coefficients) == 4 * n_resonances
