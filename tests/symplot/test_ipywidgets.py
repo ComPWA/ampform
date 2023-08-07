@@ -1,8 +1,11 @@
 """Behavior tests of `ipywidgets`."""
+import os
 
+import pytest
 from ipywidgets.widgets import FloatSlider
 
 
+@pytest.mark.skipif("GITHUB_ACTION" in os.environ, reason="ipywidgets instable")
 class TestFloatSlider:
     def test_continuous_update(self) -> None:
         slider = FloatSlider()

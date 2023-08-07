@@ -54,9 +54,9 @@ def _(obj: Mapping) -> str:
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
-    latex = R"\begin{array}{rcl}" + "\n"  # noqa: ISC003
+    latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"  # noqa: ISC003
+        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
     latex += R"\end{array}"
     return latex
 
@@ -67,9 +67,9 @@ def _(obj: Iterable) -> str:
     if len(obj) == 0:
         msg = "Need at least one item to render as LaTeX"
         raise ValueError(msg)
-    latex = R"\begin{array}{c}" + "\n"  # noqa: ISC003
+    latex = R"\begin{array}{c}" + "\n"
     for item in map(aslatex, obj):
-        latex += Rf"  {item} \\" + "\n"  # noqa: ISC003
+        latex += Rf"  {item} \\" + "\n"
     latex += R"\end{array}"
     return latex
 
