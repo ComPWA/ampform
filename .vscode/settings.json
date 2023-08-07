@@ -23,11 +23,11 @@
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "cSpell.enabled": true,
   "coverage-gutters.coverageFileNames": ["coverage.xml"],
   "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
   "coverage-gutters.showGutterCoverage": false,
   "coverage-gutters.showLineCoverage": true,
-  "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "editor.rulers": [88],
   "files.watcherExclude": {
@@ -46,6 +46,7 @@
     }
   ],
   "livePreview.defaultPreviewPath": "docs/_build/html",
+  "mypy-type-checker.args": ["--config-file", "pyproject.toml"],
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "python.analysis.autoImportCompletions": false,
   "python.analysis.inlayHints.pytestParameters": true,
