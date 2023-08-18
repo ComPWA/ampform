@@ -2,6 +2,7 @@ ci:
   autoupdate_commit_msg: "MAINT: update pip constraints and pre-commit"
   autoupdate_schedule: quarterly # already done by requirements-cron.yml
   skip:
+    - check-jsonschema
     - mypy
     - pyright
     - taplo
@@ -75,6 +76,19 @@ repos:
     rev: 1.16.0
     hooks:
       - id: blacken-docs
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.24.1
+    hooks:
+      - id: check-jsonschema
+        name: Check CITATION.cff
+        args:
+          - --default-filetype
+          - yaml
+          - --schemafile
+          - https://citation-file-format.github.io/1.2.0/schema.json
+          - CITATION.cff
+        pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
     rev: v7.0.1
