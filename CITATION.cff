@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: >-
+  ComPWA/ampform: Automatically generate symbolic amplitude models for Partial Wave Analysis
+abstract: |-
+  AmpForm is a Python library of spin formalisms and dynamics with which you can automatically formulate symbolic amplitude models for Partial Wave Analysis. The resulting amplitude models are formulated with [SymPy](https://www.sympy.org/en/index.html) (a Computer Algebra System). This not only makes it easy to inspect and visualize the resulting amplitude models, but also means the amplitude models can be used as templates for faster computational back-ends (see [TensorWaves](https://github.com/ComPWA/tensorwaves)).
+
+authors:
+  - family-names: Fritsch
+    given-names: Miriam
+    affiliation: Ruhr University Bochum
+  - family-names: Pflüger
+    given-names: Stefan
+    affiliation: Ruhr University Bochum
+  - family-names: de Boer
+    given-names: Remco E.
+    affiliation: Ruhr University Bochum
+  - family-names: Jäger
+    given-names: Sebastian
+    affiliation: Ruhr University Bochum
+  - family-names: Wollenberg
+    given-names: Leonard
+    affiliation: Ruhr University Bochum
+  - family-names: Gradl
+    given-names: Wolfgang
+    affiliation: Johannes Gutenberg University Mainz
+  - family-names: Peters
+    given-names: Klaus
+    affiliation: GSI Helmholtzzentrum für Schwerionenforschung
+doi: 10.5281/zenodo.5526648
+keywords:
+  - particle physics
+  - amplitude analysis
+  - partial wave analysis
+  - sympy
+  - computer algebra system
+license: GPL-3.0-or-later
+repository-code: https://github.com/ComPWA/ampform
+type: software
+url: https://ampform.readthedocs.io
