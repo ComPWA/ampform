@@ -27,6 +27,7 @@ authors:
   - family-names: Peters
     given-names: Klaus
     affiliation: GSI Helmholtzzentrum für Schwerionenforschung
+doi: 10.5281/zenodo.5526648
 keywords:
   - particle physics
   - amplitude analysis
@@ -35,4 +36,5 @@ keywords:
   - computer algebra system
 license: GPL-3.0-or-later
 repository-code: https://github.com/ComPWA/ampform
+type: software
 url: https://ampform.readthedocs.io
