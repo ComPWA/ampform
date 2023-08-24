@@ -32,7 +32,7 @@
     ".readthedocs.yml",
     ".vscode/*",
     ".vscode/.gitignore",
-    ".zenodo.json",
+    "CITATION.cff",
     "codecov.yml",
     "Dockerfile",
     "docs/_templates/*",
