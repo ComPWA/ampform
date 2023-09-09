@@ -50,8 +50,7 @@ class NameGenerator(ABC):
 
     @property
     @abstractmethod
-    def parity_partner_coefficient_mapping(self) -> dict[str, str]:
-        ...
+    def parity_partner_coefficient_mapping(self) -> dict[str, str]: ...
 
 
 class HelicityAmplitudeNameGenerator(NameGenerator):
