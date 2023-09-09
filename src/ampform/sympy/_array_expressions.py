@@ -72,27 +72,25 @@ _ArrayExpr._iterable = False  # type: ignore[attr-defined]
 
 
 @overload
-def _array_symbol_getitem(self: type[ArraySymbol], key: sp.Basic | int) -> ArrayElement:
-    ...
+def _array_symbol_getitem(
+    self: type[ArraySymbol], key: sp.Basic | int
+) -> ArrayElement: ...
 
 
 @overload
-def _array_symbol_getitem(self: type[ArraySymbol], key: slice) -> ArraySlice:
-    ...
+def _array_symbol_getitem(self: type[ArraySymbol], key: slice) -> ArraySlice: ...
 
 
 @overload
 def _array_symbol_getitem(  # type: ignore[misc]
     self: type[ArraySymbol], key: tuple[sp.Basic | int, ...]
-) -> ArrayElement:
-    ...
+) -> ArrayElement: ...
 
 
 @overload
 def _array_symbol_getitem(
     self: type[ArraySymbol], key: tuple[sp.Basic | int | slice, ...]
-) -> ArraySlice:
-    ...
+) -> ArraySlice: ...
 
 
 def _array_symbol_getitem(self, key):
