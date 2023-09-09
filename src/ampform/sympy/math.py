@@ -31,8 +31,7 @@ class ComplexSqrt(NumPyPrintable):
         ...
 
     @overload
-    def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt:
-        ...
+    def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
 
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)

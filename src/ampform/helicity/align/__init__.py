@@ -15,12 +15,10 @@ if TYPE_CHECKING:
 
 class SpinAlignment(ABC):
     @abstractmethod
-    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:
-        ...
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr: ...
 
     @abstractmethod
-    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:
-        ...
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]: ...
 
 
 class NoAlignment(SpinAlignment):

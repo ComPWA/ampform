@@ -311,8 +311,7 @@ _BasicType = TypeVar("_BasicType", bound=sp.Basic)
 
 
 @overload
-def __rationalize(value: _BasicType) -> _BasicType:
-    ...
+def __rationalize(value: _BasicType) -> _BasicType: ...
 
 
 @overload
