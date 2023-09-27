@@ -68,7 +68,7 @@ repos:
           - --fix
 
   - repo: https://github.com/psf/black
-    rev: 23.9.0
+    rev: 23.9.1
     hooks:
       - id: black
 
@@ -107,7 +107,7 @@ repos:
           )$
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.36.0
+    rev: v0.37.0
     hooks:
       - id: markdownlint
 
@@ -151,19 +151,19 @@ repos:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.326
+    rev: v1.1.328
     hooks:
       - id: pyright
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.13.0
     hooks:
       - id: pyupgrade
         args:
           - --py37-plus
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.287
+    rev: v0.0.291
     hooks:
       - id: ruff
         args:
