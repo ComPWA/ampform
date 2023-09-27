@@ -126,7 +126,7 @@ ptyprocess==0.7.0
 pybtex==0.24.0
 pybtex-docutils==1.0.3
 pycparser==2.21
-pydantic==1.10.12
+pydantic==1.10.13
 pydata-sphinx-theme==0.13.3
 pygments==2.16.1
 pyparsing==3.1.1
