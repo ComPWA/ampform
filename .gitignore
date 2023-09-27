@@ -46,7 +46,6 @@ pyvenv*/
 !.github/*.yml
 !.github/*/*.yml
 !.gitpod.yml
-!.markdownlint.json
 !.pre-commit-config.yaml
 !.readthedocs.yml
 !.vscode/*.json
