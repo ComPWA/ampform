@@ -38,7 +38,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.198
+    rev: 0.0.199
     hooks:
       - id: check-dev-files
         args:
@@ -46,6 +46,7 @@ repos:
           - --pin-requirements=monthly
           - --repo-name=ampform
           - --repo-title=AmpForm
+      - id: colab-toc-visible
       - id: fix-nbformat-version
       - id: format-setup-cfg
       - id: set-nb-cells
