@@ -173,7 +173,7 @@ sphinx-togglebutton==0.3.2
 sphinxcontrib-applehelp==1.0.7
 sphinxcontrib-bibtex==2.6.1
 sphinxcontrib-devhelp==1.0.5
-sphinxcontrib-hep-pdgref==0.1.4
+sphinxcontrib-hep-pdgref==0.1.5
 sphinxcontrib-htmlhelp==2.0.4
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.6
