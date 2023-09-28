@@ -81,7 +81,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.26.3
+    rev: 0.27.0
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -150,7 +150,7 @@ repos:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.328
+    rev: v1.1.329
     hooks:
       - id: pyright
 
