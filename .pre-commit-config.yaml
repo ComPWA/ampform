@@ -48,7 +48,6 @@ repos:
           - --repo-title=AmpForm
       - id: colab-toc-visible
       - id: fix-nbformat-version
-      - id: format-setup-cfg
       - id: set-nb-cells
         args:
           - --add-install-cell
@@ -170,3 +169,10 @@ repos:
     rev: v0.8.1
     hooks:
       - id: taplo
+
+  - repo: https://github.com/pappasam/toml-sort
+    rev: PLEASE-UPDATE
+    hooks:
+      - id: toml-sort
+        args:
+          - --in-place

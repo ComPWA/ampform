@@ -1,9 +1,9 @@
 [build-system]
 requires = [
-    "setuptools>=36.2.1", # environment markers
+    "setuptools>=61.2",
     "setuptools_scm",
-    "wheel",
 ]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/ampform/version.py"
@@ -238,3 +238,160 @@ known-third-party = ["sympy"]
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+[tool.tomlsort]
+all = false
+ignore_case = true
+in_place = true
+sort_first = [
+    "build-system",
+    "project",
+    "tool.setuptools",
+    "tool.setuptools_scm",
+]
+sort_table_keys = true
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.package-data]
+ampform = ["py.typed"]
+symplot = ["py.typed"]
+
+[project]
+name = "ampform"
+description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
+authors = [{name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de"}]
+maintainers = [{email = "compwa-admin@ep1.rub.de"}]
+license = {text = "GPLv3 or later"}
+keywords = [
+    "HEP",
+    "PWA",
+    "amplitude analysis",
+    "partial wave analysis",
+    "particle physics",
+    "particles",
+    "physics",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Typing :: Typed",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
+    "qrules ==0.9.*, >=0.9.6", # https://github.com/ComPWA/qrules/pull/145
+    'singledispatchmethod; python_version <"3.8.0"',
+    "sympy >=1.10",
+    'typing-extensions; python_version <"3.8.0"',
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Tracker = "https://github.com/ComPWA/ampform/issues"
+Changelog = "https://github.com/ComPWA/ampform/releases"
+Documentation = "https://ampform.rtfd.io"
+Source = "https://github.com/ComPWA/ampform"
+
+[project.optional-dependencies]
+viz = [
+    "graphviz",
+]
+all = [
+    "ampform[viz]",
+]
+doc = [
+    "ampform[viz]",
+    "black",
+    'importlib-metadata; python_version <"3.8.0"',
+    "ipympl",
+    "matplotlib",
+    "mpl-interactions",
+    "myst-nb >=0.14", # nb_ configuration prefixes
+    "nbclient >=0.5.5", # https://github.com/executablebooks/jupyter-book/issues/833
+    "numpy",
+    "rich",
+    "Sphinx >=3",
+    "sphinx-book-theme",
+    "sphinx-codeautolink[ipython]",
+    "sphinx-comments",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "sphinx-hep-pdgref",
+    "sphinx-thebe",
+    "sphinx-togglebutton",
+    "sphinxcontrib-bibtex >=2",
+]
+test = [
+    "black",
+    "ipywidgets", # symplot
+    "nbmake",
+    'nbmake <1.3; python_version=="3.7.*"',
+    "numpy",
+    "pytest",
+    "pytest-cov",
+    "pytest-profiling",
+    "pytest-xdist",
+]
+format = [
+    "black",
+]
+mypy = [
+    "mypy >=0.730", # error code support
+    "types-docutils",
+    "types-pkg-resources",
+    "types-requests",
+    "types-setuptools",
+]
+lint = [
+    "ampform[mypy]",
+    "ruff",
+]
+sty = [
+    "ampform[format]",
+    "ampform[lint]",
+    "ampform[test]", # for pytest type hints
+    "pre-commit >=1.4.0",
+]
+jupyter = [
+    "jupyterlab",
+    "jupyterlab-code-formatter",
+    "jupyterlab-lsp",
+    "jupyterlab-myst",
+    "python-lsp-server[rope]",
+    'ypy-websocket <0.8.3; python_version <"3.8.0"',
+]
+dev = [
+    "ampform[all]",
+    "ampform[doc]",
+    "ampform[jupyter]",
+    "ampform[sty]",
+    "ampform[test]",
+    "sphinx-autobuild",
+    "tox >=1.9", # for skip_install, use_develop
+]
