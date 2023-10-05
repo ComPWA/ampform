@@ -50,6 +50,7 @@
   "livePreview.defaultPreviewPath": "docs/_build/html",
   "mypy-type-checker.args": ["--config-file", "pyproject.toml"],
   "mypy-type-checker.importStrategy": "fromEnvironment",
+  "notebook.gotoSymbols.showAllSymbols": true,
   "python.analysis.autoImportCompletions": false,
   "python.analysis.inlayHints.pytestParameters": true,
   "python.analysis.typeCheckingMode": "strict",
