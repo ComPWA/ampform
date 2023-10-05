@@ -290,7 +290,8 @@ nitpick_ignore = [
 # Intersphinx settings
 version_remapping: dict[str, dict[str, str]] = {
     "ipython": {
-        "8.12.2": "8.13.2",
+        "8.12.2": "8.12.1",
+        "8.12.3": "8.12.1",
     },
     "ipywidgets": {
         "8.0.3": "8.0.5",
