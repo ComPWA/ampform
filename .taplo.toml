@@ -3,6 +3,7 @@ exclude = [
     "**/Manifest.toml",
     "**/Project.toml",
     "labels*.toml",
+    "labels/*.toml",
 ]
 
 [formatting]
