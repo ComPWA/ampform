@@ -38,7 +38,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.0.197
+    rev: 0.1.0rc0
     hooks:
       - id: check-dev-files
         args:
@@ -68,7 +68,7 @@ repos:
           - --fix
 
   - repo: https://github.com/psf/black
-    rev: 23.9.0
+    rev: 23.9.1
     hooks:
       - id: black
 
@@ -78,7 +78,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.26.3
+    rev: 0.27.0
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -91,7 +91,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v7.3.0
+    rev: v7.3.1
     hooks:
       - id: cspell
 
@@ -107,7 +107,7 @@ repos:
           )$
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.36.0
+    rev: v0.37.0
     hooks:
       - id: markdownlint
 
@@ -151,19 +151,19 @@ repos:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.326
+    rev: v1.1.330
     hooks:
       - id: pyright
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.14.0
     hooks:
       - id: pyupgrade
         args:
           - --py37-plus
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.287
+    rev: v0.0.292
     hooks:
       - id: ruff
         args:
