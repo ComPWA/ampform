@@ -3,6 +3,7 @@
     "editor.formatOnSave": false
   },
   "[git-commit]": {
+    "editor.rulers": [72],
     "rewrap.wrappingColumn": 72
   },
   "[json]": {
@@ -19,7 +20,8 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     },
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.rulers": [88]
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -31,7 +33,6 @@
   "coverage-gutters.showLineCoverage": true,
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [88],
   "files.watcherExclude": {
     "**/*_cache/**": true,
     "**/.eggs/**": true,
@@ -48,8 +49,9 @@
     }
   ],
   "livePreview.defaultPreviewPath": "docs/_build/html",
-  "mypy-type-checker.args": ["--config-file", "pyproject.toml"],
+  "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
   "mypy-type-checker.importStrategy": "fromEnvironment",
+  "notebook.gotoSymbols.showAllSymbols": true,
   "python.analysis.autoImportCompletions": false,
   "python.analysis.inlayHints.pytestParameters": true,
   "python.analysis.typeCheckingMode": "strict",

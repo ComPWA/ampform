@@ -1,5 +1,3 @@
-# cspell:ignore agilepathway commitlint kode
-
 name: PR linting
 on:
   pull_request:
@@ -14,19 +12,22 @@ on:
 jobs:
   check-labels:
     name: Check labels
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: docker://agilepathway/pull-request-label-checker:latest
+      - uses: docker://agilepathway/pull-request-label-checker:latest # cspell:ignore agilepathway
         with:
-          any_of: 🐛 Bug,✨ Feature,⚙️ Enhancement,⚠️ Interface,❗ Behavior,📝 Docs,🔨
-            Maintenance,🖱️ DX
+          any_of: >-
+            🐛 Bug,✨ Feature,⚙️ Enhancement,⚠️ Interface,❗ Behavior,📝 Docs,🔨 Maintenance,🖱️ DX
           none_of: Epic,💫 Good first issue
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
   check-title:
     name: Check title
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - run: npm install @commitlint/config-conventional
-      - uses: JulienKode/pull-request-name-linter-action@v0.5.0
+      - uses: actions/checkout@v4
+      - run: npm install @compwa/commitlint-config
+      - name: Create commitlint config
+        run: |
+          echo "module.exports = {extends: ['@compwa/commitlint-config']}" > commitlint.config.js
+      - uses: JulienKode/pull-request-name-linter-action@v0.5.0 # cspell:ignore kode
