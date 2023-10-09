@@ -4,14 +4,10 @@
 
 ```
 
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
 [![10.5281/zenodo.5526648](https://zenodo.org/badge/doi/10.5281/zenodo.5526648.svg)](https://doi.org/10.5281/zenodo.5526648)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/ampform)](https://pypi.org/project/ampform)
 {{ '[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/{})'.format(branch) }}
 {{ '[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/{}?filepath=docs/usage)'.format(branch) }}
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
 
 :::{margin}
 

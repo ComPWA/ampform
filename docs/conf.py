@@ -141,10 +141,10 @@ extensions = [
     "sphinx_comments",
     "sphinx_copybutton",
     "sphinx_design",
+    "sphinx_hep_pdgref",
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
-    "sphinxcontrib.hep.pdgref",
 ]
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -290,12 +290,14 @@ nitpick_ignore = [
 # Intersphinx settings
 version_remapping: dict[str, dict[str, str]] = {
     "ipython": {
-        "8.12.2": "8.13.2",
+        "8.12.2": "8.12.1",
+        "8.12.3": "8.12.1",
     },
     "ipywidgets": {
         "8.0.3": "8.0.5",
         "8.0.4": "8.0.5",
         "8.0.6": "8.0.5",
+        "8.1.1": "8.1.2",
     },
 }
 
