@@ -7,11 +7,12 @@
 
 {%- for ismain, link in links[1:] -%} ,
 <a href="{{ link }}"
-  >{% if ismain %}<strong>{% endif -%} [{{ loop.index }}] {%- if ismain %}</strong>{%
-  endif -%}
+  >{% if ismain %}<strong
+    >{% endif -%} [{{ loop.index }}] {%- if ismain %}</strong
+  >{% endif -%}
 </a>
-{%- endfor %} {%- else %} {{ firstname|e }} {%- endif %} {% endmacro %} {%- extends
-"layout.html" %} {% set title = _('Index') %} {% block body %}
+{%- endfor %} {%- else %} {{ firstname|e }} {%- endif %} {% endmacro %} {%-
+extends "layout.html" %} {% set title = _('Index') %} {% block body %}
 
 <h1 id="index">{{ _('Index') }}</h1>
 
