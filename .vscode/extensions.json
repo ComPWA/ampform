@@ -2,7 +2,6 @@
   "recommendations": [
     "charliermarsh.ruff",
     "christian-kohler.path-intellisense",
-    "davidanson.vscode-markdownlint",
     "eamodio.gitlens",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
@@ -27,6 +26,7 @@
   ],
   "unwantedRecommendations": [
     "bungcip.better-toml",
+    "davidanson.vscode-markdownlint",
     "ms-python.flake8",
     "ms-python.isort",
     "ms-python.pylint",
