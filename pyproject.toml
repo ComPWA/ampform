@@ -30,6 +30,7 @@ dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "qrules >=0.9.6",
     "sympy >=1.10",
+    'importlib-metadata; python_version <"3.8.0"',
     'singledispatchmethod; python_version <"3.8.0"',
     'typing-extensions; python_version <"3.8.0"',
 ]
