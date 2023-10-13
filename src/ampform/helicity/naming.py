@@ -352,8 +352,9 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     the internal decay topology.
 
     >>> from qrules.topology import create_isobar_topologies
+    >>> from ampform._qrules import get_qrules_version
     >>> topologies = create_isobar_topologies(5)
-    >>> topology = topologies[0]
+    >>> topology = topologies[0 if get_qrules_version() < (0, 10) else 3]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
     ...     suffix = get_boost_chain_suffix(topology, i)
     ...     print(f"{i}: 'phi{suffix}'")
@@ -365,7 +366,7 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     5: 'phi_034'
     6: 'phi_12'
     7: 'phi_34^034'
-    >>> topology = topologies[1]
+    >>> topology = topologies[1 if get_qrules_version() < (0, 10) else 2]
     >>> for i in topology.intermediate_edge_ids | topology.outgoing_edge_ids:
     ...     suffix = get_boost_chain_suffix(topology, i)
     ...     print(f"{i}: 'phi{suffix}'")

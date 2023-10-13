@@ -14,9 +14,10 @@ import sympy as sp
 from attrs import define, field
 from attrs.validators import in_
 from qrules.topology import Topology
-from qrules.transition import ReactionInfo, StateTransition, StateTransitionCollection
+from qrules.transition import ReactionInfo, StateTransition
 from sympy.physics.quantum.spin import Rotation as Wigner
 
+from ampform._qrules import get_qrules_version
 from ampform.helicity.align import SpinAlignment
 from ampform.helicity.decay import (
     get_outer_state_ids,
@@ -34,6 +35,11 @@ else:
 
 if TYPE_CHECKING:
     from sympy.physics.quantum.spin import WignerD
+
+if get_qrules_version() < (0, 10):
+    from qrules.transition import (  # type: ignore[attr-defined]
+        StateTransitionCollection,
+    )
 
 
 @define
@@ -110,8 +116,14 @@ class _DPDAlignmentWignerGenerator:
         return Wigner.d(j, m, m_prime, zeta)
 
 
-T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)
-"""Allowed types for :func:`relabel_edge_ids`."""
+if get_qrules_version() < (0, 10):
+    T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)
+    """Allowed types for :func:`relabel_edge_ids`."""
+else:
+    T = TypeVar(  # type: ignore[misc]  # pyright: ignore[reportConstantRedefinition]
+        "T", ReactionInfo, StateTransition, Topology
+    )
+    """Allowed types for :func:`relabel_edge_ids`."""
 
 
 @singledispatch
@@ -122,29 +134,43 @@ def relabel_edge_ids(obj: T) -> T:
 
 @relabel_edge_ids.register(ReactionInfo)
 def _(obj: ReactionInfo) -> ReactionInfo:  # type: ignore[misc]
-    return ReactionInfo(  # no attrs.evolve() in order to call __attrs_post_init__()
-        transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],
+    if get_qrules_version() < (0, 10):
+        return ReactionInfo(  # type: ignore[call-arg]
+            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # type: ignore[attr-defined]
+            formalism=obj.formalism,
+        )
+    return ReactionInfo(
+        # no attrs.evolve() in order to call __attrs_post_init__()
+        transitions=[relabel_edge_ids(g) for g in obj.transitions],
         formalism=obj.formalism,
     )
 
 
-@relabel_edge_ids.register(StateTransitionCollection)
-def _(obj: StateTransitionCollection) -> StateTransitionCollection:  # type: ignore[misc]
-    return StateTransitionCollection(
-        [  # no attrs.evolve() for __attrs_post_init__()
-            relabel_edge_ids(transition) for transition in obj.transitions
-        ]
-    )
+if get_qrules_version() < (0, 10):
+
+    def __relabel_stc(obj: StateTransitionCollection) -> StateTransitionCollection:  # type: ignore[misc]
+        return StateTransitionCollection(
+            [relabel_edge_ids(transition) for transition in obj.transitions]
+        )
+
+    relabel_edge_ids.register(StateTransitionCollection)(__relabel_stc)
 
 
-@relabel_edge_ids.register(StateTransition)
-def _(obj: StateTransition) -> StateTransition:  # type: ignore[misc]
+def __relabel_st(obj: StateTransition) -> StateTransition:  # type: ignore[misc]
     mapping = __get_default_relabel_mapping()
     return attrs.evolve(
         obj,
         topology=relabel_edge_ids(obj.topology),
         states={mapping[k]: v for k, v in obj.states.items()},
     )
+
+
+if get_qrules_version() < (0, 10):
+    relabel_edge_ids.register(StateTransition)(__relabel_st)
+else:
+    from qrules.topology import FrozenTransition
+
+    relabel_edge_ids.register(FrozenTransition)(__relabel_st)
 
 
 @relabel_edge_ids.register(Topology)

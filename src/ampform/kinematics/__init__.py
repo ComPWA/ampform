@@ -17,6 +17,7 @@ import attrs
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
+from ampform._qrules import get_qrules_version
 from ampform.helicity.decay import assert_isobar_topology
 from ampform.kinematics.angles import compute_helicity_angles
 from ampform.kinematics.lorentz import (
@@ -121,6 +122,13 @@ def _(obj: Topology) -> Topology:
     return obj
 
 
-@_get_topology.register(StateTransition)
-def _(obj: StateTransition) -> Topology:
+def __get_state_transition(obj: StateTransition) -> Topology:
     return obj.topology
+
+
+if get_qrules_version() < (0, 10):
+    _get_topology.register(StateTransition)(__get_state_transition)
+else:
+    from qrules.topology import FrozenTransition
+
+    _get_topology.register(FrozenTransition)(__get_state_transition)
