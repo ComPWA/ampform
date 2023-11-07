@@ -38,7 +38,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.1.0
+    rev: 0.1.1
     hooks:
       - id: check-dev-files
         args:
@@ -65,7 +65,7 @@ repos:
         args:
           - --fix
 
-  - repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 23.10.1
     hooks:
       - id: black
