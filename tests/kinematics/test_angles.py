@@ -275,37 +275,22 @@ def test_compute_wigner_rotation_matrix_numpy(
 
 def test_formulate_scattering_angle():
     assert formulate_scattering_angle(2, 3)[1] == sp.acos(
-        (
-            2 * s1 * (-(m1**2) - m2**2 + s3)
-            - (m0**2 - m1**2 - s1) * (m2**2 - m3**2 + s1)
-        )
-        / (
-            sp.sqrt(Kallen(m0**2, m1**2, s1))
-            * sp.sqrt(Kallen(s1, m2**2, m3**2))
-        )
+        (2 * s1 * (-(m1**2) - m2**2 + s3) - (m0**2 - m1**2 - s1) * (m2**2 - m3**2 + s1))
+        / (sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s1, m2**2, m3**2)))
     )
     assert formulate_scattering_angle(3, 1)[1] == sp.acos(
         (
             2 * s2 * (-(m2**2) - m3**2 + s1)
             - (m0**2 - m2**2 - s2) * (-(m1**2) + m3**2 + s2)
         )
-        / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2))
-            * sp.sqrt(Kallen(s2, m3**2, m1**2))
-        )
+        / (sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s2, m3**2, m1**2)))
     )
 
 
 def test_formulate_theta_hat_angle():
     assert formulate_theta_hat_angle(1, 2)[1] == sp.acos(
-        (
-            (m0**2 + m1**2 - s1) * (m0**2 + m2**2 - s2)
-            - 2 * m0**2 * (s3 - m1**2 - m2**2)
-        )
-        / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2))
-            * sp.sqrt(Kallen(m0**2, s1, m1**2))
-        )
+        ((m0**2 + m1**2 - s1) * (m0**2 + m2**2 - s2) - 2 * m0**2 * (s3 - m1**2 - m2**2))
+        / (sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(m0**2, s1, m1**2)))
     )
     assert formulate_theta_hat_angle(1, 2)[1] == -formulate_theta_hat_angle(2, 1)[1]
     for i in [1, 2, 3]:

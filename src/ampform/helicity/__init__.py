@@ -4,6 +4,7 @@
 
     import sympy as sp
 """
+
 from __future__ import annotations
 
 import collections

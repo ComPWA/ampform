@@ -2,6 +2,7 @@
 
 See :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`.
 """
+
 from __future__ import annotations
 
 import sys

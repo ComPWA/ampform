@@ -1,4 +1,5 @@
 """Behavior tests of `ipywidgets`."""
+
 import os
 
 import pytest

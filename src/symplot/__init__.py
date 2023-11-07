@@ -10,6 +10,7 @@ The package also provides other helpful functions, like
 :func:`substitute_indexed_symbols`, that are useful when visualizing `sympy`
 expressions.
 """
+
 from __future__ import annotations
 
 import inspect

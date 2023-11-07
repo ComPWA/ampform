@@ -7,6 +7,7 @@ This module is an implementation of :doc:`compwa-org:report/005`,
 keep the code organized and to enable caching of the matrix multiplications, but this
 might change once these dynamics are implemented into the amplitude builder.
 """
+
 from __future__ import annotations
 
 import functools

@@ -1,4 +1,5 @@
 """Symbolic implementations for Lorentz vectors and boosts."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict

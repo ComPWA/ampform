@@ -1,4 +1,5 @@
 """Tools that facilitate in building :mod:`sympy` expressions."""
+
 # cspell:ignore mhash
 from __future__ import annotations
 

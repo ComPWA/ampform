@@ -1,4 +1,5 @@
 """Extract two-body decay info from a `~qrules.transition.StateTransition`."""
+
 from __future__ import annotations
 
 import collections

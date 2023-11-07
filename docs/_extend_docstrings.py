@@ -2,6 +2,7 @@
 
 This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
+
 # pyright: reportMissingImports=false
 from __future__ import annotations
 

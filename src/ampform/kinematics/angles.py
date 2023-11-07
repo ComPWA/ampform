@@ -1,4 +1,5 @@
 """Angle computations for (boosted) :mod:`.lorentz` vectors."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Mapping
@@ -257,14 +258,8 @@ def formulate_scattering_angle(
     sj = sp.Symbol(f"m_{__get_id_complement(sibling_id)}", nonnegative=True) ** 2
     sk = sp.Symbol(f"m_{__get_id_complement(spectator_id)}", nonnegative=True) ** 2
     theta = sp.acos(
-        (
-            2 * sk * (sj - mk**2 - mi**2)
-            - (sk + mi**2 - mj**2) * (m0**2 - sk - mk**2)
-        )
-        / (
-            sp.sqrt(Kallen(m0**2, mk**2, sk))
-            * sp.sqrt(Kallen(sk, mi**2, mj**2))
-        )
+        (2 * sk * (sj - mk**2 - mi**2) - (sk + mi**2 - mj**2) * (m0**2 - sk - mk**2))
+        / (sp.sqrt(Kallen(m0**2, mk**2, sk)) * sp.sqrt(Kallen(sk, mi**2, mj**2)))
     )
     return symbol, theta
 
@@ -296,10 +291,7 @@ def formulate_theta_hat_angle(
                 (m0**2 + mi**2 - si) * (m0**2 + mj**2 - sj)
                 - 2 * m0**2 * (sk - mi**2 - mj**2)
             )
-            / (
-                sp.sqrt(Kallen(m0**2, mj**2, sj))
-                * sp.sqrt(Kallen(m0**2, si, mi**2))
-            )
+            / (sp.sqrt(Kallen(m0**2, mj**2, sj)) * sp.sqrt(Kallen(m0**2, si, mi**2)))
         )
         return symbol, theta
     _, theta = formulate_theta_hat_angle(
@@ -338,8 +330,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m1**2 * (s2 - m0**2 - m2**2)
             + (m0**2 + m1**2 - s1) * (s3 - m1**2 - m2**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m1**2, s1))
-            * sp.sqrt(Kallen(s3, m1**2, m2**2))
+            sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s3, m1**2, m2**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (1, 2, 1):
@@ -347,8 +338,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m1**2 * (s3 - m0**2 - m3**2)
             + (m0**2 + m1**2 - s1) * (s2 - m1**2 - m3**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m1**2, s1))
-            * sp.sqrt(Kallen(s2, m1**2, m3**2))
+            sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s2, m1**2, m3**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 2, 1):
@@ -356,8 +346,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m2**2 * (s3 - m0**2 - m3**2)
             + (m0**2 + m2**2 - s2) * (s1 - m2**2 - m3**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2))
-            * sp.sqrt(Kallen(s1, m2**2, m3**2))
+            sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s1, m2**2, m3**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 3, 2):
@@ -365,8 +354,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m2**2 * (s1 - m0**2 - m1**2)
             + (m0**2 + m2**2 - s2) * (s3 - m2**2 - m1**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2))
-            * sp.sqrt(Kallen(s3, m2**2, m1**2))
+            sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s3, m2**2, m1**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 3, 2):
@@ -374,8 +362,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m3**2 * (s1 - m0**2 - m1**2)
             + (m0**2 + m3**2 - s3) * (s2 - m3**2 - m1**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m3**2, s3))
-            * sp.sqrt(Kallen(s2, m3**2, m1**2))
+            sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s2, m3**2, m1**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 1, 3):
@@ -383,8 +370,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * m3**2 * (s2 - m0**2 - m2**2)
             + (m0**2 + m3**2 - s3) * (s1 - m3**2 - m2**2)
         ) / (
-            sp.sqrt(Kallen(m0**2, m3**2, s3))
-            * sp.sqrt(Kallen(s1, m3**2, m2**2))
+            sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s1, m3**2, m2**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) in {  # Eq (A10)
@@ -399,8 +385,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911
             2 * mi**2 * (mj**2 + mk**2 - si)
             + (sj - mi**2 - mk**2) * (sk - mi**2 - mj**2)
         ) / (
-            sp.sqrt(Kallen(sj, mk**2, mi**2))
-            * sp.sqrt(Kallen(sk, mi**2, mj**2))
+            sp.sqrt(Kallen(sj, mk**2, mi**2)) * sp.sqrt(Kallen(sk, mi**2, mj**2))
         )
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) in {

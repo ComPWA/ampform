@@ -3,6 +3,7 @@
 See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
 <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
