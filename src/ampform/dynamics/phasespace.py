@@ -9,6 +9,7 @@ This module provides several parametrizations. They all comply with the
 `PhaseSpaceFactorProtocol`, so that they can be used in parametrizations like
 `.EnergyDependentWidth`.
 """
+
 from __future__ import annotations
 
 import re
@@ -214,9 +215,7 @@ def chew_mandelstam_s_wave(s, m_a, m_b):
         sp.log((m_a**2 + m_b**2 - s + 2 * sp.sqrt(s) * q) / (2 * m_a * m_b)),
         evaluate=False,
     )
-    right_term = (
-        (m_a**2 - m_b**2) * (1 / s - 1 / (m_a + m_b) ** 2) * sp.log(m_a / m_b)
-    )
+    right_term = (m_a**2 - m_b**2) * (1 / s - 1 / (m_a + m_b) ** 2) * sp.log(m_a / m_b)
     # evaluate=False in order to keep same style as PDG
     return sp.Mul(
         1 / (16 * sp.pi**2),

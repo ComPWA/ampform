@@ -3,6 +3,7 @@
 This module can be removed once `sympy/sympy#22265
 <https://github.com/sympy/sympy/pull/22265>`_ is merged and released.
 """
+
 from __future__ import annotations
 
 import string

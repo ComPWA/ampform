@@ -2,6 +2,7 @@
 
 .. seealso:: :doc:`/usage/kinematics`
 """
+
 from __future__ import annotations
 
 import sympy as sp

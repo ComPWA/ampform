@@ -12,6 +12,7 @@
     >>> aslatex(3.4 - 2j)
     '3.4-2i'
 """
+
 from __future__ import annotations
 
 from collections import abc

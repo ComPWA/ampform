@@ -5,6 +5,7 @@ clickable links.
 
 See also https://github.com/sphinx-doc/sphinx/issues/5868.
 """
+
 # pyright: reportMissingImports=false
 from __future__ import annotations
 

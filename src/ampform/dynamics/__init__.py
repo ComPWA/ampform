@@ -2,7 +2,8 @@
 
 .. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
 """
-# cspell:ignore asner
+
+# cspell:ignore asner mhash
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -86,14 +87,7 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             5: (
                 998881
                 * z**5
-                / (
-                    z**5
-                    + 15 * z**4
-                    + 315 * z**3
-                    + 6300 * z**2
-                    + 99225 * z
-                    + 893025
-                )
+                / (z**5 + 15 * z**4 + 315 * z**3 + 6300 * z**2 + 99225 * z + 893025)
             ),
             6: (
                 118394977
@@ -138,14 +132,11 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
                 )
             ),
         }
-        return sp.Piecewise(
-            *[
-                (expression, sp.Eq(angular_momentum, value))
-                for value, expression in cases.items()
-                if self.max_angular_momentum is None
-                or value <= self.max_angular_momentum
-            ]
-        )
+        return sp.Piecewise(*[
+            (expression, sp.Eq(angular_momentum, value))
+            for value, expression in cases.items()
+            if self.max_angular_momentum is None or value <= self.max_angular_momentum
+        ])
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))
@@ -312,7 +303,5 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
     `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    ff_squared = BlattWeisskopfSquared(
-        angular_momentum, z=q_squared * meson_radius**2
-    )
+    ff_squared = BlattWeisskopfSquared(angular_momentum, z=q_squared * meson_radius**2)
     return sp.sqrt(ff_squared)

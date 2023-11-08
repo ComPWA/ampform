@@ -7,6 +7,7 @@ This module is an implementation of :doc:`compwa-org:report/005`,
 keep the code organized and to enable caching of the matrix multiplications, but this
 might change once these dynamics are implemented into the amplitude builder.
 """
+
 from __future__ import annotations
 
 import functools
@@ -78,32 +79,28 @@ class RelativisticKMatrix(TMatrix):
         s = sp.Symbol("s", nonnegative=True)
         m_a = sp.IndexedBase("m_a", nonnegative=True)
         m_b = sp.IndexedBase("m_b", nonnegative=True)
-        return t_matrix.xreplace(
-            {
-                k_matrix[i, j]: cls.parametrization(
-                    i=i,
-                    j=j,
-                    s=s,
-                    pole_position=sp.IndexedBase("m", nonnegative=True),
-                    pole_width=sp.IndexedBase("Gamma", nonnegative=True),
-                    m_a=m_a,
-                    m_b=m_b,
-                    residue_constant=sp.IndexedBase("gamma", nonnegative=True),
-                    n_poles=n_poles,
-                    pole_id=sp.Symbol("R", integer=True, positive=True),
-                    angular_momentum=angular_momentum,
-                    meson_radius=meson_radius,
-                    phsp_factor=phsp_factor,
-                )
-                for i in range(n_channels)
-                for j in range(n_channels)
-            }
-        ).xreplace(
-            {
-                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
-                for i in range(n_channels)
-            }
-        )
+        return t_matrix.xreplace({
+            k_matrix[i, j]: cls.parametrization(
+                i=i,
+                j=j,
+                s=s,
+                pole_position=sp.IndexedBase("m", nonnegative=True),
+                pole_width=sp.IndexedBase("Gamma", nonnegative=True),
+                m_a=m_a,
+                m_b=m_b,
+                residue_constant=sp.IndexedBase("gamma", nonnegative=True),
+                n_poles=n_poles,
+                pole_id=sp.Symbol("R", integer=True, positive=True),
+                angular_momentum=angular_momentum,
+                meson_radius=meson_radius,
+                phsp_factor=phsp_factor,
+            )
+            for i in range(n_channels)
+            for j in range(n_channels)
+        }).xreplace({
+            sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
+            for i in range(n_channels)
+        })
 
     @staticmethod
     def parametrization(
@@ -163,22 +160,20 @@ class NonRelativisticKMatrix(TMatrix):
         t_matrix, k_matrix = cls._create_matrices(n_channels)
         if not parametrize:
             return t_matrix
-        return t_matrix.xreplace(
-            {
-                k_matrix[i, j]: cls.parametrization(
-                    i=i,
-                    j=j,
-                    s=sp.Symbol("s", nonnegative=True),
-                    pole_position=sp.IndexedBase("m", nonnegative=True),
-                    pole_width=sp.IndexedBase("Gamma", nonnegative=True),
-                    residue_constant=sp.IndexedBase("gamma", nonnegative=True),
-                    n_poles=n_poles,
-                    pole_id=sp.Symbol("R", integer=True, positive=True),
-                )
-                for i in range(n_channels)
-                for j in range(n_channels)
-            }
-        )
+        return t_matrix.xreplace({
+            k_matrix[i, j]: cls.parametrization(
+                i=i,
+                j=j,
+                s=sp.Symbol("s", nonnegative=True),
+                pole_position=sp.IndexedBase("m", nonnegative=True),
+                pole_width=sp.IndexedBase("Gamma", nonnegative=True),
+                residue_constant=sp.IndexedBase("gamma", nonnegative=True),
+                n_poles=n_poles,
+                pole_id=sp.Symbol("R", integer=True, positive=True),
+            )
+            for i in range(n_channels)
+            for j in range(n_channels)
+        })
 
     @staticmethod
     def parametrization(
@@ -229,36 +224,32 @@ class NonRelativisticPVector(TMatrix):
         pole_width = sp.IndexedBase("Gamma", nonnegative=True)
         residue_constant = sp.IndexedBase("gamma", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
-        return f_vector.xreplace(
-            {
-                k_matrix[i, j]: NonRelativisticKMatrix.parametrization(
-                    i=i,
-                    j=j,
-                    s=s,
-                    pole_position=pole_position,
-                    pole_width=pole_width,
-                    residue_constant=residue_constant,
-                    n_poles=n_poles,
-                    pole_id=pole_id,
-                )
-                for i in range(n_channels)
-                for j in range(n_channels)
-            }
-        ).xreplace(
-            {
-                p_vector[i]: cls.parametrization(
-                    i=i,
-                    s=sp.Symbol("s", nonnegative=True),
-                    pole_position=pole_position,
-                    pole_width=pole_width,
-                    residue_constant=residue_constant,
-                    beta_constant=sp.IndexedBase("beta", nonnegative=True),
-                    n_poles=n_poles,
-                    pole_id=pole_id,
-                )
-                for i in range(n_channels)
-            }
-        )
+        return f_vector.xreplace({
+            k_matrix[i, j]: NonRelativisticKMatrix.parametrization(
+                i=i,
+                j=j,
+                s=s,
+                pole_position=pole_position,
+                pole_width=pole_width,
+                residue_constant=residue_constant,
+                n_poles=n_poles,
+                pole_id=pole_id,
+            )
+            for i in range(n_channels)
+            for j in range(n_channels)
+        }).xreplace({
+            p_vector[i]: cls.parametrization(
+                i=i,
+                s=sp.Symbol("s", nonnegative=True),
+                pole_position=pole_position,
+                pole_width=pole_width,
+                residue_constant=residue_constant,
+                beta_constant=sp.IndexedBase("beta", nonnegative=True),
+                n_poles=n_poles,
+                pole_id=pole_id,
+            )
+            for i in range(n_channels)
+        })
 
     @staticmethod
     def parametrization(
@@ -333,51 +324,45 @@ class RelativisticPVector(TMatrix):
         m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         return (
-            f_vector.xreplace(
-                {
-                    k_matrix[i, j]: RelativisticKMatrix.parametrization(
-                        i=i,
-                        j=j,
-                        s=s,
-                        pole_position=pole_position,
-                        pole_width=pole_width,
-                        m_a=m_a,
-                        m_b=m_b,
-                        residue_constant=residue_constant,
-                        n_poles=n_poles,
-                        pole_id=pole_id,
-                        angular_momentum=angular_momentum,
-                        meson_radius=meson_radius,
-                    )
-                    for i in range(n_channels)
-                    for j in range(n_channels)
-                }
-            )
-            .xreplace(
-                {
-                    p_vector[i]: cls.parametrization(
-                        i=i,
-                        s=s,
-                        pole_position=pole_position,
-                        pole_width=pole_width,
-                        m_a=m_a,
-                        m_b=m_b,
-                        beta_constant=sp.IndexedBase("beta", nonnegative=True),
-                        residue_constant=residue_constant,
-                        n_poles=n_poles,
-                        pole_id=pole_id,
-                        angular_momentum=angular_momentum,
-                        meson_radius=meson_radius,
-                    )
-                    for i in range(n_channels)
-                }
-            )
-            .xreplace(
-                {
-                    sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
-                    for i in range(n_channels)
-                }
-            )
+            f_vector.xreplace({
+                k_matrix[i, j]: RelativisticKMatrix.parametrization(
+                    i=i,
+                    j=j,
+                    s=s,
+                    pole_position=pole_position,
+                    pole_width=pole_width,
+                    m_a=m_a,
+                    m_b=m_b,
+                    residue_constant=residue_constant,
+                    n_poles=n_poles,
+                    pole_id=pole_id,
+                    angular_momentum=angular_momentum,
+                    meson_radius=meson_radius,
+                )
+                for i in range(n_channels)
+                for j in range(n_channels)
+            })
+            .xreplace({
+                p_vector[i]: cls.parametrization(
+                    i=i,
+                    s=s,
+                    pole_position=pole_position,
+                    pole_width=pole_width,
+                    m_a=m_a,
+                    m_b=m_b,
+                    beta_constant=sp.IndexedBase("beta", nonnegative=True),
+                    residue_constant=residue_constant,
+                    n_poles=n_poles,
+                    pole_id=pole_id,
+                    angular_momentum=angular_momentum,
+                    meson_radius=meson_radius,
+                )
+                for i in range(n_channels)
+            })
+            .xreplace({
+                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
+                for i in range(n_channels)
+            })
         )
 
     @staticmethod

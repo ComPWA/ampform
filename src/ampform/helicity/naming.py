@@ -1,4 +1,5 @@
 """Generate descriptions used in the `~ampform.helicity` formalism."""
+
 from __future__ import annotations
 
 import re

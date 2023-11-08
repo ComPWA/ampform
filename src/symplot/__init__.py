@@ -10,6 +10,7 @@ The package also provides other helpful functions, like
 :func:`substitute_indexed_symbols`, that are useful when visualizing `sympy`
 expressions.
 """
+
 from __future__ import annotations
 
 import inspect
@@ -395,10 +396,8 @@ def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
 
     See :doc:`compwa-org:report/008` for more info.
     """
-    return expression.xreplace(
-        {
-            s: _indexed_to_symbol(s)
-            for s in expression.free_symbols
-            if isinstance(s, sp.Indexed)
-        }
-    )
+    return expression.xreplace({
+        s: _indexed_to_symbol(s)
+        for s in expression.free_symbols
+        if isinstance(s, sp.Indexed)
+    })

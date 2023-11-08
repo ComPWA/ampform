@@ -1,4 +1,5 @@
 """Build `~ampform.dynamics` with correct variable names and values."""
+
 from __future__ import annotations
 
 import sys

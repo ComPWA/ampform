@@ -6,6 +6,7 @@
     import sympy as sp
     from ampform.kinematics import create_four_momentum_symbols
 """
+
 from __future__ import annotations
 
 import itertools
@@ -62,7 +63,7 @@ class HelicityAdapter:
 
     def __init__(
         self,
-        transitions: (ReactionInfo | Iterable[Topology | StateTransition]),
+        transitions: ReactionInfo | Iterable[Topology | StateTransition],
     ) -> None:
         self.__topologies = _extract_topologies(transitions)
         for topology in self.__topologies:
@@ -430,14 +431,12 @@ class MinkowskiMetric(NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, -1, 0, 0],
-                [0, 0, -1, 0],
-                [0, 0, 0, -1],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -1, 0],
+            [0, 0, 0, -1],
+        ])
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         return R"\boldsymbol{\eta}"
@@ -478,14 +477,12 @@ class BoostZMatrix(UnevaluatedExpression):
     def as_explicit(self) -> sp.MutableDenseMatrix:
         beta = self.args[0]
         gamma = 1 / ComplexSqrt(1 - beta**2)  # type: ignore[operator]
-        return sp.Matrix(
-            [
-                [gamma, 0, 0, -gamma * beta],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [-gamma * beta, 0, 0, gamma],
-            ]
-        )
+        return sp.Matrix([
+            [gamma, 0, 0, -gamma * beta],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [-gamma * beta, 0, 0, gamma],
+        ])
 
     def evaluate(self) -> _BoostZMatrixImplementation:
         beta = self.args[0]
@@ -547,29 +544,27 @@ class BoostMatrix(UnevaluatedExpression):
         beta_y = FourMomentumY(momentum) / energy
         beta_z = FourMomentumZ(momentum) / energy
         g = 1 / sp.sqrt(1 - beta_sq)
-        return sp.Matrix(
+        return sp.Matrix([
+            [g, -g * beta_x, -g * beta_y, -g * beta_z],
             [
-                [g, -g * beta_x, -g * beta_y, -g * beta_z],
-                [
-                    -g * beta_x,
-                    1 + (g - 1) * beta_x**2 / beta_sq,
-                    (g - 1) * beta_y * beta_x / beta_sq,
-                    (g - 1) * beta_z * beta_x / beta_sq,
-                ],
-                [
-                    -g * beta_y,
-                    (g - 1) * beta_x * beta_y / beta_sq,
-                    1 + (g - 1) * beta_y**2 / beta_sq,
-                    (g - 1) * beta_z * beta_y / beta_sq,
-                ],
-                [
-                    -g * beta_z,
-                    (g - 1) * beta_x * beta_z / beta_sq,
-                    (g - 1) * beta_y * beta_z / beta_sq,
-                    1 + (g - 1) * beta_z**2 / beta_sq,
-                ],
-            ]
-        )
+                -g * beta_x,
+                1 + (g - 1) * beta_x**2 / beta_sq,
+                (g - 1) * beta_y * beta_x / beta_sq,
+                (g - 1) * beta_z * beta_x / beta_sq,
+            ],
+            [
+                -g * beta_y,
+                (g - 1) * beta_x * beta_y / beta_sq,
+                1 + (g - 1) * beta_y**2 / beta_sq,
+                (g - 1) * beta_z * beta_y / beta_sq,
+            ],
+            [
+                -g * beta_z,
+                (g - 1) * beta_x * beta_z / beta_sq,
+                (g - 1) * beta_y * beta_z / beta_sq,
+                1 + (g - 1) * beta_z**2 / beta_sq,
+            ],
+        ])
 
     def evaluate(self) -> _BoostMatrixImplementation:
         momentum = self.args[0]
@@ -665,14 +660,12 @@ class RotationYMatrix(UnevaluatedExpression):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         angle = self.args[0]
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), 0, sp.sin(angle)],
-                [0, 0, 1, 0],
-                [0, -sp.sin(angle), 0, sp.cos(angle)],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, sp.cos(angle), 0, sp.sin(angle)],
+            [0, 0, 1, 0],
+            [0, -sp.sin(angle), 0, sp.cos(angle)],
+        ])
 
     def evaluate(self) -> _RotationYMatrixImplementation:
         angle = self.args[0]
@@ -738,14 +731,12 @@ class RotationZMatrix(UnevaluatedExpression):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         angle = self.args[0]
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), -sp.sin(angle), 0],
-                [0, sp.sin(angle), sp.cos(angle), 0],
-                [0, 0, 0, 1],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, sp.cos(angle), -sp.sin(angle), 0],
+            [0, sp.sin(angle), sp.cos(angle), 0],
+            [0, 0, 0, 1],
+        ])
 
     def evaluate(self) -> _RotationZMatrixImplementation:
         angle = self.args[0]
@@ -871,9 +862,9 @@ def compute_helicity_angles(
                 sub_momenta_ids = determine_attached_final_state(topology, state_id)
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = ArraySum(
-                        *[four_momenta[i] for i in sub_momenta_ids]
-                    )
+                    four_momentum = ArraySum(*[
+                        four_momenta[i] for i in sub_momenta_ids
+                    ])
 
                     # boost all of those momenta into this new subsystem
                     phi_expr = Phi(four_momentum)

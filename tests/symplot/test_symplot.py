@@ -89,6 +89,7 @@ class TestSliderKwargs:
             assert slider.max == slider_from_repr.max
             assert slider.value == slider_from_repr.value
 
+    @pytest.mark.skipif("CI" not in os.environ, reason="Only works on GitHub Actions")
     @pytest.mark.parametrize(
         ("slider_name", "min_", "max_", "n_steps", "step_size"),
         [
@@ -135,6 +136,7 @@ class TestSliderKwargs:
         with pytest.raises(ValueError, match=r"Number of steps has to be positive"):
             slider_kwargs.set_ranges({"n": (0, 10, -1)})
 
+    @pytest.mark.skipif("CI" not in os.environ, reason="Only works on GitHub Actions")
     def test_set_values(
         self, slider_kwargs: SliderKwargs, caplog: pytest.LogCaptureFixture
     ) -> None:
