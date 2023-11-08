@@ -1,4 +1,5 @@
 """A collection of basic math operations, used in `ampform.dynamics`."""
+
 # cspell:ignore Lambdifier
 from __future__ import annotations
 

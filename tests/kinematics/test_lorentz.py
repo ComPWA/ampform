@@ -50,14 +50,12 @@ class TestBoostMatrix:
         func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
         matrix = func(p_array)[0]
-        assert pytest.approx(matrix) == np.array(
-            [
-                [1.02062073, 0, 0, -0.20412415],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [-0.20412415, 0, 0, 1.02062073],
-            ]
-        )
+        assert pytest.approx(matrix) == np.array([
+            [1.02062073, 0, 0, -0.20412415],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [-0.20412415, 0, 0, 1.02062073],
+        ])
 
         beta = three_momentum_norm(p) / Energy(p)
         z_expr = BoostZMatrix(beta)
@@ -337,14 +335,12 @@ def test_rotation_over_multiple_two_pi_is_identity(rotation):
     func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
-    identity = np.array(
-        [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ]
-    )
+    identity = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ])
     identity = np.tile(identity, reps=(len(angle_array), 1, 1))
     assert pytest.approx(rotation_matrices) == identity
 

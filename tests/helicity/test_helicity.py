@@ -186,12 +186,10 @@ class TestHelicityModel:
         assert {d1, d2} <= model.expression.free_symbols
 
         new_d = sp.Symbol("d", positive=True)
-        new_model = model.rename_symbols(
-            {
-                d1.name: new_d.name,
-                d2.name: new_d.name,
-            }
-        )
+        new_model = model.rename_symbols({
+            d1.name: new_d.name,
+            d2.name: new_d.name,
+        })
         assert not {d1, d2} & new_model.expression.free_symbols
         assert not {d1, d2} & set(new_model.parameter_defaults)
         assert new_d in new_model.parameter_defaults

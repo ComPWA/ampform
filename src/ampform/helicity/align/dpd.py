@@ -2,6 +2,7 @@
 
 See :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`.
 """
+
 from __future__ import annotations
 
 import sys
@@ -129,9 +130,9 @@ def _(obj: ReactionInfo) -> ReactionInfo:  # type: ignore[misc]
 
 @relabel_edge_ids.register(StateTransitionCollection)
 def _(obj: StateTransitionCollection) -> StateTransitionCollection:  # type: ignore[misc]
-    return StateTransitionCollection(  # no attrs.evolve() for __attrs_post_init__()
-        [relabel_edge_ids(transition) for transition in obj.transitions]
-    )
+    return StateTransitionCollection([  # no attrs.evolve() for __attrs_post_init__()
+        relabel_edge_ids(transition) for transition in obj.transitions
+    ])
 
 
 @relabel_edge_ids.register(StateTransition)
@@ -159,11 +160,9 @@ def _collect_outer_state_helicities(
 ) -> dict[int, list[sp.Rational]]:
     outer_state_ids = get_outer_state_ids(reaction)
     return {
-        i: sorted(
-            {
-                sp.Rational(transition.states[i].spin_projection)
-                for transition in reaction.transitions
-            }
-        )
+        i: sorted({
+            sp.Rational(transition.states[i].spin_projection)
+            for transition in reaction.transitions
+        })
         for i in outer_state_ids
     }

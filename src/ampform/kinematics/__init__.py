@@ -5,6 +5,7 @@
     import sympy as sp
     from ampform.kinematics import create_four_momentum_symbols
 """
+
 from __future__ import annotations
 
 import itertools
@@ -39,7 +40,7 @@ class HelicityAdapter:
 
     def __init__(
         self,
-        transitions: (ReactionInfo | Iterable[Topology | StateTransition]),
+        transitions: ReactionInfo | Iterable[Topology | StateTransition],
     ) -> None:
         self.__topologies = _extract_topologies(transitions)
         for topology in self.__topologies:
