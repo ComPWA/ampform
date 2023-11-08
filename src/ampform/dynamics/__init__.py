@@ -132,14 +132,11 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
                 )
             ),
         }
-        return sp.Piecewise(
-            *[
-                (expression, sp.Eq(angular_momentum, value))
-                for value, expression in cases.items()
-                if self.max_angular_momentum is None
-                or value <= self.max_angular_momentum
-            ]
-        )
+        return sp.Piecewise(*[
+            (expression, sp.Eq(angular_momentum, value))
+            for value, expression in cases.items()
+            if self.max_angular_momentum is None or value <= self.max_angular_momentum
+        ])
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         angular_momentum, z = tuple(map(printer._print, self.args))

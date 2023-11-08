@@ -78,31 +78,27 @@ _LOGGER = logging.getLogger(__name__)
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr]
 ) -> OrderedDict[str, sp.Expr]:
-    return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
-    )
+    return collections.OrderedDict([
+        (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
+    ])
 
 
 def _order_symbol_mapping(
     mapping: Mapping[sp.Symbol, sp.Expr]
 ) -> OrderedDict[sp.Symbol, sp.Expr]:
-    return collections.OrderedDict(
-        [
-            (symbol, mapping[symbol])
-            for symbol in sorted(mapping, key=lambda s: natural_sorting(s.name))
-        ]
-    )
+    return collections.OrderedDict([
+        (symbol, mapping[symbol])
+        for symbol in sorted(mapping, key=lambda s: natural_sorting(s.name))
+    ])
 
 
 def _order_amplitudes(
     mapping: Mapping[sp.Indexed, sp.Expr]
 ) -> OrderedDict[sp.Indexed, sp.Expr]:
-    return collections.OrderedDict(
-        [
-            (key, mapping[key])
-            for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
-        ]
-    )
+    return collections.OrderedDict([
+        (key, mapping[key])
+        for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
+    ])
 
 
 def _to_parameter_values(mapping: Mapping[sp.Basic, ParameterValue]) -> ParameterValues:

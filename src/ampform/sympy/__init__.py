@@ -385,12 +385,10 @@ class PoolSum(UnevaluatedExpression):
 
     def evaluate(self) -> sp.Expr:
         indices = {symbol: tuple(values) for symbol, values in self.indices}
-        return sp.Add(
-            *[
-                self.expression.subs(zip(indices, combi))
-                for combi in itertools.product(*indices.values())
-            ]
-        )
+        return sp.Add(*[
+            self.expression.subs(zip(indices, combi))
+            for combi in itertools.product(*indices.values())
+        ])
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         indices = dict(self.indices)

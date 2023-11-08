@@ -264,14 +264,12 @@ class MinkowskiMetric(NumPyPrintable):
         return self.args[0]  # type: ignore[return-value]
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, -1, 0, 0],
-                [0, 0, -1, 0],
-                [0, 0, 0, -1],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -1, 0],
+            [0, 0, 0, -1],
+        ])
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         return R"\boldsymbol{\eta}"
@@ -312,14 +310,12 @@ class BoostZMatrix(UnevaluatedExpression):
     def as_explicit(self) -> sp.MutableDenseMatrix:
         beta = self.args[0]
         gamma = 1 / ComplexSqrt(1 - beta**2)  # type: ignore[operator]
-        return sp.Matrix(
-            [
-                [gamma, 0, 0, -gamma * beta],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [-gamma * beta, 0, 0, gamma],
-            ]
-        )
+        return sp.Matrix([
+            [gamma, 0, 0, -gamma * beta],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [-gamma * beta, 0, 0, gamma],
+        ])
 
     def evaluate(self) -> _BoostZMatrixImplementation:
         beta = self.args[0]
@@ -381,29 +377,27 @@ class BoostMatrix(UnevaluatedExpression):
         beta_y = FourMomentumY(momentum) / energy
         beta_z = FourMomentumZ(momentum) / energy
         g = 1 / sp.sqrt(1 - beta_sq)
-        return sp.Matrix(
+        return sp.Matrix([
+            [g, -g * beta_x, -g * beta_y, -g * beta_z],
             [
-                [g, -g * beta_x, -g * beta_y, -g * beta_z],
-                [
-                    -g * beta_x,
-                    1 + (g - 1) * beta_x**2 / beta_sq,
-                    (g - 1) * beta_y * beta_x / beta_sq,
-                    (g - 1) * beta_z * beta_x / beta_sq,
-                ],
-                [
-                    -g * beta_y,
-                    (g - 1) * beta_x * beta_y / beta_sq,
-                    1 + (g - 1) * beta_y**2 / beta_sq,
-                    (g - 1) * beta_z * beta_y / beta_sq,
-                ],
-                [
-                    -g * beta_z,
-                    (g - 1) * beta_x * beta_z / beta_sq,
-                    (g - 1) * beta_y * beta_z / beta_sq,
-                    1 + (g - 1) * beta_z**2 / beta_sq,
-                ],
-            ]
-        )
+                -g * beta_x,
+                1 + (g - 1) * beta_x**2 / beta_sq,
+                (g - 1) * beta_y * beta_x / beta_sq,
+                (g - 1) * beta_z * beta_x / beta_sq,
+            ],
+            [
+                -g * beta_y,
+                (g - 1) * beta_x * beta_y / beta_sq,
+                1 + (g - 1) * beta_y**2 / beta_sq,
+                (g - 1) * beta_z * beta_y / beta_sq,
+            ],
+            [
+                -g * beta_z,
+                (g - 1) * beta_x * beta_z / beta_sq,
+                (g - 1) * beta_y * beta_z / beta_sq,
+                1 + (g - 1) * beta_z**2 / beta_sq,
+            ],
+        ])
 
     def evaluate(self) -> _BoostMatrixImplementation:
         momentum = self.args[0]
@@ -499,14 +493,12 @@ class RotationYMatrix(UnevaluatedExpression):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         angle = self.args[0]
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), 0, sp.sin(angle)],
-                [0, 0, 1, 0],
-                [0, -sp.sin(angle), 0, sp.cos(angle)],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, sp.cos(angle), 0, sp.sin(angle)],
+            [0, 0, 1, 0],
+            [0, -sp.sin(angle), 0, sp.cos(angle)],
+        ])
 
     def evaluate(self) -> _RotationYMatrixImplementation:
         angle = self.args[0]
@@ -572,14 +564,12 @@ class RotationZMatrix(UnevaluatedExpression):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         angle = self.args[0]
-        return sp.Matrix(
-            [
-                [1, 0, 0, 0],
-                [0, sp.cos(angle), -sp.sin(angle), 0],
-                [0, sp.sin(angle), sp.cos(angle), 0],
-                [0, 0, 0, 1],
-            ]
-        )
+        return sp.Matrix([
+            [1, 0, 0, 0],
+            [0, sp.cos(angle), -sp.sin(angle), 0],
+            [0, sp.sin(angle), sp.cos(angle), 0],
+            [0, 0, 0, 1],
+        ])
 
     def evaluate(self) -> _RotationZMatrixImplementation:
         angle = self.args[0]
