@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from typing import Any
 
 import pytest
 import sympy as sp
@@ -92,3 +93,14 @@ def test_unevaluated_expression():
     assert args_str == ["s", "m1", "m2", "args", "evaluate", "kwargs"]
     latex = sp.latex(expr)
     assert latex == R"q\left(m_{0}^{2}\right)"
+
+    @unevaluated_expression(implement_doit=False)
+    class Squared(sp.Expr):
+        x: Any
+
+        def _implementation_(self) -> sp.Expr:
+            return self.x**2
+
+    sqrt = Squared(2)
+    assert str(sqrt) == "Squared(2)"
+    assert str(sqrt.doit()) == "Squared(2)"

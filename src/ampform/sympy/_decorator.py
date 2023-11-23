@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import sys
-from typing import TYPE_CHECKING, Callable, Iterable, TypeVar
+from typing import TYPE_CHECKING, Callable, Iterable, TypeVar, overload
 
 import sympy as sp
 
@@ -25,10 +25,19 @@ _P = ParamSpec("_P")
 _T = TypeVar("_T")
 
 
-@dataclass_transform()
+@overload
+def unevaluated_expression(cls: type[ExprClass]) -> type[ExprClass]: ...
+@overload
 def unevaluated_expression(
-    cls: type[ExprClass], implement_doit: bool = True
-) -> type[ExprClass]:
+    *,
+    implement_doit: bool = True,
+) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
+
+
+@dataclass_transform()  # type: ignore[misc]
+def unevaluated_expression(  # type: ignore[misc]
+    cls: type[ExprClass] | None = None, *, implement_doit=True
+):
     r"""Decorator for defining 'unevaluated' SymPy expressions.
 
     Unevaluated expressions are handy for defining large expressions that consist of
@@ -51,12 +60,18 @@ def unevaluated_expression(
     >>> expr.doit()
     a**2 + b**4
     """
-    cls = _implement_new_method(cls)
-    if implement_doit:
-        cls = _implement_doit(cls)
-    if hasattr(cls, "_latex_repr_"):
-        cls = _implement_latex_repr(cls)
-    return cls
+
+    def decorator(cls: type[ExprClass]) -> type[ExprClass]:
+        cls = _implement_new_method(cls)
+        if implement_doit:
+            cls = _implement_doit(cls)
+        if hasattr(cls, "_latex_repr_"):
+            cls = _implement_latex_repr(cls)
+        return cls
+
+    if cls is None:
+        return decorator
+    return decorator(cls)
 
 
 @dataclass_transform()
