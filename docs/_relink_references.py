@@ -37,6 +37,7 @@ __TARGET_SUBSTITUTIONS = {
     "a set-like object providing a view on D's items": "typing.ItemsView",
     "a set-like object providing a view on D's keys": "typing.KeysView",
     "ampform.helicity._T": "typing.TypeVar",
+    "ampform.sympy._decorator.ExprClass": "ampform.sympy.ExprClass",
     "an object providing a view on D's values": "typing.ValuesView",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
@@ -62,6 +63,7 @@ __REF_TYPE_SUBSTITUTIONS = {
     "ampform.kinematics.lorentz.FourMomentumSymbol": "obj",
     "ampform.sympy.DecoratedClass": "obj",
     "ampform.sympy.DecoratedExpr": "obj",
+    "ampform.sympy.ExprClass": "obj",
     "symplot.Slider": "obj",
 }
 
