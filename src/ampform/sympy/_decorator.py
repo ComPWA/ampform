@@ -8,14 +8,14 @@ from typing import TYPE_CHECKING, Callable, Iterable, TypeVar, overload
 import sympy as sp
 
 if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
+    from typing_extensions import Protocol, TypedDict
 else:
-    from typing import Protocol
+    from typing import Protocol, TypedDict
 
 if sys.version_info < (3, 11):
-    from typing_extensions import ParamSpec, dataclass_transform
+    from typing_extensions import ParamSpec, Unpack, dataclass_transform
 else:
-    from typing import ParamSpec, dataclass_transform
+    from typing import ParamSpec, Unpack, dataclass_transform
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -25,18 +25,49 @@ _P = ParamSpec("_P")
 _T = TypeVar("_T")
 
 
+class SymPyAssumptions(TypedDict, total=False):
+    """See https://docs.sympy.org/latest/guides/assumptions.html#predicates."""
+
+    algebraic: bool
+    commutative: bool
+    complex: bool
+    extended_negative: bool
+    extended_nonnegative: bool
+    extended_nonpositive: bool
+    extended_nonzero: bool
+    extended_positive: bool
+    extended_real: bool
+    finite: bool
+    hermitian: bool
+    imaginary: bool
+    infinite: bool
+    integer: bool
+    irrational: bool
+    negative: bool
+    noninteger: bool
+    nonnegative: bool
+    nonpositive: bool
+    nonzero: bool
+    positive: bool
+    rational: bool
+    real: bool
+    transcendental: bool
+    zero: bool
+
+
 @overload
 def unevaluated_expression(cls: type[ExprClass]) -> type[ExprClass]: ...
 @overload
 def unevaluated_expression(
     *,
     implement_doit: bool = True,
+    **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
 
 
 @dataclass_transform()  # type: ignore[misc]
 def unevaluated_expression(  # type: ignore[misc]
-    cls: type[ExprClass] | None = None, *, implement_doit=True
+    cls: type[ExprClass] | None = None, *, implement_doit=True, **assumptions
 ):
     r"""Decorator for defining 'unevaluated' SymPy expressions.
 
@@ -60,6 +91,10 @@ def unevaluated_expression(  # type: ignore[misc]
     >>> expr.doit()
     a**2 + b**4
     """
+    if assumptions is None:
+        assumptions = {}
+    if not assumptions.get("commutative"):
+        assumptions["commutative"] = True
 
     def decorator(cls: type[ExprClass]) -> type[ExprClass]:
         cls = _implement_new_method(cls)
@@ -67,6 +102,7 @@ def unevaluated_expression(  # type: ignore[misc]
             cls = _implement_doit(cls)
         if hasattr(cls, "_latex_repr_"):
             cls = _implement_latex_repr(cls)
+        _set_assumptions(**assumptions)(cls)
         return cls
 
     if cls is None:
@@ -225,3 +261,15 @@ def _get_attribute_names(cls: type) -> list[str]:
     ['a', 'b']
     """
     return [v for v in cls.__annotations__ if not callable(v) if not v.startswith("_")]
+
+
+@dataclass_transform()
+def _set_assumptions(
+    **assumptions: Unpack[SymPyAssumptions],
+) -> Callable[[type[_T]], type[_T]]:
+    def class_wrapper(cls: _T) -> _T:
+        for assumption, value in assumptions.items():
+            setattr(cls, f"is_{assumption}", value)
+        return cls
+
+    return class_wrapper

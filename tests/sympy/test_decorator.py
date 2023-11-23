@@ -11,6 +11,7 @@ from ampform.sympy._decorator import (
     _implement_latex_repr,
     _implement_new_method,
     _insert_args_in_signature,
+    _set_assumptions,
     unevaluated_expression,
 )
 
@@ -94,6 +95,8 @@ def test_unevaluated_expression():
     latex = sp.latex(expr)
     assert latex == R"q\left(m_{0}^{2}\right)"
 
+
+def test_unevaluated_expression_callable():
     @unevaluated_expression(implement_doit=False)
     class Squared(sp.Expr):
         x: Any
@@ -104,3 +107,21 @@ def test_unevaluated_expression():
     sqrt = Squared(2)
     assert str(sqrt) == "Squared(2)"
     assert str(sqrt.doit()) == "Squared(2)"
+
+    @unevaluated_expression(complex=True, implement_doit=False)
+    class MySqrt(sp.Expr):
+        x: Any
+
+    expr = MySqrt(-1)
+    assert expr.is_commutative
+    assert expr.is_complex  # type: ignore[attr-defined]
+
+
+def test_set_assumptions():
+    @_set_assumptions(commutative=True, negative=False, real=True)
+    class MySqrt: ...
+
+    expr = MySqrt()
+    assert expr.is_commutative  # type: ignore[attr-defined]
+    assert not expr.is_negative  # type: ignore[attr-defined]
+    assert expr.is_real  # type: ignore[attr-defined]
