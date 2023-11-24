@@ -80,7 +80,7 @@ def unevaluated_expression(  # type: ignore[misc]
     ...     y: sp.Symbol
     ...     _latex_repr_ = R"z\left({x}, {y}\right)"
     ...
-    ...     def _implementation_(self) -> sp.Expr:
+    ...     def evaluate(self) -> sp.Expr:
     ...         x, y = self.args
     ...         return x**2 + y**2
     ...
@@ -139,7 +139,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         for name, value in zip(attr_names, args):
             setattr(expr, name, value)
         if evaluate:
-            return expr._implementation_()
+            return expr.evaluate()
         return expr
 
     cls.__new__ = new_method  # type: ignore[method-assign]
@@ -201,7 +201,7 @@ def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
 
     @functools.wraps(cls.doit)
     def doit_method(self, deep: bool = True) -> sp.Expr:
-        expr = self._implementation_()
+        expr = self.evaluate()
         if deep:
             return expr.doit()
         return expr
@@ -211,12 +211,12 @@ def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
 
 
 def _check_has_implementation(cls: type) -> None:
-    implementation_method = getattr(cls, "_implementation_", None)
+    implementation_method = getattr(cls, "evaluate", None)
     if implementation_method is None:
-        msg = "Decorated class must have an _implementation_ method"
+        msg = "Decorated class must have an evaluate() method"
         raise ValueError(msg)
     if not callable(implementation_method):
-        msg = "_implementation_ must be a callable method"
+        msg = "evaluate must be a callable method"
         raise TypeError(msg)
 
 

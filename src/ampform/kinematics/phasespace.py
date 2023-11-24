@@ -5,23 +5,25 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import sympy as sp
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
+from ampform.sympy import unevaluated_expression
 
 
-@make_commutative
-@implement_doit_method
-class Kibble(UnevaluatedExpression):
+@unevaluated_expression
+class Kibble(sp.Expr):
     """Kibble function for determining the phase space region."""
 
-    def __new__(cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints) -> Kibble:
-        return create_expression(cls, sigma1, sigma2, sigma3, m0, m1, m2, m3, **hints)
+    sigma1: Any
+    sigma2: Any
+    sigma3: Any
+    m0: Any
+    m1: Any
+    m2: Any
+    m3: Any
+    _latex_repr_ = R"\phi\left({sigma1}, {sigma2}\right)"
 
     def evaluate(self) -> Kallen:
         sigma1, sigma2, sigma3, m0, m1, m2, m3 = self.args
@@ -31,26 +33,19 @@ class Kibble(UnevaluatedExpression):
             Kallen(sigma1, m1**2, m0**2),  # type: ignore[operator]
         )
 
-    def _latex(self, printer, *args):
-        sigma1, sigma2, *_ = map(printer._print, self.args)
-        return Rf"\phi\left({sigma1}, {sigma2}\right)"
 
-
-@make_commutative
-@implement_doit_method
-class Kallen(UnevaluatedExpression):
+@unevaluated_expression
+class Kallen(sp.Expr):
     """Källén function, used for computing break-up momenta."""
 
-    def __new__(cls, x, y, z, **hints) -> Kallen:
-        return create_expression(cls, x, y, z, **hints)
+    x: Any
+    y: Any
+    z: Any
+    _latex_repr_ = R"\lambda\left({x}, {y}, {z}\right)"
 
     def evaluate(self) -> sp.Expr:
         x, y, z = self.args
         return x**2 + y**2 + z**2 - 2 * x * y - 2 * y * z - 2 * z * x  # type: ignore[operator]
-
-    def _latex(self, printer, *args):
-        x, y, z = map(printer._print, self.args)
-        return Rf"\lambda\left({x}, {y}, {z}\right)"
 
 
 def is_within_phasespace(

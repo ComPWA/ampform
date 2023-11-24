@@ -17,17 +17,17 @@ from ampform.sympy._decorator import (
 
 
 def test_check_implementation():
-    with pytest.raises(ValueError, match="must have an _implementation_ method"):
+    with pytest.raises(ValueError, match="must have an evaluate() method"):
 
         @_check_has_implementation
         class MyExpr1:  # pyright: ignore[reportUnusedClass]
             pass
 
-    with pytest.raises(TypeError, match="_implementation_ must be a callable method"):
+    with pytest.raises(TypeError, match="evaluate()s must be a callable method"):
 
         @_check_has_implementation
         class MyExpr2:  # pyright: ignore[reportUnusedClass]
-            _implementation_ = "test"
+            evaluate = "test"
 
 
 def test_implement_latex_repr():
@@ -84,7 +84,7 @@ def test_unevaluated_expression():
         m2: sp.Basic
         _latex_repr_ = R"q\left({s}\right)"
 
-        def _implementation_(self) -> sp.Expr:
+        def evaluate(self) -> sp.Expr:
             s, m1, m2 = self.args
             return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2))  # type: ignore[operator]
 
@@ -101,7 +101,7 @@ def test_unevaluated_expression_callable():
     class Squared(sp.Expr):
         x: Any
 
-        def _implementation_(self) -> sp.Expr:
+        def evaluate(self) -> sp.Expr:
             return self.x**2
 
     sqrt = Squared(2)
