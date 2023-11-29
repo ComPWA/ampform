@@ -283,10 +283,12 @@ addopts = '''
 filterwarnings = [
     "error",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
+    "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
     "ignore:Passing a schema to Validator.iter_errors is deprecated.*:DeprecationWarning",
     "ignore:The .* argument to NotebookFile is deprecated.*:pytest.PytestRemovedIn8Warning",
     "ignore:The distutils package is deprecated.*:DeprecationWarning",
     "ignore:The distutils.* module is deprecated.*:DeprecationWarning",
+    "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:unclosed .*:ResourceWarning",
     'ignore:Widget\..* is deprecated\.:DeprecationWarning',
 ]
