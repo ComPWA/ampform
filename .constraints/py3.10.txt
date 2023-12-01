@@ -32,7 +32,6 @@ cycler==0.12.1
 debugpy==1.8.0
 decorator==5.1.1
 defusedxml==0.7.1
-deprecated==1.2.14
 distlib==0.3.7
 docstring-to-markdown==0.13
 docutils==0.17.1
@@ -106,7 +105,7 @@ overrides==7.4.0
 packaging==23.2
 pandocfilters==1.5.0
 parso==0.8.3
-particle==0.23.0
+particle==0.23.1
 pathspec==0.11.2
 pexpect==4.9.0
 pillow==10.1.0
@@ -195,7 +194,6 @@ webencodings==0.5.1
 websocket-client==1.6.4
 wheel==0.42.0
 widgetsnbextension==4.0.9
-wrapt==1.16.0
 zipp==3.17.0
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -33,7 +33,6 @@ cycler==0.11.0
 debugpy==1.7.0
 decorator==5.1.1
 defusedxml==0.7.1
-deprecated==1.2.14
 distlib==0.3.7
 docstring-to-markdown==0.13
 docutils==0.17.1
@@ -110,7 +109,7 @@ numpy==1.21.6
 packaging==23.2
 pandocfilters==1.5.0
 parso==0.8.3
-particle==0.23.0
+particle==0.23.1
 pathspec==0.11.2
 pexpect==4.9.0
 pickleshare==0.7.5
@@ -201,7 +200,6 @@ webencodings==0.5.1
 websocket-client==1.6.1
 wheel==0.42.0
 widgetsnbextension==4.0.9
-wrapt==1.16.0
 y-py==0.5.9
 ypy-websocket==0.8.2
 zipp==3.15.0
