@@ -4,6 +4,7 @@ ci:
   skip:
     - check-jsonschema
     - mypy
+    - prettier
     - pyright
     - taplo
 

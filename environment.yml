@@ -11,3 +11,4 @@ dependencies:
         -e .[dev]
 variables:
   PYTHONHASHSEED: 0
+  PRETTIER_LEGACY_CLI: "1"
