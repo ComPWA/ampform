@@ -4,6 +4,7 @@ ci:
   skip:
     - check-jsonschema
     - mypy
+    - prettier
     - pyright
     - taplo
 
@@ -38,7 +39,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.1.1
+    rev: 0.1.4
     hooks:
       - id: check-dev-files
         args:
@@ -56,7 +57,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.0
+    rev: 1.7.1
     hooks:
       - id: nbqa-pyupgrade
         args:
@@ -79,7 +80,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.1
+    rev: 0.27.2
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -143,12 +144,12 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
+    rev: v4.0.0-alpha.3
     hooks:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.334
+    rev: v1.1.338
     hooks:
       - id: pyright
 
@@ -160,7 +161,7 @@ repos:
           - --py37-plus
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.4
+    rev: v0.1.6
     hooks:
       - id: ruff
         args:
