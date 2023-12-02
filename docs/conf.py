@@ -288,6 +288,9 @@ version_remapping: dict[str, dict[str, str]] = {
         "8.12.2": "8.12.1",
         "8.12.3": "8.12.1",
     },
+    "mpl-interactions": {
+        "0.24.1": "0.24.0",
+    },
     "ipywidgets": {
         "8.0.3": "8.0.5",
         "8.0.4": "8.0.5",
