@@ -3,9 +3,7 @@
     "editor.formatOnSave": false
   },
   "[git-commit]": {
-    "editor.rulers": [
-      72
-    ],
+    "editor.rulers": [72],
     "rewrap.wrappingColumn": 72
   },
   "[json]": {
@@ -22,17 +20,13 @@
       "source.organizeImports": true
     },
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.rulers": [
-      88
-    ]
+    "editor.rulers": [88]
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "black-formatter.importStrategy": "fromEnvironment",
-  "coverage-gutters.coverageFileNames": [
-    "coverage.xml"
-  ],
+  "coverage-gutters.coverageFileNames": ["coverage.xml"],
   "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
   "coverage-gutters.showGutterCoverage": false,
   "coverage-gutters.showLineCoverage": true,
@@ -47,30 +41,21 @@
   },
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
-  "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/ci.yml"
-  ],
+  "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
   "json.schemas": [
     {
-      "fileMatch": [
-        ".zenodo.json"
-      ],
+      "fileMatch": [".zenodo.json"],
       "url": "https://zenodo.org/schemas/deposits/records/legacyrecord.json"
     }
   ],
   "livePreview.defaultPreviewPath": "docs/_build/html",
-  "mypy-type-checker.args": [
-    "--config-file=${workspaceFolder}/pyproject.toml"
-  ],
+  "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "notebook.gotoSymbols.showAllSymbols": true,
   "python.analysis.autoImportCompletions": false,
   "python.analysis.inlayHints.pytestParameters": true,
   "python.analysis.typeCheckingMode": "strict",
-  "python.testing.pytestArgs": [
-    "--color=no",
-    "--no-cov"
-  ],
+  "python.testing.pytestArgs": ["--color=no", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "rewrap.wrappingColumn": 88,
