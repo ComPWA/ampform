@@ -17,6 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -87,10 +88,13 @@ format = [
     "black",
 ]
 jupyter = [
+    "isort",
     "jupyterlab",
     "jupyterlab-code-formatter",
+    "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
+    "python-lsp-ruff",
     "python-lsp-server[rope]",
     'ypy-websocket <0.8.3; python_version <"3.8.0"',
 ]
@@ -170,6 +174,7 @@ preview = true
 target-version = [
     "py310",
     "py311",
+    "py312",
     "py37",
     "py38",
     "py39",
@@ -219,24 +224,6 @@ module = ["pybtex.*"]
 ignore_missing_imports = true
 module = ["sphinx.*"]
 
-[tool.nbqa.addopts]
-ruff = [
-    "--extend-ignore=B018",
-    "--extend-ignore=C408",
-    "--extend-ignore=C90",
-    "--extend-ignore=D",
-    "--extend-ignore=F404",
-    "--extend-ignore=N806",
-    "--extend-ignore=N816",
-    "--extend-ignore=PLR09",
-    "--extend-ignore=PLR2004",
-    "--extend-ignore=PLW0602",
-    "--extend-ignore=PLW0603",
-    "--extend-ignore=S301", # allow pickle
-    "--extend-ignore=TCH002",
-    "--line-length=85",
-]
-
 [tool.pyright]
 exclude = [
     "**/.git",
@@ -283,10 +270,12 @@ addopts = '''
 filterwarnings = [
     "error",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
+    "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
     "ignore:Passing a schema to Validator.iter_errors is deprecated.*:DeprecationWarning",
     "ignore:The .* argument to NotebookFile is deprecated.*:pytest.PytestRemovedIn8Warning",
     "ignore:The distutils package is deprecated.*:DeprecationWarning",
     "ignore:The distutils.* module is deprecated.*:DeprecationWarning",
+    "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:unclosed .*:ResourceWarning",
     'ignore:Widget\..* is deprecated\.:DeprecationWarning',
 ]
@@ -302,6 +291,7 @@ testpaths = [
 
 [tool.ruff]
 extend-exclude = ["typings"]
+extend-include = ["*.ipynb"]
 extend-select = [
     "A",
     "B",
@@ -361,6 +351,25 @@ task-tags = ["cspell"]
 known-third-party = ["sympy"]
 
 [tool.ruff.per-file-ignores]
+"*.ipynb" = [
+    "B018",
+    "C408",
+    "C90",
+    "D",
+    "E402",
+    "E703",
+    "F404",
+    "N806",
+    "N816",
+    "PLR09",
+    "PLR2004",
+    "PLW0602",
+    "PLW0603",
+    "S101",
+    "S301",
+    "T201",
+    "TCH00",
+]
 "docs/*" = [
     "E402",
     "INP001",
