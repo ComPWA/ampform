@@ -11,8 +11,6 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
-import subprocess
 import sys
 from typing import TYPE_CHECKING
 
@@ -73,22 +71,6 @@ sys.path.insert(0, os.path.abspath("."))
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
-
-shutil.rmtree("api", ignore_errors=True)
-subprocess.call(
-    " ".join([
-        "sphinx-apidoc",
-        f"../src/{PACKAGE}/",
-        f"../src/{PACKAGE}/version.py",
-        f"../src/{PACKAGE}/io/latex.py",
-        "-o api/",
-        "--force",
-        "--no-toc",
-        "--templatedir _templates",
-        "--separate",
-    ]),
-    shell=True,  # noqa: S602
-)
 
 # -- General configuration ---------------------------------------------------
 master_doc = "index.md"
@@ -202,6 +184,7 @@ from IPython.display import display
 
 """
 AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
+generate_apidoc_package_path = f"../src/{PACKAGE}"
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
 html_css_files = [
