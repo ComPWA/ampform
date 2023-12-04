@@ -28,13 +28,7 @@ from pybtex.style.template import (
     sentence,
     words,
 )
-
-if sys.version_info < (3, 8):
-    from importlib_metadata import PackageNotFoundError
-    from importlib_metadata import version as get_package_version
-else:
-    from importlib.metadata import PackageNotFoundError
-    from importlib.metadata import version as get_package_version
+from sphinx_api_relink import get_version
 
 if TYPE_CHECKING:
     from pybtex.database import Entry
@@ -58,12 +52,6 @@ def get_branch_name() -> str:
 
 
 BRANCH = get_branch_name()
-
-try:
-    __VERSION = get_package_version(PACKAGE)
-    version = ".".join(__VERSION.split(".")[:3])
-except PackageNotFoundError:
-    pass
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
@@ -263,8 +251,10 @@ html_theme_options = {
 }
 html_title = project
 pygments_style = "sphinx"
+release = get_version(PACKAGE)
 todo_include_todos = False
 viewcode_follow_imported_members = True
+version = get_version(PACKAGE)
 
 # Cross-referencing configuration
 default_role = "py:obj"
@@ -297,7 +287,7 @@ version_remapping: dict[str, dict[str, str]] = {
 }
 
 
-def get_version(package_name: str) -> str:
+def pin(package_name: str) -> str:
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     constraints_path = f"../.constraints/py{python_version}.txt"
     package_name = package_name.lower()
@@ -325,8 +315,8 @@ def get_version(package_name: str) -> str:
     return "stable"
 
 
-def get_minor_version(package_name: str) -> str:
-    installed_version = get_version(package_name)
+def pin_minor(package_name: str) -> str:
+    installed_version = pin(package_name)
     if installed_version == "stable":
         return installed_version
     matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
@@ -338,29 +328,29 @@ def get_minor_version(package_name: str) -> str:
 
 intersphinx_mapping = {
     "IPython": (
-        f"https://ipython.readthedocs.io/en/{get_version('IPython')}",
+        f"https://ipython.readthedocs.io/en/{pin('IPython')}",
         None,
     ),
-    "attrs": (f"https://www.attrs.org/en/{get_version('attrs')}", None),
+    "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (
-        f"https://ipywidgets.readthedocs.io/en/{get_version('ipywidgets')}",
+        f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}",
         None,
     ),
     "matplotlib": (
-        f"https://matplotlib.org/{get_version('matplotlib')}",
+        f"https://matplotlib.org/{pin('matplotlib')}",
         None,
     ),
     "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{get_version('mpl-interactions')}",
+        f"https://mpl-interactions.readthedocs.io/en/{pin('mpl-interactions')}",
         None,
     ),
-    "numpy": (f"https://numpy.org/doc/{get_minor_version('numpy')}", None),
+    "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (
-        f"https://qrules.readthedocs.io/en/{get_version('qrules')}",
+        f"https://qrules.readthedocs.io/en/{pin('qrules')}",
         None,
     ),
     "sympy": ("https://docs.sympy.org/latest", None),
