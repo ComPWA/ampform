@@ -99,7 +99,10 @@ lint = [
     "ampform[mypy]",
     "ruff",
 ]
-mypy = ["mypy >=0.730"]
+mypy = [
+    "mypy >=0.730",
+    "sphinx-api-relink >=0.0.3",
+]
 sty = [
     "ampform[format]",
     "ampform[lint]",
