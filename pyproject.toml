@@ -350,6 +350,7 @@ known-third-party = ["sympy"]
     "S113",
     "T201",
 ]
+"docs/conf.py" = ["A001"]
 "setup.py" = ["D100"]
 "tests/*" = [
     "C408",

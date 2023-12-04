@@ -4,9 +4,6 @@ This file only contains a selection of the most common options. For a full list 
 documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-# pyright: reportMissingImports=false
-# pyright: reportUntypedBaseClass=false
-# pyright: reportUntypedFunctionDecorator=false
 from __future__ import annotations
 
 import os
@@ -15,16 +12,9 @@ import sys
 
 from sphinx_api_relink import get_version
 
-# -- Project information -----------------------------------------------------
-project = "AmpForm"
-PACKAGE = "ampform"
-REPO_NAME = "ampform"
-copyright = "2020, ComPWA"  # noqa: A001
-author = "Common Partial Wave Analysis"
 
-
-# https://docs.readthedocs.io/en/stable/builds.html
 def get_branch_name() -> str:
+    """https://docs.readthedocs.io/en/stable/builds.html."""
     branch_name = os.environ.get("READTHEDOCS_VERSION", "stable")
     if branch_name == "latest":
         return "main"
@@ -33,57 +23,86 @@ def get_branch_name() -> str:
     return branch_name
 
 
-BRANCH = get_branch_name()
+def get_execution_mode() -> str:
+    if "FORCE_EXECUTE_NB" in os.environ:
+        print("\033[93;1mWill run ALL Jupyter notebooks!\033[0m")
+        return "force"
+    if "EXECUTE_NB" in os.environ:
+        return "cache"
+    return "off"
 
-# -- Generate API ------------------------------------------------------------
+
+def pin(package_name: str) -> str:
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    constraints_path = f"../.constraints/py{python_version}.txt"
+    package_name = package_name.lower()
+    with open(constraints_path) as stream:
+        constraints = stream.read()
+    for line in constraints.split("\n"):
+        line = line.split("#")[0]  # remove comments
+        line = line.strip()
+        line = line.lower()
+        if not line.startswith(package_name):
+            continue
+        if not line:
+            continue
+        line_segments = tuple(line.split("=="))
+        if len(line_segments) != 2:  # noqa: PLR2004
+            continue
+        _, installed_version, *_ = line_segments
+        installed_version = installed_version.strip()
+        remapped_versions = VERSION_REMAPPING.get(package_name)
+        if remapped_versions is not None:
+            existing_version = remapped_versions.get(installed_version)
+            if existing_version is not None:
+                return existing_version
+        return installed_version
+    return "stable"
+
+
+def pin_minor(package_name: str) -> str:
+    installed_version = pin(package_name)
+    if installed_version == "stable":
+        return installed_version
+    matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
+    if matches is None:
+        msg = f"Could not find documentation for {package_name} v{installed_version}"
+        raise ValueError(msg)
+    return matches[1]
+
+
 sys.path.insert(0, os.path.abspath("."))
 
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
 
-# -- General configuration ---------------------------------------------------
-master_doc = "index.md"
-source_suffix = {
-    ".ipynb": "myst-nb",
-    ".md": "myst-nb",
-    ".rst": "restructuredtext",
+PACKAGE = "ampform"
+REPO_NAME = "ampform"
+REPO_TITLE = "AmpForm"
+BRANCH = get_branch_name()
+
+BINDER_LINK = (
+    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+)
+EXECUTE_NB = get_execution_mode() != "off"
+VERSION_REMAPPING: dict[str, dict[str, str]] = {
+    "ipython": {
+        "8.12.2": "8.12.1",
+        "8.12.3": "8.12.1",
+    },
+    "mpl-interactions": {
+        "0.24.1": "0.24.0",
+    },
+    "ipywidgets": {
+        "8.0.3": "8.0.5",
+        "8.0.4": "8.0.5",
+        "8.0.6": "8.0.5",
+        "8.1.1": "8.1.2",
+    },
 }
 
-# The master toctree document.
-master_doc = "index"
-modindex_common_prefix = [
-    f"{PACKAGE}.",
-]
 
-extensions = [
-    "myst_nb",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosectionlabel",
-    "sphinx.ext.doctest",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
-    "sphinx_api_relink",
-    "sphinx_codeautolink",
-    "sphinx_comments",
-    "sphinx_copybutton",
-    "sphinx_design",
-    "sphinx_hep_pdgref",
-    "sphinx_pybtex_etal_style",
-    "sphinx_thebe",
-    "sphinx_togglebutton",
-    "sphinxcontrib.bibtex",
-]
-exclude_patterns = [
-    "**.ipynb_checkpoints",
-    "*build",
-    "adr/template.md",
-    "tests",
-]
-
-# General sphinx settings
 add_module_names = False
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
@@ -124,6 +143,7 @@ api_target_types: dict[str, str] = {
     "RangeDefinition": "obj",
     "ampform.helicity.align.dpd.T": "obj",
 }
+author = "Common Partial Wave Analysis"
 autodoc_default_options = {
     "exclude-members": ", ".join([
         "as_explicit",
@@ -146,6 +166,9 @@ autodoc_default_options = {
 }
 autodoc_member_order = "bysource"
 autodoc_typehints_format = "short"
+autosectionlabel_prefix_document = True
+bibtex_bibfiles = ["bibliography.bib"]
+bibtex_default_style = "unsrt_et_al"
 codeautolink_concat_default = True
 codeautolink_global_preface = """
 import numpy
@@ -154,16 +177,48 @@ import sympy as sp
 from IPython.display import display
 
 """
-AUTODOC_INSERT_SIGNATURE_LINEBREAKS = False
-bibtex_default_style = "unsrt_et_al"
+comments_config = {
+    "hypothesis": True,
+    "utterances": {
+        "repo": f"ComPWA/{REPO_NAME}",
+        "issue-term": "pathname",
+        "label": "📝 Docs",
+    },
+}
+copybutton_prompt_is_regexp = True
+copybutton_prompt_text = r">>> |\.\.\. "  # doctest
+copyright = "2020, ComPWA"
+default_role = "py:obj"
+exclude_patterns = [
+    "**.ipynb_checkpoints",
+    "*build",
+    "adr/template.md",
+    "tests",
+]
+extensions = [
+    "myst_nb",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx_api_relink",
+    "sphinx_codeautolink",
+    "sphinx_comments",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_hep_pdgref",
+    "sphinx_pybtex_etal_style",
+    "sphinx_thebe",
+    "sphinx_togglebutton",
+    "sphinxcontrib.bibtex",
+]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
 graphviz_output_format = "svg"
 html_copy_source = True  # needed for download notebook button
-html_css_files = [
-    "custom.css",
-]
-if AUTODOC_INSERT_SIGNATURE_LINEBREAKS:
-    html_css_files.append("linebreaks-api.css")
+html_css_files = ["custom.css"]
 html_favicon = "_static/favicon.ico"
 html_last_updated_fmt = "%-d %B %Y"
 html_logo = (
@@ -214,7 +269,7 @@ html_theme_options = {
             "type": "url",
         },
     ],
-    "logo": {"text": project},
+    "logo": {"text": REPO_TITLE},
     "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
     "repository_branch": BRANCH,
     "path_to_docs": "docs",
@@ -233,83 +288,7 @@ html_theme_options = {
     "show_navbar_depth": 2,
     "show_toc_level": 2,
 }
-html_title = project
-pygments_style = "sphinx"
-release = get_version(PACKAGE)
-todo_include_todos = False
-viewcode_follow_imported_members = True
-version = get_version(PACKAGE)
-
-# Cross-referencing configuration
-default_role = "py:obj"
-primary_domain = "py"
-nitpicky = True  # warn if cross-references are missing
-nitpick_ignore = [
-    ("py:class", "ArraySum"),
-    ("py:class", "MatrixMultiplication"),
-    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
-    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    ("py:class", "typing_extensions.Protocol"),
-]
-
-
-# Intersphinx settings
-version_remapping: dict[str, dict[str, str]] = {
-    "ipython": {
-        "8.12.2": "8.12.1",
-        "8.12.3": "8.12.1",
-    },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
-    },
-    "ipywidgets": {
-        "8.0.3": "8.0.5",
-        "8.0.4": "8.0.5",
-        "8.0.6": "8.0.5",
-        "8.1.1": "8.1.2",
-    },
-}
-
-
-def pin(package_name: str) -> str:
-    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-    constraints_path = f"../.constraints/py{python_version}.txt"
-    package_name = package_name.lower()
-    with open(constraints_path) as stream:
-        constraints = stream.read()
-    for line in constraints.split("\n"):
-        line = line.split("#")[0]  # remove comments
-        line = line.strip()
-        line = line.lower()
-        if not line.startswith(package_name):
-            continue
-        if not line:
-            continue
-        line_segments = tuple(line.split("=="))
-        if len(line_segments) != 2:  # noqa: PLR2004
-            continue
-        _, installed_version, *_ = line_segments
-        installed_version = installed_version.strip()
-        remapped_versions = version_remapping.get(package_name)
-        if remapped_versions is not None:
-            existing_version = remapped_versions.get(installed_version)
-            if existing_version is not None:
-                return existing_version
-        return installed_version
-    return "stable"
-
-
-def pin_minor(package_name: str) -> str:
-    installed_version = pin(package_name)
-    if installed_version == "stable":
-        return installed_version
-    matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
-    if matches is None:
-        msg = f"Could not find documentation for {package_name} v{installed_version}"
-        raise ValueError(msg)
-    return matches[1]
-
-
+html_title = REPO_TITLE
 intersphinx_mapping = {
     "IPython": (
         f"https://ipython.readthedocs.io/en/{pin('IPython')}",
@@ -339,21 +318,6 @@ intersphinx_mapping = {
     ),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
-
-# Settings for autosectionlabel
-autosectionlabel_prefix_document = True
-
-# Settings for bibtex
-bibtex_bibfiles = ["bibliography.bib"]
-suppress_warnings = [
-    "myst.domains",
-]
-
-# Settings for copybutton
-copybutton_prompt_is_regexp = True
-copybutton_prompt_text = r">>> |\.\.\. "  # doctest
-
-# Settings for linkcheck
 linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
@@ -364,25 +328,9 @@ linkcheck_ignore = [
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
 ]
-
-
-# Settings for myst_nb
-def get_execution_mode() -> str:
-    if "FORCE_EXECUTE_NB" in os.environ:
-        print("\033[93;1mWill run ALL Jupyter notebooks!\033[0m")
-        return "force"
-    if "EXECUTE_NB" in os.environ:
-        return "cache"
-    return "off"
-
-
-nb_execution_mode = get_execution_mode()
-nb_execution_show_tb = True
-nb_execution_timeout = -1
-nb_output_stderr = "remove"
-EXECUTE_NB = nb_execution_mode != "off"
-
-# Settings for myst-parser
+project = REPO_TITLE
+master_doc = "index"
+modindex_common_prefix = [f"{PACKAGE}."]
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
@@ -391,9 +339,6 @@ myst_enable_extensions = [
     "substitution",
 ]
 myst_heading_anchors = 2
-BINDER_LINK = (
-    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
-)
 myst_substitutions = {
     "branch": BRANCH,
     "EXECUTE_NB": EXECUTE_NB,
@@ -406,24 +351,35 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
+nitpicky = True
+nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "MatrixMultiplication"),
+    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
+    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
+    ("py:class", "typing_extensions.Protocol"),
+]
+nb_execution_mode = get_execution_mode()
+nb_execution_show_tb = True
+nb_execution_timeout = -1
+nb_output_stderr = "remove"
+primary_domain = "py"
+pygments_style = "sphinx"
+release = get_version(PACKAGE)
+source_suffix = {
+    ".ipynb": "myst-nb",
+    ".md": "myst-nb",
+    ".rst": "restructuredtext",
+}
 suppress_warnings = [
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127
     "mystnb.unknown_mime_type",
+    "myst.domains",
 ]
-
-# Settings for sphinx_comments
-comments_config = {
-    "hypothesis": True,
-    "utterances": {
-        "repo": f"ComPWA/{REPO_NAME}",
-        "issue-term": "pathname",
-        "label": "📝 Docs",
-    },
-}
-
-# Settings for Thebe cell output
 thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
+version = get_version(PACKAGE)
+viewcode_follow_imported_members = True
