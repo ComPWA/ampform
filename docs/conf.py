@@ -9,7 +9,6 @@ documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 # pyright: reportUntypedFunctionDecorator=false
 from __future__ import annotations
 
-import contextlib
 import os
 import re
 import shutil
@@ -17,7 +16,6 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-import requests
 from pybtex.plugin import register_plugin
 from pybtex.richtext import Tag, Text
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
@@ -68,25 +66,6 @@ try:
     version = ".".join(__VERSION.split(".")[:3])
 except PackageNotFoundError:
     pass
-
-
-# -- Fetch logo --------------------------------------------------------------
-def fetch_logo(url: str, output_path: str) -> None:
-    if os.path.exists(output_path):
-        return
-    online_content = requests.get(url, allow_redirects=True, timeout=10)
-    with open(output_path, "wb") as stream:
-        stream.write(online_content.content)
-
-
-LOGO_PATH = "_static/logo.svg"
-with contextlib.suppress(requests.exceptions.ConnectionError):
-    fetch_logo(
-        url="https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg",
-        output_path=LOGO_PATH,
-    )
-if os.path.exists(LOGO_PATH):
-    html_logo = LOGO_PATH
 
 # -- Generate API ------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("."))
@@ -232,6 +211,9 @@ if AUTODOC_INSERT_SIGNATURE_LINEBREAKS:
     html_css_files.append("linebreaks-api.css")
 html_favicon = "_static/favicon.ico"
 html_last_updated_fmt = "%-d %B %Y"
+html_logo = (
+    "https://raw.githubusercontent.com/ComPWA/ComPWA/04e5199/doc/images/logo.svg"
+)
 html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
