@@ -92,10 +92,8 @@ if os.path.exists(LOGO_PATH):
 sys.path.insert(0, os.path.abspath("."))
 
 from _extend_docstrings import extend_docstrings
-from _relink_references import relink_references
 
 extend_docstrings()
-relink_references()
 
 shutil.rmtree("api", ignore_errors=True)
 subprocess.call(
@@ -136,6 +134,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx_api_relink",
     "sphinx_codeautolink",
     "sphinx_comments",
     "sphinx_copybutton",
@@ -154,6 +153,45 @@ exclude_patterns = [
 
 # General sphinx settings
 add_module_names = False
+api_target_substitutions: dict[str, str | tuple[str, str]] = {
+    "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
+    "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
+    "DecoratedExpr": ("obj", "ampform.sympy.DecoratedExpr"),
+    "FourMomenta": ("obj", "ampform.kinematics.lorentz.FourMomenta"),
+    "FourMomentumSymbol": ("obj", "ampform.kinematics.lorentz.FourMomentumSymbol"),
+    "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "LatexPrinter": "sympy.printing.printer.Printer",
+    "Literal[(-1, 1)]": "typing.Literal",
+    "NumPyPrinter": "sympy.printing.printer.Printer",
+    "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
+    "Particle": "qrules.particle.Particle",
+    "ReactionInfo": "qrules.transition.ReactionInfo",
+    "Slider": ("obj", "symplot.Slider"),
+    "State": "qrules.transition.State",
+    "StateTransition": "qrules.transition.StateTransition",
+    "Topology": "qrules.topology.Topology",
+    "WignerD": "sympy.physics.quantum.spin.WignerD",
+    "ampform.helicity._T": "typing.TypeVar",
+    "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
+    "an object providing a view on D's values": "typing.ValuesView",
+    "sp.Basic": "sympy.core.basic.Basic",
+    "sp.Expr": "sympy.core.expr.Expr",
+    "sp.Float": "sympy.core.numbers.Float",
+    "sp.Indexed": "sympy.tensor.indexed.Indexed",
+    "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
+    "sp.Rational": "sympy.core.numbers.Rational",
+    "sp.Symbol": "sympy.core.symbol.Symbol",
+    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
+    "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
+    "sympy.tensor.array.expressions.array_expressions.ArraySymbol": (
+        "mod",
+        "sympy.tensor.array.expressions",
+    ),
+}
+api_target_types: dict[str, str] = {
+    "RangeDefinition": "obj",
+    "ampform.helicity.align.dpd.T": "obj",
+}
 autodoc_default_options = {
     "exclude-members": ", ".join([
         "as_explicit",
@@ -175,12 +213,6 @@ autodoc_default_options = {
     ]),
 }
 autodoc_member_order = "bysource"
-autodoc_type_aliases = {
-    "BuilderReturnType": "ampform.dynamics.builder.BuilderReturnType",
-    "FourMomenta": "ampform.kinematics.lorentz.FourMomenta",
-    "FourMomentumSymbol": "ampform.kinematics.lorentz.FourMomentumSymbol",
-    "RangeDefinition": "symplot.RangeDefinition",
-}
 autodoc_typehints_format = "short"
 codeautolink_concat_default = True
 codeautolink_global_preface = """
