@@ -7,69 +7,16 @@ documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 from __future__ import annotations
 
 import os
-import re
 import sys
 
-from sphinx_api_relink import get_version
-
-
-def get_branch_name() -> str:
-    """https://docs.readthedocs.io/en/stable/builds.html."""
-    branch_name = os.environ.get("READTHEDOCS_VERSION", "stable")
-    if branch_name == "latest":
-        return "main"
-    if re.match(r"^\d+$", branch_name):  # PR preview
-        return "stable"
-    return branch_name
-
-
-def get_execution_mode() -> str:
-    if "FORCE_EXECUTE_NB" in os.environ:
-        print("\033[93;1mWill run ALL Jupyter notebooks!\033[0m")
-        return "force"
-    if "EXECUTE_NB" in os.environ:
-        return "cache"
-    return "off"
-
-
-def pin(package_name: str) -> str:
-    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-    constraints_path = f"../.constraints/py{python_version}.txt"
-    package_name = package_name.lower()
-    with open(constraints_path) as stream:
-        constraints = stream.read()
-    for line in constraints.split("\n"):
-        line = line.split("#")[0]  # remove comments
-        line = line.strip()
-        line = line.lower()
-        if not line.startswith(package_name):
-            continue
-        if not line:
-            continue
-        line_segments = tuple(line.split("=="))
-        if len(line_segments) != 2:  # noqa: PLR2004
-            continue
-        _, installed_version, *_ = line_segments
-        installed_version = installed_version.strip()
-        remapped_versions = VERSION_REMAPPING.get(package_name)
-        if remapped_versions is not None:
-            existing_version = remapped_versions.get(installed_version)
-            if existing_version is not None:
-                return existing_version
-        return installed_version
-    return "stable"
-
-
-def pin_minor(package_name: str) -> str:
-    installed_version = pin(package_name)
-    if installed_version == "stable":
-        return installed_version
-    matches = re.match(r"^([0-9]+\.[0-9]+).*$", installed_version)
-    if matches is None:
-        msg = f"Could not find documentation for {package_name} v{installed_version}"
-        raise ValueError(msg)
-    return matches[1]
-
+from sphinx_api_relink.helpers import (
+    get_branch_name,
+    get_execution_mode,
+    get_package_version,
+    pin,
+    pin_minor,
+    set_intersphinx_version_remapping,
+)
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -77,16 +24,18 @@ from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
 
+BRANCH = get_branch_name()
 PACKAGE = "ampform"
 REPO_NAME = "ampform"
 REPO_TITLE = "AmpForm"
-BRANCH = get_branch_name()
 
 BINDER_LINK = (
     f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
 )
 EXECUTE_NB = get_execution_mode() != "off"
-VERSION_REMAPPING: dict[str, dict[str, str]] = {
+
+
+set_intersphinx_version_remapping({
     "ipython": {
         "8.12.2": "8.12.1",
         "8.12.3": "8.12.1",
@@ -100,8 +49,7 @@ VERSION_REMAPPING: dict[str, dict[str, str]] = {
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
     },
-}
-
+})
 
 add_module_names = False
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
@@ -290,21 +238,12 @@ html_theme_options = {
 }
 html_title = REPO_TITLE
 intersphinx_mapping = {
-    "IPython": (
-        f"https://ipython.readthedocs.io/en/{pin('IPython')}",
-        None,
-    ),
+    "IPython": (f"https://ipython.readthedocs.io/en/{pin('IPython')}", None),
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa-org": ("https://compwa-org.readthedocs.io", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
-    "ipywidgets": (
-        f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}",
-        None,
-    ),
-    "matplotlib": (
-        f"https://matplotlib.org/{pin('matplotlib')}",
-        None,
-    ),
+    "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
+    "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
     "mpl_interactions": (
         f"https://mpl-interactions.readthedocs.io/en/{pin('mpl-interactions')}",
         None,
@@ -312,10 +251,7 @@ intersphinx_mapping = {
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": (
-        f"https://qrules.readthedocs.io/en/{pin('qrules')}",
-        None,
-    ),
+    "qrules": (f"https://qrules.readthedocs.io/en/{pin('qrules')}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
 linkcheck_anchors = False
@@ -365,7 +301,7 @@ nb_execution_timeout = -1
 nb_output_stderr = "remove"
 primary_domain = "py"
 pygments_style = "sphinx"
-release = get_version(PACKAGE)
+release = get_package_version(PACKAGE)
 source_suffix = {
     ".ipynb": "myst-nb",
     ".md": "myst-nb",
@@ -381,5 +317,5 @@ thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
-version = get_version(PACKAGE)
+version = get_package_version(PACKAGE)
 viewcode_follow_imported_members = True
