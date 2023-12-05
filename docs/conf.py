@@ -25,13 +25,12 @@ from _extend_docstrings import extend_docstrings
 extend_docstrings()
 
 BRANCH = get_branch_name()
+ORGANIZATION = "ComPWA"
 PACKAGE = "ampform"
 REPO_NAME = "ampform"
 REPO_TITLE = "AmpForm"
 
-BINDER_LINK = (
-    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
-)
+BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
 EXECUTE_NB = get_execution_mode() != "off"
 
 
@@ -52,6 +51,7 @@ set_intersphinx_version_remapping({
 })
 
 add_module_names = False
+api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
@@ -128,14 +128,14 @@ from IPython.display import display
 comments_config = {
     "hypothesis": True,
     "utterances": {
-        "repo": f"ComPWA/{REPO_NAME}",
+        "repo": f"{ORGANIZATION}/{REPO_NAME}",
         "issue-term": "pathname",
         "label": "📝 Docs",
     },
 }
 copybutton_prompt_is_regexp = True
 copybutton_prompt_text = r">>> |\.\.\. "  # doctest
-copyright = "2020, ComPWA"
+copyright = f"2020, {ORGANIZATION}"
 default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -151,7 +151,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
     "sphinx_api_relink",
     "sphinx_codeautolink",
     "sphinx_comments",
@@ -188,7 +187,7 @@ html_theme_options = {
         },
         {
             "name": "GitHub",
-            "url": f"https://github.com/ComPWA/{REPO_NAME}",
+            "url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
             "icon": "fa-brands fa-github",
         },
         {
@@ -204,21 +203,19 @@ html_theme_options = {
         },
         {
             "name": "Launch on Binder",
-            "url": (
-                f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs"
-            ),
+            "url": f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs",
             "icon": "https://mybinder.readthedocs.io/en/latest/_static/favicon.png",
             "type": "url",
         },
         {
             "name": "Launch on Colaboratory",
-            "url": f"https://colab.research.google.com/github/ComPWA/{REPO_NAME}/blob/{BRANCH}",
+            "url": f"https://colab.research.google.com/github/{ORGANIZATION}/{REPO_NAME}/blob/{BRANCH}",
             "icon": "https://avatars.githubusercontent.com/u/33467679?s=100",
             "type": "url",
         },
     ],
     "logo": {"text": REPO_TITLE},
-    "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
+    "repository_url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
     "repository_branch": BRANCH,
     "path_to_docs": "docs",
     "use_download_button": True,
