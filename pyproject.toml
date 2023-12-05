@@ -50,9 +50,7 @@ name = "ampform"
 requires-python = ">=3.7"
 
 [project.optional-dependencies]
-all = [
-    "ampform[viz]",
-]
+all = ["ampform[viz]"]
 dev = [
     "ampform[all]",
     "ampform[doc]",
@@ -73,20 +71,19 @@ doc = [
     "nbclient >=0.5.5", # https://github.com/executablebooks/jupyter-book/issues/833
     "numpy",
     "rich",
+    "sphinx-api-relink >=0.0.3",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
     "sphinx-comments",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-hep-pdgref",
+    "sphinx-pybtex-etal-style",
     "sphinx-thebe",
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
-    'importlib-metadata; python_version <"3.8.0"',
 ]
-format = [
-    "black",
-]
+format = ["black"]
 jupyter = [
     "isort",
     "jupyterlab",
@@ -103,11 +100,8 @@ lint = [
     "ruff",
 ]
 mypy = [
-    "mypy >=0.730", # error code support
-    "types-docutils",
-    "types-pkg-resources",
-    "types-requests",
-    "types-setuptools",
+    "mypy >=0.730",
+    "sphinx-api-relink >=0.0.3",
 ]
 sty = [
     "ampform[format]",
@@ -126,9 +120,7 @@ test = [
     "pytest-xdist",
     'nbmake <1.3; python_version=="3.7.*"',
 ]
-viz = [
-    "graphviz",
-]
+viz = ["graphviz"]
 
 [project.readme]
 content-type = "text/markdown"
@@ -190,20 +182,6 @@ show_error_codes = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-check_untyped_defs = true
-disallow_incomplete_defs = false
-disallow_untyped_defs = false
-module = ["tests.*"]
-
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["typings.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["IPython.*"]
-
-[[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = ["graphviz.*"]
 
@@ -212,16 +190,14 @@ ignore_missing_imports = true
 module = ["ipywidgets.*"]
 
 [[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["numpy.*"]
+check_untyped_defs = true
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+module = ["tests.*"]
 
 [[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["pybtex.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["sphinx.*"]
+ignore_errors = true
+module = ["typings.*"]
 
 [tool.pyright]
 exclude = [
@@ -377,6 +353,7 @@ known-third-party = ["sympy"]
     "S113",
     "T201",
 ]
+"docs/conf.py" = ["A001"]
 "setup.py" = ["D100"]
 "tests/*" = [
     "C408",
