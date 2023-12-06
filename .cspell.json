@@ -21,6 +21,7 @@
   ],
   "ignorePaths": [
     "**/*.bib",
+    "**/*.rst_t",
     "**/.cspell.json",
     ".constraints/*.txt",
     ".editorconfig",
