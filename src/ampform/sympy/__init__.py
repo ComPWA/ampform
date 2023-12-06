@@ -2,6 +2,7 @@
 
 .. autodecorator:: unevaluated_expression
 .. autodata:: ExprClass
+.. autoclass:: SymPyAssumptions
 """
 
 # cspell:ignore mhash
@@ -25,6 +26,7 @@ from sympy.printing.precedence import PRECEDENCE
 
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     unevaluated_expression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
 )
 

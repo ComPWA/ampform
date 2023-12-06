@@ -74,6 +74,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "ampform.helicity._T": "typing.TypeVar",
     "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
+    "ampform.sympy._decorator.SymPyAssumptions": "ampform.sympy.SymPyAssumptions",
     "an object providing a view on D's values": "typing.ValuesView",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
