@@ -20,6 +20,7 @@ repos:
       - id: check-dev-files
         args:
           - --doc-apt-packages=graphviz
+          - --dev-python-version=3.11
           - --no-prettierrc
           - --pin-requirements=monthly
           - --repo-name=ampform
