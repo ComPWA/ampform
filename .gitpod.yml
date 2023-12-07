@@ -1,4 +1,5 @@
 tasks:
+  - init: pyenv local 3.8
   - init: pip install -c .constraints/py3.8.txt -e .[dev]
 
 github:

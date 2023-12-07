@@ -341,7 +341,7 @@ known-third-party = ["sympy"]
     "PLW0603",
     "S101",
     "S301",
-    "T201",
+    "T20",
     "TCH00",
 ]
 "docs/*" = [
@@ -363,6 +363,7 @@ known-third-party = ["sympy"]
     "PLR0913",
     "PLR2004",
     "S101",
+    "T20",
 ]
 
 [tool.ruff.pydocstyle]
