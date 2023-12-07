@@ -260,6 +260,7 @@ linkcheck_ignore = [
     "https://hss-opus.ub.ruhr-uni-bochum.de",
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
+    "https://www.bookfinder.com",
 ]
 project = REPO_TITLE
 master_doc = "index"
