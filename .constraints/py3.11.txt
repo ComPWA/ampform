@@ -48,7 +48,7 @@ gprof2dot==2022.7.29
 graphviz==0.20.1
 greenlet==3.0.1
 hepunits==2.3.2
-identify==2.5.32
+identify==2.5.33
 idna==3.6
 imagesize==1.4.1
 importlib-metadata==7.0.0
@@ -145,7 +145,7 @@ pytoolconfig==1.2.6
 pyyaml==6.0.1
 pyzmq==25.1.2
 qrules==0.9.8
-referencing==0.31.1
+referencing==0.32.0
 requests==2.31.0
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
@@ -168,7 +168,7 @@ sphinx-comments==0.0.3
 sphinx-copybutton==0.5.2
 sphinx-design==0.5.0
 sphinx-hep-pdgref==0.2.0
-sphinx-pybtex-etal-style==0.0.1
+sphinx-pybtex-etal-style==0.0.2
 sphinx-thebe==0.3.0
 sphinx-togglebutton==0.3.2
 sphinxcontrib-applehelp==1.0.7

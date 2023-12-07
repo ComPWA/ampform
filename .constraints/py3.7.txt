@@ -176,7 +176,7 @@ sphinx-comments==0.0.3
 sphinx-copybutton==0.5.2
 sphinx-design==0.4.1
 sphinx-hep-pdgref==0.2.0
-sphinx-pybtex-etal-style==0.0.1
+sphinx-pybtex-etal-style==0.0.2
 sphinx-thebe==0.2.1
 sphinx-togglebutton==0.3.2
 sphinxcontrib-applehelp==1.0.2
