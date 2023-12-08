@@ -19,7 +19,6 @@ from sphinx_api_relink.helpers import (
 )
 
 sys.path.insert(0, os.path.abspath("."))
-
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
