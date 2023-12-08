@@ -100,6 +100,8 @@ lint = [
     "ruff",
 ]
 mypy = [
+    "ampform[viz]",
+    "ipywidgets", # symplot
     "mypy >=0.730",
     "sphinx-api-relink >=0.0.3",
 ]
@@ -180,14 +182,6 @@ source = ["src"]
 exclude = "_build"
 show_error_codes = true
 warn_unused_configs = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["graphviz.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["ipywidgets.*"]
 
 [[tool.mypy.overrides]]
 check_untyped_defs = true
