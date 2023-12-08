@@ -22,17 +22,6 @@ sys.path.insert(0, os.path.abspath("."))
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
-
-BRANCH = get_branch_name()
-ORGANIZATION = "ComPWA"
-PACKAGE = "ampform"
-REPO_NAME = "ampform"
-REPO_TITLE = "AmpForm"
-
-BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
-EXECUTE_NB = get_execution_mode() != "off"
-
-
 set_intersphinx_version_remapping({
     "ipython": {
         "8.12.2": "8.12.1",
@@ -48,6 +37,16 @@ set_intersphinx_version_remapping({
         "8.1.1": "8.1.2",
     },
 })
+
+BRANCH = get_branch_name()
+ORGANIZATION = "ComPWA"
+PACKAGE = "ampform"
+REPO_NAME = "ampform"
+REPO_TITLE = "AmpForm"
+
+BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+EXECUTE_NB = get_execution_mode() != "off"
+
 
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
@@ -284,19 +283,13 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
-nitpicky = True
-nitpick_ignore = [
-    ("py:class", "ArraySum"),
-    ("py:class", "MatrixMultiplication"),
-    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
-    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    ("py:class", "typing_extensions.Protocol"),
-]
 nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
+nitpicky = True
 primary_domain = "py"
+project = REPO_TITLE
 pygments_style = "sphinx"
 release = get_package_version(PACKAGE)
 source_suffix = {
@@ -305,14 +298,13 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 suppress_warnings = [
+    "myst.domains",
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127
     "mystnb.unknown_mime_type",
-    "myst.domains",
 ]
 thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
 version = get_package_version(PACKAGE)
-viewcode_follow_imported_members = True
