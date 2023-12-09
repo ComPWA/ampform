@@ -1,10 +1,14 @@
-"""Deprecated classes and functions for constructing unevaluated expressions."""
+"""Deprecated classes and functions for constructing unevaluated expressions.
+
+.. deprecated:: 0.15.0
+"""
 
 from __future__ import annotations
 
 import functools
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, TypeVar
+from warnings import warn
 
 import sympy as sp
 
@@ -44,6 +48,15 @@ class UnevaluatedExpression(sp.Expr):
     __slots__: tuple[str] = ("_name",)
     _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
+
+    def __init_subclass__(cls, **kwargs):
+        warn(
+            f"{cls.__name__} is deprecated, use the"
+            " @ampform.sympy.unevaluated_expression decorator instead",
+            category=DeprecationWarning,
+            stacklevel=1,
+        )
+        super().__init_subclass__(**kwargs)
 
     def __new__(
         cls: type[DecoratedClass],
@@ -144,6 +157,12 @@ def implement_expr(
     Implement a :meth:`~object.__new__` and :meth:`~sympy.core.basic.Basic.doit` method
     for a class that derives from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
+    warn(
+        "@implement_expr is deprecated, use the @ampform.sympy.unevaluated_expression"
+        " decorator instead",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
 
     def decorator(
         decorated_class: type[DecoratedClass],
@@ -162,6 +181,12 @@ def implement_new_method(
     Implement a :meth:`~object.__new__` method for a class that derives from
     `~sympy.core.expr.Expr` (via `UnevaluatedExpression`).
     """
+    warn(
+        "@implement_new_method is deprecated, use the"
+        " @ampform.sympy.unevaluated_expression decorator instead",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
 
     def decorator(
         decorated_class: type[DecoratedClass],
@@ -198,6 +223,12 @@ def implement_doit_method(
     :meth:`~.UnevaluatedExpression.evaluate` method in the sense that it can work
     recursively on deeper expression trees.
     """
+    warn(
+        "@implement_doit_method is deprecated, use the"
+        " @ampform.sympy.unevaluated_expression decorator instead",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
 
     @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
     def doit_method(self: UnevaluatedExpression, deep: bool = True) -> sp.Expr:
@@ -221,6 +252,12 @@ def make_commutative(
 
     .. seealso:: :doc:`sympy:guides/assumptions`
     """
+    warn(
+        "@make_commutative is deprecated, use the @ampform.sympy.unevaluated_expression"
+        " decorator instead with commutative=True",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
     decorated_class.is_commutative = True  # type: ignore[attr-defined]
     decorated_class.is_extended_real = True  # type: ignore[attr-defined]
     return decorated_class
@@ -234,6 +271,12 @@ def create_expression(
     **kwargs,
 ) -> DecoratedExpr:
     """Helper function for implementing `UnevaluatedExpression.__new__`."""
+    warn(
+        "create_expression() is deprecated, construct the class with the"
+        " @ampform.sympy.unevaluated_expression decorator instead",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
         expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
