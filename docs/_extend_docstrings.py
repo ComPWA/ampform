@@ -6,9 +6,13 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 # pyright: reportMissingImports=false
 from __future__ import annotations
 
+import hashlib
 import inspect
 import logging
+import pickle
+import sys
 import textwrap
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 import attrs
@@ -23,7 +27,13 @@ from ampform.io import aslatex
 from ampform.kinematics import FourMomentumSymbol, _ArraySize
 from ampform.sympy._array_expressions import ArrayMultiplication
 
+if sys.version_info < (3, 8):
+    from importlib_metadata import version as get_package_version
+else:
+    from importlib.metadata import version as get_package_version
 if TYPE_CHECKING:
+    from qrules.transition import ReactionInfo
+
     from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -518,7 +528,7 @@ def extend_formulate_wigner_d() -> None:
 def __get_graphviz_state_transition_example(
     formalism: str, transition_number: int = 0
 ) -> str:
-    reaction = qrules.generate_transitions(
+    reaction = __generate_transitions_cached(
         initial_state=[("J/psi(1S)", [+1])],
         final_state=[("gamma", [-1]), "f(0)(980)"],
         formalism=formalism,
@@ -697,6 +707,30 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
 def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
     assert class_type.__doc__ is not None
     class_type.__doc__ += appended_text
+
+
+def __generate_transitions_cached(
+    initial_state: list[tuple[str, list[float | int]] | str],
+    final_state: list[tuple[str, list[float | int]] | str],
+    formalism: str,
+) -> ReactionInfo:
+    version = get_package_version("qrules")
+    obj = (initial_state, final_state, formalism)
+    h = hashlib.sha256(pickle.dumps(obj)).hexdigest()
+    docs_dir = Path(__file__).parent
+    file_name = docs_dir / ".cache" / f"reaction-qrules-v{version}-{h}.pickle"
+    file_name.parent.mkdir(exist_ok=True)
+    if file_name.exists():
+        with open(file_name, "rb") as f:
+            return pickle.load(f)  # noqa: S301
+    reaction = qrules.generate_transitions(
+        initial_state,
+        final_state,
+        formalism=formalism,
+    )
+    with open(file_name, "wb") as f:
+        pickle.dump(reaction, f)
+    return reaction
 
 
 def __print_imports(printer: NumPyPrinter) -> str:
