@@ -93,7 +93,6 @@ jupyter = [
     "jupyterlab-myst",
     "python-lsp-ruff",
     "python-lsp-server[rope]",
-    'ypy-websocket <0.8.3; python_version <"3.8.0"',
 ]
 lint = [
     "ampform[mypy]",
