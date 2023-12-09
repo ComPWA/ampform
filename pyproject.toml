@@ -208,6 +208,7 @@ exclude = [
     "**/.tox",
     "**/__pycache__",
     "**/_build",
+    "**/typings",
 ]
 reportGeneralTypeIssues = false
 reportIncompatibleMethodOverride = false
