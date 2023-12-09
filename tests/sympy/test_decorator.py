@@ -17,13 +17,13 @@ from ampform.sympy._decorator import (
 
 
 def test_check_implementation():
-    with pytest.raises(ValueError, match="must have an evaluate() method"):
+    with pytest.raises(ValueError, match=r"must have an evaluate\(\) method"):
 
         @_check_has_implementation
         class MyExpr1:  # pyright: ignore[reportUnusedClass]
             pass
 
-    with pytest.raises(TypeError, match="evaluate()s must be a callable method"):
+    with pytest.raises(TypeError, match=r"evaluate\(\) must be a callable method"):
 
         @_check_has_implementation
         class MyExpr2:  # pyright: ignore[reportUnusedClass]

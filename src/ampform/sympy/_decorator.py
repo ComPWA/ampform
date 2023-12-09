@@ -216,7 +216,7 @@ def _check_has_implementation(cls: type) -> None:
         msg = "Decorated class must have an evaluate() method"
         raise ValueError(msg)
     if not callable(implementation_method):
-        msg = "evaluate must be a callable method"
+        msg = "evaluate() must be a callable method"
         raise TypeError(msg)
 
 
