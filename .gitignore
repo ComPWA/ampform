@@ -31,6 +31,7 @@ version.py
 .virtual_documents/
 __pycache__/
 htmlcov/
+oryx-build-commands.txt
 prof/
 
 # Virtual environments
