@@ -27,15 +27,13 @@ set_intersphinx_version_remapping({
         "8.12.2": "8.12.1",
         "8.12.3": "8.12.1",
     },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
-    },
     "ipywidgets": {
         "8.0.3": "8.0.5",
         "8.0.4": "8.0.5",
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
     },
+    "mpl-interactions": {"0.24.1": "0.24.0"},
 })
 
 BRANCH = get_branch_name()
@@ -121,7 +119,6 @@ import numpy
 import numpy as np
 import sympy as sp
 from IPython.display import display
-
 """
 comments_config = {
     "hypothesis": True,
@@ -260,7 +257,6 @@ linkcheck_ignore = [
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
 ]
-project = REPO_TITLE
 master_doc = "index"
 modindex_common_prefix = [f"{PACKAGE}."]
 myst_enable_extensions = [
