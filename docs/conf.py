@@ -19,10 +19,22 @@ from sphinx_api_relink.helpers import (
 )
 
 sys.path.insert(0, os.path.abspath("."))
-
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
+set_intersphinx_version_remapping({
+    "ipython": {
+        "8.12.2": "8.12.1",
+        "8.12.3": "8.12.1",
+    },
+    "ipywidgets": {
+        "8.0.3": "8.0.5",
+        "8.0.4": "8.0.5",
+        "8.0.6": "8.0.5",
+        "8.1.1": "8.1.2",
+    },
+    "mpl-interactions": {"0.24.1": "0.24.0"},
+})
 
 BRANCH = get_branch_name()
 ORGANIZATION = "ComPWA"
@@ -33,22 +45,6 @@ REPO_TITLE = "AmpForm"
 BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
 EXECUTE_NB = get_execution_mode() != "off"
 
-
-set_intersphinx_version_remapping({
-    "ipython": {
-        "8.12.2": "8.12.1",
-        "8.12.3": "8.12.1",
-    },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
-    },
-    "ipywidgets": {
-        "8.0.3": "8.0.5",
-        "8.0.4": "8.0.5",
-        "8.0.6": "8.0.5",
-        "8.1.1": "8.1.2",
-    },
-})
 
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
@@ -123,7 +119,6 @@ import numpy
 import numpy as np
 import sympy as sp
 from IPython.display import display
-
 """
 comments_config = {
     "hypothesis": True,
@@ -262,7 +257,6 @@ linkcheck_ignore = [
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
 ]
-project = REPO_TITLE
 master_doc = "index"
 modindex_common_prefix = [f"{PACKAGE}."]
 myst_enable_extensions = [
@@ -285,19 +279,17 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
-nitpicky = True
-nitpick_ignore = [
-    ("py:class", "ArraySum"),
-    ("py:class", "MatrixMultiplication"),
-    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
-    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    ("py:class", "typing_extensions.Protocol"),
-]
 nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
+nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "MatrixMultiplication"),
+]
+nitpicky = True
 primary_domain = "py"
+project = REPO_TITLE
 pygments_style = "sphinx"
 release = get_package_version(PACKAGE)
 source_suffix = {
@@ -306,14 +298,13 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 suppress_warnings = [
+    "myst.domains",
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127
     "mystnb.unknown_mime_type",
-    "myst.domains",
 ]
 thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
 version = get_package_version(PACKAGE)
-viewcode_follow_imported_members = True
