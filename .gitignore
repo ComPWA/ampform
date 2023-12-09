@@ -25,11 +25,13 @@ version.py
 .coverage
 .coverage.*
 .ipynb_checkpoints/
+.jupyter_ystore.db
 .mypy*/
 .pytest_cache/
 .virtual_documents/
 __pycache__/
 htmlcov/
+oryx-build-commands.txt
 prof/
 
 # Virtual environments

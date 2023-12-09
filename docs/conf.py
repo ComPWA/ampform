@@ -19,29 +19,13 @@ from sphinx_api_relink.helpers import (
 )
 
 sys.path.insert(0, os.path.abspath("."))
-
 from _extend_docstrings import extend_docstrings
 
 extend_docstrings()
-
-BRANCH = get_branch_name()
-PACKAGE = "ampform"
-REPO_NAME = "ampform"
-REPO_TITLE = "AmpForm"
-
-BINDER_LINK = (
-    f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
-)
-EXECUTE_NB = get_execution_mode() != "off"
-
-
 set_intersphinx_version_remapping({
     "ipython": {
         "8.12.2": "8.12.1",
         "8.12.3": "8.12.1",
-    },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
     },
     "ipywidgets": {
         "8.0.3": "8.0.5",
@@ -49,9 +33,21 @@ set_intersphinx_version_remapping({
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
     },
+    "mpl-interactions": {"0.24.1": "0.24.0"},
 })
 
+BRANCH = get_branch_name()
+ORGANIZATION = "ComPWA"
+PACKAGE = "ampform"
+REPO_NAME = "ampform"
+REPO_TITLE = "AmpForm"
+
+BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+EXECUTE_NB = get_execution_mode() != "off"
+
+
 add_module_names = False
+api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
@@ -126,19 +122,18 @@ import numpy
 import numpy as np
 import sympy as sp
 from IPython.display import display
-
 """
 comments_config = {
     "hypothesis": True,
     "utterances": {
-        "repo": f"ComPWA/{REPO_NAME}",
+        "repo": f"{ORGANIZATION}/{REPO_NAME}",
         "issue-term": "pathname",
         "label": "📝 Docs",
     },
 }
 copybutton_prompt_is_regexp = True
 copybutton_prompt_text = r">>> |\.\.\. "  # doctest
-copyright = "2020, ComPWA"
+copyright = f"2020, {ORGANIZATION}"
 default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
@@ -154,7 +149,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
     "sphinx_api_relink",
     "sphinx_codeautolink",
     "sphinx_comments",
@@ -191,7 +185,7 @@ html_theme_options = {
         },
         {
             "name": "GitHub",
-            "url": f"https://github.com/ComPWA/{REPO_NAME}",
+            "url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
             "icon": "fa-brands fa-github",
         },
         {
@@ -207,21 +201,19 @@ html_theme_options = {
         },
         {
             "name": "Launch on Binder",
-            "url": (
-                f"https://mybinder.org/v2/gh/ComPWA/{REPO_NAME}/{BRANCH}?filepath=docs"
-            ),
+            "url": f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs",
             "icon": "https://mybinder.readthedocs.io/en/latest/_static/favicon.png",
             "type": "url",
         },
         {
             "name": "Launch on Colaboratory",
-            "url": f"https://colab.research.google.com/github/ComPWA/{REPO_NAME}/blob/{BRANCH}",
+            "url": f"https://colab.research.google.com/github/{ORGANIZATION}/{REPO_NAME}/blob/{BRANCH}",
             "icon": "https://avatars.githubusercontent.com/u/33467679?s=100",
             "type": "url",
         },
     ],
     "logo": {"text": REPO_TITLE},
-    "repository_url": f"https://github.com/ComPWA/{REPO_NAME}",
+    "repository_url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
     "repository_branch": BRANCH,
     "path_to_docs": "docs",
     "use_download_button": True,
@@ -266,8 +258,8 @@ linkcheck_ignore = [
     "https://hss-opus.ub.ruhr-uni-bochum.de",
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
+    "https://www.bookfinder.com",
 ]
-project = REPO_TITLE
 master_doc = "index"
 modindex_common_prefix = [f"{PACKAGE}."]
 myst_enable_extensions = [
@@ -290,19 +282,17 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
-nitpicky = True
-nitpick_ignore = [
-    ("py:class", "ArraySum"),
-    ("py:class", "MatrixMultiplication"),
-    ("py:class", "ipywidgets.widgets.widget_float.FloatSlider"),
-    ("py:class", "ipywidgets.widgets.widget_int.IntSlider"),
-    ("py:class", "typing_extensions.Protocol"),
-]
 nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
+nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "MatrixMultiplication"),
+]
+nitpicky = True
 primary_domain = "py"
+project = REPO_TITLE
 pygments_style = "sphinx"
 release = get_package_version(PACKAGE)
 source_suffix = {
@@ -311,14 +301,13 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 suppress_warnings = [
+    "myst.domains",
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127
     "mystnb.unknown_mime_type",
-    "myst.domains",
 ]
 thebe_config = {
     "repository_url": html_theme_options["repository_url"],
     "repository_branch": html_theme_options["repository_branch"],
 }
 version = get_package_version(PACKAGE)
-viewcode_follow_imported_members = True
