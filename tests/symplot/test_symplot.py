@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from copy import deepcopy
 from typing import Any, Callable, Pattern, no_type_check
 
@@ -14,7 +13,6 @@ from ipywidgets.widgets.widget_int import IntSlider
 from symplot import RangeDefinition, Slider, SliderKwargs
 
 
-@pytest.mark.skipif("GITHUB_ACTION" in os.environ, reason="ipywidgets instable")
 class TestSliderKwargs:
     @pytest.fixture()
     def slider_kwargs(self) -> SliderKwargs:
@@ -89,6 +87,7 @@ class TestSliderKwargs:
             assert slider.max == slider_from_repr.max
             assert slider.value == slider_from_repr.value
 
+    @pytest.mark.skip(reason="ipywidgets cannot be compied anymore")
     @pytest.mark.parametrize(
         ("slider_name", "min_", "max_", "n_steps", "step_size"),
         [
@@ -135,6 +134,7 @@ class TestSliderKwargs:
         with pytest.raises(ValueError, match=r"Number of steps has to be positive"):
             slider_kwargs.set_ranges({"n": (0, 10, -1)})
 
+    @pytest.mark.skip(reason="ipywidgets cannot be compied anymore")
     def test_set_values(
         self, slider_kwargs: SliderKwargs, caplog: pytest.LogCaptureFixture
     ) -> None:
