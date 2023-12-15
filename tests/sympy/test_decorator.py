@@ -74,6 +74,16 @@ def test_insert_args_in_signature():
     assert signature.return_annotation == "int"
 
 
+def test_set_assumptions():
+    @_set_assumptions(commutative=True, negative=False, real=True)
+    class MySqrt: ...
+
+    expr = MySqrt()
+    assert expr.is_commutative  # type: ignore[attr-defined]
+    assert not expr.is_negative  # type: ignore[attr-defined]
+    assert expr.is_real  # type: ignore[attr-defined]
+
+
 def test_unevaluated_expression():
     @unevaluated_expression
     class BreakupMomentum(sp.Expr):
@@ -115,13 +125,3 @@ def test_unevaluated_expression_callable():
     expr = MySqrt(-1)
     assert expr.is_commutative
     assert expr.is_complex  # type: ignore[attr-defined]
-
-
-def test_set_assumptions():
-    @_set_assumptions(commutative=True, negative=False, real=True)
-    class MySqrt: ...
-
-    expr = MySqrt()
-    assert expr.is_commutative  # type: ignore[attr-defined]
-    assert not expr.is_negative  # type: ignore[attr-defined]
-    assert expr.is_real  # type: ignore[attr-defined]
