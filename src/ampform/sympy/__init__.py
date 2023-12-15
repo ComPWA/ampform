@@ -1,8 +1,11 @@
 """Tools that facilitate in building :mod:`sympy` expressions.
 
 .. autodecorator:: unevaluated_expression
-.. autodata:: ExprClass
-.. autoclass:: SymPyAssumptions
+.. dropdown:: SymPy assumptions
+
+    .. autodata:: ExprClass
+    .. autoclass:: SymPyAssumptions
+
 """
 
 # cspell:ignore mhash
