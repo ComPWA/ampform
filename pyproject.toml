@@ -176,6 +176,7 @@ branch = true
 source = ["src"]
 
 [tool.mypy]
+enable_incomplete_feature = "Unpack"
 exclude = "_build"
 show_error_codes = true
 warn_unused_configs = true
@@ -207,6 +208,7 @@ exclude = [
     "**/.tox",
     "**/__pycache__",
     "**/_build",
+    "**/typings",
 ]
 reportGeneralTypeIssues = false
 reportIncompatibleMethodOverride = false
@@ -224,6 +226,7 @@ reportUnknownVariableType = false
 reportUnnecessaryComparison = false
 reportUnnecessaryContains = false
 reportUnnecessaryIsInstance = false
+reportUntypedClassDecorator = false
 reportUntypedFunctionDecorator = false
 reportUnusedClass = true
 reportUnusedFunction = true
@@ -324,6 +327,7 @@ task-tags = ["cspell"]
 known-third-party = ["sympy"]
 
 [tool.ruff.per-file-ignores]
+"**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",
     "C408",

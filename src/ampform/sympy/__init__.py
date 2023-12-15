@@ -1,4 +1,12 @@
-"""Tools that facilitate in building :mod:`sympy` expressions."""
+"""Tools that facilitate in building :mod:`sympy` expressions.
+
+.. autodecorator:: unevaluated_expression
+.. dropdown:: SymPy assumptions
+
+    .. autodata:: ExprClass
+    .. autoclass:: SymPyAssumptions
+
+"""
 
 # cspell:ignore mhash
 from __future__ import annotations
@@ -18,6 +26,12 @@ from typing import TYPE_CHECKING, Callable, Iterable, Sequence, SupportsFloat, T
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
+
+from ._decorator import (
+    ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    unevaluated_expression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
