@@ -327,6 +327,7 @@ task-tags = ["cspell"]
 known-third-party = ["sympy"]
 
 [tool.ruff.per-file-ignores]
+"**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",
     "C408",
