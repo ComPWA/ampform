@@ -52,11 +52,13 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.DecoratedExpr"),
+    "ExprClass": "ampform.sympy.ExprClass",
     "FourMomenta": ("obj", "ampform.kinematics.FourMomenta"),
     "FourMomentumSymbol": ("obj", "ampform.kinematics.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
     "LatexPrinter": "sympy.printing.printer.Printer",
     "Literal[(-1, 1)]": "typing.Literal",
+    "Literal[-1, 1]": "typing.Literal",
     "NumPyPrinter": "sympy.printing.printer.Printer",
     "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
@@ -68,6 +70,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "ampform.helicity._T": "typing.TypeVar",
     "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
+    "ampform.sympy._decorator.SymPyAssumptions": "ampform.sympy.SymPyAssumptions",
     "an object providing a view on D's values": "typing.ValuesView",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
@@ -283,7 +286,7 @@ nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
 nitpick_ignore = [
-    ("py:class", "ArraySum"),
+    ("py:class", "ampform.sympy._array_expressions.ArraySum"),
     ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
 ]
 nitpicky = True
