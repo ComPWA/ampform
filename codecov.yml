@@ -14,13 +14,13 @@ coverage:
         threshold: 1% # allow drops by this percentage
         base: auto
         # advanced
-        branches: null
+        branches: []
         if_no_uploads: error
         if_not_found: success
         if_ci_failed: error
         only_pulls: false
-        flags: null
-        paths: null
+        flags: []
+        paths: []
     patch:
       default:
         # basic
