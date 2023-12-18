@@ -65,9 +65,9 @@ def extend_docstrings() -> None:
 def extend_BlattWeisskopfSquared() -> None:
     from ampform.dynamics import BlattWeisskopfSquared
 
-    L = sp.Symbol("L", integer=True)
     z = sp.Symbol("z", real=True)
-    expr = BlattWeisskopfSquared(L, z)
+    L = sp.Symbol("L", integer=True)
+    expr = BlattWeisskopfSquared(z, angular_momentum=L)
     _append_latex_doit_definition(expr, deep=True, full_width=True)
 
 

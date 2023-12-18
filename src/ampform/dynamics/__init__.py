@@ -39,11 +39,11 @@ class BlattWeisskopfSquared(sp.Expr):
     r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
 
     Args:
-        angular_momentum: Angular momentum :math:`L` of the decaying particle.
-
         z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter and
             :math:`q` the breakup-momentum (see `.BreakupMomentumSquared`).
+
+        angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
     Note that equal powers of :math:`z` appear in the nominator and the denominator,
     while some sources have nominator :math:`1`, instead of :math:`z^L`. Compare for
@@ -57,8 +57,8 @@ class BlattWeisskopfSquared(sp.Expr):
 
     See also :ref:`usage/dynamics:Form factor`.
     """
-    angular_momentum: Any
     z: Any
+    angular_momentum: Any
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
 
     max_angular_momentum: ClassVar[int | None] = None
@@ -69,8 +69,8 @@ class BlattWeisskopfSquared(sp.Expr):
     """
 
     def evaluate(self) -> sp.Expr:
-        angular_momentum: sp.Expr = self.args[0]  # type: ignore[assignment]
-        z: sp.Expr = self.args[1]  # type: ignore[assignment]
+        z: sp.Expr = self.args[0]  # type: ignore[assignment]
+        angular_momentum: sp.Expr = self.args[1]  # type: ignore[assignment]
         cases: dict[int, sp.Expr] = {
             0: sp.S.One,
             1: 2 * z / (z + 1),
@@ -204,12 +204,12 @@ class EnergyDependentWidth(UnevaluatedExpression):
         q_squared = BreakupMomentumSquared(s, m_a, m_b)
         q0_squared = BreakupMomentumSquared(mass0**2, m_a, m_b)  # type: ignore[operator]
         form_factor_sq = BlattWeisskopfSquared(
+            q_squared * meson_radius**2,  # type: ignore[operator]
             angular_momentum,
-            z=q_squared * meson_radius**2,  # type: ignore[operator]
         )
         form_factor0_sq = BlattWeisskopfSquared(
+            q0_squared * meson_radius**2,  # type: ignore[operator]
             angular_momentum,
-            z=q0_squared * meson_radius**2,  # type: ignore[operator]
         )
         rho = self.phsp_factor(s, m_a, m_b)
         rho0 = self.phsp_factor(mass0**2, m_a, m_b)  # type: ignore[operator]
@@ -299,5 +299,5 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
     `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
     """
     q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    ff_squared = BlattWeisskopfSquared(angular_momentum, z=q_squared * meson_radius**2)
+    ff_squared = BlattWeisskopfSquared(q_squared * meson_radius**2, angular_momentum)
     return sp.sqrt(ff_squared)
