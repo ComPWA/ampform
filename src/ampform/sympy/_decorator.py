@@ -136,7 +136,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         attr_values, kwargs = _get_attribute_values(attr_names, *args, **kwargs)
         attr_values = sp.sympify(attr_values)
         expr = sp.Expr.__new__(cls, *attr_values, **kwargs)
-        for name, value in zip(attr_names, args):
+        for name, value in zip(attr_names, attr_values):
             setattr(expr, name, value)
         if evaluate:
             return expr.evaluate()
