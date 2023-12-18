@@ -87,8 +87,6 @@ def test_set_assumptions():
 def test_unevaluated_expression():
     @unevaluated_expression
     class BreakupMomentum(sp.Expr):
-        r"""Breakup momentum of a two-body decay :math:`a \to 1+2`."""
-
         s: sp.Basic
         m1: sp.Basic
         m2: sp.Basic
