@@ -6,7 +6,7 @@
 # cspell:ignore asner mhash
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import sympy as sp
 from sympy.core.basic import _aresame
@@ -24,17 +24,17 @@ from ampform.dynamics.phasespace import (
 )
 from ampform.sympy import (
     UnevaluatedExpression,
-    create_expression,
     determine_indices,
     implement_doit_method,
+    unevaluated_expression,
 )
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
 
-@implement_doit_method
-class BlattWeisskopfSquared(UnevaluatedExpression):
+@unevaluated_expression
+class BlattWeisskopfSquared(sp.Expr):
     # cspell:ignore pychyGekoppeltePartialwellenanalyseAnnihilationen
     r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
 
@@ -57,16 +57,16 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
 
     See also :ref:`usage/dynamics:Form factor`.
     """
-    is_commutative = True
-    max_angular_momentum: int | None = None
+    angular_momentum: Any
+    z: Any
+    _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
+
+    max_angular_momentum: ClassVar[int | None] = None
     """Limit the maximum allowed angular momentum :math:`L`.
 
     This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol` and you
     are note interested in higher angular momenta.
     """
-
-    def __new__(cls, angular_momentum, z, **hints) -> BlattWeisskopfSquared:
-        return create_expression(cls, angular_momentum, z, **hints)
 
     def evaluate(self) -> sp.Expr:
         angular_momentum: sp.Expr = self.args[0]  # type: ignore[assignment]
@@ -137,10 +137,6 @@ class BlattWeisskopfSquared(UnevaluatedExpression):
             for value, expression in cases.items()
             if self.max_angular_momentum is None or value <= self.max_angular_momentum
         ])
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        angular_momentum, z = tuple(map(printer._print, self.args))
-        return Rf"B_{{{angular_momentum}}}^2\left({z}\right)"
 
 
 @implement_doit_method
