@@ -134,7 +134,7 @@ def test_unevaluated_expression_classvar():
     assert y_expr.doit() == 5**3
 
 
-def test_unevaluated_expression_classvar_symbol():
+def test_unevaluated_expression_default_argument():
     @unevaluated_expression
     class FunkyPower(sp.Expr):
         x: Any
@@ -155,12 +155,20 @@ def test_unevaluated_expression_classvar_symbol():
     assert exprs[0].doit() == x
     assert exprs[1].doit() == x**2
     assert exprs[2].doit() == x**3
+    for expr in exprs:
+        assert expr.x is x
+        assert isinstance(expr.m, sp.Integer)
+        assert expr.default_return is None
 
     half = sp.Rational(1, 2)
     FunkyPower.default_return = half
     assert exprs[0].doit() == half
     assert exprs[1].doit() == half
     assert exprs[2].doit() == half
+    for expr in exprs:
+        assert expr.x is x
+        assert isinstance(expr.m, sp.Integer)
+        assert expr.default_return is half
 
 
 def test_unevaluated_expression_callable():
