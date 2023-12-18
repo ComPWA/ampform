@@ -78,17 +78,17 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
         # https://github.com/ComPWA/ampform/actions/runs/3277058875/jobs/5393849802
         # https://github.com/ComPWA/ampform/actions/runs/3277143883/jobs/5394043014
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0-6040455869260657745",
-            "helicity": "pythonhashseed-0-1928646339459384503",
+            "canonical-helicity": "pythonhashseed-0-3873186712292274641",
+            "helicity": "pythonhashseed-0-8800154542426799839",
         }[formalism]
     elif sys.version_info >= (3, 11):
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0+409069872540431022",
-            "helicity": "pythonhashseed-0-8907705932662936900",
+            "canonical-helicity": "pythonhashseed-0+4035132515642199515",
+            "helicity": "pythonhashseed-0-2843057473565885663",
         }[formalism]
     else:
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0-7143983882032045549",
-            "helicity": "pythonhashseed-0+3357246175053927117",
+            "canonical-helicity": "pythonhashseed-0+3420919389670627445",
+            "helicity": "pythonhashseed-0-6681863313351758450",
         }[formalism]
     assert get_readable_hash(model.expression) == expected_hash

@@ -28,7 +28,7 @@ class TestUnevaluatedExpression:
         assert expr == imported_expr
 
         # Pickle classes derived from UnevaluatedExpression
-        expr = BlattWeisskopfSquared(angular_momentum, z=z)
+        expr = BlattWeisskopfSquared(z, angular_momentum)
         pickled_obj = pickle.dumps(expr)
         imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr
