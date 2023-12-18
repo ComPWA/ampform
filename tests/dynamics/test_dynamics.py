@@ -35,6 +35,18 @@ class TestBlattWeisskopfSquared:
             (1, sp.Eq(angular_momentum, 0)),
             (2 * z / (z + 1), sp.Eq(angular_momentum, 1)),
         )
+        BlattWeisskopfSquared.max_angular_momentum = None
+
+    def test_unevaluated_expression(self):
+        z = sp.Symbol("z")
+        ff1 = BlattWeisskopfSquared(z, angular_momentum=1)
+        ff2 = BlattWeisskopfSquared(z, angular_momentum=2)
+        assert ff1.max_angular_momentum is None
+        assert ff2.max_angular_momentum is None
+        BlattWeisskopfSquared.max_angular_momentum = 3
+        assert ff1.max_angular_momentum is 3  # noqa: F632
+        assert ff2.max_angular_momentum is 3  # noqa: F632
+        BlattWeisskopfSquared.max_angular_momentum = None
 
 
 class TestEnergyDependentWidth:
