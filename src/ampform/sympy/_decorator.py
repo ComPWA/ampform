@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import sys
-from typing import TYPE_CHECKING, Callable, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
 
 import sympy as sp
 
@@ -136,7 +136,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         attr_values, kwargs = _get_attribute_values(attr_names, *args, **kwargs)
         attr_values = sp.sympify(attr_values)
         expr = sp.Expr.__new__(cls, *attr_values, **kwargs)
-        for name, value in zip(attr_names, args):
+        for name, value in zip(attr_names, attr_values):
             setattr(expr, name, value)
         if evaluate:
             return expr.evaluate()
@@ -146,7 +146,9 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     return cls
 
 
-def _get_attribute_values(attr_names: list, *args, **kwargs) -> tuple[tuple, dict]:
+def _get_attribute_values(
+    attr_names: tuple[str, ...], *args, **kwargs
+) -> tuple[tuple, dict[str, Any]]:
     if len(args) == len(attr_names):
         return args, kwargs
     if len(args) > len(attr_names):
@@ -156,7 +158,7 @@ def _get_attribute_values(attr_names: list, *args, **kwargs) -> tuple[tuple, dic
         )
         raise ValueError(msg)
     attr_values = list(args)
-    remaining_attr_names = attr_names[len(args) :]
+    remaining_attr_names = list(attr_names[len(args) :])
     for name in list(remaining_attr_names):
         if name in kwargs:
             attr_values.append(kwargs.pop(name))
@@ -247,7 +249,7 @@ def _insert_args_in_signature(
     return decorator
 
 
-def _get_attribute_names(cls: type) -> list[str]:
+def _get_attribute_names(cls: type) -> tuple[str, ...]:
     """Get the public attributes of a class with dataclass-like semantics.
 
     >>> class MyClass:
@@ -258,9 +260,11 @@ def _get_attribute_names(cls: type) -> list[str]:
     ...     def print(self): ...
     ...
     >>> _get_attribute_names(MyClass)
-    ['a', 'b']
+    ('a', 'b')
     """
-    return [v for v in cls.__annotations__ if not callable(v) if not v.startswith("_")]
+    return tuple(
+        k for k in cls.__annotations__ if not callable(k) if not k.startswith("_")
+    )
 
 
 @dataclass_transform()
