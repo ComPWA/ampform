@@ -134,6 +134,35 @@ def test_unevaluated_expression_classvar():
     assert y_expr.doit() == 5**3
 
 
+def test_unevaluated_expression_classvar_symbol():
+    @unevaluated_expression
+    class FunkyPower(sp.Expr):
+        x: Any
+        m: int = 1
+        default_return: ClassVar[float | None] = None
+
+        def evaluate(self) -> sp.Expr:
+            if self.default_return is None:
+                return self.x**self.m
+            return sp.sympify(self.default_return)
+
+    x = sp.Symbol("x")
+    exprs = (
+        FunkyPower(x),
+        FunkyPower(x, 2),
+        FunkyPower(x, m=3),
+    )
+    assert exprs[0].doit() == x
+    assert exprs[1].doit() == x**2
+    assert exprs[2].doit() == x**3
+
+    half = sp.Rational(1, 2)
+    FunkyPower.default_return = half
+    assert exprs[0].doit() == half
+    assert exprs[1].doit() == half
+    assert exprs[2].doit() == half
+
+
 def test_unevaluated_expression_callable():
     @unevaluated_expression(implement_doit=False)
     class Squared(sp.Expr):
