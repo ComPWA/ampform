@@ -74,14 +74,22 @@ def test_insert_args_in_signature():
     assert signature.return_annotation == "int"
 
 
+def test_set_assumptions():
+    @_set_assumptions(commutative=True, negative=False, real=True)
+    class MySqrt: ...
+
+    expr = MySqrt()
+    assert expr.is_commutative  # type: ignore[attr-defined]
+    assert not expr.is_negative  # type: ignore[attr-defined]
+    assert expr.is_real  # type: ignore[attr-defined]
+
+
 def test_unevaluated_expression():
     @unevaluated_expression
     class BreakupMomentum(sp.Expr):
-        r"""Breakup momentum of a two-body decay :math:`a \to 1+2`."""
-
-        s: sp.Basic
-        m1: sp.Basic
-        m2: sp.Basic
+        s: Any
+        m1: Any
+        m2: Any
         _latex_repr_ = R"q\left({s}\right)"
 
         def evaluate(self) -> sp.Expr:
@@ -90,10 +98,19 @@ def test_unevaluated_expression():
 
     m0, ma, mb = sp.symbols("m0 m_a m_b")
     expr = BreakupMomentum(m0**2, ma, mb)
+    assert expr.s is m0**2
+    assert expr.m1 is ma
+    assert expr.m2 is mb
+    assert expr.is_commutative is True
     args_str = list(inspect.signature(expr.__new__).parameters)
     assert args_str == ["s", "m1", "m2", "args", "evaluate", "kwargs"]
     latex = sp.latex(expr)
     assert latex == R"q\left(m_{0}^{2}\right)"
+
+    q_value = BreakupMomentum(1, m1=0.2, m2=0.4)
+    assert isinstance(q_value.s, sp.Integer)
+    assert isinstance(q_value.m1, sp.Float)
+    assert isinstance(q_value.m2, sp.Float)
 
 
 def test_unevaluated_expression_callable():
@@ -115,13 +132,3 @@ def test_unevaluated_expression_callable():
     expr = MySqrt(-1)
     assert expr.is_commutative
     assert expr.is_complex  # type: ignore[attr-defined]
-
-
-def test_set_assumptions():
-    @_set_assumptions(commutative=True, negative=False, real=True)
-    class MySqrt: ...
-
-    expr = MySqrt()
-    assert expr.is_commutative  # type: ignore[attr-defined]
-    assert not expr.is_negative  # type: ignore[attr-defined]
-    assert expr.is_real  # type: ignore[attr-defined]
