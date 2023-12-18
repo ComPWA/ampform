@@ -133,7 +133,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     @functools.wraps(cls.__new__)
     @_insert_args_in_signature(attr_names, idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
-        positional_args, hints = _get_attribute_values(attr_names, *args, **kwargs)
+        positional_args, hints = _get_attribute_values(cls, attr_names, *args, **kwargs)
         sympified_args = sp.sympify(positional_args)
         expr = sp.Expr.__new__(cls, *sympified_args, **hints)
         for name, value in zip(attr_names, sympified_args):
@@ -147,7 +147,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
 
 
 def _get_attribute_values(
-    attr_names: tuple[str, ...], *args, **kwargs
+    cls: type[ExprClass], attr_names: tuple[str, ...], *args, **kwargs
 ) -> tuple[tuple, dict[str, Any]]:
     if len(args) == len(attr_names):
         return args, kwargs
@@ -162,6 +162,10 @@ def _get_attribute_values(
     for name in list(remaining_attr_names):
         if name in kwargs:
             attr_values.append(kwargs.pop(name))
+            remaining_attr_names.pop(0)
+        elif hasattr(cls, name):
+            default_value = getattr(cls, name)
+            attr_values.append(default_value)
             remaining_attr_names.pop(0)
     if remaining_attr_names:
         msg = f"Missing constructor arguments: {', '.join(remaining_attr_names)}"

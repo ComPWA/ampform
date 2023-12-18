@@ -153,3 +153,20 @@ def test_unevaluated_expression_callable():
     expr = MySqrt(-1)
     assert expr.is_commutative
     assert expr.is_complex  # type: ignore[attr-defined]
+
+
+def test_unevaluated_expression_default_args():
+    @unevaluated_expression
+    class MyExpr(sp.Expr):
+        x: Any
+        m: int = 2
+
+        def evaluate(self) -> sp.Expr:
+            return self.x**self.m
+
+    expr1 = MyExpr(x=5)
+    assert str(expr1) == "MyExpr(5, 2)"
+    assert expr1.doit() == 5**2
+
+    expr2 = MyExpr(4, 3)
+    assert expr2.doit() == 4**3
