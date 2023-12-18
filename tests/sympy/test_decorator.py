@@ -134,6 +134,43 @@ def test_unevaluated_expression_classvar():
     assert y_expr.doit() == 5**3
 
 
+def test_unevaluated_expression_default_argument():
+    @unevaluated_expression
+    class FunkyPower(sp.Expr):
+        x: Any
+        m: int = 1
+        default_return: ClassVar[float | None] = None
+
+        def evaluate(self) -> sp.Expr:
+            if self.default_return is None:
+                return self.x**self.m
+            return sp.sympify(self.default_return)
+
+    x = sp.Symbol("x")
+    exprs = (
+        FunkyPower(x),
+        FunkyPower(x, 2),
+        FunkyPower(x, m=3),
+    )
+    assert exprs[0].doit() == x
+    assert exprs[1].doit() == x**2
+    assert exprs[2].doit() == x**3
+    for expr in exprs:
+        assert expr.x is x
+        assert isinstance(expr.m, sp.Integer)
+        assert expr.default_return is None
+
+    half = sp.Rational(1, 2)
+    FunkyPower.default_return = half
+    assert exprs[0].doit() == half
+    assert exprs[1].doit() == half
+    assert exprs[2].doit() == half
+    for expr in exprs:
+        assert expr.x is x
+        assert isinstance(expr.m, sp.Integer)
+        assert expr.default_return is half
+
+
 def test_unevaluated_expression_callable():
     @unevaluated_expression(implement_doit=False)
     class Squared(sp.Expr):
@@ -153,3 +190,20 @@ def test_unevaluated_expression_callable():
     expr = MySqrt(-1)
     assert expr.is_commutative
     assert expr.is_complex  # type: ignore[attr-defined]
+
+
+def test_unevaluated_expression_default_args():
+    @unevaluated_expression
+    class MyExpr(sp.Expr):
+        x: Any
+        m: int = 2
+
+        def evaluate(self) -> sp.Expr:
+            return self.x**self.m
+
+    expr1 = MyExpr(x=5)
+    assert str(expr1) == "MyExpr(5, 2)"
+    assert expr1.doit() == 5**2
+
+    expr2 = MyExpr(4, 3)
+    assert expr2.doit() == 4**3
