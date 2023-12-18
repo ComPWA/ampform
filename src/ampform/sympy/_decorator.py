@@ -256,6 +256,7 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     ...     a: int
     ...     b: int
     ...     _c: int
+    ...     n: ClassVar[int] = 2
     ...
     ...     def print(self): ...
     ...
@@ -263,7 +264,11 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     ('a', 'b')
     """
     return tuple(
-        k for k in cls.__annotations__ if not callable(k) if not k.startswith("_")
+        k
+        for k, v in cls.__annotations__.items()
+        if not callable(k)
+        if not k.startswith("_")
+        if not str(v).startswith("ClassVar")
     )
 
 

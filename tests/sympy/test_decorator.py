@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 import sympy as sp
@@ -111,6 +111,27 @@ def test_unevaluated_expression():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+def test_unevaluated_expression_classvar():
+    @unevaluated_expression
+    class MyExpr(sp.Expr):
+        x: float
+        m: ClassVar[int] = 2
+
+        def evaluate(self) -> sp.Expr:
+            return self.x**self.m  # type: ignore[return-value]
+
+    x_expr = MyExpr(4)
+    assert x_expr.x is sp.Integer(4)
+    assert x_expr.m is 2  # noqa: F632
+
+    y_expr = MyExpr(5)
+    assert x_expr.doit() == 4**2
+    assert y_expr.doit() == 5**2
+    MyExpr.m = 3
+    assert x_expr.doit() == 4**3
+    assert y_expr.doit() == 5**3
 
 
 def test_unevaluated_expression_callable():
