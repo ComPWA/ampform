@@ -182,6 +182,7 @@
     "sharey",
     "startswith",
     "suptitle",
+    "sympified",
     "sympify",
     "symplot",
     "theano",

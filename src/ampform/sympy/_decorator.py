@@ -133,10 +133,10 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     @functools.wraps(cls.__new__)
     @_insert_args_in_signature(attr_names, idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
-        attr_values, kwargs = _get_attribute_values(attr_names, *args, **kwargs)
-        attr_values = sp.sympify(attr_values)
-        expr = sp.Expr.__new__(cls, *attr_values, **kwargs)
-        for name, value in zip(attr_names, attr_values):
+        positional_args, hints = _get_attribute_values(attr_names, *args, **kwargs)
+        sympified_args = sp.sympify(positional_args)
+        expr = sp.Expr.__new__(cls, *sympified_args, **hints)
+        for name, value in zip(attr_names, sympified_args):
             setattr(expr, name, value)
         if evaluate:
             return expr.evaluate()
