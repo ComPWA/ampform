@@ -149,6 +149,17 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
 def _get_attribute_values(
     cls: type[ExprClass], attr_names: tuple[str, ...], *args, **kwargs
 ) -> tuple[tuple, dict[str, Any]]:
+    """Extract the attribute values from the constructor arguments.
+
+    Returns a `tuple` of:
+
+    1. the extracted, ordered attributes as requested by :code:`attr_names`,
+    2. a `dict` of remaining keyword arguments that can be used hints for the
+       constructed :class:`sp.Expr<sympy.core.expr.Expr>` instance.
+
+    An attempt is made to get any missing attributes from the type hints in the class
+    definition.
+    """
     if len(args) == len(attr_names):
         return args, kwargs
     if len(args) > len(attr_names):
