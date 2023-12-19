@@ -113,6 +113,27 @@ def test_unevaluated_expression():
     assert isinstance(q_value.m2, sp.Float)
 
 
+def test_unevaluated_expression_callable():
+    @unevaluated_expression(implement_doit=False)
+    class Squared(sp.Expr):
+        x: Any
+
+        def evaluate(self) -> sp.Expr:
+            return self.x**2
+
+    sqrt = Squared(2)
+    assert str(sqrt) == "Squared(2)"
+    assert str(sqrt.doit()) == "Squared(2)"
+
+    @unevaluated_expression(complex=True, implement_doit=False)
+    class MySqrt(sp.Expr):
+        x: Any
+
+    expr = MySqrt(-1)
+    assert expr.is_commutative
+    assert expr.is_complex  # type: ignore[attr-defined]
+
+
 def test_unevaluated_expression_classvar():
     @unevaluated_expression
     class MyExpr(sp.Expr):
@@ -169,27 +190,6 @@ def test_unevaluated_expression_default_argument():
         assert expr.x is x
         assert isinstance(expr.m, sp.Integer)
         assert expr.default_return is half
-
-
-def test_unevaluated_expression_callable():
-    @unevaluated_expression(implement_doit=False)
-    class Squared(sp.Expr):
-        x: Any
-
-        def evaluate(self) -> sp.Expr:
-            return self.x**2
-
-    sqrt = Squared(2)
-    assert str(sqrt) == "Squared(2)"
-    assert str(sqrt.doit()) == "Squared(2)"
-
-    @unevaluated_expression(complex=True, implement_doit=False)
-    class MySqrt(sp.Expr):
-        x: Any
-
-    expr = MySqrt(-1)
-    assert expr.is_commutative
-    assert expr.is_complex  # type: ignore[attr-defined]
 
 
 def test_unevaluated_expression_default_args():
