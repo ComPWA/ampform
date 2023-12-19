@@ -162,3 +162,24 @@ def test_symbols_and_no_symbols():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+def test_xreplace_with_non_sympy_attributes():
+    class Protocol: ...
+
+    class Protocol1(Protocol): ...
+
+    class Protocol2(Protocol): ...
+
+    @unevaluated_expression(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        protocol: type[Protocol] = Protocol1
+
+    x, y = sp.symbols("x y")
+    expr = MyExpr(x)
+    replaced_expr: MyExpr = expr.xreplace({x: y, Protocol1: Protocol2})
+    assert replaced_expr.x is not x
+    assert replaced_expr.x is y
+    assert replaced_expr.protocol is not Protocol1
+    assert replaced_expr.protocol is Protocol2
