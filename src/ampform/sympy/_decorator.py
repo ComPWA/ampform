@@ -71,8 +71,8 @@ def unevaluated_expression(
 ) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
 
 
-@dataclass_transform()  # type: ignore[misc]
-def unevaluated_expression(  # type: ignore[misc]
+@dataclass_transform()
+def unevaluated_expression(
     cls: type[ExprClass] | None = None, *, implement_doit=True, **assumptions
 ):
     r"""Decorator for defining 'unevaluated' SymPy expressions.
