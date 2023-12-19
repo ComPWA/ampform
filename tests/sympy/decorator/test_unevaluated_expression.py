@@ -135,7 +135,7 @@ def test_no_implement_doit():
     assert expr.is_complex  # type: ignore[attr-defined]
 
 
-def test_symbols_and_no_symbols():
+def test_non_symbols_construction():
     @unevaluated_expression
     class BreakupMomentum(sp.Expr):
         s: Any
@@ -162,6 +162,22 @@ def test_symbols_and_no_symbols():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+def test_subs_with_non_sympy_attributes():
+    class Protocol: ...
+
+    @unevaluated_expression(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        protocol: type[Protocol] = Protocol
+
+    x, y = sp.symbols("x y")
+    expr = MyExpr(x)
+    replaced_expr: MyExpr = expr.subs(x, y)
+    assert replaced_expr.x is not x
+    assert replaced_expr.x is y
+    assert replaced_expr.protocol is Protocol
 
 
 def test_xreplace_with_non_sympy_attributes():

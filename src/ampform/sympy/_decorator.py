@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, ov
 
 import sympy as sp
 from attrs import frozen
+from sympy.core.basic import _aresame
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 if sys.version_info < (3, 8):
@@ -150,6 +151,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         return expr
 
     cls.__new__ = new_method  # type: ignore[method-assign]
+    cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
     cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
     cls._xreplace = _xreplace_method  # type: ignore[method-assign]
     return cls
@@ -356,6 +358,38 @@ def _set_assumptions(
         return cls
 
     return class_wrapper
+
+
+def _eval_subs_method(self, old, new, **hints):
+    # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1117-L1147
+    hit = False
+    substituted_attrs = list(self._all_args)
+    for i, old_attr in enumerate(substituted_attrs):
+        if not hasattr(old_attr, "_eval_subs"):
+            continue
+        if isclass(old_attr):
+            continue
+        new_attr = old_attr._subs(old, new, **hints)
+        if not _aresame(new_attr, old_attr):
+            hit = True
+            substituted_attrs[i] = new_attr
+    if hit:
+        rv = self.func(*substituted_attrs)
+        hack2 = hints.get("hack2", False)
+        if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
+            coefficient = sp.S.One
+            nonnumber = []
+            for i in substituted_attrs:
+                if i.is_Number:
+                    coefficient *= i
+                else:
+                    nonnumber.append(i)
+            nonnumber = self.func(*nonnumber)
+            if coefficient is sp.S.One:
+                return nonnumber
+            return self.func(coefficient, nonnumber, evaluate=False)
+        return rv
+    return self
 
 
 def _hashable_content_method(self) -> tuple:
