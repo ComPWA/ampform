@@ -62,17 +62,15 @@ class SymPyAssumptions(TypedDict, total=False):
 
 
 @overload
-def unevaluated_expression(cls: type[ExprClass]) -> type[ExprClass]: ...
+def unevaluated(cls: type[ExprClass]) -> type[ExprClass]: ...
 @overload
-def unevaluated_expression(
+def unevaluated(
     *,
     implement_doit: bool = True,
     **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
-
-
 @dataclass_transform()
-def unevaluated_expression(
+def unevaluated(
     cls: type[ExprClass] | None = None, *, implement_doit=True, **assumptions
 ):
     r"""Decorator for defining 'unevaluated' SymPy expressions.
@@ -80,7 +78,7 @@ def unevaluated_expression(
     Unevaluated expressions are handy for defining large expressions that consist of
     several sub-definitions.
 
-    >>> @unevaluated_expression
+    >>> @unevaluated
     ... class MyExpr(sp.Expr):
     ...     x: sp.Symbol
     ...     y: sp.Symbol

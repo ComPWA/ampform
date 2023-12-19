@@ -5,11 +5,11 @@ from typing import Any, ClassVar
 
 import sympy as sp
 
-from ampform.sympy._decorator import unevaluated_expression
+from ampform.sympy._decorator import unevaluated
 
 
 def test_classvar_behavior():
-    @unevaluated_expression
+    @unevaluated
     class MyExpr(sp.Expr):
         x: float
         m: ClassVar[int] = 2
@@ -32,7 +32,7 @@ def test_classvar_behavior():
 def test_construction_non_sympy_attributes():
     class CannotBeSympified: ...
 
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         sympifiable: Any
         non_sympy: CannotBeSympified
@@ -48,7 +48,7 @@ def test_construction_non_sympy_attributes():
 
 
 def test_default_argument():
-    @unevaluated_expression
+    @unevaluated
     class MyExpr(sp.Expr):
         x: Any
         m: int = 2
@@ -65,7 +65,7 @@ def test_default_argument():
 
 
 def test_default_argument_with_classvar():
-    @unevaluated_expression
+    @unevaluated
     class FunkyPower(sp.Expr):
         x: Any
         m: int = 1
@@ -104,7 +104,7 @@ def test_default_argument_with_classvar():
 def test_hashable_with_classes():
     class CannotBeSympified: ...
 
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
         typ: type[CannotBeSympified]
@@ -115,7 +115,7 @@ def test_hashable_with_classes():
 
 
 def test_no_implement_doit():
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class Squared(sp.Expr):
         x: Any
 
@@ -126,7 +126,7 @@ def test_no_implement_doit():
     assert str(sqrt) == "Squared(2)"
     assert str(sqrt.doit()) == "Squared(2)"
 
-    @unevaluated_expression(complex=True, implement_doit=False)
+    @unevaluated(complex=True, implement_doit=False)
     class MySqrt(sp.Expr):
         x: Any
 
@@ -136,7 +136,7 @@ def test_no_implement_doit():
 
 
 def test_non_symbols_construction():
-    @unevaluated_expression
+    @unevaluated
     class BreakupMomentum(sp.Expr):
         s: Any
         m1: Any
@@ -167,7 +167,7 @@ def test_non_symbols_construction():
 def test_subs_with_non_sympy_attributes():
     class Protocol: ...
 
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
         protocol: type[Protocol] = Protocol
@@ -187,7 +187,7 @@ def test_xreplace_with_non_sympy_attributes():
 
     class Protocol2(Protocol): ...
 
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
         protocol: type[Protocol] = Protocol1
