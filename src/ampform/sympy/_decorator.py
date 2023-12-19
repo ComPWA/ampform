@@ -243,11 +243,10 @@ def _safe_sympify(*args: Any) -> _ExprNewArumgents:
     sympy_args = []
     non_sympy_args = []
     for arg in args:
-        try:
-            converted_arg = sp.sympify(arg)
+        converted_arg, is_sympy = _try_sympify(arg)
+        if is_sympy:
             sympy_args.append(converted_arg)
-        except (TypeError, SymPyDeprecationWarning, sp.SympifyError):
-            converted_arg = arg
+        else:
             non_sympy_args.append(converted_arg)
         all_args.append(converted_arg)
     return _ExprNewArumgents(
@@ -255,6 +254,15 @@ def _safe_sympify(*args: Any) -> _ExprNewArumgents:
         sympy=tuple(sympy_args),
         non_sympy=tuple(non_sympy_args),
     )
+
+
+def _try_sympify(obj) -> tuple[Any, bool]:
+    if isinstance(obj, str):
+        return obj, False
+    try:
+        return sp.sympify(obj), True
+    except (TypeError, SymPyDeprecationWarning, sp.SympifyError):
+        return obj, False
 
 
 @frozen
