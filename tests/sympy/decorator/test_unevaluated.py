@@ -13,6 +13,7 @@ def test_classvar_behavior():
     class MyExpr(sp.Expr):
         x: float
         m: ClassVar[int] = 2
+        class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
             return self.x**self.m  # type: ignore[return-value]
@@ -24,9 +25,15 @@ def test_classvar_behavior():
     y_expr = MyExpr(5)
     assert x_expr.doit() == 4**2
     assert y_expr.doit() == 5**2
+    assert x_expr.class_name == "MyExpr"
+    assert y_expr.class_name == "MyExpr"
     MyExpr.m = 3
+    new_name = "different name"
+    MyExpr.class_name = new_name
     assert x_expr.doit() == 4**3
     assert y_expr.doit() == 5**3
+    assert x_expr.class_name == new_name
+    assert y_expr.class_name == new_name
 
 
 def test_construction_non_sympy_attributes():
