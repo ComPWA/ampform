@@ -116,7 +116,7 @@ def unevaluated_expression(  # type: ignore[misc]
 
 
 @dataclass_transform()
-def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:  # noqa: C901
+def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     """Implement the :meth:`__new__` method for dataclass-like SymPy expression classes.
 
     >>> @_implement_new_method
@@ -149,38 +149,9 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:  # noqa: C90
             return expr.evaluate()
         return expr
 
-    def _hashable_content(self) -> tuple:
-        hashable_content = super(sp.Expr, self)._hashable_content()
-        if not self._non_sympy_args:
-            return hashable_content
-        remaining_content = (_get_hashable_object(arg) for arg in self._non_sympy_args)
-        return (*hashable_content, *remaining_content)
-
-    def _xreplace(self, rule) -> tuple[sp.Expr, bool]:
-        # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1233-L1253
-        if self in rule:
-            return rule[self], True
-        if rule:
-            new_args = []
-            hit = False
-            for arg in self._all_args:
-                if hasattr(arg, "_xreplace") and not isclass(arg):
-                    replace_result, is_replaced = arg._xreplace(rule)
-                elif isinstance(rule, abc.Mapping):
-                    is_replaced = bool(arg in rule)
-                    replace_result = rule.get(arg, arg)
-                else:
-                    replace_result = arg
-                    is_replaced = False
-                new_args.append(replace_result)
-                hit |= is_replaced
-            if hit:
-                return self.func(*new_args), True
-        return self, False
-
     cls.__new__ = new_method  # type: ignore[method-assign]
-    cls._hashable_content = _hashable_content  # type: ignore[method-assign]
-    cls._xreplace = _xreplace  # type: ignore[method-assign]
+    cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
+    cls._xreplace = _xreplace_method  # type: ignore[method-assign]
     return cls
 
 
@@ -385,3 +356,34 @@ def _set_assumptions(
         return cls
 
     return class_wrapper
+
+
+def _hashable_content_method(self) -> tuple:
+    hashable_content = super(sp.Expr, self)._hashable_content()
+    if not self._non_sympy_args:
+        return hashable_content
+    remaining_content = (_get_hashable_object(arg) for arg in self._non_sympy_args)
+    return (*hashable_content, *remaining_content)
+
+
+def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
+    # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1233-L1253
+    if self in rule:
+        return rule[self], True
+    if rule:
+        new_args = []
+        hit = False
+        for arg in self._all_args:
+            if hasattr(arg, "_xreplace") and not isclass(arg):
+                replace_result, is_replaced = arg._xreplace(rule)
+            elif isinstance(rule, abc.Mapping):
+                is_replaced = bool(arg in rule)
+                replace_result = rule.get(arg, arg)
+            else:
+                replace_result = arg
+                is_replaced = False
+            new_args.append(replace_result)
+            hit |= is_replaced
+        if hit:
+            return self.func(*new_args), True
+    return self, False
