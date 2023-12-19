@@ -155,7 +155,7 @@ def test_unevaluated_expression_classvar():
     assert y_expr.doit() == 5**3
 
 
-def test_unevaluated_expression_default_argument():
+def test_unevaluated_expression_default_arg_with_classvar():
     @unevaluated_expression
     class FunkyPower(sp.Expr):
         x: Any
