@@ -6,6 +6,8 @@ import sys
 from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
 
 import sympy as sp
+from attrs import frozen
+from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol, TypedDict
@@ -133,10 +135,10 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     @functools.wraps(cls.__new__)
     @_insert_args_in_signature(attr_names, idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
-        positional_args, hints = _get_attribute_values(cls, attr_names, *args, **kwargs)
-        sympified_args = sp.sympify(positional_args)
-        expr = sp.Expr.__new__(cls, *sympified_args, **hints)
-        for name, value in zip(attr_names, sympified_args):
+        attr_values, hints = _get_attribute_values(cls, attr_names, *args, **kwargs)
+        converted_attr_values = _safe_sympify(*attr_values)
+        expr = sp.Expr.__new__(cls, *converted_attr_values.sympy, **hints)
+        for name, value in zip(attr_names, converted_attr_values.all_args):
             setattr(expr, name, value)
         if evaluate:
             return expr.evaluate()
@@ -182,6 +184,32 @@ def _get_attribute_values(
         msg = f"Missing constructor arguments: {', '.join(remaining_attr_names)}"
         raise ValueError(msg)
     return tuple(attr_values), kwargs
+
+
+def _safe_sympify(*args: Any) -> _ExprNewArumgents:
+    all_args = []
+    sympy_args = []
+    non_sympy_args = []
+    for arg in args:
+        try:
+            converted_arg = sp.sympify(arg)
+            sympy_args.append(converted_arg)
+        except (TypeError, SymPyDeprecationWarning, sp.SympifyError):
+            converted_arg = arg
+            non_sympy_args.append(converted_arg)
+        all_args.append(converted_arg)
+    return _ExprNewArumgents(
+        all_args=tuple(all_args),
+        sympy=tuple(sympy_args),
+        non_sympy=tuple(non_sympy_args),
+    )
+
+
+@frozen
+class _ExprNewArumgents:
+    all_args: tuple[Any, ...]
+    sympy: tuple[sp.Basic, ...]
+    non_sympy: tuple[Any, ...]
 
 
 class LatexMethod(Protocol):
