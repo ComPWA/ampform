@@ -3,7 +3,8 @@ from __future__ import annotations
 import functools
 import inspect
 import sys
-from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
+from inspect import isclass
+from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, overload
 
 import sympy as sp
 from attrs import frozen
@@ -23,8 +24,9 @@ if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
 ExprClass = TypeVar("ExprClass", bound=sp.Expr)
-_P = ParamSpec("_P")
-_T = TypeVar("_T")
+P = ParamSpec("P")
+T = TypeVar("T")
+H = TypeVar("H", bound=Hashable)
 
 
 class SymPyAssumptions(TypedDict, total=False):
@@ -140,12 +142,39 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         expr = sp.Expr.__new__(cls, *converted_attr_values.sympy, **hints)
         for name, value in zip(attr_names, converted_attr_values.all_args):
             setattr(expr, name, value)
+        expr._non_sympy_args = converted_attr_values.non_sympy
         if evaluate:
             return expr.evaluate()
         return expr
 
+    def _hashable_content(self) -> tuple:
+        hashable_content: tuple[sp.Basic, ...] = super(
+            sp.Expr, self
+        )._hashable_content()
+        if not self._non_sympy_args:
+            return hashable_content
+        remaining_content = (_get_hashable_object(arg) for arg in self._non_sympy_args)
+        return (*hashable_content, *remaining_content)
+
     cls.__new__ = new_method  # type: ignore[method-assign]
+    cls._hashable_content = _hashable_content  # type: ignore[method-assign]
     return cls
+
+
+@overload
+def _get_hashable_object(obj: type) -> str: ...  # type: ignore[overload-overlap]
+@overload
+def _get_hashable_object(obj: H) -> H: ...
+@overload
+def _get_hashable_object(obj: Any) -> str: ...
+def _get_hashable_object(obj):
+    if isclass(obj):
+        return str(obj)
+    try:
+        hash(obj)
+    except TypeError:
+        return str(obj)
+    return obj
 
 
 def _get_attribute_values(
@@ -217,7 +246,7 @@ class LatexMethod(Protocol):
 
 
 @dataclass_transform()
-def _implement_latex_repr(cls: type[_T]) -> type[_T]:
+def _implement_latex_repr(cls: type[T]) -> type[T]:
     _latex_repr_: LatexMethod | str | None = getattr(cls, "_latex_repr_", None)
     if _latex_repr_ is None:
         msg = (
@@ -267,7 +296,7 @@ def _check_has_implementation(cls: type) -> None:
 
 def _insert_args_in_signature(
     new_params: Iterable[str] | None = None, idx: int = 0
-) -> Callable[[Callable[_P, _T]], Callable[_P, _T]]:
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if new_params is None:
         new_params = []
 
@@ -318,8 +347,8 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
 @dataclass_transform()
 def _set_assumptions(
     **assumptions: Unpack[SymPyAssumptions],
-) -> Callable[[type[_T]], type[_T]]:
-    def class_wrapper(cls: _T) -> _T:
+) -> Callable[[type[T]], type[T]]:
+    def class_wrapper(cls: T) -> T:
         for assumption, value in assumptions.items():
             setattr(cls, f"is_{assumption}", value)
         return cls

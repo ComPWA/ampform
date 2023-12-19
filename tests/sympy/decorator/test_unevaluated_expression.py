@@ -101,6 +101,19 @@ def test_default_argument_with_classvar():
         assert expr.default_return is half
 
 
+def test_hashable_with_classes():
+    class CannotBeSympified: ...
+
+    @unevaluated_expression(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        typ: type[CannotBeSympified]
+
+    x = sp.Symbol("x")
+    expr = MyExpr(x, typ=CannotBeSympified)
+    assert expr._hashable_content() == (x, str(CannotBeSympified))
+
+
 def test_no_implement_doit():
     @unevaluated_expression(implement_doit=False)
     class Squared(sp.Expr):
