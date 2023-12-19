@@ -8,7 +8,7 @@ import sympy as sp
 from ampform.sympy._decorator import unevaluated_expression
 
 
-def test_unevaluated_expression():
+def test_symbols_and_no_symbols():
     @unevaluated_expression
     class BreakupMomentum(sp.Expr):
         s: Any
@@ -37,7 +37,7 @@ def test_unevaluated_expression():
     assert isinstance(q_value.m2, sp.Float)
 
 
-def test_unevaluated_expression_callable():
+def test_no_implement_doit():
     @unevaluated_expression(implement_doit=False)
     class Squared(sp.Expr):
         x: Any
@@ -58,7 +58,7 @@ def test_unevaluated_expression_callable():
     assert expr.is_complex  # type: ignore[attr-defined]
 
 
-def test_unevaluated_expression_classvar():
+def test_classvar_behavior():
     @unevaluated_expression
     class MyExpr(sp.Expr):
         x: float
@@ -79,7 +79,7 @@ def test_unevaluated_expression_classvar():
     assert y_expr.doit() == 5**3
 
 
-def test_unevaluated_expression_default_arg_with_classvar():
+def test_default_argument_with_classvar():
     @unevaluated_expression
     class FunkyPower(sp.Expr):
         x: Any
@@ -116,7 +116,7 @@ def test_unevaluated_expression_default_arg_with_classvar():
         assert expr.default_return is half
 
 
-def test_unevaluated_expression_default_args():
+def test_default_argument():
     @unevaluated_expression
     class MyExpr(sp.Expr):
         x: Any
