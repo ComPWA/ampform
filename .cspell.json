@@ -182,6 +182,7 @@
     "sharey",
     "startswith",
     "suptitle",
+    "sympifiable",
     "sympified",
     "sympify",
     "symplot",

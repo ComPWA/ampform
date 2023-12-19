@@ -29,6 +29,24 @@ def test_classvar_behavior():
     assert y_expr.doit() == 5**3
 
 
+def test_construction_non_sympy_attributes():
+    class CannotBeSympified: ...
+
+    @unevaluated_expression(implement_doit=False)
+    class MyExpr(sp.Expr):
+        sympifiable: Any
+        non_sympy: CannotBeSympified
+
+    obj = CannotBeSympified()
+    expr = MyExpr(
+        sympifiable=3,
+        non_sympy=obj,
+    )
+    assert expr.sympifiable is not 3  # noqa: F632
+    assert expr.sympifiable is sp.Integer(3)
+    assert expr.non_sympy is obj
+
+
 def test_default_argument():
     @unevaluated_expression
     class MyExpr(sp.Expr):
