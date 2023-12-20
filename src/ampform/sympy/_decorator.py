@@ -18,17 +18,23 @@ else:
     from typing import Protocol, TypedDict
 
 if sys.version_info < (3, 11):
-    from typing_extensions import ParamSpec, Unpack, dataclass_transform
+    from typing_extensions import dataclass_transform
 else:
-    from typing import ParamSpec, Unpack, dataclass_transform
+    from typing import dataclass_transform
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
+    if sys.version_info < (3, 11):
+        from typing_extensions import ParamSpec, Unpack
+    else:
+        from typing import ParamSpec, Unpack
+
+    H = TypeVar("H", bound=Hashable)
+    P = ParamSpec("P")
+    T = TypeVar("T")
+
 ExprClass = TypeVar("ExprClass", bound=sp.Expr)
-P = ParamSpec("P")
-T = TypeVar("T")
-H = TypeVar("H", bound=Hashable)
 
 
 class SymPyAssumptions(TypedDict, total=False):
