@@ -225,6 +225,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     )(cls)
     cls = _update_field_metadata(cls)
     sympy_fields = _get_sympy_fields(cls)
+    cls.__slots__ = tuple(f.name for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
 
     @functools.wraps(cls.__new__)
     @_insert_args_in_signature([f.name for f in sympy_fields], idx=1)
