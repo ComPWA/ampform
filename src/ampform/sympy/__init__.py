@@ -1,6 +1,8 @@
 """Tools that facilitate in building :mod:`sympy` expressions.
 
 .. autodecorator:: unevaluated
+.. autofunction:: argument
+
 .. dropdown:: SymPy assumptions
 
     .. autodata:: ExprClass
@@ -30,6 +32,7 @@ from sympy.printing.precedence import PRECEDENCE
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    argument,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     unevaluated,  # noqa: F401  # pyright: ignore[reportUnusedImport]
 )
 

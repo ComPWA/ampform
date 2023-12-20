@@ -5,7 +5,7 @@ from typing import Any, ClassVar
 
 import sympy as sp
 
-from ampform.sympy._decorator import unevaluated
+from ampform.sympy._decorator import argument, unevaluated
 
 
 def test_classvar_behavior():
@@ -42,7 +42,7 @@ def test_construction_non_sympy_attributes():
     @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         sympifiable: Any
-        non_sympy: CannotBeSympified
+        non_sympy: CannotBeSympified = argument(sympify=False)
 
     obj = CannotBeSympified()
     expr = MyExpr(
@@ -114,7 +114,7 @@ def test_hashable_with_classes():
     @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
-        typ: type[CannotBeSympified]
+        typ: type[CannotBeSympified] = argument(sympify=False)
 
     x = sp.Symbol("x")
     expr = MyExpr(x, typ=CannotBeSympified)
@@ -177,7 +177,7 @@ def test_subs_with_non_sympy_attributes():
     @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
-        protocol: type[Protocol] = Protocol
+        protocol: type[Protocol] = argument(default=Protocol, sympify=False)
 
     x, y = sp.symbols("x y")
     expr = MyExpr(x)
@@ -197,7 +197,7 @@ def test_xreplace_with_non_sympy_attributes():
     @unevaluated(implement_doit=False)
     class MyExpr(sp.Expr):
         x: Any
-        protocol: type[Protocol] = Protocol1
+        protocol: type[Protocol] = argument(default=Protocol1, sympify=False)
 
     x, y = sp.symbols("x y")
     expr = MyExpr(x)
