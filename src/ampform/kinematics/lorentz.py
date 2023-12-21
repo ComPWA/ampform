@@ -304,7 +304,7 @@ class BoostZMatrix(UnevaluatedExpression):
         cls, beta: sp.Basic, n_events: sp.Expr | None = None, **kwargs
     ) -> BoostZMatrix:
         if n_events is None:
-            n_events = _ArraySize(beta)
+            n_events = ArraySize(beta)
         return create_expression(cls, beta, n_events, **kwargs)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -488,7 +488,7 @@ class RotationYMatrix(UnevaluatedExpression):
         cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
     ) -> RotationYMatrix:
         if n_events is None:
-            n_events = _ArraySize(angle)
+            n_events = ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -559,7 +559,7 @@ class RotationZMatrix(UnevaluatedExpression):
         cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
     ) -> RotationZMatrix:
         if n_events is None:
-            n_events = _ArraySize(angle)
+            n_events = ArraySize(angle)
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -636,8 +636,10 @@ class _ZerosArray(NumPyPrintable):
         return f"zeros({shape})"
 
 
-class _ArraySize(NumPyPrintable):
-    def __new__(cls, array: sp.Basic, **kwargs) -> _ArraySize:
+class ArraySize(NumPyPrintable):
+    """Symbolic expression for getting the size of a numerical array."""
+
+    def __new__(cls, array: sp.Basic, **kwargs) -> ArraySize:
         return create_expression(cls, array, **kwargs)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:

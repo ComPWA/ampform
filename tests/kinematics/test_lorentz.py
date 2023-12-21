@@ -11,6 +11,7 @@ from numpy.lib.scimath import sqrt as complex_sqrt
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.kinematics.lorentz import (
+    ArraySize,
     BoostMatrix,
     BoostZMatrix,
     Energy,
@@ -24,7 +25,6 @@ from ampform.kinematics.lorentz import (
     RotationYMatrix,
     RotationZMatrix,
     ThreeMomentum,
-    _ArraySize,
     _OnesArray,
     _ZerosArray,
     compute_boost_chain,
@@ -104,7 +104,7 @@ class TestBoostMatrix:
 class TestBoostZMatrix:
     def test_boost_into_own_rest_frame_gives_mass(self):
         p = FourMomentumSymbol("p", shape=[])
-        n_events = _ArraySize(p)
+        n_events = ArraySize(p)
         beta = three_momentum_norm(p) / Energy(p)
         expr = BoostZMatrix(beta, n_events)
         func = sp.lambdify(p, expr.doit(), cse=True)
@@ -122,9 +122,9 @@ class TestBoostZMatrix:
     def test_numpycode_cse_in_expression_tree(self):
         p, beta, phi, theta = sp.symbols("p beta phi theta")
         expr = ArrayMultiplication(
-            BoostZMatrix(beta, n_events=_ArraySize(p)),
-            RotationYMatrix(theta, n_events=_ArraySize(p)),
-            RotationZMatrix(phi, n_events=_ArraySize(p)),
+            BoostZMatrix(beta, n_events=ArraySize(p)),
+            RotationYMatrix(theta, n_events=ArraySize(p)),
+            RotationZMatrix(phi, n_events=ArraySize(p)),
             p,
         )
         func = sp.lambdify([], expr.doit(), cse=True)
@@ -253,7 +253,7 @@ class TestRotationYMatrix:
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
-        rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
+        rotation_expr = rotation_expr.subs(sp.Symbol("n"), ArraySize(angle))
         return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
@@ -292,7 +292,7 @@ class TestRotationZMatrix:
     def rotation_func(self, rotation_expr):
         angle = sp.Symbol("a")
         rotation_expr = rotation_expr.doit()
-        rotation_expr = rotation_expr.subs(sp.Symbol("n"), _ArraySize(angle))
+        rotation_expr = rotation_expr.subs(sp.Symbol("n"), ArraySize(angle))
         return sp.lambdify(angle, rotation_expr, cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
