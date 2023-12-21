@@ -24,7 +24,7 @@ import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.io import aslatex
-from ampform.kinematics.lorentz import FourMomentumSymbol, _ArraySize
+from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
 from ampform.sympy._array_expressions import ArrayMultiplication
 
 if sys.version_info < (3, 8):
@@ -127,7 +127,7 @@ def extend_BoostZMatrix() -> None:
     )
     b = sp.Symbol("b")
     _append_code_rendering(
-        BoostZMatrix(b).doit(),
+        BoostZMatrix(b, n_events=ArraySize(b)).doit(),
         use_cse=True,
         docstring_class=BoostZMatrix,
     )
@@ -147,9 +147,9 @@ def extend_BoostZMatrix() -> None:
     )
     p, beta, phi, theta = sp.symbols("p beta phi theta")
     multiplication = ArrayMultiplication(
-        BoostZMatrix(beta, n_events=_ArraySize(p)),
-        RotationYMatrix(theta, n_events=_ArraySize(p)),
-        RotationZMatrix(phi, n_events=_ArraySize(p)),
+        BoostZMatrix(beta, n_events=ArraySize(p)),
+        RotationYMatrix(theta, n_events=ArraySize(p)),
+        RotationZMatrix(phi, n_events=ArraySize(p)),
         p,
     )
     _append_to_docstring(
@@ -460,7 +460,7 @@ def extend_RotationZMatrix() -> None:
     )
     a = sp.Symbol("a")
     _append_code_rendering(
-        RotationZMatrix(a).doit(),
+        RotationZMatrix(a, n_events=ArraySize(a)).doit(),
         use_cse=True,
         docstring_class=RotationZMatrix,
     )

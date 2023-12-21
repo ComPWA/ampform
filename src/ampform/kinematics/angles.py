@@ -13,6 +13,7 @@ from ampform.helicity.decay import (
 )
 from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
 from ampform.kinematics.lorentz import (
+    ArraySize,
     BoostMatrix,
     BoostZMatrix,
     Energy,
@@ -23,7 +24,6 @@ from ampform.kinematics.lorentz import (
     NegativeMomentum,
     RotationYMatrix,
     RotationZMatrix,
-    _ArraySize,
     compute_boost_chain,
     three_momentum_norm,
 )
@@ -183,9 +183,9 @@ def compute_helicity_angles(
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
 
 
-def _get_number_of_events(four_momenta: Mapping[int, sp.Expr]) -> _ArraySize:
+def _get_number_of_events(four_momenta: Mapping[int, sp.Expr]) -> ArraySize:
     sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
-    return _ArraySize(sorted_momentum_symbols[0])
+    return ArraySize(sorted_momentum_symbols[0])
 
 
 def compute_wigner_angles(
