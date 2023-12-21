@@ -49,6 +49,7 @@ EXECUTE_NB = get_execution_mode() != "off"
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
+    "T": "TypeVar",
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.DecoratedExpr"),
