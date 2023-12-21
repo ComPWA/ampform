@@ -5,14 +5,15 @@ from typing import Any, ClassVar
 
 import sympy as sp
 
-from ampform.sympy._decorator import unevaluated_expression
+from ampform.sympy._decorator import unevaluated
 
 
 def test_classvar_behavior():
-    @unevaluated_expression
+    @unevaluated
     class MyExpr(sp.Expr):
         x: float
         m: ClassVar[int] = 2
+        class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
             return self.x**self.m  # type: ignore[return-value]
@@ -24,13 +25,37 @@ def test_classvar_behavior():
     y_expr = MyExpr(5)
     assert x_expr.doit() == 4**2
     assert y_expr.doit() == 5**2
+    assert x_expr.class_name == "MyExpr"
+    assert y_expr.class_name == "MyExpr"
     MyExpr.m = 3
+    new_name = "different name"
+    MyExpr.class_name = new_name
     assert x_expr.doit() == 4**3
     assert y_expr.doit() == 5**3
+    assert x_expr.class_name == new_name
+    assert y_expr.class_name == new_name
+
+
+def test_construction_non_sympy_attributes():
+    class CannotBeSympified: ...
+
+    @unevaluated(implement_doit=False)
+    class MyExpr(sp.Expr):
+        sympifiable: Any
+        non_sympy: CannotBeSympified
+
+    obj = CannotBeSympified()
+    expr = MyExpr(
+        sympifiable=3,
+        non_sympy=obj,
+    )
+    assert expr.sympifiable is not 3  # noqa: F632
+    assert expr.sympifiable is sp.Integer(3)
+    assert expr.non_sympy is obj
 
 
 def test_default_argument():
-    @unevaluated_expression
+    @unevaluated
     class MyExpr(sp.Expr):
         x: Any
         m: int = 2
@@ -47,7 +72,7 @@ def test_default_argument():
 
 
 def test_default_argument_with_classvar():
-    @unevaluated_expression
+    @unevaluated
     class FunkyPower(sp.Expr):
         x: Any
         m: int = 1
@@ -83,8 +108,21 @@ def test_default_argument_with_classvar():
         assert expr.default_return is half
 
 
+def test_hashable_with_classes():
+    class CannotBeSympified: ...
+
+    @unevaluated(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        typ: type[CannotBeSympified]
+
+    x = sp.Symbol("x")
+    expr = MyExpr(x, typ=CannotBeSympified)
+    assert expr._hashable_content() == (x, str(CannotBeSympified))
+
+
 def test_no_implement_doit():
-    @unevaluated_expression(implement_doit=False)
+    @unevaluated(implement_doit=False)
     class Squared(sp.Expr):
         x: Any
 
@@ -95,7 +133,7 @@ def test_no_implement_doit():
     assert str(sqrt) == "Squared(2)"
     assert str(sqrt.doit()) == "Squared(2)"
 
-    @unevaluated_expression(complex=True, implement_doit=False)
+    @unevaluated(complex=True, implement_doit=False)
     class MySqrt(sp.Expr):
         x: Any
 
@@ -104,8 +142,8 @@ def test_no_implement_doit():
     assert expr.is_complex  # type: ignore[attr-defined]
 
 
-def test_symbols_and_no_symbols():
-    @unevaluated_expression
+def test_non_symbols_construction():
+    @unevaluated
     class BreakupMomentum(sp.Expr):
         s: Any
         m1: Any
@@ -131,3 +169,40 @@ def test_symbols_and_no_symbols():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+def test_subs_with_non_sympy_attributes():
+    class Protocol: ...
+
+    @unevaluated(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        protocol: type[Protocol] = Protocol
+
+    x, y = sp.symbols("x y")
+    expr = MyExpr(x)
+    replaced_expr: MyExpr = expr.subs(x, y)
+    assert replaced_expr.x is not x
+    assert replaced_expr.x is y
+    assert replaced_expr.protocol is Protocol
+
+
+def test_xreplace_with_non_sympy_attributes():
+    class Protocol: ...
+
+    class Protocol1(Protocol): ...
+
+    class Protocol2(Protocol): ...
+
+    @unevaluated(implement_doit=False)
+    class MyExpr(sp.Expr):
+        x: Any
+        protocol: type[Protocol] = Protocol1
+
+    x, y = sp.symbols("x y")
+    expr = MyExpr(x)
+    replaced_expr: MyExpr = expr.xreplace({x: y, Protocol1: Protocol2})
+    assert replaced_expr.x is not x
+    assert replaced_expr.x is y
+    assert replaced_expr.protocol is not Protocol1
+    assert replaced_expr.protocol is Protocol2
