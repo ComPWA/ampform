@@ -225,7 +225,8 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     )(cls)
     cls = _update_field_metadata(cls)
     sympy_fields = _get_sympy_fields(cls)
-    cls.__slots__ = tuple(f.name for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
+    non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
+    cls.__slots__ = tuple(f.name for f in non_sympy_fields)  # type: ignore[arg-type]
 
     @functools.wraps(cls.__new__)
     @_insert_args_in_signature([f.name for f in sympy_fields], idx=1)
@@ -249,9 +250,10 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
 
     cls.__new__ = new_method  # type: ignore[method-assign]
     cls.__getnewargs__ = _get_arguments  # type: ignore[assignment,method-assign]
-    cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
     cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
-    cls._xreplace = _xreplace_method  # type: ignore[method-assign]
+    if non_sympy_fields:
+        cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
+        cls._xreplace = _xreplace_method  # type: ignore[method-assign]
     return cls
 
 
