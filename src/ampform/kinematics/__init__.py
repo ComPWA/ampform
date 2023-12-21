@@ -467,11 +467,7 @@ class BoostZMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`beta`.
     """
 
-    def __new__(
-        cls, beta: sp.Basic, n_events: sp.Expr | None = None, **kwargs
-    ) -> BoostZMatrix:
-        if n_events is None:
-            n_events = _ArraySize(beta)
+    def __new__(cls, beta: sp.Basic, n_events: sp.Expr, **kwargs) -> BoostZMatrix:
         return create_expression(cls, beta, n_events, **kwargs)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -651,11 +647,7 @@ class RotationYMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
-    def __new__(
-        cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
-    ) -> RotationYMatrix:
-        if n_events is None:
-            n_events = _ArraySize(angle)
+    def __new__(cls, angle: sp.Basic, n_events: sp.Expr, **hints) -> RotationYMatrix:
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -722,11 +714,7 @@ class RotationZMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
-    def __new__(
-        cls, angle: sp.Basic, n_events: sp.Expr | None = None, **hints
-    ) -> RotationZMatrix:
-        if n_events is None:
-            n_events = _ArraySize(angle)
+    def __new__(cls, angle: sp.Basic, n_events: sp.Expr, **hints) -> RotationZMatrix:
         return create_expression(cls, angle, n_events, **hints)
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
@@ -803,8 +791,10 @@ class _ZerosArray(NumPyPrintable):
         return f"zeros({shape})"
 
 
-class _ArraySize(NumPyPrintable):
-    def __new__(cls, array: sp.Basic, **kwargs) -> _ArraySize:
+class ArraySize(NumPyPrintable):
+    """Symbolic expression for getting the size of a numerical array."""
+
+    def __new__(cls, array: sp.Basic, **kwargs) -> ArraySize:
         return create_expression(cls, array, **kwargs)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
@@ -906,9 +896,9 @@ def compute_helicity_angles(
 
 def _get_number_of_events(
     four_momenta: Mapping[int, sp.Expr],
-) -> _ArraySize:
+) -> ArraySize:
     sorted_momentum_symbols = sorted(four_momenta.values(), key=str)
-    return _ArraySize(sorted_momentum_symbols[0])
+    return ArraySize(sorted_momentum_symbols[0])
 
 
 def compute_invariant_masses(
