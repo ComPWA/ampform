@@ -279,27 +279,6 @@ def implement_doit_method(
     return decorated_class
 
 
-def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
-    subscript: str,
-) -> Callable[[type[UnevaluatedExpression]], type[UnevaluatedExpression]]:
-    def decorator(
-        decorated_class: type[UnevaluatedExpression],
-    ) -> type[UnevaluatedExpression]:
-        @functools.wraps(decorated_class.doit)
-        def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
-            momentum = printer._print(self._momentum)  # type: ignore[attr-defined]
-            if printer._needs_mul_brackets(self._momentum):  # type: ignore[attr-defined]
-                momentum = Rf"\left({momentum}\right)"
-            else:
-                momentum = Rf"{{{momentum}}}"
-            return f"{momentum}_{subscript}"
-
-        decorated_class._latex = _latex  # type: ignore[assignment]
-        return decorated_class
-
-    return decorator
-
-
 DecoratedExpr = TypeVar("DecoratedExpr", bound=sp.Expr)
 """`~typing.TypeVar` for decorators like :func:`make_commutative`."""
 

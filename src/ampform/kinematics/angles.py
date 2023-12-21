@@ -28,12 +28,7 @@ from ampform.kinematics.lorentz import (
     three_momentum_norm,
 )
 from ampform.kinematics.phasespace import Kallen
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
+from ampform.sympy import unevaluated
 from ampform.sympy._array_expressions import (
     ArrayMultiplication,
     ArraySlice,
@@ -43,49 +38,30 @@ from ampform.sympy._array_expressions import (
 
 if TYPE_CHECKING:
     from qrules.topology import Topology
-    from sympy.printing.latex import LatexPrinter
 
 
-@implement_doit_method
-@make_commutative
-class Phi(UnevaluatedExpression):
+@unevaluated
+class Phi(sp.Expr):
     r"""Azimuthal angle :math:`\phi` of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> Phi:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr_ = R"\phi\left({momentum}\right)"
 
     def evaluate(self) -> sp.Expr:
-        p = self._momentum
+        p = self.momentum
         return sp.atan2(FourMomentumY(p), FourMomentumX(p))
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return Rf"\phi\left({momentum}\right)"
 
-
-@implement_doit_method
-@make_commutative
-class Theta(UnevaluatedExpression):
+@unevaluated
+class Theta(sp.Expr):
     r"""Polar (elevation) angle :math:`\theta` of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> Theta:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr_ = R"\theta\left({momentum}\right)"
 
     def evaluate(self) -> sp.Expr:
-        p = self._momentum
+        p = self.momentum
         return sp.acos(FourMomentumZ(p) / three_momentum_norm(p))
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return Rf"\theta\left({momentum}\right)"
 
 
 def compute_helicity_angles(
