@@ -58,7 +58,7 @@ class TestBoostMatrix:
         ])
 
         beta = three_momentum_norm(p) / Energy(p)
-        z_expr = BoostZMatrix(beta)
+        z_expr = BoostZMatrix(beta, n_events=ArraySize(p))
         z_func = sp.lambdify(p, z_expr.doit(), cse=True)
         z_matrix = z_func(p_array)[0]
         assert pytest.approx(matrix) == z_matrix
@@ -246,27 +246,26 @@ class TestNegativeMomentum:
 class TestRotationYMatrix:
     @pytest.fixture(scope="session")
     def rotation_expr(self):
-        angle, n_events = sp.symbols("a n")
-        return RotationYMatrix(angle, n_events)
+        angle = sp.Symbol("a")
+        return RotationYMatrix(angle, n_events=ArraySize(angle))
 
     @pytest.fixture(scope="session")
-    def rotation_func(self, rotation_expr):
+    def rotation_func(self, rotation_expr: RotationYMatrix):
         angle = sp.Symbol("a")
-        rotation_expr = rotation_expr.doit()
-        rotation_expr = rotation_expr.subs(sp.Symbol("n"), ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=True)
+        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationYMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
+            x0 = len(a)
             return (array(
                     [
-                        [ones(n), zeros(n), zeros(n), zeros(n)],
-                        [zeros(n), cos(a), zeros(n), sin(a)],
-                        [zeros(n), zeros(n), ones(n), zeros(n)],
-                        [zeros(n), -sin(a), zeros(n), cos(a)],
+                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
+                        [zeros(x0), cos(a), zeros(x0), sin(a)],
+                        [zeros(x0), zeros(x0), ones(x0), zeros(x0)],
+                        [zeros(x0), -sin(a), zeros(x0), cos(a)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -285,27 +284,26 @@ class TestRotationYMatrix:
 class TestRotationZMatrix:
     @pytest.fixture(scope="session")
     def rotation_expr(self):
-        angle, n_events = sp.symbols("a n")
-        return RotationZMatrix(angle, n_events)
+        angle = sp.Symbol("a")
+        return RotationZMatrix(angle, n_events=ArraySize(angle))
 
     @pytest.fixture(scope="session")
-    def rotation_func(self, rotation_expr):
+    def rotation_func(self, rotation_expr: RotationZMatrix):
         angle = sp.Symbol("a")
-        rotation_expr = rotation_expr.doit()
-        rotation_expr = rotation_expr.subs(sp.Symbol("n"), ArraySize(angle))
-        return sp.lambdify(angle, rotation_expr, cse=True)
+        return sp.lambdify(angle, rotation_expr.doit(), cse=True)
 
     def test_numpycode_cse(self, rotation_expr: RotationZMatrix):
         func = sp.lambdify([], rotation_expr.doit(), cse=True)
         src = inspect.getsource(func)
         expected_src = """
         def _lambdifygenerated():
+            x0 = len(a)
             return (array(
                     [
-                        [ones(n), zeros(n), zeros(n), zeros(n)],
-                        [zeros(n), cos(a), -sin(a), zeros(n)],
-                        [zeros(n), sin(a), cos(a), zeros(n)],
-                        [zeros(n), zeros(n), zeros(n), ones(n)],
+                        [ones(x0), zeros(x0), zeros(x0), zeros(x0)],
+                        [zeros(x0), cos(a), -sin(a), zeros(x0)],
+                        [zeros(x0), sin(a), cos(a), zeros(x0)],
+                        [zeros(x0), zeros(x0), zeros(x0), ones(x0)],
                     ]
                 ).transpose((2, 0, 1)))
         """
@@ -331,7 +329,7 @@ def test_rotation_latex_repr_is_identical_with_doit(rotation):
 @pytest.mark.parametrize("rotation", [RotationYMatrix, RotationZMatrix])
 def test_rotation_over_multiple_two_pi_is_identity(rotation):
     angle = sp.Symbol("a")
-    expr = rotation(angle)
+    expr = rotation(angle, n_events=ArraySize(angle))
     func = sp.lambdify(angle, expr.doit(), cse=True)
     angle_array = np.arange(-2, 4, 1) * 2 * np.pi
     rotation_matrices = func(angle_array)
