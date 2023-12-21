@@ -27,13 +27,14 @@ if TYPE_CHECKING:
 )
 def test_get_readable_hash(assumptions, expected_hash, caplog: LogCaptureFixture):
     if sys.version_info < (3, 8) or sys.version_info >= (3, 11):
-        pytest.skip("Cannot run this test on Python 3.7")
+        python_version = ".".join(map(str, sys.version_info[:2]))
+        pytest.skip(f"Cannot run this test on Python {python_version}")
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
     h = get_readable_hash(expr)
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
-    if python_hash_seed is None or not python_hash_seed.isdigit():
+    if python_hash_seed is None:
         assert h[:7] == "bbc9833"
         if _warn_about_unsafe_hash.cache_info().hits == 0:
             assert "PYTHONHASHSEED has not been set." in caplog.text
@@ -60,7 +61,9 @@ def test_get_readable_hash_energy_dependent_width():
     h = get_readable_hash(expr)
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None:
-        pytest.skip("PYTHONHASHSEED has been set, but is not 0")
+        pytest.skip("PYTHONHASHSEED has not been set")
+    if python_hash_seed != "0":
+        pytest.skip(f"PYTHONHASHSEED is not set to 0, but to {python_hash_seed}")
     if sys.version_info < (3, 8):
         assert h == "pythonhashseed-0+6939334787254793397"
     elif sys.version_info >= (3, 11):
