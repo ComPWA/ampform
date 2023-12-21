@@ -242,7 +242,9 @@ addopts = '''
 --durations=3
 --ignore=docs/abbreviate_signature.py
 --ignore=docs/conf.py
--m "not slow"'''
+-m "not slow"
+-rS
+'''
 filterwarnings = [
     "error",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
