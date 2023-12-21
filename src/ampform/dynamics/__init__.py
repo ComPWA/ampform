@@ -26,14 +26,14 @@ from ampform.sympy import (
     UnevaluatedExpression,
     determine_indices,
     implement_doit_method,
-    unevaluated_expression,
+    unevaluated,
 )
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
 
-@unevaluated_expression
+@unevaluated
 class BlattWeisskopfSquared(sp.Expr):
     # cspell:ignore pychyGekoppeltePartialwellenanalyseAnnihilationen
     r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.

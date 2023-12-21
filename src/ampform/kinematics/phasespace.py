@@ -9,10 +9,10 @@ from typing import Any
 
 import sympy as sp
 
-from ampform.sympy import unevaluated_expression
+from ampform.sympy import unevaluated
 
 
-@unevaluated_expression
+@unevaluated
 class Kibble(sp.Expr):
     """Kibble function for determining the phase space region."""
 
@@ -34,7 +34,7 @@ class Kibble(sp.Expr):
         )
 
 
-@unevaluated_expression
+@unevaluated
 class Kallen(sp.Expr):
     """Källén function, used for computing break-up momenta."""
 
