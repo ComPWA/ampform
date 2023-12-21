@@ -131,8 +131,6 @@ class UnevaluatedExpression(sp.Expr):
         """Evaluate and 'unfold' this `UnevaluatedExpression` by one level.
 
         >>> from ampform.dynamics import BreakupMomentumSquared
-        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
-        True
         >>> s, m1, m2 = sp.symbols("s m1 m2")
         >>> expr = BreakupMomentumSquared(s, m1, m2)
         >>> expr
@@ -151,8 +149,6 @@ class UnevaluatedExpression(sp.Expr):
         r"""Provide a mathematical Latex representation for pretty printing.
 
         >>> from ampform.dynamics import BreakupMomentumSquared
-        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
-        True
         >>> s, m1 = sp.symbols("s m1")
         >>> expr = BreakupMomentumSquared(s, m1, m1)
         >>> print(sp.latex(expr))
