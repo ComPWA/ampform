@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from dataclasses import dataclass, field, fields
 
 import pytest
 import sympy as sp
@@ -11,6 +12,7 @@ from ampform.sympy._decorator import (
     _implement_new_method,
     _insert_args_in_signature,
     _set_assumptions,
+    _update_field_metadata,
 )
 
 
@@ -80,3 +82,19 @@ def test_set_assumptions():
     assert expr.is_commutative  # type: ignore[attr-defined]
     assert not expr.is_negative  # type: ignore[attr-defined]
     assert expr.is_real  # type: ignore[attr-defined]
+
+
+def test_update_field_metadata():
+    @_update_field_metadata
+    @dataclass
+    class MyClass:
+        a: int
+        b: float
+        name: str = field(metadata={"sympify": False})
+
+    cls_fields = {f.name: f.metadata["sympify"] for f in fields(MyClass)}
+    assert cls_fields == {
+        "a": True,
+        "b": True,
+        "name": False,
+    }

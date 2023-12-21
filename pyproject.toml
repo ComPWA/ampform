@@ -328,6 +328,11 @@ task-tags = ["cspell"]
 [tool.ruff.isort]
 known-third-party = ["sympy"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "ampform.sympy._decorator.argument",
+]
+
 [tool.ruff.per-file-ignores]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
