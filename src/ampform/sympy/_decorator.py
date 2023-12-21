@@ -248,6 +248,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         return expr
 
     cls.__new__ = new_method  # type: ignore[method-assign]
+    cls.__getnewargs__ = _get_arguments  # type: ignore[assignment,method-assign]
     cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
     cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
     cls._xreplace = _xreplace_method  # type: ignore[method-assign]
