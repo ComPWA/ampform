@@ -23,29 +23,41 @@ if TYPE_CHECKING:
         (
             dict(),
             {
+                "3.7": 7060330373292767180,
+                "3.8": 7459658071388516764,
+                "3.9": 7459658071388516764,
+                "3.10": 7459658071388516764,
                 "3.11": 8778804591879682108,
-                "other": -4104198680071506829,
+                "3.12": 8778804591879682108,
             },
         ),
         (
             dict(real=True),
             {
+                "3.7": 118635607833730864,
+                "3.8": 3665410414623666716,
+                "3.9": 3665410414623666716,
+                "3.10": 3665410414623666716,
                 "3.11": -7967572625470457155,
-                "other": -1291758581343490731,
+                "3.12": -7967572625470457155,
             },
         ),
         (
             dict(rational=True),
             {
+                "3.7": -1011754479721050016,
+                "3.8": -7926839224244779605,
+                "3.9": -7926839224244779605,
+                "3.10": -7926839224244779605,
                 "3.11": -8321323707982755013,
-                "other": 6838601176144009860,
+                "3.12": -8321323707982755013,
             },
         ),
     ],
 )
 def test_get_readable_hash(assumptions, expected_hashes, caplog: LogCaptureFixture):
     python_version = ".".join(map(str, sys.version_info[:2]))
-    expected_hash = expected_hashes.get(python_version, expected_hashes["other"])
+    expected_hash = expected_hashes[python_version]
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
@@ -83,11 +95,11 @@ def test_get_readable_hash_energy_dependent_width():
     if python_hash_seed != "0":
         pytest.skip(f"PYTHONHASHSEED is not set to 0, but to {python_hash_seed}")
     if sys.version_info < (3, 8):
-        assert h == "pythonhashseed-0-9211392000530089200"
+        assert h == "pythonhashseed-0-6795262906917625791"
     elif sys.version_info >= (3, 11):
         assert h == "pythonhashseed-0+4377931190501974271"
     else:
-        assert h == "pythonhashseed-0-67990895668907749"
+        assert h == "pythonhashseed-0+8267198661922532208"
 
 
 def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
@@ -99,8 +111,8 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
         # https://github.com/ComPWA/ampform/actions/runs/3277058875/jobs/5393849802
         # https://github.com/ComPWA/ampform/actions/runs/3277143883/jobs/5394043014
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0+1513033598846132863",
-            "helicity": "pythonhashseed-0+5437824948737780817",
+            "canonical-helicity": "pythonhashseed-0-5383158178341674913",
+            "helicity": "pythonhashseed-0-7110179181475816071",
         }[formalism]
     elif sys.version_info >= (3, 11):
         expected_hash = {
@@ -109,7 +121,7 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
         }[formalism]
     else:
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0+6643131693203619238",
-            "helicity": "pythonhashseed-0-161415059607400250",
+            "canonical-helicity": "pythonhashseed-0-8505502895987205495",
+            "helicity": "pythonhashseed-0-1430245260241162669",
         }[formalism]
     assert get_readable_hash(model.expression) == expected_hash
