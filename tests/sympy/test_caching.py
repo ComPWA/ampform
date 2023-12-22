@@ -18,31 +18,49 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    ("assumptions", "expected_hash"),
+    ("assumptions", "expected_hashes"),
     [
-        (dict(), "pythonhashseed-0+7459658071388516764"),
-        (dict(real=True), "pythonhashseed-0+3665410414623666716"),
-        (dict(rational=True), "pythonhashseed-0-7926839224244779605"),
+        (
+            dict(),
+            {
+                "3.11": 8778804591879682108,
+                "other": -4104198680071506829,
+            },
+        ),
+        (
+            dict(real=True),
+            {
+                "3.11": -7967572625470457155,
+                "other": -1291758581343490731,
+            },
+        ),
+        (
+            dict(rational=True),
+            {
+                "3.11": -8321323707982755013,
+                "other": 6838601176144009860,
+            },
+        ),
     ],
 )
-def test_get_readable_hash(assumptions, expected_hash, caplog: LogCaptureFixture):
-    if sys.version_info < (3, 8) or sys.version_info >= (3, 11):
-        python_version = ".".join(map(str, sys.version_info[:2]))
-        pytest.skip(f"Cannot run this test on Python {python_version}")
+def test_get_readable_hash(assumptions, expected_hashes, caplog: LogCaptureFixture):
+    python_version = ".".join(map(str, sys.version_info[:2]))
+    expected_hash = expected_hashes.get(python_version, expected_hashes["other"])
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
-    h = get_readable_hash(expr)
+    h_str = get_readable_hash(expr)
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None:
-        assert h[:7] == "bbc9833"
+        assert h_str[:7] == "bbc9833"
         if _warn_about_unsafe_hash.cache_info().hits == 0:
             assert "PYTHONHASHSEED has not been set." in caplog.text
             caplog.clear()
     elif python_hash_seed == "0":
+        h = int(h_str.replace("pythonhashseed-0", ""))
         assert h == expected_hash
     else:
-        pytest.skip("PYTHONHASHSEED has been set, but is not 0")
+        pytest.skip(f"PYTHONHASHSEED has been set, but is {python_hash_seed}, not 0")
     assert caplog.text == ""
 
 
@@ -67,9 +85,9 @@ def test_get_readable_hash_energy_dependent_width():
     if sys.version_info < (3, 8):
         assert h == "pythonhashseed-0-9211392000530089200"
     elif sys.version_info >= (3, 11):
-        assert h == "pythonhashseed-0+7808940742939174712"
+        assert h == "pythonhashseed-0+4377931190501974271"
     else:
-        assert h == "pythonhashseed-0-2719780200054898865"
+        assert h == "pythonhashseed-0-67990895668907749"
 
 
 def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
@@ -86,12 +104,12 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
         }[formalism]
     elif sys.version_info >= (3, 11):
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0-2637369534939111800",
-            "helicity": "pythonhashseed-0-5459834061442873528",
+            "canonical-helicity": "pythonhashseed-0-9019524491135114657",
+            "helicity": "pythonhashseed-0+220334524130979941",
         }[formalism]
     else:
         expected_hash = {
-            "canonical-helicity": "pythonhashseed-0+1147985238658030130",
-            "helicity": "pythonhashseed-0-3418844932213090144",
+            "canonical-helicity": "pythonhashseed-0+6643131693203619238",
+            "helicity": "pythonhashseed-0-161415059607400250",
         }[formalism]
     assert get_readable_hash(model.expression) == expected_hash
