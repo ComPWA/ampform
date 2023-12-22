@@ -249,6 +249,7 @@ filterwarnings = [
     "error",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
     "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
+    "ignore:.*the @ampform.sympy.unevaluated_expression decorator instead( with commutative=True)?:DeprecationWarning",
     "ignore:Passing a schema to Validator.iter_errors is deprecated.*:DeprecationWarning",
     "ignore:The .* argument to NotebookFile is deprecated.*:pytest.PytestRemovedIn8Warning",
     "ignore:The distutils package is deprecated.*:DeprecationWarning",

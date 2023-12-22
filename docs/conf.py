@@ -49,17 +49,16 @@ EXECUTE_NB = get_execution_mode() != "off"
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
-    "T": "TypeVar",
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
-    "DecoratedClass": ("obj", "ampform.sympy.DecoratedClass"),
-    "DecoratedExpr": ("obj", "ampform.sympy.DecoratedExpr"),
-    "ExprClass": "ampform.sympy.ExprClass",
+    "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
+    "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
     "FourMomenta": ("obj", "ampform.kinematics.FourMomenta"),
     "FourMomentumSymbol": ("obj", "ampform.kinematics.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
     "LatexPrinter": "sympy.printing.printer.Printer",
     "Literal[(-1, 1)]": "typing.Literal",
     "Literal[-1, 1]": "typing.Literal",
+    "NumPyPrintable": ("class", "ampform.sympy.NumPyPrintable"),
     "NumPyPrinter": "sympy.printing.printer.Printer",
     "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
@@ -67,12 +66,11 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "Slider": ("obj", "symplot.Slider"),
     "State": "qrules.transition.State",
     "StateTransition": "qrules.transition.StateTransition",
+    "T": "TypeVar",
     "Topology": "qrules.topology.Topology",
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "ampform.helicity._T": "typing.TypeVar",
     "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
-    "ampform.sympy._decorator.SymPyAssumptions": "ampform.sympy.SymPyAssumptions",
-    "an object providing a view on D's values": "typing.ValuesView",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
     "sp.Float": "sympy.core.numbers.Float",
@@ -287,6 +285,9 @@ nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
 nitpick_ignore = [
+    ("py:class", "ArraySum"),
+    ("py:class", "ExprClass"),
+    ("py:class", "MatrixMultiplication"),
     ("py:class", "ampform.sympy._array_expressions.ArraySum"),
     ("py:class", "ampform.sympy._array_expressions.MatrixMultiplication"),
 ]

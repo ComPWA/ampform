@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, overload
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
 
-from ampform.sympy import NumPyPrintable, create_expression, make_commutative
+from ampform.sympy import NumPyPrintable
 
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from sympy.printing.pycode import PythonCodePrinter
 
 
-@make_commutative
 class ComplexSqrt(NumPyPrintable):
     """Square root that returns positive imaginary values for negative input.
 
@@ -27,13 +26,17 @@ class ComplexSqrt(NumPyPrintable):
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
 
+    is_commutative = True
+    is_extended_real = True
+
     @overload
     def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...  # type: ignore[misc]
     @overload
     def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
-        expr = create_expression(cls, x, *args, **kwargs)
+        args = sp.sympify((x, *args))
+        expr: ComplexSqrt = sp.Expr.__new__(cls, *args, **kwargs)  # type: ignore[annotation-unchecked]
         if isinstance(x, sp.Number):
             return expr.get_definition()
         return expr
@@ -60,13 +63,7 @@ class ComplexSqrt(NumPyPrintable):
         return printer._print(expr)
 
     def get_definition(self) -> sp.Piecewise:
-        """Get a symbolic definition for this expression class.
-
-        .. note:: This class is `.NumPyPrintable`, so should not have an
-            :meth:`~.UnevaluatedExpression.evaluate` method (in order to block
-            :meth:`~sympy.core.basic.Basic.doit`). This method serves as an equivalent
-            to that.
-        """
+        """Get a symbolic definition for this expression class."""
         x: sp.Expr = self.args[0]  # type: ignore[assignment]
         return sp.Piecewise(
             (sp.I * sp.sqrt(-x), x < 0),
