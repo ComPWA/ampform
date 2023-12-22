@@ -166,10 +166,10 @@ class UnevaluatedExpression(sp.Expr):
 class NumPyPrintable(sp.Expr):
     r"""`~sympy.core.expr.Expr` class that can lambdify to NumPy code.
 
-    This interface for classes that derive from `sympy.Expr <sympy.core.expr.Expr>`
-    enforce the implementation of a :meth:`_numpycode` method in case the class does not
-    correctly :func:`~sympy.utilities.lambdify.lambdify` to NumPy code. For more info on
-    SymPy printers, see :doc:`sympy:modules/printing`.
+    This interface is for classes that derive from `sympy.Expr <sympy.core.expr.Expr>`
+    and that require a :meth:`_numpycode` method in case the class does not correctly
+    :func:`~sympy.utilities.lambdify.lambdify` to NumPy code. For more info on SymPy
+    printers, see :doc:`sympy:modules/printing`.
 
     Several computational frameworks try to converge their interface to that of NumPy.
     See for instance `TensorFlow's NumPy API
@@ -179,9 +179,9 @@ class NumPyPrintable(sp.Expr):
     :func:`~sympy.utilities.lambdify.lambdify` SymPy expressions to these different
     backends with the same lambdification code.
 
-    .. note:: This interface differs from `UnevaluatedExpression` in that it **should
-        not** implement an :meth:`.evaluate` (and therefore a
-        :meth:`~sympy.core.basic.Basic.doit`) method.
+    .. warning:: If you decorate this class with :func:`unevaluated`, you usually want
+        to do so with :code:`implement_doit=False`, because you do not want the class
+        to be 'unfolded' with :meth:`~sympy.core.basic.Basic.doit` before lambdification.
 
 
     .. warning:: The implemented :meth:`_numpycode` method should countain as little
@@ -332,8 +332,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
 
 
-@implement_doit_method
-class PoolSum(UnevaluatedExpression):
+class PoolSum(sp.Expr):
     r"""Sum over indices where the values are taken from a domain set.
 
     >>> i, j, m, n = sp.symbols("i j m n")
@@ -352,6 +351,7 @@ class PoolSum(UnevaluatedExpression):
         cls,
         expression,
         *indices: tuple[sp.Symbol, Iterable[sp.Basic]],
+        evaluate: bool = False,
         **hints,
     ) -> PoolSum:
         converted_indices = []
@@ -361,7 +361,11 @@ class PoolSum(UnevaluatedExpression):
                 msg = f"No values provided for index {idx_symbol}"
                 raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
-        return create_expression(cls, expression, *converted_indices, **hints)
+        args = sp.sympify((expression, *converted_indices))
+        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)
+        if evaluate:
+            return expr.evaluate()  # type: ignore[return-value]
+        return expr
 
     @property
     def expression(self) -> sp.Expr:
@@ -374,6 +378,12 @@ class PoolSum(UnevaluatedExpression):
     @property
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
+
+    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[override]
+        expr = self.evaluate()
+        if deep:
+            return expr.doit()
+        return expr
 
     def evaluate(self) -> sp.Expr:
         indices = {symbol: tuple(values) for symbol, values in self.indices}

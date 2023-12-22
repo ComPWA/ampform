@@ -26,8 +26,6 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
-from ampform.sympy import create_expression, make_commutative
-
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
 
@@ -254,7 +252,8 @@ class ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
 
     def __new__(cls, *terms: sp.Basic, **hints) -> ArraySum:
-        return create_expression(cls, *terms, **hints)
+        terms = sp.sympify(terms)
+        return sp.Expr.__new__(cls, *terms, **hints)
 
     @property
     def terms(self) -> tuple[sp.Basic, ...]:
@@ -305,13 +304,15 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
     return name
 
 
-@make_commutative
 class ArrayAxisSum(sp.Expr):
+    is_commutative = True
+
     def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             msg = "Only single digits allowed for axis"
             raise TypeError(msg)
-        return create_expression(cls, array, axis, **hints)
+        args = sp.sympify((array, axis))
+        return sp.Expr.__new__(cls, *args, **hints)
 
     @property
     def array(self) -> sp.Expr:
@@ -346,7 +347,8 @@ class ArrayMultiplication(sp.Expr):
     """
 
     def __new__(cls, *tensors: sp.Basic, **hints) -> ArrayMultiplication:
-        return create_expression(cls, *tensors, **hints)
+        tensors = sp.sympify(tensors)
+        return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
     def tensors(self) -> list[sp.Expr]:
@@ -399,7 +401,8 @@ class MatrixMultiplication(sp.Expr):
     """
 
     def __new__(cls, *tensors: sp.Basic, **hints) -> MatrixMultiplication:
-        return create_expression(cls, *tensors, **hints)
+        tensors = sp.sympify(tensors)
+        return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
     def tensors(self) -> tuple[sp.Basic, ...]:
