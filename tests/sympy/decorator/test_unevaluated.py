@@ -118,7 +118,10 @@ def test_hashable_with_classes():
 
     x = sp.Symbol("x")
     expr = MyExpr(x, typ=CannotBeSympified)
-    assert expr._hashable_content() == (x, str(CannotBeSympified))
+    assert expr._hashable_content() == (
+        x,
+        f"{CannotBeSympified.__module__}.{CannotBeSympified.__qualname__}",
+    )
 
 
 def test_no_implement_doit():

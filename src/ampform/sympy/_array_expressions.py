@@ -119,12 +119,13 @@ def _normalize_index(idx, axis_size: sp.Expr | None):
 
 
 class ArraySlice(_ArrayExpr):
-    parent: sp.Expr = property(lambda self: self.args[0])  # type: ignore[assignment]
+    parent: sp.Basic = property(lambda self: self.args[0])  # type: ignore[assignment]
     indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
+    is_commutative = True
 
     def __new__(
         cls,
-        parent: sp.Expr,
+        parent: sp.Basic,
         indices: tuple[sp.Basic | int | slice, ...],
     ) -> ArraySlice:
         parent_shape = get_shape(parent)
@@ -344,7 +345,7 @@ class ArrayMultiplication(sp.Expr):
     Lorentz matrices) to :math:`n\times\times4` (:math:`n` four-momentum tuples).
     """
 
-    def __new__(cls, *tensors: sp.Expr, **hints) -> ArrayMultiplication:
+    def __new__(cls, *tensors: sp.Basic, **hints) -> ArrayMultiplication:
         return create_expression(cls, *tensors, **hints)
 
     @property

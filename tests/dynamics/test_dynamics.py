@@ -67,7 +67,7 @@ class TestEnergyDependentWidth:
             sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2)
         )
         assert width.phsp_factor is PhaseSpaceFactor
-        assert width._name is None
+        assert width.name is None
 
         width = EnergyDependentWidth(
             s=s,
@@ -81,7 +81,7 @@ class TestEnergyDependentWidth:
             name="Gamma_1",
         )
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
-        assert width._name == "Gamma_1"
+        assert width.name == "Gamma_1"
 
     @pytest.mark.parametrize("method", ["subs", "xreplace"])
     def test_doit_and_subs(self, method: str):

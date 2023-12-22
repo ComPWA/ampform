@@ -274,8 +274,10 @@ def _get_hashable_object(obj: H) -> H: ...
 @overload
 def _get_hashable_object(obj: Any) -> str: ...
 def _get_hashable_object(obj):
+    if obj is None:
+        obj = type(None)
     if isclass(obj):
-        return str(obj)
+        return f"{obj.__module__}.{obj.__qualname__}"
     try:
         hash(obj)
     except TypeError:

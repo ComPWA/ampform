@@ -129,8 +129,6 @@ class UnevaluatedExpression(sp.Expr):
         """Evaluate and 'unfold' this `UnevaluatedExpression` by one level.
 
         >>> from ampform.dynamics import BreakupMomentumSquared
-        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
-        True
         >>> s, m1, m2 = sp.symbols("s m1 m2")
         >>> expr = BreakupMomentumSquared(s, m1, m2)
         >>> expr
@@ -149,8 +147,6 @@ class UnevaluatedExpression(sp.Expr):
         r"""Provide a mathematical Latex representation for pretty printing.
 
         >>> from ampform.dynamics import BreakupMomentumSquared
-        >>> issubclass(BreakupMomentumSquared, UnevaluatedExpression)
-        True
         >>> s, m1 = sp.symbols("s m1")
         >>> expr = BreakupMomentumSquared(s, m1, m1)
         >>> print(sp.latex(expr))
@@ -279,27 +275,6 @@ def implement_doit_method(
 
     decorated_class.doit = doit_method  # type: ignore[assignment]
     return decorated_class
-
-
-def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
-    subscript: str,
-) -> Callable[[type[UnevaluatedExpression]], type[UnevaluatedExpression]]:
-    def decorator(
-        decorated_class: type[UnevaluatedExpression],
-    ) -> type[UnevaluatedExpression]:
-        @functools.wraps(decorated_class.doit)
-        def _latex(self: sp.Expr, printer: LatexPrinter, *args) -> str:
-            momentum = printer._print(self._momentum)  # type: ignore[attr-defined]
-            if printer._needs_mul_brackets(self._momentum):  # type: ignore[attr-defined]
-                momentum = Rf"\left({momentum}\right)"
-            else:
-                momentum = Rf"{{{momentum}}}"
-            return f"{momentum}_{subscript}"
-
-        decorated_class._latex = _latex  # type: ignore[assignment]
-        return decorated_class
-
-    return decorator
 
 
 DecoratedExpr = TypeVar("DecoratedExpr", bound=sp.Expr)

@@ -182,6 +182,8 @@ class HelicityModel:
             renamed accordingly.
         """
         renames = dict(renames)
+        if not renames:
+            return self
         symbols = self.__collect_symbols()
         symbol_names = {s.name for s in symbols}
         for name in renames:

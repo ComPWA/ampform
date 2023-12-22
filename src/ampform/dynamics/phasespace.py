@@ -14,16 +14,12 @@ from __future__ import annotations
 
 import re
 import sys
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
 
-from ampform.sympy import (
-    UnevaluatedExpression,
-    create_expression,
-    implement_doit_method,
-)
+from ampform.sympy import argument, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -51,7 +47,7 @@ class PhaseSpaceFactorProtocol(Protocol):
     protocol, but are technically speaking not phase space factors.
     """
 
-    def __call__(self, s, m_a, m_b) -> sp.Expr:
+    def __call__(self, s, m1, m2) -> sp.Expr:
         """Expected `~inspect.signature`.
 
         Args:
@@ -59,13 +55,13 @@ class PhaseSpaceFactorProtocol(Protocol):
                 Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the invariant
                 mass of decaying particle :math:`R`.
 
-            m_a: Mass of decay product :math:`a`.
-            m_b: Mass of decay product :math:`b`.
+            m1: Mass of decay product :math:`a`.
+            m2: Mass of decay product :math:`b`.
         """
 
 
-@implement_doit_method
-class BreakupMomentumSquared(UnevaluatedExpression):
+@unevaluated
+class BreakupMomentumSquared(sp.Expr):
     r"""Squared value of the two-body break-up momentum.
 
     For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
@@ -74,56 +70,56 @@ class BreakupMomentumSquared(UnevaluatedExpression):
     on :pdg-review:`2021; Resonances; p.5`.
 
     It's up to the caller in which way to take the square root of this break-up
-    momentum, because :math:`q^2` can have negative values for non-zero :math:`m_a,m_b`.
+    momentum, because :math:`q^2` can have negative values for non-zero :math:`m1,m2`.
     In this case, one may want to use `.ComplexSqrt` instead of the standard
     :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> BreakupMomentumSquared:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        return (s - (m_a + m_b) ** 2) * (s - (m_a - m_b) ** 2) / (4 * s)  # type: ignore[operator]
+        s, m1, m2 = self.args
+        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)  # type: ignore[operator]
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
         s_latex = printer._print(self.args[0])
         subscript = _indices_to_subscript(_determine_indices(s))
-        name = "q^2" + subscript if self._name is None else self._name
+        name = "q^2" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
-@implement_doit_method
-class PhaseSpaceFactor(UnevaluatedExpression):
+@unevaluated
+class PhaseSpaceFactor(sp.Expr):
     """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
     See :pdg-review:`2021; Resonances; p.6`, Equation (50.9).
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactor:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        s, m1, m2 = self.args
+        q_squared = BreakupMomentumSquared(s, m1, m2)
         denominator = _phase_space_factor_denominator(s)
         return sp.sqrt(q_squared) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(_determine_indices(s_symbol))
-        name = R"\rho" + subscript if self._name is None else self._name
+        name = R"\rho" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
-@implement_doit_method
-class PhaseSpaceFactorAbs(UnevaluatedExpression):
+@unevaluated
+class PhaseSpaceFactorAbs(sp.Expr):
     r"""Phase space factor square root over the absolute value.
 
     As opposed to `.PhaseSpaceFactor`, this takes the
@@ -134,88 +130,88 @@ class PhaseSpaceFactorAbs(UnevaluatedExpression):
     used in `.EqualMassPhaseSpaceFactor`.
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorAbs:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        s, m1, m2 = self.args
+        q_squared = BreakupMomentumSquared(s, m1, m2)
         denominator = _phase_space_factor_denominator(s)
         return sp.sqrt(sp.Abs(q_squared)) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(_determine_indices(s_symbol))
-        name = R"\hat{\rho}" + subscript if self._name is None else self._name
+        name = R"\hat{\rho}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
-@implement_doit_method
-class PhaseSpaceFactorComplex(UnevaluatedExpression):
+@unevaluated
+class PhaseSpaceFactorComplex(sp.Expr):
     """Phase-space factor with `.ComplexSqrt`.
 
     Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have defined
     behavior for defined for negative input values.
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorComplex:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        q_squared = BreakupMomentumSquared(s, m_a, m_b)
+        s, m1, m2 = self.args
+        q_squared = BreakupMomentumSquared(s, m1, m2)
         denominator = _phase_space_factor_denominator(s)
         return ComplexSqrt(q_squared) / denominator
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(_determine_indices(s_symbol))
-        name = R"\rho^\mathrm{c}" + subscript if self._name is None else self._name
+        name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
-@implement_doit_method
-class PhaseSpaceFactorSWave(UnevaluatedExpression):
+@unevaluated
+class PhaseSpaceFactorSWave(sp.Expr):
     r"""Phase space factor using :func:`chew_mandelstam_s_wave`.
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
     both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> PhaseSpaceFactorSWave:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        chew_mandelstam = chew_mandelstam_s_wave(s, m_a, m_b)
+        s, m1, m2 = self.args
+        chew_mandelstam = chew_mandelstam_s_wave(s, m1, m2)
         return -sp.I * chew_mandelstam
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(_determine_indices(s_symbol))
-        name = R"\rho^\mathrm{CM}" + subscript if self._name is None else self._name
+        name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
-def chew_mandelstam_s_wave(s, m_a, m_b):
+def chew_mandelstam_s_wave(s, m1, m2):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
+    q_squared = BreakupMomentumSquared(s, m1, m2)
     q = ComplexSqrt(q_squared)
     left_term = sp.Mul(
         2 * q / sp.sqrt(s),
-        sp.log((m_a**2 + m_b**2 - s + 2 * sp.sqrt(s) * q) / (2 * m_a * m_b)),
+        sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
         evaluate=False,
     )
-    right_term = (m_a**2 - m_b**2) * (1 / s - 1 / (m_a + m_b) ** 2) * sp.log(m_a / m_b)
+    right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
     # evaluate=False in order to keep same style as PDG
     return sp.Mul(
         1 / (16 * sp.pi**2),
@@ -224,8 +220,8 @@ def chew_mandelstam_s_wave(s, m_a, m_b):
     )
 
 
-@implement_doit_method
-class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
+@unevaluated
+class EqualMassPhaseSpaceFactor(sp.Expr):
     """Analytic continuation for the :func:`PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
@@ -235,22 +231,22 @@ class EqualMassPhaseSpaceFactor(UnevaluatedExpression):
     equal masses*.
     """
 
-    is_commutative = True
-
-    def __new__(cls, s, m_a, m_b, **hints) -> EqualMassPhaseSpaceFactor:
-        return create_expression(cls, s, m_a, m_b, **hints)
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m_a, m_b = self.args
-        rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-        s_threshold = (m_a + m_b) ** 2  # type: ignore[operator]
+        s, m1, m2 = self.args
+        rho_hat = PhaseSpaceFactorAbs(s, m1, m2)
+        s_threshold = (m1 + m2) ** 2  # type: ignore[operator]
         return _analytic_continuation(rho_hat, s, s_threshold)
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(_determine_indices(s_symbol))
-        name = R"\rho^\mathrm{eq}" + subscript if self._name is None else self._name
+        name = R"\rho^\mathrm{eq}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
