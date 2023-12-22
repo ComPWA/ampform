@@ -28,12 +28,9 @@ class ComplexSqrt(NumPyPrintable):
     """
 
     @overload
-    def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr:  # type: ignore[misc]
-        ...
-
+    def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...  # type: ignore[misc]
     @overload
     def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
-
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
         expr = create_expression(cls, x, *args, **kwargs)

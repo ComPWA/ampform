@@ -116,7 +116,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: PhaseSpaceFactorProtocol | None = None,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(

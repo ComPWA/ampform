@@ -2,19 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict
 
 import sympy as sp
 
 from ampform.helicity.decay import determine_attached_final_state, list_decay_chain_ids
-from ampform.sympy import (
-    NumPyPrintable,
-    UnevaluatedExpression,
-    _implement_latex_subscript,
-    create_expression,
-    implement_doit_method,
-    make_commutative,
-)
+from ampform.sympy import ExprClass, NumPyPrintable, unevaluated
 from ampform.sympy._array_expressions import (
     ArrayAxisSum,
     ArrayMultiplication,
@@ -61,145 +54,105 @@ See also `Energy`, `FourMomentumX`, `FourMomentumY`, and `FourMomentumZ`.
 """
 
 
-# for numpy broadcasting
-ArraySlice = make_commutative(ArraySlice)  # type: ignore[misc]
-
-
-@implement_doit_method
-@make_commutative
-class Energy(UnevaluatedExpression):
+@unevaluated
+class Energy(sp.Expr):
     """Represents the energy-component of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> Energy:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr_ = R"E\left({momentum}\right)"
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 0))
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return Rf"E\left({momentum}\right)"
+        return ArraySlice(self.momentum, (slice(None), 0))
 
 
+def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
+    subscript: str,
+) -> Callable[[type[ExprClass]], type[ExprClass]]:
+    def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
+        def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
+            momentum = printer._print(self.momentum)  # type: ignore[attr-defined]
+            if printer._needs_mul_brackets(self.momentum):  # type: ignore[attr-defined]
+                momentum = Rf"\left({momentum}\right)"
+            else:
+                momentum = Rf"{{{momentum}}}"
+            return f"{momentum}_{subscript}"
+
+        decorated_class._latex_repr_ = _latex_repr_  # type: ignore[assignment,attr-defined]
+        return decorated_class
+
+    return decorator
+
+
+@unevaluated
 @_implement_latex_subscript(subscript="x")
-@implement_doit_method
-@make_commutative
-class FourMomentumX(UnevaluatedExpression):
+class FourMomentumX(sp.Expr):
     """Component :math:`x` of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumX:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 1))
+        return ArraySlice(self.momentum, (slice(None), 1))
 
 
+@unevaluated
 @_implement_latex_subscript(subscript="y")
-@implement_doit_method
-@make_commutative
-class FourMomentumY(UnevaluatedExpression):
+class FourMomentumY(sp.Expr):
     """Component :math:`y` of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumY:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 2))
+        return ArraySlice(self.momentum, (slice(None), 2))
 
 
+@unevaluated
 @_implement_latex_subscript(subscript="z")
-@implement_doit_method
-@make_commutative
-class FourMomentumZ(UnevaluatedExpression):
+class FourMomentumZ(sp.Expr):
     """Component :math:`z` of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> FourMomentumZ:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), 3))
+        return ArraySlice(self.momentum, (slice(None), 3))
 
 
-@implement_doit_method
-@make_commutative
-class ThreeMomentum(UnevaluatedExpression, NumPyPrintable):
+@unevaluated
+class ThreeMomentum(NumPyPrintable):
     """Spatial components of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> ThreeMomentum:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr_ = R"\vec{{{momentum}}}"
 
     def evaluate(self) -> ArraySlice:
-        return ArraySlice(self._momentum, (slice(None), slice(1, None)))
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return Rf"\vec{{{momentum}}}"
+        return ArraySlice(self.momentum, (slice(None), slice(1, None)))
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         return printer._print(self.evaluate())
 
 
-@implement_doit_method
-@make_commutative
-class EuclideanNorm(UnevaluatedExpression, NumPyPrintable):
+@unevaluated
+class EuclideanNorm(NumPyPrintable):
     """Take the euclidean norm of an array over axis 1."""
 
-    def __new__(cls, vector: sp.Basic, **hints) -> EuclideanNorm:
-        return create_expression(cls, vector, **hints)
-
-    @property
-    def _vector(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    vector: sp.Basic
+    _latex_repr = R"\left|{vector}\right|"
 
     def evaluate(self) -> ArraySlice:
-        return sp.sqrt(EuclideanNormSquared(self._vector))
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        vector = printer._print(self._vector)
-        return Rf"\left|{vector}\right|"
+        return sp.sqrt(EuclideanNormSquared(self.vector))
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
 
 
-@implement_doit_method
-@make_commutative
-class EuclideanNormSquared(UnevaluatedExpression):
+@unevaluated
+class EuclideanNormSquared(sp.Expr):
     """Take the squared euclidean norm of an array over axis 1."""
 
-    def __new__(cls, vector: sp.Basic, **hints) -> EuclideanNormSquared:
-        return create_expression(cls, vector, **hints)
-
-    @property
-    def _vector(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    vector: sp.Basic
+    _latex_repr_ = R"\left|{vector}\right|^{{2}}"
 
     def evaluate(self) -> ArrayAxisSum:
-        return ArrayAxisSum(self._vector**2, axis=1)
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        vector = printer._print(self._vector, *args)
-        return Rf"\left|{vector}\right|^{{2}}"
+        return ArrayAxisSum(self.vector**2, axis=1)  # type: ignore[operator]
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
@@ -209,59 +162,38 @@ def three_momentum_norm(momentum: sp.Basic) -> EuclideanNorm:
     return EuclideanNorm(ThreeMomentum(momentum))
 
 
-@implement_doit_method
-@make_commutative
-class InvariantMass(UnevaluatedExpression):
+@unevaluated
+class InvariantMass(sp.Expr):
     """Invariant mass of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> InvariantMass:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr = "m_{{{momentum}}}"
 
     def evaluate(self) -> ComplexSqrt:
-        p = self._momentum
+        p = self.momentum
         p_xyz = ThreeMomentum(p)
         return ComplexSqrt(Energy(p) ** 2 - EuclideanNorm(p_xyz) ** 2)
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return f"m_{{{momentum}}}"
 
-
-@implement_doit_method
-@make_commutative
-class NegativeMomentum(UnevaluatedExpression):
+@unevaluated
+class NegativeMomentum(sp.Expr):
     r"""Invert the spatial components of a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> NegativeMomentum:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr = R"-\left({momentum}\right)"
 
     def evaluate(self) -> sp.Expr:
-        p = self._momentum
+        p = self.momentum
         eta = MinkowskiMetric(p)
         return ArrayMultiplication(eta, p)
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self._momentum)
-        return Rf"-\left({momentum}\right)"
 
-
+@unevaluated(implement_doit=False)
 class MinkowskiMetric(NumPyPrintable):
     r"""Minkowski metric :math:`\eta = (1, -1, -1, -1)`."""
 
-    def __new__(cls, momentum: sp.Basic, **hints) -> MinkowskiMetric:
-        return create_expression(cls, momentum, **hints)
-
-    @property
-    def _momentum(self) -> MinkowskiMetric:
-        return self.args[0]  # type: ignore[return-value]
+    momentum: sp.Basic
+    _latex_repr_ = R"\boldsymbol{\eta}"
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         return sp.Matrix([
@@ -271,12 +203,9 @@ class MinkowskiMetric(NumPyPrintable):
             [0, 0, 0, -1],
         ])
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        return R"\boldsymbol{\eta}"
-
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].update({"array", "ones", "zeros"})
-        momentum = printer._print(self._momentum)
+        momentum = printer._print(self.momentum)
         n_events = f"len({momentum})"
         zeros = f"zeros({n_events})"
         ones = f"ones({n_events})"
@@ -290,8 +219,8 @@ class MinkowskiMetric(NumPyPrintable):
         ).transpose((2, 0, 1))"""
 
 
-@implement_doit_method
-class BoostZMatrix(UnevaluatedExpression):
+@unevaluated(commutative=False)
+class BoostZMatrix(sp.Expr):
     r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
 
     Args:
@@ -300,11 +229,11 @@ class BoostZMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`beta`.
     """
 
-    def __new__(cls, beta: sp.Basic, n_events: sp.Basic, **kwargs) -> BoostZMatrix:
-        return create_expression(cls, beta, n_events, **kwargs)
+    beta: sp.Basic
+    n_events: sp.Basic
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        beta = self.args[0]
+        beta = self.beta
         gamma = 1 / ComplexSqrt(1 - beta**2)  # type: ignore[operator]
         return sp.Matrix([
             [gamma, 0, 0, -gamma * beta],
@@ -314,9 +243,9 @@ class BoostZMatrix(UnevaluatedExpression):
         ])
 
     def evaluate(self) -> _BoostZMatrixImplementation:
-        beta = self.args[0]
+        beta = self.beta
         gamma = 1 / sp.sqrt(1 - beta**2)  # type: ignore[operator]
-        n_events = self.args[1]
+        n_events = self.n_events
         return _BoostZMatrixImplementation(
             beta=beta,
             gamma=gamma,
@@ -325,25 +254,18 @@ class BoostZMatrix(UnevaluatedExpression):
             zeros=_ZerosArray(n_events),
         )
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
 
 
+@unevaluated(implement_doit=False)
 class _BoostZMatrixImplementation(NumPyPrintable):
-    def __new__(
-        cls,
-        beta: sp.Basic,
-        gamma: sp.Basic,
-        gamma_beta: sp.Basic,
-        ones: _OnesArray,
-        zeros: _ZerosArray,
-        **hints,
-    ) -> _BoostZMatrixImplementation:
-        return create_expression(cls, beta, gamma, gamma_beta, ones, zeros, **hints)
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        beta = printer._print(self.args[0])
-        return Rf"\boldsymbol{{B_z}}\left({beta}\right)"
+    beta: sp.Basic
+    gamma: sp.Basic
+    gamma_beta: sp.Basic
+    ones: _OnesArray
+    zeros: _ZerosArray
+    _latex_repr = R"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -358,15 +280,15 @@ class _BoostZMatrixImplementation(NumPyPrintable):
         ).transpose((2, 0, 1))"""
 
 
-@implement_doit_method
-class BoostMatrix(UnevaluatedExpression):
+@unevaluated(commutative=False)
+class BoostMatrix(sp.Expr):
     r"""Compute a rank-3 Lorentz boost matrix from a `.FourMomentumSymbol`."""
 
-    def __new__(cls, momentum: sp.Basic, **kwargs) -> BoostMatrix:
-        return create_expression(cls, momentum, **kwargs)
+    momentum: sp.Basic
+    _latex_repr = R"\boldsymbol{{B}}\left({momentum}\right)"
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        momentum = self.args[0]
+        momentum = self.momentum
         energy = Energy(momentum)
         beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
         beta_x = FourMomentumX(momentum) / energy
@@ -396,15 +318,15 @@ class BoostMatrix(UnevaluatedExpression):
         ])
 
     def evaluate(self) -> _BoostMatrixImplementation:
-        momentum = self.args[0]
-        energy = Energy(momentum)
-        beta_sq = EuclideanNormSquared(ThreeMomentum(momentum)) / energy**2
-        beta_x = FourMomentumX(momentum) / energy
-        beta_y = FourMomentumY(momentum) / energy
-        beta_z = FourMomentumZ(momentum) / energy
+        p = self.momentum
+        energy = Energy(p)
+        beta_sq = EuclideanNormSquared(ThreeMomentum(p)) / energy**2
+        beta_x = FourMomentumX(p) / energy
+        beta_y = FourMomentumY(p) / energy
+        beta_z = FourMomentumZ(p) / energy
         gamma = 1 / sp.sqrt(1 - beta_sq)
         return _BoostMatrixImplementation(
-            momentum,
+            momentum=p,
             b00=gamma,
             b01=-gamma * beta_x,
             b02=-gamma * beta_y,
@@ -417,46 +339,21 @@ class BoostMatrix(UnevaluatedExpression):
             b33=1 + (gamma - 1) * beta_z**2 / beta_sq,
         )
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self.args[0])
-        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
 
-
+@unevaluated(commutative=False, implement_doit=False)
 class _BoostMatrixImplementation(NumPyPrintable):
-    def __new__(
-        cls,
-        momentum: sp.Basic,
-        b00: sp.Basic,
-        b01: sp.Basic,
-        b02: sp.Basic,
-        b03: sp.Basic,
-        b11: sp.Basic,
-        b12: sp.Basic,
-        b13: sp.Basic,
-        b22: sp.Basic,
-        b23: sp.Basic,
-        b33: sp.Basic,
-        **kwargs,
-    ) -> _BoostMatrixImplementation:
-        return create_expression(
-            cls,
-            momentum,
-            b00,
-            b01,
-            b02,
-            b03,
-            b11,
-            b12,
-            b13,
-            b22,
-            b23,
-            b33,
-            **kwargs,
-        )
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        momentum = printer._print(self.args[0])
-        return Rf"\boldsymbol{{B}}\left({momentum}\right)"
+    momentum: sp.Basic
+    b00: sp.Basic
+    b01: sp.Basic
+    b02: sp.Basic
+    b03: sp.Basic
+    b11: sp.Basic
+    b12: sp.Basic
+    b13: sp.Basic
+    b22: sp.Basic
+    b23: sp.Basic
+    b33: sp.Basic
+    _latex_repr = R"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
@@ -470,8 +367,8 @@ class _BoostMatrixImplementation(NumPyPrintable):
         ).transpose((2, 0, 1))"""
 
 
-@implement_doit_method
-class RotationYMatrix(UnevaluatedExpression):
+@unevaluated(commutative=False)
+class RotationYMatrix(sp.Expr):
     r"""Rotation matrix around the :math:`y`-axis for a `.FourMomentumSymbol`.
 
     Args:
@@ -480,11 +377,11 @@ class RotationYMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
-    def __new__(cls, angle: sp.Basic, n_events: sp.Basic, **hints) -> RotationYMatrix:
-        return create_expression(cls, angle, n_events, **hints)
+    angle: sp.Basic
+    n_events: sp.Basic
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        angle = self.args[0]
+        angle = self.angle
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, sp.cos(angle), 0, sp.sin(angle)],
@@ -493,36 +390,26 @@ class RotationYMatrix(UnevaluatedExpression):
         ])
 
     def evaluate(self) -> _RotationYMatrixImplementation:
-        angle = self.args[0]
-        n_events = self.args[1]
         return _RotationYMatrixImplementation(
-            angle=angle,
-            cos_angle=sp.cos(angle),
-            sin_angle=sp.sin(angle),
-            ones=_OnesArray(n_events),
-            zeros=_ZerosArray(n_events),
+            angle=self.angle,
+            cos_angle=sp.cos(self.angle),
+            sin_angle=sp.sin(self.angle),
+            ones=_OnesArray(self.n_events),
+            zeros=_ZerosArray(self.n_events),
         )
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
 
 
+@unevaluated(commutative=False, implement_doit=False)
 class _RotationYMatrixImplementation(NumPyPrintable):
-    def __new__(
-        cls,
-        angle: sp.Basic,
-        cos_angle: sp.Basic,
-        sin_angle: sp.Basic,
-        ones: _OnesArray,
-        zeros: _ZerosArray,
-        **hints,
-    ) -> _RotationYMatrixImplementation:
-        return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        angle, *_ = self.args
-        angle_latex = printer._print(angle)
-        return Rf"\boldsymbol{{R_y}}\left({angle_latex}\right)"
+    angle: sp.Basic
+    cos_angle: sp.Basic
+    sin_angle: sp.Basic
+    ones: _OnesArray
+    zeros: _ZerosArray
+    _latex_repr = R"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -537,8 +424,8 @@ class _RotationYMatrixImplementation(NumPyPrintable):
         ).transpose((2, 0, 1))"""
 
 
-@implement_doit_method
-class RotationZMatrix(UnevaluatedExpression):
+@unevaluated(commutative=False)
+class RotationZMatrix(sp.Expr):
     r"""Rotation matrix around the :math:`z`-axis for a `.FourMomentumSymbol`.
 
     Args:
@@ -547,11 +434,11 @@ class RotationZMatrix(UnevaluatedExpression):
             :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
     """
 
-    def __new__(cls, angle: sp.Basic, n_events: sp.Basic, **hints) -> RotationZMatrix:
-        return create_expression(cls, angle, n_events, **hints)
+    angle: sp.Basic
+    n_events: sp.Basic
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
-        angle = self.args[0]
+        angle = self.angle
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, sp.cos(angle), -sp.sin(angle), 0],
@@ -560,36 +447,26 @@ class RotationZMatrix(UnevaluatedExpression):
         ])
 
     def evaluate(self) -> _RotationZMatrixImplementation:
-        angle = self.args[0]
-        n_events = self.args[1]
         return _RotationZMatrixImplementation(
-            angle=angle,
-            cos_angle=sp.cos(angle),
-            sin_angle=sp.sin(angle),
-            ones=_OnesArray(n_events),
-            zeros=_ZerosArray(n_events),
+            angle=self.angle,
+            cos_angle=sp.cos(self.angle),
+            sin_angle=sp.sin(self.angle),
+            ones=_OnesArray(self.n_events),
+            zeros=_ZerosArray(self.n_events),
         )
 
-    def _latex(self, printer: LatexPrinter, *args) -> str:
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
 
 
+@unevaluated(commutative=False, implement_doit=False)
 class _RotationZMatrixImplementation(NumPyPrintable):
-    def __new__(
-        cls,
-        angle: sp.Basic,
-        cos_angle: sp.Basic,
-        sin_angle: sp.Basic,
-        ones: _OnesArray,
-        zeros: _ZerosArray,
-        **hints,
-    ) -> _RotationZMatrixImplementation:
-        return create_expression(cls, angle, cos_angle, sin_angle, ones, zeros, **hints)
-
-    def _latex(self, printer: LatexPrinter, *args) -> str:
-        angle, *_ = self.args
-        angle_latex = printer._print(angle)
-        return Rf"\boldsymbol{{R_z}}\left({angle_latex}\right)"
+    angle: sp.Basic
+    cos_angle: sp.Basic
+    sin_angle: sp.Basic
+    ones: _OnesArray
+    zeros: _ZerosArray
+    _latex_repr = R"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -604,35 +481,36 @@ class _RotationZMatrixImplementation(NumPyPrintable):
         ).transpose((2, 0, 1))"""
 
 
+@unevaluated(implement_doit=False)
 class _OnesArray(NumPyPrintable):
-    def __new__(cls, shape, **kwargs) -> _OnesArray:
-        return create_expression(cls, shape, **kwargs)
+    shape: Any
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("ones")
-        shape = printer._print(self.args[0])
+        shape = printer._print(self.shape)
         return f"ones({shape})"
 
 
+@unevaluated(implement_doit=False)
 class _ZerosArray(NumPyPrintable):
-    def __new__(cls, shape, **kwargs) -> _ZerosArray:
-        return create_expression(cls, shape, **kwargs)
+    shape: Any
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("zeros")
-        shape = printer._print(self.args[0])
+        shape = printer._print(self.shape)
         return f"zeros({shape})"
 
 
+@unevaluated(implement_doit=False)
 class ArraySize(NumPyPrintable):
     """Symbolic expression for getting the size of a numerical array."""
 
-    def __new__(cls, array: sp.Basic, **kwargs) -> ArraySize:
-        return create_expression(cls, array, **kwargs)
+    array: Any
+    _latex_repr_ = "N_{{{array}}}"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
-        shape = printer._print(self.args[0])
-        return f"len({shape})"
+        array = printer._print(self.array)
+        return f"len({array})"
 
 
 def compute_boost_chain(
