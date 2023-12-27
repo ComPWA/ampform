@@ -34,7 +34,7 @@ class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
     This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
-    build some lineshape expression from the `.dynamics` module. It also allows to
+    build some lineshape expression from the :mod:`.dynamics` module. It also allows to
     insert :doc:`custom dynamics </usage/dynamics/custom>` into the amplitude model.
     """
 

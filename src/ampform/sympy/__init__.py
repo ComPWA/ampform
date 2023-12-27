@@ -18,12 +18,14 @@ import itertools
 import logging
 import os
 import pickle
+import re
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
 from textwrap import dedent
 from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 
 import sympy as sp
+from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 
 from ._decorator import (
@@ -245,6 +247,38 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
         if difference != 1.0:  # noqa: PLR2004
             return False
     return True
+
+
+def determine_indices(symbol: sp.Basic) -> list[int]:
+    r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
+
+    >>> determine_indices(sp.Symbol("m1"))
+    [1]
+    >>> determine_indices(sp.Symbol("m_12"))
+    [12]
+    >>> determine_indices(sp.Symbol("m_a2"))
+    [2]
+    >>> determine_indices(sp.Symbol(R"\alpha_{i2, 5}"))
+    [2, 5]
+    >>> determine_indices(sp.Symbol("m"))
+    []
+
+    `~sympy.tensor.indexed.Indexed` instances can also be handled:
+    >>> m_a = sp.IndexedBase("m_a")
+    >>> determine_indices(m_a[0])
+    [0]
+    """
+    _, _, subscripts = split_super_sub(sp.latex(symbol))
+    if not subscripts:
+        return []
+    subscript: str = subscripts[-1]
+    subscript = re.sub(r"[^0-9^\,]", "", subscript)
+    subscript = f"[{subscript}]"
+    try:
+        indices = eval(subscript)  # noqa: PGH001, S307
+    except SyntaxError:
+        return []
+    return list(indices)
 
 
 def perform_cached_doit(

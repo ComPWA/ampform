@@ -43,6 +43,15 @@ from ampform.dynamics.builder import (
     TwoBodyKinematicVariableSet,
     create_non_dynamic,
 )
+from ampform.helicity.decay import (
+    TwoBodyDecay,
+    get_parent_id,
+    get_prefactor,
+    get_sibling_state_id,
+    group_by_spin_projection,
+    group_by_topology,
+    is_opposite_helicity_state,
+)
 from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
@@ -53,18 +62,9 @@ from ampform.helicity.naming import (
     get_topology_identifier,
     natural_sorting,
 )
-from ampform.kinematics import HelicityAdapter, get_invariant_mass_symbol
+from ampform.kinematics import HelicityAdapter
+from ampform.kinematics.lorentz import get_invariant_mass_symbol
 from ampform.sympy import PoolSum
-
-from .decay import (
-    TwoBodyDecay,
-    get_parent_id,
-    get_prefactor,
-    get_sibling_state_id,
-    group_by_spin_projection,
-    group_by_topology,
-    is_opposite_helicity_state,
-)
 
 if sys.version_info >= (3, 8):
     from functools import singledispatchmethod

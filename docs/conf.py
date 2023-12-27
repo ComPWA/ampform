@@ -52,8 +52,8 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
-    "FourMomenta": ("obj", "ampform.kinematics.FourMomenta"),
-    "FourMomentumSymbol": ("obj", "ampform.kinematics.FourMomentumSymbol"),
+    "FourMomenta": ("obj", "ampform.kinematics.lorentz.FourMomenta"),
+    "FourMomentumSymbol": ("obj", "ampform.kinematics.lorentz.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
     "LatexPrinter": "sympy.printing.printer.Printer",
     "Literal[(-1, 1)]": "typing.Literal",
@@ -230,6 +230,7 @@ html_theme_options = {
     "show_navbar_depth": 2,
     "show_toc_level": 2,
 }
+html_title = REPO_TITLE
 intersphinx_mapping = {
     "IPython": (f"https://ipython.readthedocs.io/en/{pin('IPython')}", None),
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),

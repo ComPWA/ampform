@@ -12,14 +12,12 @@ This module provides several parametrizations. They all comply with the
 
 from __future__ import annotations
 
-import re
 import sys
 from typing import TYPE_CHECKING, Any, Sequence
 
 import sympy as sp
-from sympy.printing.conventions import split_super_sub
 
-from ampform.sympy import argument, unevaluated
+from ampform.sympy import argument, determine_indices, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -87,7 +85,7 @@ class BreakupMomentumSquared(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
         s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(_determine_indices(s))
+        subscript = _indices_to_subscript(determine_indices(s))
         name = "q^2" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -113,7 +111,7 @@ class PhaseSpaceFactor(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(_determine_indices(s_symbol))
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\rho" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -144,7 +142,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(_determine_indices(s_symbol))
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\hat{\rho}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -171,7 +169,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(_determine_indices(s_symbol))
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -197,7 +195,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(_determine_indices(s_symbol))
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -245,7 +243,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
         s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(_determine_indices(s_symbol))
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\rho^\mathrm{eq}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -285,33 +283,3 @@ def _indices_to_subscript(indices: Sequence[int]) -> str:
         return ""
     subscript = ",".join(map(str, indices))
     return "_{" + subscript + "}"
-
-
-def _determine_indices(symbol) -> list[int]:
-    r"""Extract any indices if available from a `~sympy.core.symbol.Symbol`.
-
-    >>> _determine_indices(sp.Symbol("m1"))
-    [1]
-    >>> _determine_indices(sp.Symbol("m_a2"))
-    [2]
-    >>> _determine_indices(sp.Symbol(R"\alpha_{i2, 5}"))
-    [2, 5]
-    >>> _determine_indices(sp.Symbol("m"))
-    []
-
-    `~sympy.tensor.indexed.Indexed` instances can also be handled:
-    >>> m_a = sp.IndexedBase("m_a")
-    >>> _determine_indices(m_a[0])
-    [0]
-    """
-    _, _, subscripts = split_super_sub(sp.latex(symbol))
-    if not subscripts:
-        return []
-    subscript: str = subscripts[-1]
-    subscript = re.sub(r"[^0-9^\,]", "", subscript)
-    subscript = f"[{subscript}]"
-    try:
-        indices = eval(subscript)  # noqa: PGH001, S307
-    except SyntaxError:
-        return []
-    return list(indices)

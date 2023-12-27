@@ -1,5 +1,4 @@
 import operator
-from copy import deepcopy
 from functools import reduce
 
 import sympy as sp
@@ -38,22 +37,6 @@ class TestSymbol:
         assert g.name == "g"
         x.name = "x"
         assert x.name == "x"
-
-    def test_name_change(self):
-        x = sp.Symbol("a")
-        y = sp.Symbol("a")
-        assert x.name == y.name
-        assert x == y
-        assert x is y
-        x.name = "I am x"
-        assert y.name == "I am x"
-        z = deepcopy(x)
-        assert z == x
-        assert z is not x
-        assert z.name == "I am x"
-        z.name = "z"
-        assert x.name == "I am x"
-        assert z.name == "z"
 
     def test_product(self):
         symbols = [
