@@ -19,10 +19,9 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorComplex,  # noqa: F401
     PhaseSpaceFactorProtocol,
     PhaseSpaceFactorSWave,  # noqa: F401
-    _determine_indices,
     _indices_to_subscript,
 )
-from ampform.sympy import argument, unevaluated
+from ampform.sympy import argument, determine_indices, unevaluated
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -180,7 +179,7 @@ class EnergyDependentWidth(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
         gamma0 = self.args[2]
-        subscript = _indices_to_subscript(_determine_indices(gamma0))
+        subscript = _indices_to_subscript(determine_indices(gamma0))
         name = Rf"\Gamma{subscript}" if self.name is None else self.name
         return Rf"{name}\left({s}\right)"
 

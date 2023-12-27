@@ -41,6 +41,7 @@
   ],
   "ignoreWords": [
     "Autoupdate",
+    "Dalitzplot",
     "MAINT",
     "Minkowski",
     "adrs",
@@ -254,6 +255,7 @@
     "lineshapes",
     "mathbb",
     "matplotlib",
+    "Mikhasenko",
     "mypy",
     "nishijima",
     "numpy",
