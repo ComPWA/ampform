@@ -78,9 +78,9 @@ _LOGGER = logging.getLogger(__name__)
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr]
 ) -> OrderedDict[str, sp.Expr]:
-    return collections.OrderedDict([
-        (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
-    ])
+    return collections.OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
+    )
 
 
 def _order_symbol_mapping(
