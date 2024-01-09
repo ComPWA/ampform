@@ -15,7 +15,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.1.11
+    rev: 0.1.13a2
     hooks:
       - id: check-dev-files
         args:
@@ -84,7 +84,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.2.1
+    rev: v8.3.0
     hooks:
       - id: cspell
 
@@ -140,12 +140,12 @@ repos:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.344
+    rev: v1.1.345
     hooks:
       - id: pyright
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.1.11
     hooks:
       - id: ruff
         args: [--fix]
