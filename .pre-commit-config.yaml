@@ -15,7 +15,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.1.11
+    rev: 0.1.13a2
     hooks:
       - id: check-dev-files
         args:
@@ -140,7 +140,7 @@ repos:
       - id: prettier
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.344
+    rev: v1.1.345
     hooks:
       - id: pyright
 
