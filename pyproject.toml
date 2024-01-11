@@ -235,16 +235,14 @@ typeCheckingMode = "strict"
 
 [tool.pytest.ini_options]
 addopts = """
-"not
 --color=yes
 --doctest-continue-on-failure
 --doctest-modules
 --durations=3
 --ignore=docs/abbreviate_signature.py
 --ignore=docs/conf.py
--m
+-m "not slow"
 -rS
-slow"
 """
 filterwarnings = [
     "error",
