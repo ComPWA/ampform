@@ -155,7 +155,6 @@ extensions = [
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
 graphviz_output_format = "svg"
-html_copy_source = True  # needed for download notebook button
 html_css_files = ["custom.css"]
 html_favicon = "_static/favicon.ico"
 html_last_updated_fmt = "%-d %B %Y"
@@ -166,7 +165,6 @@ html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
 html_sourcelink_suffix = ""
-html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "icon_links": [
@@ -205,14 +203,6 @@ html_theme_options = {
             "type": "url",
         },
     ],
-    "logo": {"text": REPO_TITLE},
-    "repository_url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
-    "repository_branch": BRANCH,
-    "path_to_docs": "docs",
-    "use_download_button": True,
-    "use_edit_page_button": True,
-    "use_issues_button": True,
-    "use_repository_button": True,
     "launch_buttons": {
         "binderhub_url": "https://mybinder.org",
         "colab_url": "https://colab.research.google.com",
@@ -221,8 +211,17 @@ html_theme_options = {
         "thebe": True,
         "thebelab": True,
     },
+    "logo": {"text": REPO_TITLE},
+    "path_to_docs": "docs",
+    "repository_branch": BRANCH,
+    "repository_url": f"https://github.com/{ORGANIZATION}/{REPO_NAME}",
     "show_navbar_depth": 2,
     "show_toc_level": 2,
+    "use_download_button": False,
+    "use_edit_page_button": True,
+    "use_issues_button": True,
+    "use_repository_button": True,
+    "use_source_button": True,
 }
 html_title = REPO_TITLE
 intersphinx_mapping = {
@@ -253,8 +252,6 @@ linkcheck_ignore = [
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
 ]
-master_doc = "index"
-modindex_common_prefix = [f"{PACKAGE}."]
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
@@ -275,6 +272,7 @@ modify the parameters.
 """,
 }
 myst_update_mathjax = False
+nb_execution_allow_errors = False
 nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
