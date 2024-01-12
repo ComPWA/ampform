@@ -14,8 +14,8 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
 
-  - repo: https://github.com/ComPWA/repo-maintenance
-    rev: 0.1.13a6
+  - repo: https://github.com/ComPWA/policy
+    rev: 0.2.0
     hooks:
       - id: check-dev-files
         args:
@@ -145,7 +145,7 @@ repos:
       - id: pyright
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.11
+    rev: v0.1.13
     hooks:
       - id: ruff
         args: [--fix]

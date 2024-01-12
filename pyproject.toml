@@ -234,16 +234,16 @@ reportUnusedVariable = true
 typeCheckingMode = "strict"
 
 [tool.pytest.ini_options]
-addopts = """
---color=yes
---doctest-continue-on-failure
---doctest-modules
---durations=3
---ignore=docs/abbreviate_signature.py
---ignore=docs/conf.py
--m "not slow"
--rS
-"""
+addopts = [
+    "--color=yes",
+    "--doctest-continue-on-failure",
+    "--doctest-modules",
+    "--durations=3",
+    "--ignore=docs/abbreviate_signature.py",
+    "--ignore=docs/conf.py",
+    "-rS",
+    '-m "not slow"',
+]
 filterwarnings = [
     "error",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",

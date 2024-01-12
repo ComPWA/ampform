@@ -24,7 +24,7 @@ else:
 class StateWithID(State):
     """Extension of `~qrules.transition.State` that embeds the state ID."""
 
-    id: int  # noqa: A003
+    id: int
 
     @classmethod
     def from_transition(cls, transition: StateTransition, state_id: int) -> StateWithID:
