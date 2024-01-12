@@ -12,7 +12,6 @@ on:
     paths:
       - .constraints/py3.*.txt
       - .pre-commit-config.yaml
-      - setup.cfg
   schedule:
     - cron: "0 3 7 */1 *"
   workflow_dispatch:

@@ -6,7 +6,6 @@
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "executablebookproject.myst-highlight",
-    "garaioag.garaio-vscode-unwanted-recommendations",
     "github.vscode-github-actions",
     "github.vscode-pull-request-github",
     "ms-python.black-formatter",
@@ -18,6 +17,7 @@
     "ms-vsliveshare.vsliveshare",
     "redhat.vscode-yaml",
     "ryanluker.vscode-coverage-gutters",
+    "Soulcode.vscode-unwanted-extensions",
     "stkb.rewrap",
     "streetsidesoftware.code-spell-checker",
     "tamasfe.even-better-toml",
@@ -27,6 +27,7 @@
   "unwantedRecommendations": [
     "bungcip.better-toml",
     "davidanson.vscode-markdownlint",
+    "garaioag.garaio-vscode-unwanted-recommendations",
     "ms-python.flake8",
     "ms-python.isort",
     "ms-python.pylint",

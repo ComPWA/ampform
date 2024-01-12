@@ -12,8 +12,8 @@ anyio==3.7.1
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 arrow==1.2.3
-attrs==23.1.0
-babel==2.13.1
+attrs==23.2.0
+babel==2.14.0
 backcall==0.2.0
 beautifulsoup4==4.12.2
 black==23.3.0
@@ -34,22 +34,22 @@ cycler==0.11.0
 debugpy==1.7.0
 decorator==5.1.1
 defusedxml==0.7.1
-distlib==0.3.7
+distlib==0.3.8
 docstring-to-markdown==0.13
 docutils==0.17.1
 entrypoints==0.4
 exceptiongroup==1.2.0
 execnet==2.0.2
-fastjsonschema==2.19.0
+fastjsonschema==2.19.1
 filelock==3.12.2
 fonttools==4.38.0
 fqdn==1.5.1
 gitdb==4.0.11
-gitpython==3.1.40
+gitpython==3.1.41
 gprof2dot==2022.7.29
 graphviz==0.20.1
-greenlet==3.0.2
-hepunits==2.3.2
+greenlet==3.0.3
+hepunits==2.3.3
 identify==2.5.24
 idna==3.6
 imagesize==1.4.1
@@ -64,7 +64,7 @@ ipywidgets==8.1.1
 isoduration==20.11.0
 isort==5.11.5
 jedi==0.18.2
-jinja2==3.1.2
+jinja2==3.1.3
 json5==0.9.14
 jsonpointer==2.4
 jsonschema==4.17.3
@@ -74,7 +74,7 @@ jupyter-core==4.12.0
 jupyter-events==0.6.3
 jupyter-lsp==1.5.1
 jupyter-server==1.24.0
-jupyter-server-fileid==0.9.0
+jupyter-server-fileid==0.9.1
 jupyter-server-mathjax==0.2.6
 jupyter-server-ydoc==0.8.0
 jupyter-ydoc==0.2.5
@@ -89,7 +89,7 @@ jupyterlab-widgets==3.0.9
 kiwisolver==1.4.5
 latexcodec==2.0.1
 livereload==2.6.3
-lsprotocol==2023.0.0
+lsprotocol==2023.0.1
 markdown-it-py==2.2.0
 markupsafe==2.1.3
 matplotlib==3.5.3
@@ -108,7 +108,7 @@ nbclient==0.5.13
 nbconvert==7.6.0
 nbdime==3.2.1
 nbformat==5.8.0
-nbmake==1.2.1
+nbmake==1.3.0
 nest-asyncio==1.5.8
 nodeenv==1.8.0
 notebook==6.5.6
@@ -127,8 +127,8 @@ platformdirs==4.0.0
 pluggy==1.2.0
 pre-commit==2.21.0
 prometheus-client==0.17.1
-prompt-toolkit==3.0.41
-psutil==5.9.6
+prompt-toolkit==3.0.43
+psutil==5.9.7
 ptyprocess==0.7.0
 pybtex==0.24.0
 pybtex-docutils==1.0.3
@@ -139,7 +139,7 @@ pygments==2.17.2
 pyparsing==3.1.1
 pyproject-api==1.5.3
 pyrsistent==0.19.3
-pytest==7.4.3
+pytest==7.4.4
 pytest-cov==4.1.0
 pytest-profiling==1.7.0
 pytest-xdist==3.5.0
@@ -149,7 +149,7 @@ python-json-logger==2.0.7
 python-lsp-jsonrpc==1.0.0
 python-lsp-ruff==1.6.0
 python-lsp-server==1.7.4
-pytoolconfig==1.2.6
+pytoolconfig==1.3.0
 pytz==2023.3.post1
 pyyaml==6.0.1
 pyzmq==24.0.1
@@ -159,7 +159,7 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rich==13.7.0
 rope==1.9.0
-ruff==0.1.7
+ruff==0.1.13
 send2trash==1.8.2
 singledispatchmethod==1.0 ; python_version < "3.8.0"
 six==1.16.0
@@ -168,7 +168,7 @@ sniffio==1.3.0
 snowballstemmer==2.2.0
 soupsieve==2.4.1
 sphinx==5.3.0
-sphinx-api-relink==0.0.6
+sphinx-api-relink==0.0.8
 sphinx-autobuild==2021.3.14
 sphinx-book-theme==1.0.1
 sphinx-codeautolink==0.15.0
@@ -180,13 +180,13 @@ sphinx-pybtex-etal-style==0.0.2
 sphinx-thebe==0.2.1
 sphinx-togglebutton==0.3.2
 sphinxcontrib-applehelp==1.0.2
-sphinxcontrib-bibtex==2.6.1
+sphinxcontrib-bibtex==2.6.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-sqlalchemy==1.4.50
+sqlalchemy==1.4.51
 sympy==1.10.1
 tabulate==0.9.0
 terminado==0.17.1
@@ -202,7 +202,7 @@ ujson==5.7.0
 uri-template==1.3.0
 urllib3==2.0.7
 virtualenv==20.25.0
-wcwidth==0.2.12
+wcwidth==0.2.13
 webcolors==1.13
 webencodings==0.5.1
 websocket-client==1.6.1
