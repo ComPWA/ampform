@@ -71,7 +71,7 @@ if sys.version_info >= (3, 8):
     from typing import Literal
 else:
     from singledispatchmethod import singledispatchmethod
-    from typing_extensions import Literal  # noqa: TCH002
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
@@ -83,9 +83,9 @@ _LOGGER = logging.getLogger(__name__)
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr]
 ) -> OrderedDict[str, sp.Expr]:
-    return collections.OrderedDict([
-        (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
-    ])
+    return collections.OrderedDict(
+        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
+    )
 
 
 def _order_symbol_mapping(

@@ -114,9 +114,9 @@ def compute_helicity_angles(
                 sub_momenta_ids = determine_attached_final_state(topology, state_id)
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = ArraySum(*[
-                        four_momenta[i] for i in sub_momenta_ids
-                    ])
+                    four_momentum = ArraySum(
+                        *[four_momenta[i] for i in sub_momenta_ids]
+                    )
 
                     # boost all of those momenta into this new subsystem
                     phi_expr = Phi(four_momentum)
