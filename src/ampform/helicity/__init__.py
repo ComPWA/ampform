@@ -121,7 +121,7 @@ class HelicityModel:
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
     definitions for each of these. See also
-    :ref:`TR-014 <compwa-org:tr-014-solution-2>`.
+    :ref:`TR-014 <compwa:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
