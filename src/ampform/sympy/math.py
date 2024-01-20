@@ -21,7 +21,7 @@ class ComplexSqrt(NumPyPrintable):
 
     A special version :func:`~sympy.functions.elementary.miscellaneous.sqrt` that
     renders nicely as LaTeX and and can be used as a handle for lambdify printers. See
-    :doc:`compwa-org:report/000`, :doc:`compwa-org:report/001`, and
+    :doc:`compwa:report/000`, :doc:`compwa:report/001`, and
     :doc:`sympy:modules/printing` for how to implement a custom
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """

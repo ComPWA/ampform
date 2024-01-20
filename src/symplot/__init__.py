@@ -394,7 +394,7 @@ def rename_symbols(
 def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
     """Substitute `~sympy.tensor.indexed.IndexedBase` with symbols.
 
-    See :doc:`compwa-org:report/008` for more info.
+    See :doc:`compwa:report/008` for more info.
     """
     return expression.xreplace({
         s: _indexed_to_symbol(s)
