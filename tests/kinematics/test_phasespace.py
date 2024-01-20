@@ -12,7 +12,7 @@ from ampform.kinematics.phasespace import is_within_phasespace
     ],
 )
 def test_is_within_phasespace(s1, s2, expected):
-    # See widget https://compwa-org.rtfd.io/report/017.html
+    # See widget https://compwa.github.io/report/017
     m0 = 2.1
     m1 = 0.2
     m2 = 0.4
