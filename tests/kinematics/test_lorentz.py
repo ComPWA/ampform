@@ -193,6 +193,12 @@ class TestFourMomentumXYZ:
 
 
 class TestInvariantMass:
+    def test_latex(self):
+        p = FourMomentumSymbol("p1", shape=[])
+        mass = InvariantMass(p)
+        latex = sp.latex(mass)
+        assert latex == "m_{p_{1}}"
+
     @pytest.mark.parametrize(
         ("state_id", "expected_mass"),
         [
