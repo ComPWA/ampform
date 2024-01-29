@@ -344,10 +344,15 @@ class LatexMethod(Protocol):
 
 @dataclass_transform(field_specifiers=(argument, _create_field))
 def _implement_latex_repr(cls: type[T]) -> type[T]:
-    _latex_repr_: LatexMethod | str | None = getattr(cls, "_latex_repr_", None)
+    repr_name = "_latex_repr_"
+    repr_mistyped = "_latex_repr"
+    if hasattr(cls, repr_mistyped):
+        msg = f"Class defines a {repr_mistyped} attribute, but it should be {repr_name}"
+        raise AttributeError(msg)
+    _latex_repr_: LatexMethod | str | None = getattr(cls, repr_name, None)
     if _latex_repr_ is None:
         msg = (
-            "You need to define a _latex_repr_ str or method in order to decorate an"
+            f"You need to define a {repr_name} str or method in order to decorate an"
             " unevaluated expression with a printer method for LaTeX representation."
         )
         raise NotImplementedError(msg)
