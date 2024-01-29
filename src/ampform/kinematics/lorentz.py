@@ -135,7 +135,7 @@ class EuclideanNorm(NumPyPrintable):
     """Take the euclidean norm of an array over axis 1."""
 
     vector: sp.Basic
-    _latex_repr = R"\left|{vector}\right|"
+    _latex_repr_ = R"\left|{vector}\right|"
 
     def evaluate(self) -> ArraySlice:
         return sp.sqrt(EuclideanNormSquared(self.vector))
@@ -167,7 +167,7 @@ class InvariantMass(sp.Expr):
     """Invariant mass of a `.FourMomentumSymbol`."""
 
     momentum: sp.Basic
-    _latex_repr = "m_{{{momentum}}}"
+    _latex_repr_ = "m_{{{momentum}}}"
 
     def evaluate(self) -> ComplexSqrt:
         p = self.momentum
@@ -180,7 +180,7 @@ class NegativeMomentum(sp.Expr):
     r"""Invert the spatial components of a `.FourMomentumSymbol`."""
 
     momentum: sp.Basic
-    _latex_repr = R"-\left({momentum}\right)"
+    _latex_repr_ = R"-\left({momentum}\right)"
 
     def evaluate(self) -> sp.Expr:
         p = self.momentum
@@ -265,7 +265,7 @@ class _BoostZMatrixImplementation(NumPyPrintable):
     gamma_beta: sp.Basic
     ones: _OnesArray
     zeros: _ZerosArray
-    _latex_repr = R"\boldsymbol{{B_z}}\left({beta}\right)"
+    _latex_repr_ = R"\boldsymbol{{B_z}}\left({beta}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -285,7 +285,7 @@ class BoostMatrix(sp.Expr):
     r"""Compute a rank-3 Lorentz boost matrix from a `.FourMomentumSymbol`."""
 
     momentum: sp.Basic
-    _latex_repr = R"\boldsymbol{{B}}\left({momentum}\right)"
+    _latex_repr_ = R"\boldsymbol{{B}}\left({momentum}\right)"
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         momentum = self.momentum
@@ -353,7 +353,7 @@ class _BoostMatrixImplementation(NumPyPrintable):
     b22: sp.Basic
     b23: sp.Basic
     b33: sp.Basic
-    _latex_repr = R"\boldsymbol{{B}}\left({momentum}\right)"
+    _latex_repr_ = R"\boldsymbol{{B}}\left({momentum}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         _, b00, b01, b02, b03, b11, b12, b13, b22, b23, b33 = self.args
@@ -409,7 +409,7 @@ class _RotationYMatrixImplementation(NumPyPrintable):
     sin_angle: sp.Basic
     ones: _OnesArray
     zeros: _ZerosArray
-    _latex_repr = R"\boldsymbol{{R_y}}\left({angle}\right)"
+    _latex_repr_ = R"\boldsymbol{{R_y}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
@@ -466,7 +466,7 @@ class _RotationZMatrixImplementation(NumPyPrintable):
     sin_angle: sp.Basic
     ones: _OnesArray
     zeros: _ZerosArray
-    _latex_repr = R"\boldsymbol{{R_z}}\left({angle}\right)"
+    _latex_repr_ = R"\boldsymbol{{R_z}}\left({angle}\right)"
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         printer.module_imports[printer._module].add("array")
