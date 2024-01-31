@@ -117,6 +117,7 @@ test = [
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
+    "scipy",
 ]
 viz = ["graphviz"]
 
