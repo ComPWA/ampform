@@ -63,9 +63,9 @@
   "ruff.enable": true,
   "ruff.organizeImports": true,
   "search.exclude": {
-    "typings/**": true,
     "**/tests/**/__init__.py": true,
-    ".constraints/*.txt": true
+    ".constraints/*.txt": true,
+    "typings/**": true
   },
   "yaml.schemas": {
     "https://citation-file-format.github.io/1.2.0/schema.json": "CITATION.cff",
