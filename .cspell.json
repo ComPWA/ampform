@@ -206,6 +206,7 @@
     "xlim",
     "xreplace",
     "xticks",
+    "xytext",
     "yaxis",
     "ylabel",
     "ylim",
