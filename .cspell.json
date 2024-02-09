@@ -42,6 +42,7 @@
     "Dalitzplot",
     "MAINT",
     "Minkowski",
+    "PYDEVD",
     "adrs",
     "aitchison",
     "arange",
