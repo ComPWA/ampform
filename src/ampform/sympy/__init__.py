@@ -19,6 +19,7 @@ import logging
 import os
 import pickle
 import re
+import warnings
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
 from textwrap import dedent
@@ -27,6 +28,7 @@ from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
+from sympy.printing.pycode import _unpack_integral_limits
 
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -350,3 +352,47 @@ def _warn_about_unsafe_hash():
     """
     message = dedent(message).replace("\n", " ").strip()
     _LOGGER.warning(message)
+
+
+class UnevaluatableIntegral(sp.Integral):
+    abs_tolerance = 1e-5
+    rel_tolerance = 1e-5
+    limit = 50
+    dummify = True
+
+    def doit(self, **hints):
+        args = [arg.doit(**hints) for arg in self.args]
+        return self.func(*args)
+
+    def _numpycode(self, printer, *args):
+        _warn_if_scipy_not_installed()
+        integration_vars, limits = _unpack_integral_limits(self)
+        if len(limits) != 1 or len(integration_vars) != 1:
+            msg = f"Cannot handle {len(limits)}-dimensional integrals"
+            raise ValueError(msg)
+        x = integration_vars[0]
+        a, b = limits[0]
+        expr = self.args[0]
+        if self.dummify:
+            dummy = sp.Dummy()
+            expr = expr.xreplace({x: dummy})
+            x = dummy
+        integrate_func = "quad_vec"
+        printer.module_imports["scipy.integrate"].add(integrate_func)
+        return (
+            f"{integrate_func}(lambda {printer._print(x)}: {printer._print(expr)},"
+            f" {printer._print(a)}, {printer._print(b)},"
+            f" epsabs={self.abs_tolerance}, epsrel={self.abs_tolerance},"
+            f" limit={self.limit})[0]"
+        )
+
+
+def _warn_if_scipy_not_installed() -> None:
+    try:
+        import scipy  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+    except ImportError:
+        warnings.warn(
+            "Scipy is not installed. Install with 'pip install scipy' or with 'pip"
+            " install ampform[scipy]'",
+            stacklevel=1,
+        )

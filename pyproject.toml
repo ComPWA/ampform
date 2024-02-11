@@ -50,7 +50,10 @@ name = "ampform"
 requires-python = ">=3.7"
 
 [project.optional-dependencies]
-all = ["ampform[viz]"]
+all = [
+    "ampform[scipy]",
+    "ampform[viz]",
+]
 dev = [
     "ampform[all]",
     "ampform[doc]",
@@ -62,7 +65,7 @@ dev = [
 ]
 doc = [
     "Sphinx >=3",
-    "ampform[viz]",
+    "ampform[all]",
     "black",
     "ipympl",
     "matplotlib",
@@ -102,6 +105,7 @@ mypy = [
     "mypy >=0.730",
     "sphinx-api-relink >=0.0.3",
 ]
+scipy = ["scipy"]
 sty = [
     "ampform[format]",
     "ampform[lint]",
@@ -109,6 +113,7 @@ sty = [
     "pre-commit >=1.4.0",
 ]
 test = [
+    "ampform[scipy]",
     "black",
     "ipywidgets", # symplot
     "nbmake",
@@ -183,6 +188,10 @@ warn_unused_configs = true
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = ["graphviz.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["scipy.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
