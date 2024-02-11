@@ -15,7 +15,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, overload
 
 import sympy as sp
-from sympy.core.basic import _aresame
+from sympy.core.basic import _aresame  # noqa: PLC2701
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 if sys.version_info < (3, 8):

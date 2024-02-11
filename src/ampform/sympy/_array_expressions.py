@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Iterable, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
-from sympy.core.sympify import _sympify
+from sympy.core.sympify import _sympify  # noqa: PLC2701
 from sympy.functions.elementary.integers import floor
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
@@ -22,7 +22,7 @@ from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
 from sympy.tensor.array.expressions.array_expressions import (
     ArraySymbol,
-    _ArrayExpr,
+    _ArrayExpr,  # noqa: PLC2701
     get_shape,
 )
 

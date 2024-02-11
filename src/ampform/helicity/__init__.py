@@ -273,7 +273,7 @@ class ParameterValues(abc.Mapping):
         self.__parameters[par] = value
 
     @singledispatchmethod
-    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
+    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:  # noqa: PLR6301
         msg = f"Cannot find parameter for key type {type(key).__name__}"
         raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
@@ -641,7 +641,9 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
+    def assign(  # noqa: PLR6301
+        self, selection, builder: ResonanceDynamicsBuilder
+    ) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -772,7 +774,7 @@ def formulate_isobar_cg_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
-    from sympy.physics.quantum.cg import CG
+    from sympy.physics.quantum.cg import CG  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
@@ -851,7 +853,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     >>> formulate_isobar_wigner_d(transition, node_id=0)
     WignerD(1, 1, -1, -phi_0, theta_0, 0)
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner
+    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)

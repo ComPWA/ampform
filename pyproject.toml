@@ -357,12 +357,14 @@ split-on-trailing-comma = false
     "F404",
     "N806",
     "N816",
+    "PLC2401",
     "PLR09",
     "PLR2004",
     "PLW0602",
     "PLW0603",
     "S101",
     "S301",
+    "S403",
     "T20",
     "TCH00",
 ]
@@ -373,7 +375,12 @@ split-on-trailing-comma = false
     "N806",
     "S101",
     "S113",
+    "S403",
     "T201",
+]
+"docs/_extend_docstrings.py" = [
+    "PLC0415",
+    "PLC2701",
 ]
 "docs/conf.py" = [
     "A001",
@@ -385,7 +392,10 @@ split-on-trailing-comma = false
     "D",
     "INP001",
     "PGH001",
+    "PLC2701",
     "PLR0913",
+    "PLR0914",
+    "PLR0917",
     "PLR2004",
     "PLR6301",
     "S101",
@@ -394,6 +404,10 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = ["_latex_repr_", "_repr_pretty_"]
+max-positional-args = 7
 
 [tool.tomlsort]
 all = false

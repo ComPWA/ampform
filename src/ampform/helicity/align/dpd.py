@@ -54,13 +54,15 @@ class DalitzPlotDecomposition(SpinAlignment):
 
 
 @lru_cache(maxsize=None)
-def _formulate_aligned_amplitude(
+def _formulate_aligned_amplitude(  # noqa: PLR0914
     reaction: ReactionInfo, reference_subsystem: Literal[1, 2, 3]
 ) -> tuple[sp.Expr, dict[sp.Symbol, sp.Expr]]:
     wigner_generator = _DPDAlignmentWignerGenerator(reference_subsystem)
     outer_state_ids = get_outer_state_ids(reaction)
-    λ0, λ1, λ2, λ3 = (create_spin_projection_symbol(i) for i in outer_state_ids)
-    _λ0, _λ1, _λ2, _λ3 = sp.symbols(R"\lambda_(:4)^", rational=True)
+    λ0, λ1, λ2, λ3 = (  # noqa: PLC2401
+        create_spin_projection_symbol(i) for i in outer_state_ids
+    )
+    _λ0, _λ1, _λ2, _λ3 = sp.symbols(R"\lambda_(:4)^", rational=True)  # noqa: PLC2401
     some_transition = reaction.transitions[0]
     j0, j1, j2, j3 = (
         sp.Rational(some_transition.states[i].particle.spin) for i in outer_state_ids

@@ -17,7 +17,7 @@ import hashlib
 import itertools
 import logging
 import os
-import pickle
+import pickle  # noqa: S403
 import re
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
