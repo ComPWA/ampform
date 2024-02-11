@@ -209,14 +209,21 @@ exclude = [
     "**/_build",
     "**/typings",
 ]
+reportArgumentType = false
+reportAssignmentType = false
+reportAttributeAccessIssue = false
+reportCallIssue = false
 reportGeneralTypeIssues = false
 reportIncompatibleMethodOverride = false
+reportInconsistentOverload = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportMissingTypeStubs = false
+reportOperatorIssue = false
 reportOverlappingOverload = false
 reportPrivateImportUsage = false
 reportPrivateUsage = false
+reportReturnType = false
 reportUnboundVariable = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
