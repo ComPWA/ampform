@@ -19,6 +19,7 @@ import logging
 import os
 import pickle
 import re
+import warnings
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
 from textwrap import dedent
@@ -364,6 +365,7 @@ class UnevaluatableIntegral(sp.Integral):
         return self.func(*args)
 
     def _numpycode(self, printer, *args):
+        _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
             msg = f"Cannot handle {len(limits)}-dimensional integrals"
@@ -382,4 +384,15 @@ class UnevaluatableIntegral(sp.Integral):
             f" {printer._print(a)}, {printer._print(b)},"
             f" epsabs={self.abs_tolerance}, epsrel={self.abs_tolerance},"
             f" limit={self.limit})[0]"
+        )
+
+
+def _warn_if_scipy_not_installed() -> None:
+    try:
+        import scipy  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+    except ImportError:
+        warnings.warn(
+            "Scipy is not installed. Install with 'pip install scipy' or with 'pip"
+            " install ampform[scipy]'",
+            stacklevel=1,
         )
