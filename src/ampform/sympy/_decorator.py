@@ -4,6 +4,7 @@ import dataclasses
 import functools
 import inspect
 import sys
+import warnings
 from collections import abc
 from dataclasses import MISSING, Field
 from dataclasses import astuple as _get_arguments
@@ -187,6 +188,11 @@ def unevaluated(
         cls = _implement_new_method(cls)
         if implement_doit:
             cls = _implement_doit(cls)
+        typos = ["_latex_repr"]
+        for typo in typos:
+            if hasattr(cls, typo):
+                msg = f"Class defines a {typo} attribute, but it should be _latex_repr_"
+                warnings.warn(msg, category=UserWarning, stacklevel=1)
         if hasattr(cls, "_latex_repr_"):
             cls = _implement_latex_repr(cls)
         _set_assumptions(**assumptions)(cls)
@@ -345,10 +351,6 @@ class LatexMethod(Protocol):
 @dataclass_transform(field_specifiers=(argument, _create_field))
 def _implement_latex_repr(cls: type[T]) -> type[T]:
     repr_name = "_latex_repr_"
-    repr_mistyped = "_latex_repr"
-    if hasattr(cls, repr_mistyped):
-        msg = f"Class defines a {repr_mistyped} attribute, but it should be {repr_name}"
-        raise AttributeError(msg)
     _latex_repr_: LatexMethod | str | None = getattr(cls, repr_name, None)
     if _latex_repr_ is None:
         msg = (
