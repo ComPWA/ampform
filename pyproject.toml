@@ -277,6 +277,15 @@ testpaths = [
 [tool.ruff]
 extend-exclude = ["typings"]
 extend-include = ["*.ipynb"]
+preview = true
+show-fixes = true
+src = [
+    "src",
+    "tests",
+]
+target-version = "py37"
+
+[tool.ruff.lint]
 extend-select = [
     "A",
     "B",
@@ -321,26 +330,22 @@ ignore = [
     "D416",
     "E501",
     "PLR0913",
+    "PLW1514",
     "PLW2901",
     "SIM108",
 ]
-show-fixes = true
-src = [
-    "src",
-    "tests",
-]
-target-version = "py37"
 task-tags = ["cspell"]
-
-[tool.ruff.isort]
-known-third-party = ["sympy"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
     "ampform.sympy._decorator.argument",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.isort]
+known-third-party = ["sympy"]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",
@@ -382,11 +387,12 @@ extend-immutable-calls = [
     "PGH001",
     "PLR0913",
     "PLR2004",
+    "PLR6301",
     "S101",
     "T20",
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.tomlsort]

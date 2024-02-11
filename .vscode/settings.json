@@ -42,6 +42,7 @@
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
   "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
+  "gitlens.telemetry.enabled": false,
   "json.schemas": [
     {
       "fileMatch": [".zenodo.json"],
@@ -59,14 +60,16 @@
   "python.testing.pytestArgs": ["--color=no", "--no-cov"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
+  "redhat.telemetry.enabled": false,
   "rewrap.wrappingColumn": 88,
   "ruff.enable": true,
   "ruff.organizeImports": true,
   "search.exclude": {
-    "typings/**": true,
     "**/tests/**/__init__.py": true,
-    ".constraints/*.txt": true
+    ".constraints/*.txt": true,
+    "typings/**": true
   },
+  "telemetry.telemetryLevel": "off",
   "yaml.schemas": {
     "https://citation-file-format.github.io/1.2.0/schema.json": "CITATION.cff",
     "https://json.schemastore.org/github-workflow.json": "./.github/workflows/requirements.yml",
