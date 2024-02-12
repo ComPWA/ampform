@@ -3,6 +3,7 @@
 # cspell:ignore Lambdifier
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, overload
 
 import sympy as sp
@@ -10,6 +11,10 @@ from sympy.plotting.experimental_lambdify import Lambdifier
 
 from ampform.sympy import NumPyPrintable
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
     from sympy.printing.printer import Printer
@@ -33,6 +38,7 @@ class ComplexSqrt(NumPyPrintable):
     def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...  # type: ignore[misc]
     @overload
     def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
+    @override
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
         args = sp.sympify((x, *args))

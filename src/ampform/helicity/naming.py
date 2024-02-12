@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import lru_cache
@@ -20,6 +21,10 @@ from ampform.helicity.decay import (
     group_by_spin_projection,
 )
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from qrules.topology import Topology
 
@@ -219,6 +224,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
 
 
 class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
+    @override
     def __init__(
         self,
         transitions: ReactionInfo | Iterable[StateTransition],
@@ -243,6 +249,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         self.__insert_ls_combinations = value
         self._register_amplitude_coefficients()
 
+    @override
     def generate_amplitude_name(
         self,
         transition: StateTransition,
@@ -262,6 +269,7 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
             names.append(canonical_name)
         return "; ".join(names)
 
+    @override
     def _get_coefficient_components(
         self, transition: StateTransition, node_id: int
     ) -> tuple[str, str, str]:
