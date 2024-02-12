@@ -1,4 +1,4 @@
-import pickle
+import pickle  # noqa: S403
 
 import sympy as sp
 

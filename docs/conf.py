@@ -13,7 +13,7 @@ from sphinx_api_relink.helpers import (
 )
 
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings
+from _extend_docstrings import extend_docstrings  # noqa: PLC2701
 
 extend_docstrings()
 set_intersphinx_version_remapping({

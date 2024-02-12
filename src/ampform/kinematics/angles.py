@@ -277,7 +277,7 @@ def formulate_theta_hat_angle(
     return symbol, -theta
 
 
-def formulate_zeta_angle(  # noqa: C901, PLR0911
+def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
