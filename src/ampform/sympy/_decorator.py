@@ -153,7 +153,7 @@ def unevaluated(
     y
 
     Attributes to the class are fed to the `~object.__new__` constructor of the
-    :class`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
+    :class:`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
     like in the :class:`~sympy.core.expr.Expr` class, these arguments are automatically
     `sympified
     <https://docs.sympy.org/latest/modules/core.html#module-sympy.core.sympify>`_.
