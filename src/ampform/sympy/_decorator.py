@@ -78,7 +78,9 @@ class SymPyAssumptions(TypedDict, total=False):
 def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # type: ignore[assignment]
 @overload
 def argument(
-    *, default_factory: Callable[[], T] = MISSING, sympify: bool = True  # type: ignore[assignment]
+    *,
+    default_factory: Callable[[], T] = MISSING,  # type: ignore[assignment]
+    sympify: bool = True,
 ) -> T: ...
 def argument(
     *,
@@ -125,7 +127,6 @@ def unevaluated(
     ...     def evaluate(self) -> sp.Expr:
     ...         x, y = self.args
     ...         return x**2 + y**2
-    ...
     >>> a, b = sp.symbols("a b")
     >>> expr = MyExpr(a, b**2)
     >>> sp.latex(expr)
@@ -144,7 +145,6 @@ def unevaluated(
     ...
     ...     def evaluate(self) -> sp.Expr:
     ...         return sp.sqrt(self.x)
-    ...
     >>> y = sp.Symbol("y", nonnegative=True)
     >>> expr = Function(x=y**2)
     >>> sp.latex(expr)
@@ -161,7 +161,6 @@ def unevaluated(
 
     >>> class Transformation:
     ...     def __call__(self, x: sp.Basic, y: sp.Basic) -> sp.Expr: ...
-    ...
     >>> @unevaluated
     ... class MyExpr(sp.Expr):
     ...     x: Any
@@ -170,7 +169,6 @@ def unevaluated(
     ...
     ...     def evaluate(self) -> sp.Expr:
     ...         return self.functor(self.x, self.y)
-    ...
     >>> expr = MyExpr(0, y=3.14, functor=Transformation)
     >>> isinstance(expr.x, sp.Integer)
     True
@@ -211,7 +209,6 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     ... class MyExpr(sp.Expr):
     ...     a: sp.Symbol
     ...     b: sp.Symbol
-    ...
     >>> x, y = sp.symbols("x y")
     >>> expr = MyExpr(x**2, y**2)
     >>> expr.a
@@ -435,7 +432,6 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     ...     n: ClassVar[int] = 2
     ...
     ...     def print(self): ...
-    ...
     >>> _get_attribute_names(MyClass)
     ('a', 'b')
     """

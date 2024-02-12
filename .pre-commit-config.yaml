@@ -40,7 +40,7 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.2.4
+    rev: 0.2.5
     hooks:
       - id: check-dev-files
         args:
@@ -57,6 +57,15 @@ repos:
           - --add-install-cell
           - --additional-packages=IPython
           - --extras-require=doc,viz
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi, jupyter]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -81,19 +90,6 @@ repos:
         name: Tests should start with test_
         args: ["--django"]
       - id: trailing-whitespace
-
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.1
-    hooks:
-      - id: black
-      - id: black-jupyter
-        args: [--line-length=85]
-        types_or: [jupyter]
-
-  - repo: https://github.com/asottile/blacken-docs
-    rev: 1.16.0
-    hooks:
-      - id: blacken-docs
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
@@ -155,10 +151,3 @@ repos:
     rev: v1.1.350
     hooks:
       - id: pyright
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.1
-    hooks:
-      - id: ruff
-        args: [--fix]
-        types_or: [python, pyi, jupyter]

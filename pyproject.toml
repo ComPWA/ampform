@@ -86,8 +86,8 @@ doc = [
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
 ]
-format = ["black"]
 jupyter = [
+    "black",
     "isort",
     "jupyterlab",
     "jupyterlab-code-formatter",
@@ -97,24 +97,15 @@ jupyter = [
     "python-lsp-ruff",
     "python-lsp-server[rope]",
 ]
-lint = [
-    "ampform[mypy]",
-    "ruff",
-]
-mypy = [
-    "mypy >=0.730",
-    "sphinx-api-relink >=0.0.3",
-]
 scipy = ["scipy"]
 sty = [
-    "ampform[format]",
-    "ampform[lint]",
-    "ampform[test]", # for pytest type hints
+    "ampform[types]",
+    "mypy >=0.730",
     "pre-commit >=1.4.0",
+    "ruff",
 ]
 test = [
     "ampform[scipy]",
-    "black",
     "ipywidgets", # symplot
     "nbmake",
     "numpy",
@@ -122,6 +113,9 @@ test = [
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
+]
+types = [
+    "sphinx-api-relink >=0.0.3",
 ]
 viz = ["graphviz"]
 
@@ -149,31 +143,6 @@ where = ["src"]
 
 [tool.setuptools_scm]
 write_to = "src/ampform/version.py"
-
-[tool.black]
-exclude = '''
-/(
-    .*\.egg-info
-    | .*build
-    | \.eggs
-    | \.git
-    | \.pytest_cache
-    | \.tox
-    | \.venv
-    | \.vscode
-    | dist
-)/
-'''
-include = '\.pyi?$'
-preview = true
-target-version = [
-    "py310",
-    "py311",
-    "py312",
-    "py37",
-    "py38",
-    "py39",
-]
 
 [tool.coverage.run]
 branch = true
@@ -294,6 +263,10 @@ src = [
 ]
 target-version = "py37"
 
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
 [tool.ruff.lint]
 extend-select = [
     "A",
@@ -338,6 +311,7 @@ ignore = [
     "D407",
     "D416",
     "E501",
+    "ISC001",
     "PLR0913",
     "PLW1514",
     "PLW2901",

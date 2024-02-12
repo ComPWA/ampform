@@ -78,15 +78,14 @@ class UnevaluatedExpression(sp.Expr):
         used in its implementation, like so:
 
         >>> class MyExpression(UnevaluatedExpression):
-        ...    def __new__(
-        ...        cls, x: sp.Symbol, y: sp.Symbol, n: int, **hints
-        ...    ) -> "MyExpression":
-        ...        return create_expression(cls, x, y, n, **hints)
+        ...     def __new__(
+        ...         cls, x: sp.Symbol, y: sp.Symbol, n: int, **hints
+        ...     ) -> "MyExpression":
+        ...         return create_expression(cls, x, y, n, **hints)
         ...
-        ...    def evaluate(self) -> sp.Expr:
-        ...        x, y, n = self.args
-        ...        return (x + y)**n
-        ...
+        ...     def evaluate(self) -> sp.Expr:
+        ...         x, y, n = self.args
+        ...         return (x + y) ** n
         >>> x, y = sp.symbols("x y")
         >>> expr = MyExpression(x, y, n=3)
         >>> expr

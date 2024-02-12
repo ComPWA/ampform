@@ -132,11 +132,9 @@ def _(obj: ReactionInfo) -> ReactionInfo:  # type: ignore[misc]
 
 @relabel_edge_ids.register(StateTransitionCollection)
 def _(obj: StateTransitionCollection) -> StateTransitionCollection:  # type: ignore[misc]
-    return StateTransitionCollection(
-        [  # no attrs.evolve() for __attrs_post_init__()
-            relabel_edge_ids(transition) for transition in obj.transitions
-        ]
-    )
+    return StateTransitionCollection([  # no attrs.evolve() for __attrs_post_init__()
+        relabel_edge_ids(transition) for transition in obj.transitions
+    ])
 
 
 @relabel_edge_ids.register(StateTransition)
