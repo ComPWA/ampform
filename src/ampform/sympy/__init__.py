@@ -19,6 +19,7 @@ import logging
 import os
 import pickle
 import re
+import sys
 import warnings
 from abc import abstractmethod
 from os.path import abspath, dirname, expanduser
@@ -44,6 +45,10 @@ from .deprecated import (
     make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
 )
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
@@ -124,6 +129,7 @@ class PoolSum(sp.Expr):
 
     precedence = PRECEDENCE["Mul"]
 
+    @override
     def __new__(
         cls,
         expression,
@@ -156,6 +162,7 @@ class PoolSum(sp.Expr):
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
+    @override
     def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[override]
         expr = self.evaluate()
         if deep:
@@ -360,10 +367,12 @@ class UnevaluatableIntegral(sp.Integral):
     limit = 50
     dummify = True
 
+    @override
     def doit(self, **hints):
         args = [arg.doit(**hints) for arg in self.args]
         return self.func(*args)
 
+    @override
     def _numpycode(self, printer, *args):
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
