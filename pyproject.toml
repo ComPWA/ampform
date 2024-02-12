@@ -245,6 +245,7 @@ filterwarnings = [
 markers = ["slow: marks tests as slow (select with '-m slow')"]
 norecursedirs = [
     ".ipynb_checkpoints",
+    ".virtual_documents",
     "_build",
 ]
 testpaths = [
