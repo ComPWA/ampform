@@ -7,6 +7,7 @@ This module can be removed once `sympy/sympy#22265
 from __future__ import annotations
 
 import string
+import sys
 from collections import abc
 from itertools import zip_longest
 from typing import TYPE_CHECKING, Iterable, overload
@@ -26,11 +27,16 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
 
 
 class ArrayElement(_ArrayExpr):
+    @override
     def __new__(cls, parent: sp.Expr, indices: Iterable) -> ArrayElement:
         # cspell:ignore sympified
         sympified_indices = sp.Tuple(*map(_sympify, indices))
@@ -121,6 +127,7 @@ class ArraySlice(_ArrayExpr):
     indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
     is_commutative = True
 
+    @override
     def __new__(
         cls,
         parent: sp.Basic,
@@ -251,6 +258,7 @@ StrPrinter._print_ArraySlice = _print_str_ArraySlice  # type: ignore[attr-define
 class ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
 
+    @override
     def __new__(cls, *terms: sp.Basic, **hints) -> ArraySum:
         terms = sp.sympify(terms)
         return sp.Expr.__new__(cls, *terms, **hints)
@@ -307,6 +315,7 @@ def _strip_subscript_superscript(symbol: sp.Basic) -> str:
 class ArrayAxisSum(sp.Expr):
     is_commutative = True
 
+    @override
     def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             msg = "Only single digits allowed for axis"
@@ -346,6 +355,7 @@ class ArrayMultiplication(sp.Expr):
     Lorentz matrices) to :math:`n\times\times4` (:math:`n` four-momentum tuples).
     """
 
+    @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> ArrayMultiplication:
         tensors = sp.sympify(tensors)
         return sp.Expr.__new__(cls, *tensors, **hints)
@@ -400,6 +410,7 @@ class MatrixMultiplication(sp.Expr):
     Lorentz matrices) to :math:`n\times\times4\times4` (:math:`n` four-momentum tuples).
     """
 
+    @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> MatrixMultiplication:
         tensors = sp.sympify(tensors)
         return sp.Expr.__new__(cls, *tensors, **hints)

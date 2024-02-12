@@ -69,6 +69,10 @@ if sys.version_info >= (3, 8):
 else:
     from singledispatchmethod import singledispatchmethod
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
@@ -575,10 +579,12 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
     """
 
+    @override
     def __init__(self, reaction: ReactionInfo) -> None:
         super().__init__(reaction)
         self._naming = CanonicalAmplitudeNameGenerator(reaction)
 
+    @override
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
