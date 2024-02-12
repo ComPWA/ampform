@@ -115,9 +115,9 @@ def compute_helicity_angles(
                 sub_momenta_ids = determine_attached_final_state(topology, state_id)
                 if len(sub_momenta_ids) > 1:
                     # add all of these momenta together -> defines new subsystem
-                    four_momentum = ArraySum(
-                        *[four_momenta[i] for i in sub_momenta_ids]
-                    )
+                    four_momentum = ArraySum(*[
+                        four_momenta[i] for i in sub_momenta_ids
+                    ])
 
                     # boost all of those momenta into this new subsystem
                     phi_expr = Phi(four_momentum)
@@ -305,49 +305,37 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
         cos_zeta_expr = (
             2 * m1**2 * (s2 - m0**2 - m2**2)
             + (m0**2 + m1**2 - s1) * (s3 - m1**2 - m2**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s3, m1**2, m2**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s3, m1**2, m2**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (1, 2, 1):
         cos_zeta_expr = (
             2 * m1**2 * (s3 - m0**2 - m3**2)
             + (m0**2 + m1**2 - s1) * (s2 - m1**2 - m3**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s2, m1**2, m3**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m1**2, s1)) * sp.sqrt(Kallen(s2, m1**2, m3**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 2, 1):
         cos_zeta_expr = (
             2 * m2**2 * (s3 - m0**2 - m3**2)
             + (m0**2 + m2**2 - s2) * (s1 - m2**2 - m3**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s1, m2**2, m3**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s1, m2**2, m3**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (2, 3, 2):
         cos_zeta_expr = (
             2 * m2**2 * (s1 - m0**2 - m1**2)
             + (m0**2 + m2**2 - s2) * (s3 - m2**2 - m1**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s3, m2**2, m1**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m2**2, s2)) * sp.sqrt(Kallen(s3, m2**2, m1**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 3, 2):
         cos_zeta_expr = (
             2 * m3**2 * (s1 - m0**2 - m1**2)
             + (m0**2 + m3**2 - s3) * (s2 - m3**2 - m1**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s2, m3**2, m1**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s2, m3**2, m1**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) == (3, 1, 3):
         cos_zeta_expr = (
             2 * m3**2 * (s2 - m0**2 - m2**2)
             + (m0**2 + m3**2 - s3) * (s1 - m3**2 - m2**2)
-        ) / (
-            sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s1, m3**2, m2**2))
-        )
+        ) / (sp.sqrt(Kallen(m0**2, m3**2, s3)) * sp.sqrt(Kallen(s1, m3**2, m2**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) in {  # Eq (A10)
         (1, 2, 3),
@@ -360,9 +348,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
         cos_zeta_expr = (
             2 * mi**2 * (mj**2 + mk**2 - si)
             + (sj - mi**2 - mk**2) * (sk - mi**2 - mj**2)
-        ) / (
-            sp.sqrt(Kallen(sj, mk**2, mi**2)) * sp.sqrt(Kallen(sk, mi**2, mj**2))
-        )
+        ) / (sp.sqrt(Kallen(sj, mk**2, mi**2)) * sp.sqrt(Kallen(sk, mi**2, mj**2)))
         return zeta_symbol, sp.acos(cos_zeta_expr)
     if (rotated_state, aligned_subsystem, reference_subsystem) in {
         (1, 3, 1),

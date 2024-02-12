@@ -51,6 +51,7 @@ class BlattWeisskopfSquared(sp.Expr):
 
     See also :ref:`usage/dynamics:Form factor`.
     """
+
     z: Any
     angular_momentum: Any
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"

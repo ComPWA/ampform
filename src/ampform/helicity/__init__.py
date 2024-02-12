@@ -82,9 +82,9 @@ _LOGGER = logging.getLogger(__name__)
 def _order_component_mapping(
     mapping: Mapping[str, sp.Expr],
 ) -> OrderedDict[str, sp.Expr]:
-    return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
-    )
+    return collections.OrderedDict([
+        (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
+    ])
 
 
 def _order_symbol_mapping(
@@ -229,7 +229,7 @@ class ParameterValues(abc.Mapping):
     dictionary.
 
     >>> a, b, c = sp.symbols("a b c")
-    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
+    >>> parameters = ParameterValues({a: 0.0, b: 1 + 1j, c: -2})
     >>> parameters[a]
     0.0
     >>> parameters["b"]
