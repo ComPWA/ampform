@@ -116,6 +116,7 @@ test = [
 ]
 types = [
     "IPython",
+    "ipywidgets",
     "numpy",
     "pytest",
     "sphinx-api-relink >=0.0.3",
