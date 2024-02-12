@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session")
 def topology_and_momentum_symbols(
-    data_sample: dict[int, np.ndarray]
+    data_sample: dict[int, np.ndarray],
 ) -> tuple[Topology, FourMomenta]:
     n = len(data_sample)
     assert n == 4

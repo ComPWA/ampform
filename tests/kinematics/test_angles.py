@@ -27,7 +27,7 @@ s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2  # type: ignore[assignment
 
 @pytest.fixture(scope="session")
 def helicity_angles(
-    topology_and_momentum_symbols: tuple[Topology, FourMomenta]
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ) -> dict[sp.Symbol, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)

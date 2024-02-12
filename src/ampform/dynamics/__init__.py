@@ -193,7 +193,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(
+def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     s,
     mass0,
     gamma0,

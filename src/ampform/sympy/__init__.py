@@ -17,7 +17,7 @@ import hashlib
 import itertools
 import logging
 import os
-import pickle
+import pickle  # noqa: S403
 import re
 import sys
 import warnings
@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import _unpack_integral_limits
+from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -398,7 +398,7 @@ class UnevaluatableIntegral(sp.Integral):
 
 def _warn_if_scipy_not_installed() -> None:
     try:
-        import scipy  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+        import scipy  # noqa: F401, PLC0415  # pyright: ignore[reportUnusedImport, reportMissingImports]
     except ImportError:
         warnings.warn(
             "Scipy is not installed. Install with 'pip install scipy' or with 'pip"

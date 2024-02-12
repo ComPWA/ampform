@@ -31,9 +31,8 @@ vscode:
     - ms-vsliveshare.vsliveshare
     - redhat.vscode-yaml
     - ryanluker.vscode-coverage-gutters
-    - Soulcode.vscode-unwanted-extensions
+    - soulcode.vscode-unwanted-extensions
     - stkb.rewrap
     - streetsidesoftware.code-spell-checker
     - tamasfe.even-better-toml
-    - tyriar.sort-lines
     - yzhang.markdown-all-in-one

@@ -103,7 +103,7 @@ class RelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(
+    def parametrization(  # noqa: PLR0917
         i,
         j,
         s,
@@ -176,7 +176,7 @@ class NonRelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(
+    def parametrization(  # noqa: PLR0917
         i,
         j,
         s,
@@ -252,7 +252,7 @@ class NonRelativisticPVector(TMatrix):
         })
 
     @staticmethod
-    def parametrization(
+    def parametrization(  # noqa: PLR0917
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -366,7 +366,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(
+    def parametrization(  # noqa: PLR0917
         i,
         s,
         pole_position: sp.IndexedBase,

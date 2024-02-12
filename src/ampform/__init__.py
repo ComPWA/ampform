@@ -25,7 +25,7 @@ def get_builder(reaction: ReactionInfo) -> HelicityAmplitudeBuilder:
         raise ValueError(msg)
     if formalism == "helicity":
         amplitude_builder = HelicityAmplitudeBuilder(reaction)
-    elif formalism in ["canonical-helicity", "canonical"]:
+    elif formalism in {"canonical-helicity", "canonical"}:
         amplitude_builder = CanonicalAmplitudeBuilder(reaction)
     else:
         msg = f'No amplitude generator for formalism type "{formalism}"'

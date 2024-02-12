@@ -85,7 +85,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _order_component_mapping(
-    mapping: Mapping[str, sp.Expr]
+    mapping: Mapping[str, sp.Expr],
 ) -> OrderedDict[str, sp.Expr]:
     return collections.OrderedDict(
         [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
@@ -93,7 +93,7 @@ def _order_component_mapping(
 
 
 def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, sp.Expr]
+    mapping: Mapping[sp.Symbol, sp.Expr],
 ) -> OrderedDict[sp.Symbol, sp.Expr]:
     return collections.OrderedDict([
         (symbol, mapping[symbol])
@@ -102,7 +102,7 @@ def _order_symbol_mapping(
 
 
 def _order_amplitudes(
-    mapping: Mapping[sp.Indexed, sp.Expr]
+    mapping: Mapping[sp.Indexed, sp.Expr],
 ) -> OrderedDict[sp.Indexed, sp.Expr]:
     return collections.OrderedDict([
         (key, mapping[key])
@@ -320,7 +320,7 @@ class ParameterValues(abc.Mapping):
         self.__parameters[par] = value
 
     @singledispatchmethod
-    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
+    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:  # noqa: PLR6301
         msg = f"Cannot find parameter for key type {type(key).__name__}"
         raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
@@ -397,7 +397,9 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
+    def assign(  # noqa: PLR6301
+        self, selection, builder: ResonanceDynamicsBuilder
+    ) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -904,7 +906,7 @@ def formulate_clebsch_gordan_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
-    from sympy.physics.quantum.cg import CG
+    from sympy.physics.quantum.cg import CG  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
@@ -983,7 +985,7 @@ def formulate_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     >>> formulate_wigner_d(transition, node_id=0)
     WignerD(1, 1, -1, -phi_0, theta_0, 0)
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner
+    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
@@ -1206,7 +1208,7 @@ def formulate_helicity_rotation(
     >>> formulate_helicity_rotation(1/2, -1/2, i, a, b, c)
     PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, (-1/2, 1/2)))
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner
+    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
 
     helicities = map(sp.Rational, _create_spin_range(spin_magnitude, no_zero_spin))
     return PoolSum(
