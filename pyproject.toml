@@ -115,6 +115,9 @@ test = [
     "pytest-xdist",
 ]
 types = [
+    "IPython",
+    "numpy",
+    "pytest",
     "sphinx-api-relink >=0.0.3",
 ]
 viz = ["graphviz"]
