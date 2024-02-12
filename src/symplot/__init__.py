@@ -258,7 +258,7 @@ def prepare_sliders(
 
     >>> n = sp.Symbol("n", integer=True)
     >>> x = sp.Symbol("x")
-    >>> expression, sliders = prepare_sliders(x ** n, plot_symbol=x)
+    >>> expression, sliders = prepare_sliders(x**n, plot_symbol=x)
     >>> expression
     <function _lambdifygenerated at ...>
     >>> sliders

@@ -123,9 +123,7 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     ...         sibling_id = get_sibling_state_id(topology, state_id)
     ...         assert is_opposite_helicity_state(
     ...             topology, state_id
-    ...         ) != is_opposite_helicity_state(
-    ...             topology, sibling_id
-    ...         )
+    ...         ) != is_opposite_helicity_state(topology, sibling_id)
 
     The Wigner-:math:`D` function for a two-particle state treats one helicity with a
     negative sign. This sign originates from Eq.(13) in

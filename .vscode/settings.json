@@ -2,6 +2,9 @@
   "[bibtex]": {
     "editor.formatOnSave": false
   },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[git-commit]": {
     "editor.rulers": [72],
     "rewrap.wrappingColumn": 72
@@ -19,13 +22,12 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
     },
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.rulers": [88]
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "black-formatter.importStrategy": "fromEnvironment",
   "coverage-gutters.coverageFileNames": ["coverage.xml"],
   "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
   "coverage-gutters.showGutterCoverage": false,
