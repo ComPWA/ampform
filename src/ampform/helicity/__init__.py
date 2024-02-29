@@ -75,6 +75,10 @@ if sys.version_info >= (3, 8):
 else:
     from singledispatchmethod import singledispatchmethod
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
     from qrules.topology import MutableTransition
@@ -83,15 +87,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _order_component_mapping(
-    mapping: Mapping[str, sp.Expr]
+    mapping: Mapping[str, sp.Expr],
 ) -> OrderedDict[str, sp.Expr]:
-    return collections.OrderedDict(
-        [(key, mapping[key]) for key in sorted(mapping, key=natural_sorting)]
-    )
+    return collections.OrderedDict([
+        (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
+    ])
 
 
 def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, sp.Expr]
+    mapping: Mapping[sp.Symbol, sp.Expr],
 ) -> OrderedDict[sp.Symbol, sp.Expr]:
     return collections.OrderedDict([
         (symbol, mapping[symbol])
@@ -100,7 +104,7 @@ def _order_symbol_mapping(
 
 
 def _order_amplitudes(
-    mapping: Mapping[sp.Indexed, sp.Expr]
+    mapping: Mapping[sp.Indexed, sp.Expr],
 ) -> OrderedDict[sp.Indexed, sp.Expr]:
     return collections.OrderedDict([
         (key, mapping[key])
@@ -232,7 +236,7 @@ class ParameterValues(abc.Mapping):
     dictionary.
 
     >>> a, b, c = sp.symbols("a b c")
-    >>> parameters = ParameterValues({a: 0.0, b: 1+1j, c: -2})
+    >>> parameters = ParameterValues({a: 0.0, b: 1 + 1j, c: -2})
     >>> parameters[a]
     0.0
     >>> parameters["b"]
@@ -280,7 +284,7 @@ class ParameterValues(abc.Mapping):
         self.__parameters[par] = value
 
     @singledispatchmethod
-    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:
+    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:  # noqa: PLR6301
         msg = f"Cannot find parameter for key type {type(key).__name__}"
         raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
@@ -598,10 +602,12 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
     """
 
+    @override
     def __init__(self, reaction: ReactionInfo) -> None:
         super().__init__(reaction)
         self._naming = CanonicalAmplitudeNameGenerator(reaction)
 
+    @override
     def _formulate_partial_decay(
         self, transition: StateTransition, node_id: int
     ) -> sp.Expr:
@@ -664,7 +670,9 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
+    def assign(  # noqa: PLR6301
+        self, selection, builder: ResonanceDynamicsBuilder
+    ) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -795,7 +803,7 @@ def formulate_isobar_cg_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
-    from sympy.physics.quantum.cg import CG
+    from sympy.physics.quantum.cg import CG  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
@@ -874,7 +882,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     >>> formulate_isobar_wigner_d(transition, node_id=0)
     WignerD(1, 1, -1, -phi_0, theta_0, 0)
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner
+    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)

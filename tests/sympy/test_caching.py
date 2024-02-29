@@ -73,7 +73,7 @@ def test_get_readable_hash(assumptions, expected_hashes, caplog: LogCaptureFixtu
         assert h == expected_hash
     else:
         pytest.skip(f"PYTHONHASHSEED has been set, but is {python_hash_seed}, not 0")
-    assert caplog.text == ""
+    assert not caplog.text
 
 
 def test_get_readable_hash_energy_dependent_width():

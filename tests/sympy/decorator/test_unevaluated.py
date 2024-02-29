@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import Any, ClassVar
 
+import pytest
 import sympy as sp
 
 from ampform.sympy._decorator import argument, unevaluated
@@ -122,6 +123,21 @@ def test_hashable_with_classes():
         x,
         f"{CannotBeSympified.__module__}.{CannotBeSympified.__qualname__}",
     )
+
+
+def test_latex_repr_typo_warning():
+    with pytest.warns(
+        UserWarning,
+        match=r"Class defines a _latex_repr attribute, but it should be _latex_repr_",
+    ):
+
+        @unevaluated(real=False)
+        class MyExpr(sp.Expr):  # pyright: ignore[reportUnusedClass]
+            x: sp.Symbol
+            _latex_repr = "<The attribute name is wrong>"
+
+            def evaluate(self) -> sp.Expr:
+                return self.x
 
 
 def test_no_implement_doit():

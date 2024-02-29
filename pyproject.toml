@@ -51,7 +51,10 @@ name = "ampform"
 requires-python = ">=3.7"
 
 [project.optional-dependencies]
-all = ["ampform[viz]"]
+all = [
+    "ampform[scipy]",
+    "ampform[viz]",
+]
 dev = [
     "ampform[all]",
     "ampform[doc]",
@@ -63,7 +66,7 @@ dev = [
 ]
 doc = [
     "Sphinx >=3",
-    "ampform[viz]",
+    "ampform[all]",
     "black",
     "ipympl",
     "matplotlib",
@@ -84,8 +87,8 @@ doc = [
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
 ]
-format = ["black"]
 jupyter = [
+    "black",
     "isort",
     "jupyterlab",
     "jupyterlab-code-formatter",
@@ -95,22 +98,15 @@ jupyter = [
     "python-lsp-ruff",
     "python-lsp-server[rope]",
 ]
-lint = [
-    "ampform[mypy]",
+scipy = ["scipy"]
+sty = [
+    "ampform[types]",
+    "mypy >=0.730",
+    "pre-commit >=1.4.0",
     "ruff",
 ]
-mypy = [
-    "mypy >=0.730",
-    "sphinx-api-relink >=0.0.3",
-]
-sty = [
-    "ampform[format]",
-    "ampform[lint]",
-    "ampform[test]", # for pytest type hints
-    "pre-commit >=1.4.0",
-]
 test = [
-    "black",
+    "ampform[scipy]",
     "ipywidgets", # symplot
     "nbmake",
     "numpy",
@@ -118,6 +114,13 @@ test = [
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
+]
+types = [
+    "IPython",
+    "ipywidgets",
+    "numpy",
+    "pytest",
+    "sphinx-api-relink >=0.0.3",
 ]
 viz = ["graphviz"]
 
@@ -146,31 +149,6 @@ where = ["src"]
 [tool.setuptools_scm]
 write_to = "src/ampform/version.py"
 
-[tool.black]
-exclude = '''
-/(
-    .*\.egg-info
-    | .*build
-    | \.eggs
-    | \.git
-    | \.pytest_cache
-    | \.tox
-    | \.venv
-    | \.vscode
-    | dist
-)/
-'''
-include = '\.pyi?$'
-preview = true
-target-version = [
-    "py310",
-    "py311",
-    "py312",
-    "py37",
-    "py38",
-    "py39",
-]
-
 [tool.coverage.run]
 branch = true
 source = ["src"]
@@ -184,6 +162,10 @@ warn_unused_configs = true
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = ["graphviz.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["scipy.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -210,14 +192,21 @@ exclude = [
     "**/_build",
     "**/typings",
 ]
+reportArgumentType = false
+reportAssignmentType = false
+reportAttributeAccessIssue = false
+reportCallIssue = false
 reportGeneralTypeIssues = false
 reportIncompatibleMethodOverride = false
+reportInconsistentOverload = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportMissingTypeStubs = false
+reportOperatorIssue = false
 reportOverlappingOverload = false
 reportPrivateImportUsage = false
 reportPrivateUsage = false
+reportReturnType = false
 reportUnboundVariable = false
 reportUnknownArgumentType = false
 reportUnknownLambdaType = false
@@ -262,6 +251,7 @@ filterwarnings = [
 markers = ["slow: marks tests as slow (select with '-m slow')"]
 norecursedirs = [
     ".ipynb_checkpoints",
+    ".virtual_documents",
     "_build",
 ]
 testpaths = [
@@ -272,6 +262,19 @@ testpaths = [
 [tool.ruff]
 extend-exclude = ["typings"]
 extend-include = ["*.ipynb"]
+preview = true
+show-fixes = true
+src = [
+    "src",
+    "tests",
+]
+target-version = "py37"
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+[tool.ruff.lint]
 extend-select = [
     "A",
     "B",
@@ -315,27 +318,24 @@ ignore = [
     "D407",
     "D416",
     "E501",
+    "ISC001",
     "PLR0913",
+    "PLW1514",
     "PLW2901",
     "SIM108",
 ]
-show-fixes = true
-src = [
-    "src",
-    "tests",
-]
-target-version = "py37"
 task-tags = ["cspell"]
-
-[tool.ruff.isort]
-known-third-party = ["sympy"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
     "ampform.sympy._decorator.argument",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.isort]
+known-third-party = ["sympy"]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",
@@ -347,12 +347,14 @@ extend-immutable-calls = [
     "F404",
     "N806",
     "N816",
+    "PLC2401",
     "PLR09",
     "PLR2004",
     "PLW0602",
     "PLW0603",
     "S101",
     "S301",
+    "S403",
     "T20",
     "TCH00",
 ]
@@ -363,7 +365,12 @@ extend-immutable-calls = [
     "N806",
     "S101",
     "S113",
+    "S403",
     "T201",
+]
+"docs/_extend_docstrings.py" = [
+    "PLC0415",
+    "PLC2701",
 ]
 "docs/conf.py" = [
     "A001",
@@ -375,14 +382,22 @@ extend-immutable-calls = [
     "D",
     "INP001",
     "PGH001",
+    "PLC2701",
     "PLR0913",
+    "PLR0914",
+    "PLR0917",
     "PLR2004",
+    "PLR6301",
     "S101",
     "T20",
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = ["_latex_repr_", "_repr_pretty_"]
+max-positional-args = 7
 
 [tool.tomlsort]
 all = false

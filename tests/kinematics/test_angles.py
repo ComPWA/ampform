@@ -31,7 +31,7 @@ s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2  # type: ignore[assignment
 
 @pytest.fixture(scope="session")
 def helicity_angles(
-    topology_and_momentum_symbols: tuple[Topology, FourMomenta]
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ) -> dict[sp.Symbol, sp.Expr]:
     topology, momentum_symbols = topology_and_momentum_symbols
     return compute_helicity_angles(momentum_symbols, topology)
@@ -292,9 +292,9 @@ def test_formulate_zeta_angle_equation_a6():
     """
     for i in [1, 2, 3]:
         for k in [1, 2, 3]:
-            _, ζi_k0 = formulate_zeta_angle(i, k, 0)
-            _, ζi_ki = formulate_zeta_angle(i, k, i)
-            _, ζi_kk = formulate_zeta_angle(i, k, k)
+            _, ζi_k0 = formulate_zeta_angle(i, k, 0)  # noqa: PLC2401
+            _, ζi_ki = formulate_zeta_angle(i, k, i)  # noqa: PLC2401
+            _, ζi_kk = formulate_zeta_angle(i, k, k)  # noqa: PLC2401
             assert ζi_ki == ζi_k0
             assert ζi_kk == 0
 
@@ -334,9 +334,9 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
         s2: 3.0,
         s3: s3_expr,
     }
-    ζ1 = float(zeta1.doit().subs(masses))
-    ζ2 = float(zeta2.doit().subs(masses))
-    ζ3 = float(zeta3.doit().subs(masses))
+    ζ1 = float(zeta1.doit().subs(masses))  # noqa: PLC2401
+    ζ2 = float(zeta2.doit().subs(masses))  # noqa: PLC2401
+    ζ3 = float(zeta3.doit().subs(masses))  # noqa: PLC2401
     np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 

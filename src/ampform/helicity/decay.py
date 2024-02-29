@@ -118,7 +118,7 @@ def _(obj: tuple) -> TwoBodyDecay:
 
 def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
     if get_qrules_version() >= (0, 10):
-        from qrules.topology import FrozenTransition
+        from qrules.topology import FrozenTransition  # noqa: PLC0415
 
         if isinstance(obj, FrozenTransition):
             if any(not isinstance(s, State) for s in obj.states.values()):
@@ -153,9 +153,7 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     ...         sibling_id = get_sibling_state_id(topology, state_id)
     ...         assert is_opposite_helicity_state(
     ...             topology, state_id
-    ...         ) != is_opposite_helicity_state(
-    ...             topology, sibling_id
-    ...         )
+    ...         ) != is_opposite_helicity_state(topology, sibling_id)
 
     The Wigner-:math:`D` function for a two-particle state treats one helicity with a
     negative sign. This sign originates from Eq.(13) in
@@ -358,8 +356,7 @@ def determine_attached_final_state(topology: Topology, state_id: int) -> list[in
     >>> import pytest
     >>> from ampform._qrules import get_qrules_version
     >>> if get_qrules_version() < (0, 10):
-    ...     pytest.skip('Doctest only works for qrules>=0.10')
-    ...
+    ...     pytest.skip("Doctest only works for qrules>=0.10")
     """
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:

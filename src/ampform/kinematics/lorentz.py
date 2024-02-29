@@ -195,7 +195,7 @@ class MinkowskiMetric(NumPyPrintable):
     momentum: sp.Basic
     _latex_repr_ = R"\boldsymbol{\eta}"
 
-    def as_explicit(self) -> sp.MutableDenseMatrix:
+    def as_explicit(self) -> sp.MutableDenseMatrix:  # noqa: PLR6301
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, -1, 0, 0],

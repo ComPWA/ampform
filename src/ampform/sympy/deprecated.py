@@ -6,12 +6,17 @@
 from __future__ import annotations
 
 import functools
+import sys
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, TypeVar
 from warnings import warn
 
 import sympy as sp
 
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
@@ -58,6 +63,7 @@ class UnevaluatedExpression(sp.Expr):
         )
         super().__init_subclass__(**kwargs)
 
+    @override
     def __new__(
         cls: type[DecoratedClass],
         *args,
@@ -72,15 +78,14 @@ class UnevaluatedExpression(sp.Expr):
         used in its implementation, like so:
 
         >>> class MyExpression(UnevaluatedExpression):
-        ...    def __new__(
-        ...        cls, x: sp.Symbol, y: sp.Symbol, n: int, **hints
-        ...    ) -> "MyExpression":
-        ...        return create_expression(cls, x, y, n, **hints)
+        ...     def __new__(
+        ...         cls, x: sp.Symbol, y: sp.Symbol, n: int, **hints
+        ...     ) -> "MyExpression":
+        ...         return create_expression(cls, x, y, n, **hints)
         ...
-        ...    def evaluate(self) -> sp.Expr:
-        ...        x, y, n = self.args
-        ...        return (x + y)**n
-        ...
+        ...     def evaluate(self) -> sp.Expr:
+        ...         x, y, n = self.args
+        ...         return (x + y) ** n
         >>> x, y = sp.symbols("x y")
         >>> expr = MyExpression(x, y, n=3)
         >>> expr
@@ -103,6 +108,7 @@ class UnevaluatedExpression(sp.Expr):
         kwargs = {"name": self._name}
         return args, kwargs
 
+    @override
     def _hashable_content(self) -> tuple:
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None

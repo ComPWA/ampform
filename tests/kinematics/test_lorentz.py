@@ -368,7 +368,7 @@ class TestOnesZerosArray:
 
 
 def test_compute_invariant_masses_names(
-    topology_and_momentum_symbols: tuple[Topology, FourMomenta]
+    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
 ):
     topology, momentum_symbols = topology_and_momentum_symbols
     invariant_masses = compute_invariant_masses(momentum_symbols, topology)

@@ -44,7 +44,7 @@ class TestNonRelativisticKMatrix:
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
     free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
     residue_constants = filter(lambda s: s.name.startswith(R"\gamma_"), free_symbols)
-    return expression.xreplace({gamma: 1 for gamma in residue_constants})
+    return expression.xreplace(dict.fromkeys(residue_constants, 1))
 
 
 def _rename_widths(expression: sp.Expr) -> sp.Expr:

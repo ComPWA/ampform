@@ -4,6 +4,7 @@ import dataclasses
 import functools
 import inspect
 import sys
+import warnings
 from collections import abc
 from dataclasses import MISSING, Field
 from dataclasses import astuple as _get_arguments
@@ -15,7 +16,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, overload
 
 import sympy as sp
-from sympy.core.basic import _aresame
+from sympy.core.basic import _aresame  # noqa: PLC2701
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 if sys.version_info < (3, 8):
@@ -77,7 +78,9 @@ class SymPyAssumptions(TypedDict, total=False):
 def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # type: ignore[assignment]
 @overload
 def argument(
-    *, default_factory: Callable[[], T] = MISSING, sympify: bool = True  # type: ignore[assignment]
+    *,
+    default_factory: Callable[[], T] = MISSING,  # type: ignore[assignment]
+    sympify: bool = True,
 ) -> T: ...
 def argument(
     *,
@@ -124,7 +127,6 @@ def unevaluated(
     ...     def evaluate(self) -> sp.Expr:
     ...         x, y = self.args
     ...         return x**2 + y**2
-    ...
     >>> a, b = sp.symbols("a b")
     >>> expr = MyExpr(a, b**2)
     >>> sp.latex(expr)
@@ -143,7 +145,6 @@ def unevaluated(
     ...
     ...     def evaluate(self) -> sp.Expr:
     ...         return sp.sqrt(self.x)
-    ...
     >>> y = sp.Symbol("y", nonnegative=True)
     >>> expr = Function(x=y**2)
     >>> sp.latex(expr)
@@ -152,7 +153,7 @@ def unevaluated(
     y
 
     Attributes to the class are fed to the `~object.__new__` constructor of the
-    :class`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
+    :class:`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
     like in the :class:`~sympy.core.expr.Expr` class, these arguments are automatically
     `sympified
     <https://docs.sympy.org/latest/modules/core.html#module-sympy.core.sympify>`_.
@@ -160,7 +161,6 @@ def unevaluated(
 
     >>> class Transformation:
     ...     def __call__(self, x: sp.Basic, y: sp.Basic) -> sp.Expr: ...
-    ...
     >>> @unevaluated
     ... class MyExpr(sp.Expr):
     ...     x: Any
@@ -169,7 +169,6 @@ def unevaluated(
     ...
     ...     def evaluate(self) -> sp.Expr:
     ...         return self.functor(self.x, self.y)
-    ...
     >>> expr = MyExpr(0, y=3.14, functor=Transformation)
     >>> isinstance(expr.x, sp.Integer)
     True
@@ -187,6 +186,11 @@ def unevaluated(
         cls = _implement_new_method(cls)
         if implement_doit:
             cls = _implement_doit(cls)
+        typos = ["_latex_repr"]
+        for typo in typos:
+            if hasattr(cls, typo):
+                msg = f"Class defines a {typo} attribute, but it should be _latex_repr_"
+                warnings.warn(msg, category=UserWarning, stacklevel=1)
         if hasattr(cls, "_latex_repr_"):
             cls = _implement_latex_repr(cls)
         _set_assumptions(**assumptions)(cls)
@@ -205,7 +209,6 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     ... class MyExpr(sp.Expr):
     ...     a: sp.Symbol
     ...     b: sp.Symbol
-    ...
     >>> x, y = sp.symbols("x y")
     >>> expr = MyExpr(x**2, y**2)
     >>> expr.a
@@ -345,10 +348,6 @@ class LatexMethod(Protocol):
 @dataclass_transform(field_specifiers=(argument, _create_field))
 def _implement_latex_repr(cls: type[T]) -> type[T]:
     repr_name = "_latex_repr_"
-    repr_mistyped = "_latex_repr"
-    if hasattr(cls, repr_mistyped):
-        msg = f"Class defines a {repr_mistyped} attribute, but it should be {repr_name}"
-        raise AttributeError(msg)
     _latex_repr_: LatexMethod | str | None = getattr(cls, repr_name, None)
     if _latex_repr_ is None:
         msg = (
@@ -433,7 +432,6 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     ...     n: ClassVar[int] = 2
     ...
     ...     def print(self): ...
-    ...
     >>> _get_attribute_names(MyClass)
     ('a', 'b')
     """
