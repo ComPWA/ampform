@@ -41,10 +41,10 @@ class NameGenerator(ABC):
     ) -> str:
         """Generates a unique name for the amplitude corresponding.
 
-        That is, corresponging to the given `~qrules.transition.StateTransition`. If
+        That is, corresponging to the given `~qrules.topology.Transition`. If
         ``node_id`` is given, it generates a unique name for the partial amplitude
         corresponding to the interaction node of the given
-        `~qrules.transition.StateTransition`.
+        `~qrules.topology.Transition`.
         """
 
     @abstractmethod

@@ -679,7 +679,7 @@ class DynamicsSelector(abc.Mapping):
 
         - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
           `~qrules.particle.Particle`.
-        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.topology.Transition` with a
           node ID: set dynamics for one specific transition node.
         """
         msg = (

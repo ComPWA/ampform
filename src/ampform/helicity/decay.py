@@ -1,4 +1,4 @@
-"""Extract two-body decay info from a `~qrules.transition.StateTransition`."""
+"""Extract two-body decay info from a `~qrules.topology.Transition`."""
 
 from __future__ import annotations
 
@@ -44,11 +44,11 @@ class StateWithID(State):
 
 @frozen
 class TwoBodyDecay:
-    """Two-body sub-decay in a `~qrules.transition.StateTransition`.
+    """Two-body sub-decay in a `~qrules.topology.Transition`.
 
     This container class ensures that:
 
-    1. a selected node in a `~qrules.transition.StateTransition` is indeed a 1-to-2 body
+    1. a selected node in a `~qrules.topology.Transition` is indeed a 1-to-2 body
        decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
@@ -407,7 +407,7 @@ def group_by_spin_projection(
 ) -> list[list[StateTransition]]:
     """Match final and initial states in groups.
 
-    Each `~qrules.transition.StateTransition` corresponds to a specific state transition
+    Each `~qrules.topology.Transition` corresponds to a specific state transition
     amplitude. This function groups together transitions, which have the same initial
     and final state (including spin). This is needed to determine the coherency of the
     individual amplitude parts.

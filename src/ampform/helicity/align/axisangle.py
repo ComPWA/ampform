@@ -197,7 +197,7 @@ def formulate_wigner_rotation(
     :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially Eq.(36).
 
     Args:
-        transition: The `~qrules.transition.StateTransition` in which you
+        transition: The `~qrules.topology.Transition` in which you
             want to rotate one of the spin states.
         rotated_state_id: The state ID of a spin `~qrules.transition.State`
             that you want to rotate.
