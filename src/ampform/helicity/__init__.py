@@ -57,10 +57,13 @@ from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
+    create_amplitude_base,
+    create_amplitude_symbol,
+    create_helicity_symbol,
+    create_spin_projection_symbol,
     generate_transition_label,
     get_helicity_angle_symbols,
     get_helicity_suffix,
-    get_topology_identifier,
     natural_sorting,
 )
 from ampform.kinematics import HelicityAdapter
@@ -606,7 +609,7 @@ class HelicityAmplitudeBuilder:
             for transition in group:
                 for i in outer_state_ids:
                     state = transition.states[i]
-                    symbol = _create_spin_projection_symbol(i)
+                    symbol = create_spin_projection_symbol(i)
                     value = sp.Rational(state.spin_projection)
                     spin_projections[symbol].add(value)
 
@@ -616,8 +619,7 @@ class HelicityAmplitudeBuilder:
         else:
             indices = list(spin_projections)
             amplitude = sum(  # type: ignore[assignment]
-                _create_amplitude_base(topology)[indices]
-                for topology in topology_groups
+                create_amplitude_base(topology)[indices] for topology in topology_groups
             )
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
@@ -627,10 +629,10 @@ class HelicityAmplitudeBuilder:
         outer_state_ids = get_outer_state_ids(self.__reaction)
         amplitude = sp.S.Zero
         for topology, transitions in topology_groups.items():
-            base = _create_amplitude_base(topology)
+            base = create_amplitude_base(topology)
             helicities = [
                 _get_opposite_helicity_sign(topology, i)
-                * _create_helicity_symbol(topology, i)
+                * create_helicity_symbol(topology, i)
                 for i in outer_state_ids
             ]
             amplitude_symbol = base[helicities]
@@ -667,7 +669,7 @@ class HelicityAmplitudeBuilder:
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
-        symbol = _create_amplitude_symbol(first_transition)
+        symbol = create_amplitude_symbol(first_transition)
         expression = sum(sequential_expressions)  # type: ignore[assignment]
         self.__ingredients.amplitudes[symbol] = expression
         return expression
@@ -766,43 +768,10 @@ class HelicityAmplitudeBuilder:
         return None
 
 
-def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
-    outer_state_ids = get_outer_state_ids(transition)
-    helicities = tuple(
-        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
-    )
-    base = _create_amplitude_base(transition.topology)
-    return base[helicities]
-
-
 def _get_opposite_helicity_sign(topology: Topology, state_id: int) -> Literal[-1, 1]:
     if state_id != -1 and is_opposite_helicity_state(topology, state_id):
         return -1
     return 1
-
-
-def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
-    superscript = get_topology_identifier(topology)
-    return sp.IndexedBase(f"A^{superscript}", complex=True)
-
-
-def _create_helicity_symbol(
-    topology: Topology, state_id: int, root: str = "lambda"
-) -> sp.Symbol:
-    if state_id == -1:  # initial state
-        name = "m_A"
-    else:
-        suffix = get_helicity_suffix(topology, state_id)
-        name = f"{root}{suffix}"
-    return sp.Symbol(name, rational=True)
-
-
-def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
-    if state_id == -1:  # initial state
-        suffix = "_A"
-    else:
-        suffix = str(state_id)
-    return sp.Symbol(f"m{suffix}", rational=True)
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
@@ -1016,7 +985,7 @@ def formulate_rotation_chain(
     plus a Wigner rotation (see :func:`.formulate_wigner_rotation`) in case there is
     more than one helicity rotation.
     """
-    helicity_symbol = _create_spin_projection_symbol(rotated_state_id)
+    helicity_symbol = create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, helicity_symbol
     )
