@@ -1,4 +1,4 @@
-"""Extract two-body decay info from a `~qrules.transition.StateTransition`."""
+"""Extract two-body decay info from a `~qrules.topology.Transition`."""
 
 from __future__ import annotations
 
@@ -8,16 +8,22 @@ from functools import lru_cache, singledispatch
 from typing import TYPE_CHECKING, Iterable
 
 from attrs import frozen
+from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import ReactionInfo, State, StateTransition
 
+from ampform._qrules import get_qrules_version
+
 if TYPE_CHECKING:
-    from qrules.quantum_numbers import InteractionProperties
     from qrules.topology import Topology
 
 if sys.version_info < (3, 8):
     from typing_extensions import Literal
 else:
     from typing import Literal
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeGuard
+else:
+    from typing import TypeGuard
 
 
 @frozen
@@ -38,11 +44,11 @@ class StateWithID(State):
 
 @frozen
 class TwoBodyDecay:
-    """Two-body sub-decay in a `~qrules.transition.StateTransition`.
+    """Two-body sub-decay in a `~qrules.topology.Transition`.
 
     This container class ensures that:
 
-    1. a selected node in a `~qrules.transition.StateTransition` is indeed a 1-to-2 body
+    1. a selected node in a `~qrules.topology.Transition` is indeed a 1-to-2 body
        decay
 
     2. its two `.children` are sorted by whether they decay further or not (see
@@ -104,10 +110,28 @@ def _(obj: TwoBodyDecay) -> TwoBodyDecay:
 def _(obj: tuple) -> TwoBodyDecay:
     if len(obj) == 2:  # noqa: PLR2004
         transition, node_id = obj
-        if isinstance(transition, StateTransition) and isinstance(node_id, int):
-            return TwoBodyDecay.from_transition(*obj)
+        if _is_qrules_state_transition(transition) and isinstance(node_id, int):
+            return TwoBodyDecay.from_transition(transition, node_id)
     msg = f"Cannot create a {TwoBodyDecay.__name__} from {obj}"
     raise NotImplementedError(msg)
+
+
+def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
+    if get_qrules_version() >= (0, 10):
+        from qrules.topology import FrozenTransition  # noqa: PLC0415
+
+        if isinstance(obj, FrozenTransition):
+            if any(not isinstance(s, State) for s in obj.states.values()):
+                return False
+            if any(
+                not isinstance(i, InteractionProperties)
+                for i in obj.interactions.values()
+            ):
+                return False
+            return True
+    if get_qrules_version() < (0, 10) and isinstance(obj, StateTransition):  # type: ignore[misc]
+        return True
+    return False
 
 
 @lru_cache(maxsize=None)
@@ -327,8 +351,12 @@ def determine_attached_final_state(topology: Topology, state_id: int) -> list[in
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(5)
-    >>> determine_attached_final_state(topologies[0], state_id=5)
+    >>> determine_attached_final_state(topologies[3], state_id=5)
     [0, 3, 4]
+    >>> import pytest
+    >>> from ampform._qrules import get_qrules_version
+    >>> if get_qrules_version() < (0, 10):
+    ...     pytest.skip("Doctest only works for qrules>=0.10")
     """
     edge = topology.edges[state_id]
     if edge.ending_node_id is None:
@@ -342,11 +370,18 @@ def get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
     raise NotImplementedError(msg)
 
 
-@get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> list[int]:
+def __convert_state_transition(transition: StateTransition) -> list[int]:
     outer_state_ids = list(transition.initial_states)
     outer_state_ids += sorted(transition.final_states)
     return outer_state_ids
+
+
+if get_qrules_version() < (0, 10):
+    get_outer_state_ids.register(StateTransition)(__convert_state_transition)
+else:
+    from qrules.topology import FrozenTransition
+
+    get_outer_state_ids.register(FrozenTransition)(__convert_state_transition)
 
 
 @get_outer_state_ids.register(ReactionInfo)
@@ -372,7 +407,7 @@ def group_by_spin_projection(
 ) -> list[list[StateTransition]]:
     """Match final and initial states in groups.
 
-    Each `~qrules.transition.StateTransition` corresponds to a specific state transition
+    Each `~qrules.topology.Transition` corresponds to a specific state transition
     amplitude. This function groups together transitions, which have the same initial
     and final state (including spin). This is needed to determine the coherency of the
     individual amplitude parts.

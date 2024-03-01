@@ -601,8 +601,10 @@ def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
     state :math:`5` is :math:`m_{034}`, because :math:`p_5=p_0+p_3+p_4`:
 
     >>> from qrules.topology import create_isobar_topologies
+    >>> from ampform._qrules import get_qrules_version
     >>> topologies = create_isobar_topologies(5)
-    >>> get_invariant_mass_symbol(topologies[0], state_id=5)
+    >>> topology = topologies[0 if get_qrules_version() < (0, 10) else 3]
+    >>> get_invariant_mass_symbol(topology, state_id=5)
     m_034
 
     Naturally, the 'invariant' mass label for a final state is just the mass of the

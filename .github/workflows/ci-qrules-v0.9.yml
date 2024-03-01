@@ -1,0 +1,36 @@
+name: Test with QRules v0.9
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONHASHSEED: "0"
+
+on:
+  push:
+    branches:
+      - main
+      - epic/*
+      - "[0-9]+.[0-9]+.x"
+  pull_request:
+    branches:
+      - main
+      - epic/*
+      - "[0-9]+.[0-9]+.x"
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: Run unit tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ComPWA/actions/pip-install@v1
+        with:
+          additional-packages: tox
+          editable: "yes"
+          extras: test
+          python-version: "3.9"
+          specific-packages: qrules==0.9.*
+      - run: pytest -n auto

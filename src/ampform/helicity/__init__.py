@@ -31,8 +31,14 @@ from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
-from qrules.transition import ReactionInfo, StateTransition
+from qrules.transition import (
+    InteractionProperties,
+    ReactionInfo,
+    State,
+    StateTransition,
+)
 
+from ampform._qrules import get_qrules_version
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
@@ -75,6 +81,7 @@ else:
     from typing import override
 if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
+    from qrules.topology import MutableTransition
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -453,11 +460,9 @@ class HelicityAmplitudeBuilder:
     ) -> sp.Expr:
         sequential_expressions: list[sp.Expr] = []
         for transition in transitions:
-            sequential_graphs = perform_external_edge_identical_particle_combinatorics(
-                transition.to_graph()
-            )
+            sequential_graphs = _perform_combinatorics(transition)
             for graph in sequential_graphs:
-                first_transition = StateTransition.from_graph(graph)
+                first_transition = _freeze(graph)
                 expression = self.__formulate_sequential_decay(first_transition)
                 sequential_expressions.append(expression)
 
@@ -561,6 +566,24 @@ class HelicityAmplitudeBuilder:
         return None
 
 
+def _perform_combinatorics(
+    transition: StateTransition,
+) -> list[MutableTransition[State, InteractionProperties]]:
+    if get_qrules_version() < (0, 10):
+        return perform_external_edge_identical_particle_combinatorics(
+            transition.to_graph()  # type: ignore[attr-defined]
+        )
+    graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
+    combinations = perform_external_edge_identical_particle_combinatorics(graph)
+    return [g.freeze().convert(lambda s: State(*s)).unfreeze() for g in combinations]
+
+
+def _freeze(graph: MutableTransition[State, InteractionProperties]) -> StateTransition:
+    if get_qrules_version() < (0, 10):
+        return StateTransition.from_graph(graph)  # type: ignore[attr-defined]
+    return graph.freeze()
+
+
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     r"""Amplitude model generator for the canonical helicity formalism.
 
@@ -656,7 +679,7 @@ class DynamicsSelector(abc.Mapping):
 
         - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
           `~qrules.particle.Particle`.
-        - `.TwoBodyDecay` or `tuple` of a `~qrules.transition.StateTransition` with a
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.topology.Transition` with a
           node ID: set dynamics for one specific transition node.
         """
         msg = (

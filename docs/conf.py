@@ -59,7 +59,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "ReactionInfo": "qrules.transition.ReactionInfo",
     "Slider": ("obj", "symplot.Slider"),
     "State": "qrules.transition.State",
-    "StateTransition": "qrules.transition.StateTransition",
+    "StateTransition": "qrules.topology.Transition",
     "T": "TypeVar",
     "Topology": "qrules.topology.Topology",
     "WignerD": "sympy.physics.quantum.spin.WignerD",
@@ -238,7 +238,7 @@ intersphinx_mapping = {
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
-    "qrules": (f"https://qrules.readthedocs.io/en/{pin('qrules')}", None),
+    "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
 linkcheck_anchors = False

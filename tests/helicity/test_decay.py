@@ -6,6 +6,7 @@ from typing import Iterable
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
 
+from ampform._qrules import get_qrules_version
 from ampform.helicity.decay import (
     determine_attached_final_state,
     get_sibling_state_id,
@@ -24,10 +25,10 @@ def test_determine_attached_final_state():
                 topology.outgoing_edge_ids
             )
     # intermediate states
-    topology = topologies[0]
+    topology = topologies[0 if get_qrules_version() < (0, 10) else 1]
     assert determine_attached_final_state(topology, state_id=4) == [0, 1]
     assert determine_attached_final_state(topology, state_id=5) == [2, 3]
-    topology = topologies[1]
+    topology = topologies[1 if get_qrules_version() < (0, 10) else 0]
     assert determine_attached_final_state(topology, state_id=4) == [1, 2, 3]
     assert determine_attached_final_state(topology, state_id=5) == [2, 3]
 
