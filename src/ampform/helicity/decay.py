@@ -7,7 +7,7 @@ from functools import lru_cache, singledispatch
 from typing import TYPE_CHECKING, Iterable
 
 from attrs import frozen
-from qrules.transition import State, StateTransition
+from qrules.transition import ReactionInfo, State, StateTransition
 
 if TYPE_CHECKING:
     from qrules.quantum_numbers import InteractionProperties
@@ -293,6 +293,24 @@ def determine_attached_final_state(topology: Topology, state_id: int) -> list[in
     if edge.ending_node_id is None:
         return [state_id]
     return sorted(topology.get_originating_final_state_edge_ids(edge.ending_node_id))
+
+
+@singledispatch
+def get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
+    msg = f"Cannot get outer state IDs from a {type(obj).__name__}"
+    raise NotImplementedError(msg)
+
+
+@get_outer_state_ids.register(StateTransition)
+def _(transition: StateTransition) -> list[int]:
+    outer_state_ids = list(transition.initial_states)
+    outer_state_ids += sorted(transition.final_states)
+    return outer_state_ids
+
+
+@get_outer_state_ids.register(ReactionInfo)
+def _(reaction: ReactionInfo) -> list[int]:
+    return get_outer_state_ids(reaction.transitions[0])
 
 
 def get_prefactor(transition: StateTransition) -> float:

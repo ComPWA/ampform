@@ -14,7 +14,7 @@ import sys
 from collections import OrderedDict, abc
 from decimal import Decimal
 from difflib import get_close_matches
-from functools import reduce, singledispatch
+from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Generator,
@@ -45,6 +45,7 @@ from ampform.dynamics.builder import (
 )
 from ampform.helicity.decay import (
     TwoBodyDecay,
+    get_outer_state_ids,
     get_parent_id,
     get_prefactor,
     get_sibling_state_id,
@@ -595,7 +596,7 @@ class HelicityAmplitudeBuilder:
         )
 
     def __formulate_top_expression(self) -> PoolSum:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = get_outer_state_ids(self.__reaction)
         spin_projections: collections.defaultdict[sp.Symbol, set[sp.Rational]] = (
             collections.defaultdict(set)
         )
@@ -623,7 +624,7 @@ class HelicityAmplitudeBuilder:
     def __formulate_aligned_amplitude(
         self, topology_groups: dict[Topology, list[StateTransition]]
     ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = get_outer_state_ids(self.__reaction)
         amplitude = sp.S.Zero
         for topology, transitions in topology_groups.items():
             base = _create_amplitude_base(topology)
@@ -766,7 +767,7 @@ class HelicityAmplitudeBuilder:
 
 
 def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
-    outer_state_ids = _get_outer_state_ids(transition)
+    outer_state_ids = get_outer_state_ids(transition)
     helicities = tuple(
         sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
     )
@@ -802,24 +803,6 @@ def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
     else:
         suffix = str(state_id)
     return sp.Symbol(f"m{suffix}", rational=True)
-
-
-@singledispatch
-def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    msg = f"Cannot get outer state IDs from a {type(obj).__name__}"
-    raise NotImplementedError(msg)
-
-
-@_get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> list[int]:
-    outer_state_ids = list(transition.initial_states)
-    outer_state_ids += sorted(transition.final_states)
-    return outer_state_ids
-
-
-@_get_outer_state_ids.register(ReactionInfo)
-def _(reaction: ReactionInfo) -> list[int]:
-    return _get_outer_state_ids(reaction.transitions[0])
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
