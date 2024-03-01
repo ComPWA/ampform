@@ -15,6 +15,7 @@ from ampform.helicity.decay import (
     assert_isobar_topology,
     determine_attached_final_state,
     get_helicity_info,
+    get_outer_state_ids,
     get_sorted_states,
 )
 
@@ -287,6 +288,20 @@ class CanonicalAmplitudeNameGenerator(HelicityAmplitudeNameGenerator):
         return Rf" \xrightarrow[S={coupled_spin}]{{L={angular_momentum}}} "
 
 
+def create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
+    outer_state_ids = get_outer_state_ids(transition)
+    helicities = tuple(
+        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
+    )
+    base = create_amplitude_base(transition.topology)
+    return base[helicities]
+
+
+def create_amplitude_base(topology: Topology) -> sp.IndexedBase:
+    superscript = get_topology_identifier(topology)
+    return sp.IndexedBase(f"A^{superscript}", complex=True)
+
+
 def generate_transition_label(transition: StateTransition) -> str:
     r"""Generate a label for a coherent intensity, including spin projection.
 
@@ -495,3 +510,22 @@ def _render_float(value: float) -> str:
     if value > 0:
         return f"+{rational}"
     return str(rational)
+
+
+def create_helicity_symbol(
+    topology: Topology, state_id: int, root: str = "lambda"
+) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        name = "m_A"
+    else:
+        suffix = get_helicity_suffix(topology, state_id)
+        name = f"{root}{suffix}"
+    return sp.Symbol(name, rational=True)
+
+
+def create_spin_projection_symbol(state_id: int) -> sp.Symbol:
+    if state_id == -1:  # initial state
+        suffix = "_A"
+    else:
+        suffix = str(state_id)
+    return sp.Symbol(f"m{suffix}", rational=True)

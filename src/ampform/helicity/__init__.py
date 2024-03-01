@@ -14,7 +14,7 @@ import sys
 from collections import OrderedDict, abc
 from decimal import Decimal
 from difflib import get_close_matches
-from functools import reduce, singledispatch
+from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Generator,
@@ -45,6 +45,7 @@ from ampform.dynamics.builder import (
 )
 from ampform.helicity.decay import (
     TwoBodyDecay,
+    get_outer_state_ids,
     get_parent_id,
     get_prefactor,
     get_sibling_state_id,
@@ -56,10 +57,13 @@ from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
+    create_amplitude_base,
+    create_amplitude_symbol,
+    create_helicity_symbol,
+    create_spin_projection_symbol,
     generate_transition_label,
     get_helicity_angle_symbols,
     get_helicity_suffix,
-    get_topology_identifier,
     natural_sorting,
 )
 from ampform.kinematics import HelicityAdapter
@@ -595,7 +599,7 @@ class HelicityAmplitudeBuilder:
         )
 
     def __formulate_top_expression(self) -> PoolSum:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = get_outer_state_ids(self.__reaction)
         spin_projections: collections.defaultdict[sp.Symbol, set[sp.Rational]] = (
             collections.defaultdict(set)
         )
@@ -605,7 +609,7 @@ class HelicityAmplitudeBuilder:
             for transition in group:
                 for i in outer_state_ids:
                     state = transition.states[i]
-                    symbol = _create_spin_projection_symbol(i)
+                    symbol = create_spin_projection_symbol(i)
                     value = sp.Rational(state.spin_projection)
                     spin_projections[symbol].add(value)
 
@@ -615,21 +619,20 @@ class HelicityAmplitudeBuilder:
         else:
             indices = list(spin_projections)
             amplitude = sum(  # type: ignore[assignment]
-                _create_amplitude_base(topology)[indices]
-                for topology in topology_groups
+                create_amplitude_base(topology)[indices] for topology in topology_groups
             )
         return PoolSum(abs(amplitude) ** 2, *spin_projections.items())
 
     def __formulate_aligned_amplitude(
         self, topology_groups: dict[Topology, list[StateTransition]]
     ) -> sp.Expr:
-        outer_state_ids = _get_outer_state_ids(self.__reaction)
+        outer_state_ids = get_outer_state_ids(self.__reaction)
         amplitude = sp.S.Zero
         for topology, transitions in topology_groups.items():
-            base = _create_amplitude_base(topology)
+            base = create_amplitude_base(topology)
             helicities = [
                 _get_opposite_helicity_sign(topology, i)
-                * _create_helicity_symbol(topology, i)
+                * create_helicity_symbol(topology, i)
                 for i in outer_state_ids
             ]
             amplitude_symbol = base[helicities]
@@ -666,7 +669,7 @@ class HelicityAmplitudeBuilder:
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
-        symbol = _create_amplitude_symbol(first_transition)
+        symbol = create_amplitude_symbol(first_transition)
         expression = sum(sequential_expressions)  # type: ignore[assignment]
         self.__ingredients.amplitudes[symbol] = expression
         return expression
@@ -765,61 +768,10 @@ class HelicityAmplitudeBuilder:
         return None
 
 
-def _create_amplitude_symbol(transition: StateTransition) -> sp.Indexed:
-    outer_state_ids = _get_outer_state_ids(transition)
-    helicities = tuple(
-        sp.Rational(transition.states[i].spin_projection) for i in outer_state_ids
-    )
-    base = _create_amplitude_base(transition.topology)
-    return base[helicities]
-
-
 def _get_opposite_helicity_sign(topology: Topology, state_id: int) -> Literal[-1, 1]:
     if state_id != -1 and is_opposite_helicity_state(topology, state_id):
         return -1
     return 1
-
-
-def _create_amplitude_base(topology: Topology) -> sp.IndexedBase:
-    superscript = get_topology_identifier(topology)
-    return sp.IndexedBase(f"A^{superscript}", complex=True)
-
-
-def _create_helicity_symbol(
-    topology: Topology, state_id: int, root: str = "lambda"
-) -> sp.Symbol:
-    if state_id == -1:  # initial state
-        name = "m_A"
-    else:
-        suffix = get_helicity_suffix(topology, state_id)
-        name = f"{root}{suffix}"
-    return sp.Symbol(name, rational=True)
-
-
-def _create_spin_projection_symbol(state_id: int) -> sp.Symbol:
-    if state_id == -1:  # initial state
-        suffix = "_A"
-    else:
-        suffix = str(state_id)
-    return sp.Symbol(f"m{suffix}", rational=True)
-
-
-@singledispatch
-def _get_outer_state_ids(obj: ReactionInfo | StateTransition) -> list[int]:
-    msg = f"Cannot get outer state IDs from a {type(obj).__name__}"
-    raise NotImplementedError(msg)
-
-
-@_get_outer_state_ids.register(StateTransition)
-def _(transition: StateTransition) -> list[int]:
-    outer_state_ids = list(transition.initial_states)
-    outer_state_ids += sorted(transition.final_states)
-    return outer_state_ids
-
-
-@_get_outer_state_ids.register(ReactionInfo)
-def _(reaction: ReactionInfo) -> list[int]:
-    return _get_outer_state_ids(reaction.transitions[0])
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
@@ -1033,7 +985,7 @@ def formulate_rotation_chain(
     plus a Wigner rotation (see :func:`.formulate_wigner_rotation`) in case there is
     more than one helicity rotation.
     """
-    helicity_symbol = _create_spin_projection_symbol(rotated_state_id)
+    helicity_symbol = create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
         transition, rotated_state_id, helicity_symbol
     )
