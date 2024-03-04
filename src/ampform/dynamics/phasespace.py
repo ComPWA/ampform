@@ -210,7 +210,7 @@ def chew_mandelstam_s_wave(s, m1, m2):
     right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
     # evaluate=False in order to keep same style as PDG
     return sp.Mul(
-        1 / (2 * sp.pi),
+        1 / sp.pi,
         left_term - right_term,
         evaluate=False,
     )
