@@ -161,9 +161,7 @@ def formulate_helicity_rotation_chain(
         if is_opposite_helicity_state(topology, state_id):
             state_id = get_sibling_state_id(topology, state_id)
         phi, theta = get_helicity_angle_symbols(topology, state_id)
-        no_zero_spin = (
-            transition.states[rotated_state_id].particle.mass == 0.0  # noqa: PLR2004
-        )
+        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(f"{next_idx_root}{idx_suffix}", rational=True),
@@ -209,7 +207,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
-    no_zero_spin = state.particle.mass == 0.0  # noqa: PLR2004
+    no_zero_spin = state.particle.mass == 0.0
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     if helicity_symbol is None:
         spin_projection = state.spin_projection

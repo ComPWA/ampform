@@ -253,7 +253,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in zip(sorted_values, sorted_values[1:]):
         difference = float(next_val) - float(val)
-        if difference != 1.0:  # noqa: PLR2004
+        if difference != 1.0:
             return False
     return True
 
