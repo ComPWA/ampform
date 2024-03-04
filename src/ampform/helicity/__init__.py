@@ -11,6 +11,7 @@ import collections
 import logging
 import operator
 import sys
+import warnings
 from collections import OrderedDict, abc
 from functools import reduce
 from typing import (
@@ -376,6 +377,22 @@ class HelicityAmplitudeBuilder:
     @property
     def reaction(self) -> ReactionInfo:
         return self.__reaction
+
+    def set_dynamics(
+        self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
+    ) -> None:
+        """Assign a `.ResonanceDynamicsBuilder` for a specific resonance.
+
+        .. deprecated:: 0.16.0
+            Use the `~.DynamicsSelector.assign()` method of the `.dynamics` attribute
+            instead.
+        """
+        warnings.warn(
+            "set_dynamics() will be removed in favor of dynamics.assign()",
+            category=DeprecationWarning,
+            stacklevel=1,
+        )
+        self.dynamics.assign(particle_name, dynamics_builder)
 
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
