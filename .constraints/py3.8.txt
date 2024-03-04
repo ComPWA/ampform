@@ -109,7 +109,7 @@ nbclient==0.6.8
 nbconvert==7.16.1
 nbdime==4.0.1
 nbformat==5.9.2
-nbmake==1.5.0
+nbmake==1.5.1
 nest-asyncio==1.6.0
 nodeenv==1.8.0
 notebook-shim==0.2.4
@@ -188,7 +188,7 @@ sphinxcontrib-htmlhelp==2.0.1
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-sqlalchemy==2.0.27
+sqlalchemy==2.0.28
 stack-data==0.6.3
 sympy==1.12
 tabulate==0.9.0
