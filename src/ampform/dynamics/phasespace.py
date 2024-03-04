@@ -92,9 +92,10 @@ class BreakupMomentumSquared(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactor(sp.Expr):
-    """Standard phase-space factor, using :func:`BreakupMomentumSquared`.
+    r"""Standard phase-space factor, using :func:`BreakupMomentumSquared`.
 
-    See :pdg-review:`2021; Resonances; p.6`, Equation (50.9).
+    See :pdg-review:`2021; Resonances; p.6`, Equation (50.9). We ignore the factor
+    :math:`\frac{1}{16\pi}` as done in :cite:`chungPrimerKmatrixFormalism1995`, p.5.
     """
 
     s: Any
@@ -105,8 +106,7 @@ class PhaseSpaceFactor(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         q_squared = BreakupMomentumSquared(s, m1, m2)
-        denominator = _phase_space_factor_denominator(s)
-        return sp.sqrt(q_squared) / denominator
+        return 2 * sp.sqrt(q_squared) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -136,8 +136,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         q_squared = BreakupMomentumSquared(s, m1, m2)
-        denominator = _phase_space_factor_denominator(s)
-        return sp.sqrt(sp.Abs(q_squared)) / denominator
+        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -163,8 +162,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         q_squared = BreakupMomentumSquared(s, m1, m2)
-        denominator = _phase_space_factor_denominator(s)
-        return ComplexSqrt(q_squared) / denominator
+        return 2 * ComplexSqrt(q_squared) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -212,7 +210,7 @@ def chew_mandelstam_s_wave(s, m1, m2):
     right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
     # evaluate=False in order to keep same style as PDG
     return sp.Mul(
-        1 / (16 * sp.pi**2),
+        1 / (2 * sp.pi),
         left_term - right_term,
         evaluate=False,
     )
@@ -263,10 +261,6 @@ def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
             True,
         ),
     )
-
-
-def _phase_space_factor_denominator(s) -> sp.Mul:
-    return 8 * sp.pi * sp.sqrt(s)
 
 
 def _indices_to_subscript(indices: Sequence[int]) -> str:
