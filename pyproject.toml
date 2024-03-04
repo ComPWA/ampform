@@ -336,6 +336,8 @@ known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
+"**/docs/usage/dynamics.ipynb" = ["RUF027"]
+"**/docs/usage/symplot.ipynb" = ["RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",

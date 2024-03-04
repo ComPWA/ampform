@@ -554,7 +554,7 @@ def __get_graphviz_state_transition_example(
     for state_id in [0, 1, -1]:
         dot = dot.replace(
             f'label="{state_id}: ',
-            f'label="{state_id+2}: ',
+            f'label="{state_id + 2}: ',
         )
     return _graphviz_to_image(dot, indent=4, options={"align": "center"})
 
