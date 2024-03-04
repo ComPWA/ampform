@@ -110,7 +110,6 @@ test = [
     "ipywidgets", # symplot
     "nbmake",
     "numpy",
-    "pytest!=8.1.0", # https://github.com/treebeardtech/nbmake/issues/119
     "pytest",
     "pytest-cov",
     "pytest-profiling",
