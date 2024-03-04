@@ -6,7 +6,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[git-commit]": {
-    "editor.rulers": [72],
+    "editor.rulers": [
+      72
+    ],
     "rewrap.wrappingColumn": 72
   },
   "[json]": {
@@ -23,12 +25,16 @@
       "source.organizeImports": "explicit"
     },
     "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.rulers": [88]
+    "editor.rulers": [
+      88
+    ]
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "coverage-gutters.coverageFileNames": ["coverage.xml"],
+  "coverage-gutters.coverageFileNames": [
+    "coverage.xml"
+  ],
   "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
   "coverage-gutters.showGutterCoverage": false,
   "coverage-gutters.showLineCoverage": true,
@@ -43,28 +49,42 @@
   },
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
-  "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/ci.yml"
+  ],
   "gitlens.telemetry.enabled": false,
   "json.schemas": [
     {
-      "fileMatch": [".zenodo.json"],
+      "fileMatch": [
+        ".zenodo.json"
+      ],
       "url": "https://zenodo.org/schemas/deposits/records/legacyrecord.json"
     }
   ],
   "livePreview.defaultPreviewPath": "docs/_build/html",
   "multiDiffEditor.experimental.enabled": true,
-  "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
+  "mypy-type-checker.args": [
+    "--config-file=${workspaceFolder}/pyproject.toml"
+  ],
   "mypy-type-checker.importStrategy": "fromEnvironment",
+  "notebook.codeActionsOnSave": {
+    "notebook.source.organizeImports": "explicit"
+  },
+  "notebook.formatOnSave.enabled": true,
   "notebook.gotoSymbols.showAllSymbols": true,
   "python.analysis.autoImportCompletions": false,
   "python.analysis.inlayHints.pytestParameters": true,
   "python.analysis.typeCheckingMode": "strict",
-  "python.testing.pytestArgs": ["--color=no", "--no-cov"],
+  "python.testing.pytestArgs": [
+    "--color=no",
+    "--no-cov"
+  ],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "redhat.telemetry.enabled": false,
   "rewrap.wrappingColumn": 88,
   "ruff.enable": true,
+  "ruff.importStrategy": "fromEnvironment",
   "ruff.organizeImports": true,
   "search.exclude": {
     "**/tests/**/__init__.py": true,
