@@ -74,7 +74,7 @@ jupyter-client==8.6.0
 jupyter-core==5.7.1
 jupyter-events==0.9.0
 jupyter-lsp==2.2.3
-jupyter-server==2.12.5
+jupyter-server==2.13.0
 jupyter-server-mathjax==0.2.6
 jupyter-server-terminals==0.5.2
 jupyterlab==4.1.2
@@ -134,7 +134,7 @@ pydata-sphinx-theme==0.15.2
 pygments==2.17.2
 pyparsing==3.1.1
 pyproject-api==1.6.1
-pytest==8.1.0
+pytest==8.0.2
 pytest-cov==4.1.0
 pytest-profiling==1.7.0
 pytest-xdist==3.5.0
