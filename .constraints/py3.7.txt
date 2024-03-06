@@ -83,7 +83,7 @@ jupyterlab-pygments==0.2.2
 jupyterlab-server==2.24.0
 jupyterlab-widgets==3.0.10
 kiwisolver==1.4.5
-latexcodec==2.0.1
+latexcodec==3.0.0
 livereload==2.6.3
 lsprotocol==2023.0.1
 markdown-it-py==2.2.0
