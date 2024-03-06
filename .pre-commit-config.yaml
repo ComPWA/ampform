@@ -122,7 +122,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.5.0
+    rev: v8.6.0
     hooks:
       - id: cspell
 
