@@ -40,7 +40,7 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.2.6
+    rev: 0.3.0
     hooks:
       - id: check-dev-files
         args:
