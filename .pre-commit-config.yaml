@@ -40,7 +40,7 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.2.6
+    rev: 0.3.0
     hooks:
       - id: check-dev-files
         args:
@@ -59,7 +59,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+    rev: v0.3.1
     hooks:
       - id: ruff
         args: [--fix]
@@ -122,7 +122,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.5.0
+    rev: v8.6.0
     hooks:
       - id: cspell
 
