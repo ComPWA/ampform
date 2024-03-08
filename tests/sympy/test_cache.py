@@ -9,7 +9,7 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import EnergyDependentWidth
-from ampform.sympy import _warn_about_unsafe_hash, get_readable_hash
+from ampform.sympy._cache import _warn_about_unsafe_hash, get_readable_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
