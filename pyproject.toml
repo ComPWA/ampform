@@ -72,7 +72,6 @@ doc = [
     "matplotlib",
     "mpl-interactions",
     "myst-nb >=0.14", # nb_ configuration prefixes
-    "nbclient >=0.5.5", # https://github.com/executablebooks/jupyter-book/issues/833
     "numpy",
     "rich",
     "sphinx-api-relink >=0.0.4",
