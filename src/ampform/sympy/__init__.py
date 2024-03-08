@@ -355,18 +355,24 @@ def _get_system_cache_directory() -> str:
     return os.path.expanduser("~/.cache")
 
 
-def _get_readable_hash(obj) -> str:
-    """Get a human-readable hash of any Python object.
+def _get_readable_hash(obj, ignore_hash_seed: bool = False) -> str:
+    """Get a human-readable hash of any hashable Python object.
 
     The algorithm is fastest if `PYTHONHASHSEED
     <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ is set.
     Otherwise, it falls back to computing the hash with :func:`hashlib.sha256()`.
+
+    Args:
+        obj: Any hashable object, mutable or immutable, to be hashed.
+        ignore_hash_seed: Ignore the :code:`PYTHONHASHSEED` environment variable. If
+            :code:`True`, the hash seed is ignored and the hash is computed with
+            :func:`hashlib.sha256`.
     """
     python_hash_seed = _get_python_hash_seed()
-    if python_hash_seed is not None:
-        return f"pythonhashseed-{python_hash_seed}{hash(obj):+}"
-    b = _to_bytes(obj)
-    return hashlib.sha256(b).hexdigest()
+    if ignore_hash_seed or python_hash_seed is None:
+        b = _to_bytes(obj)
+        return hashlib.sha256(b).hexdigest()
+    return f"pythonhashseed-{python_hash_seed}{hash(obj):+}"
 
 
 def _to_bytes(obj) -> bytes:
