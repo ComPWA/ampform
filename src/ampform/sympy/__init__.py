@@ -292,6 +292,11 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
 
 
 class UnevaluatableIntegral(sp.Integral):
+    """See :ref:`usage/sympy:Numerical integrals`.
+
+    .. versionadded:: 0.14.10
+    """
+
     abs_tolerance = 1e-5
     rel_tolerance = 1e-5
     limit = 50
@@ -356,6 +361,7 @@ def perform_cached_doit(
         <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
         fixed value.
 
+    .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
     if cache_directory is None:

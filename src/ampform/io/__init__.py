@@ -27,6 +27,8 @@ def aslatex(obj) -> str:
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
+
+    .. versionadded:: 0.14.1
     """
     return str(obj)
 
@@ -76,7 +78,10 @@ def _(obj: Iterable) -> str:
 
 
 def improve_latex_rendering() -> None:
-    """Improve LaTeX rendering of an `~sympy.tensor.indexed.Indexed` object."""
+    """Improve LaTeX rendering of an `~sympy.tensor.indexed.Indexed` object.
+
+    .. versionadded:: 0.14.2
+    """
 
     def _print_Indexed_latex(self, printer, *args):  # noqa: N802
         base = printer._print(self.base)
