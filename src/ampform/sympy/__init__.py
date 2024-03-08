@@ -310,11 +310,12 @@ def perform_cached_doit(
         fixed value.
 
     .. autofunction:: _get_system_cache_directory
+    .. autofunction:: _get_readable_hash
     """
     if cache_directory is None:
         system_cache_dir = _get_system_cache_directory()
         cache_directory = abspath(f"{system_cache_dir}/ampform")
-    h = get_readable_hash(unevaluated_expr)
+    h = _get_readable_hash(unevaluated_expr)
     filename = f"{cache_directory}/{h}.pkl"
     os.makedirs(dirname(filename), exist_ok=True)
     if os.path.exists(filename):
@@ -354,7 +355,13 @@ def _get_system_cache_directory() -> str:
     return os.path.expanduser("~/.cache")
 
 
-def get_readable_hash(obj) -> str:
+def _get_readable_hash(obj) -> str:
+    """Get a human-readable hash of any Python object.
+
+    The algorithm is fastest if `PYTHONHASHSEED
+    <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ is set.
+    Otherwise, it falls back to computing the hash with :func:`hashlib.sha256()`.
+    """
     python_hash_seed = _get_python_hash_seed()
     if python_hash_seed is not None:
         return f"pythonhashseed-{python_hash_seed}{hash(obj):+}"

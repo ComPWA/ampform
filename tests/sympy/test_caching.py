@@ -9,7 +9,7 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import EnergyDependentWidth
-from ampform.sympy import _warn_about_unsafe_hash, get_readable_hash
+from ampform.sympy import _get_readable_hash, _warn_about_unsafe_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
@@ -61,7 +61,7 @@ def test_get_readable_hash(assumptions, expected_hashes, caplog: LogCaptureFixtu
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
-    h_str = get_readable_hash(expr)
+    h_str = _get_readable_hash(expr)
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None:
         assert h_str[:7] == "bbc9833"
@@ -88,7 +88,7 @@ def test_get_readable_hash_energy_dependent_width():
         angular_momentum=angular_momentum,
         meson_radius=d,
     )
-    h = get_readable_hash(expr)
+    h = _get_readable_hash(expr)
     python_hash_seed = os.environ.get("PYTHONHASHSEED")
     if python_hash_seed is None:
         pytest.skip("PYTHONHASHSEED has not been set")
@@ -124,4 +124,4 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
             "canonical-helicity": "pythonhashseed-0-8505502895987205495",
             "helicity": "pythonhashseed-0-1430245260241162669",
         }[formalism]
-    assert get_readable_hash(model.expression) == expected_hash
+    assert _get_readable_hash(model.expression) == expected_hash
