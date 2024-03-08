@@ -22,7 +22,7 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from os.path import abspath, dirname, expanduser
+from os.path import abspath, dirname
 from textwrap import dedent
 from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 
@@ -291,9 +291,9 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
 
 
 def perform_cached_doit(
-    unevaluated_expr: sp.Expr, directory: str | None = None
+    unevaluated_expr: sp.Expr, cache_directory: str | None = None
 ) -> sp.Expr:
-    """Perform :meth:`~sympy.core.basic.Basic.doit` cache the result to disk.
+    """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
     The cached result is fetched from disk if the hash of the original expression is the
     same as the hash embedded in the filename.
@@ -301,18 +301,21 @@ def perform_cached_doit(
     Args:
         unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
             :meth:`~sympy.core.basic.Basic.doit`.
-        directory: The directory in which to cache the result. If `None`, the cache
-            directory will be put under the home directory.
+        cache_directory: The directory in which to cache the result. Defaults to
+            :file:`ampform` under the system cache directory (see
+            :func:`_get_system_cache_directory`).
 
     .. tip:: For a faster cache, set `PYTHONHASHSEED
         <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
         fixed value.
+
+    .. autofunction:: _get_system_cache_directory
     """
-    if directory is None:
-        home_directory = expanduser("~")
-        directory = abspath(f"{home_directory}/.sympy-cache")
+    if cache_directory is None:
+        system_cache_dir = _get_system_cache_directory()
+        cache_directory = abspath(f"{system_cache_dir}/ampform")
     h = get_readable_hash(unevaluated_expr)
-    filename = f"{directory}/{h}.pkl"
+    filename = f"{cache_directory}/{h}.pkl"
     os.makedirs(dirname(filename), exist_ok=True)
     if os.path.exists(filename):
         with open(filename, "rb") as f:
@@ -324,6 +327,31 @@ def perform_cached_doit(
     with open(filename, "wb") as f:
         pickle.dump(unfolded_expr, f)
     return unfolded_expr
+
+
+def _get_system_cache_directory() -> str:
+    r"""Return the system cache directory for the current platform.
+
+    >>> import sys, pytest
+    >>> if sys.platform.startswith("darwin"):
+    ...     assert _get_system_cache_directory().endswith("/Library/Caches")
+    >>> if sys.platform.startswith("linux"):
+    ...     assert _get_system_cache_directory().endswith("/.cache")
+    >>> if sys.platform.startswith("win"):
+    ...     assert _get_system_cache_directory().endswith(R"\AppData\Local")
+    """
+    if sys.platform.startswith("linux"):
+        cache_directory = os.getenv("XDG_CACHE_HOME")
+        if cache_directory is not None:
+            return cache_directory
+    if sys.platform.startswith("darwin"):  # macos
+        return os.path.expanduser("~/Library/Caches")
+    if sys.platform.startswith("win"):
+        cache_directory = os.getenv("LocalAppData")  # noqa: SIM112
+        if cache_directory is not None:
+            return cache_directory
+        return os.path.expanduser("~/AppData/Local")
+    return os.path.expanduser("~/.cache")
 
 
 def get_readable_hash(obj) -> str:
