@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 
 import sympy as sp
+from importlib_metadata import version
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
@@ -356,7 +357,8 @@ def perform_cached_doit(
     """
     if cache_directory is None:
         system_cache_dir = get_system_cache_directory()
-        cache_directory = Path(system_cache_dir) / "ampform"
+        sympy_version = version("sympy")
+        cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
     if not isinstance(cache_directory, Path):
         cache_directory = Path(cache_directory)
     cache_directory.mkdir(exist_ok=True, parents=True)
