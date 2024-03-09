@@ -14,13 +14,12 @@ from __future__ import annotations
 
 import itertools
 import logging
-import os
 import pickle  # noqa: S403
 import re
 import sys
 import warnings
 from abc import abstractmethod
-from os.path import abspath, dirname
+from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 
 import sympy as sp
@@ -335,7 +334,7 @@ def _warn_if_scipy_not_installed() -> None:
 
 
 def perform_cached_doit(
-    unevaluated_expr: sp.Expr, cache_directory: str | None = None
+    unevaluated_expr: sp.Expr, cache_directory: Path | str | None = None
 ) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
@@ -357,11 +356,13 @@ def perform_cached_doit(
     """
     if cache_directory is None:
         system_cache_dir = get_system_cache_directory()
-        cache_directory = abspath(f"{system_cache_dir}/ampform")
+        cache_directory = Path(system_cache_dir) / "ampform"
+    if not isinstance(cache_directory, Path):
+        cache_directory = Path(cache_directory)
+    cache_directory.mkdir(exist_ok=True, parents=True)
     h = get_readable_hash(unevaluated_expr)
-    filename = f"{cache_directory}/{h}.pkl"
-    os.makedirs(dirname(filename), exist_ok=True)
-    if os.path.exists(filename):
+    filename = cache_directory / f"{h}.pkl"
+    if filename.exists():
         with open(filename, "rb") as f:
             return pickle.load(f)  # noqa: S301
     _LOGGER.warning(
