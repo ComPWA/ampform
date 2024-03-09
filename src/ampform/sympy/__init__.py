@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
 
 import sympy as sp
-from importlib_metadata import version
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
@@ -43,6 +42,10 @@ from .deprecated import (
     make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
 )
 
+if sys.version_info < (3, 8):
+    from importlib_metadata import version
+else:
+    from importlib.metadata import version
 if sys.version_info < (3, 12):
     from typing_extensions import override
 else:
