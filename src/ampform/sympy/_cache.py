@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 def get_system_cache_directory() -> str:
     r"""Return the system cache directory for the current platform.
 
-    >>> import sys, pytest
+    >>> import sys
     >>> if sys.platform.startswith("darwin"):
     ...     assert get_system_cache_directory().endswith("/Library/Caches")
     >>> if sys.platform.startswith("linux"):
