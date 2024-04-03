@@ -267,6 +267,7 @@
     "parametrizations",
     "permutate",
     "pydocstyle",
+    "PyPA",
     "pyplot",
     "pytest",
     "qrules",

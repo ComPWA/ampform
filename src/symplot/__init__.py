@@ -214,17 +214,13 @@ class SliderKwargs(abc.Mapping):
 def _is_min_max(
     range_def: RangeDefinition,
 ) -> TypeGuard[tuple[float, float]]:
-    if len(range_def) == 2:  # noqa: PLR2004
-        return True
-    return False
+    return len(range_def) == 2  # noqa: PLR2004
 
 
 def _is_min_max_step(
     range_def: RangeDefinition,
 ) -> TypeGuard[tuple[float, float, float | int]]:
-    if len(range_def) == 3:  # noqa: PLR2004
-        return True
-    return False
+    return len(range_def) == 3  # noqa: PLR2004
 
 
 ValueType = TypeVar("ValueType")
