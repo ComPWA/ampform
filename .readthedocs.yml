@@ -16,4 +16,6 @@ build:
     - graphviz
   jobs:
     post_install:
-      - pip install -c .constraints/py3.11.txt -e .[doc]
+      - curl -LsSf https://astral.sh/uv/install.sh | sh
+      - |-
+        /home/docs/.cargo/bin/uv pip install --system -c .constraints/py3.11.txt -e .[doc]

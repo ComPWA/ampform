@@ -123,15 +123,10 @@ def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
         if isinstance(obj, FrozenTransition):
             if any(not isinstance(s, State) for s in obj.states.values()):
                 return False
-            if any(
-                not isinstance(i, InteractionProperties)
-                for i in obj.interactions.values()
-            ):
-                return False
-            return True
-    if get_qrules_version() < (0, 10) and isinstance(obj, StateTransition):  # type: ignore[misc]
-        return True
-    return False
+            return all(
+                isinstance(i, InteractionProperties) for i in obj.interactions.values()
+            )
+    return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)  # type: ignore[misc]
 
 
 @lru_cache(maxsize=None)

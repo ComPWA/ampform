@@ -22,6 +22,7 @@
   "ignorePaths": [
     "**/*.bib",
     "**/.cspell.json",
+    "*.ico",
     ".constraints/*.txt",
     ".editorconfig",
     ".gitignore",
@@ -266,6 +267,7 @@
     "parametrizations",
     "permutate",
     "pydocstyle",
+    "PyPA",
     "pyplot",
     "pytest",
     "qrules",
