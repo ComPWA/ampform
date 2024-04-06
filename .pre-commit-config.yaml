@@ -40,7 +40,7 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.3.3
+    rev: 0.3.4
     hooks:
       - id: check-dev-files
         args:
@@ -148,6 +148,6 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.356
+    rev: v1.1.357
     hooks:
       - id: pyright
