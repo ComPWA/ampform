@@ -23,7 +23,7 @@ import sympy as sp
 
 
 @singledispatch
-def aslatex(obj) -> str:
+def aslatex(obj, **kwargs) -> str:
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
@@ -34,26 +34,26 @@ def aslatex(obj) -> str:
 
 
 @aslatex.register(complex)
-def _(obj: complex) -> str:
+def _(obj: complex, **kwargs) -> str:
     real = __downcast(obj.real)
     imag = __downcast(obj.imag)
     plus = "+" if imag >= 0 else ""
     return f"{real}{plus}{imag}i"
 
 
-def __downcast(obj: float) -> float | int:
+def __downcast(obj: float, **kwargs) -> float | int:
     if obj.is_integer():
         return int(obj)
     return obj
 
 
 @aslatex.register(sp.Basic)
-def _(obj: sp.Basic) -> str:
+def _(obj: sp.Basic, **kwargs) -> str:
     return sp.latex(obj)
 
 
 @aslatex.register(abc.Mapping)
-def _(obj: Mapping) -> str:
+def _(obj: Mapping, **kwargs) -> str:
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
@@ -65,7 +65,7 @@ def _(obj: Mapping) -> str:
 
 
 @aslatex.register(abc.Iterable)
-def _(obj: Iterable) -> str:
+def _(obj: Iterable, **kwargs) -> str:
     obj = list(obj)
     if len(obj) == 0:
         msg = "Need at least one item to render as LaTeX"
