@@ -17,18 +17,25 @@ from __future__ import annotations
 
 from collections import abc
 from functools import singledispatch
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Sequence
 
 import sympy as sp
 
 
 @singledispatch
-def aslatex(obj, **kwargs) -> str:
+def aslatex(obj, **kwargs) -> str:  # noqa: D417
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
 
     .. versionadded:: 0.14.1
+
+    Args:
+        terms_per_line: If set to a non-zero, positive number,
+            `sp.Expr <sympy.core.expr.Expr>` objects on the right-hand-side with multiple
+            terms are split over multiple lines. The terms are split at the addition.
+
+            .. versionadded:: 0.15.2
     """
     return str(obj)
 
@@ -47,21 +54,59 @@ def __downcast(obj: float, **kwargs) -> float | int:
     return obj
 
 
+@aslatex.register(str)
+def _(obj: str, **kwargs) -> str:
+    return obj
+
+
 @aslatex.register(sp.Basic)
 def _(obj: sp.Basic, **kwargs) -> str:
     return sp.latex(obj)
 
 
+@aslatex.register(sp.Expr)
+def _(obj: sp.Expr, *, terms_per_line: int = 0, **kwargs) -> str:
+    terms = obj.as_ordered_terms()
+    if terms_per_line > 0 and len(terms) > terms_per_line:
+        return _render_broken_expression(terms, terms_per_line, **kwargs)
+    return sp.latex(obj)
+
+
+def _render_broken_expression(
+    terms: Sequence[sp.Basic], terms_per_line: int, **kwargs
+) -> str:
+    n = terms_per_line
+    groups = [sp.Add(*terms[i : i + n]) for i in range(0, len(terms), n)]
+    latex = R"\begin{array}{l}" + "\n"
+    latex += Rf"  {aslatex(groups[0], **kwargs)} \\" + "\n"
+    for term in groups[1:]:
+        latex += Rf"  \; + \; {aslatex(term, **kwargs)} \\" + "\n"
+    latex += R"\end{array}"
+    return latex
+
+
 @aslatex.register(abc.Mapping)
-def _(obj: Mapping, **kwargs) -> str:
+def _(obj: Mapping, *, terms_per_line: int = 0, **kwargs) -> str:
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
+        latex += _render_row(lhs, rhs, terms_per_line, **kwargs)
     latex += R"\end{array}"
     return latex
+
+
+def _render_row(lhs, rhs, terms_per_line: int, **kwargs) -> str:
+    if terms_per_line > 0 and isinstance(rhs, sp.Expr):
+        n = terms_per_line
+        terms = rhs.as_ordered_terms()
+        terms = [sum(terms[i : i + n]) for i in range(0, len(terms), n)]
+        row = _render_row(lhs, terms[0], terms_per_line=False)
+        for term in terms[1:]:
+            row += Rf"    &+& {aslatex(term, **kwargs)} \\" + "\n"
+        return row
+    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs, **kwargs)} \\" + "\n"
 
 
 @aslatex.register(abc.Iterable)
