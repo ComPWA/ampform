@@ -14,6 +14,31 @@ def test_complex():
     assert aslatex(1 + 1j) == "1+1i"
 
 
+def test_expr():
+    x, y, z = sp.symbols("x:z")
+    expr = x + y + z
+    assert aslatex(expr) == "x + y + z"
+    assert aslatex(expr, terms_per_line=0) == "x + y + z"
+    assert aslatex(expr, terms_per_line=3) == "x + y + z"
+
+    expected = dedent(R"""
+    \begin{array}{l}
+      x \\
+      \; + \; y \\
+      \; + \; z \\
+    \end{array}
+    """)
+
+    assert aslatex(expr, terms_per_line=1) == expected.strip()
+    expected = dedent(R"""
+    \begin{array}{l}
+      x + y \\
+      \; + \; z \\
+    \end{array}
+    """)
+    assert aslatex(expr, terms_per_line=2) == expected.strip()
+
+
 def test_iterable():
     items = [
         a * x**2 + b,

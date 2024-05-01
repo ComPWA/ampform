@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections import abc
 from functools import singledispatch
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Sequence
 
 import sympy as sp
 
@@ -62,6 +62,27 @@ def _(obj: str, **kwargs) -> str:
 @aslatex.register(sp.Basic)
 def _(obj: sp.Basic, **kwargs) -> str:
     return sp.latex(obj)
+
+
+@aslatex.register(sp.Expr)
+def _(obj: sp.Expr, *, terms_per_line: int = 0, **kwargs) -> str:
+    terms = obj.as_ordered_terms()
+    if terms_per_line > 0 and len(terms) > terms_per_line:
+        return _render_broken_expression(terms, terms_per_line, **kwargs)
+    return sp.latex(obj)
+
+
+def _render_broken_expression(
+    terms: Sequence[sp.Basic], terms_per_line: int, **kwargs
+) -> str:
+    n = terms_per_line
+    groups = [sp.Add(*terms[i : i + n]) for i in range(0, len(terms), n)]
+    latex = R"\begin{array}{l}" + "\n"
+    latex += Rf"  {aslatex(groups[0], **kwargs)} \\" + "\n"
+    for term in groups[1:]:
+        latex += Rf"  \; + \; {aslatex(term, **kwargs)} \\" + "\n"
+    latex += R"\end{array}"
+    return latex
 
 
 @aslatex.register(abc.Mapping)
