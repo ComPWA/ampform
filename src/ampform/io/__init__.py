@@ -54,6 +54,11 @@ def __downcast(obj: float, **kwargs) -> float | int:
     return obj
 
 
+@aslatex.register(str)
+def _(obj: str, **kwargs) -> str:
+    return obj
+
+
 @aslatex.register(sp.Basic)
 def _(obj: sp.Basic, **kwargs) -> str:
     return sp.latex(obj)
