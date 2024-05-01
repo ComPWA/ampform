@@ -66,21 +66,21 @@ def _(obj: Mapping, *, terms_per_line: int = 0, **kwargs) -> str:
         raise ValueError(msg)
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += _render_row(lhs, rhs, terms_per_line)
+        latex += _render_row(lhs, rhs, terms_per_line, **kwargs)
     latex += R"\end{array}"
     return latex
 
 
-def _render_row(lhs, rhs, terms_per_line: int) -> str:
+def _render_row(lhs, rhs, terms_per_line: int, **kwargs) -> str:
     if terms_per_line > 0 and isinstance(rhs, sp.Expr):
         n = terms_per_line
         terms = rhs.as_ordered_terms()
         terms = [sum(terms[i : i + n]) for i in range(0, len(terms), n)]
         row = _render_row(lhs, terms[0], terms_per_line=False)
         for term in terms[1:]:
-            row += Rf"    &+& {aslatex(term)} \\" + "\n"
+            row += Rf"    &+& {aslatex(term, **kwargs)} \\" + "\n"
         return row
-    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
+    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs, **kwargs)} \\" + "\n"
 
 
 @aslatex.register(abc.Iterable)
