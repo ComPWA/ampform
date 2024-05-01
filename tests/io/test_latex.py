@@ -1,5 +1,6 @@
 from textwrap import dedent
 
+import pytest
 import sympy as sp
 
 from ampform.io import aslatex
@@ -31,13 +32,14 @@ def test_iterable():
     assert latex == dedent(expected).strip()
 
 
-def test_mapping():
+@pytest.mark.parametrize("terms_per_line", [0, 2])
+def test_mapping(terms_per_line: int):
     definitions = {
         y: a * x**2 + b,
         a: 3.0,
         b: 2 - 1.3j,
     }
-    latex = aslatex(definitions)
+    latex = aslatex(definitions, terms_per_line=terms_per_line)
     expected = R"""
     \begin{array}{rcl}
       y &=& a x^{2} + b \\
@@ -47,7 +49,7 @@ def test_mapping():
     """
     assert latex == dedent(expected).strip()
 
-    latex = aslatex(definitions, multiline=True)
+    latex = aslatex(definitions, terms_per_line=1)
     expected = R"""
     \begin{array}{rcl}
       y &=& a x^{2} \\

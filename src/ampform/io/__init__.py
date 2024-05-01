@@ -53,27 +53,30 @@ def _(obj: sp.Basic, **kwargs) -> str:
 
 
 @aslatex.register(abc.Mapping)
-def _(obj: Mapping, multiline: bool = False, **kwargs) -> str:  # noqa: D417
+def _(obj: Mapping, *, terms_per_line: int = 0, **kwargs) -> str:  # noqa: D417
     """Render a dictionary of definitions as a LaTeX :code:`array`.
 
     Args:
-        multiline: If `True`, `sp.Expr <sympy.core.expr.Expr` objects
-            on the right-hand-side with multiple terms are split over multiple lines.
+        terms_per_line: If set to a non-zero, positive number,
+            `sp.Expr <sympy.core.expr.Expr` objects on the right-hand-side with multiple
+            terms are split over multiple lines. The terms are split at the addition.
     """
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += _render_row(lhs, rhs, multiline)
+        latex += _render_row(lhs, rhs, terms_per_line)
     latex += R"\end{array}"
     return latex
 
 
-def _render_row(lhs, rhs, multiline: bool) -> str:
-    if multiline and isinstance(rhs, sp.Expr):
+def _render_row(lhs, rhs, terms_per_line: int) -> str:
+    if terms_per_line > 0 and isinstance(rhs, sp.Expr):
+        n = terms_per_line
         terms = rhs.as_ordered_terms()
-        row = _render_row(lhs, terms[0], multiline=False)
+        terms = [sum(terms[i : i + n]) for i in range(0, len(terms), n)]
+        row = _render_row(lhs, terms[0], terms_per_line=False)
         for term in terms[1:]:
             row += Rf"    &+& {aslatex(term)} \\" + "\n"
         return row
