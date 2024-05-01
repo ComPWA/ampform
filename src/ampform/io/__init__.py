@@ -53,15 +53,31 @@ def _(obj: sp.Basic, **kwargs) -> str:
 
 
 @aslatex.register(abc.Mapping)
-def _(obj: Mapping, **kwargs) -> str:
+def _(obj: Mapping, multiline: bool = False, **kwargs) -> str:  # noqa: D417
+    """Render a dictionary of definitions as a LaTeX :code:`array`.
+
+    Args:
+        multiline: If `True`, `sp.Expr <sympy.core.expr.Expr` objects
+            on the right-hand-side with multiple terms are split over multiple lines.
+    """
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
     latex = R"\begin{array}{rcl}" + "\n"
     for lhs, rhs in obj.items():
-        latex += Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
+        latex += _render_row(lhs, rhs, multiline)
     latex += R"\end{array}"
     return latex
+
+
+def _render_row(lhs, rhs, multiline: bool) -> str:
+    if multiline and isinstance(rhs, sp.Expr):
+        terms = rhs.as_ordered_terms()
+        row = _render_row(lhs, terms[0], multiline=False)
+        for term in terms[1:]:
+            row += Rf"    &+& {aslatex(term)} \\" + "\n"
+        return row
+    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs)} \\" + "\n"
 
 
 @aslatex.register(abc.Iterable)

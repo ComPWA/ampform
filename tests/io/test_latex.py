@@ -46,3 +46,14 @@ def test_mapping():
     \end{array}
     """
     assert latex == dedent(expected).strip()
+
+    latex = aslatex(definitions, multiline=True)
+    expected = R"""
+    \begin{array}{rcl}
+      y &=& a x^{2} \\
+        &+& b \\
+      a &=& 3.0 \\
+      b &=& 2-1.3i \\
+    \end{array}
+    """
+    assert latex == dedent(expected).strip()
