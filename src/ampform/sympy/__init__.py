@@ -285,7 +285,7 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # noqa: PGH001, S307
+        indices = eval(subscript)  # noqa: S307
     except SyntaxError:
         return []
     return list(indices)
