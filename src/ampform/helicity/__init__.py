@@ -884,9 +884,8 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source
     chose :math:`\Omega=(\phi,\theta,-\phi)` as argument to the (conjugated)
     Wigner-:math:`D` function, just like the original paper by Jacob & Wick
-    :cite:`Jacob:1959at`, Eq. (24). See p.119-120 and p.199 in
-    :cite:`martinElementaryParticleTheory1970` for the two conventions, :math:`\gamma=0`
-    versus :math:`\gamma=-\phi`.
+    :cite:`Jacob:1959at`, Eq. (24). See p.119-120 and p.199 in :cite:`Martin:1970hmp`
+    for the two conventions, :math:`\gamma=0` versus :math:`\gamma=-\phi`.
 
     Example
     -------
