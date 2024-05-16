@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any
 
 import sympy as sp
 
@@ -11,8 +11,7 @@ from ampform.sympy import unevaluated
 
 @unevaluated
 class BlattWeisskopfSquared(sp.Expr):
-    # cspell:ignore asner pychyGekoppeltePartialwellenanalyseAnnihilationen
-    r"""Blatt-Weisskopf function :math:`B_L^2(z)`, up to :math:`L \leq 8`.
+    r"""Normalized Blatt-Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.
 
     Args:
         z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
@@ -22,95 +21,64 @@ class BlattWeisskopfSquared(sp.Expr):
         angular_momentum: Angular momentum :math:`L` of the decaying particle.
 
     Note that equal powers of :math:`z` appear in the nominator and the denominator,
-    while some sources have nominator :math:`1`, instead of :math:`z^L`. Compare for
-    instance Equation (50.27) in :pdg-review:`2021; Resonances; p.9`.
+    while some sources define an *non-normalized* form factor :math:`F_L` with :math:`1`
+    in the nominator, instead of :math:`z^L`. See for instance Equation (50.27) in
+    :pdg-review:`2021; Resonances; p.9`. We normalize the form factor such that
+    :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
-    Each of these cases for :math:`L` has been taken from
-    :cite:`pychyGekoppeltePartialwellenanalyseAnnihilationen2016`, p.59,
-    :cite:`chungPartialWaveAnalysis1995`, p.415, and
-    :cite:`chungFormulasAngularMomentumBarrier2015`. For a good overview of where to use
-    these Blatt-Weisskopf functions, see :cite:`asnerDalitzPlotAnalysis2006`.
+    .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa:report/029>`,
+      and :cite:`chungFormulasAngularMomentumBarrier2015`.
 
-    See also :ref:`usage/dynamics:Form factor`.
+    With this, the implementation becomes
     """
 
     z: Any
     angular_momentum: Any
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
 
-    max_angular_momentum: ClassVar[int | None] = None
-    """Limit the maximum allowed angular momentum :math:`L`.
+    def evaluate(self) -> sp.Expr:
+        z, angular_momentum = self.args
+        return (
+            sp.Abs(SphericalHankel1(angular_momentum, 1)) ** 2
+            / sp.Abs(SphericalHankel1(angular_momentum, sp.sqrt(z))) ** 2
+            / z
+        )
 
-    This improves performance when :math:`L` is a `~sympy.core.symbol.Symbol` and you
-    are note interested in higher angular momenta.
+
+@unevaluated(implement_doit=False)
+class SphericalHankel1(sp.Expr):
+    r"""Spherical Hankel function of the first kind for real-valued :math:`z`.
+
+    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa:report/029>`
+    for more info. `This page
+    <https://mathworld.wolfram.com/SphericalHankelFunctionoftheFirstKind.html>`_
+    explains the difference with the *general* Hankel function of the first kind,
+    :math:`H_\ell^{(1)}`.
+
+    This expression class assumes that :math:`z` is real and evaluates to the following
+    series:
     """
 
+    l: Any  # noqa: E741
+    z: Any
+    _latex_repr_ = R"h_{{{l}}}^{{(1)}}\left({z}\right)"
+
+    def doit(self, deep: bool = True, **kwargs):
+        expr = self.evaluate()
+        if deep and isinstance(self.l, sp.Integer):
+            return expr.doit()
+        return expr
+
     def evaluate(self) -> sp.Expr:
-        z: sp.Expr = self.args[0]  # type: ignore[assignment]
-        angular_momentum: sp.Expr = self.args[1]  # type: ignore[assignment]
-        cases: dict[int, sp.Expr] = {
-            0: sp.S.One,
-            1: 2 * z / (z + 1),
-            2: 13 * z**2 / ((z - 3) * (z - 3) + 9 * z),
-            3: 277 * z**3 / (z * (z - 15) * (z - 15) + 9 * (2 * z - 5) * (2 * z - 5)),
-            4: (
-                12746
-                * z**4
-                / (
-                    (z**2 - 45 * z + 105) * (z**2 - 45 * z + 105)
-                    + 25 * z * (2 * z - 21) * (2 * z - 21)
-                )
-            ),
-            5: (
-                998881
-                * z**5
-                / (z**5 + 15 * z**4 + 315 * z**3 + 6300 * z**2 + 99225 * z + 893025)
-            ),
-            6: (
-                118394977
-                * z**6
-                / (
-                    z**6
-                    + 21 * z**5
-                    + 630 * z**4
-                    + 18900 * z**3
-                    + 496125 * z**2
-                    + 9823275 * z
-                    + 108056025
-                )
-            ),
-            7: (
-                19727003738
-                * z**7
-                / (
-                    z**7
-                    + 28 * z**6
-                    + 1134 * z**5
-                    + 47250 * z**4
-                    + 1819125 * z**3
-                    + 58939650 * z**2
-                    + 1404728325 * z
-                    + 18261468225
-                )
-            ),
-            8: (
-                4392846440677
-                * z**8
-                / (
-                    z**8
-                    + 36 * z**7
-                    + 1890 * z**6
-                    + 103950 * z**5
-                    + 5457375 * z**4
-                    + 255405150 * z**3
-                    + 9833098275 * z**2
-                    + 273922023375 * z
-                    + 4108830350625
-                )
-            ),
-        }
-        return sp.Piecewise(*[
-            (expression, sp.Eq(angular_momentum, value))
-            for value, expression in cases.items()
-            if self.max_angular_momentum is None or value <= self.max_angular_momentum
-        ])
+        l, z = self.args  # noqa: E741
+        k = sp.Dummy("k", integer=True, nonnegative=True)
+        return (
+            (-sp.I) ** (1 + l)  # type:ignore[operator]
+            * (sp.exp(z * sp.I) / z)
+            * sp.Sum(
+                sp.factorial(l + k)
+                / (sp.factorial(l - k) * sp.factorial(k))
+                * (sp.I / (2 * z)) ** k,  # type:ignore[operator]
+                (k, 0, l),
+            )
+        )

@@ -63,12 +63,19 @@ def extend_docstrings() -> None:
 
 
 def extend_BlattWeisskopfSquared() -> None:
-    from ampform.dynamics.form_factor import BlattWeisskopfSquared
+    from ampform.dynamics.form_factor import BlattWeisskopfSquared, SphericalHankel1
 
-    z = sp.Symbol("z", real=True)
-    L = sp.Symbol("L", integer=True)
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    L = sp.Symbol("L", integer=True, nonnegative=True)
     expr = BlattWeisskopfSquared(z, angular_momentum=L)
-    _append_latex_doit_definition(expr, deep=True, full_width=True)
+    h1lz = SphericalHankel1(L, z)
+    _append_latex_doit_definition(expr)
+    _append_to_docstring(
+        BlattWeisskopfSquared,
+        f"""\n
+    where :math:`{sp.latex(h1lz)}` is defined by :eq:`SphericalHankel1`.
+    """,
+    )
 
 
 def extend_BoostMatrix() -> None:
@@ -470,6 +477,15 @@ def extend_RotationZMatrix() -> None:
     See also the note that comes with Equation :eq:`boost-in-z-direction`.
     """,
     )
+
+
+def extend_SphericalHankel1() -> None:
+    from ampform.dynamics.form_factor import SphericalHankel1
+
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    ell = sp.Symbol(R"\ell", integer=True, nonnegative=True)
+    expr = SphericalHankel1(ell, z)
+    _append_latex_doit_definition(expr)
 
 
 def extend_Theta() -> None:
