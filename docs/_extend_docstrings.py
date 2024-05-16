@@ -63,7 +63,7 @@ def extend_docstrings() -> None:
 
 
 def extend_BlattWeisskopfSquared() -> None:
-    from ampform.dynamics import BlattWeisskopfSquared
+    from ampform.dynamics.form_factor import BlattWeisskopfSquared
 
     z = sp.Symbol("z", real=True)
     L = sp.Symbol("L", integer=True)

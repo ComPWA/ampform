@@ -6,13 +6,13 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import (
-    BlattWeisskopfSquared,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
     relativistic_breit_wigner_with_ff,
 )
+from ampform.dynamics.form_factor import BlattWeisskopfSquared
 
 if TYPE_CHECKING:
     from qrules import ParticleCollection
