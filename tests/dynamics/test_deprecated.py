@@ -2,11 +2,8 @@ import pickle  # noqa: S403
 
 import sympy as sp
 
-from ampform.dynamics import (
-    BlattWeisskopfSquared,
-    EnergyDependentWidth,
-    EqualMassPhaseSpaceFactor,
-)
+from ampform.dynamics import EnergyDependentWidth, EqualMassPhaseSpaceFactor
+from ampform.dynamics.form_factor import BlattWeisskopfSquared
 from ampform.sympy import UnevaluatedExpression
 
 
