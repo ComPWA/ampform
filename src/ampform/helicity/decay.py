@@ -152,14 +152,13 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 
     The Wigner-:math:`D` function for a two-particle state treats one helicity with a
     negative sign. This sign originates from Eq.(13) in
-    :cite:`jacobGeneralTheoryCollisions1959` (see also Eq.(6) in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`). Following
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, we call the state that gets this
-    minus sign the **"opposite helicity" state**. The other state is called **helicity
-    state**. The choice of (opposite) helicity state affects not only the sign in the
-    Wigner-:math:`D` function, but also the choice of angles: the argument of the
-    Wigner-:math:`D` function returned by :func:`.formulate_isobar_wigner_d` are the
-    angles of the helicity state.
+    :cite:`Jacob:1959at` (see also Eq.(6) in
+    :cite:`Marangotto:2019ucc`). Following :cite:`Marangotto:2019ucc`, we call the state
+    that gets this minus sign the **"opposite helicity" state**. The other state is
+    called **helicity state**. The choice of (opposite) helicity state affects not only
+    the sign in the Wigner-:math:`D` function, but also the choice of angles: the
+    argument of the Wigner-:math:`D` function returned by
+    :func:`.formulate_isobar_wigner_d` are the angles of the helicity state.
     """
     sibling_id = get_sibling_state_id(topology, state_id)
     state_fs_ids = determine_attached_final_state(topology, state_id)
