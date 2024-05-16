@@ -169,9 +169,9 @@ def compute_wigner_angles(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
 
-    Implementation of (B.2-4) in :cite:`marangottoHelicityAmplitudesGeneric2020`, with
-    :math:`x'_z` etc. taken from the result of :func:`compute_wigner_rotation_matrix`.
-    See also `Wigner rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
+    Implementation of (B.2-4) in :cite:`Marangotto:2019ucc`, with :math:`x'_z` etc.
+    taken from the result of :func:`compute_wigner_rotation_matrix`. See also `Wigner
+    rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
     wigner_rotation_matrix = compute_wigner_rotation_matrix(topology, momenta, state_id)
     x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
@@ -195,8 +195,8 @@ def compute_wigner_rotation_matrix(
 ) -> MatrixMultiplication:
     """Compute a Wigner rotation matrix.
 
-    Implementation of Eq. (36) in :cite:`marangottoHelicityAmplitudesGeneric2020`. See
-    also `Wigner rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
+    Implementation of Eq. (36) in :cite:`Marangotto:2019ucc`. See also `Wigner rotations
+    <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
     momentum = momenta[state_id]
     inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
@@ -209,12 +209,10 @@ def formulate_scattering_angle(
 ) -> tuple[sp.Symbol, sp.acos]:
     r"""Formulate the scattering angle in the rest frame of the resonance.
 
-    Compute the :math:`\theta_{ij}` scattering angle as formulated in `Eq (A1)
-    in the DPD paper
-    <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
-    :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`. The angle is that
-    between particle :math:`i` and spectator particle :math:`k` in the rest
-    frame of the isobar resonance :math:`(ij)`.
+    Compute the :math:`\theta_{ij}` scattering angle as formulated in `Eq (A1) in the
+    DPD paper <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
+    :cite:`Marangotto:2019ucc`. The angle is that between particle :math:`i` and
+    spectator particle :math:`k` in the rest frame of the isobar resonance :math:`(ij)`.
     """
     if not {state_id, sibling_id} <= {1, 2, 3}:
         msg = "Child IDs need to be one of 1, 2, 3"
