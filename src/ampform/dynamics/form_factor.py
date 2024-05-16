@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 import sympy as sp
@@ -37,15 +38,19 @@ class BlattWeisskopfSquared(sp.Expr):
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
 
     def evaluate(self) -> sp.Expr:
-        z, angular_momentum = self.args
-        return (
-            sp.Abs(SphericalHankel1(angular_momentum, 1)) ** 2
-            / sp.Abs(SphericalHankel1(angular_momentum, sp.sqrt(z))) ** 2
+        ell = self.angular_momentum
+        z = sp.Dummy("z", nonnegative=True, real=True)
+        expr = (
+            sp.Abs(SphericalHankel1(ell, 1)) ** 2
+            / sp.Abs(SphericalHankel1(ell, sp.sqrt(z))) ** 2
             / z
         )
+        if not ell.free_symbols:
+            expr = expr.doit().simplify()
+        return expr.xreplace({z: self.z})
 
 
-@unevaluated(implement_doit=False)
+@unevaluated
 class SphericalHankel1(sp.Expr):
     r"""Spherical Hankel function of the first kind for real-valued :math:`z`.
 
@@ -63,22 +68,35 @@ class SphericalHankel1(sp.Expr):
     z: Any
     _latex_repr_ = R"h_{{{l}}}^{{(1)}}\left({z}\right)"
 
-    def doit(self, deep: bool = True, **kwargs):
-        expr = self.evaluate()
-        if deep and isinstance(self.l, sp.Integer):
-            return expr.doit()
-        return expr
-
     def evaluate(self) -> sp.Expr:
         l, z = self.args  # noqa: E741
         k = sp.Dummy("k", integer=True, nonnegative=True)
         return (
             (-sp.I) ** (1 + l)  # type:ignore[operator]
             * (sp.exp(z * sp.I) / z)
-            * sp.Sum(
+            * _SymbolicSum(
                 sp.factorial(l + k)
                 / (sp.factorial(l - k) * sp.factorial(k))
                 * (sp.I / (2 * z)) ** k,  # type:ignore[operator]
                 (k, 0, l),
             )
         )
+
+
+class _SymbolicSum(sp.Sum):
+    """See [TR-029](https://compwa.github.io/report/029.html) for why this class is needed."""
+
+    def doit(self, deep: bool = True, **kwargs) -> sp.Expr:
+        if _get_indices(self):
+            expression = self.args[0]
+            indices = self.args[1:]
+            return _SymbolicSum(expression.doit(deep=deep, **kwargs), *indices)
+        return super().doit(deep=deep, **kwargs)
+
+
+@lru_cache(maxsize=None)
+def _get_indices(expr: sp.Sum) -> set[sp.Basic]:
+    free_symbols = set()
+    for index in expr.args[1:]:
+        free_symbols.update(index.free_symbols)
+    return {s for s in free_symbols if not isinstance(s, sp.Dummy)}
