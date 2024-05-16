@@ -143,7 +143,7 @@ def unevaluated(
     >>> @unevaluated
     ... class Function(sp.Expr):
     ...     x: sp.Symbol
-    ...     _latex_repr_ = R"f\left({x}\right)"
+    ...     _latex_repr_ = R"f\left({x}\right)"  # not an f-string!
     ...
     ...     def evaluate(self) -> sp.Expr:
     ...         return sp.sqrt(self.x)
@@ -153,6 +153,24 @@ def unevaluated(
     'f\\left(y^{2}\\right)'
     >>> expr.doit()
     y
+
+    Or, `as a method <https://docs.sympy.org/latest/modules/printing.html#example-of-custom-printing-method>`_:
+
+    >>> from sympy.printing.latex import LatexPrinter
+    >>> @unevaluated
+    ... class Function(sp.Expr):
+    ...     x: sp.Symbol
+    ...
+    ...     def evaluate(self) -> sp.Expr:
+    ...         return self.x**2
+    ...
+    ...     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+    ...         x = printer._print(self.x)  # important to convert to string first
+    ...         x, *_ = map(printer._print, self.args)  # also possible via its args
+    ...         return Rf"g\left({x}\right)"  # this is an f-string
+    >>> expr = Function(y)
+    >>> sp.latex(expr)
+    'g\\left(y\\right)'
 
     Attributes to the class are fed to the `~object.__new__` constructor of the
     :class:`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
