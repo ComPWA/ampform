@@ -1,6 +1,6 @@
 """Spin alignment with the "axis-angle" method.
 
-See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+See :cite:`Marangotto:2019ucc` and `Wigner rotations
 <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
 """
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 class AxisAngleAlignment(SpinAlignment):
     """Alignment amplitudes with the "axis-angle" method.
 
-    See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+    See :cite:`Marangotto:2019ucc` and `Wigner rotations
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
 
@@ -90,11 +90,11 @@ def formulate_axis_angle_alignment(transition: StateTransition) -> PoolSum:
     """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
 
     Generate all Wigner-:math:`D` function combinations that appear in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45), but for a generic
-    multibody decay. Each element in the returned `list` is a `tuple` of
-    Wigner-:math:`D` functions that appear in the summation, for a specific set of
-    helicities were are summing over. To generate the full sum, make a multiply the
-    Wigner-:math:`D` functions in each `tuple` and sum over all these products.
+    :cite:`Marangotto:2019ucc`, Eq.(45), but for a generic multibody decay. Each element
+    in the returned `list` is a `tuple` of Wigner-:math:`D` functions that appear in the
+    summation, for a specific set of helicities were are summing over. To generate the
+    full sum, make a multiply the Wigner-:math:`D` functions in each `tuple` and sum
+    over all these products.
     """
     rotations = PoolSum(1)
     for rotated_state_id in transition.final_states:
@@ -108,10 +108,10 @@ def formulate_rotation_chain(
 ) -> PoolSum:
     """Formulate the spin alignment sum for a specific chain.
 
-    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain consists
-    of a series of helicity rotations (see :func:`formulate_helicity_rotation_chain`)
-    plus a Wigner rotation (see :func:`.formulate_wigner_rotation`) in case there is
-    more than one helicity rotation.
+    See Eq.(45) from :cite:`Marangotto:2019ucc`. The chain consists of a series of
+    helicity rotations (see :func:`formulate_helicity_rotation_chain`) plus a Wigner
+    rotation (see :func:`.formulate_wigner_rotation`) in case there is more than one
+    helicity rotation.
     """
     helicity_symbol = create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
@@ -192,7 +192,7 @@ def formulate_wigner_rotation(
 
     A **Wigner rotation** is the 'average' rotation that results form a chain of Lorentz
     boosts to a new reference frame with regard to a direct boost. See
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially Eq.(36).
+    :cite:`Marangotto:2019ucc`, p.6, especially Eq.(36).
 
     Args:
         transition: The `~qrules.topology.Transition` in which you
@@ -246,11 +246,10 @@ def formulate_helicity_rotation(
         R(\alpha,\beta,\gamma)\left|s,m\right\rangle = \sum^s_{m'=-s}
         D^s_{m',m}\left(\alpha,\beta,\gamma\right) \left|s,m'\right\rangle
 
-    See :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(B.5).
+    See :cite:`Marangotto:2019ucc`, Eq.(B.5).
 
     This function gives the summation over these Wigner-:math:`D` functions and can be
-    used for spin alignment following :cite:`marangottoHelicityAmplitudesGeneric2020`,
-    Eq.(45).
+    used for spin alignment following :cite:`Marangotto:2019ucc`, Eq.(45).
 
     Args:
         spin_magnitude: Spin magnitude :math:`s` of spin state that is being
