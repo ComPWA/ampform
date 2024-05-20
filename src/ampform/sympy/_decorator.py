@@ -548,7 +548,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     return self, False
 
 
-def _get_sympy_fields(cls) -> tuple:
+def _get_sympy_fields(cls) -> tuple[Field, ...]:
     return tuple(f for f in _get_fields(cls) if _is_sympify(f))
 
 
