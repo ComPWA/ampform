@@ -251,12 +251,11 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         frozen=False,
     )(cls)
     cls = _update_field_metadata(cls)
-    sympy_fields = _get_sympy_fields(cls)
     non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
     cls.__slots__ = tuple(f.name for f in non_sympy_fields)  # type: ignore[arg-type]
 
     @functools.wraps(cls.__new__)
-    @_insert_args_in_signature([f.name for f in sympy_fields], idx=1)
+    @_insert_args_in_signature([f.name for f in _get_fields(cls)], idx=1)  # type:ignore[arg-type]
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
         fields_with_values, hints = _extract_field_values(cls, *args, **kwargs)
         fields_with_sympified_values = {
@@ -548,7 +547,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     return self, False
 
 
-def _get_sympy_fields(cls) -> tuple[Field, ...]:
+def get_sympy_fields(cls) -> tuple[Field, ...]:
     return tuple(f for f in _get_fields(cls) if _is_sympify(f))
 
 
