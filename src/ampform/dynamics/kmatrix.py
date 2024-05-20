@@ -19,8 +19,8 @@ from ampform.dynamics import (
     EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
-    formulate_form_factor,
 )
+from ampform.dynamics.form_factor import FormFactor
 from ampform.sympy import create_symbol_matrix
 
 
@@ -384,9 +384,7 @@ class RelativisticPVector(TMatrix):
         gamma = residue_constant[pole_id, i]
         mass0 = pole_position[pole_id]
         width = pole_width[pole_id, i]
-        form_factor = formulate_form_factor(
-            s, m_a[i], m_b[i], angular_momentum, meson_radius
-        )
+        form_factor = FormFactor(s, m_a[i], m_b[i], angular_momentum, meson_radius)
         return sp.Sum(
             beta * gamma * mass0 * width * form_factor / (mass0**2 - s),
             (pole_id, 1, n_poles),

@@ -7,7 +7,32 @@ from typing import Any
 
 import sympy as sp
 
+from ampform.dynamics.phasespace import BreakupMomentumSquared
 from ampform.sympy import unevaluated
+
+
+@unevaluated
+class FormFactor(sp.Expr):
+    """Formulate a Blatt-Weisskopf form factor.
+
+    Returns the production process factor :math:`n_a` from Equation (50.26) in
+    :pdg-review:`2021; Resonances; p.9`, which features the
+    `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    angular_momentum: Any
+    meson_radius: Any = 1
+
+    _latex_repr_ = R"\mathcal{{F}}_{{{angular_momentum}}}\left({s}, {m1}, {m2}\right)"
+
+    def evaluate(self):
+        s, m1, m2, angular_momentum, meson_radius = self.args
+        q2 = BreakupMomentumSquared(s, m1, m2)
+        ff_squared = BlattWeisskopfSquared(q2 * meson_radius**2, angular_momentum)
+        return sp.sqrt(ff_squared)
 
 
 @unevaluated
