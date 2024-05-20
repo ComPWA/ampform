@@ -300,13 +300,7 @@ def extend_FormFactor() -> None:
 
     s, m_a, m_b, L, d = sp.symbols("s m_a m_b L d")
     form_factor = FormFactor(s, m_a, m_b, angular_momentum=L, meson_radius=d)
-    _append_to_docstring(
-        FormFactor,
-        f"""
-    .. math:: {sp.latex(form_factor)}
-        :label: FormFactor
-    """,
-    )
+    _append_latex_doit_definition(form_factor)
 
 
 def extend_Kallen() -> None:
@@ -726,8 +720,10 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
 
 
 def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
-    assert class_type.__doc__ is not None
-    class_type.__doc__ += appended_text
+    if class_type.__doc__ is None:
+        class_type.__doc__ = appended_text
+    else:
+        class_type.__doc__ += appended_text
 
 
 def __generate_transitions_cached(
