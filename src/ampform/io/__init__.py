@@ -116,7 +116,7 @@ def _(obj: Iterable, **kwargs) -> str:
         msg = "Need at least one item to render as LaTeX"
         raise ValueError(msg)
     latex = R"\begin{array}{c}" + "\n"
-    for item in map(aslatex, obj):
+    for item in (aslatex(i, **kwargs) for i in obj):
         latex += Rf"  {item} \\" + "\n"
     latex += R"\end{array}"
     return latex
