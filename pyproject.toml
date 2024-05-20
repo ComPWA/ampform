@@ -69,6 +69,7 @@ doc = [
     "ampform[all]",
     "black",
     "ipympl",
+    "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
     "matplotlib",
     "mpl-interactions",
     "myst-nb >=0.14", # nb_ configuration prefixes

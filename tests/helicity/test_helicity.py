@@ -22,6 +22,7 @@ from ampform.helicity import (
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
+    from qrules.transition import SpinFormalism
 
 
 class TestHelicityAmplitudeBuilder:
@@ -267,7 +268,7 @@ class TestHelicityModel:
         assert new_model == model
 
     @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
-    def test_amplitudes(self, formalism: str):
+    def test_amplitudes(self, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=("J/psi(1S)", [-1, +1]),
             final_state=["K0", "Sigma+", "p~"],
