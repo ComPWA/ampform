@@ -1,6 +1,6 @@
 """Spin alignment with Dalitz-Plot Decomposition.
 
-See :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`.
+See :cite:`Marangotto:2019ucc`.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ if get_qrules_version() < (0, 10):
 class DalitzPlotDecomposition(SpinAlignment):
     """Alignment amplitudes with the "axis-angle" method.
 
-    See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+    See :cite:`Marangotto:2019ucc` and `Wigner rotations
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
 
