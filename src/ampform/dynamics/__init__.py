@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import sympy as sp
+from attrs import asdict, frozen
 
 # pyright: reportUnusedImport=false
 from ampform.dynamics.form_factor import (
@@ -32,8 +33,65 @@ if TYPE_CHECKING:
 
 
 @unevaluated
+class SimpleBreitWigner(sp.Expr):
+    """Simple, non-relativistic Breit-Wigner with :math:`1` in the nominator."""
+
+    s: Any
+    mass: Any
+    width: Any
+    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{BW}}\left({s}; {mass}, {width}\right)"
+
+    def evaluate(self):
+        s, m0, w0 = self.args
+        return 1 / (m0**2 - s - m0 * w0 * sp.I)
+
+
+@unevaluated
+class BreitWigner(sp.Expr):
+    """Relativistic Breit-Wigner with :math:`1` in the nominator.
+
+    `SimpleBreitWigner` with `EnergyDependentWidth` as width (see Equations
+    :eq:`SimpleBreitWigner` and :eq:`EnergyDependentWidth`).
+    """
+
+    s: Any
+    mass: Any
+    width: Any
+    m1: Any = 0
+    m2: Any = 0
+    angular_momentum: Any = 0
+    meson_radius: Any = 1
+    phsp_factor: PhaseSpaceFactorProtocol = argument(
+        default=PhaseSpaceFactor, sympify=False
+    )
+
+    def evaluate(self):
+        width = self.energy_dependent_width()
+        expr = SimpleBreitWigner(self.s, self.mass, width)
+        if self.angular_momentum == 0 and self.m1 == 0 and self.m2 == 0:
+            return expr.evaluate()
+        return expr
+
+    def energy_dependent_width(self) -> sp.Expr:
+        s, m0, w0, m1, m2, ang_mom, d = self.args
+        if ang_mom == 0 and m1 == 0 and m2 == 0:
+            return w0  # type:ignore[return-value]
+        return EnergyDependentWidth(s, m0, w0, m1, m2, ang_mom, d, self.phsp_factor)
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = printer._print(self.s)
+        function_symbol = R"\mathcal{R}^\mathrm{BW}"
+        mass = printer._print(self.mass)
+        width = printer._print(self.width)
+        arg = Rf"\left({s}; {mass}, {width}\right)"
+        angular_momentum = printer._print(self.angular_momentum)
+        if isinstance(self.angular_momentum, sp.Integer):
+            return Rf"{function_symbol}_{{L={angular_momentum}}}{arg}"
+        return Rf"{function_symbol}_{{{angular_momentum}}}{arg}"
+
+
+@unevaluated
 class EnergyDependentWidth(sp.Expr):
-    # cspell:ignore asner
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
@@ -75,13 +133,59 @@ class EnergyDependentWidth(sp.Expr):
         return Rf"{name}\left({s}\right)"
 
 
+@unevaluated
+class MultichannelBreitWigner(sp.Expr):
+    """`BreitWigner` for multiple channels."""
+
+    s: Any
+    mass: Any
+    channels: list[ChannelArguments] = argument(sympify=False)
+
+    def evaluate(self):
+        s = self.s
+        m0 = self.mass
+        width = sum(channel.formulate_width(s, m0) for channel in self.channels)
+        return SimpleBreitWigner(s, m0, width)
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        latex = R"\mathcal{R}^\mathrm{BW}_\mathrm{multi}\left("
+        latex += printer._print(self.s) + "; "
+        latex += ", ".join(printer._print(channel.width) for channel in self.channels)
+        latex += R"\right)"
+        return latex
+
+
+@frozen
+class ChannelArguments:
+    """Arguments for a channel in a `MultichannelBreitWigner`."""
+
+    width: Any
+    m1: Any = 0
+    m2: Any = 0
+    angular_momentum: Any = 0
+    meson_radius: Any = 1
+
+    def __attrs_post_init__(self) -> None:
+        for name, value in asdict(self).items():
+            object.__setattr__(self, name, sp.sympify(value))
+
+    def formulate_width(self, s: Any, m0: Any) -> sp.Expr:
+        w0 = self.width
+        m1 = self.m1
+        m2 = self.m2
+        angular_momentum = self.angular_momentum
+        meson_radius = self.meson_radius
+        ff2 = FormFactor(s, m1, m2, angular_momentum, meson_radius) ** 2
+        return ff2 * w0 * m0 / sp.sqrt(s)
+
+
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
     See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`ParticleDataGroup:2020ssz`.
     """
-    return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
+    return gamma0 * mass0 * SimpleBreitWigner(s, mass0, gamma0)
 
 
 def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
@@ -99,13 +203,11 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
     p.9`.
     """
-    form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
-    energy_dependent_width = EnergyDependentWidth(
+    ff = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
+    bw = BreitWigner(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
-    return (mass0 * gamma0 * form_factor) / (
-        mass0**2 - s - energy_dependent_width * mass0 * sp.I
-    )
+    return mass0 * gamma0 * ff * bw
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
