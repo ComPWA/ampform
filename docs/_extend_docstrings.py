@@ -32,7 +32,7 @@ if sys.version_info < (3, 8):
 else:
     from importlib.metadata import version as get_package_version
 if TYPE_CHECKING:
-    from qrules.transition import ReactionInfo
+    from qrules.transition import ReactionInfo, SpinFormalism
 
     from ampform.sympy import NumPyPrintable
 
@@ -547,7 +547,7 @@ def extend_formulate_isobar_wigner_d() -> None:
 
 
 def __get_graphviz_state_transition_example(
-    formalism: str, transition_number: int = 0
+    formalism: SpinFormalism, transition_number: int = 0
 ) -> str:
     reaction = __generate_transitions_cached(
         initial_state=[("J/psi(1S)", [+1])],
@@ -733,7 +733,7 @@ def _append_to_docstring(class_type: Callable | type, appended_text: str) -> Non
 def __generate_transitions_cached(
     initial_state: list[tuple[str, list[float | int]] | str],
     final_state: list[tuple[str, list[float | int]] | str],
-    formalism: str,
+    formalism: SpinFormalism,
 ) -> ReactionInfo:
     version = get_package_version("qrules")
     obj = (initial_state, final_state, formalism)
