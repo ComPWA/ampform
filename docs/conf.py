@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import importlib
+import inspect
 import os
 import sys
+from dataclasses import is_dataclass
 
 from sphinx_api_relink.helpers import (
     get_branch_name,
@@ -12,8 +15,50 @@ from sphinx_api_relink.helpers import (
     set_intersphinx_version_remapping,
 )
 
+from ampform.sympy._decorator import get_sympy_fields  # noqa: PLC2701
+
 sys.path.insert(0, os.path.abspath("."))
 from _extend_docstrings import extend_docstrings  # noqa: PLC2701
+
+
+def _get_excluded_members() -> list[str]:
+    default_exclusions = {
+        "as_explicit",
+        "default_assumptions",
+        "doit",
+        "evaluate",
+        "is_commutative",
+        "is_extended_real",
+        "items",
+        "keys",
+        "precedence",
+        "values",
+    }
+    for cls in [
+        *_get_dataclasses_recursive("ampform"),
+    ]:
+        fields = get_sympy_fields(cls)
+        arg_names = {f.name for f in fields}
+        default_exclusions.update(arg_names)
+    return sorted(default_exclusions)
+
+
+def _get_dataclasses_recursive(module_name: str) -> list[type]:
+    module = importlib.import_module(module_name)
+    dataclass_list = _get_dataclasses(module)
+    for _, submodule in inspect.getmembers(module, inspect.ismodule):
+        if submodule.__name__.startswith(module_name):
+            dataclass_list.extend(_get_dataclasses_recursive(submodule.__name__))
+    return dataclass_list
+
+
+def _get_dataclasses(module):
+    dataclass_list = []
+    for _, obj in inspect.getmembers(module):
+        if inspect.isclass(obj) and is_dataclass(obj):
+            dataclass_list.append(obj)
+    return dataclass_list
+
 
 extend_docstrings()
 set_intersphinx_version_remapping({
@@ -85,18 +130,7 @@ api_target_types: dict[str, str] = {
 }
 author = "Common Partial Wave Analysis"
 autodoc_default_options = {
-    "exclude-members": ", ".join([
-        "as_explicit",
-        "default_assumptions",
-        "doit",
-        "evaluate",
-        "is_commutative",
-        "is_extended_real",
-        "items",
-        "keys",
-        "precedence",
-        "values",
-    ]),
+    "exclude-members": ", ".join(_get_excluded_members()),
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
