@@ -6,11 +6,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from warnings import warn
 
 import sympy as sp
 
 # pyright: reportUnusedImport=false
-from ampform.dynamics.form_factor import BlattWeisskopfSquared
+from ampform.dynamics.form_factor import BlattWeisskopfSquared, FormFactor
 from ampform.dynamics.phasespace import (
     BreakupMomentumSquared,
     EqualMassPhaseSpaceFactor,  # noqa: F401
@@ -103,7 +104,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
     p.9`.
     """
-    form_factor = formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius)
+    form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
@@ -115,10 +116,11 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
     """Formulate a Blatt-Weisskopf form factor.
 
-    Returns the production process factor :math:`n_a` from Equation (50.26) in
-    :pdg-review:`2021; Resonances; p.9`, which features the
-    `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
+    .. deprecated:: 0.16
     """
-    q_squared = BreakupMomentumSquared(s, m_a, m_b)
-    ff_squared = BlattWeisskopfSquared(q_squared * meson_radius**2, angular_momentum)
-    return sp.sqrt(ff_squared)
+    warn(
+        message="Use the FormFactor expression class instead.",
+        category=DeprecationWarning,
+        stacklevel=1,
+    )
+    return FormFactor(s, m_a, m_b, angular_momentum, meson_radius)

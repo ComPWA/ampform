@@ -9,11 +9,7 @@ import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
 
-from ampform.dynamics import (
-    EnergyDependentWidth,
-    formulate_form_factor,
-    relativistic_breit_wigner,
-)
+from ampform.dynamics import EnergyDependentWidth, FormFactor, relativistic_breit_wigner
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -83,17 +79,17 @@ def create_non_dynamic_with_ff(
 ) -> BuilderReturnType:
     """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
 
-    See also :func:`.formulate_form_factor`.
+    See also :class:`.FormFactor`.
     """
     if variable_pool.angular_momentum is None:
         msg = "Angular momentum is not defined but is required in the form factor!"
         raise ValueError(msg)
     res_identifier = resonance.latex if resonance.latex else resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
-    form_factor = formulate_form_factor(
+    form_factor = FormFactor(
         s=variable_pool.incoming_state_mass**2,
-        m_a=variable_pool.outgoing_state_mass1,
-        m_b=variable_pool.outgoing_state_mass2,
+        m1=variable_pool.outgoing_state_mass1,
+        m2=variable_pool.outgoing_state_mass2,
         angular_momentum=variable_pool.angular_momentum,
         meson_radius=meson_radius,
     )
@@ -111,8 +107,8 @@ class RelativisticBreitWignerBuilder:
 
     Args:
         form_factor: Formulate a relativistic Breit-Wigner function multiplied
-            by a Blatt-Weisskopf form factor (`.BlattWeisskopfSquared`), like in
-            Equation (50.26) on :pdg-review:`2021; Resonances; p.9`.
+            by a Blatt-Weisskopf form factor (`.FormFactor`), like in Equation (50.26)
+            on :pdg-review:`2021; Resonances; p.9`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
             denominator of the Breit-Wigner.
         phsp_factor: A class that complies with the
@@ -214,10 +210,10 @@ class RelativisticBreitWignerBuilder:
 
         inv_mass = variable_pool.incoming_state_mass
         _, __, meson_radius = self.__create_symbols(resonance)
-        form_factor = formulate_form_factor(
+        form_factor = FormFactor(
             s=inv_mass**2,
-            m_a=variable_pool.outgoing_state_mass1,
-            m_b=variable_pool.outgoing_state_mass2,
+            m1=variable_pool.outgoing_state_mass1,
+            m2=variable_pool.outgoing_state_mass2,
             angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
         )

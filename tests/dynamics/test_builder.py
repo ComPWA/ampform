@@ -2,11 +2,12 @@ import pytest
 import sympy as sp
 from qrules.particle import Particle
 
-from ampform.dynamics import EnergyDependentWidth, formulate_form_factor
+from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import (
     RelativisticBreitWignerBuilder,
     TwoBodyKinematicVariableSet,
 )
+from ampform.dynamics.form_factor import FormFactor
 
 
 class TestRelativisticBreitWignerBuilder:
@@ -53,9 +54,7 @@ class TestRelativisticBreitWignerBuilder:
         m2 = variable_set.outgoing_state_mass2
         L = variable_set.angular_momentum  # noqa: N806
         d = sp.Symbol(R"d_{N}", positive=True)
-        form_factor = formulate_form_factor(
-            s, m1, m2, angular_momentum=L, meson_radius=d
-        )
+        form_factor = FormFactor(s, m1, m2, angular_momentum=L, meson_radius=d)
         assert bw_with_ff / bw == form_factor
         assert set(parameters) == {m0, w0, d}
         assert parameters[m0] == particle.mass
@@ -89,9 +88,7 @@ class TestRelativisticBreitWignerBuilder:
         builder.form_factor = True
         bw_with_ff, parameters = builder(particle, variable_set)
         ang_mom = variable_set.angular_momentum
-        form_factor = formulate_form_factor(
-            s, m1, m2, angular_momentum=ang_mom, meson_radius=d
-        )
+        form_factor = FormFactor(s, m1, m2, angular_momentum=ang_mom, meson_radius=d)
         assert bw_with_ff / bw == form_factor
         assert set(parameters) == {m0, w0, d}
         assert parameters[m0] == particle.mass
