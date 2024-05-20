@@ -15,13 +15,13 @@ from ampform.kinematics.lorentz import create_four_momentum_symbol
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
-    from qrules.transition import ReactionInfo
+    from qrules.transition import ReactionInfo, SpinFormalism
 
 
 class TestDalitzPlotDecomposition:
     @pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
     def jpsi_to_k0_sigma_pbar(self, request: SubRequest) -> ReactionInfo:
-        formalism: str = request.param
+        formalism: SpinFormalism = request.param
         reaction = qrules.generate_transitions(
             initial_state=("J/psi(1S)", [-1, +1]),
             final_state=["K0", "Sigma+", "p~"],
