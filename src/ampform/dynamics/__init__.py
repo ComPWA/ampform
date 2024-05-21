@@ -217,7 +217,8 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
     """Formulate a Blatt-Weisskopf form factor.
 
-    .. deprecated:: 0.16
+    .. deprecated:: 0.16.0
+        Use `.FormFactor` instead.
     """
     warn(
         message="Use the FormFactor expression class instead.",
