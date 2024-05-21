@@ -72,7 +72,7 @@ class BreitWigner(sp.Expr):
             return expr.evaluate()
         return expr
 
-    def energy_dependent_width(self) -> sp.Expr:
+    def energy_dependent_width(self) -> EnergyDependentWidth | sp.Basic:
         s, m0, w0, m1, m2, ang_mom, d = self.args
         if ang_mom == 0 and m1 == 0 and m2 == 0:
             return w0  # type:ignore[return-value]
