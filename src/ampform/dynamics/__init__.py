@@ -43,7 +43,7 @@ class SimpleBreitWigner(sp.Expr):
 
     def evaluate(self):
         s, m0, w0 = self.args
-        return 1 / (m0**2 - s - m0 * w0 * sp.I)
+        return m0 * w0 / (m0**2 - s - m0 * w0 * sp.I)
 
 
 @unevaluated
@@ -189,7 +189,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`ParticleDataGroup:2020ssz`.
     """
-    return gamma0 * mass0 * SimpleBreitWigner(s, mass0, gamma0)
+    return SimpleBreitWigner(s, mass0, gamma0)
 
 
 def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
@@ -211,7 +211,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     bw = BreitWigner(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
-    return mass0 * gamma0 * ff * bw
+    return ff * bw
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:

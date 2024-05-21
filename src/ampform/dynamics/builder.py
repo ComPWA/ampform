@@ -9,7 +9,7 @@ import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
 
-from ampform.dynamics import EnergyDependentWidth, FormFactor, relativistic_breit_wigner
+from ampform.dynamics import EnergyDependentWidth, FormFactor, SimpleBreitWigner
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -156,10 +156,10 @@ class RelativisticBreitWignerBuilder:
         identifier = resonance.latex if resonance.latex else resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
         res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
-        expression = relativistic_breit_wigner(
+        expression = SimpleBreitWigner(
             s=inv_mass**2,
-            mass0=res_mass,
-            gamma0=res_width,
+            mass=res_mass,
+            width=res_width,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
