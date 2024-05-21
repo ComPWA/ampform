@@ -119,11 +119,11 @@ class EnergyDependentWidth(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args
-        ff2 = FormFactor(s, m1, m2, angular_momentum, meson_radius)
-        ff2_0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)  # type: ignore[operator]
+        ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
+        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)  # type: ignore[operator]
         rho = self.phsp_factor(s, m1, m2)
         rho0 = self.phsp_factor(m0**2, m1, m2)  # type: ignore[operator]
-        return width0 * (ff2 / ff2_0) * (rho / rho0)
+        return width0 * (ff / ff0) ** 2 * (rho / rho0)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.args[0])
