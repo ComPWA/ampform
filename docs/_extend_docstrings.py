@@ -258,7 +258,7 @@ def extend_EnergyDependentWidth() -> None:
     _append_to_docstring(
         EnergyDependentWidth,
         R"""
-    where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is defined
+    where :math:`F_L` is defined by :eq:`FormFactor`, :math:`q` is defined
     by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default) defined by
     :eq:`PhaseSpaceFactor`.
     """,
