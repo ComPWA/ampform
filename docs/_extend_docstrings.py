@@ -389,12 +389,6 @@ def extend_MultichannelBreitWigner() -> None:
     `SimpleBreitWigner`.
     """,
     )
-    _append_to_docstring(
-        ChannelArguments.formulate_width,
-        Rf"""
-    .. math:: {sp.latex(channels[0].formulate_width(s, m0))}
-    """,
-    )
 
 
 def extend_PhaseSpaceFactor() -> None:

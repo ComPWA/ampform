@@ -164,19 +164,23 @@ class ChannelArguments:
     m2: Any = 0
     angular_momentum: Any = 0
     meson_radius: Any = 1
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor
 
     def __attrs_post_init__(self) -> None:
         for name, value in asdict(self).items():
             object.__setattr__(self, name, sp.sympify(value))
 
-    def formulate_width(self, s: Any, m0: Any) -> sp.Expr:
-        w0 = self.width
-        m1 = self.m1
-        m2 = self.m2
-        angular_momentum = self.angular_momentum
-        meson_radius = self.meson_radius
-        ff2 = FormFactor(s, m1, m2, angular_momentum, meson_radius) ** 2
-        return ff2 * w0 * m0 / sp.sqrt(s)
+    def formulate_width(self, s: Any, m0: Any) -> EnergyDependentWidth:
+        return EnergyDependentWidth(
+            s,
+            m0,
+            self.width,
+            self.m1,
+            self.m2,
+            self.angular_momentum,
+            self.meson_radius,
+            self.phsp_factor,
+        )
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
