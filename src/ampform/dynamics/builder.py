@@ -57,7 +57,7 @@ class ResonanceDynamicsBuilder(Protocol):
 
     Follow this `~typing.Protocol` when defining a builder function that is to be used
     by `.DynamicsSelector.assign`. For an example, see the source code
-    `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
+    `.create_relativistic_breit_wigner`, which creates a `.SimpleBreitWigner`.
 
     .. seealso:: :doc:`/usage/dynamics/custom`
     """
@@ -236,7 +236,7 @@ class RelativisticBreitWignerBuilder:
 create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
     form_factor=False
 ).__call__
-"""Create a `.relativistic_breit_wigner` for a two-body decay.
+"""Create a `.SimpleBreitWigner` for a two-body decay.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _without_ form
 factor.

@@ -188,7 +188,11 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
 
     See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`ParticleDataGroup:2020ssz`.
+
+    .. deprecated:: 0.16.0
+        Use `.SimpleBreitWigner` instead.
     """
+    warn("Use SimpleBreitWigner instead", category=DeprecationWarning, stacklevel=1)
     return SimpleBreitWigner(s, mass0, gamma0)
 
 

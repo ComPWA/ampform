@@ -645,20 +645,6 @@ def extend_get_boost_chain_suffix() -> None:
     )
 
 
-def extend_relativistic_breit_wigner() -> None:
-    from ampform.dynamics import relativistic_breit_wigner
-
-    s, m0, w0 = sp.symbols("s m0 Gamma0")
-    rel_bw = relativistic_breit_wigner(s, m0, w0)
-    _append_to_docstring(
-        relativistic_breit_wigner,
-        f"""
-    .. math:: {sp.latex(rel_bw)}
-        :label: relativistic_breit_wigner
-    """,
-    )
-
-
 def extend_relativistic_breit_wigner_with_ff() -> None:
     from ampform.dynamics import relativistic_breit_wigner_with_ff
 
