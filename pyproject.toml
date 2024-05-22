@@ -111,6 +111,7 @@ test = [
     "nbmake",
     "numpy",
     "pytest",
+    "pytest-benchmark",
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
@@ -164,17 +165,21 @@ module = ["graphviz.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = ["scipy.*"]
+module = ["pytest_benchmark.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = ["ipywidgets.*"]
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["scipy.*"]
+
+[[tool.mypy.overrides]]
 check_untyped_defs = true
 disallow_incomplete_defs = false
 disallow_untyped_defs = false
-module = ["tests.*"]
+module = ["benchmarks.*", "tests.*"]
 
 [[tool.mypy.overrides]]
 ignore_errors = true
@@ -253,6 +258,7 @@ norecursedirs = [
     "_build",
 ]
 testpaths = [
+    "benchmarks",
     "src",
     "tests",
 ]
@@ -358,6 +364,10 @@ split-on-trailing-comma = false
     "S403",
     "T20",
     "TCH00",
+]
+"benchmarks/*" = [
+    "D",
+    "S101",
 ]
 "docs/*" = [
     "E402",
