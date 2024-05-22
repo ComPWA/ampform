@@ -181,6 +181,15 @@ def extend_BreakupMomentumSquared() -> None:
     _append_latex_doit_definition(expr, deep=True)
 
 
+def extend_BreitWigner() -> None:
+    from ampform.dynamics import BreitWigner
+
+    s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
+    L = sp.Symbol("L", integer=True, nonnegative=True)
+    expr = BreitWigner(s, m0, w0, m1, m2, angular_momentum=L, meson_radius=d)
+    _append_latex_doit_definition(expr)
+
+
 def extend_ComplexSqrt() -> None:
     from ampform.sympy.math import ComplexSqrt
 
@@ -358,6 +367,36 @@ def extend_is_within_phasespace() -> None:
     )
 
 
+def extend_MultichannelBreitWigner() -> None:
+    from ampform.dynamics import (
+        ChannelArguments,
+        MultichannelBreitWigner,
+        SimpleBreitWigner,
+    )
+
+    s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+    channels = [
+        ChannelArguments(*sp.symbols("Gamma1 m_a1 m_b1 L1 d", nonnegative=True)),
+        ChannelArguments(*sp.symbols("Gamma2 m_a2 m_b2 L2 d", nonnegative=True)),
+    ]
+    expr = MultichannelBreitWigner(s, m0, channels=channels)
+    _append_latex_doit_definition(expr)
+    bw = SimpleBreitWigner(s, m0, w0)
+    _append_to_docstring(
+        MultichannelBreitWigner,
+        Rf"""
+    with :math:`{sp.latex(bw)}` defined by Equation :eq:`SimpleBreitWigner`, a
+    `SimpleBreitWigner`.
+    """,
+    )
+    _append_to_docstring(
+        ChannelArguments.formulate_width,
+        Rf"""
+    .. math:: {sp.latex(channels[0].formulate_width(s, m0))}
+    """,
+    )
+
+
 def extend_PhaseSpaceFactor() -> None:
     from ampform.dynamics.phasespace import PhaseSpaceFactor
 
@@ -471,6 +510,14 @@ def extend_RotationZMatrix() -> None:
     See also the note that comes with Equation :eq:`boost-in-z-direction`.
     """,
     )
+
+
+def extend_SimpleBreitWigner() -> None:
+    from ampform.dynamics import SimpleBreitWigner
+
+    s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+    expr = SimpleBreitWigner(s, m0, w0)
+    _append_latex_doit_definition(expr)
 
 
 def extend_SphericalHankel1() -> None:

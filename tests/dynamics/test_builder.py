@@ -2,7 +2,7 @@ import pytest
 import sympy as sp
 from qrules.particle import Particle
 
-from ampform.dynamics import EnergyDependentWidth
+from ampform.dynamics import EnergyDependentWidth, SimpleBreitWigner
 from ampform.dynamics.builder import (
     RelativisticBreitWignerBuilder,
     TwoBodyKinematicVariableSet,
@@ -43,7 +43,8 @@ class TestRelativisticBreitWignerBuilder:
         s = variable_set.incoming_state_mass**2
         m0 = sp.Symbol("m_{N}", nonnegative=True)
         w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
-        assert bw == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)
+        simple_bw = SimpleBreitWigner(s, m0, w0)
+        assert bw == w0 * m0 * simple_bw
         assert set(parameters) == {m0, w0}
         assert parameters[m0] == particle.mass
         assert parameters[w0] == particle.width
