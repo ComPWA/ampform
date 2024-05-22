@@ -77,6 +77,7 @@ hidden:
 maxdepth: 2
 ---
 API <api/ampform>
+Continuous benchmarks <https://compwa.github.io/ampform>
 Changelog <https://github.com/ComPWA/ampform/releases>
 Upcoming features <https://github.com/ComPWA/ampform/milestones?direction=asc&sort=title&state=open>
 Help developing <https://compwa.github.io/develop>

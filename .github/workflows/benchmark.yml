@@ -1,0 +1,62 @@
+name: Benchmark
+env:
+  PYTHONHASHSEED: "0"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - epic/*
+  workflow_dispatch:
+    inputs:
+      specific-pip-packages:
+        description: Run benchmarks with specific pip packages
+        required: false
+        type: string
+
+jobs:
+  benchmark:
+    name: Performance regression
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ComPWA/actions/pip-install@v1
+        with:
+          editable: "yes"
+          extras: test,all
+          python-version: "3.9"
+          specific-packages: ${{ inputs.specific-pip-packages }}
+      - name: Run pytest-benchmark
+        run: |
+          pytest \
+            -k benchmark \
+            --benchmark-json output.json \
+            --durations=0
+        working-directory: benchmarks
+      - name: Store result
+        if: github.event_name == 'push'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: AmpForm benchmark results
+          tool: pytest
+          output-file-path: benchmarks/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: benchmark-results
+          benchmark-data-dir-path: ""
+          auto-push: true
+      - name: Warn on performance decrease
+        if: github.event_name == 'pull_request'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: AmpForm benchmark results
+          tool: pytest
+          output-file-path: benchmarks/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: benchmark-results
+          benchmark-data-dir-path: ""
+          auto-push: false
+          comment-on-alert: true
+          fail-on-alert: true

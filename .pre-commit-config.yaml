@@ -89,6 +89,10 @@ repos:
       - id: name-tests-test
         name: Tests should start with test_
         args: ["--django"]
+        exclude: >
+          (?x)^(
+            benchmarks/.*
+          )$
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/mirrors-prettier

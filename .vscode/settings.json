@@ -73,6 +73,7 @@
   "ruff.importStrategy": "fromEnvironment",
   "ruff.organizeImports": true,
   "search.exclude": {
+    "**/benchmarks/**/__init__.py": true,
     "**/tests/**/__init__.py": true,
     ".constraints/*.txt": true,
     "typings/**": true
