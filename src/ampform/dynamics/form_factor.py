@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
+from typing import Any, Callable
 
 import sympy as sp
 
@@ -63,16 +63,31 @@ class BlattWeisskopfSquared(sp.Expr):
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
 
     def evaluate(self) -> sp.Expr:
-        ell = self.angular_momentum
-        z = sp.Dummy("z", nonnegative=True, real=True)
-        expr = (
-            sp.Abs(SphericalHankel1(ell, 1)) ** 2
-            / sp.Abs(SphericalHankel1(ell, sp.sqrt(z))) ** 2
-            / z
-        )
-        if not ell.free_symbols:
-            expr = expr.doit().simplify()
-        return expr.xreplace({z: self.z})
+        z, ell = self.args
+        if ell.free_symbols:
+            return _formulate_blatt_weisskopf(ell, z)
+        expr = _get_polynomial_blatt_weisskopf(ell)(z)
+        return sp.sympify(expr)
+
+
+@lru_cache(maxsize=20)
+def _get_polynomial_blatt_weisskopf(ell: int | sp.Integer) -> Callable[[Any], Any]:
+    """Get the Blatt-Weisskopf factor as a fraction of polynomials.
+
+    See https://github.com/ComPWA/ampform/issues/426.
+    """
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    expr = _formulate_blatt_weisskopf(ell, z)
+    expr = expr.doit().simplify()
+    return sp.lambdify(z, expr, "math")
+
+
+def _formulate_blatt_weisskopf(ell, z) -> sp.Expr:
+    return (
+        sp.Abs(SphericalHankel1(ell, 1)) ** 2
+        / sp.Abs(SphericalHankel1(ell, sp.sqrt(z))) ** 2
+        / z
+    )
 
 
 @unevaluated

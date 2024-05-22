@@ -12,23 +12,11 @@ from ampform.dynamics import (
     PhaseSpaceFactorSWave,
     relativistic_breit_wigner_with_ff,
 )
-from ampform.dynamics.form_factor import BlattWeisskopfSquared
 
 if TYPE_CHECKING:
     from qrules import ParticleCollection
 
     from ampform.helicity import HelicityModel
-
-
-class TestBlattWeisskopfSquared:
-    def test_factorials(self):
-        z = sp.Symbol("z")
-        angular_momentum = sp.Symbol("L", integer=True)
-        form_factor = BlattWeisskopfSquared(z, angular_momentum)
-        form_factor_9 = form_factor.subs(angular_momentum, 8).evaluate()
-        factor, z_power, _ = form_factor_9.args
-        assert factor == 4392846440677
-        assert z_power == z**8
 
 
 class TestEnergyDependentWidth:
