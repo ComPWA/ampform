@@ -66,7 +66,8 @@ class BlattWeisskopfSquared(sp.Expr):
         z, ell = self.args
         if ell.free_symbols:
             return _formulate_blatt_weisskopf(ell, z)
-        return _get_polynomial_blatt_weisskopf(ell)(z)
+        expr = _get_polynomial_blatt_weisskopf(ell)(z)
+        return sp.sympify(expr)
 
 
 @lru_cache(maxsize=20)
