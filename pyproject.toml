@@ -121,6 +121,7 @@ types = [
     "ipywidgets",
     "numpy",
     "pytest",
+    "pytest-benchmark",
     "sphinx-api-relink >=0.0.3",
 ]
 viz = ["graphviz"]
