@@ -40,7 +40,7 @@ repos:
             metadata.vscode
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.3.8
+    rev: 0.3.9
     hooks:
       - id: check-dev-files
         args:
@@ -59,7 +59,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.4.8
     hooks:
       - id: ruff
         args: [--fix]
@@ -113,7 +113,7 @@ repos:
           - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.3
+    rev: 0.28.4
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -126,7 +126,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.8.1
+    rev: v8.8.2
     hooks:
       - id: cspell
 
@@ -152,6 +152,6 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.363
+    rev: v1.1.366
     hooks:
       - id: pyright
