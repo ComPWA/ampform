@@ -166,6 +166,10 @@ module = ["graphviz.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
+module = ["numpy.lib.index_tricks.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["pytest_benchmark.*"]
 
 [[tool.mypy.overrides]]
