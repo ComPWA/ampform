@@ -36,7 +36,7 @@ docutils==0.17.1
 entrypoints==0.4
 exceptiongroup==1.2.1
 execnet==2.0.2
-fastjsonschema==2.19.1
+fastjsonschema==2.20.0
 filelock==3.12.2
 fonttools==4.38.0
 fqdn==1.5.1
@@ -62,7 +62,7 @@ isort==5.11.5
 jedi==0.18.2
 jinja2==3.1.4
 json5==0.9.16
-jsonpointer==2.4
+jsonpointer==3.0.0
 jsonschema==4.17.3
 jupyter-cache==0.5.0
 jupyter-client==7.4.9
@@ -123,14 +123,14 @@ platformdirs==4.0.0
 pluggy==1.2.0
 pre-commit==2.21.0
 prometheus-client==0.17.1
-prompt-toolkit==3.0.46
-psutil==5.9.8
+prompt-toolkit==3.0.47
+psutil==6.0.0
 ptyprocess==0.7.0
 py-cpuinfo==9.0.0
 pybtex==0.24.0
 pybtex-docutils==1.0.3
 pycparser==2.21
-pydantic==1.10.15
+pydantic==1.10.17
 pydata-sphinx-theme==0.13.3
 pygments==2.17.2
 pyparsing==3.1.2
