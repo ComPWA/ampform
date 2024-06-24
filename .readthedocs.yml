@@ -1,13 +1,5 @@
 version: 2
 
-sphinx:
-  builder: html
-  configuration: docs/conf.py
-  fail_on_warning: true
-
-formats:
-  - htmlzip
-
 build:
   os: ubuntu-22.04
   tools:
@@ -18,3 +10,11 @@ build:
     post_install:
       - python -m pip install 'uv>=0.2.0'
       - python -m uv pip install -c .constraints/py3.11.txt -e .[doc]
+
+formats:
+  - htmlzip
+
+sphinx:
+  builder: html
+  configuration: docs/conf.py
+  fail_on_warning: true
