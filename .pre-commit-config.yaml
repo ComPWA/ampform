@@ -59,7 +59,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.1
+    rev: v0.5.5
     hooks:
       - id: ruff
         args: [--fix]
@@ -113,7 +113,7 @@ repos:
           - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.0
+    rev: 0.29.1
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -126,7 +126,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.10.1
+    rev: v8.13.0
     hooks:
       - id: cspell
 
@@ -152,6 +152,6 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.370
+    rev: v1.1.374
     hooks:
       - id: pyright
