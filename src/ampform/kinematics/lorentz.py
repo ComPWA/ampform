@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Callable, Dict
 
 import sympy as sp
@@ -17,6 +18,10 @@ from ampform.sympy._array_expressions import (
 )
 from ampform.sympy.math import ComplexSqrt
 
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
 if TYPE_CHECKING:
     from qrules.topology import Topology
     from sympy.printing.latex import LatexPrinter
@@ -45,7 +50,7 @@ FourMomenta = Dict[int, "FourMomentumSymbol"]
 It's best to create a `dict` of `.FourMomenta` with
 :func:`create_four_momentum_symbols`.
 """
-FourMomentumSymbol = ArraySymbol
+FourMomentumSymbol: TypeAlias = ArraySymbol
 r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
 The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number of

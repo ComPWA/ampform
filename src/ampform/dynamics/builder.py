@@ -123,7 +123,7 @@ class RelativisticBreitWignerBuilder:
         phsp_factor: PhaseSpaceFactorProtocol | None = None,
     ) -> None:
         if phsp_factor is None:
-            phsp_factor = PhaseSpaceFactor
+            phsp_factor = PhaseSpaceFactor  # type:ignore[arg-type,assignment]
         self.phsp_factor = phsp_factor
         self.energy_dependent_width = energy_dependent_width
         self.form_factor = form_factor
@@ -189,7 +189,7 @@ class RelativisticBreitWignerBuilder:
             m_b=m_b,
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
-            phsp_factor=self.phsp_factor,
+            phsp_factor=self.phsp_factor,  # type:ignore[arg-type]
         )
         breit_wigner_expr = (res_mass * res_width) / (
             res_mass**2 - s - mass_dependent_width * res_mass * sp.I
@@ -245,7 +245,7 @@ factor.
 create_relativistic_breit_wigner_with_ff = RelativisticBreitWignerBuilder(
     energy_dependent_width=True,
     form_factor=True,
-    phsp_factor=PhaseSpaceFactor,
+    phsp_factor=PhaseSpaceFactor,  # type:ignore[arg-type]
 ).__call__
 """Create a `.relativistic_breit_wigner_with_ff` for a two-body decay.
 
@@ -256,7 +256,7 @@ and a 'normal' `.PhaseSpaceFactor`.
 create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
     energy_dependent_width=True,
     form_factor=True,
-    phsp_factor=EqualMassPhaseSpaceFactor,
+    phsp_factor=EqualMassPhaseSpaceFactor,  # type:ignore[arg-type]
 ).__call__
 """Create a `.relativistic_breit_wigner_with_ff` with analytic continuation.
 

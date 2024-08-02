@@ -108,7 +108,7 @@ class UnevaluatedExpression(sp.Expr):
         kwargs = {"name": self._name}
         return args, kwargs
 
-    @override
+    @override  # type:ignore[misc]
     def _hashable_content(self) -> tuple:
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
