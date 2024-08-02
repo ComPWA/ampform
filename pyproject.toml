@@ -67,7 +67,6 @@ dev = [
 doc = [
     "Sphinx >=3",
     "ampform[all]",
-    "black",
     "ipympl",
     "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
     "matplotlib",
@@ -88,10 +87,8 @@ doc = [
     "sphinxcontrib-bibtex >=2",
 ]
 jupyter = [
-    "black",
-    "isort",
     "jupyterlab",
-    "jupyterlab-code-formatter",
+    "jupyterlab-code-formatter >=3.0.0",
     "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
