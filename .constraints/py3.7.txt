@@ -15,9 +15,9 @@ beautifulsoup4==4.12.3
 black==23.3.0
 bleach==6.0.0
 cached-property==1.5.2
-cachetools==5.3.3
+cachetools==5.4.0
 cattrs==23.1.2
-certifi==2024.6.2
+certifi==2024.7.4
 cffi==1.15.1
 cfgv==3.3.1
 chardet==5.2.0
@@ -34,7 +34,7 @@ distlib==0.3.8
 docstring-to-markdown==0.15
 docutils==0.17.1
 entrypoints==0.4
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
 execnet==2.0.2
 fastjsonschema==2.20.0
 filelock==3.12.2
@@ -75,7 +75,7 @@ jupyter-server-mathjax==0.2.6
 jupyter-server-ydoc==0.8.0
 jupyter-ydoc==0.2.5
 jupyterlab==3.6.7
-jupyterlab-code-formatter==2.2.1
+jupyterlab-code-formatter==3.0.0
 jupyterlab-git==0.44.0
 jupyterlab-lsp==3.10.2
 jupyterlab-myst==1.2.0
@@ -185,7 +185,7 @@ sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-sqlalchemy==1.4.52
+sqlalchemy==1.4.53
 sympy==1.10.1
 tabulate==0.9.0
 terminado==0.17.1
