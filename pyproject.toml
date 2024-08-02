@@ -162,6 +162,10 @@ warn_unused_configs = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
+module = ["sympy.*"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["graphviz.*"]
 
 [[tool.mypy.overrides]]
