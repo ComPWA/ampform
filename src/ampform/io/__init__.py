@@ -48,7 +48,7 @@ def _(obj: complex, **kwargs) -> str:
     return f"{real}{plus}{imag}i"
 
 
-def __downcast(obj: float, **kwargs) -> float | int:
+def __downcast(obj: float, **kwargs) -> float:
     if obj.is_integer():
         return int(obj)
     return obj

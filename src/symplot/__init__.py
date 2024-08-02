@@ -166,7 +166,7 @@ class SliderKwargs(abc.Mapping):
         for keyword, value in value_mapping.items():
             try:
                 self[keyword].value = value
-            except KeyError:
+            except KeyError:  # noqa: PERF203
                 _LOGGER.warning(f'There is no slider with name or symbol "{keyword}"')
                 continue
 
@@ -219,7 +219,7 @@ def _is_min_max(
 
 def _is_min_max_step(
     range_def: RangeDefinition,
-) -> TypeGuard[tuple[float, float, float | int]]:
+) -> TypeGuard[tuple[float, float, float]]:
     return len(range_def) == 3  # noqa: PLR2004
 
 

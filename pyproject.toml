@@ -282,7 +282,8 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 ignore = [
-    "ANN401",
+    "ANN",
+    "ARG00",
     "COM812",
     "CPY001",
     "D101",
@@ -296,6 +297,7 @@ ignore = [
     "D416",
     "DOC",
     "E501",
+    "FBT00",
     "FURB101",
     "FURB103",
     "FURB140",
@@ -319,6 +321,14 @@ extend-immutable-calls = [
 [tool.ruff.lint.flake8-builtins]
 builtins-ignorelist = ["display"]
 
+[tool.ruff.lint.flake8-self]
+ignore-names = [
+    "_latex",
+    "_module",
+    "_numpycode",
+    "_print",
+]
+
 [tool.ruff.lint.isort]
 known-third-party = ["sympy"]
 split-on-trailing-comma = false
@@ -328,7 +338,6 @@ split-on-trailing-comma = false
 "**/docs/usage/symplot.ipynb" = ["RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
-    "ANN",
     "B018",
     "C408",
     "C90",
@@ -347,13 +356,12 @@ split-on-trailing-comma = false
     "S101",
     "S301",
     "S403",
+    "SLF001",
     "T20",
     "TCH00",
 ]
 "benchmarks/*" = [
-    "ANN",
     "D",
-    "FBT001",
     "INP001",
     "PGH001",
     "PLC2701",
@@ -383,10 +391,8 @@ split-on-trailing-comma = false
 ]
 "setup.py" = ["D100"]
 "tests/*" = [
-    "ANN",
     "C408",
     "D",
-    "FBT001",
     "INP001",
     "PGH001",
     "PLC2701",

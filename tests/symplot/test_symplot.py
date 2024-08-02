@@ -103,7 +103,7 @@ class TestSliderKwargs:
         slider_name: str,
         min_: float,
         max_: float,
-        n_steps: float | int | None,
+        n_steps: float | None,
         step_size: float,
         slider_kwargs: SliderKwargs,
     ) -> None:
