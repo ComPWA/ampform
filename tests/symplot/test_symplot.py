@@ -23,7 +23,7 @@ class TestSliderKwargs:
                     value=0.3, min=0.0, max=2.5, description=R"$\alpha$"
                 ),
                 R"\theta_12": FloatSlider(
-                    value=1.5, min=0.0, max=3.14, description=R"$\theta_{12}$"
+                    value=1.5, min=0.0, max=3.12, description=R"$\theta_{12}$"
                 ),
             },
             arg_to_symbol={
@@ -48,7 +48,7 @@ class TestSliderKwargs:
         theta_slider = slider_kwargs[sp.Symbol(R"\theta_12", real=True)]
         assert theta_slider is not None
         assert isinstance(theta_slider, FloatSlider)
-        assert theta_slider.max == 3.14
+        assert theta_slider.max == 3.12
         assert theta_slider.description == R"$\theta_{12}$"
         assert slider_kwargs["Dummy"] == theta_slider
 
@@ -66,7 +66,7 @@ class TestSliderKwargs:
             assert set(kwargs) == {"Dummy", "alpha", "n"}
             assert isinstance(kwargs["alpha"], FloatSlider)
             assert isinstance(kwargs["n"], IntSlider)
-            assert kwargs["Dummy"].max == 3.14
+            assert kwargs["Dummy"].max == 3.12
 
         some_function(**slider_kwargs)
 

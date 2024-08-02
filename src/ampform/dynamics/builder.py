@@ -84,7 +84,7 @@ def create_non_dynamic_with_ff(
     if variable_pool.angular_momentum is None:
         msg = "Angular momentum is not defined but is required in the form factor!"
         raise ValueError(msg)
-    res_identifier = resonance.latex if resonance.latex else resonance.name
+    res_identifier = resonance.latex or resonance.name
     meson_radius = sp.Symbol(f"d_{{{res_identifier}}}", positive=True)
     form_factor = FormFactor(
         s=variable_pool.incoming_state_mass**2,
@@ -153,7 +153,7 @@ class RelativisticBreitWignerBuilder:
         resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         inv_mass = variable_pool.incoming_state_mass
-        identifier = resonance.latex if resonance.latex else resonance.name
+        identifier = resonance.latex or resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
         res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
         expression = relativistic_breit_wigner(
@@ -226,7 +226,7 @@ class RelativisticBreitWignerBuilder:
     def __create_symbols(
         resonance: Particle,
     ) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
-        identifier = resonance.latex if resonance.latex else resonance.name
+        identifier = resonance.latex or resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
         res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
         meson_radius = sp.Symbol(f"d_{{{identifier}}}", positive=True)
