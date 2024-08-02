@@ -47,7 +47,7 @@ class TestEnergyDependentWidth:
             m_b=m_b,
             angular_momentum=angular_momentum,
             meson_radius=d,
-            phsp_factor=EqualMassPhaseSpaceFactor,
+            phsp_factor=EqualMassPhaseSpaceFactor,  # type:ignore[arg-type]
             name="Gamma_1",
         )
         assert width.phsp_factor is EqualMassPhaseSpaceFactor
@@ -70,7 +70,7 @@ class TestEnergyDependentWidth:
             m_b=m_a,
             angular_momentum=0,
             meson_radius=1,
-            phsp_factor=PhaseSpaceFactorSWave,
+            phsp_factor=PhaseSpaceFactorSWave,  # type:ignore[arg-type]
         )
         subs_first = round_nested(_subs(width, parameters, method).doit(), n_decimals=3)
         doit_first = round_nested(_subs(width.doit(), parameters, method), n_decimals=3)
