@@ -308,7 +308,7 @@ class UnevaluatableIntegral(sp.Integral):
         return self.func(*args)
 
     @override
-    def _numpycode(self, printer, *args):
+    def _numpycode(self, printer, *args) -> str:
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:

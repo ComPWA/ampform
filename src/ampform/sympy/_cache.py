@@ -77,7 +77,7 @@ def _get_python_hash_seed() -> int | None:
 
 
 @functools.lru_cache(maxsize=None)  # warn once
-def _warn_about_unsafe_hash():
+def _warn_about_unsafe_hash() -> None:
     message = """
     PYTHONHASHSEED has not been set. For faster and safer hashing of SymPy expressions,
     set the PYTHONHASHSEED environment variable to a fixed value and rerun the program.
