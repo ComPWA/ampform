@@ -36,6 +36,9 @@
   "cSpell.enabled": true,
   "diffEditor.experimental.showMoves": true,
   "editor.formatOnSave": true,
+  "files.associations": {
+    "**/.constraints/py*.txt": "pip-requirements"
+  },
   "files.watcherExclude": {
     "**/*_cache/**": true,
     "**/.eggs/**": true,
