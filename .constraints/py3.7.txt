@@ -8,7 +8,7 @@ anyio==3.7.1
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 arrow==1.2.3
-attrs==24.1.0
+attrs==24.2.0
 babel==2.14.0
 backcall==0.2.0
 beautifulsoup4==4.12.3
