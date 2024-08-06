@@ -168,7 +168,7 @@ class PoolSum(sp.Expr):
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[override]
+    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[misc]
         expr = self.evaluate()
         if deep:
             return expr.doit()
@@ -311,7 +311,7 @@ class UnevaluatableIntegral(sp.Integral):
         args = [arg.doit(**hints) for arg in self.args]
         return self.func(*args)
 
-    @override
+    @override  # type:ignore[misc]
     def _numpycode(self, printer, *args) -> str:
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)

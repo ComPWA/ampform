@@ -274,7 +274,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.evaluate()
         return expr
 
-    cls.__new__ = new_method  # type: ignore[method-assign]
+    cls.__new__ = new_method  # type: ignore[assignment]
     cls.__getnewargs__ = _get_arguments  # type: ignore[assignment,method-assign]
     cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
     if non_sympy_fields:

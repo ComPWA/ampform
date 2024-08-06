@@ -1,4 +1,4 @@
-"""A collection of basic math operations, used in `ampform.dynamics`."""
+"""A collection of basic math operations, used in `ampform.dynamics`."""  # noqa: A005
 
 # cspell:ignore Lambdifier
 from __future__ import annotations
@@ -37,7 +37,7 @@ class ComplexSqrt(NumPyPrintable):
     @overload
     def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...  # type: ignore[misc]
     @overload
-    def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
+    def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...  # type:ignore[misc]
     @override
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
