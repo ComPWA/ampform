@@ -12,6 +12,7 @@ attrs==24.1.0
 babel==2.14.0
 backcall==0.2.0
 beautifulsoup4==4.12.3
+black==23.3.0
 bleach==6.0.0
 cached-property==1.5.2
 cachetools==5.4.0
@@ -112,6 +113,7 @@ packaging==24.0
 pandocfilters==1.5.1
 parso==0.8.4
 particle==0.23.1
+pathspec==0.11.2
 pexpect==4.9.0
 pickleshare==0.7.5
 pillow==9.5.0
