@@ -247,6 +247,7 @@ addopts = [
 ]
 filterwarnings = [
     "error",
+    "ignore: The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025.:DeprecationWarning",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
     "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
     "ignore:.*the @ampform.sympy.unevaluated_expression decorator instead( with commutative=True)?:DeprecationWarning",
