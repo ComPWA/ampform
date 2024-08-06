@@ -59,7 +59,7 @@ repos:
           - --extras-require=doc,viz
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
+    rev: v0.5.6
     hooks:
       - id: ruff
         args: [--fix]
@@ -126,7 +126,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.13.0
+    rev: v8.13.1
     hooks:
       - id: cspell
 
