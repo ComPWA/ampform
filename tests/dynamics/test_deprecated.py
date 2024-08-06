@@ -38,7 +38,7 @@ class TestUnevaluatedExpression:
             m_b=m_a,
             angular_momentum=0,
             meson_radius=1,
-            phsp_factor=EqualMassPhaseSpaceFactor,
+            phsp_factor=EqualMassPhaseSpaceFactor,  # type:ignore[arg-type]
             name="Gamma_1",
         )
         pickled_obj = pickle.dumps(expr)

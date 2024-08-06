@@ -56,7 +56,7 @@ class RelativisticKMatrix(TMatrix):
         n_poles,
         parametrize: bool = True,
         return_t_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
         angular_momentum=0,
         meson_radius=1,
     ) -> sp.MutableDenseMatrix:
@@ -116,7 +116,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
@@ -296,7 +296,7 @@ class RelativisticPVector(TMatrix):
         n_poles,
         parametrize: bool = True,
         return_f_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
         angular_momentum=0,
         meson_radius=1,
     ) -> sp.MutableDenseMatrix:
