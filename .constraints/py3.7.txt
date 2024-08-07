@@ -74,7 +74,7 @@ jupyter-server-mathjax==0.2.6
 jupyter-server-ydoc==0.8.0
 jupyter-ydoc==0.2.5
 jupyterlab==3.6.7
-jupyterlab-code-formatter==3.0.0
+jupyterlab-code-formatter==3.0.1
 jupyterlab-git==0.44.0
 jupyterlab-lsp==3.10.2
 jupyterlab-myst==1.2.0

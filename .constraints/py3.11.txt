@@ -73,7 +73,7 @@ jupyter-server==2.14.2
 jupyter-server-mathjax==0.2.6
 jupyter-server-terminals==0.5.3
 jupyterlab==4.2.4
-jupyterlab-code-formatter==3.0.0
+jupyterlab-code-formatter==3.0.1
 jupyterlab-git==0.50.1
 jupyterlab-lsp==5.1.0
 jupyterlab-myst==2.4.2
