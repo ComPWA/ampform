@@ -46,6 +46,10 @@ if sys.version_info < (3, 8):
     from importlib_metadata import version
 else:
     from importlib.metadata import version
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 if sys.version_info < (3, 12):
     from typing_extensions import override
 else:
@@ -137,7 +141,7 @@ class PoolSum(sp.Expr):
         *indices: tuple[sp.Symbol, Iterable[sp.Basic]],
         evaluate: bool = False,
         **hints,
-    ) -> PoolSum:
+    ) -> Self:
         converted_indices = []
         for idx_symbol, values in indices:
             values = tuple(values)
@@ -307,8 +311,8 @@ class UnevaluatableIntegral(sp.Integral):
         args = [arg.doit(**hints) for arg in self.args]
         return self.func(*args)
 
-    @override
-    def _numpycode(self, printer, *args):
+    @override  # type:ignore[misc]
+    def _numpycode(self, printer, *args) -> str:
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:

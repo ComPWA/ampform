@@ -489,7 +489,7 @@ def _eval_subs_method(self, old, new, **hints):
             continue
         if isclass(old_arg):
             continue
-        new_attr = old_arg._subs(old, new, **hints)
+        new_attr = old_arg._subs(old, new, **hints)  # noqa: SLF001
         if not _aresame(new_attr, old_arg):
             hit = True
             new_args[i] = new_attr
@@ -533,7 +533,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
         hit = False
         for arg in _get_arguments(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
-                replace_result, is_replaced = arg._xreplace(rule)
+                replace_result, is_replaced = arg._xreplace(rule)  # noqa: SLF001
             elif isinstance(rule, abc.Mapping):
                 is_replaced = bool(arg in rule)
                 replace_result = rule.get(arg, arg)

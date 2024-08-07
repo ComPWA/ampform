@@ -13,7 +13,7 @@ class TestUnevaluatableIntegral:
         assert func() == 26 / 3
 
     @pytest.mark.parametrize(
-        "p_value,expected",
+        ("p_value", "expected"),
         [
             (2, 26 / 3),
             (1, 4),

@@ -48,7 +48,7 @@ def _(obj: complex, **kwargs) -> str:
     return f"{real}{plus}{imag}i"
 
 
-def __downcast(obj: float, **kwargs) -> float | int:
+def __downcast(obj: float, **kwargs) -> float:
     if obj.is_integer():
         return int(obj)
     return obj
@@ -128,7 +128,7 @@ def improve_latex_rendering() -> None:
     .. versionadded:: 0.14.2
     """
 
-    def _print_Indexed_latex(self, printer, *args):  # noqa: N802
+    def _print_Indexed_latex(self, printer, *args) -> str:  # noqa: N802
         base = printer._print(self.base)
         indices = ", ".join(map(printer._print, self.indices))
         return f"{base}_{{{indices}}}"

@@ -27,6 +27,10 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 if sys.version_info < (3, 12):
     from typing_extensions import override
 else:
@@ -37,7 +41,7 @@ if TYPE_CHECKING:
 
 class ArrayElement(_ArrayExpr):
     @override
-    def __new__(cls, parent: sp.Expr, indices: Iterable) -> ArrayElement:
+    def __new__(cls, parent: sp.Expr, indices: Iterable) -> Self:
         # cspell:ignore sympified
         sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
@@ -73,7 +77,7 @@ class ArrayElement(_ArrayExpr):
 
 
 # required for lambdify
-_ArrayExpr._iterable = False  # type: ignore[attr-defined]
+_ArrayExpr._iterable = False  # type: ignore[attr-defined]  # noqa: SLF001
 
 
 @overload
@@ -132,7 +136,7 @@ class ArraySlice(_ArrayExpr):
         cls,
         parent: sp.Basic,
         indices: tuple[sp.Basic | int | slice, ...],
-    ) -> ArraySlice:
+    ) -> Self:
         parent_shape = get_shape(parent)
         normalized_indices = []
         for idx, axis_size in zip_longest(indices, parent_shape):
@@ -249,17 +253,17 @@ def _slice_to_str(self: Printer, x, dim) -> str:
     return ":".join("" if xi in {none, None} else self._print(xi) for xi in x)
 
 
-LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # type: ignore[assignment]
-LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # type: ignore[attr-defined]
-StrPrinter._print_ArrayElement = _print_str_ArrayElement  # type: ignore[assignment]
-StrPrinter._print_ArraySlice = _print_str_ArraySlice  # type: ignore[attr-defined]
+LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # type: ignore[assignment]  # noqa: SLF001
+LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # type: ignore[attr-defined]  # noqa: SLF001
+StrPrinter._print_ArrayElement = _print_str_ArrayElement  # type: ignore[assignment]  # noqa: SLF001
+StrPrinter._print_ArraySlice = _print_str_ArraySlice  # type: ignore[attr-defined]  # noqa: SLF001
 
 
 class ArraySum(sp.Expr):
     precedence = PRECEDENCE["Add"]
 
     @override
-    def __new__(cls, *terms: sp.Basic, **hints) -> ArraySum:
+    def __new__(cls, *terms: sp.Basic, **hints) -> Self:
         terms = sp.sympify(terms)
         return sp.Expr.__new__(cls, *terms, **hints)
 
@@ -274,7 +278,7 @@ class ArraySum(sp.Expr):
                 name = next(iter(names))
                 subscript = "".join(map(_get_subscript, self.terms))
                 return f"{{{name}}}_{{{subscript}}}"
-        return printer._print_ArraySum(self)  # type: ignore[attr-defined]
+        return printer._print_ArraySum(self)  # type: ignore[attr-defined]  # noqa: SLF001
 
 
 def _print_array_sum(self: Printer, expr: ArraySum) -> str:
@@ -282,7 +286,7 @@ def _print_array_sum(self: Printer, expr: ArraySum) -> str:
     return " + ".join(terms)
 
 
-Printer._print_ArraySum = _print_array_sum  # type: ignore[attr-defined]
+Printer._print_ArraySum = _print_array_sum  # type: ignore[attr-defined]  # noqa: SLF001
 
 
 def _get_subscript(symbol: sp.Basic) -> str:
@@ -316,7 +320,7 @@ class ArrayAxisSum(sp.Expr):
     is_commutative = True
 
     @override
-    def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> ArrayAxisSum:
+    def __new__(cls, array: sp.Expr, axis: int | None = None, **hints) -> Self:
         if axis is not None and not isinstance(axis, (int, sp.Integer)):
             msg = "Only single digits allowed for axis"
             raise TypeError(msg)
@@ -356,7 +360,7 @@ class ArrayMultiplication(sp.Expr):
     """
 
     @override
-    def __new__(cls, *tensors: sp.Basic, **hints) -> ArrayMultiplication:
+    def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
         tensors = sp.sympify(tensors)
         return sp.Expr.__new__(cls, *tensors, **hints)
 
@@ -411,7 +415,7 @@ class MatrixMultiplication(sp.Expr):
     """
 
     @override
-    def __new__(cls, *tensors: sp.Basic, **hints) -> MatrixMultiplication:
+    def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
         tensors = sp.sympify(tensors)
         return sp.Expr.__new__(cls, *tensors, **hints)
 

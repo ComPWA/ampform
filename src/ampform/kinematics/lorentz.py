@@ -76,7 +76,7 @@ def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
     def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
         def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
             momentum = printer._print(self.momentum)  # type: ignore[attr-defined]
-            if printer._needs_mul_brackets(self.momentum):  # type: ignore[attr-defined]
+            if printer._needs_mul_brackets(self.momentum):  # type: ignore[attr-defined]  # noqa: SLF001
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"

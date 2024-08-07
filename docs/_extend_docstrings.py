@@ -727,8 +727,8 @@ def _append_to_docstring(class_type: Callable | type, appended_text: str) -> Non
 
 
 def __generate_transitions_cached(
-    initial_state: list[tuple[str, list[float | int]] | str],
-    final_state: list[tuple[str, list[float | int]] | str],
+    initial_state: list[tuple[str, list[float]] | str],
+    final_state: list[tuple[str, list[float]] | str],
     formalism: SpinFormalism,
 ) -> ReactionInfo:
     version = get_package_version("qrules")

@@ -134,7 +134,7 @@ autodoc_default_options = {
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
-    "special-members": ", ".join([
+    "special-members": ", ".join([  # noqa: FLY002
         "__call__",
     ]),
 }

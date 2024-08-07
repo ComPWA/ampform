@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.benchmark(group="doit", min_rounds=1)
-def test_doit_speed(benchmark: BenchmarkFixture):
+def test_doit_speed(benchmark: BenchmarkFixture) -> None:
     reaction = qrules.generate_transitions(
         initial_state=("psi(4160)", [-1, +1]),
         final_state=["D-", "D0", "pi+"],
