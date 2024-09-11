@@ -243,9 +243,9 @@ pytest src tests \
 [tool.pixi.feature.dev.tasks.doc]
 cmd = """
 sphinx-build \
+    --builder html \
     --keep-going \
-    -TW \
-    -b html \
+    --show-traceback --fail-on-warning \
     docs/ docs/_build/html
 """
 env = {FORCE_COLOR = "yes"}
@@ -253,11 +253,14 @@ env = {FORCE_COLOR = "yes"}
 [tool.pixi.feature.dev.tasks.doclive]
 cmd = """
 sphinx-autobuild \
+    --builder html \
     --open-browser \
-    --re-ignore '.*/.ipynb_checkpoints/.*' \
     --re-ignore '.*/__pycache__/.*' \
+    --re-ignore '.*/.ipynb_checkpoints/.*' \
     --re-ignore '.*\\.gitignore' \
     --re-ignore '.*\\.tmp' \
+    --re-ignore 'docs/_build/.*' \
+    --re-ignore 'docs/_images/.*' \
     --re-ignore 'docs/.*\\.csv' \
     --re-ignore 'docs/.*\\.gif' \
     --re-ignore 'docs/.*\\.gv' \
@@ -268,12 +271,9 @@ sphinx-autobuild \
     --re-ignore 'docs/.*\\.svg' \
     --re-ignore 'docs/.*\\.yaml' \
     --re-ignore 'docs/.*\\.yml' \
-    --re-ignore 'docs/_build/.*' \
-    --re-ignore 'docs/_images/.*' \
     --re-ignore 'docs/api/.*' \
     --watch docs \
     --watch src \
-    -b html \
     docs/ docs/_build/html
 """
 env = {FORCE_COLOR = "yes"}
@@ -293,8 +293,8 @@ env = {EXECUTE_NB = "yes", FORCE_COLOR = "yes"}
 [tool.pixi.feature.dev.tasks.linkcheck]
 cmd = """
 sphinx-build \
-    -T \
-    -b linkcheck \
+    --builder linkcheck \
+    --show-traceback \
     docs/ docs/_build/linkcheck
 """
 env = {FORCE_COLOR = "yes"}
