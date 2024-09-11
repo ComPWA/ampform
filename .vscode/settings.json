@@ -37,7 +37,8 @@
   "diffEditor.experimental.showMoves": true,
   "editor.formatOnSave": true,
   "files.associations": {
-    "**/.constraints/py*.txt": "pip-requirements"
+    "**/.constraints/py*.txt": "pip-requirements",
+    "**/pixi.lock": "yaml"
   },
   "files.watcherExclude": {
     "**/*_cache/**": true,

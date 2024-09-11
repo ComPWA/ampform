@@ -4,9 +4,7 @@ ci:
   skip:
     - check-jsonschema
     - mypy
-    - prettier
     - pyright
-    - taplo
 
 repos:
   - repo: meta
@@ -14,11 +12,32 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
 
+  - repo: https://github.com/ComPWA/policy
+    rev: 0.4.0
+    hooks:
+      - id: check-dev-files
+        args:
+          - --doc-apt-packages=graphviz
+          - --dev-python-version=3.11
+          - --no-prettierrc
+          - --pin-requirements=monthly
+          - --repo-name=ampform
+          - --repo-title=AmpForm
+      - id: colab-toc-visible
+      - id: fix-nbformat-version
+      - id: remove-empty-tags
+      - id: set-nb-cells
+        args:
+          - --add-install-cell
+          - --additional-packages=IPython
+          - --extras-require=doc,viz
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
       - id: nbstripout
         args:
+          - --drop-empty-cells
           - --extra-keys
           - |
             cell.attachments
@@ -41,28 +60,8 @@ repos:
             metadata.varInspector
             metadata.vscode
 
-  - repo: https://github.com/ComPWA/policy
-    rev: 0.3.18
-    hooks:
-      - id: check-dev-files
-        args:
-          - --doc-apt-packages=graphviz
-          - --dev-python-version=3.11
-          - --no-prettierrc
-          - --pin-requirements=monthly
-          - --repo-name=ampform
-          - --repo-title=AmpForm
-      - id: colab-toc-visible
-      - id: fix-nbformat-version
-      - id: remove-empty-tags
-      - id: set-nb-cells
-        args:
-          - --add-install-cell
-          - --additional-packages=IPython
-          - --extras-require=doc,viz
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.6
+    rev: v0.6.4
     hooks:
       - id: ruff
         args: [--fix]
@@ -98,15 +97,15 @@ repos:
           )$
       - id: trailing-whitespace
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  - repo: https://github.com/ComPWA/prettier-pre-commit
+    rev: v3.3.3
     hooks:
       - id: prettier
 
-  - repo: https://github.com/ComPWA/mirrors-taplo
-    rev: v0.8.1
+  - repo: https://github.com/ComPWA/taplo-pre-commit
+    rev: v0.9.3
     hooks:
-      - id: taplo
+      - id: taplo-format
 
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.23.1
@@ -116,7 +115,7 @@ repos:
           - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.1
+    rev: 0.29.2
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -129,12 +128,12 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.13.1
+    rev: v8.13.3
     hooks:
       - id: cspell
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.7.3
+    rev: 3.0.3
     hooks:
       - id: editorconfig-checker
         name: editorconfig
@@ -155,6 +154,6 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/mirrors-pyright
-    rev: v1.1.374
+    rev: v1.1.379
     hooks:
       - id: pyright

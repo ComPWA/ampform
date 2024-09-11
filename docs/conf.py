@@ -72,7 +72,10 @@ set_intersphinx_version_remapping({
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
     },
-    "mpl-interactions": {"0.24.1": "0.24.0"},
+    "mpl-interactions": {
+        "0.24.1": "0.24.0",
+        "0.24.2": "0.24.0",
+    },
 })
 
 BRANCH = get_branch_name()

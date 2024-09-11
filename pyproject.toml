@@ -147,6 +147,8 @@ namespaces = false
 where = ["src"]
 
 [tool.setuptools_scm]
+local_scheme = "no-local-version"
+version_scheme = "post-release"
 write_to = "src/ampform/version.py"
 
 [tool.coverage.run]
@@ -191,6 +193,133 @@ module = ["benchmarks.*", "tests.*"]
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = ["typings.*"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.activation.env]
+PRETTIER_LEGACY_CLI = "1"
+PYDEVD_DISABLE_FILE_VALIDATION = "1"
+PYTHONHASHSEED = "0"
+
+[tool.pixi.dependencies]
+graphviz = "*"
+python = "3.11.*"
+
+[tool.pixi.environments]
+default = {features = [
+    "all",
+    "dev",
+    "doc",
+    "jupyter",
+    "scipy",
+    "sty",
+    "test",
+    "types",
+    "viz",
+]}
+
+[tool.pixi.feature.dev.tasks.bench]
+cmd = """
+pytest benchmarks \
+    --durations=0 \
+    --benchmark-autosave \
+    -k benchmark
+"""
+
+[tool.pixi.feature.dev.tasks.ci]
+depends_on = ["cov", "docnb", "linkcheck", "sty"]
+
+[tool.pixi.feature.dev.tasks.cov]
+cmd = """
+pytest src tests \
+    --cov-fail-under=75 \
+    --cov-report=html \
+    --cov-report=xml \
+    --cov=ampform
+"""
+
+[tool.pixi.feature.dev.tasks.doc]
+cmd = """
+sphinx-build \
+    --builder html \
+    --keep-going \
+    --show-traceback --fail-on-warning \
+    docs/ docs/_build/html
+"""
+env = {FORCE_COLOR = "yes"}
+
+[tool.pixi.feature.dev.tasks.doclive]
+cmd = """
+sphinx-autobuild \
+    --builder html \
+    --open-browser \
+    --re-ignore '.*/__pycache__/.*' \
+    --re-ignore '.*/.ipynb_checkpoints/.*' \
+    --re-ignore '.*\\.gitignore' \
+    --re-ignore '.*\\.tmp' \
+    --re-ignore 'docs/_build/.*' \
+    --re-ignore 'docs/_images/.*' \
+    --re-ignore 'docs/.*\\.csv' \
+    --re-ignore 'docs/.*\\.gif' \
+    --re-ignore 'docs/.*\\.gv' \
+    --re-ignore 'docs/.*\\.inv' \
+    --re-ignore 'docs/.*\\.json' \
+    --re-ignore 'docs/.*\\.pickle' \
+    --re-ignore 'docs/.*\\.png' \
+    --re-ignore 'docs/.*\\.svg' \
+    --re-ignore 'docs/.*\\.yaml' \
+    --re-ignore 'docs/.*\\.yml' \
+    --re-ignore 'docs/api/.*' \
+    --watch docs \
+    --watch src \
+    docs/ docs/_build/html
+"""
+env = {FORCE_COLOR = "yes"}
+
+[tool.pixi.feature.dev.tasks.docnb]
+cmd = "pixi run doc"
+env = {EXECUTE_NB = "yes", FORCE_COLOR = "yes"}
+
+[tool.pixi.feature.dev.tasks.docnb-force]
+cmd = "pixi run doc"
+env = {FORCE_COLOR = "yes", FORCE_EXECUTE_NB = "yes"}
+
+[tool.pixi.feature.dev.tasks.docnblive]
+cmd = "pixi run doclive"
+env = {EXECUTE_NB = "yes", FORCE_COLOR = "yes"}
+
+[tool.pixi.feature.dev.tasks.linkcheck]
+cmd = """
+sphinx-build \
+    --builder linkcheck \
+    --show-traceback \
+    docs/ docs/_build/linkcheck
+"""
+env = {FORCE_COLOR = "yes"}
+
+[tool.pixi.feature.dev.tasks.nb]
+cmd = "pytest --nbmake docs"
+
+[tool.pixi.feature.dev.tasks.pydeps]
+cmd = """
+pydeps ampform \
+    -o module_structure.svg \
+    --exclude *._* \
+    --max-bacon=1 \
+    --noshow
+"""
+
+[tool.pixi.feature.dev.tasks.sty]
+cmd = "pre-commit run  -a"
+env = {SKIP = "pyright"}
+
+[tool.pixi.feature.dev.tasks.tests]
+cmd = "pytest"
+
+[tool.pixi.pypi-dependencies]
+ampform = {path = ".", editable = true}
 
 [tool.pyright]
 exclude = [
@@ -280,7 +409,6 @@ src = [
     "src",
     "tests",
 ]
-target-version = "py37"
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -343,9 +471,6 @@ known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
-"**/docs/usage/symplot.ipynb" = ["RUF027"]
-"**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
     "B018",
     "C408",
@@ -370,6 +495,9 @@ split-on-trailing-comma = false
     "T20",
     "TCH00",
 ]
+"**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
+"**/docs/usage/symplot.ipynb" = ["RUF027"]
+"**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
     "D",
     "INP001",
@@ -432,6 +560,5 @@ sort_first = [
     "tool.setuptools",
     "tool.setuptools_scm",
 ]
-sort_table_keys = true
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
