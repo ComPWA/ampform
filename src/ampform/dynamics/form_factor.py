@@ -52,7 +52,7 @@ class BlattWeisskopfSquared(sp.Expr):
     :pdg-review:`2021; Resonances; p.9`. We normalize the form factor such that
     :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
-    .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa:report/029>`,
+    .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa-report:029>`,
       and :cite:`chungFormulasAngularMomentumBarrier2015`.
 
     With this, the implementation becomes
@@ -94,7 +94,7 @@ def _formulate_blatt_weisskopf(ell, z) -> sp.Expr:
 class SphericalHankel1(sp.Expr):
     r"""Spherical Hankel function of the first kind for real-valued :math:`z`.
 
-    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa:report/029>`
+    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa-report:029>`
     for more info. `This page
     <https://mathworld.wolfram.com/SphericalHankelFunctionoftheFirstKind.html>`_
     explains the difference with the *general* Hankel function of the first kind,

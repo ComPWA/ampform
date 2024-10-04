@@ -266,6 +266,7 @@ intersphinx_mapping = {
     "IPython": (f"https://ipython.readthedocs.io/en/{pin('IPython')}", None),
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa": ("https://compwa.github.io", None),
+    "compwa-report": ("https://compwa.github.io/report", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
