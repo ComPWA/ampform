@@ -44,10 +44,10 @@ gitdb==4.0.11
 gitpython==3.1.43
 gprof2dot==2022.7.29
 graphviz==0.20.1
-greenlet==3.1.0
+greenlet==3.1.1
 hepunits==2.3.3
 identify==2.5.24
-idna==3.8
+idna==3.10
 imagesize==1.4.1
 importlib-metadata==6.7.0
 importlib-resources==5.12.0
@@ -122,7 +122,7 @@ platformdirs==4.0.0
 pluggy==1.2.0
 pre-commit==2.21.0
 prometheus-client==0.17.1
-prompt-toolkit==3.0.47
+prompt-toolkit==3.0.48
 psutil==6.0.0
 ptyprocess==0.7.0
 py-cpuinfo==9.0.0
@@ -147,7 +147,7 @@ python-lsp-jsonrpc==1.0.0
 python-lsp-ruff==1.6.0
 python-lsp-server==1.7.4
 pytoolconfig==1.3.0
-pytz==2024.1
+pytz==2024.2
 pyyaml==6.0.1
 pyzmq==26.2.0
 qrules==0.10.2
@@ -178,7 +178,7 @@ sphinx-pybtex-etal-style==0.0.2
 sphinx-thebe==0.2.1
 sphinx-togglebutton==0.3.2
 sphinxcontrib-applehelp==1.0.2
-sphinxcontrib-bibtex==2.6.2
+sphinxcontrib-bibtex==2.6.3
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
@@ -199,7 +199,7 @@ typing-extensions==4.7.1
 ujson==5.7.0
 uri-template==1.3.0
 urllib3==2.0.7
-virtualenv==20.26.4
+virtualenv==20.26.6
 wcwidth==0.2.13
 webcolors==1.13
 webencodings==0.5.1
