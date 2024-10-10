@@ -2,8 +2,8 @@ r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 
 .. seealso:: :doc:`/usage/dynamics/k-matrix`.
 
-This module is an implementation of :doc:`compwa:report/005`,
-:doc:`compwa:report/009`, and :doc:`compwa:report/010`. It works with classes to
+This module is an implementation of :doc:`compwa-report:005`,
+:doc:`compwa-report:009`, and :doc:`compwa-report:010`. It works with classes to
 keep the code organized and to enable caching of the matrix multiplications, but this
 might change once these dynamics are implemented into the amplitude builder.
 """
