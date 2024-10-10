@@ -302,15 +302,6 @@ env = {FORCE_COLOR = "yes"}
 [tool.pixi.feature.dev.tasks.nb]
 cmd = "pytest --nbmake docs"
 
-[tool.pixi.feature.dev.tasks.pydeps]
-cmd = """
-pydeps ampform \
-    -o module_structure.svg \
-    --exclude *._* \
-    --max-bacon=1 \
-    --noshow
-"""
-
 [tool.pixi.feature.dev.tasks.sty]
 cmd = "pre-commit run  -a"
 env = {SKIP = "pyright"}
