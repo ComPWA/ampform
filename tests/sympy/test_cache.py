@@ -94,9 +94,7 @@ def test_get_readable_hash_energy_dependent_width():
         pytest.skip("PYTHONHASHSEED has not been set")
     if python_hash_seed != "0":
         pytest.skip(f"PYTHONHASHSEED is not set to 0, but to {python_hash_seed}")
-    if sys.version_info < (3, 8):
-        assert h == "pythonhashseed-0-6795262906917625791"
-    elif sys.version_info >= (3, 11):
+    if sys.version_info >= (3, 11):
         assert h == "pythonhashseed-0+4377931190501974271"
     else:
         assert h == "pythonhashseed-0+8267198661922532208"
@@ -107,14 +105,7 @@ def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
     if python_hash_seed != "0":
         pytest.skip("PYTHONHASHSEED is not 0")
     formalism, model = amplitude_model
-    if sys.version_info < (3, 8):
-        # https://github.com/ComPWA/ampform/actions/runs/3277058875/jobs/5393849802
-        # https://github.com/ComPWA/ampform/actions/runs/3277143883/jobs/5394043014
-        expected_hash = {
-            "canonical-helicity": "pythonhashseed-0-4409019767276782833",
-            "helicity": "pythonhashseed-0+8495836064961054249",
-        }[formalism]
-    elif sys.version_info >= (3, 11):
+    if sys.version_info >= (3, 11):
         expected_hash = {
             "canonical-helicity": "pythonhashseed-0-8140852268928771574",
             "helicity": "pythonhashseed-0-991855900379383849",

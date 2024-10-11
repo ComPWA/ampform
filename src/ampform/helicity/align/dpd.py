@@ -5,9 +5,8 @@ See :cite:`Marangotto:2019ucc`.
 
 from __future__ import annotations
 
-import sys
-from functools import lru_cache, singledispatch
-from typing import TYPE_CHECKING, TypeVar
+from functools import cache, singledispatch
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 import attrs
 import sympy as sp
@@ -27,11 +26,6 @@ from ampform.helicity.decay import (
 from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 if TYPE_CHECKING:
     from sympy.physics.quantum.spin import WignerD
@@ -59,7 +53,7 @@ class DalitzPlotDecomposition(SpinAlignment):
         return _formulate_aligned_amplitude(reaction, self.reference_subsystem)[1]
 
 
-@lru_cache(maxsize=None)
+@cache
 def _formulate_aligned_amplitude(  # noqa: PLR0914
     reaction: ReactionInfo, reference_subsystem: Literal[1, 2, 3]
 ) -> tuple[sp.Expr, dict[sp.Symbol, sp.Expr]]:

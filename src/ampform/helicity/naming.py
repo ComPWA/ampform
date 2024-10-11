@@ -6,8 +6,8 @@ import re
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from functools import lru_cache
-from typing import TYPE_CHECKING, Iterable
+from functools import cache
+from typing import TYPE_CHECKING
 
 import sympy as sp
 from qrules.transition import ReactionInfo, State, StateTransition
@@ -26,6 +26,8 @@ if sys.version_info < (3, 12):
 else:
     from typing import override
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from qrules.topology import Topology
 
 
@@ -343,7 +345,7 @@ def get_helicity_angle_symbols(
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 

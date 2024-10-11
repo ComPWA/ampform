@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import sys
-from typing import TYPE_CHECKING, Dict, Tuple
+from typing import TYPE_CHECKING, Protocol
 
 import sympy as sp
 from attrs import field, frozen
@@ -15,11 +14,6 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
 )
-
-if sys.version_info >= (3, 8):
-    from typing import Protocol
-else:  # pragma: no cover
-    from typing_extensions import Protocol
 
 if TYPE_CHECKING:
     from qrules.particle import Particle
@@ -42,7 +36,7 @@ class TwoBodyKinematicVariableSet:
     angular_momentum: int | None = field(default=None)
 
 
-BuilderReturnType = Tuple[sp.Expr, Dict[sp.Symbol, float]]
+BuilderReturnType = tuple[sp.Expr, dict[sp.Symbol, float]]
 """Type that a `.ResonanceDynamicsBuilder` should return.
 
 The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>` that

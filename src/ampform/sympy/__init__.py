@@ -19,8 +19,9 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
+from importlib.metadata import version
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
+from typing import TYPE_CHECKING, SupportsFloat
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -42,10 +43,6 @@ from .deprecated import (
     make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
 )
 
-if sys.version_info < (3, 8):
-    from importlib_metadata import version
-else:
-    from importlib.metadata import version
 if sys.version_info < (3, 11):
     from typing_extensions import Self
 else:
@@ -55,6 +52,8 @@ if sys.version_info < (3, 12):
 else:
     from typing import override
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
 

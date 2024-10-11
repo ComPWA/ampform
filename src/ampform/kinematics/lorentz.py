@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable
 
 import sympy as sp
 
@@ -44,7 +44,7 @@ def create_four_momentum_symbol(index: int) -> FourMomentumSymbol:
     return FourMomentumSymbol(f"p{index}", shape=[])
 
 
-FourMomenta = Dict[int, "FourMomentumSymbol"]
+FourMomenta = dict[int, "FourMomentumSymbol"]
 """A mapping of state IDs to their corresponding `.FourMomentumSymbol`.
 
 It's best to create a `dict` of `.FourMomenta` with

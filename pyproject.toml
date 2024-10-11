@@ -18,8 +18,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Physics",
@@ -30,9 +28,6 @@ dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "qrules >=0.9.6",
     "sympy >=1.10",
-    'importlib-metadata; python_version <"3.8.0"',
-    'singledispatchmethod; python_version <"3.8.0"',
-    'typing-extensions; python_version <"3.8.0"',
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
 dynamic = ["version"]
@@ -48,7 +43,7 @@ keywords = [
 license = {file = "LICENSE"}
 maintainers = [{email = "compwa-admin@ep1.rub.de"}]
 name = "ampform"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 all = [

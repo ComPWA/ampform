@@ -11,7 +11,7 @@ from __future__ import annotations
 import itertools
 from collections import abc
 from functools import singledispatch
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 import attrs
 from qrules.topology import Topology
@@ -26,6 +26,8 @@ from ampform.kinematics.lorentz import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     import sympy as sp
 
 
