@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 import pytest
 from qrules.topology import Topology, create_isobar_topologies
@@ -12,6 +12,9 @@ from ampform.helicity.decay import (
     get_sibling_state_id,
     is_opposite_helicity_state,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def test_determine_attached_final_state():

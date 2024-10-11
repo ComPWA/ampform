@@ -266,6 +266,7 @@ intersphinx_mapping = {
     "IPython": (f"https://ipython.readthedocs.io/en/{pin('IPython')}", None),
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa": ("https://compwa.github.io", None),
+    "compwa-report": ("https://compwa.github.io/report", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
@@ -282,11 +283,12 @@ intersphinx_mapping = {
 linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
-    "https://doi.org/10.1002/andp.19955070504",  # 403 for onlinelibrary.wiley.com
-    "https://doi.org/10.1093/ptep/ptaa104",
-    "https://doi.org/10.1155/2020/6674595",  # 403 for hindawi.com
+    "https://doi.org/10.1002",  # 403 for onlinelibrary.wiley.com
+    "https://doi.org/10.1103",  # 403 for Phys Rev D
+    "https://doi.org/10.1155",  # 403 for hindawi.com
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
     "https://hss-opus.ub.ruhr-uni-bochum.de",
+    "https://journals.aps.org/prd",  # 403 for Phys Rev D
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",

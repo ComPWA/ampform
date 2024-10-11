@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+from typing import TYPE_CHECKING
 
 import pytest
 import qrules
@@ -9,6 +9,9 @@ from qrules import ParticleCollection
 from qrules.particle import Particle
 
 from ampform import get_builder
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 
 def calculate_sympy_integral(

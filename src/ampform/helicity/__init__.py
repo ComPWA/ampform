@@ -13,18 +13,8 @@ import operator
 import sys
 import warnings
 from collections import OrderedDict, abc
-from functools import reduce
-from typing import (
-    TYPE_CHECKING,
-    ItemsView,
-    Iterable,
-    Iterator,
-    KeysView,
-    Mapping,
-    Sequence,
-    Union,
-    ValuesView,
-)
+from functools import reduce, singledispatchmethod
+from typing import TYPE_CHECKING, Union
 
 import attrs
 import sympy as sp
@@ -71,16 +61,21 @@ from ampform.kinematics.lorentz import (
 from ampform.sympy import PoolSum, determine_indices
 from ampform.sympy._array_expressions import ArraySum
 
-if sys.version_info >= (3, 8):
-    from functools import singledispatchmethod
-else:
-    from singledispatchmethod import singledispatchmethod
-
 if sys.version_info < (3, 12):
     from typing_extensions import override
 else:
     from typing import override
 if TYPE_CHECKING:
+    from collections.abc import (
+        ItemsView,
+        Iterable,
+        Iterator,
+        KeysView,
+        Mapping,
+        Sequence,
+        ValuesView,
+    )
+
     from IPython.lib.pretty import PrettyPrinter
     from qrules.topology import MutableTransition
 
@@ -128,7 +123,7 @@ class HelicityModel:
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
     definitions for each of these. See also
-    :ref:`TR-014 <compwa:tr-014-solution-2>`.
+    :ref:`TR-014 <compwa-report:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
@@ -733,10 +728,10 @@ class DynamicsSelector(abc.Mapping):
         return self.assign(particle.name, builder)
 
     def __getitem__(
-        self, __k: TwoBodyDecay | tuple[StateTransition, int]
+        self, k: TwoBodyDecay | tuple[StateTransition, int], /
     ) -> ResonanceDynamicsBuilder:
-        __k = TwoBodyDecay.create(__k)
-        return self.__choices[__k]
+        k = TwoBodyDecay.create(k)
+        return self.__choices[k]
 
     def __len__(self) -> int:
         return len(self.__choices)

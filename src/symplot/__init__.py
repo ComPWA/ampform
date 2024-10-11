@@ -16,16 +16,7 @@ from __future__ import annotations
 import inspect
 import logging
 from collections import abc
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Iterator,
-    Mapping,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Callable, TypeVar, Union
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
@@ -33,6 +24,7 @@ from sympy.printing.latex import translate
 
 if TYPE_CHECKING:  # pragma: no cover
     import sys
+    from collections.abc import Iterator, Mapping, Sequence
 
     from IPython.lib.pretty import PrettyPrinter
 
@@ -46,8 +38,8 @@ _LOGGER = logging.getLogger(__name__)
 Slider = Union[FloatSlider, IntSlider]
 """Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
 RangeDefinition = Union[
-    Tuple[float, float],
-    Tuple[float, float, Union[float, int]],
+    tuple[float, float],
+    tuple[float, float, Union[float, int]],
 ]
 """Types of range definitions used in :meth:`.set_ranges`."""
 
@@ -390,7 +382,7 @@ def rename_symbols(
 def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
     """Substitute `~sympy.tensor.indexed.IndexedBase` with symbols.
 
-    See :doc:`compwa:report/008` for more info.
+    See :doc:`compwa-report:008` for more info.
     """
     return expression.xreplace({
         s: _indexed_to_symbol(s)
