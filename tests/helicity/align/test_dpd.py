@@ -8,7 +8,7 @@ import qrules
 import ampform
 from ampform.helicity.align.dpd import (
     DalitzPlotDecomposition,
-    _collect_outer_state_helicities,
+    _compute_allowed_helicities,
     relabel_edge_ids,
 )
 from ampform.kinematics.lorentz import create_four_momentum_symbol
@@ -69,10 +69,10 @@ class TestDalitzPlotDecomposition:
         assert str(sorted_free_symbols) == str([p1, p2, p3])
 
 
-def test_collect_outer_state_helicities(reaction: ReactionInfo):
-    helicities = _collect_outer_state_helicities(reaction)
+def test_compute_allowed_helicities(reaction: ReactionInfo):
+    helicities = _compute_allowed_helicities(reaction)
     assert helicities == {
-        -1: [-1, +1],
+        -1: [-1, 0, +1],
         0: [-1, +1],
         1: [0],
         2: [0],
