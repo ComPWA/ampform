@@ -17,9 +17,12 @@ from __future__ import annotations
 
 from collections import abc
 from functools import singledispatch
-from typing import Iterable, Mapping, Sequence
+from typing import TYPE_CHECKING
 
 import sympy as sp
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
 
 
 @singledispatch

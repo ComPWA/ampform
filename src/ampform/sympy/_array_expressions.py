@@ -10,7 +10,7 @@ import string
 import sys
 from collections import abc
 from itertools import zip_longest
-from typing import TYPE_CHECKING, Iterable, overload
+from typing import TYPE_CHECKING, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -36,6 +36,8 @@ if sys.version_info < (3, 12):
 else:
     from typing import override
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from sympy.printing.numpy import NumPyPrinter
 
 

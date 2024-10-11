@@ -35,7 +35,7 @@ class TMatrix(ABC):
 
 class RelativisticKMatrix(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels, return_t_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -141,7 +141,7 @@ class RelativisticKMatrix(TMatrix):
 
 class NonRelativisticKMatrix(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels,
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -199,7 +199,7 @@ class NonRelativisticKMatrix(TMatrix):
 
 class NonRelativisticPVector(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels,
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -272,7 +272,7 @@ class NonRelativisticPVector(TMatrix):
 
 class RelativisticPVector(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels, return_f_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:

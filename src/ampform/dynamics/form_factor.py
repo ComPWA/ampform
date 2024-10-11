@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache, lru_cache
 from typing import Any, Callable
 
 import sympy as sp
@@ -134,7 +134,7 @@ class _SymbolicSum(sp.Sum):
         return super().doit(deep=deep, **kwargs)
 
 
-@lru_cache(maxsize=None)
+@cache
 def _get_indices(expr: sp.Sum) -> set[sp.Basic]:
     free_symbols = set()
     for index in expr.args[1:]:

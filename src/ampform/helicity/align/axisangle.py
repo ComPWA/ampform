@@ -6,7 +6,7 @@ See :cite:`Marangotto:2019ucc` and `Wigner rotations
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import sympy as sp
 
@@ -31,15 +31,11 @@ from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
 
 if TYPE_CHECKING:
-    import sys
+    from collections.abc import Generator, Sequence
+    from typing import Literal
 
     from qrules.topology import Topology
     from qrules.transition import ReactionInfo, StateTransition
-
-    if sys.version_info >= (3, 8):
-        from typing import Literal
-    else:
-        from typing_extensions import Literal
 
 
 class AxisAngleAlignment(SpinAlignment):

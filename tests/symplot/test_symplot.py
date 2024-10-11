@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import Any, Callable, Pattern, no_type_check
+from typing import TYPE_CHECKING, Any, Callable, no_type_check
 
 import pytest
 import sympy as sp
@@ -11,6 +11,9 @@ from ipywidgets.widgets.widget_float import FloatSlider
 from ipywidgets.widgets.widget_int import IntSlider
 
 from symplot import RangeDefinition, Slider, SliderKwargs
+
+if TYPE_CHECKING:
+    from re import Pattern
 
 
 class TestSliderKwargs:

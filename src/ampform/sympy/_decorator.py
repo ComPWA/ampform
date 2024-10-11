@@ -13,16 +13,11 @@ from dataclasses import field as _create_field
 from dataclasses import fields as _get_fields
 from inspect import isclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypedDict, TypeVar, overload
 
 import sympy as sp
 from sympy.core.basic import _aresame  # noqa: PLC2701
 from sympy.utilities.exceptions import SymPyDeprecationWarning
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol, TypedDict
-else:
-    from typing import Protocol, TypedDict
 
 if sys.version_info < (3, 11):
     from typing_extensions import dataclass_transform
@@ -30,6 +25,8 @@ else:
     from typing import dataclass_transform
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable, Iterable
+
     from sympy.printing.latex import LatexPrinter
 
     if sys.version_info < (3, 11):

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import collections
 import sys
-from functools import lru_cache, singledispatch
-from typing import TYPE_CHECKING, Iterable
+from functools import cache, singledispatch
+from typing import TYPE_CHECKING
 
 from attrs import frozen
 from qrules.quantum_numbers import InteractionProperties
@@ -14,12 +14,12 @@ from qrules.transition import ReactionInfo, State, StateTransition
 from ampform._qrules import get_qrules_version
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from qrules.topology import Topology
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
+from typing import Literal
+
 if sys.version_info < (3, 10):
     from typing_extensions import TypeGuard
 else:
@@ -129,7 +129,7 @@ def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
     return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)  # type: ignore[misc]
 
 
-@lru_cache(maxsize=None)
+@cache
 def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     """Determine if an edge is an "opposite helicity" state.
 
@@ -194,7 +194,7 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     return next(iter(out_state_ids))
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
@@ -202,7 +202,7 @@ def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
     return next(iter(spectator_id_candidates))  # type: ignore[arg-type]
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_decay_product_ids(
     topology: Topology,
 ) -> tuple[Literal[1, 2, 3], Literal[1, 2, 3]]:
@@ -298,7 +298,7 @@ def assert_isobar_topology(topology: Topology) -> None:
         assert_two_body_decay(topology, node_id)
 
 
-@lru_cache(maxsize=None)
+@cache
 def assert_three_body_decay(topology: Topology) -> None:
     n_initial = len(topology.incoming_edge_ids)
     n_final = len(topology.outgoing_edge_ids)
