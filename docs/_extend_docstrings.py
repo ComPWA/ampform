@@ -16,9 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 import attrs
-
-# sphinx.ext.graphviz does not work well on RTD
-import graphviz
+import graphviz  # sphinx.ext.graphviz does not work well on RTD
 import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
