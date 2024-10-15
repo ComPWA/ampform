@@ -18,6 +18,6 @@ on:
 
 jobs:
   requirements:
-    uses: ComPWA/actions/.github/workflows/requirements.yml@v1
+    uses: ComPWA/actions/.github/workflows/lock.yml@v2
     secrets:
       token: ${{ secrets.PAT }}
