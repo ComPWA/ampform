@@ -14,13 +14,12 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.5.0rc0
+    rev: 0.5.0rc1
     hooks:
       - id: check-dev-files
         args:
           - --doc-apt-packages=graphviz
           - --dev-python-version=3.11
-          - --no-prettierrc
           - --pin-requirements=monthly
           - --repo-name=ampform
           - --repo-title=AmpForm
