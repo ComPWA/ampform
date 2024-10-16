@@ -1,4 +1,4 @@
-name: Requirements
+name: Update
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  requirements:
+  lock:
     uses: ComPWA/actions/.github/workflows/lock.yml@v2
     secrets:
       token: ${{ secrets.PAT }}
