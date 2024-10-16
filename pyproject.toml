@@ -57,19 +57,12 @@ dev = [
     "ampform[sty]",
     "ampform[test]",
     "sphinx-autobuild",
-    "tox >=1.9", # for skip_install, use_develop
+    "tox",
 ]
 doc = [
-    "Sphinx >=3",
-    "ampform[all]",
-    "black",
-    "ipympl",
-    "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
-    "matplotlib",
-    "mpl-interactions",
-    "myst-nb >=0.14", # nb_ configuration prefixes
-    "numpy",
-    "rich",
+    "ampform[notebooks]",
+    "myst-nb",
+    "sphinx",
     "sphinx-api-relink >=0.0.4",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
@@ -90,6 +83,15 @@ jupyter = [
     "jupyterlab-myst",
     "python-lsp-ruff",
     "python-lsp-server[rope]",
+]
+notebooks = [
+    "ampform[all]",
+    "ipympl",
+    "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
+    "matplotlib",
+    "mpl-interactions",
+    "numpy",
+    "rich",
 ]
 scipy = ["scipy"]
 sty = [
