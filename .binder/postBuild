@@ -1,7 +1,12 @@
 #!/bin/bash
 set -ex
 curl -LsSf https://astral.sh/uv/install.sh | sh
-uv sync \
+source $HOME/.cargo/env
+uv export \
   --extra jupyter \
-  --extra notebooks
-source .venv/bin/activate
+  --extra notebooks \
+  > requirements.txt
+uv pip install \
+  --requirement requirements.txt \
+  --system
+uv cache clean
