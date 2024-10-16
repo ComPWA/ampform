@@ -86,6 +86,7 @@ jupyter = [
 ]
 notebooks = [
     "ampform[all]",
+    "black",
     "ipympl",
     "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
     "matplotlib",
