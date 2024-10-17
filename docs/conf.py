@@ -84,7 +84,9 @@ PACKAGE = "ampform"
 REPO_NAME = "ampform"
 REPO_TITLE = "AmpForm"
 
-BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+BINDER_LINK = (
+    f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?urlpath=lab/docs"
+)
 EXECUTE_NB = get_execution_mode() != "off"
 
 
