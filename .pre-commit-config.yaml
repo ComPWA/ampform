@@ -14,7 +14,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.5.0rc8
+    rev: 0.5.0rc9
     hooks:
       - id: check-dev-files
         args:
@@ -154,7 +154,7 @@ repos:
           - python
 
   - repo: https://github.com/ComPWA/pyright-pre-commit
-    rev: v1.1.384
+    rev: v1.1.385
     hooks:
       - id: pyright
 
