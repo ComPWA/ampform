@@ -1,6 +1,9 @@
 version = 1
 requires-python = ">=3.9"
 
+[manifest]
+constraints = [{ name = "pytest-profiling", specifier = "!=1.8.0" }]
+
 [[package]]
 name = "accessible-pygments"
 version = "0.0.5"
@@ -2582,16 +2585,16 @@ wheels = [
 
 [[package]]
 name = "pytest-profiling"
-version = "1.8.0"
+version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gprof2dot" },
     { name = "pytest" },
     { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/3f/e84badafc1a95b82d021c3615efb535bbd6015ea4dbd748ecb56b86e0739/pytest-profiling-1.8.0.tar.gz", hash = "sha256:4c3a7ee88bcd9a3723c01b4e885ea9da6d070d62110d800e51ddd7f35ea82cf7", size = 33491 }
+sdist = { url = "https://files.pythonhosted.org/packages/39/70/22a4b33739f07f1732a63e33bbfbf68e0fa58cfba9d200e76d01921eddbf/pytest-profiling-1.7.0.tar.gz", hash = "sha256:93938f147662225d2b8bd5af89587b979652426a8a6ffd7e73ec4a23e24b7f29", size = 30985 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/79/6d7fcbaee8ffc34ba05cb45dba48d9ff561cb04ad67259e608a8a9eb0613/pytest_profiling-1.8.0-py3-none-any.whl", hash = "sha256:bb001150c36f4a5f6bd58f3a4c6e88fbc778551371e76ee083dbe8beb73b8219", size = 9503 },
+    { url = "https://files.pythonhosted.org/packages/d9/71/cdb746eaee0d3be65fd777b4ac821f5f051063f3084d4a200ecfd7f7ab40/pytest_profiling-1.7.0-py2.py3-none-any.whl", hash = "sha256:999cc9ac94f2e528e3f5d43465da277429984a1c237ae9818f8cfd0b06acb019", size = 8255 },
 ]
 
 [[package]]

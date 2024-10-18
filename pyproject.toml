@@ -573,3 +573,8 @@ description = Perform all linting, formatting, and spelling checks
 setenv =
     SKIP = pyright
 """
+
+[tool.uv]
+constraint-dependencies = [
+    "pytest-profiling!=1.8.0",
+]
