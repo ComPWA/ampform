@@ -23,14 +23,18 @@ on:
 jobs:
   pytest:
     name: Run unit tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: ComPWA/actions/pip-install@v1
+      - uses: actions/setup-python@v5
         with:
-          additional-packages: tox
-          editable: "yes"
-          extras: test
-          python-version: "3.9"
-          specific-packages: qrules==0.9.*
-      - run: pytest -n auto
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Run pytest with QRules v0.9
+        run: |
+          uv run \
+            --extra test \
+            --with qrules~=0.9.0 \
+            pytest --numprocesses auto

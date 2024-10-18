@@ -16,5 +16,5 @@ indent_size = 4
 [LICENSE]
 indent_size = unset
 
-[setup.cfg]
+[uv.lock]
 indent_size = 4
