@@ -23,18 +23,31 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: ComPWA/actions/pip-install@v1
+      - uses: actions/setup-python@v5
         with:
-          editable: "yes"
-          extras: test,all
-          python-version: "3.9"
-          specific-packages: ${{ inputs.specific-pip-packages }}
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - id: with
+        if: inputs.specific-pip-packages
+        name: Determine additional packages to install
+        run: |
+          additional_packages=''
+          for package in ${{ inputs.specific-pip-packages }}; do
+            additional_packages="$additional_packages --with $package"
+          done
+          echo "packages=$additional_packages" | tee -a $GITHUB_OUTPUT
       - name: Run pytest-benchmark
         run: |
-          pytest \
-            -k benchmark \
-            --benchmark-json output.json \
-            --durations=0
+          uv run \
+            --extra all \
+            --extra test \
+            ${{ steps.with.outputs.packages }} \
+            pytest \
+              -k benchmark \
+              --benchmark-json output.json \
+              --durations=0
         working-directory: benchmarks
       - name: Store result
         if: github.event_name == 'push'

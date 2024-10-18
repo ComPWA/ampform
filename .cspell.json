@@ -150,6 +150,7 @@
     "nowrap",
     "nrows",
     "nsimplify",
+    "numprocesses",
     "numpycode",
     "pandoc",
     "pbar",
