@@ -15,12 +15,30 @@ cd ampform
 Now it's simply a matter of creating and activating the [virtual environment](https://docs.astral.sh/uv/pip/environments) with [`uv sync`](https://docs.astral.sh/uv/reference/cli/#uv-sync). The dependencies for the project are 'pinned' in each commit through the [`uv.lock` file](https://docs.astral.sh/uv/concepts/projects/#project-lockfile).
 
 ```shell
-uv sync
+uv sync --all-extras
 source .venv/bin/activate
 ```
 
-Formatting and linting checks are automatically performed when committing changes. This is done with [pre-commit](https://pre-commit.com). To install the hooks in your local repository, run [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-scripts) **once**:
+Formatting and linting checks are automatically performed when committing changes. This is done with [pre-commit](https://pre-commit.com). To install the hooks in your local repository, run install `pre-commit` with `uv`:
+
+```shell
+uv tool install pre-commit --with pre-commit-uv --force-reinstall
+```
+
+and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-scripts) **once**:
 
 ```shell
 pre-commit install --install-hooks
+```
+
+In addition, it may be handy to install `tox`:
+
+```shell
+uv tool install tox --with tox-uv
+```
+
+If the repository provides a Tox configuration under [`pyproject.toml`](./pyproject.toml), you can see which jobs it defines with:
+
+```shell
+tox list
 ```

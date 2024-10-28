@@ -11,7 +11,11 @@ build:
       pixi global install graphviz uv
     - |-
       export UV_LINK_MODE=copy
-      uv run --extra doc --locked --with tox \
+      uv run \
+        --group doc \
+        --locked \
+        --no-dev \
+        --with tox \
         tox -e doc
       mkdir -p $READTHEDOCS_OUTPUT
       mv docs/_build/html $READTHEDOCS_OUTPUT

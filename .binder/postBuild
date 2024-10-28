@@ -3,10 +3,12 @@ set -ex
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.cargo/env
 uv export \
-  --extra jupyter \
-  --extra notebooks \
+  --group jupyter \
+  --group notebooks \
+  --no-dev \
   > requirements.txt
 uv pip install \
   --requirement requirements.txt \
   --system
+rm requirements.txt
 uv cache clean

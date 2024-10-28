@@ -46,21 +46,29 @@ name = "ampform"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-all = [
-    "ampform[scipy]",
-    "ampform[viz]",
-]
+scipy = ["scipy"]
+viz = ["graphviz"]
+
+[project.readme]
+content-type = "text/markdown"
+file = "README.md"
+
+[project.urls]
+Changelog = "https://github.com/ComPWA/ampform/releases"
+Documentation = "https://ampform.rtfd.io"
+Source = "https://github.com/ComPWA/ampform"
+Tracker = "https://github.com/ComPWA/ampform/issues"
+
+[dependency-groups]
 dev = [
-    "ampform[all]",
-    "ampform[doc]",
-    "ampform[jupyter]",
-    "ampform[sty]",
-    "ampform[test]",
+    "ruff",
     "sphinx-autobuild",
-    "tox",
+    {include-group = "doc"},
+    {include-group = "jupyter"},
+    {include-group = "style"},
+    {include-group = "test"},
 ]
 doc = [
-    "ampform[notebooks]",
     "myst-nb",
     "sphinx",
     "sphinx-api-relink >=0.0.4",
@@ -74,10 +82,12 @@ doc = [
     "sphinx-thebe",
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
+    {include-group = "notebooks"},
 ]
 jupyter = [
     "jupyterlab",
     "jupyterlab-code-formatter >=3.0.0",
+    "jupyterlab-code-formatter",
     "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
@@ -85,7 +95,7 @@ jupyter = [
     "python-lsp-server[rope]",
 ]
 notebooks = [
-    "ampform[all]",
+    "ampform[scipy,viz]",
     "black",
     "ipympl",
     "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
@@ -94,12 +104,9 @@ notebooks = [
     "numpy",
     "rich",
 ]
-scipy = ["scipy"]
-sty = [
-    "ampform[types]",
+style = [
     "mypy >=0.730",
-    "pre-commit-uv",
-    "ruff",
+    {include-group = "types"},
 ]
 test = [
     "ampform[scipy]",
@@ -120,17 +127,6 @@ types = [
     "pytest-benchmark",
     "sphinx-api-relink >=0.0.3",
 ]
-viz = ["graphviz"]
-
-[project.readme]
-content-type = "text/markdown"
-file = "README.md"
-
-[project.urls]
-Changelog = "https://github.com/ComPWA/ampform/releases"
-Documentation = "https://ampform.rtfd.io"
-Source = "https://github.com/ComPWA/ampform"
-Tracker = "https://github.com/ComPWA/ampform/issues"
 
 [tool.setuptools]
 include-package-data = false
@@ -235,6 +231,8 @@ reportUnusedFunction = true
 reportUnusedImport = true
 reportUnusedVariable = true
 typeCheckingMode = "strict"
+venv = ".venv"
+venvPath = "."
 
 [tool.pytest.ini_options]
 addopts = [
@@ -568,10 +566,8 @@ description = Run all notebooks with pytest
 allowlist_externals =
     pre-commit
 commands =
-    pre-commit run {posargs} --all-files
+    pre-commit run --all-files {posargs}
 description = Perform all linting, formatting, and spelling checks
-setenv =
-    SKIP = pyright
 """
 
 [tool.uv]
