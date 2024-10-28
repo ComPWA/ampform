@@ -94,6 +94,7 @@ doc = [
     { name = "myst-nb" },
     { name = "numpy" },
     { name = "rich" },
+    { name = "scipy" },
     { name = "sphinx" },
     { name = "sphinx-api-relink" },
     { name = "sphinx-book-theme" },
@@ -118,11 +119,13 @@ jupyter = [
 ]
 notebooks = [
     { name = "black" },
+    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "rich" },
+    { name = "scipy" },
 ]
 style = [
     { name = "ipython" },
@@ -165,8 +168,8 @@ requires-dist = [
 [package.metadata.dependency-groups]
 dev = [
     { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
-    { name = "graphviz" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -208,8 +211,8 @@ dev = [
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
 ]
 doc = [
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
-    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "matplotlib", specifier = "<3.9.0" },
@@ -241,6 +244,7 @@ jupyter = [
     { name = "python-lsp-server", extras = ["rope"] },
 ]
 notebooks = [
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },

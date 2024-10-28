@@ -69,7 +69,6 @@ dev = [
     {include-group = "test"},
 ]
 doc = [
-    "graphviz",
     "myst-nb",
     "sphinx",
     "sphinx-api-relink >=0.0.4",
@@ -96,6 +95,7 @@ jupyter = [
     "python-lsp-server[rope]",
 ]
 notebooks = [
+    "ampform[scipy,viz]",
     "black",
     "ipympl",
     "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
