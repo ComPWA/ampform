@@ -41,8 +41,9 @@ jobs:
       - name: Run pytest-benchmark
         run: |
           uv run \
-            --extra all \
+            --all-extras \
             --group test \
+            --no-dev \
             ${{ steps.with.outputs.packages }} \
             pytest \
               -k benchmark \

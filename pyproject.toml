@@ -46,10 +46,6 @@ name = "ampform"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-all = [
-    "ampform[scipy]",
-    "ampform[viz]",
-]
 scipy = ["scipy"]
 viz = ["graphviz"]
 
@@ -65,7 +61,6 @@ Tracker = "https://github.com/ComPWA/ampform/issues"
 
 [dependency-groups]
 dev = [
-    "ampform[all]",
     "ruff",
     "sphinx-autobuild",
     {include-group = "doc"},
@@ -100,7 +95,6 @@ jupyter = [
     "python-lsp-server[rope]",
 ]
 notebooks = [
-    "ampform[all]",
     "black",
     "ipympl",
     "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279

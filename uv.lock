@@ -36,10 +36,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-all = [
-    { name = "graphviz" },
-    { name = "scipy" },
-]
 scipy = [
     { name = "scipy" },
 ]
@@ -50,7 +46,6 @@ viz = [
 [package.dependency-groups]
 dev = [
     { name = "black" },
-    { name = "graphviz" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -91,14 +86,12 @@ dev = [
 ]
 doc = [
     { name = "black" },
-    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "mpl-interactions" },
     { name = "myst-nb" },
     { name = "numpy" },
     { name = "rich" },
-    { name = "scipy" },
     { name = "sphinx" },
     { name = "sphinx-api-relink" },
     { name = "sphinx-book-theme" },
@@ -123,13 +116,11 @@ jupyter = [
 ]
 notebooks = [
     { name = "black" },
-    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "rich" },
-    { name = "scipy" },
 ]
 style = [
     { name = "ipython" },
@@ -162,8 +153,6 @@ types = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ampform", extras = ["scipy"], marker = "extra == 'all'" },
-    { name = "ampform", extras = ["viz"], marker = "extra == 'all'" },
     { name = "attrs", specifier = ">=20.1.0" },
     { name = "graphviz", marker = "extra == 'viz'" },
     { name = "qrules", specifier = ">=0.9.6" },
@@ -173,7 +162,6 @@ requires-dist = [
 
 [package.metadata.dependency-groups]
 dev = [
-    { name = "ampform", extras = ["all"] },
     { name = "ampform", extras = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
@@ -217,7 +205,6 @@ dev = [
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
 ]
 doc = [
-    { name = "ampform", extras = ["all"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
@@ -250,7 +237,6 @@ jupyter = [
     { name = "python-lsp-server", extras = ["rope"] },
 ]
 notebooks = [
-    { name = "ampform", extras = ["all"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
