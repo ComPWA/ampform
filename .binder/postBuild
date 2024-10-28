@@ -5,6 +5,7 @@ source $HOME/.cargo/env
 uv export \
   --group jupyter \
   --group notebooks \
+  --no-dev \
   > requirements.txt
 uv pip install \
   --requirement requirements.txt \
