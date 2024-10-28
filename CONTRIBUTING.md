@@ -19,8 +19,26 @@ uv sync
 source .venv/bin/activate
 ```
 
-Formatting and linting checks are automatically performed when committing changes. This is done with [pre-commit](https://pre-commit.com). To install the hooks in your local repository, run [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-scripts) **once**:
+Formatting and linting checks are automatically performed when committing changes. This is done with [pre-commit](https://pre-commit.com). To install the hooks in your local repository, run install `pre-commit` with `uv`:
+
+```shell
+uv tool install pre-commit --with pre-commit-uv --force-reinstall
+```
+
+and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-scripts) **once**:
 
 ```shell
 pre-commit install --install-hooks
+```
+
+In addition, it may be handy to install `tox`:
+
+```shell
+uv tool install tox --with tox-uv
+```
+
+If the repository provides a Tox configuration under [`pyproject.toml`](./pyproject.toml), you can see which jobs it defines with:
+
+```shell
+tox list
 ```

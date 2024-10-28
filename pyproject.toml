@@ -57,7 +57,6 @@ dev = [
     "ampform[sty]",
     "ampform[test]",
     "sphinx-autobuild",
-    "tox",
 ]
 doc = [
     "ampform[notebooks]",
@@ -98,7 +97,6 @@ scipy = ["scipy"]
 sty = [
     "ampform[types]",
     "mypy >=0.730",
-    "pre-commit-uv",
     "ruff",
 ]
 test = [
