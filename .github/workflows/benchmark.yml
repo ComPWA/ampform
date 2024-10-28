@@ -42,7 +42,7 @@ jobs:
         run: |
           uv run \
             --extra all \
-            --extra test \
+            --group test \
             ${{ steps.with.outputs.packages }} \
             pytest \
               -k benchmark \
