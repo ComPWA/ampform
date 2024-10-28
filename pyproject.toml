@@ -69,6 +69,7 @@ dev = [
     {include-group = "test"},
 ]
 doc = [
+    "graphviz",
     "myst-nb",
     "sphinx",
     "sphinx-api-relink >=0.0.4",

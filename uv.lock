@@ -46,6 +46,7 @@ viz = [
 [package.dependency-groups]
 dev = [
     { name = "black" },
+    { name = "graphviz" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -86,6 +87,7 @@ dev = [
 ]
 doc = [
     { name = "black" },
+    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "mpl-interactions" },
@@ -164,6 +166,7 @@ requires-dist = [
 dev = [
     { name = "ampform", extras = ["scipy"] },
     { name = "black" },
+    { name = "graphviz" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -206,6 +209,7 @@ dev = [
 ]
 doc = [
     { name = "black" },
+    { name = "graphviz" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "matplotlib", specifier = "<3.9.0" },
