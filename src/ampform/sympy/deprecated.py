@@ -31,7 +31,7 @@ class UnevaluatedExpression(sp.Expr):
     1. condense the LaTeX representation of an expression tree by providing a custom
        :meth:`_latex` method.
     2. overwrite its printer methods (see `.NumPyPrintable` and e.g.
-       :doc:`compwa-report:001`).
+       :doc:`compwa-report:001/index`).
 
     The `UnevaluatedExpression` base class makes implementations of its derived classes
     more secure by enforcing the developer to provide implementations for these methods,

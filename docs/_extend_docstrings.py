@@ -509,7 +509,7 @@ def extend_chew_mandelstam_s_wave() -> None:
 
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
 
-    .. seealso:: :doc:`compwa-report:003`
+    .. seealso:: :doc:`compwa-report:003/index`
     """,
     )
 
