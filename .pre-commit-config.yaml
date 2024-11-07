@@ -18,7 +18,6 @@ repos:
     hooks:
       - id: check-dev-files
         args:
-          - --dev-python-version=3.11
           - --doc-apt-packages=graphviz
           - --environment-variables=PYTHONHASHSEED=0
           - --repo-name=ampform

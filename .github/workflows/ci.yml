@@ -34,7 +34,6 @@ jobs:
       id-token: write
     with:
       apt-packages: graphviz
-      python-version: "3.11"
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   pytest:
     uses: ComPWA/actions/.github/workflows/pytest.yml@v2.1
@@ -47,5 +46,3 @@ jobs:
     secrets:
       token: ${{ secrets.PAT }}
     uses: ComPWA/actions/.github/workflows/pre-commit.yml@v2.1
-    with:
-      python-version: "3.11"
