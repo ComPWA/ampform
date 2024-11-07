@@ -286,6 +286,7 @@ linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
     "https://doi.org/10.1002",  # 403 for onlinelibrary.wiley.com
+    "https://doi.org/10.1093",  # 403 for PTEP
     "https://doi.org/10.1103",  # 403 for Phys Rev D
     "https://doi.org/10.1155",  # 403 for hindawi.com
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
