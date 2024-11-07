@@ -18,11 +18,11 @@ repos:
     hooks:
       - id: check-dev-files
         args:
-          - --doc-apt-packages=graphviz
           - --dev-python-version=3.11
-          - --update-lock-files=outsource
+          - --doc-apt-packages=graphviz
           - --repo-name=ampform
           - --repo-title=AmpForm
+          - --update-lock-files=outsource
       - id: colab-toc-visible
       - id: fix-nbformat-version
       - id: remove-empty-tags
