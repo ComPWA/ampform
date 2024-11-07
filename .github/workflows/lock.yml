@@ -13,8 +13,6 @@ on:
     paths:
       - .pre-commit-config.yaml
       - uv.lock
-  schedule:
-    - cron: "0 3 7 */1 *"
   workflow_dispatch:
 
 jobs:
