@@ -20,7 +20,7 @@ repos:
         args:
           - --doc-apt-packages=graphviz
           - --dev-python-version=3.11
-          - --update-lock-files=monthly
+          - --update-lock-files=outsource
           - --repo-name=ampform
           - --repo-title=AmpForm
       - id: colab-toc-visible
