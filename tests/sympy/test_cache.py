@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     ("expected_hash", "assumptions"),
     [
-        ("8eb22db72da08d18", dict()),
-        ("40b00fbe1e8ddf6b", dict(real=True)),
-        ("94569e99c6b4ceec", dict(rational=True)),
+        ("87ecd62a4c584b2a", dict()),
+        ("1c4981af01b2fc14", dict(real=True)),
+        ("115ed5f321a7fe96", dict(rational=True)),
     ],
 )
 def test_get_readable_hash(
@@ -47,13 +47,13 @@ def test_get_readable_hash_energy_dependent_width():
         meson_radius=d,
     )
     h = get_readable_hash(expr)
-    assert h == "eee5788b2adb017c"
+    assert h == "e722efd64af3d92b"
 
 
 def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
     formalism, model = amplitude_model
     expected_hash = {
-        "canonical-helicity": "5d0e0a326b9f7266",
-        "helicity": "83149d2218ff4aea",
+        "canonical-helicity": "67a26cb9955c17b8",
+        "helicity": "5636f9e0f8a20ad4",
     }[formalism]
     assert get_readable_hash(model.expression) == expected_hash

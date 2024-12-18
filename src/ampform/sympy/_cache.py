@@ -39,7 +39,7 @@ def get_system_cache_directory() -> str:
 
 def get_readable_hash(obj) -> str:
     b = to_bytes(obj)
-    h = xxhash.xxh3_64(b)
+    h = xxhash.xxh64(b)
     return h.hexdigest()
 
 
