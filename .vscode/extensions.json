@@ -12,6 +12,7 @@
     "ms-python.mypy-type-checker",
     "ms-python.python",
     "ms-python.vscode-pylance",
+    "ms-toolsai.jupyter",
     "ms-toolsai.vscode-jupyter-cell-tags",
     "ms-vscode.live-server",
     "ms-vsliveshare.vsliveshare",
@@ -31,6 +32,7 @@
     "ms-python.flake8",
     "ms-python.isort",
     "ms-python.pylint",
+    "ms-toolsai.vscode-jupyter-slideshow",
     "travisillig.vscode-json-stable-stringify",
     "tyriar.sort-lines"
   ]

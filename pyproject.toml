@@ -363,7 +363,7 @@ split-on-trailing-comma = false
     "S403",
     "SLF001",
     "T20",
-    "TCH00",
+    "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
 "**/docs/usage/symplot.ipynb" = ["RUF027"]

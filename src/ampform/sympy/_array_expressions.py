@@ -27,14 +27,14 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
-if sys.version_info < (3, 11):
-    from typing_extensions import Self
-else:
+if sys.version_info >= (3, 11):
     from typing import Self
-if sys.version_info < (3, 12):
-    from typing_extensions import override
 else:
+    from typing_extensions import Self
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
