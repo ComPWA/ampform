@@ -18,10 +18,10 @@ from ampform.sympy._array_expressions import (
 )
 from ampform.sympy.math import ComplexSqrt
 
-if sys.version_info < (3, 10):
-    from typing_extensions import TypeAlias
-else:
+if sys.version_info >= (3, 10):
     from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
 if TYPE_CHECKING:
     from qrules.topology import Topology
     from sympy.printing.latex import LatexPrinter

@@ -13,10 +13,10 @@ from warnings import warn
 
 import sympy as sp
 
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 

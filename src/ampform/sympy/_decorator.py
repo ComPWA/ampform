@@ -19,20 +19,20 @@ import sympy as sp
 from sympy.core.basic import _aresame  # noqa: PLC2701
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
-if sys.version_info < (3, 11):
-    from typing_extensions import dataclass_transform
-else:
+if sys.version_info >= (3, 11):
     from typing import dataclass_transform
+else:
+    from typing_extensions import dataclass_transform
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Iterable
 
     from sympy.printing.latex import LatexPrinter
 
-    if sys.version_info < (3, 11):
-        from typing_extensions import ParamSpec, Unpack
-    else:
+    if sys.version_info >= (3, 11):
         from typing import ParamSpec, Unpack
+    else:
+        from typing_extensions import ParamSpec, Unpack
 
     H = TypeVar("H", bound=Hashable)
     P = ParamSpec("P")
