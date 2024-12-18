@@ -19,7 +19,6 @@ repos:
       - id: check-dev-files
         args:
           - --doc-apt-packages=graphviz
-          - --environment-variables=PYTHONHASHSEED=0
           - --repo-name=ampform
           - --repo-title=AmpForm
           - --update-lock-files=outsource

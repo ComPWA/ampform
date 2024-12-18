@@ -360,10 +360,6 @@ def perform_cached_doit(
             :file:`ampform` under the system cache directory (see
             :func:`.get_system_cache_directory`).
 
-    .. tip:: For a faster cache, set `PYTHONHASHSEED
-        <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
-        fixed value.
-
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
