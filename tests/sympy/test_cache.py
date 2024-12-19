@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 import pytest
 import qrules
 import sympy as sp
+from qrules.topology import FrozenDict
 
 from ampform import get_builder
 from ampform.dynamics import EnergyDependentWidth
@@ -95,3 +96,20 @@ class TestLargeHash:
             builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
         model = builder.formulate()
         assert get_readable_hash(model.expression) == expected_hash
+
+
+class TestFrozenDict:
+    def test_qrules_frozen_dict(self):
+        obj: FrozenDict = FrozenDict({})
+        assert get_readable_hash(obj) == "023f1d9cf3576a46b278007d6e5cb0fa"
+
+        obj = FrozenDict({"key1": "value1"})
+        assert get_readable_hash(obj) == "076915d85252aa5c87f63702437c6dbd"
+
+        obj = FrozenDict({
+            "key1": "value1",
+            "key2": 2,
+            "key3": (1, 2, 3),
+            "key4": FrozenDict({"nested_key": "nested_value"}),
+        })
+        assert get_readable_hash(obj) == "c3b3a661e63f57003fc3deea5d23ede9"
