@@ -193,7 +193,7 @@ types = [
 requires-dist = [
     { name = "attrs", specifier = ">=20.1.0" },
     { name = "graphviz", marker = "extra == 'viz'" },
-    { name = "qrules", specifier = ">=0.9.6" },
+    { name = "qrules", git = "https://github.com/ComPWA/qrules?rev=47e0c29" },
     { name = "scipy", marker = "extra == 'scipy'" },
     { name = "sympy", specifier = ">=1.10" },
     { name = "xxhash", specifier = ">=3.5.0" },
@@ -3088,19 +3088,16 @@ wheels = [
 
 [[package]]
 name = "qrules"
-version = "0.10.3"
-source = { registry = "https://pypi.org/simple" }
+version = "0.10.2"
+source = { git = "https://github.com/ComPWA/qrules?rev=47e0c29#47e0c29bc4d89b0215e8d730fe9e4858067d1e88" }
 dependencies = [
     { name = "attrs" },
+    { name = "frozendict" },
     { name = "jsonschema" },
     { name = "particle" },
     { name = "python-constraint" },
     { name = "pyyaml" },
     { name = "tqdm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bb/89/849dc7c14849015fca7380d7b72590383dc8036308d464cff9a247a38f5a/qrules-0.10.3.tar.gz", hash = "sha256:729fca4ef0713c9207d54aeab887be593bb7e1a2605ed378177739d8289bab6f", size = 145584 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/8f/9a3cfe2cf810408afba00365c819ed62f635ef126b7c16cc74243b0d44b4/qrules-0.10.3-py3-none-any.whl", hash = "sha256:19fb1818794830184881476bd5f3f4f64aa738ced14afde4ab7ae69598b74071", size = 79783 },
 ]
 
 [[package]]

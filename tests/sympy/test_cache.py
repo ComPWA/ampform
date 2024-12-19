@@ -62,8 +62,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("UNSTABLE-HASH", "canonical-helicity"),
-            ("UNSTABLE-HASH", "helicity"),
+            ("de995528a15267dd3a72fe6c5dfa6136", "canonical-helicity"),
+            ("61c08ea813390cfbae8b083a89a5673a", "helicity"),
         ],
     )
     def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
