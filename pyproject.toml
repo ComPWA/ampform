@@ -26,8 +26,9 @@ classifiers = [
 ]
 dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
-    "qrules >=0.9.6",
+    "qrules @ git+https://github.com/ComPWA/qrules@47e0c29",
     "sympy >=1.10",
+    "xxhash>=3.5.0",
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
 dynamic = ["version"]
@@ -110,6 +111,7 @@ style = [
 ]
 test = [
     "ampform[scipy]",
+    "frozendict",
     "ipywidgets", # symplot
     "nbmake",
     "numpy",
@@ -363,7 +365,7 @@ split-on-trailing-comma = false
     "S403",
     "SLF001",
     "T20",
-    "TCH00",
+    "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
 "**/docs/usage/symplot.ipynb" = ["RUF027"]
@@ -452,8 +454,6 @@ commands =
     pytest {posargs}
 description = Run all unit tests
 passenv = *
-setenv =
-    PYTHONHASHSEED = 0
 
 [testenv:bench]
 allowlist_externals =

@@ -43,14 +43,14 @@ from .deprecated import (
     make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
 )
 
-if sys.version_info < (3, 11):
-    from typing_extensions import Self
-else:
+if sys.version_info >= (3, 11):
     from typing import Self
-if sys.version_info < (3, 12):
-    from typing_extensions import override
 else:
+    from typing_extensions import Self
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
@@ -359,10 +359,6 @@ def perform_cached_doit(
         cache_directory: The directory in which to cache the result. Defaults to
             :file:`ampform` under the system cache directory (see
             :func:`.get_system_cache_directory`).
-
-    .. tip:: For a faster cache, set `PYTHONHASHSEED
-        <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
-        fixed value.
 
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache

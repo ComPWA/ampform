@@ -20,10 +20,10 @@ if TYPE_CHECKING:
 
 from typing import Literal
 
-if sys.version_info < (3, 10):
-    from typing_extensions import TypeGuard
-else:
+if sys.version_info >= (3, 10):
     from typing import TypeGuard
+else:
+    from typing_extensions import TypeGuard
 
 
 @frozen
