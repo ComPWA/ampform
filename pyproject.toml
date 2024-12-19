@@ -111,6 +111,7 @@ style = [
 ]
 test = [
     "ampform[scipy]",
+    "frozendict",
     "ipywidgets", # symplot
     "nbmake",
     "numpy",
