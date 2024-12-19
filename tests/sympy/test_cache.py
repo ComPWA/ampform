@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import pytest
+import qrules
 import sympy as sp
 
 from ampform import get_builder
@@ -13,7 +14,7 @@ from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
-    from qrules import ReactionInfo
+    from qrules.transition import SpinFormalism
 
 
 @pytest.mark.parametrize(
@@ -51,13 +52,23 @@ def test_get_readable_hash_energy_dependent_width():
     assert h == "086a038e35f21ed6eee5788b2adb017c"
 
 
-def test_get_readable_hash_large(reaction: ReactionInfo):
+@pytest.mark.parametrize(
+    ("expected_hash", "formalism"),
+    [
+        ("0047c8be9e94ec7d5d0e0a326b9f7266", "canonical-helicity"),
+        ("562d5f1390b56ddb83149d2218ff4aea", "helicity"),
+    ],
+)
+def test_get_readable_hash_large(expected_hash: str, formalism: SpinFormalism):
+    reaction = qrules.generate_transitions(
+        initial_state=[("J/psi(1S)", [-1, 1])],
+        final_state=["gamma", "pi0", "pi0"],
+        allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
+        allowed_interaction_types="strong",
+        formalism=formalism,
+    )
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:
         model_builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
     model = model_builder.formulate()
-    expected_hash = {
-        "canonical-helicity": "0047c8be9e94ec7d5d0e0a326b9f7266",
-        "helicity": "562d5f1390b56ddb83149d2218ff4aea",
-    }[reaction.formalism]
     assert get_readable_hash(model.expression) == expected_hash
