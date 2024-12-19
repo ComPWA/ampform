@@ -6,13 +6,14 @@ from typing import TYPE_CHECKING
 import pytest
 import sympy as sp
 
+from ampform import get_builder
 from ampform.dynamics import EnergyDependentWidth
+from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
 from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
-
-    from ampform.helicity import HelicityModel
+    from qrules import ReactionInfo
 
 
 @pytest.mark.parametrize(
@@ -50,10 +51,13 @@ def test_get_readable_hash_energy_dependent_width():
     assert h == "086a038e35f21ed6eee5788b2adb017c"
 
 
-def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
-    formalism, model = amplitude_model
+def test_get_readable_hash_large(reaction: ReactionInfo):
+    model_builder = get_builder(reaction)
+    for name in reaction.get_intermediate_particles().names:
+        model_builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
+    model = model_builder.formulate()
     expected_hash = {
         "canonical-helicity": "0047c8be9e94ec7d5d0e0a326b9f7266",
         "helicity": "562d5f1390b56ddb83149d2218ff4aea",
-    }[formalism]
+    }[reaction.formalism]
     assert get_readable_hash(model.expression) == expected_hash
