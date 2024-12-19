@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         ("7db2db79aa9f7bd4caca01a2082f4638", dict(real=True)),
         ("12c6c97d066784a23076bf172eb86260", dict(rational=True)),
     ],
+    ids=["symbol", "symbol-real", "symbol-rational"],
 )
 def test_get_readable_hash(
     assumptions: dict, expected_hash: str, caplog: LogCaptureFixture
@@ -65,6 +66,7 @@ class TestLargeHash:
             ("de995528a15267dd3a72fe6c5dfa6136", "canonical-helicity"),
             ("61c08ea813390cfbae8b083a89a5673a", "helicity"),
         ],
+        ids=["canonical-helicity", "helicity"],
     )
     def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
@@ -82,6 +84,7 @@ class TestLargeHash:
             ("0047c8be9e94ec7d5d0e0a326b9f7266", "canonical-helicity"),
             ("562d5f1390b56ddb83149d2218ff4aea", "helicity"),
         ],
+        ids=["canonical-helicity", "helicity"],
     )
     def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
