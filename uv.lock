@@ -193,7 +193,7 @@ types = [
 requires-dist = [
     { name = "attrs", specifier = ">=20.1.0" },
     { name = "graphviz", marker = "extra == 'viz'" },
-    { name = "qrules", git = "https://github.com/ComPWA/qrules?rev=47e0c29" },
+    { name = "qrules", git = "https://github.com/ComPWA/qrules?rev=e32e78c" },
     { name = "scipy", marker = "extra == 'scipy'" },
     { name = "sympy", specifier = ">=1.10" },
     { name = "xxhash", specifier = ">=3.5.0" },
@@ -3089,7 +3089,7 @@ wheels = [
 [[package]]
 name = "qrules"
 version = "0.10.2"
-source = { git = "https://github.com/ComPWA/qrules?rev=47e0c29#47e0c29bc4d89b0215e8d730fe9e4858067d1e88" }
+source = { git = "https://github.com/ComPWA/qrules?rev=e32e78c#e32e78ca7f113efe908bd76cf1dc43c5ca6a7b3e" }
 dependencies = [
     { name = "attrs" },
     { name = "frozendict" },
