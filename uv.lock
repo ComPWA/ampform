@@ -70,7 +70,6 @@ viz = [
 dev = [
     { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
-    { name = "frozendict" },
     { name = "ipympl" },
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "ipython", version = "8.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -167,7 +166,6 @@ style = [
 ]
 test = [
     { name = "ampform", extra = ["scipy"] },
-    { name = "frozendict" },
     { name = "ipywidgets" },
     { name = "nbmake" },
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -204,7 +202,6 @@ dev = [
     { name = "ampform", extras = ["scipy"] },
     { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
-    { name = "frozendict" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -299,7 +296,6 @@ style = [
 ]
 test = [
     { name = "ampform", extras = ["scipy"] },
-    { name = "frozendict" },
     { name = "ipywidgets" },
     { name = "nbmake" },
     { name = "numpy" },
