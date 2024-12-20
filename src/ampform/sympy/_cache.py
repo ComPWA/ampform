@@ -37,6 +37,11 @@ def get_system_cache_directory() -> str:
 
 
 def get_readable_hash(obj) -> str:
+    """Get a human-readable hash of any hashable Python object.
+
+    Args:
+        obj: Any hashable object, mutable or immutable, to be hashed.
+    """
     b = to_bytes(obj)
     h = hashlib.md5(b)  # noqa: S324
     return h.hexdigest()
