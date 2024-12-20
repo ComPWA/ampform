@@ -11,10 +11,10 @@ from sympy.plotting.experimental_lambdify import Lambdifier
 
 from ampform.sympy import NumPyPrintable
 
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
     from sympy.printing.printer import Printer
