@@ -27,6 +27,7 @@ else:
     from typing_extensions import override
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from fractions import Fraction
 
     from qrules.topology import Topology
 
@@ -503,7 +504,7 @@ def _state_to_str(
     return output_string
 
 
-def _render_float(value: float) -> str:
+def _render_float(value: float | Fraction) -> str:
     """Render a `float` nicely as a string.
 
     >>> _render_float(-0.5)
