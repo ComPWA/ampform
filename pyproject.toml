@@ -28,7 +28,6 @@ dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "qrules>=0.9.6",
     "sympy >=1.10",
-    "xxhash>=3.5.0",
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
 dynamic = ["version"]

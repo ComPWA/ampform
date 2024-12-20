@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import pickle  # noqa: S403
 import sys
-
-import xxhash
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +38,7 @@ def get_system_cache_directory() -> str:
 
 def get_readable_hash(obj) -> str:
     b = to_bytes(obj)
-    h = xxhash.xxh128(b)
+    h = hashlib.md5(b)  # noqa: S324
     return h.hexdigest()
 
 
