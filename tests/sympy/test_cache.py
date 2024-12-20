@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     ("expected_hash", "assumptions"),
     [
-        ("564ea466060f7565ec3ee24de64e0f92", dict()),
-        ("91495f4a4193c7ac08bd53e7fb5a1521", dict(real=True)),
-        ("dba358d78f1aec9641114d7a26d59a09", dict(rational=True)),
+        ("a7559ca6e9037446da186a62ff1ed673", dict()),
+        ("f4b1fadd65890a86cbac47da2435694d", dict(real=True)),
+        ("d5bdc74485ba4d3f16f387541315f64d", dict(rational=True)),
     ],
     ids=["symbol", "symbol-real", "symbol-rational"],
 )
@@ -50,7 +50,7 @@ def test_get_readable_hash_energy_dependent_width():
         meson_radius=d,
     )
     h = get_readable_hash(expr)
-    assert h == "2ebebe58be64f0b77540fd138597c28e"
+    assert h == "ccafec30a6b6974920652b9df1b13c57"
 
 
 class TestLargeHash:
@@ -62,8 +62,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("65106a44301f9340e633d09f66ad7d17", "canonical-helicity"),
-            ("9646d3ee5c5e8534deb8019435161f2e", "helicity"),
+            ("762cc006a8c4c0a0a88fce934a32577d", "canonical-helicity"),
+            ("17fefe55a7da0810371e90bd762a176a", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -80,8 +80,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("bb6cba308b7b7691c22ffa6d462f55c8", "canonical-helicity"),
-            ("1d31f62fd37c5053d498ee9b35ae4244", "helicity"),
+            ("01bb11213896fcb173cb9b4ea4bdc3bf", "canonical-helicity"),
+            ("0638a0ec2efa602e4c1f79141f7ca88a", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
