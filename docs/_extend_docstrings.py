@@ -6,7 +6,6 @@ This small script is used by ``conf.py`` to dynamically modify docstrings.
 # pyright: reportMissingImports=false
 from __future__ import annotations
 
-import hashlib
 import inspect
 import logging
 import pickle
@@ -24,6 +23,7 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
 from ampform.sympy._array_expressions import ArrayMultiplication
+from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
     from qrules.transition import ReactionInfo, SpinFormalism
@@ -727,7 +727,7 @@ def __generate_transitions_cached(
 ) -> ReactionInfo:
     version = get_package_version("qrules")
     obj = (initial_state, final_state, formalism)
-    h = hashlib.sha256(pickle.dumps(obj)).hexdigest()
+    h = get_readable_hash(obj)
     docs_dir = Path(__file__).parent
     file_name = docs_dir / ".cache" / f"reaction-qrules-v{version}-{h}.pickle"
     file_name.parent.mkdir(exist_ok=True)

@@ -2,77 +2,42 @@ from __future__ import annotations
 
 import logging
 import os
-import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
+import qrules
 import sympy as sp
 
+from ampform import get_builder
 from ampform.dynamics import EnergyDependentWidth
-from ampform.sympy._cache import _warn_about_unsafe_hash, get_readable_hash
+from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
+from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
+    from qrules.transition import SpinFormalism
 
-    from ampform.helicity import HelicityModel
+
+_GH = "CI" in os.environ and os.uname().sysname != "Darwin"
 
 
 @pytest.mark.parametrize(
-    ("assumptions", "expected_hashes"),
+    ("expected_hash", "assumptions"),
     [
-        (
-            dict(),
-            {
-                "3.7": 7060330373292767180,
-                "3.8": 7459658071388516764,
-                "3.9": 7459658071388516764,
-                "3.10": 7459658071388516764,
-                "3.11": 8778804591879682108,
-                "3.12": 8778804591879682108,
-            },
-        ),
-        (
-            dict(real=True),
-            {
-                "3.7": 118635607833730864,
-                "3.8": 3665410414623666716,
-                "3.9": 3665410414623666716,
-                "3.10": 3665410414623666716,
-                "3.11": -7967572625470457155,
-                "3.12": -7967572625470457155,
-            },
-        ),
-        (
-            dict(rational=True),
-            {
-                "3.7": -1011754479721050016,
-                "3.8": -7926839224244779605,
-                "3.9": -7926839224244779605,
-                "3.10": -7926839224244779605,
-                "3.11": -8321323707982755013,
-                "3.12": -8321323707982755013,
-            },
-        ),
+        ("a7559ca", dict()),
+        ("f4b1fad", dict(real=True)),
+        ("d5bdc74", dict(rational=True)),
     ],
+    ids=["symbol", "symbol-real", "symbol-rational"],
 )
-def test_get_readable_hash(assumptions, expected_hashes, caplog: LogCaptureFixture):
-    python_version = ".".join(map(str, sys.version_info[:2]))
-    expected_hash = expected_hashes[python_version]
+def test_get_readable_hash(
+    assumptions: dict, expected_hash: str, caplog: LogCaptureFixture
+):
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
-    h_str = get_readable_hash(expr)
-    python_hash_seed = os.environ.get("PYTHONHASHSEED")
-    if python_hash_seed is None:
-        assert h_str[:7] == "bbc9833"
-        if _warn_about_unsafe_hash.cache_info().hits == 0:
-            assert "PYTHONHASHSEED has not been set." in caplog.text
-            caplog.clear()
-    elif python_hash_seed == "0":
-        h = int(h_str.replace("pythonhashseed-0", ""))
-        assert h == expected_hash
-    else:
-        pytest.skip(f"PYTHONHASHSEED has been set, but is {python_hash_seed}, not 0")
+    h = get_readable_hash(expr)[:7]
+    assert h == expected_hash
     assert not caplog.text
 
 
@@ -88,31 +53,54 @@ def test_get_readable_hash_energy_dependent_width():
         angular_momentum=angular_momentum,
         meson_radius=d,
     )
-    h = get_readable_hash(expr)
-    python_hash_seed = os.environ.get("PYTHONHASHSEED")
-    if python_hash_seed is None:
-        pytest.skip("PYTHONHASHSEED has not been set")
-    if python_hash_seed != "0":
-        pytest.skip(f"PYTHONHASHSEED is not set to 0, but to {python_hash_seed}")
-    if sys.version_info >= (3, 11):
-        assert h == "pythonhashseed-0+4377931190501974271"
-    else:
-        assert h == "pythonhashseed-0+8267198661922532208"
+    h = get_readable_hash(expr)[:7]
+    assert h == "ccafec3"
 
 
-def test_get_readable_hash_large(amplitude_model: tuple[str, HelicityModel]):
-    python_hash_seed = os.environ.get("PYTHONHASHSEED")
-    if python_hash_seed != "0":
-        pytest.skip("PYTHONHASHSEED is not 0")
-    formalism, model = amplitude_model
-    if sys.version_info >= (3, 11):
-        expected_hash = {
-            "canonical-helicity": "pythonhashseed-0-8140852268928771574",
-            "helicity": "pythonhashseed-0-991855900379383849",
-        }[formalism]
-    else:
-        expected_hash = {
-            "canonical-helicity": "pythonhashseed-0+3166036244969111461",
-            "helicity": "pythonhashseed-0+4247688887304834148",
-        }[formalism]
-    assert get_readable_hash(model.expression) == expected_hash
+class TestLargeHash:
+    initial_state: ClassVar = [("J/psi(1S)", [-1, 1])]
+    final_state: ClassVar = ["gamma", "pi0", "pi0"]
+    allowed_intermediate_particles: ClassVar = ["f(0)(980)", "f(0)(1500)"]
+    allowed_interaction_types: ClassVar = "strong"
+
+    @pytest.mark.parametrize(
+        ("expected_hash", "formalism"),
+        [
+            ("762cc00", "canonical-helicity"),
+            ("17fefe5", "helicity"),
+        ],
+        ids=["canonical-helicity", "helicity"],
+    )
+    def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
+        reaction = qrules.generate_transitions(
+            initial_state=self.initial_state,
+            final_state=self.final_state,
+            allowed_intermediate_particles=self.allowed_intermediate_particles,
+            allowed_interaction_types=self.allowed_interaction_types,
+            formalism=formalism,
+        )
+        h = get_readable_hash(reaction)[:7]
+        assert h == expected_hash
+
+    @pytest.mark.parametrize(
+        ("expected_hash", "formalism"),
+        [
+            ("87c4839" if _GH else "01bb112", "canonical-helicity"),
+            ("c147bdd" if _GH else "0638a0e", "helicity"),
+        ],
+        ids=["canonical-helicity", "helicity"],
+    )
+    def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
+        reaction = qrules.generate_transitions(
+            initial_state=[("J/psi(1S)", [-1, 1])],
+            final_state=["gamma", "pi0", "pi0"],
+            allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
+            allowed_interaction_types="strong",
+            formalism=formalism,
+        )
+        builder = get_builder(reaction)
+        for name in reaction.get_intermediate_particles().names:
+            builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
+        model = builder.formulate()
+        h = get_readable_hash(model.expression)[:7]
+        assert h == expected_hash
