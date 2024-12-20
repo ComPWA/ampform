@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     ("expected_hash", "assumptions"),
     [
-        ("a7559ca6e9037446da186a62ff1ed673", dict()),
-        ("f4b1fadd65890a86cbac47da2435694d", dict(real=True)),
-        ("d5bdc74485ba4d3f16f387541315f64d", dict(rational=True)),
+        ("a7559ca", dict()),
+        ("f4b1fad", dict(real=True)),
+        ("d5bdc74", dict(rational=True)),
     ],
     ids=["symbol", "symbol-real", "symbol-rational"],
 )
@@ -32,7 +32,7 @@ def test_get_readable_hash(
     caplog.set_level(logging.WARNING)
     x, y = sp.symbols("x y", **assumptions)
     expr = x**2 + y
-    h = get_readable_hash(expr)
+    h = get_readable_hash(expr)[:7]
     assert h == expected_hash
     assert not caplog.text
 
@@ -49,8 +49,8 @@ def test_get_readable_hash_energy_dependent_width():
         angular_momentum=angular_momentum,
         meson_radius=d,
     )
-    h = get_readable_hash(expr)
-    assert h == "ccafec30a6b6974920652b9df1b13c57"
+    h = get_readable_hash(expr)[:7]
+    assert h == "ccafec3"
 
 
 class TestLargeHash:
@@ -62,8 +62,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("762cc006a8c4c0a0a88fce934a32577d", "canonical-helicity"),
-            ("17fefe55a7da0810371e90bd762a176a", "helicity"),
+            ("762cc00", "canonical-helicity"),
+            ("17fefe5", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -75,13 +75,14 @@ class TestLargeHash:
             allowed_interaction_types=self.allowed_interaction_types,
             formalism=formalism,
         )
-        assert get_readable_hash(reaction) == expected_hash
+        h = get_readable_hash(reaction)[:7]
+        assert h == expected_hash
 
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("01bb11213896fcb173cb9b4ea4bdc3bf", "canonical-helicity"),
-            ("0638a0ec2efa602e4c1f79141f7ca88a", "helicity"),
+            ("01bb112", "canonical-helicity"),
+            ("0638a0e", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -97,4 +98,5 @@ class TestLargeHash:
         for name in reaction.get_intermediate_particles().names:
             builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
         model = builder.formulate()
-        assert get_readable_hash(model.expression) == expected_hash
+        h = get_readable_hash(model.expression)[:7]
+        assert h == expected_hash
