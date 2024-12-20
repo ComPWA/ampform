@@ -27,8 +27,6 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
       - id: with
         if: inputs.specific-pip-packages
         name: Determine additional packages to install
