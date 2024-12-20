@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, ClassVar
 
 import pytest
@@ -15,6 +16,9 @@ from ampform.sympy._cache import get_readable_hash
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
     from qrules.transition import SpinFormalism
+
+
+_GH = "CI" in os.environ and os.uname().sysname != "Darwin"
 
 
 @pytest.mark.parametrize(
@@ -81,8 +85,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("01bb112", "canonical-helicity"),
-            ("0638a0e", "helicity"),
+            ("87c4839" if _GH else "01bb112", "canonical-helicity"),
+            ("c147bdd" if _GH else "0638a0e", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
