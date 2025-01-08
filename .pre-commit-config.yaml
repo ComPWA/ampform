@@ -114,7 +114,7 @@ repos:
           - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.30.0
+    rev: 0.31.0
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -158,6 +158,6 @@ repos:
       - id: pyright
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.5.14
+    rev: 0.5.15
     hooks:
       - id: uv-lock
