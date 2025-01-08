@@ -436,6 +436,7 @@ trailing_comma_inline_array = true
 
 [tool.tox]
 env_list = [
+    "bench",
     "cov",
     "docnb-force",
     "linkcheck",
@@ -471,7 +472,7 @@ allowlist_externals = ["pytest"]
 commands = [
     [
         "pytest",
-        {replace = "posargs", extend = true},
+        {replace = "posargs", default = ["src", "tests"], extend = true},
         "--cov-fail-under=75",
         "--cov-report=html",
         "--cov-report=xml",
