@@ -471,7 +471,7 @@ allowlist_externals = ["pytest"]
 commands = [
     [
         "pytest",
-        {replace = "posargs", default = ["src", "tests"], extend = true},
+        {replace = "posargs", extend = true},
         "--cov-fail-under=75",
         "--cov-report=html",
         "--cov-report=xml",
