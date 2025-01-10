@@ -13,7 +13,6 @@ build:
       export UV_LINK_MODE=copy
       uv run \
         --group doc \
-        --locked \
         --no-dev \
         --with tox \
         tox -e doc
