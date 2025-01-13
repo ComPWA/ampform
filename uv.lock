@@ -7,7 +7,11 @@ resolution-markers = [
 ]
 
 [manifest]
-constraints = [{ name = "pytest-profiling", specifier = "!=1.8.0" }]
+constraints = [
+    { name = "pygments", specifier = "!=2.19.*" },
+    { name = "pytest-profiling", specifier = "!=1.8.0" },
+    { name = "sphinx-codeautolink", specifier = "!=0.16.0" },
+]
 
 [[package]]
 name = "accessible-pygments"
@@ -99,8 +103,7 @@ dev = [
     { name = "sphinx-api-relink" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-book-theme" },
-    { name = "sphinx-codeautolink", version = "0.15.2", source = { registry = "https://pypi.org/simple" }, extra = ["ipython"], marker = "python_full_version < '3.10'" },
-    { name = "sphinx-codeautolink", version = "0.16.0", source = { registry = "https://pypi.org/simple" }, extra = ["ipython"], marker = "python_full_version >= '3.10'" },
+    { name = "sphinx-codeautolink", extra = ["ipython"] },
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
@@ -124,8 +127,7 @@ doc = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "sphinx-api-relink" },
     { name = "sphinx-book-theme" },
-    { name = "sphinx-codeautolink", version = "0.15.2", source = { registry = "https://pypi.org/simple" }, extra = ["ipython"], marker = "python_full_version < '3.10'" },
-    { name = "sphinx-codeautolink", version = "0.16.0", source = { registry = "https://pypi.org/simple" }, extra = ["ipython"], marker = "python_full_version >= '3.10'" },
+    { name = "sphinx-codeautolink", extra = ["ipython"] },
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
@@ -2814,11 +2816,11 @@ wheels = [
 
 [[package]]
 name = "pygments"
-version = "2.19.1"
+version = "2.18.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7c/2d/c3338d48ea6cc0feb8446d8e6937e1408088a72a39937982cc6111d17f84/pygments-2.19.1.tar.gz", hash = "sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f", size = 4968581 }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/62/8336eff65bcbc8e4cb5d05b55faf041285951b6e80f33e2bff2024788f31/pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199", size = 4891905 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/0b/9fcc47d19c48b59121088dd6da2488a49d5f72dacf8262e2790a1d2c7d15/pygments-2.19.1-py3-none-any.whl", hash = "sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c", size = 1225293 },
+    { url = "https://files.pythonhosted.org/packages/f7/3f/01c8b82017c199075f8f788d0d906b9ffbbc5a47dc9918a945e13d5a2bda/pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a", size = 1205513 },
 ]
 
 [[package]]
@@ -3673,12 +3675,10 @@ wheels = [
 name = "sphinx-codeautolink"
 version = "0.15.2"
 source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version < '3.10'",
-]
 dependencies = [
-    { name = "beautifulsoup4", marker = "python_full_version < '3.10'" },
+    { name = "beautifulsoup4" },
     { name = "sphinx", version = "7.4.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/09/4e/d0c9894b9dff38ad3db533479b845427e1c57cb3b8527b65259fed71a7a1/sphinx_codeautolink-0.15.2.tar.gz", hash = "sha256:93963a05f17642c8892b06932e013af62c1041a4949524c810dbc5ae8b3ff16d", size = 53067 }
 wheels = [
@@ -3688,27 +3688,6 @@ wheels = [
 [package.optional-dependencies]
 ipython = [
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-]
-
-[[package]]
-name = "sphinx-codeautolink"
-version = "0.16.0"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version >= '3.10' and python_full_version < '3.12'",
-]
-dependencies = [
-    { name = "beautifulsoup4", marker = "python_full_version >= '3.10'" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/37/b5/ebe865f758df57eccf87fd6f06fad32296b233cb4e5da3c23610e1ca2538/sphinx_codeautolink-0.16.0.tar.gz", hash = "sha256:840a08393d81ad5be2a76a0c452658008e3205645291ee9f33092518bda4e279", size = 52070 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/b5/bba3189db1b01ac95b4b5b3d36ed39daadf25915f163b528c8a5410ad777/sphinx_codeautolink-0.16.0-py3-none-any.whl", hash = "sha256:e0546c8bb00c34b270fa0b7d0b5df27c9861f7c65083d0110c77e07058168e18", size = 24546 },
-]
-
-[package.optional-dependencies]
-ipython = [
     { name = "ipython", version = "8.31.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
 
