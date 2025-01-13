@@ -9,32 +9,22 @@ coverage:
   status:
     project:
       default:
-        # basic
-        target: 75% # can't go below this percentage
-        threshold: 1% # allow drops by this percentage
+        target: 75%
+        threshold: 1%
         base: auto
-        # advanced
-        branches: []
         if_no_uploads: error
         if_not_found: success
         if_ci_failed: error
         only_pulls: false
-        flags: []
-        paths: []
     patch:
       default:
-        # basic
         target: 0
         threshold: 5%
         base: auto
-        # advanced
-        branches: null
         if_no_uploads: error
         if_not_found: success
         if_ci_failed: error
         only_pulls: false
-        flags: null
-        paths: null
     changes: false
 
 parsers:
