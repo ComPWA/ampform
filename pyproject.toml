@@ -429,146 +429,157 @@ sort_first = [
     "project",
     "tool.setuptools",
     "tool.setuptools_scm",
+    "tool.tox.env_run_base",
 ]
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
 
 [tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist =
-    cov,
-    docnb-force,
-    linkcheck,
-    sty,
-skip_install = True
-skip_missing_interpreters = True
-skipsdist = True
+env_list = [
+    "bench",
+    "cov",
+    "docnb-force",
+    "linkcheck",
+    "sty",
+]
+no_package = true
+requires = ["tox>=4.21.0"]
+skip_install = true
+skip_missing_interpreters = true
 
-[testenv]
-allowlist_externals =
-    pytest
-commands =
-    pytest {posargs}
-description = Run all unit tests
-passenv = *
+[tool.tox.env_run_base]
+allowlist_externals = ["pytest"]
+commands = [["pytest", {replace = "posargs", extend = true}]]
+description = "Run all unit tests"
+pass_env = ["*"]
 
-[testenv:bench]
-allowlist_externals =
-    pytest
-commands =
-    pytest {posargs:benchmarks} \
-        --durations=0 \
-        --benchmark-autosave \
-        -k benchmark
-description = Run benchmark tests and visualize in histogram
+[tool.tox.env.bench]
+allowlist_externals = ["pytest"]
+commands = [
+    [
+        "pytest",
+        "{posargs:benchmarks}",
+        "--durations=0",
+        "--benchmark-autosave",
+        "-k",
+        "benchmark",
+    ],
+]
+description = "Run benchmark tests and visualize in histogram"
 
-[testenv:cov]
-allowlist_externals =
-    pytest
-commands =
-    pytest {posargs:src tests} \
-        --cov-fail-under=75 \
-        --cov-report=html \
-        --cov-report=xml \
-        --cov=ampform
-description = Compute test coverage
+[tool.tox.env.cov]
+allowlist_externals = ["pytest"]
+commands = [
+    [
+        "pytest",
+        {replace = "posargs", default = ["src", "tests"], extend = true},
+        "--cov-fail-under=75",
+        "--cov-report=html",
+        "--cov-report=xml",
+        "--cov=ampform",
+    ],
+]
+description = "Compute test coverage"
 
-[testenv:doc]
-allowlist_externals =
-    sphinx-build
-commands =
-    sphinx-build \
-        --builder=html \
-        --fail-on-warning \
-        --keep-going \
-        --show-traceback \
-        docs/ docs/_build/html
-description = Build documentation and API through Sphinx
-setenv =
-    PYTHONWARNINGS =
+[tool.tox.env.doc]
+allowlist_externals = ["sphinx-build"]
+commands = [
+    [
+        "sphinx-build",
+        "--builder=html",
+        "--fail-on-warning",
+        "--keep-going",
+        "--show-traceback",
+        "docs/",
+        "docs/_build/html",
+    ],
+]
+description = "Build documentation and API through Sphinx"
+set_env.PYTHONWARNINGS = ""
 
-[testenv:docnb]
-base = doc
-description = {[testenv:doc]description} with cached notebook execution
-setenv =
-    {[testenv:doc]setenv}
-    EXECUTE_NB = yes
+[tool.tox.env.doclive]
+allowlist_externals = ["sphinx-autobuild"]
+commands = [
+    [
+        "sphinx-autobuild",
+        "--builder=html",
+        "--ignore=docs/_build/",
+        "--ignore=docs/_images/",
+        "--ignore=docs/api/",
+        "--open-browser",
+        "--port=0",
+        "--re-ignore='.*/__pycache__/.*'",
+        "--re-ignore='.*/.ipynb_checkpoints/.*'",
+        "--re-ignore='.*/.virtual_documents/.*'",
+        "--re-ignore='.*\\.csv'",
+        "--re-ignore='.*\\.gif'",
+        "--re-ignore='.*\\.gitignore'",
+        "--re-ignore='.*\\.gv'",
+        "--re-ignore='.*\\.inv'",
+        "--re-ignore='.*\\.json'",
+        "--re-ignore='.*\\.pickle'",
+        "--re-ignore='.*\\.png'",
+        "--re-ignore='.*\\.svg'",
+        "--re-ignore='.*\\.tmp'",
+        "--re-ignore='.*\\.ya?ml'",
+        "--watch=docs",
+        "--watch=src",
+        "docs/",
+        "docs/_build/html",
+    ],
+]
+description = "Set up a server to directly preview changes to the HTML pages"
 
-[testenv:docnb-force]
-base = doc
-description = {[testenv:doc]description} with notebook execution (no cache)
-setenv =
-    {[testenv:doc]setenv}
-    FORCE_EXECUTE_NB = yes
+[tool.tox.env.docnb]
+base = ["tool.tox.env.doc", "tool.tox.env_run_base"]
+description = "{[tool.tox.env.doc]description} with cached notebook execution"
+set_env = [
+    {replace = "ref", of = ["tool.tox.env.doc.set_env"]},
+    {EXECUTE_NB = "yes"},
+]
 
-[testenv:doclive]
-allowlist_externals =
-    sphinx-autobuild
-commands =
-    sphinx-autobuild \
-        --builder=html \
-        --ignore=docs/_build/ \
-        --ignore=docs/_images/ \
-        --ignore=docs/api/ \
-        --open-browser \
-        --port=0 \
-        --re-ignore='.*/__pycache__/.*' \
-        --re-ignore='.*/.ipynb_checkpoints/.*' \
-        --re-ignore='.*/.virtual_documents/.*' \
-        --re-ignore='.*\\.csv' \
-        --re-ignore='.*\\.gif' \
-        --re-ignore='.*\\.gitignore' \
-        --re-ignore='.*\\.gv' \
-        --re-ignore='.*\\.inv' \
-        --re-ignore='.*\\.json' \
-        --re-ignore='.*\\.pickle' \
-        --re-ignore='.*\\.png' \
-        --re-ignore='.*\\.svg' \
-        --re-ignore='.*\\.tmp' \
-        --re-ignore='.*\\.ya?ml' \
-        --watch=docs \
-        --watch=src \
-        docs/ docs/_build/html
-description = Set up a server to directly preview changes to the HTML pages
-setenv =
-    {[testenv:doc]setenv}
+[tool.tox.env.docnb-force]
+base = ["tool.tox.env.doc", "tool.tox.env_run_base"]
+description = "{[tool.tox.env.doc]description} with notebook execution (no cache)"
+set_env = [
+    {replace = "ref", of = ["tool.tox.env.doc.set_env"]},
+    {FORCE_EXECUTE_NB = "yes"},
+]
 
-[testenv:docnblive]
-base = doclive
-description = {[testenv:doclive]description} with cached notebook execution
-setenv =
-    {[testenv:doclive]setenv}
-    EXECUTE_NB = yes
+[tool.tox.env.docnblive]
+base = ["tool.tox.env.doclive", "tool.tox.env_run_base"]
+description = "{[tool.tox.env.doclive]description} with cached notebook execution"
+set_env = [
+    {replace = "ref", of = ["tool.tox.env.doclive.set_env"]},
+    {EXECUTE_NB = "yes"},
+]
 
-[testenv:linkcheck]
-allowlist_externals =
-    sphinx-build
-commands =
-    sphinx-build \
-        --builder=linkcheck \
-        --show-traceback \
-        docs/ docs/_build/linkcheck
-description = Check external links in the documentation (requires internet connection)
-setenv =
-    {[testenv:doclive]setenv}
+[tool.tox.env.linkcheck]
+allowlist_externals = ["sphinx-build"]
+commands = [
+    [
+        "sphinx-build",
+        "--builder=linkcheck",
+        "--show-traceback",
+        "docs/",
+        "docs/_build/linkcheck",
+    ],
+]
+description = "Check external links in the documentation (requires internet connection)"
 
-[testenv:nb]
-allowlist_externals =
-    pytest
-commands =
-    pytest --nbmake {posargs:docs}
-description = Run all notebooks with pytest
+[tool.tox.env.nb]
+allowlist_externals = ["pytest"]
+commands = [["pytest", "--nbmake", "{posargs:docs}"]]
+description = "Run all notebooks with pytest"
 
-[testenv:sty]
-allowlist_externals =
-    pre-commit
-commands =
-    pre-commit run --all-files {posargs}
-description = Perform all linting, formatting, and spelling checks
-"""
+[tool.tox.env.sty]
+allowlist_externals = ["pre-commit"]
+commands = [["pre-commit", "run", "--all-files", {replace = "posargs", extend = true}]]
+description = "Perform all linting, formatting, and spelling checks"
 
 [tool.uv]
 constraint-dependencies = [
+    "pygments!=2.19.*", # https://github.com/felix-hilden/sphinx-codeautolink/issues/152
     "pytest-profiling!=1.8.0",
+    "sphinx-codeautolink!=0.16.0",
 ]
