@@ -13,6 +13,7 @@ import operator
 import sys
 import warnings
 from collections import OrderedDict, abc
+from fractions import Fraction
 from functools import reduce, singledispatchmethod
 from typing import TYPE_CHECKING, Union
 
@@ -928,13 +929,18 @@ def _get_final_state_ids(mass: sp.Symbol) -> tuple[int, ...]:
 def _generate_kinematic_variable_set(
     transition: StateTransition, node_id: int
 ) -> TwoBodyKinematicVariableSet:
+    def _dispatching_is_integer(spin: float | Fraction) -> bool:
+        if isinstance(spin, Fraction):
+            return spin.denominator == 1
+        return spin.is_integer()
+
     decay = TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
     topology = transition.topology
     child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
     child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
-    if angular_momentum is None and decay.parent.particle.spin.is_integer():
+    if angular_momentum is None and _dispatching_is_integer(decay.parent.particle.spin):
         angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
