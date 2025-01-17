@@ -13,7 +13,6 @@ import operator
 import sys
 import warnings
 from collections import OrderedDict, abc
-from fractions import Fraction
 from functools import reduce, singledispatchmethod
 from typing import TYPE_CHECKING, Union
 
