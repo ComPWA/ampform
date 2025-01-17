@@ -141,8 +141,6 @@ namespaces = false
 where = ["src"]
 
 [tool.setuptools_scm]
-local_scheme = "no-local-version"
-version_scheme = "only-version"
 write_to = "src/ampform/version.py"
 
 [tool.coverage.run]
