@@ -3173,7 +3173,7 @@ wheels = [
 
 [[package]]
 name = "qrules"
-version = "0.10.4"
+version = "0.10.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -3184,9 +3184,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/51/f2a49f4bbfbe4ee80d7ed2e19e07ac6e8b672d3f786dcf36e81efe884b14/qrules-0.10.4.tar.gz", hash = "sha256:c07f91407da20e060bc585cd26fd722e82b82bb49bbee5c6a03cb2f756b69a1c", size = 272714 }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/8e/101313599b3f7db1198491e56f5c746617a6d55c0ad722d06873a1124c75/qrules-0.10.5.tar.gz", hash = "sha256:63dd44cc64962779c0fa3c2506ad7679e450cef847a6db346f9648fa330b6fd7", size = 272633 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/cd/1130bb17f497273504cfbfe5ff53d302d72dd1219e3571fa36a45915016d/qrules-0.10.4-py3-none-any.whl", hash = "sha256:fc71f7b4bdb3293367e77e313d23e9dee1317ee0421bc4cfaff32cd0ac7c4daf", size = 80409 },
+    { url = "https://files.pythonhosted.org/packages/ff/99/a63e865c51106b9371c43b6250b359ceb2d4e5807106cddfac1a9e1c3b3a/qrules-0.10.5-py3-none-any.whl", hash = "sha256:7958a8343cb1e79ec931d416ee3b334a1f40f72109dbb763cf4c8c54892ced52", size = 80335 },
 ]
 
 [[package]]
