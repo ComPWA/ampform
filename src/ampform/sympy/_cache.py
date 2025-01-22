@@ -48,6 +48,6 @@ def get_readable_hash(obj) -> str:
 
 
 def to_bytes(obj) -> bytes:
-    if isinstance(obj, bytes | bytearray):
+    if isinstance(obj, (bytes, bytearray)):
         return obj
     return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
