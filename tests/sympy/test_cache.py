@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from qrules.transition import SpinFormalism
 
 
-_GH = "CI" in os.environ and os.uname().sysname != "Darwin"
+_GH = "CI" in os.environ
 
 
 @pytest.mark.parametrize(
