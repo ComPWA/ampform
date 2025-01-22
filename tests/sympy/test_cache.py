@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from typing import TYPE_CHECKING, ClassVar
 
 import pytest
@@ -62,8 +63,14 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("762cc00", "canonical-helicity"),
-            ("17fefe5", "helicity"),
+            (
+                "762cc00" if sys.version_info >= (3, 11) else "1f5ac33",
+                "canonical-helicity",
+            ),
+            (
+                "17fefe5" if sys.version_info >= (3, 11) else "7b5fad1",
+                "helicity",
+            ),
         ],
         ids=["canonical-helicity", "helicity"],
     )
