@@ -143,6 +143,11 @@ where = ["src"]
 [tool.setuptools_scm]
 write_to = "src/ampform/version.py"
 
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+]
+
 [tool.coverage.run]
 branch = true
 source = ["src"]

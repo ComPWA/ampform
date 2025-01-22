@@ -30,6 +30,7 @@ repos:
           - --add-install-cell
           - --additional-packages=IPython
           - --extras-require=doc,viz
+      - id: set-nb-display-name
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
