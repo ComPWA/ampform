@@ -14,14 +14,10 @@ from __future__ import annotations
 
 import itertools
 import logging
-import os
-import pickle  # noqa: S403
 import re
 import sys
 import warnings
 from abc import abstractmethod
-from importlib.metadata import version
-from pathlib import Path
 from typing import TYPE_CHECKING, SupportsFloat
 
 import sympy as sp
@@ -29,7 +25,8 @@ from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
-from ._cache import get_readable_hash, get_system_cache_directory
+from ampform.sympy._cache import cache_to_disk
+
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -346,7 +343,8 @@ def _warn_if_scipy_not_installed() -> None:
         )
 
 
-def perform_cached_doit(unevaluated_expr: sp.Expr = None) -> sp.Expr:
+@cache_to_disk
+def perform_cached_doit(unevaluated_expr: sp.Expr) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
     The cached result is fetched from disk if the hash of the original expression is the
@@ -359,24 +357,4 @@ def perform_cached_doit(unevaluated_expr: sp.Expr = None) -> sp.Expr:
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
-    if "NO_CACHE" not in os.environ:
-        cache_file = __get_cache_path(unevaluated_expr)
-        if cache_file.exists():
-            with open(cache_file, "rb") as f:
-                return pickle.load(f)  # noqa: S301
-        msg = f"Cached expression file {cache_file} not found, performing doit()..."
-        _LOGGER.warning(msg)
-    unfolded_expr = unevaluated_expr.doit()
-    if "NO_CACHE" not in os.environ:
-        with open(cache_file, "wb") as f:
-            pickle.dump(unfolded_expr, f)
-    return unfolded_expr
-
-
-def __get_cache_path(obj) -> Path:
-    system_cache_dir = get_system_cache_directory()
-    sympy_version = version("sympy")
-    cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    cache_directory.mkdir(exist_ok=True, parents=True)
-    h = get_readable_hash(obj)
-    return cache_directory / f"{h}.pkl"
+    return unevaluated_expr.doit()

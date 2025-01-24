@@ -7,8 +7,58 @@ import logging
 import os
 import pickle  # noqa: S403
 import sys
+from functools import cache, wraps
+from importlib.metadata import version
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import ParamSpec
+    else:
+        from typing_extensions import ParamSpec
+    from typing import Callable, TypeVar
+
+    P = ParamSpec("P")
+    T = TypeVar("T")
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
+    if "NO_CACHE" in os.environ:
+        return func
+
+    @wraps(func)
+    def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
+        hashable_object = (
+            args,
+            tuple((k, kwargs[k]) for k in sorted(kwargs)),
+        )
+        h = get_readable_hash(hashable_object)
+        cache_file = _get_cache_dir() / f"{h}.pkl"
+        if cache_file.exists():
+            with open(cache_file, "rb") as f:
+                return pickle.load(f)  # noqa: S301
+        result = func(*args, **kwargs)
+        with open(cache_file, "wb") as f:
+            pickle.dump(result, f)
+        msg = f"Cached expression file {cache_file} not found, performing doit()..."
+        _LOGGER.warning(msg)
+        with open(cache_file, "wb") as f:
+            pickle.dump(result, f)
+        return result
+
+    return wrapped_function
+
+
+@cache
+def _get_cache_dir() -> Path:
+    system_cache_dir = get_system_cache_directory()
+    sympy_version = version("sympy")
+    cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
+    cache_directory.mkdir(exist_ok=True, parents=True)
+    return cache_directory
 
 
 def get_system_cache_directory() -> str:
