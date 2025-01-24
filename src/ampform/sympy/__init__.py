@@ -346,9 +346,7 @@ def _warn_if_scipy_not_installed() -> None:
         )
 
 
-def perform_cached_doit(
-    unevaluated_expr: sp.Expr, cache_directory: Path | str | None = None
-) -> sp.Expr:
+def perform_cached_doit(unevaluated_expr: sp.Expr = None) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
     The cached result is fetched from disk if the hash of the original expression is the
@@ -357,15 +355,12 @@ def perform_cached_doit(
     Args:
         unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
             :meth:`~sympy.core.basic.Basic.doit`.
-        cache_directory: The directory in which to cache the result. Defaults to
-            :file:`ampform` under the system cache directory (see
-            :func:`.get_system_cache_directory`).
 
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
     if "NO_CACHE" not in os.environ:
-        cache_file = __get_cache_path(unevaluated_expr, cache_directory)
+        cache_file = __get_cache_path(unevaluated_expr)
         if cache_file.exists():
             with open(cache_file, "rb") as f:
                 return pickle.load(f)  # noqa: S301
@@ -378,12 +373,10 @@ def perform_cached_doit(
     return unfolded_expr
 
 
-def __get_cache_path(obj, cache_directory: Path | str | None) -> Path:
-    if cache_directory is None:
-        system_cache_dir = get_system_cache_directory()
-        sympy_version = version("sympy")
-        cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    cache_directory = Path(cache_directory)
+def __get_cache_path(obj) -> Path:
+    system_cache_dir = get_system_cache_directory()
+    sympy_version = version("sympy")
+    cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
     cache_directory.mkdir(exist_ok=True, parents=True)
     h = get_readable_hash(obj)
     return cache_directory / f"{h}.pkl"
