@@ -27,6 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
     if "NO_CACHE" in os.environ:
+        _warn_once("Cache disabled by NO_CACHE environment variable.")
         return func
 
     @wraps(func)
@@ -59,6 +60,11 @@ def _get_cache_dir() -> Path:
     cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
     cache_directory.mkdir(exist_ok=True, parents=True)
     return cache_directory
+
+
+@cache
+def _warn_once(msg):
+    _LOGGER.warning(msg)
 
 
 def get_system_cache_directory() -> str:
