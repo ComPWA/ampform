@@ -11,11 +11,14 @@ import sympy as sp
 from ampform import get_builder
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
+from ampform.sympy import perform_cached_doit
 from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
     from qrules.transition import SpinFormalism
+
+    from ampform.helicity import HelicityModel
 
 
 _GH = "CI" in os.environ and os.uname().sysname != "Darwin"
@@ -55,6 +58,17 @@ def test_get_readable_hash_energy_dependent_width():
     )
     h = get_readable_hash(expr)[:7]
     assert h == "ccafec3"
+
+
+def test_perform_cached_doit(amplitude_model: tuple[str, HelicityModel]):
+    _, model = amplitude_model
+    expected_expr = model.expression.doit()
+    assert expected_expr != model.expression
+
+    unfolded_expr_1 = perform_cached_doit(model.expression)
+    assert unfolded_expr_1 == expected_expr
+    unfolded_expr_2 = perform_cached_doit(model.expression)
+    assert unfolded_expr_2 == expected_expr
 
 
 class TestLargeHash:
