@@ -17,7 +17,7 @@ if TYPE_CHECKING:
         from typing import ParamSpec
     else:
         from typing_extensions import ParamSpec
-    from typing import Callable, TypeVar
+    from typing import Any, Callable, ParamSpec, TypeVar
 
     P = ParamSpec("P")
     T = TypeVar("T")
@@ -34,7 +34,7 @@ def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
     def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
         hashable_object = (
             args,
-            tuple((k, kwargs[k]) for k in sorted(kwargs)),
+            tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
         )
         h = get_readable_hash(hashable_object)
         cache_file = _get_cache_dir() / f"{h}.pkl"
@@ -51,6 +51,12 @@ def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
         return result
 
     return wrapped_function
+
+
+def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
+    if not isinstance(obj, dict):
+        return obj
+    return tuple((k, obj[k]) for k in sorted(obj, key=str))
 
 
 @cache
