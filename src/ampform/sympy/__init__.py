@@ -367,8 +367,7 @@ def perform_cached_doit(
         system_cache_dir = get_system_cache_directory()
         sympy_version = version("sympy")
         cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    if not isinstance(cache_directory, Path):
-        cache_directory = Path(cache_directory)
+    cache_directory = Path(cache_directory)
     cache_directory.mkdir(exist_ok=True, parents=True)
     h = get_readable_hash(unevaluated_expr)
     filename = cache_directory / f"{h}.pkl"
