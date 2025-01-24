@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import os
 import pickle  # noqa: S403
 import re
 import sys
@@ -363,16 +364,17 @@ def perform_cached_doit(
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
-    cache_file = __get_cache_path(unevaluated_expr, cache_directory)
-    if cache_file.exists():
-        with open(cache_file, "rb") as f:
-            return pickle.load(f)  # noqa: S301
-    _LOGGER.warning(
-        f"Cached expression file {cache_file} not found, performing doit()..."
-    )
+    if "NO_CACHE" not in os.environ:
+        cache_file = __get_cache_path(unevaluated_expr, cache_directory)
+        if cache_file.exists():
+            with open(cache_file, "rb") as f:
+                return pickle.load(f)  # noqa: S301
+        msg = f"Cached expression file {cache_file} not found, performing doit()..."
+        _LOGGER.warning(msg)
     unfolded_expr = unevaluated_expr.doit()
-    with open(cache_file, "wb") as f:
-        pickle.dump(unfolded_expr, f)
+    if "NO_CACHE" not in os.environ:
+        with open(cache_file, "wb") as f:
+            pickle.dump(unfolded_expr, f)
     return unfolded_expr
 
 
