@@ -11,7 +11,7 @@ import sympy as sp
 from ampform import get_builder
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
-from ampform.sympy import perform_cached_doit
+from ampform.sympy import perform_cached_doit, perform_cached_substitution
 from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
@@ -69,6 +69,24 @@ def test_perform_cached_doit(amplitude_model: tuple[str, HelicityModel]):
     assert unfolded_expr_1 == expected_expr
     unfolded_expr_2 = perform_cached_doit(model.expression)
     assert unfolded_expr_2 == expected_expr
+
+
+@pytest.mark.parametrize(
+    "substitution_name", ["parameter_defaults", "kinematic_variables"]
+)
+def test_perform_cached_substitution(
+    amplitude_model: tuple[str, HelicityModel], substitution_name: str
+):
+    _, model = amplitude_model
+    full_expression = model.expression.doit()
+    substitutions: dict[sp.Symbol, sp.Basic] = getattr(model, substitution_name)
+    expected_expr = full_expression.xreplace(substitutions)
+    assert expected_expr != full_expression
+
+    substituted_expr_1 = perform_cached_substitution(full_expression, substitutions)
+    assert substituted_expr_1 == expected_expr
+    substituted_expr_2 = perform_cached_substitution(full_expression, substitutions)
+    assert substituted_expr_2 == expected_expr
 
 
 class TestLargeHash:

@@ -50,7 +50,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
 
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
@@ -358,3 +358,11 @@ def perform_cached_doit(unevaluated_expr: sp.Expr) -> sp.Expr:
     .. automodule:: ampform.sympy._cache
     """
     return unevaluated_expr.doit()
+
+
+@cache_to_disk
+def perform_cached_substitution(
+    expr: sp.Expr,
+    substitutions: Mapping[sp.Basic, sp.Basic],
+) -> sp.Expr:
+    return expr.xreplace(substitutions)
