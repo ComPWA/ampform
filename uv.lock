@@ -52,7 +52,6 @@ wheels = [
 
 [[package]]
 name = "ampform"
-version = "0.15.5"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
