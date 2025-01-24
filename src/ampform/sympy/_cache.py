@@ -26,6 +26,20 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
+    """Decorator for caching the result of a function to disk.
+
+    This function works similarly to `functools.cache`, but it stores the result of the
+    function to disk as a pickle file.
+
+    .. tip::
+
+        - Caching can be disabled by setting the environment variable :code:`NO_CACHE`.
+          This can be useful to test if caches are correctly invalidated.
+
+        - Set :code:`COMPWA_CACHE_DIR` to change the cache directory. Alternatively,
+          have a look at the implementation of :func:`get_system_cache_directory` to see
+          how the cache directory is determined from system environment variables.
+    """
     if "NO_CACHE" in os.environ:
         _warn_once("Cache disabled by NO_CACHE environment variable.")
         return func
@@ -113,6 +127,7 @@ def get_readable_hash(obj) -> str:
 
 
 def to_bytes(obj) -> bytes:
+    """Convert any Python object to `bytes` using :func:`pickle.dumps`."""
     if isinstance(obj, bytes | bytearray):
         return obj
     return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
