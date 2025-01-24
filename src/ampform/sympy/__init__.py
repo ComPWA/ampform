@@ -363,21 +363,25 @@ def perform_cached_doit(
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
+    cache_file = __get_cache_path(unevaluated_expr, cache_directory)
+    if cache_file.exists():
+        with open(cache_file, "rb") as f:
+            return pickle.load(f)  # noqa: S301
+    _LOGGER.warning(
+        f"Cached expression file {cache_file} not found, performing doit()..."
+    )
+    unfolded_expr = unevaluated_expr.doit()
+    with open(cache_file, "wb") as f:
+        pickle.dump(unfolded_expr, f)
+    return unfolded_expr
+
+
+def __get_cache_path(obj, cache_directory: Path | str | None) -> Path:
     if cache_directory is None:
         system_cache_dir = get_system_cache_directory()
         sympy_version = version("sympy")
         cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
     cache_directory = Path(cache_directory)
     cache_directory.mkdir(exist_ok=True, parents=True)
-    h = get_readable_hash(unevaluated_expr)
-    filename = cache_directory / f"{h}.pkl"
-    if filename.exists():
-        with open(filename, "rb") as f:
-            return pickle.load(f)  # noqa: S301
-    _LOGGER.warning(
-        f"Cached expression file {filename} not found, performing doit()..."
-    )
-    unfolded_expr = unevaluated_expr.doit()
-    with open(filename, "wb") as f:
-        pickle.dump(unfolded_expr, f)
-    return unfolded_expr
+    h = get_readable_hash(obj)
+    return cache_directory / f"{h}.pkl"
