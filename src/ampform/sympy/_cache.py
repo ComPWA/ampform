@@ -61,7 +61,10 @@ def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
 
 @cache
 def _get_cache_dir() -> Path:
-    system_cache_dir = get_system_cache_directory()
+    if compwa_cache_dir := os.getenv("COMPWA_CACHE_DIR"):
+        system_cache_dir = compwa_cache_dir
+    else:
+        system_cache_dir = get_system_cache_directory()
     sympy_version = version("sympy")
     cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
     cache_directory.mkdir(exist_ok=True, parents=True)
