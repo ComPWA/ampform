@@ -683,9 +683,7 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(  # noqa: PLR6301
-        self, selection, builder: ResonanceDynamicsBuilder
-    ) -> None:
+    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
