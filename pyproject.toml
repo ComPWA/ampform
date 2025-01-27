@@ -582,9 +582,9 @@ description = "Check external links in the documentation (requires internet conn
 
 [tool.tox.env.nb]
 allowlist_externals = ["pytest"]
-base = []
 commands = [["pytest", "--nbmake", "{posargs:docs}"]]
 description = "Run all notebooks with pytest"
+with_dev = true
 
 [tool.tox.env.sty]
 allowlist_externals = ["pre-commit"]
