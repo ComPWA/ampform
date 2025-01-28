@@ -14,7 +14,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.5.18
+    rev: 0.5.19
     hooks:
       - id: check-dev-files
         args:
@@ -133,7 +133,7 @@ repos:
       - id: cspell
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 3.1.2
+    rev: 3.2.0
     hooks:
       - id: editorconfig-checker
         name: editorconfig
