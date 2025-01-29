@@ -13,6 +13,7 @@ import operator
 import sys
 import warnings
 from collections import OrderedDict, abc
+from fractions import Fraction
 from functools import reduce, singledispatchmethod
 from typing import TYPE_CHECKING, Union
 
@@ -682,9 +683,7 @@ class DynamicsSelector(abc.Mapping):
                 self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(  # noqa: PLR6301
-        self, selection, builder: ResonanceDynamicsBuilder
-    ) -> None:
+    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -928,13 +927,21 @@ def _get_final_state_ids(mass: sp.Symbol) -> tuple[int, ...]:
 def _generate_kinematic_variable_set(
     transition: StateTransition, node_id: int
 ) -> TwoBodyKinematicVariableSet:
+    def is_integer(spin: float | Fraction) -> bool:
+        if isinstance(spin, float):
+            return spin.is_integer()
+        if isinstance(spin, Fraction):
+            return spin.denominator == 1
+        msg = "spin has to of type float (qrules 0.9) or Fraction (qrules >= 0.10)"
+        raise TypeError(msg)
+
     decay = TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
     topology = transition.topology
     child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
     child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
-    if angular_momentum is None and decay.parent.particle.spin.is_integer():
+    if angular_momentum is None and is_integer(decay.parent.particle.spin):
         angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,
