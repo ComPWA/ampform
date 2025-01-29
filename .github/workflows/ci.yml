@@ -37,6 +37,7 @@ jobs:
     with:
       coverage-target: ampform
       macos-python-version: "3.9"
+      multithreaded: false
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
