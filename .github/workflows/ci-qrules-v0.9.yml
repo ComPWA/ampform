@@ -34,4 +34,4 @@ jobs:
           uv run \
             --group test \
             --with qrules~=0.9.0 \
-            pytest --numprocesses auto
+            pytest

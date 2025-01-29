@@ -14,13 +14,10 @@ from __future__ import annotations
 
 import itertools
 import logging
-import pickle  # noqa: S403
 import re
 import sys
 import warnings
 from abc import abstractmethod
-from importlib.metadata import version
-from pathlib import Path
 from typing import TYPE_CHECKING, SupportsFloat
 
 import sympy as sp
@@ -28,7 +25,8 @@ from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
-from ._cache import get_readable_hash, get_system_cache_directory
+from ampform.sympy._cache import cache_to_disk
+
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -52,7 +50,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
 
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
@@ -345,9 +343,8 @@ def _warn_if_scipy_not_installed() -> None:
         )
 
 
-def perform_cached_doit(
-    unevaluated_expr: sp.Expr, cache_directory: Path | str | None = None
-) -> sp.Expr:
+@cache_to_disk
+def perform_cached_doit(unevaluated_expr: sp.Expr) -> sp.Expr:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
     The cached result is fetched from disk if the hash of the original expression is the
@@ -356,29 +353,16 @@ def perform_cached_doit(
     Args:
         unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
             :meth:`~sympy.core.basic.Basic.doit`.
-        cache_directory: The directory in which to cache the result. Defaults to
-            :file:`ampform` under the system cache directory (see
-            :func:`.get_system_cache_directory`).
 
     .. versionadded:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
-    if cache_directory is None:
-        system_cache_dir = get_system_cache_directory()
-        sympy_version = version("sympy")
-        cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    if not isinstance(cache_directory, Path):
-        cache_directory = Path(cache_directory)
-    cache_directory.mkdir(exist_ok=True, parents=True)
-    h = get_readable_hash(unevaluated_expr)
-    filename = cache_directory / f"{h}.pkl"
-    if filename.exists():
-        with open(filename, "rb") as f:
-            return pickle.load(f)  # noqa: S301
-    _LOGGER.warning(
-        f"Cached expression file {filename} not found, performing doit()..."
-    )
-    unfolded_expr = unevaluated_expr.doit()
-    with open(filename, "wb") as f:
-        pickle.dump(unfolded_expr, f)
-    return unfolded_expr
+    return unevaluated_expr.doit()
+
+
+@cache_to_disk
+def perform_cached_substitution(
+    expr: sp.Expr,
+    substitutions: Mapping[sp.Basic, sp.Basic],
+) -> sp.Expr:
+    return expr.xreplace(substitutions)
