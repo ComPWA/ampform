@@ -507,6 +507,7 @@ commands = [
     ],
 ]
 description = "Build documentation and API through Sphinx"
+pass_env = ["*"]
 set_env.PYTHONWARNINGS = ""
 
 [tool.tox.env.doclive]
@@ -538,6 +539,7 @@ commands = [
     ],
 ]
 description = "Set up a server to directly preview changes to the HTML pages"
+pass_env = ["*"]
 
 [tool.tox.env.docnb]
 base = ["tool.tox.env.doc"]
@@ -587,6 +589,7 @@ allowlist_externals = ["pre-commit"]
 base = []
 commands = [["pre-commit", "run", "--all-files", {replace = "posargs", extend = true}]]
 description = "Perform all linting, formatting, and spelling checks"
+pass_env = ["*"]
 
 [tool.tox.labels]
 doc = [
