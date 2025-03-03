@@ -59,13 +59,6 @@ jobs:
           comment-on-alert: true
           fail-on-alert: true
       - name: Store result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: AmpForm benchmark results
-          tool: pytest
-          output-file-path: benchmarks/output.json
-          github-token: ${{ secrets.PAT }}
-          gh-pages-branch: main
-          gh-repository: github.com/ComPWA/ampform-benchmark-results
-          benchmark-data-dir-path: ""
-          auto-push: true
+        if: github.event_name == 'push'
+        run: git push https://ComPWA:${{ secrets.GITHUB_TOKEN }}@github.com/ComPWA/ampform-benchmark-results main:main
+        working-directory: benchmark-data-repository
