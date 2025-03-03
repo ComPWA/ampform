@@ -76,7 +76,7 @@ def _cache_to_disk_implementation(
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         if "NO_CACHE" in os.environ:
-            _warn_once("Cache disabled by NO_CACHE environment variable.")
+            _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
             return func
         function_identifier = [f"{func.__module__}.{func.__name__}"]
         if (package_version := _get_package_version(func)) is not None:
