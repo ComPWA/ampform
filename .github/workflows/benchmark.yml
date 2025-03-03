@@ -5,6 +5,8 @@ env:
 
 on:
   push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -50,6 +52,7 @@ jobs:
               --durations=0
         working-directory: benchmarks
       - name: Warn on performance decrease
+        if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: AmpForm benchmark results
