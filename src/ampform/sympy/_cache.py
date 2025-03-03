@@ -146,8 +146,10 @@ def _remove_dev(version: str) -> str:
     '0.15.7'
     >>> _remove_dev("0.15.7")
     '0.15.7'
+    >>> _remove_dev("0.15.7.post1")
+    '0.15.7'
     """
-    return re.sub(r"(\.dev.*)?$", "", version)
+    return re.sub(r"(\.(dev|post).*)?$", "", version)
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
