@@ -46,17 +46,6 @@ jobs:
               --benchmark-json output.json \
               --durations=0
         working-directory: benchmarks
-      - name: Store result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: AmpForm benchmark results
-          tool: pytest
-          output-file-path: benchmarks/output.json
-          github-token: ${{ secrets.PAT }}
-          gh-pages-branch: main
-          gh-repository: github.com/ComPWA/ampform-benchmark-results
-          benchmark-data-dir-path: ""
-          auto-push: true
       - name: Warn on performance decrease
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -69,3 +58,14 @@ jobs:
           benchmark-data-dir-path: ""
           comment-on-alert: true
           fail-on-alert: true
+      - name: Store result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: AmpForm benchmark results
+          tool: pytest
+          output-file-path: benchmarks/output.json
+          github-token: ${{ secrets.PAT }}
+          gh-pages-branch: main
+          gh-repository: github.com/ComPWA/ampform-benchmark-results
+          benchmark-data-dir-path: ""
+          auto-push: true
