@@ -60,5 +60,5 @@ jobs:
           fail-on-alert: true
       - name: Store result
         if: github.event_name == 'push'
-        run: git push 'https://ComPWA:${{ secrets.PAT }}@github.com/ComPWA/ampform-benchmark-results' main:main
+        run: git push 'https://ComPWA:${{ secrets.PAT }}@github.com/ComPWA/ampform-benchmark-results' main:gh-pages
         working-directory: benchmark-data-repository
