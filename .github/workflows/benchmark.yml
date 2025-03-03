@@ -63,7 +63,7 @@ jobs:
           name: AmpForm benchmark results
           output-file-path: benchmarks/output.json
           tool: pytest
-      - name: Store result
+      - name: Push results to GitHub Pages
         if: github.event_name == 'push'
         run: git push 'https://ComPWA:${{ secrets.PAT }}@github.com/ComPWA/ampform-benchmark-results' gh-pages
         working-directory: benchmark-data-repository
