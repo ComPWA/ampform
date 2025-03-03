@@ -64,7 +64,7 @@ jobs:
           output-file-path: benchmarks/output.json
           tool: pytest
       - name: Create local benchmark data repository
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           benchmark-data-dir-path: ""
@@ -74,6 +74,6 @@ jobs:
           output-file-path: benchmarks/output.json
           tool: pytest
       - name: Push results to GitHub Pages
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         run: git push 'https://ComPWA:${{ secrets.PAT }}@github.com/ComPWA/ampform-benchmark-results' gh-pages
         working-directory: benchmark-data-repository
