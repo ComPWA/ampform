@@ -1,4 +1,4 @@
-"""Helper functions for :func:`.perform_cached_doit`."""
+"""Helper functions for :func:`.cached.doit` and related functions."""
 
 from __future__ import annotations
 

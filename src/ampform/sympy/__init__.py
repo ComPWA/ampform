@@ -24,13 +24,17 @@ from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
-from ampform.sympy._cache import cache_to_disk
-
 from ._decorator import (
     ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     argument,  # noqa: F401  # pyright: ignore[reportUnusedImport]
     unevaluated,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
+from .cached import (
+    doit as perform_cached_doit,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
+from .cached import (
+    xreplace as perform_cached_substitution,  # noqa: F401  # pyright: ignore[reportUnusedImport]
 )
 from .deprecated import (
     UnevaluatedExpression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -49,7 +53,7 @@ if TYPE_CHECKING:
         from typing import Self
     else:
         from typing_extensions import Self
-    from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Iterable, Sequence
     from typing import SupportsFloat, TypeVar
 
     from sympy.printing.latex import LatexPrinter
@@ -364,28 +368,3 @@ def _warn_if_scipy_not_installed() -> None:
             " install ampform[scipy]'",
             stacklevel=1,
         )
-
-
-@cache_to_disk
-def perform_cached_doit(unevaluated_expr: sp.Expr) -> sp.Expr:
-    """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
-
-    The cached result is fetched from disk if the hash of the original expression is the
-    same as the hash embedded in the filename (see :func:`.get_readable_hash`).
-
-    Args:
-        unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
-            :meth:`~sympy.core.basic.Basic.doit`.
-
-    .. versionadded:: 0.14.4
-    .. automodule:: ampform.sympy._cache
-    """
-    return unevaluated_expr.doit()
-
-
-@cache_to_disk
-def perform_cached_substitution(
-    expr: sp.Expr,
-    substitutions: Mapping[sp.Basic, sp.Basic],
-) -> sp.Expr:
-    return expr.xreplace(substitutions)
