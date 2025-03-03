@@ -17,7 +17,7 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, SupportsFloat, TypeVar
+from typing import TYPE_CHECKING
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -40,21 +40,22 @@ from .deprecated import (
     make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
 )
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 if sys.version_info >= (3, 12):
     from typing import override
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
     from collections.abc import Iterable, Mapping, Sequence
+    from typing import SupportsFloat, TypeVar
 
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
 
-T = TypeVar("T", bound=sp.Basic)
+    T = TypeVar("T", bound=sp.Basic)
 
 
 def partial_doit(
