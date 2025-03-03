@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
 
 from ampform.sympy._cache import cache_to_disk
 
@@ -38,8 +38,30 @@ def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Ex
     return expr.xreplace(substitutions)
 
 
-def unfold(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+@overload
+def unfold(obj: Model) -> sp.Expr: ...
+@overload
+def unfold(obj: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr: ...
+def unfold(
+    obj: sp.Expr | Model, substitutions: Mapping[sp.Basic, sp.Basic] | None = None
+) -> sp.Expr:
     """Efficiently perform both substitutions and :code:`doit()`."""
+    if isinstance(obj, Model):
+        return _unfold_impl(obj.intensity, obj.amplitudes)
+    if substitutions is None:
+        substitutions = {}
+    return _unfold_impl(obj, substitutions)
+
+
+@runtime_checkable
+class Model(Protocol):
+    @property
+    def intensity(self) -> sp.Expr: ...
+    @property
+    def amplitudes(self) -> Mapping[sp.Basic, sp.Basic]: ...
+
+
+def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     return xreplace(
         expr=doit(expr),
         substitutions={k: doit(v) for k, v in substitutions.items()},
