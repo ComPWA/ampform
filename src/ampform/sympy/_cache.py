@@ -10,9 +10,13 @@ import sys
 from functools import cache, wraps
 from importlib.metadata import version
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
+    from io import BufferedReader
+
+    from _typeshed import SupportsWrite
+
     if sys.version_info >= (3, 11):
         from typing import ParamSpec
     else:
@@ -25,7 +29,20 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
+@overload
+def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]: ...
+@overload
+def cache_to_disk(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
+def cache_to_disk(
+    func: Callable[P, T] | None = None,
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+):
     """Decorator for caching the result of a function to disk.
 
     This function works similarly to `functools.cache`, but it stores the result of the
@@ -40,31 +57,44 @@ def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
           have a look at the implementation of :func:`get_system_cache_directory` to see
           how the cache directory is determined from system environment variables.
     """
-    if "NO_CACHE" in os.environ:
-        _warn_once("Cache disabled by NO_CACHE environment variable.")
-        return func
-
-    @wraps(func)
-    def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
-        hashable_object = (
-            args,
-            tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+    if func is None:
+        return _cache_to_disk_implementation(
+            dump_function=dump_function, load_function=load_function
         )
-        h = get_readable_hash(hashable_object)
-        cache_file = _get_cache_dir() / f"{h}.pkl"
-        if cache_file.exists():
-            with open(cache_file, "rb") as f:
-                return pickle.load(f)  # noqa: S301
-        result = func(*args, **kwargs)
-        with open(cache_file, "wb") as f:
-            pickle.dump(result, f)
-        msg = f"Cached expression file {cache_file} not found, performing doit()..."
-        _LOGGER.warning(msg)
-        with open(cache_file, "wb") as f:
-            pickle.dump(result, f)
-        return result
+    return _cache_to_disk_implementation()(func)
 
-    return wrapped_function
+
+def _cache_to_disk_implementation(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        if "NO_CACHE" in os.environ:
+            _warn_once("Cache disabled by NO_CACHE environment variable.")
+            return func
+
+        @wraps(func)
+        def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
+            hashable_object = (
+                args,
+                tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+            )
+            h = get_readable_hash(hashable_object)
+            cache_file = _get_cache_dir() / f"{h}.pkl"
+            if cache_file.exists():
+                with open(cache_file, "rb") as f:
+                    return load_function(f)
+            result = func(*args, **kwargs)
+            msg = f"Cached expression file {cache_file} not found, performing doit()..."
+            _LOGGER.warning(msg)
+            with open(cache_file, "wb") as f:
+                dump_function(result, f)
+            return result
+
+        return wrapped_function
+
+    return decorator
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
