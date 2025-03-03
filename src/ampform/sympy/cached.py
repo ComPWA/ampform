@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
 
 
-@cache_to_disk
+@cache_to_disk(dependencies=["sympy"])
 def doit(expr: SympyObject) -> SympyObject:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
 
@@ -32,7 +32,7 @@ def doit(expr: SympyObject) -> SympyObject:
     return expr.doit()
 
 
-@cache_to_disk
+@cache_to_disk(dependencies=["sympy"])
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
     return expr.xreplace(substitutions)

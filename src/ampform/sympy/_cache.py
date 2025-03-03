@@ -36,6 +36,7 @@ def cache_to_disk(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
     function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
 def cache_to_disk(
@@ -43,6 +44,7 @@ def cache_to_disk(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
     function_name: str | None = None,
 ):
     """Decorator for caching the result of a function to disk.
@@ -63,6 +65,7 @@ def cache_to_disk(
         return _cache_to_disk_implementation(
             dump_function=dump_function,
             load_function=load_function,
+            dependencies=dependencies,
             function_name=function_name,
         )
     return _cache_to_disk_implementation()(func)
@@ -72,15 +75,15 @@ def _cache_to_disk_implementation(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
     function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         if "NO_CACHE" in os.environ:
             _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
             return func
-        function_identifier = [f"{func.__module__}.{func.__name__}"]
-        if (package_version := _get_package_version(func)) is not None:
-            function_identifier.insert(0, package_version)
+        function_identifier = f"{func.__module__}.{func.__name__}"
+        dependency_identifiers = _get_dependency_identifiers(func, dependencies or [])
         nonlocal function_name
         if function_name is None:
             function_name = func.__name__
@@ -88,7 +91,8 @@ def _cache_to_disk_implementation(
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             hashable_object = (
-                *function_identifier,
+                function_identifier,
+                *dependency_identifiers,
                 tuple(_sort_dict(x) for x in args),
                 tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
             )
@@ -110,14 +114,26 @@ def _cache_to_disk_implementation(
     return decorator
 
 
-def _get_package_version(func: Callable) -> str | None:
+def _get_dependency_identifiers(func: Callable, dependencies: list[str]) -> list[str]:
+    dependency_identifiers = []
+    if (function_package := _get_package(func)) is not None:
+        dependency_identifiers.append(function_package)
+    dependency_identifiers.extend(dependencies)
+    return sorted(_package_with_version(p) for p in sorted(dependency_identifiers))
+
+
+def _get_package(func: Callable) -> str | None:
     if "." not in func.__module__:
         return None
-    package_name = func.__module__.split(".")[0]
+    return func.__module__.split(".")[0]
+
+
+@cache
+def _package_with_version(distribution_name: str) -> str:
     try:
-        return version(package_name)
+        return f"{distribution_name}-v{version(distribution_name)}"
     except PackageNotFoundError:
-        return None
+        return distribution_name
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
@@ -132,8 +148,7 @@ def _get_cache_dir() -> Path:
         system_cache_dir = compwa_cache_dir
     else:
         system_cache_dir = get_system_cache_directory()
-    sympy_version = version("sympy")
-    return Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
+    return Path(system_cache_dir) / "ampform"
 
 
 @cache
