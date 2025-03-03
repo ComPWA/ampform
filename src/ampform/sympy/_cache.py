@@ -6,13 +6,18 @@ import hashlib
 import logging
 import os
 import pickle  # noqa: S403
+import re
 import sys
 from functools import cache, wraps
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
+    from io import BufferedReader
+
+    from _typeshed import SupportsWrite
+
     if sys.version_info >= (3, 11):
         from typing import ParamSpec
     else:
@@ -25,7 +30,24 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
+@overload
+def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]: ...
+@overload
+def cache_to_disk(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
+def cache_to_disk(
+    func: Callable[P, T] | None = None,
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+):
     """Decorator for caching the result of a function to disk.
 
     This function works similarly to `functools.cache`, but it stores the result of the
@@ -40,31 +62,94 @@ def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]:
           have a look at the implementation of :func:`get_system_cache_directory` to see
           how the cache directory is determined from system environment variables.
     """
-    if "NO_CACHE" in os.environ:
-        _warn_once("Cache disabled by NO_CACHE environment variable.")
-        return func
-
-    @wraps(func)
-    def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
-        hashable_object = (
-            args,
-            tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+    if func is None:
+        return _cache_to_disk_implementation(
+            dump_function=dump_function,
+            load_function=load_function,
+            dependencies=dependencies,
+            function_name=function_name,
         )
-        h = get_readable_hash(hashable_object)
-        cache_file = _get_cache_dir() / f"{h}.pkl"
-        if cache_file.exists():
-            with open(cache_file, "rb") as f:
-                return pickle.load(f)  # noqa: S301
-        result = func(*args, **kwargs)
-        with open(cache_file, "wb") as f:
-            pickle.dump(result, f)
-        msg = f"Cached expression file {cache_file} not found, performing doit()..."
-        _LOGGER.warning(msg)
-        with open(cache_file, "wb") as f:
-            pickle.dump(result, f)
-        return result
+    return _cache_to_disk_implementation()(func)
 
-    return wrapped_function
+
+def _cache_to_disk_implementation(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        if "NO_CACHE" in os.environ:
+            _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
+            return func
+        function_identifier = f"{func.__module__}.{func.__name__}"
+        dependency_identifiers = _get_dependency_identifiers(func, dependencies or [])
+        nonlocal function_name
+        if function_name is None:
+            function_name = func.__name__
+
+        @wraps(func)
+        def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
+            hashable_object = (
+                function_identifier,
+                *dependency_identifiers,
+                tuple(_sort_dict(x) for x in args),
+                tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+            )
+            h = get_readable_hash(hashable_object)
+            cache_file = _get_cache_dir() / h[:2] / h[2:]
+            if cache_file.exists():
+                with open(cache_file, "rb") as f:
+                    return load_function(f)
+            result = func(*args, **kwargs)
+            msg = f"No cache file {cache_file}, performing {function_name}()..."
+            _LOGGER.warning(msg)
+            cache_file.parent.mkdir(exist_ok=True, parents=True)
+            with open(cache_file, "wb") as f:
+                dump_function(result, f)
+            return result
+
+        return wrapped_function
+
+    return decorator
+
+
+def _get_dependency_identifiers(func: Callable, dependencies: list[str]) -> list[str]:
+    dependency_identifiers = []
+    if (function_package := _get_package(func)) is not None:
+        dependency_identifiers.append(function_package)
+    dependency_identifiers.extend(dependencies)
+    return sorted(_package_with_version(p) for p in sorted(dependency_identifiers))
+
+
+def _get_package(func: Callable) -> str | None:
+    if "." not in func.__module__:
+        return None
+    return func.__module__.split(".")[0]
+
+
+@cache
+def _package_with_version(distribution_name: str) -> str:
+    try:
+        v = _remove_dev(version(distribution_name))
+    except PackageNotFoundError:
+        return distribution_name
+    else:
+        return f"{distribution_name}-{v}"
+
+
+def _remove_dev(version: str) -> str:
+    """Remove the ".dev" suffix from a version string.
+
+    >>> _remove_dev("0.15.7.dev15+g3c1b3cec.d20250301")
+    '0.15.7'
+    >>> _remove_dev("0.15.7")
+    '0.15.7'
+    >>> _remove_dev("0.15.7.post1")
+    '0.15.7'
+    """
+    return re.sub(r"(\.(dev|post).*)?$", "", version)
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
@@ -79,10 +164,7 @@ def _get_cache_dir() -> Path:
         system_cache_dir = compwa_cache_dir
     else:
         system_cache_dir = get_system_cache_directory()
-    sympy_version = version("sympy")
-    cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    cache_directory.mkdir(exist_ok=True, parents=True)
-    return cache_directory
+    return Path(system_cache_dir) / "ampform"
 
 
 @cache
