@@ -36,12 +36,14 @@ def cache_to_disk(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
 def cache_to_disk(
     func: Callable[P, T] | None = None,
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    function_name: str | None = None,
 ):
     """Decorator for caching the result of a function to disk.
 
@@ -59,7 +61,9 @@ def cache_to_disk(
     """
     if func is None:
         return _cache_to_disk_implementation(
-            dump_function=dump_function, load_function=load_function
+            dump_function=dump_function,
+            load_function=load_function,
+            function_name=function_name,
         )
     return _cache_to_disk_implementation()(func)
 
@@ -68,6 +72,7 @@ def _cache_to_disk_implementation(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
     load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         if "NO_CACHE" in os.environ:
@@ -76,6 +81,9 @@ def _cache_to_disk_implementation(
         function_identifier = [f"{func.__module__}.{func.__name__}"]
         if (package_version := _get_package_version(func)) is not None:
             function_identifier.insert(0, package_version)
+        nonlocal function_name
+        if function_name is None:
+            function_name = func.__name__
 
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -90,7 +98,7 @@ def _cache_to_disk_implementation(
                 with open(cache_file, "rb") as f:
                     return load_function(f)
             result = func(*args, **kwargs)
-            msg = f"Cached expression file {cache_file} not found, performing doit()..."
+            msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
             with open(cache_file, "wb") as f:
                 dump_function(result, f)
