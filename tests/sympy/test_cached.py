@@ -37,3 +37,11 @@ def test_xreplace(amplitude_model: tuple[str, HelicityModel], substitution_name:
     assert substituted_expr_1 == expected_expr
     substituted_expr_2 = cached.xreplace(full_expression, substitutions)
     assert substituted_expr_2 == expected_expr
+
+
+def test_unfold(amplitude_model: tuple[str, HelicityModel]):
+    _, model = amplitude_model
+    amplitudes = {k: v.doit() for k, v in model.amplitudes.items()}
+    intensity_expr_direct = model.intensity.doit().xreplace(amplitudes)
+    intensity_expr_unfold = cached.unfold(model.intensity, model.amplitudes)
+    assert intensity_expr_direct == intensity_expr_unfold
