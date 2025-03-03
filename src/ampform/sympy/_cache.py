@@ -6,6 +6,7 @@ import hashlib
 import logging
 import os
 import pickle  # noqa: S403
+import re
 import sys
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
@@ -131,9 +132,22 @@ def _get_package(func: Callable) -> str | None:
 @cache
 def _package_with_version(distribution_name: str) -> str:
     try:
-        return f"{distribution_name}-v{version(distribution_name)}"
+        v = _remove_dev(version(distribution_name))
     except PackageNotFoundError:
         return distribution_name
+    else:
+        return f"{distribution_name}-{v}"
+
+
+def _remove_dev(version: str) -> str:
+    """Remove the ".dev" suffix from a version string.
+
+    >>> _remove_dev("0.15.7.dev15+g3c1b3cec.d20250301")
+    '0.15.7'
+    >>> _remove_dev("0.15.7")
+    '0.15.7'
+    """
+    return re.sub(r"(\.dev.*)?$", "", version)
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
