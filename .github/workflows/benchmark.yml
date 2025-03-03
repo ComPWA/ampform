@@ -56,7 +56,7 @@ jobs:
           tool: pytest
           output-file-path: benchmarks/output.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          gh-pages-branch: benchmark-results
+          gh-pages-branch: main
           gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
           auto-push: true
@@ -68,7 +68,7 @@ jobs:
           tool: pytest
           output-file-path: benchmarks/output.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          gh-pages-branch: benchmark-results
+          gh-pages-branch: main
           gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
           auto-push: false
