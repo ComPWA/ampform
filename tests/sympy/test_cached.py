@@ -43,5 +43,5 @@ def test_unfold(amplitude_model: tuple[str, HelicityModel]):
     _, model = amplitude_model
     amplitudes = {k: v.doit() for k, v in model.amplitudes.items()}
     intensity_expr_direct = model.intensity.doit().xreplace(amplitudes)
-    intensity_expr_unfold = cached.unfold(model)
+    intensity_expr_unfold = cached.unfold(model.intensity, model.amplitudes)
     assert intensity_expr_direct == intensity_expr_unfold

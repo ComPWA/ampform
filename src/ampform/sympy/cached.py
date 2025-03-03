@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 from ampform.sympy._cache import cache_to_disk
 
@@ -38,19 +38,9 @@ def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Ex
     return expr.xreplace(substitutions)
 
 
-def unfold(model: Model) -> sp.Expr:
-    """Insert the amplitude definitions into the intensity and unfold the expression."""
-    unfolded_amplitudes = {
-        symbol: doit(model.amplitudes[symbol])
-        for symbol in sorted(model.amplitudes, key=str)
-    }
-    return doit(xreplace(model.intensity.doit(), unfolded_amplitudes))
-
-
-class Model(Protocol):
-    """Protocol for amplitude models of the form `.HelicityModel`."""
-
-    @property
-    def intensity(self) -> sp.Expr: ...
-    @property
-    def amplitudes(self) -> Mapping[sp.Basic, sp.Expr]: ...
+def unfold(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+    """Efficiently perform both substitutions and :code:`doit()`."""
+    return xreplace(
+        expr=doit(expr),
+        substitutions={k: doit(v) for k, v in substitutions.items()},
+    )
