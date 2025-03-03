@@ -71,6 +71,5 @@ jobs:
           gh-pages-branch: main
           gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
-          auto-push: false
           comment-on-alert: true
           fail-on-alert: true
