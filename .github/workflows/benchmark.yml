@@ -58,6 +58,7 @@ jobs:
           benchmark-data-dir-path: ""
           comment-on-alert: true
           fail-on-alert: true
+          auto-push: false
       - name: Store result
         uses: benchmark-action/github-action-benchmark@v1
         with:
