@@ -55,14 +55,14 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: AmpForm benchmark results
-          tool: pytest
-          output-file-path: benchmarks/output.json
-          github-token: ${{ secrets.PAT }}
-          gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
           comment-on-alert: true
           fail-on-alert: true
+          gh-repository: github.com/ComPWA/ampform-benchmark-results
+          github-token: ${{ secrets.PAT }}
+          name: AmpForm benchmark results
+          output-file-path: benchmarks/output.json
+          tool: pytest
       - name: Store result
         if: github.event_name == 'push'
         run: git push 'https://ComPWA:${{ secrets.PAT }}@github.com/ComPWA/ampform-benchmark-results' gh-pages
