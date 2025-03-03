@@ -52,7 +52,7 @@ jobs:
           name: AmpForm benchmark results
           tool: pytest
           output-file-path: benchmarks/output.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT }}
           gh-pages-branch: main
           gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
@@ -63,7 +63,7 @@ jobs:
           name: AmpForm benchmark results
           tool: pytest
           output-file-path: benchmarks/output.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT }}
           gh-pages-branch: main
           gh-repository: github.com/ComPWA/ampform-benchmark-results
           benchmark-data-dir-path: ""
