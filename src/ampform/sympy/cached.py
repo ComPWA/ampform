@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from ampform.sympy._cache import cache_to_disk
 
@@ -36,3 +36,17 @@ def doit(expr: SympyObject) -> SympyObject:
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
     return expr.xreplace(substitutions)
+
+
+def unfold(model: Model) -> sp.Expr:
+    """Insert the amplitude definitions into the intensity and unfold the expression."""
+    return doit(xreplace(doit(model.intensity), model.amplitudes))
+
+
+class Model(Protocol):
+    """Protocol for amplitude models of the form `.HelicityModel`."""
+
+    @property
+    def intensity(self) -> sp.Expr: ...
+    @property
+    def amplitudes(self) -> Mapping[sp.Basic, sp.Expr]: ...
