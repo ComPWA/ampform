@@ -77,7 +77,7 @@ def _cache_to_disk_implementation(
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             hashable_object = (
-                args,
+                tuple(_sort_dict(x) for x in args),
                 tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
             )
             h = get_readable_hash(hashable_object)
