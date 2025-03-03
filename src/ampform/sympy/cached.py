@@ -40,7 +40,11 @@ def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Ex
 
 def unfold(model: Model) -> sp.Expr:
     """Insert the amplitude definitions into the intensity and unfold the expression."""
-    return doit(xreplace(doit(model.intensity), model.amplitudes))
+    unfolded_amplitudes = {
+        symbol: doit(model.amplitudes[symbol])
+        for symbol in sorted(model.amplitudes, key=str)
+    }
+    return doit(xreplace(model.intensity.doit(), unfolded_amplitudes))
 
 
 class Model(Protocol):
