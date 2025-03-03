@@ -13,7 +13,6 @@
 from __future__ import annotations
 
 import itertools
-import logging
 import re
 import sys
 import warnings
@@ -54,8 +53,6 @@ if TYPE_CHECKING:
 
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class NumPyPrintable(sp.Expr):
