@@ -22,6 +22,10 @@ import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
 from sympy.printing.latex import translate
 
+from ampform.sympy import (
+    partial_doit,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
+
 if TYPE_CHECKING:  # pragma: no cover
     import sys
     from collections.abc import Iterator, Mapping, Sequence
@@ -309,26 +313,6 @@ def __safe_wrap_symbols(
         return (plot_symbol,)
     msg = f"Wrong plot_symbol input type {type(plot_symbol).__name__}"
     raise TypeError(msg)
-
-
-def partial_doit(
-    expression: sp.Expr,
-    doit_classes: type[sp.Basic] | tuple[type[sp.Basic], ...],
-) -> sp.Expr:
-    """Perform :meth:`~sympy.core.basic.Basic.doit` up to a certain level.
-
-    Arguments
-    ---------
-    expression: the `~sympy.core.expr.Expr` on which you want to perform a
-        :meth:`~sympy.core.basic.Basic.doit`.
-    doit_classes: types on which the :meth:`~sympy.core.basic.Basic.doit` should be
-        performed.
-    """
-    new_expression = expression
-    for node in sp.preorder_traversal(expression):
-        if isinstance(node, doit_classes):
-            new_expression = new_expression.xreplace({node: node.doit(deep=False)})
-    return new_expression
 
 
 def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:

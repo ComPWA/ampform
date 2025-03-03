@@ -59,7 +59,7 @@ from ampform.kinematics.lorentz import (
     create_four_momentum_symbols,
     get_invariant_mass_symbol,
 )
-from ampform.sympy import PoolSum, determine_indices
+from ampform.sympy import PoolSum, determine_indices, partial_doit
 from ampform.sympy._array_expressions import ArraySum
 
 if sys.version_info >= (3, 12):
@@ -156,16 +156,7 @@ class HelicityModel:
         Constructed from `intensity` by substituting its amplitude symbols with the
         definitions with `amplitudes`.
         """
-
-        def unfold_poolsums(expr: sp.Expr) -> sp.Expr:
-            new_expr = expr
-            for node in sp.postorder_traversal(expr):
-                if isinstance(node, PoolSum):
-                    new_expr = new_expr.xreplace({node: node.evaluate()})
-            return new_expr
-
-        intensity = self.intensity.evaluate()
-        intensity = unfold_poolsums(intensity)
+        intensity = partial_doit(self.intensity, PoolSum, recursive=True)
         return intensity.xreplace(self.amplitudes)
 
     def rename_symbols(
