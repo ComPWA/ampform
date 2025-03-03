@@ -8,7 +8,7 @@ import os
 import pickle  # noqa: S403
 import sys
 from functools import cache, wraps
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import TYPE_CHECKING, overload
 
@@ -73,10 +73,14 @@ def _cache_to_disk_implementation(
         if "NO_CACHE" in os.environ:
             _warn_once("Cache disabled by NO_CACHE environment variable.")
             return func
+        function_identifier = [f"{func.__module__}.{func.__name__}"]
+        if (package_version := _get_package_version(func)) is not None:
+            function_identifier.insert(0, package_version)
 
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             hashable_object = (
+                *function_identifier,
                 tuple(_sort_dict(x) for x in args),
                 tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
             )
@@ -95,6 +99,16 @@ def _cache_to_disk_implementation(
         return wrapped_function
 
     return decorator
+
+
+def _get_package_version(func: Callable) -> str | None:
+    if "." not in func.__module__:
+        return None
+    package_name = func.__module__.split(".")[0]
+    try:
+        return version(package_name)
+    except PackageNotFoundError:
+        return None
 
 
 def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
