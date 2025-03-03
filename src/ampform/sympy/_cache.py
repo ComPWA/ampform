@@ -93,13 +93,14 @@ def _cache_to_disk_implementation(
                 tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
             )
             h = get_readable_hash(hashable_object)
-            cache_file = _get_cache_dir() / f"{h}.pkl"
+            cache_file = _get_cache_dir() / h[:2] / h[2:]
             if cache_file.exists():
                 with open(cache_file, "rb") as f:
                     return load_function(f)
             result = func(*args, **kwargs)
             msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
+            cache_file.parent.mkdir(exist_ok=True, parents=True)
             with open(cache_file, "wb") as f:
                 dump_function(result, f)
             return result
@@ -132,9 +133,7 @@ def _get_cache_dir() -> Path:
     else:
         system_cache_dir = get_system_cache_directory()
     sympy_version = version("sympy")
-    cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    cache_directory.mkdir(exist_ok=True, parents=True)
-    return cache_directory
+    return Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
 
 
 @cache
