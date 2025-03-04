@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from functools import cache
 from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
+
+from frozendict import frozendict
 
 from ampform.sympy._cache import cache_to_disk
 
@@ -15,6 +18,7 @@ if TYPE_CHECKING:
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
 
 
+@cache
 @cache_to_disk(dependencies=["sympy"])
 def doit(expr: SympyObject) -> SympyObject:
     """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
@@ -32,9 +36,16 @@ def doit(expr: SympyObject) -> SympyObject:
     return expr.doit()
 
 
-@cache_to_disk(dependencies=["sympy"])
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
+    return _xreplace_impl(expr, frozendict(substitutions))
+
+
+@cache
+@cache_to_disk(function_name="xreplace", dependencies=["sympy"])
+def _xreplace_impl(
+    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
+) -> sp.Expr:
     return expr.xreplace(substitutions)
 
 
@@ -62,7 +73,13 @@ class Model(Protocol):
 
 
 def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
-    return xreplace(
-        expr=doit(expr),
-        substitutions={k: doit(v) for k, v in substitutions.items()},
-    )
+    substitutions = _unfold_substitutions(frozendict(substitutions))
+    expr = doit(expr)
+    return xreplace(expr, substitutions)
+
+
+@cache
+def _unfold_substitutions(
+    substitutions: frozendict[sp.Basic, sp.Basic],
+) -> frozendict[sp.Basic, sp.Basic]:
+    return frozendict({k: doit(v) for k, v in substitutions.items()})

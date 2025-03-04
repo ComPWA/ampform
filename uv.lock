@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.9"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -48,6 +49,7 @@ name = "ampform"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
+    { name = "frozendict" },
     { name = "qrules" },
     { name = "sympy" },
 ]
@@ -187,11 +189,13 @@ types = [
 [package.metadata]
 requires-dist = [
     { name = "attrs", specifier = ">=20.1.0" },
+    { name = "frozendict" },
     { name = "graphviz", marker = "extra == 'viz'" },
     { name = "qrules", specifier = ">=0.9.6" },
     { name = "scipy", marker = "extra == 'scipy'" },
     { name = "sympy", specifier = ">=1.10" },
 ]
+provides-extras = ["scipy", "viz"]
 
 [package.metadata.requires-dev]
 dev = [

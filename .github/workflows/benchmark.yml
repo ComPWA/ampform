@@ -59,7 +59,7 @@ jobs:
           comment-on-alert: true
           fail-on-alert: true
           gh-repository: github.com/ComPWA/ampform-benchmark-results
-          github-token: ${{ secrets.PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name: AmpForm benchmark results
           output-file-path: benchmarks/output.json
           tool: pytest
