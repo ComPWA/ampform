@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import cache
 from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
 
+import sympy as sp
 from frozendict import frozendict
 
 from ampform.sympy._cache import cache_to_disk
@@ -12,8 +13,6 @@ from ampform.sympy._cache import cache_to_disk
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from typing import TypeVar
-
-    import sympy as sp
 
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
 
@@ -72,14 +71,38 @@ class Model(Protocol):
     def amplitudes(self) -> Mapping[sp.Basic, sp.Basic]: ...
 
 
-def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
-    substitutions = _unfold_substitutions(frozendict(substitutions))
+def _unfold_impl(
+    expr: sp.Expr,
+    substitutions: Mapping[sp.Basic, sp.Basic],
+    *,
+    symbolize: bool = False,
+) -> sp.Expr:
+    substitutions = _unfold_substitutions(frozendict(substitutions), symbolize)
     expr = doit(expr)
+    if symbolize:
+        expr = _symbolize(expr)
     return xreplace(expr, substitutions)
 
 
 @cache
 def _unfold_substitutions(
-    substitutions: frozendict[sp.Basic, sp.Basic],
+    substitutions: frozendict[sp.Basic, sp.Basic], symbolize: bool
 ) -> frozendict[sp.Basic, sp.Basic]:
+    if symbolize:
+        substitutions = frozendict({_to_symbol(k): v for k, v in substitutions.items()})
     return frozendict({k: doit(v) for k, v in substitutions.items()})
+
+
+@cache
+def _symbolize(expr: SympyObject) -> SympyObject:
+    substitutions = {
+        s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)
+    }
+    return expr.xreplace(substitutions)
+
+
+@cache
+def _to_symbol(symbol):
+    if isinstance(symbol, sp.Indexed):
+        return sp.Symbol(sp.latex(symbol), **symbol.assumptions0)
+    return symbol
