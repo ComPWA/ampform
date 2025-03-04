@@ -38,16 +38,13 @@ def doit(expr: SympyObject) -> SympyObject:
 
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
-    hashable_substitutions = tuple(
-        (k, substitutions[k]) for k in sorted(substitutions, key=str)
-    )
-    return _xreplace_impl(expr, hashable_substitutions)
+    return _xreplace_impl(expr, frozendict(substitutions))
 
 
 @cache
 @cache_to_disk(function_name="xreplace", dependencies=["sympy"])
 def _xreplace_impl(
-    expr: sp.Expr, substitutions: tuple[tuple[sp.Basic, sp.Basic], ...]
+    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
 ) -> sp.Expr:
     return expr.xreplace(substitutions)
 
