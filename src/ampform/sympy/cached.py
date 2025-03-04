@@ -71,38 +71,36 @@ class Model(Protocol):
     def amplitudes(self) -> Mapping[sp.Basic, sp.Basic]: ...
 
 
-def _unfold_impl(
-    expr: sp.Expr,
-    substitutions: Mapping[sp.Basic, sp.Basic],
-    *,
-    symbolize: bool = False,
-) -> sp.Expr:
-    substitutions = _unfold_substitutions(frozendict(substitutions), symbolize)
+def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+    substitutions = _unfold_substitutions(frozendict(substitutions))
     expr = doit(expr)
-    if symbolize:
-        expr = _symbolize(expr)
+    expr, substitutions = _match_indexed_symbols(expr, substitutions)
     return xreplace(expr, substitutions)
 
 
 @cache
 def _unfold_substitutions(
-    substitutions: frozendict[sp.Basic, sp.Basic], symbolize: bool
+    substitutions: frozendict[sp.Basic, sp.Basic],
 ) -> frozendict[sp.Basic, sp.Basic]:
-    if symbolize:
-        substitutions = frozendict({_to_symbol(k): v for k, v in substitutions.items()})
     return frozendict({k: doit(v) for k, v in substitutions.items()})
 
 
 @cache
-def _symbolize(expr: SympyObject) -> SympyObject:
-    substitutions = {
-        s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)
+def _match_indexed_symbols(
+    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
+) -> tuple[sp.Expr, frozendict[sp.Basic, sp.Basic]]:
+    remapping = {
+        **{s: _to_symbol(s) for s in substitutions if isinstance(s, sp.Indexed)},
+        **{s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)},
     }
-    return expr.xreplace(substitutions)
+    if remapping:
+        expr = expr.xreplace(remapping)
+        substitutions = frozendict({
+            remapping.get(k, k): v for k, v in substitutions.items()
+        })
+    return expr, substitutions
 
 
 @cache
-def _to_symbol(symbol):
-    if isinstance(symbol, sp.Indexed):
-        return sp.Symbol(sp.latex(symbol), **symbol.assumptions0)
-    return symbol
+def _to_symbol(symbol: sp.Indexed) -> sp.Symbol:
+    return sp.Symbol(sp.latex(symbol), **symbol.assumptions0)
