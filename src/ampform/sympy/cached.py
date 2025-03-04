@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from functools import cache
 from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
+
+from frozendict import frozendict
 
 from ampform.sympy._cache import cache_to_disk
 
@@ -62,7 +65,13 @@ class Model(Protocol):
 
 
 def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
-    return xreplace(
-        expr=doit(expr),
-        substitutions={k: doit(v) for k, v in substitutions.items()},
-    )
+    substitutions = _unfold_substitutions(frozendict(substitutions))
+    expr = doit(expr)
+    return xreplace(expr, substitutions)
+
+
+@cache
+def _unfold_substitutions(
+    substitutions: frozendict[sp.Basic, sp.Basic],
+) -> frozendict[sp.Basic, sp.Basic]:
+    return frozendict({k: doit(v) for k, v in substitutions.items()})
