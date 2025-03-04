@@ -1,0 +1,44 @@
+name: Redirect GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Build redirect page
+        id: build
+        env:
+          REDIRECT_URL: https://compwa.github.io/ampform-benchmark-results
+        run: |-
+          mkdir -p build
+          echo '<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta http-equiv="refresh" content="0;url=${{ env.REDIRECT_URL }}">
+            <title>Redirecting to benchmark results page at ${{ env.REDIRECT_URL }}...</title>
+          </head>
+          <body>
+            <p>If you are not redirected to the benchmark results page, go to <a href="${{ env.REDIRECT_URL }}">${{ env.REDIRECT_URL }}</a>.</p>
+          </body>
+          </html>' > build/index.html
+      - id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-24.04
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
