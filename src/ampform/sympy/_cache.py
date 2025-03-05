@@ -8,12 +8,16 @@ import os
 import pickle  # noqa: S403
 import re
 import sys
+from collections import abc
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import TYPE_CHECKING, overload
 
+from frozendict import frozendict
+
 if TYPE_CHECKING:
+    from collections.abc import Hashable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -22,7 +26,6 @@ if TYPE_CHECKING:
         from typing import ParamSpec
     else:
         from typing_extensions import ParamSpec
-    from collections.abc import Hashable
     from typing import Any, Callable, ParamSpec, TypeVar
 
     P = ParamSpec("P")
@@ -95,8 +98,8 @@ def _cache_to_disk_implementation(
             hashable_object = (
                 function_identifier,
                 *dependency_identifiers,
-                tuple(_sort_dict(x) for x in args),
-                tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+                tuple(_make_hashable(x) for x in args),
+                tuple((k, _make_hashable(kwargs[k])) for k in sorted(kwargs)),
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
@@ -153,10 +156,10 @@ def _remove_dev(version: str) -> str:
     return re.sub(r"(\.(dev|post).*)?$", "", version)
 
 
-def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
-    if not isinstance(obj, dict):
-        return obj
-    return tuple((k, obj[k]) for k in sorted(obj, key=str))
+def _make_hashable(obj: Any) -> Hashable:
+    if isinstance(obj, abc.Mapping):
+        return frozendict(obj)
+    return obj
 
 
 @cache
