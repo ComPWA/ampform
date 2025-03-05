@@ -8,9 +8,9 @@ import pytest
 import qrules
 import sympy as sp
 
-from ampform import get_builder
+import ampform
 from ampform.dynamics import EnergyDependentWidth
-from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
+from ampform.dynamics.builder import RelativisticBreitWignerBuilder
 from ampform.sympy._cache import get_readable_hash
 
 if TYPE_CHECKING:
@@ -88,22 +88,32 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
-            ("01bb112", "canonical-helicity"),
-            ("0638a0e", "helicity"),
+            ("8cc382e", "canonical-helicity"),
+            ("0bf9bba", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
     def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
-            final_state=["gamma", "pi0", "pi0"],
-            allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
+            final_state=["p~", "K0", "Sigma+"],
+            allowed_intermediate_particles=[
+                "N(1650)+",  # largest branching fraction
+                "N(1675)+",  # high LS couplings
+                "Sigma(1385)",  # largest branching fraction
+                "Sigma(1775)",  # high LS couplings
+            ],
             allowed_interaction_types="strong",
             formalism=formalism,
         )
-        builder = get_builder(reaction)
+        model_builder = ampform.get_builder(reaction)
+        has_ls_couplings = formalism == "canonical-helicity"
+        dynamics_builder = RelativisticBreitWignerBuilder(
+            form_factor=has_ls_couplings,
+            energy_dependent_width=has_ls_couplings,
+        )
         for name in reaction.get_intermediate_particles().names:
-            builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
-        model = builder.formulate()
+            model_builder.dynamics.assign(name, dynamics_builder)
+        model = model_builder.formulate()
         h = get_readable_hash(model.expression)[:7]
         assert h == expected_hash
