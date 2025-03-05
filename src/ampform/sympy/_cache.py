@@ -95,11 +95,8 @@ def _cache_to_disk_implementation(
 
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
-            hashable_object = (
-                function_identifier,
-                *dependency_identifiers,
-                make_hashable(args),
-                tuple((k, make_hashable(kwargs[k])) for k in sorted(kwargs)),
+            hashable_object = make_hashable(
+                function_identifier, *dependency_identifiers, args, kwargs
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
@@ -215,9 +212,10 @@ def to_bytes(obj) -> bytes:
 
 
 def make_hashable(*args) -> Hashable:
-    if len(args) != 1:
-        return tuple(make_hashable(x) for x in args)
-    obj = args[0]
+    return tuple(_make_hashable_impl(x) for x in args)
+
+
+def _make_hashable_impl(obj) -> Hashable:
     if isinstance(obj, abc.Mapping):
         return frozendict(obj)
     if isinstance(obj, str):
