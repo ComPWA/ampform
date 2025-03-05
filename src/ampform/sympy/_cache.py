@@ -98,8 +98,8 @@ def _cache_to_disk_implementation(
             hashable_object = (
                 function_identifier,
                 *dependency_identifiers,
-                tuple(_make_hashable(x) for x in args),
-                tuple((k, _make_hashable(kwargs[k])) for k in sorted(kwargs)),
+                make_hashable(args),
+                tuple((k, make_hashable(kwargs[k])) for k in sorted(kwargs)),
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
@@ -154,12 +154,6 @@ def _remove_dev(version: str) -> str:
     '0.15.7'
     """
     return re.sub(r"(\.(dev|post).*)?$", "", version)
-
-
-def _make_hashable(obj: Any) -> Hashable:
-    if isinstance(obj, abc.Mapping):
-        return frozendict(obj)
-    return obj
 
 
 @cache
@@ -218,3 +212,20 @@ def to_bytes(obj) -> bytes:
     if isinstance(obj, (bytes, bytearray)):
         return obj
     return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def make_hashable(*args) -> Hashable:
+    if len(args) != 1:
+        return tuple(make_hashable(x) for x in args)
+    obj = args[0]
+    if isinstance(obj, abc.Mapping):
+        return frozendict(obj)
+    if isinstance(obj, str):
+        return obj
+    if isinstance(obj, abc.Iterable):
+        hashable_items = (make_hashable(x) for x in obj)
+        if isinstance(obj, abc.Sequence):
+            return tuple(hashable_items)
+        if isinstance(obj, set):
+            return frozenset(hashable_items)
+    return obj
