@@ -22,6 +22,7 @@ if TYPE_CHECKING:
         from typing import ParamSpec
     else:
         from typing_extensions import ParamSpec
+    from collections.abc import Hashable
     from typing import Any, Callable, ParamSpec, TypeVar
 
     P = ParamSpec("P")
@@ -197,7 +198,8 @@ def get_system_cache_directory() -> str:
     return os.path.expanduser("~/.cache")
 
 
-def get_readable_hash(obj) -> str:
+@cache
+def get_readable_hash(obj: Hashable) -> str:
     """Get a human-readable hash of any hashable Python object.
 
     Args:
