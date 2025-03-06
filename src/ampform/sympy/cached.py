@@ -35,6 +35,26 @@ def doit(expr: SympyObject) -> SympyObject:
     return expr.doit()
 
 
+@cache
+@cache_to_disk
+def simplify(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
+    """Perform :func:`~sympy.simplify.simplify.simplify` and cache the result to disk.
+
+    .. versionadded:: 0.15.7
+    """
+    return sp.simplify(expr, *args, **kwargs)
+
+
+@cache
+@cache_to_disk
+def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
+    """Perform :func:`~sympy.simplify.trigsimp.trigsimp` and cache the result to disk.
+
+    .. versionadded:: 0.15.7
+    """
+    return sp.trigsimp(expr, *args, **kwargs)
+
+
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
     return _xreplace_impl(expr, frozendict(substitutions))
