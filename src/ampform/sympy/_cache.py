@@ -8,12 +8,16 @@ import os
 import pickle  # noqa: S403
 import re
 import sys
+from collections import abc
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import TYPE_CHECKING, overload
 
+from frozendict import frozendict
+
 if TYPE_CHECKING:
+    from collections.abc import Hashable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -91,11 +95,8 @@ def _cache_to_disk_implementation(
 
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
-            hashable_object = (
-                function_identifier,
-                *dependency_identifiers,
-                tuple(_sort_dict(x) for x in args),
-                tuple((k, _sort_dict(kwargs[k])) for k in sorted(kwargs)),
+            hashable_object = make_hashable(
+                function_identifier, *dependency_identifiers, args, kwargs
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
@@ -152,12 +153,6 @@ def _remove_dev(version: str) -> str:
     return re.sub(r"(\.(dev|post).*)?$", "", version)
 
 
-def _sort_dict(obj) -> tuple[tuple[Any, Any], ...]:
-    if not isinstance(obj, dict):
-        return obj
-    return tuple((k, obj[k]) for k in sorted(obj, key=str))
-
-
 @cache
 def _get_cache_dir() -> Path:
     if compwa_cache_dir := os.getenv("COMPWA_CACHE_DIR"):
@@ -197,14 +192,15 @@ def get_system_cache_directory() -> str:
     return os.path.expanduser("~/.cache")
 
 
-def get_readable_hash(obj) -> str:
+@cache
+def get_readable_hash(obj: Hashable) -> str:
     """Get a human-readable hash of any hashable Python object.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
     b = to_bytes(obj)
-    h = hashlib.md5(b)  # noqa: S324
+    h = hashlib.md5(b, usedforsecurity=False)
     return h.hexdigest()
 
 
@@ -213,3 +209,21 @@ def to_bytes(obj) -> bytes:
     if isinstance(obj, (bytes, bytearray)):
         return obj
     return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def make_hashable(*args) -> Hashable:
+    return tuple(_make_hashable_impl(x) for x in args)
+
+
+def _make_hashable_impl(obj) -> Hashable:
+    if isinstance(obj, abc.Mapping):
+        return frozendict(obj)
+    if isinstance(obj, str):
+        return obj
+    if isinstance(obj, abc.Iterable):
+        hashable_items = (make_hashable(x) for x in obj)
+        if isinstance(obj, abc.Sequence):
+            return tuple(hashable_items)
+        if isinstance(obj, set):
+            return frozenset(hashable_items)
+    return obj
