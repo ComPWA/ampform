@@ -200,7 +200,7 @@ def get_readable_hash(obj: Hashable) -> str:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
     b = to_bytes(obj)
-    h = hashlib.md5(b)  # noqa: S324
+    h = hashlib.md5(b, usedforsecurity=False)
     return h.hexdigest()
 
 
