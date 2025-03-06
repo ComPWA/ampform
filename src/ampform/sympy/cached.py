@@ -1,4 +1,7 @@
-"""Handy aliases for working with cached SymPy expressions."""
+"""Handy aliases for working with cached SymPy expressions.
+
+.. autofunction:: doit
+"""
 
 from __future__ import annotations
 
@@ -33,6 +36,37 @@ def doit(expr: SympyObject) -> SympyObject:
     .. automodule:: ampform.sympy._cache
     """
     return expr.doit()
+
+
+@cache
+@cache_to_disk
+def simplify(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
+    """Perform :func:`~sympy.simplify.simplify.simplify` and cache the result to disk.
+
+    .. versionadded:: 0.15.7
+    """
+    return sp.simplify(expr, *args, **kwargs)
+
+
+@cache
+@cache_to_disk
+def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
+    """Perform :func:`~sympy.simplify.trigsimp.trigsimp` and cache the result to disk.
+
+    .. versionadded:: 0.15.7
+    """
+    return sp.trigsimp(expr, *args, **kwargs)
+
+
+def subs(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+    """Call :meth:`~sympy.core.basic.Basic.subs` and cache the result to disk."""
+    return _subs_impl(expr, frozendict(substitutions))
+
+
+@cache
+@cache_to_disk(function_name="subs", dependencies=["sympy"])
+def _subs_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]) -> sp.Expr:
+    return expr.xreplace(substitutions)
 
 
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:

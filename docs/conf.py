@@ -107,6 +107,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "P": "typing.ParamSpec",
     "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
+    "SympyObject": "typing.TypeVar",
     "ReactionInfo": "qrules.transition.ReactionInfo",
     "Slider": ("obj", "symplot.Slider"),
     "State": "qrules.transition.State",
@@ -323,10 +324,12 @@ nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
 nitpick_ignore = [
+    ("py:class", "ampform.sympy._decorator.SymPyAssumptions"),
     ("py:class", "ArraySum"),
+    ("py:class", "BufferedReader"),
     ("py:class", "ExprClass"),
     ("py:class", "MatrixMultiplication"),
-    ("py:class", "ampform.sympy._decorator.SymPyAssumptions"),
+    ("py:class", "SupportsWrite"),
 ]
 nitpicky = True
 primary_domain = "py"
