@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import cache
 from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
 
+import sympy as sp
 from frozendict import frozendict
 
 from ampform.sympy._cache import cache_to_disk
@@ -12,8 +13,6 @@ from ampform.sympy._cache import cache_to_disk
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from typing import TypeVar
-
-    import sympy as sp
 
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
 
@@ -75,6 +74,7 @@ class Model(Protocol):
 def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     substitutions = _unfold_substitutions(frozendict(substitutions))
     expr = doit(expr)
+    expr, substitutions = _match_indexed_symbols(expr, substitutions)
     return xreplace(expr, substitutions)
 
 
@@ -83,3 +83,33 @@ def _unfold_substitutions(
     substitutions: frozendict[sp.Basic, sp.Basic],
 ) -> frozendict[sp.Basic, sp.Basic]:
     return frozendict({k: doit(v) for k, v in substitutions.items()})
+
+
+@cache
+def _match_indexed_symbols(
+    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
+) -> tuple[sp.Expr, frozendict[sp.Basic, sp.Basic]]:
+    """Match indexed symbols in the expression to the substitutions.
+
+    It seems that `sympy.tensor.indexed.Indexed` objects do not have a stable hash. For
+    this reason, we convert them to `sympy.symbol.Symbol` objects with the same name.
+    This happens in both the expression and the keys of the substitutions dictionary.
+
+    .. warning:: It seems that even with this improvement, the hashes of the resulting
+        expressions are not stable.
+    """
+    remapping = {
+        **{s: _to_symbol(s) for s in substitutions if isinstance(s, sp.Indexed)},
+        **{s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)},
+    }
+    if remapping:
+        expr = expr.xreplace(remapping)
+        substitutions = frozendict({
+            remapping.get(k, k): v for k, v in substitutions.items()
+        })
+    return expr, substitutions
+
+
+@cache
+def _to_symbol(symbol: sp.Indexed) -> sp.Symbol:
+    return sp.Symbol(sp.latex(symbol))
