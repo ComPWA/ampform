@@ -55,6 +55,17 @@ def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
     return sp.trigsimp(expr, *args, **kwargs)
 
 
+def subs(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+    """Call :meth:`~sympy.core.basic.Basic.subs` and cache the result to disk."""
+    return _subs_impl(expr, frozendict(substitutions))
+
+
+@cache
+@cache_to_disk(function_name="subs", dependencies=["sympy"])
+def _subs_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]) -> sp.Expr:
+    return expr.xreplace(substitutions)
+
+
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
     return _xreplace_impl(expr, frozendict(substitutions))

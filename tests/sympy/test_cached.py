@@ -69,19 +69,23 @@ def test_trigsimp():
     assert simplified == cached_simplified
 
 
+@pytest.mark.parametrize("substitute", ["subs", "xreplace"])
 @pytest.mark.parametrize(
     "substitution_name", ["parameter_defaults", "kinematic_variables"]
 )
-def test_xreplace(amplitude_model: tuple[str, HelicityModel], substitution_name: str):
+def test_xreplace(
+    amplitude_model: tuple[str, HelicityModel], substitute: str, substitution_name: str
+):
+    cached_func = getattr(cached, substitute)
     _, model = amplitude_model
     full_expression = model.expression.doit()
     substitutions: dict[sp.Symbol, sp.Basic] = getattr(model, substitution_name)
     expected_expr = full_expression.xreplace(substitutions)
     assert expected_expr != full_expression
 
-    substituted_expr_1 = cached.xreplace(full_expression, substitutions)
+    substituted_expr_1 = cached_func(full_expression, substitutions)
     assert substituted_expr_1 == expected_expr
-    substituted_expr_2 = cached.xreplace(full_expression, substitutions)
+    substituted_expr_2 = cached_func(full_expression, substitutions)
     assert substituted_expr_2 == expected_expr
 
 
