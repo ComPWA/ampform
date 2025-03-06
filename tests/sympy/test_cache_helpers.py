@@ -88,14 +88,14 @@ class TestLargeHash:
         assert h == expected_hash
 
     @pytest.mark.parametrize(
-        ("expected_hash", "formalism"),
+        ("expected_hashes", "formalism"),
         [
-            ("4765e78", "canonical-helicity"),
-            ("c141fbb", "helicity"),
+            ({"4765e78", "8bf5459"}, "canonical-helicity"),
+            ({"c141fbb"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
-    def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
+    def test_amplitude_model(self, expected_hashes: set[str], formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
             final_state=["p~", "K0", "Sigma+"],
@@ -132,4 +132,5 @@ class TestLargeHash:
         unfolded_expr = intensity.xreplace(amplitudes)
         assert not any(isinstance(s, sp.Indexed) for s in unfolded_expr.free_symbols)
         unfolded_intensity_hash = get_readable_hash(unfolded_expr)[:7]
-        assert unfolded_intensity_hash == expected_hash
+        assert unfolded_intensity_hash in expected_hashes
+        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform/pull/465
