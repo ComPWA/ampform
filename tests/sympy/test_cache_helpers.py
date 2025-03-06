@@ -90,8 +90,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
         [
-            ({"4765e78", "8bf5459"}, "canonical-helicity"),
-            ({"c141fbb"}, "helicity"),
+            ({"4765e78", "8bf5459", "88393a4"}, "canonical-helicity"),
+            ({"be45e3f", "c141fbb"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
