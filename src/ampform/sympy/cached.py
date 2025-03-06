@@ -103,4 +103,4 @@ def _match_indexed_symbols(
 
 @cache
 def _to_symbol(symbol: sp.Indexed) -> sp.Symbol:
-    return sp.Symbol(sp.latex(symbol), **symbol.assumptions0)
+    return sp.Symbol(sp.latex(symbol))
