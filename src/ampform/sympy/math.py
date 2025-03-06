@@ -1,4 +1,4 @@
-"""A collection of basic math operations, used in `ampform.dynamics`."""  # noqa: A005
+"""A collection of basic math operations, used in `ampform.dynamics`."""
 
 # cspell:ignore Lambdifier
 from __future__ import annotations

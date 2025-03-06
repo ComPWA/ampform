@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Callable, TypeVar
 from warnings import warn
 
 import sympy as sp
+from typing_extensions import Self
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -64,12 +65,7 @@ class UnevaluatedExpression(sp.Expr):
         super().__init_subclass__(**kwargs)
 
     @override
-    def __new__(
-        cls: type[DecoratedClass],
-        *args,
-        name: str | None = None,
-        **hints,
-    ) -> DecoratedClass:
+    def __new__(cls, *args, name: str | None = None, **hints) -> Self:
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
@@ -108,8 +104,8 @@ class UnevaluatedExpression(sp.Expr):
         kwargs = {"name": self._name}
         return args, kwargs
 
-    @override  # type:ignore[misc]
-    def _hashable_content(self) -> tuple:
+    @override
+    def _hashable_content(self) -> tuple:  # type:ignore[misc]
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
         return (*super()._hashable_content(), str(self._name))
