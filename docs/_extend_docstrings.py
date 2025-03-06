@@ -23,7 +23,7 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
 from ampform.sympy._array_expressions import ArrayMultiplication
-from ampform.sympy._cache import get_readable_hash
+from ampform.sympy._cache import get_readable_hash, make_hashable
 
 if TYPE_CHECKING:
     from qrules.transition import ReactionInfo, SpinFormalism
@@ -726,7 +726,7 @@ def __generate_transitions_cached(
     formalism: SpinFormalism,
 ) -> ReactionInfo:
     version = get_package_version("qrules")
-    obj = (initial_state, final_state, formalism)
+    obj = make_hashable(initial_state, final_state, formalism)
     h = get_readable_hash(obj)
     docs_dir = Path(__file__).parent
     file_name = docs_dir / ".cache" / f"reaction-qrules-v{version}-{h}.pickle"
