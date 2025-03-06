@@ -1,4 +1,7 @@
-"""Handy aliases for working with cached SymPy expressions."""
+"""Handy aliases for working with cached SymPy expressions.
+
+.. autofunction:: doit
+"""
 
 from __future__ import annotations
 

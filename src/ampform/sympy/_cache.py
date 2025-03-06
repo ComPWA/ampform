@@ -1,4 +1,11 @@
-"""Helper functions for :func:`.cached.doit` and related functions."""
+"""Helper functions for :func:`.cached.doit` and related functions.
+
+These methods are private, but can be imported from this module:
+
+.. code-block:: python
+
+   import ampform.sympy._cache
+"""
 
 from __future__ import annotations
 
