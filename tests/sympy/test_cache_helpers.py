@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING, ClassVar
 import pytest
 import qrules
 import sympy as sp
+from frozendict import frozendict
 
 import ampform
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
 from ampform.sympy._cache import get_readable_hash
+from ampform.sympy.cached import _match_indexed_symbols
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
@@ -85,16 +87,15 @@ class TestLargeHash:
         h = get_readable_hash(reaction)[:7]
         assert h == expected_hash
 
-    @pytest.mark.slow
     @pytest.mark.parametrize(
-        ("hash1", "hash2", "formalism"),
+        ("expected_hash", "formalism"),
         [
-            ("8cc382e", "7271e89", "canonical-helicity"),
-            ("0bf9bba", "5f137b2", "helicity"),
+            ("4765e78", "canonical-helicity"),
+            ("c141fbb", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
-    def test_amplitude_model(self, hash1: str, hash2: str, formalism: SpinFormalism):
+    def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
             final_state=["p~", "K0", "Sigma+"],
@@ -116,10 +117,19 @@ class TestLargeHash:
         for name in reaction.get_intermediate_particles().names:
             model_builder.dynamics.assign(name, dynamics_builder)
         model = model_builder.formulate()
-        h = get_readable_hash(model.expression)[:7]
-        assert h == hash1
 
-        unfolded_expr = model.expression.doit()
-        assert unfolded_expr != model.expression
-        h = get_readable_hash(unfolded_expr)[:7]
-        assert h == hash2
+        amplitudes_idx = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
+        intensity_idx = model.intensity.doit()
+        intensity, amplitudes = _match_indexed_symbols(intensity_idx, amplitudes_idx)
+        assert intensity != intensity_idx
+        assert amplitudes != amplitudes_idx
+        assert not any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
+
+        assert intensity != intensity_idx
+        intensity_hash = get_readable_hash(intensity_idx)[:7]
+        assert intensity_hash == "6a98bbf"
+
+        unfolded_expr = intensity.xreplace(amplitudes)
+        assert not any(isinstance(s, sp.Indexed) for s in unfolded_expr.free_symbols)
+        unfolded_intensity_hash = get_readable_hash(unfolded_expr)[:7]
+        assert unfolded_intensity_hash == expected_hash
