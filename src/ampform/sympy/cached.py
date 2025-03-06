@@ -87,13 +87,14 @@ def _unfold_substitutions(
 
 @cache
 def _match_indexed_symbols(
-    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
+    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic] | None = None
 ) -> tuple[sp.Expr, frozendict[sp.Basic, sp.Basic]]:
-    remapping = {
-        **{s: _to_symbol(s) for s in substitutions if isinstance(s, sp.Indexed)},
-        **{s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)},
-    }
-    if remapping:
+    if substitutions is None:
+        substitutions = frozendict()
+    free_symbols = expr.free_symbols | set(substitutions)
+    indexed_symbols = {s for s in free_symbols if isinstance(s, sp.Indexed)}
+    if indexed_symbols:
+        remapping = {s: _to_symbol(s) for s in sorted(indexed_symbols, key=str)}
         expr = expr.xreplace(remapping)
         substitutions = frozendict({
             remapping.get(k, k): v for k, v in substitutions.items()
