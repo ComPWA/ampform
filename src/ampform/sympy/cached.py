@@ -89,6 +89,15 @@ def _unfold_substitutions(
 def _match_indexed_symbols(
     expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
 ) -> tuple[sp.Expr, frozendict[sp.Basic, sp.Basic]]:
+    """Match indexed symbols in the expression to the substitutions.
+
+    It seems that `sympy.tensor.indexed.Indexed` objects do not have a stable hash. For
+    this reason, we convert them to `sympy.symbol.Symbol` objects with the same name.
+    This happens in both the expression and the keys of the substitutions dictionary.
+
+    .. warning:: It seems that even with this improvement, the hashes of the resulting
+        expressions are not stable.
+    """
     remapping = {
         **{s: _to_symbol(s) for s in substitutions if isinstance(s, sp.Indexed)},
         **{s: _to_symbol(s) for s in expr.free_symbols if isinstance(s, sp.Indexed)},
