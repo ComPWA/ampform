@@ -19,7 +19,11 @@ else:
     from typing_extensions import override
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
-    from typing_extensions import Self
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
 
 class UnevaluatedExpression(sp.Expr):
