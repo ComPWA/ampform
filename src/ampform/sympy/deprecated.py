@@ -20,6 +20,11 @@ else:
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
+
 
 class UnevaluatedExpression(sp.Expr):
     """Base class for expression classes with an :meth:`evaluate` method.
@@ -64,12 +69,7 @@ class UnevaluatedExpression(sp.Expr):
         super().__init_subclass__(**kwargs)
 
     @override
-    def __new__(
-        cls: type[DecoratedClass],
-        *args,
-        name: str | None = None,
-        **hints,
-    ) -> DecoratedClass:
+    def __new__(cls, *args, name: str | None = None, **hints) -> Self:
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
@@ -108,8 +108,8 @@ class UnevaluatedExpression(sp.Expr):
         kwargs = {"name": self._name}
         return args, kwargs
 
-    @override  # type:ignore[misc]
-    def _hashable_content(self) -> tuple:
+    @override
+    def _hashable_content(self) -> tuple:  # type:ignore[misc]
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
         return (*super()._hashable_content(), str(self._name))
