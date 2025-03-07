@@ -89,9 +89,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
         [
-            ({"3bf2c7a", "4765e78", "8bf5459"}, "canonical-helicity"),
+            ({"4765e78", "8bf5459"}, "canonical-helicity"),
             ({"3bf2c7a", "915fff3"}, "helicity"),
-            # the fact that the first two hashes are the same is insane 😱
         ],
         ids=["canonical-helicity", "helicity"],
     )
