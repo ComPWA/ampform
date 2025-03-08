@@ -13,6 +13,7 @@ import ampform
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
 from ampform.sympy._cache import get_readable_hash
+from ampform.sympy.cached import _match_indexed_symbols
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
@@ -89,8 +90,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
         [
-            ({"4765e78", "8bf5459"}, "canonical-helicity"),
-            ({"3bf2c7a", "915fff3"}, "helicity"),
+            ({"4765e78", "8bf5459", "88393a4"}, "canonical-helicity"),
+            ({"be45e3f", "c141fbb"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -117,14 +118,19 @@ class TestLargeHash:
             model_builder.dynamics.assign(name, dynamics_builder)
         model = model_builder.formulate()
 
-        intensity = model.intensity.doit()
-        assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
+        amplitudes_idx = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
+        intensity_idx = model.intensity.doit()
+        intensity, amplitudes = _match_indexed_symbols(intensity_idx, amplitudes_idx)
+        assert intensity != intensity_idx
+        assert amplitudes != amplitudes_idx
+        assert not any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
-        intensity_hash = get_readable_hash(intensity)[:7]
+        assert intensity != intensity_idx
+        intensity_hash = get_readable_hash(intensity_idx)[:7]
         assert intensity_hash == "6a98bbf"
 
-        amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
-        unfolded_intensity = intensity.xreplace(amplitudes)
-        unfolded_intensity_hash = get_readable_hash(unfolded_intensity)[:7]
+        unfolded_expr = intensity.xreplace(amplitudes)
+        assert not any(isinstance(s, sp.Indexed) for s in unfolded_expr.free_symbols)
+        unfolded_intensity_hash = get_readable_hash(unfolded_expr)[:7]
         assert unfolded_intensity_hash in expected_hashes
-        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform-dpd/discussions/163
+        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform/pull/465
