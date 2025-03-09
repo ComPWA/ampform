@@ -221,6 +221,8 @@ def to_bytes(obj) -> bytes:
 
 
 def make_hashable(*args) -> Hashable:
+    if len(args) == 1:
+        return _make_hashable_impl(args[0])
     return tuple(_make_hashable_impl(x) for x in args)
 
 
