@@ -226,7 +226,7 @@ def make_hashable(*args) -> Hashable:
 
 def _make_hashable_impl(obj) -> Hashable:
     if isinstance(obj, abc.Mapping):
-        return frozendict(obj)
+        return frozendict({make_hashable(k): make_hashable(v) for k, v in obj.items()})
     if isinstance(obj, str):
         return obj
     if isinstance(obj, abc.Iterable):
