@@ -112,9 +112,9 @@ def _cache_to_disk_implementation(
             if cache_file.exists():
                 with open(cache_file, "rb") as f:
                     return load_function(f)
-            result = func(*args, **kwargs)
             msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
+            result = func(*args, **kwargs)
             cache_file.parent.mkdir(exist_ok=True, parents=True)
             with open(cache_file, "wb") as f:
                 dump_function(result, f)
