@@ -10,6 +10,7 @@ These methods are private, but can be imported from this module:
 from __future__ import annotations
 
 import hashlib
+import inspect
 import logging
 import os
 import pickle  # noqa: S403
@@ -95,6 +96,7 @@ def _cache_to_disk_implementation(
             _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
             return func
         function_identifier = f"{func.__module__}.{func.__name__}"
+        src = inspect.getsource(func)
         dependency_identifiers = _get_dependency_identifiers(func, dependencies or [])
         nonlocal function_name
         if function_name is None:
@@ -103,7 +105,7 @@ def _cache_to_disk_implementation(
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             hashable_object = make_hashable(
-                function_identifier, *dependency_identifiers, args, kwargs
+                function_identifier, src, *dependency_identifiers, args, kwargs
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
