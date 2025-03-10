@@ -10,6 +10,7 @@ These methods are private, but can be imported from this module:
 from __future__ import annotations
 
 import hashlib
+import inspect
 import logging
 import os
 import pickle  # noqa: S403
@@ -94,7 +95,9 @@ def _cache_to_disk_implementation(
         if "NO_CACHE" in os.environ:
             _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
             return func
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
         function_identifier = f"{func.__module__}.{func.__name__}"
+        src = inspect.getsource(func)
         dependency_identifiers = _get_dependency_identifiers(func, dependencies or [])
         nonlocal function_name
         if function_name is None:
@@ -103,16 +106,21 @@ def _cache_to_disk_implementation(
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             hashable_object = make_hashable(
-                function_identifier, *dependency_identifiers, args, kwargs
+                function_identifier,
+                src,
+                python_version,
+                *dependency_identifiers,
+                args,
+                kwargs,
             )
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
             if cache_file.exists():
                 with open(cache_file, "rb") as f:
                     return load_function(f)
-            result = func(*args, **kwargs)
             msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
+            result = func(*args, **kwargs)
             cache_file.parent.mkdir(exist_ok=True, parents=True)
             with open(cache_file, "wb") as f:
                 dump_function(result, f)
@@ -219,16 +227,27 @@ def to_bytes(obj) -> bytes:
 
 
 def make_hashable(*args) -> Hashable:
+    """Make a hashable object from any Python object.
+
+    >>> make_hashable("a", 1, {"b": 2}, {3, 4})
+    ('a', 1, frozendict.frozendict({'b': 2}), frozenset({3, 4}))
+    >>> make_hashable({"a": {"sub-key": {1, 2, 3}, "b": [4, 5]}})
+    frozendict.frozendict({'a': frozendict.frozendict({'sub-key': frozenset({1, 2, 3}), 'b': (4, 5)})})
+    >>> make_hashable("already-hashable")
+    'already-hashable'
+    """
+    if len(args) == 1:
+        return _make_hashable_impl(args[0])
     return tuple(_make_hashable_impl(x) for x in args)
 
 
 def _make_hashable_impl(obj) -> Hashable:
     if isinstance(obj, abc.Mapping):
-        return frozendict(obj)
+        return frozendict({k: _make_hashable_impl(v) for k, v in obj.items()})
     if isinstance(obj, str):
         return obj
     if isinstance(obj, abc.Iterable):
-        hashable_items = (make_hashable(x) for x in obj)
+        hashable_items = (_make_hashable_impl(x) for x in obj)
         if isinstance(obj, abc.Sequence):
             return tuple(hashable_items)
         if isinstance(obj, set):
