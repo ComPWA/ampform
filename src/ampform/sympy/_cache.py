@@ -221,6 +221,15 @@ def to_bytes(obj) -> bytes:
 
 
 def make_hashable(*args) -> Hashable:
+    """Make a hashable object from any Python object.
+
+    >>> make_hashable("a", 1, {"b": 2}, {3, 4})
+    ('a', 1, frozendict.frozendict({'b': 2}), frozenset({3, 4}))
+    >>> make_hashable({"a": {"sub-key": {1, 2, 3}, "b": [4, 5]}})
+    frozendict.frozendict({'a': frozendict.frozendict({'sub-key': frozenset({1, 2, 3}), 'b': (4, 5)})})
+    >>> make_hashable("already-hashable")
+    'already-hashable'
+    """
     if len(args) == 1:
         return _make_hashable_impl(args[0])
     return tuple(_make_hashable_impl(x) for x in args)
