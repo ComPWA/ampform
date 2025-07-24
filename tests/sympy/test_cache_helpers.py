@@ -23,8 +23,8 @@ if TYPE_CHECKING:
     ("expected_hash", "assumptions"),
     [
         ("a7559ca", dict()),
-        ("f4b1fad", dict(real=True)),
-        ("d5bdc74", dict(rational=True)),
+        ("278bcee", dict(real=True)),
+        ("bc417f2", dict(rational=True)),
     ],
     ids=["symbol", "symbol-real", "symbol-rational"],
 )
@@ -52,7 +52,7 @@ def test_get_readable_hash_energy_dependent_width():
         meson_radius=d,
     )
     h = get_readable_hash(expr)[:7]
-    assert h == "ccafec3"
+    assert h == "3d076c6"
 
 
 class TestLargeHash:
@@ -89,8 +89,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
         [
-            ({"4765e78", "8bf5459"}, "canonical-helicity"),
-            ({"3bf2c7a", "915fff3"}, "helicity"),
+            ({"66b030b", "9cef00d"}, "canonical-helicity"),
+            ({"aced899", "ceecb32"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -121,7 +121,7 @@ class TestLargeHash:
         assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
         intensity_hash = get_readable_hash(intensity)[:7]
-        assert intensity_hash == "6a98bbf"
+        assert intensity_hash == "d113a38"
 
         amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
         unfolded_intensity = intensity.xreplace(amplitudes)
