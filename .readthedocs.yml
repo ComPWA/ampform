@@ -11,10 +11,11 @@ build:
       pixi global install graphviz uv
     - |-
       export UV_LINK_MODE=copy
+      export UV_TOOL_BIN_DIR=$READTHEDOCS_VIRTUALENV_PATH/bin
+      uv tool install --with tox-uv tox
       uv run \
         --group doc \
         --no-dev \
-        --with tox-uv \
         tox -e doc
       mkdir -p $READTHEDOCS_OUTPUT
       mv docs/_build/html $READTHEDOCS_OUTPUT
