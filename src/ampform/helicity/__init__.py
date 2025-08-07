@@ -642,9 +642,10 @@ class DynamicsSelector(abc.Mapping):
             transitions = transitions.transitions
         self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
         for transition in transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                self.__choices[decay] = create_non_dynamic
+            for permutated_transition in perform_combinatorics(transition):
+                for node_id in permutated_transition.topology.nodes:
+                    decay = TwoBodyDecay.from_transition(permutated_transition, node_id)
+                    self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
     def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
