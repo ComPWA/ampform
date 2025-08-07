@@ -17,7 +17,6 @@
     "ms-vscode.live-server",
     "ms-vsliveshare.vsliveshare",
     "redhat.vscode-yaml",
-    "ryanluker.vscode-coverage-gutters",
     "soulcode.vscode-unwanted-extensions",
     "stkb.rewrap",
     "streetsidesoftware.code-spell-checker",
@@ -33,6 +32,7 @@
     "ms-python.isort",
     "ms-python.pylint",
     "ms-toolsai.vscode-jupyter-slideshow",
+    "ryanluker.vscode-coverage-gutters",
     "travisillig.vscode-json-stable-stringify",
     "tyriar.sort-lines"
   ]

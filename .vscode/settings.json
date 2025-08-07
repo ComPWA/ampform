@@ -30,10 +30,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "cSpell.enabled": true,
-  "coverage-gutters.coverageFileNames": ["coverage.xml"],
-  "coverage-gutters.coverageReportFileName": "**/htmlcov/index.html",
-  "coverage-gutters.showGutterCoverage": false,
-  "coverage-gutters.showLineCoverage": true,
   "diffEditor.experimental.showMoves": true,
   "editor.formatOnSave": true,
   "git.rebaseWhenSync": true,
@@ -59,7 +55,7 @@
   "python.analysis.inlayHints.pytestParameters": true,
   "python.defaultInterpreterPath": ".venv/bin/python",
   "python.terminal.activateEnvironment": false,
-  "python.testing.pytestArgs": ["--color=no", "--no-cov"],
+  "python.testing.pytestArgs": ["--numprocesses=auto"],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "redhat.telemetry.enabled": false,
@@ -75,6 +71,8 @@
     "typings/**": true
   },
   "telemetry.telemetryLevel": "off",
+  "testing.coverageToolbarEnabled": true,
+  "testing.showCoverageInExplorer": true,
   "yaml.schemas": {
     "https://citation-file-format.github.io/1.2.0/schema.json": "CITATION.cff",
     "https://json.schemastore.org/github-workflow.json": "./.github/workflows/requirements.yml"
