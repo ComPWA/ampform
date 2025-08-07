@@ -10,6 +10,7 @@ import sympy as sp
 from frozendict import frozendict
 
 import ampform
+from ampform._qrules import get_qrules_version
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
 from ampform.sympy._cache import get_readable_hash
@@ -76,6 +77,8 @@ class TestLargeHash:
         ids=["canonical-helicity", "helicity"],
     )
     def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
+        if get_qrules_version() < (0, 10):
+            pytest.skip("Hashes of are not stable in qrules<0.10")
         reaction = qrules.generate_transitions(
             initial_state=self.initial_state,
             final_state=self.final_state,
