@@ -471,10 +471,9 @@ def perform_combinatorics(
     >>> assert len(permutated_transitions) == 2
     """
     if get_qrules_version() < (0, 10):
-        mutable_graph = perform_external_edge_identical_particle_combinatorics(
-            transition.to_graph()  # type: ignore[attr-defined,return-value]
-        )
-        return StateTransition.from_graph(mutable_graph)  # type: ignore[attr-defined]
+        graph = transition.to_graph()  # type: ignore[attr-defined,return-value]
+        mutable_graphs = perform_external_edge_identical_particle_combinatorics(graph)
+        return [StateTransition.from_graph(g) for g in mutable_graphs]  # type: ignore[attr-defined]
     graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
     combinations = perform_external_edge_identical_particle_combinatorics(graph)
     return [g.freeze().convert(lambda s: State(*s)) for g in combinations]
