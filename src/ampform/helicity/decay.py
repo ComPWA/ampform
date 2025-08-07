@@ -453,6 +453,23 @@ def group_by_topology(
 def perform_combinatorics(
     transition: StateTransition,
 ) -> list[FrozenTransition[State, InteractionProperties]]:
+    """Perform final-state combinatorics on a state transition for symmetrization.
+
+    QRules returns a :class:`~qrules.transition.ReactionInfo` object where permutations
+    of equal final-state particle have been removed. This function performs the
+    combinatorics on the final-state particles, so that the symmetrization resulting
+    amplitude model is performed correctly.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state="D+",
+    ...     final_state=["pi+", "pi+", "pi-"],
+    ...     allowed_intermediate_particles=["rho(770)0"],
+    ... )
+    >>> assert len(reaction.transitions) == 1
+    >>> permutated_transitions = perform_combinatorics(reaction.transitions[0])
+    >>> assert len(permutated_transitions) == 2
+    """
     if get_qrules_version() < (0, 10):
         mutable_graph = perform_external_edge_identical_particle_combinatorics(
             transition.to_graph()  # type: ignore[attr-defined,return-value]
