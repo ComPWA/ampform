@@ -119,7 +119,6 @@ test = [
     "pytest-benchmark",
     "pytest-cov",
     "pytest-profiling",
-    "pytest-xdist",
 ]
 types = [
     "IPython",

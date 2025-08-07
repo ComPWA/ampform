@@ -20,6 +20,7 @@ repos:
       - id: check-dev-files
         args:
           - --doc-apt-packages=graphviz
+          - --pytest-single-threaded
           - --repo-name=ampform
           - --repo-title=AmpForm
           - --update-lock-files=outsource
