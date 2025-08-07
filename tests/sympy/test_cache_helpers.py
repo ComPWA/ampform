@@ -63,24 +63,22 @@ class TestLargeHash:
     allowed_interaction_types: ClassVar = "strong"
 
     @pytest.mark.parametrize(
-        ("expected_hash", "expected_hash_qrules_v9", "formalism"),
+        ("expected_hash", "formalism"),
         [
             (
                 "762cc00" if sys.version_info >= (3, 11) else "1f5ac33",
-                "5162ab9",
                 "canonical-helicity",
             ),
             (
                 "17fefe5" if sys.version_info >= (3, 11) else "7b5fad1",
-                "ec49f9c",
                 "helicity",
             ),
         ],
         ids=["canonical-helicity", "helicity"],
     )
-    def test_reaction(
-        self, expected_hash: str, expected_hash_qrules_v9: str, formalism: SpinFormalism
-    ):
+    def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
+        if get_qrules_version() < (0, 10):
+            pytest.skip("Hashes of are not stable in qrules<0.10")
         reaction = qrules.generate_transitions(
             initial_state=self.initial_state,
             final_state=self.final_state,
@@ -89,10 +87,7 @@ class TestLargeHash:
             formalism=formalism,
         )
         h = get_readable_hash(reaction)[:7]
-        if get_qrules_version() >= (0, 10):
-            assert h == expected_hash
-        else:
-            assert h == expected_hash_qrules_v9
+        assert h == expected_hash
 
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
