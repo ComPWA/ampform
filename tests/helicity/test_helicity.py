@@ -9,7 +9,10 @@ import sympy as sp
 from qrules import ReactionInfo
 
 from ampform import get_builder
-from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
+from ampform.dynamics.builder import (
+    RelativisticBreitWignerBuilder,
+    create_relativistic_breit_wigner_with_ff,
+)
 from ampform.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
@@ -366,3 +369,35 @@ def test_group_by_spin_projection(reaction: ReactionInfo):
         for transition in transition_iter:
             assert transition.initial_states == first_transition.initial_states
             assert transition.final_states == first_transition.final_states
+
+
+def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
+    reaction = d_to_pi_pi_pi
+    assert len(reaction.transitions) == 1
+    bw_builder = RelativisticBreitWignerBuilder()
+    model_builder = HelicityAmplitudeBuilder(reaction)
+    for name in reaction.get_intermediate_particles().names:
+        model_builder.dynamics.assign(name, bw_builder)
+    model = model_builder.formulate()
+    parameter_names = sorted(s.name for s in model.parameter_defaults)
+    assert parameter_names == [
+        R"C_{D^{+} \to \pi^{+}_{0} \rho(770)^{0}_{0}; \rho(770)^{0} \to \pi^{+}_{0} \pi^{-}_{0}}",
+        R"\Gamma_{\rho(770)^{0}}",
+        R"m_{\rho(770)^{0}}",
+    ]
+    coefficients = [p for p in parameter_names if p.startswith("C_")]
+    assert len(coefficients) == 1
+    assert len(model.amplitudes) == 1
+    (amplitude_expr,) = model.amplitudes.values()
+    amplitude_expr = amplitude_expr.xreplace({
+        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))
+        for s in model.parameter_defaults
+    })
+    amplitude_expr = sp.simplify(amplitude_expr, doit=False)
+    amplitude_str = str(amplitude_expr).replace("WignerD", "D").replace(" ", "")
+    assert (
+        amplitude_str == "C*m*Γ*("
+        "-(-m**2+I*m*Γ+m_02**2)*D(0,0,0,-phi_0,theta_0,0)*D(1,0,0,-phi_1^12,theta_1^12,0)"
+        "-(-m**2+I*m*Γ+m_12**2)*D(0,0,0,-phi_02,theta_02,0)*D(1,0,0,-phi_0^02,theta_0^02,0))/((-m**2+I*m*Γ+m_02**2)*(-m**2+I*m*Γ+m_12**2)"
+        ")"
+    )
