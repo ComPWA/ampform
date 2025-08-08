@@ -47,7 +47,7 @@ python3 -m pip install git+https://github.com/ComPWA/ampform@main
 
 :::{include} ../CONTRIBUTING.md
 :start-after: **[compwa.github.io/develop](https://compwa.github.io/develop)**!
-:end-before: If the repository provides a Tox configuration
+:end-before: If the repository provides a
 :::
 
 That's all! Have a look at {doc}`/usage` to try out the package. You can also have a look at {doc}`compwa:develop` for tips on how to work with this 'editable' developer setup!
