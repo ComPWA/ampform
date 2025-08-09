@@ -97,6 +97,7 @@ class TestLargeHash:
         ],
         ids=["canonical-helicity", "helicity"],
     )
+    @pytest.mark.slow
     def test_amplitude_model(self, expected_hashes: set[str], formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
