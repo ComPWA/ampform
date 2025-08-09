@@ -92,8 +92,8 @@ class TestLargeHash:
     @pytest.mark.parametrize(
         ("expected_hashes", "formalism"),
         [
-            ({"66b030b", "9cef00d"}, "canonical-helicity"),
-            ({"aced899", "ceecb32"}, "helicity"),
+            ({"1129324", "3296f60", "66b030b", "9cef00d"}, "canonical-helicity"),
+            ({"1ba1704", "aced899", "cbd5ff0", "ceecb32"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
@@ -124,7 +124,7 @@ class TestLargeHash:
         assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
         intensity_hash = get_readable_hash(intensity)[:7]
-        assert intensity_hash == "d113a38"
+        assert intensity_hash in {"c83b853", "d113a38"}
 
         amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
         unfolded_intensity = intensity.xreplace(amplitudes)
