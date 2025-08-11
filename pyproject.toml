@@ -218,22 +218,24 @@ sequence = [
 
 [tool.poe.tasks.benchmark]
 cmd = """
-pytest benchmarks \
-    --benchmark-autosave \
-    --durations=0 \
-    -k benchmark
+uv run --group test --isolated --no-dev \
+    pytest benchmarks \
+        --benchmark-autosave \
+        --durations=0 \
+        -k benchmark
 """
 help = "Run benchmark tests and visualize performance"
 
 [tool.poe.tasks.cov]
 cmd = """
-pytest \
-    --cov=ampform \
-    --cov-fail-under=75 \
-    --cov-report=html \
-    --cov-report=xml \
-    --numprocesses=auto \
-    ${paths}
+uv run --group test --isolated --no-dev \
+    pytest \
+        --cov=ampform \
+        --cov-fail-under=75 \
+        --cov-report=html \
+        --cov-report=xml \
+        --numprocesses=auto \
+        ${paths}
 """
 help = "Compute how much of the source code is covered by tests"
 
@@ -260,6 +262,7 @@ help = "Build documentation and API"
 cmd = """
 sphinx-autobuild \
     --builder=html \
+    --open-browser \
     --port=0 \
     --re-ignore=/__pycache__(/.*)?$ \
     --re-ignore=/_build(/.*)?$ \
@@ -313,11 +316,11 @@ cmd = "pytest --nbmake --nbmake-timeout=0 docs"
 help = "Run all notebooks"
 
 [tool.poe.tasks.style]
-cmd = "pre-commit run --all-files"
+cmd = "uv run --group style --isolated --no-dev pre-commit run --all-files"
 help = "Perform all linting, formatting, and spelling checks"
 
 [tool.poe.tasks.test]
-cmd = "pytest --numprocesses=auto ${paths}"
+cmd = "uv run --group test --isolated --no-dev pytest --numprocesses=auto ${paths}"
 help = "Run all unit tests"
 
 [[tool.poe.tasks.test.args]]
