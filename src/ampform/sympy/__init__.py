@@ -140,7 +140,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     [A[1, 0], A[1, 1], A[1, 2]]])
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
-    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
+    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])  # pyright:ignore[reportIndexIssue]
 
 
 class PoolSum(sp.Expr):

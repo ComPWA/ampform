@@ -25,7 +25,7 @@ on:
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@v2.1
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@v3.0
     permissions:
       pages: write
       id-token: write
@@ -33,7 +33,7 @@ jobs:
       apt-packages: graphviz
       specific-pip-packages: ${{ inputs.specific-pip-packages }}
   pytest:
-    uses: ComPWA/actions/.github/workflows/pytest.yml@v2.1
+    uses: ComPWA/actions/.github/workflows/pytest.yml@v3.0
     with:
       coverage-target: ampform
       macos-python-version: "3.10"
@@ -44,4 +44,4 @@ jobs:
     if: inputs.specific-pip-packages == ''
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/pre-commit.yml@v2.1
+    uses: ComPWA/actions/.github/workflows/pre-commit.yml@v3.0

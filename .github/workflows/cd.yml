@@ -9,9 +9,9 @@ on:
 jobs:
   milestone:
     if: startsWith(github.ref, 'refs/tags')
-    uses: ComPWA/actions/.github/workflows/close-milestone.yml@v2
+    uses: ComPWA/actions/.github/workflows/close-milestone.yml@v3
   package-name:
-    uses: ComPWA/actions/.github/workflows/get-pypi-name.yml@v2
+    uses: ComPWA/actions/.github/workflows/get-pypi-name.yml@v3
   pypi:
     environment:
       name: PyPI
@@ -24,9 +24,9 @@ jobs:
       id-token: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: ComPWA/actions/build-pypi-distribution@v2
+      - uses: ComPWA/actions/build-pypi-distribution@v3
       - uses: pypa/gh-action-pypi-publish@release/v1
   push:
     if: startsWith(github.ref, 'refs/tags') && !github.event.release.prerelease
     secrets: inherit
-    uses: ComPWA/actions/.github/workflows/push-to-version-branches.yml@v2
+    uses: ComPWA/actions/.github/workflows/push-to-version-branches.yml@v3

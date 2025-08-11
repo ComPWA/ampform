@@ -17,6 +17,6 @@ on:
 
 jobs:
   lock:
-    uses: ComPWA/actions/.github/workflows/lock.yml@v2
+    uses: ComPWA/actions/.github/workflows/lock.yml@v3
     secrets:
       token: ${{ secrets.PAT }}
