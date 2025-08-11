@@ -98,7 +98,7 @@ class RelativisticKMatrix(TMatrix):
             for i in range(n_channels)
             for j in range(n_channels)
         }).xreplace({
-            sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
+            sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])  # pyright:ignore[reportIndexIssue]
             for i in range(n_channels)
         })
 
@@ -360,7 +360,7 @@ class RelativisticPVector(TMatrix):
                 for i in range(n_channels)
             })
             .xreplace({
-                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
+                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])  # pyright:ignore[reportIndexIssue]
                 for i in range(n_channels)
             })
         )

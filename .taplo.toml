@@ -13,7 +13,7 @@ reorder_keys = true
 
 [[rule]]
 include = ["**/pyproject.toml"]
-keys = ["tool.tox"]
+keys = ["tool.poe.tasks"]
 
 [rule.formatting]
 reorder_arrays = false

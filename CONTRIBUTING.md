@@ -31,14 +31,14 @@ and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-script
 pre-commit install --install-hooks
 ```
 
-In addition, it may be handy to install `tox`:
+[Poe the Poet](https://poethepoet.natn.io) is used as a task runner. You can see which local CI checks it defines by running
 
 ```shell
-uv tool install tox --with tox-uv
+poe
 ```
 
-If the repository provides a Tox configuration under [`pyproject.toml`](./pyproject.toml), you can see which jobs it defines with:
+For instance, all style checks can be run with
 
 ```shell
-tox list
+poe style
 ```

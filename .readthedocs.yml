@@ -14,8 +14,8 @@ build:
       uv run \
         --group doc \
         --no-dev \
-        --with tox-uv \
-        tox -e doc
+        --with poethepoet \
+        poe doc
       mkdir -p $READTHEDOCS_OUTPUT
       mv docs/_build/html $READTHEDOCS_OUTPUT
 
