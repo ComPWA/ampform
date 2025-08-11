@@ -8,7 +8,6 @@ from functools import cache, singledispatch
 from typing import TYPE_CHECKING
 
 from attrs import frozen
-from qrules.quantum_numbers import InteractionProperties
 from qrules.transition import ReactionInfo, State, StateTransition
 
 from ampform._qrules import get_qrules_version
@@ -20,10 +19,17 @@ if TYPE_CHECKING:
 
 from typing import Literal
 
+from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
+from qrules.transition import InteractionProperties
+
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
 else:
     from typing_extensions import TypeGuard
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from qrules.topology import FrozenTransition
 
 
 @frozen
@@ -442,3 +448,32 @@ def group_by_topology(
     for transition in transitions:
         transition_groups[transition.topology].append(transition)
     return dict(transition_groups)
+
+
+def perform_combinatorics(
+    transition: StateTransition,
+) -> list[FrozenTransition[State, InteractionProperties]]:
+    """Perform final-state combinatorics on a state transition for symmetrization.
+
+    QRules returns a :class:`~qrules.transition.ReactionInfo` object where permutations
+    of equal final-state particle have been removed. This function performs the
+    combinatorics on the final-state particles, so that the symmetrization resulting
+    amplitude model is performed correctly.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state="D+",
+    ...     final_state=["pi+", "pi+", "pi-"],
+    ...     allowed_intermediate_particles=["rho(770)0"],
+    ... )
+    >>> assert len(reaction.transitions) == 1
+    >>> permutated_transitions = perform_combinatorics(reaction.transitions[0])
+    >>> assert len(permutated_transitions) == 2
+    """
+    if get_qrules_version() < (0, 10):
+        graph = transition.to_graph()  # type: ignore[attr-defined,return-value]
+        mutable_graphs = perform_external_edge_identical_particle_combinatorics(graph)
+        return [StateTransition.from_graph(g) for g in mutable_graphs]  # type: ignore[attr-defined]
+    graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
+    combinations = perform_external_edge_identical_particle_combinatorics(graph)
+    return [g.freeze().convert(lambda s: State(*s)) for g in combinations]

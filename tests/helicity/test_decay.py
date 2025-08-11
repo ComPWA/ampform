@@ -11,10 +11,13 @@ from ampform.helicity.decay import (
     determine_attached_final_state,
     get_sibling_state_id,
     is_opposite_helicity_state,
+    perform_combinatorics,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from qrules.transition import ReactionInfo
 
 
 def test_determine_attached_final_state():
@@ -76,3 +79,16 @@ def __permutate_final_state_ids(topology: Topology) -> set[Topology]:
         renames = dict(zip(permutation, final_state_ids))
         permutated_topologies.add(topology.relabel_edges(renames))
     return permutated_topologies
+
+
+def test_perform_combinatorics_no_permutations(reaction: ReactionInfo):
+    assert len(reaction.transitions) in {8, 16}
+    for transition in reaction.transitions:
+        permutated_transitions = perform_combinatorics(transition)
+        assert len(permutated_transitions) == 1
+
+
+def test_perform_combinatorics_two_permutations(d_to_pi_pi_pi: ReactionInfo):
+    assert len(d_to_pi_pi_pi.transitions) == 1
+    permutated_transitions = perform_combinatorics(d_to_pi_pi_pi.transitions[0])
+    assert len(permutated_transitions) == 2
