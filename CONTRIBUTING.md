@@ -31,8 +31,14 @@ and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-script
 pre-commit install --install-hooks
 ```
 
-If the repository provides a [`[tool.poe.tasks]`](https://poethepoet.natn.io) configuration under [`pyproject.toml`](./pyproject.toml), you can see which jobs it defines with:
+[Poe the Poet](https://poethepoet.natn.io) is used as a task runner. You can see which local CI checks it defines by running
 
 ```shell
 poe
+```
+
+For instance, all style checks can be run with
+
+```shell
+poe style
 ```
