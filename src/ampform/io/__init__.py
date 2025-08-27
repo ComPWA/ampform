@@ -80,11 +80,11 @@ def _render_broken_expression(
 ) -> str:
     n = terms_per_line
     groups = [sp.Add(*terms[i : i + n]) for i in range(0, len(terms), n)]
-    latex = R"\begin{array}{l}" + "\n"
-    latex += Rf"  {aslatex(groups[0], **kwargs)} \\" + "\n"
+    latex = R"\begin{aligned}" + "\n"
+    latex += Rf"& {aslatex(groups[0], **kwargs)} \\" + "\n"
     for term in groups[1:]:
-        latex += Rf"  \; + \; {aslatex(term, **kwargs)} \\" + "\n"
-    latex += R"\end{array}"
+        latex += Rf"& \;+\; {aslatex(term, **kwargs)} \\" + "\n"
+    latex += R"\end{aligned}"
     return latex
 
 
@@ -93,10 +93,10 @@ def _(obj: Mapping, *, terms_per_line: int = 0, **kwargs) -> str:
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
-    latex = R"\begin{array}{rcl}" + "\n"
+    latex = R"\begin{aligned}" + "\n"
     for lhs, rhs in obj.items():
         latex += _render_row(lhs, rhs, terms_per_line, **kwargs)
-    latex += R"\end{array}"
+    latex += R"\end{aligned}"
     return latex
 
 
@@ -107,9 +107,9 @@ def _render_row(lhs, rhs, terms_per_line: int, **kwargs) -> str:
         terms = [sum(terms[i : i + n]) for i in range(0, len(terms), n)]
         row = _render_row(lhs, terms[0], terms_per_line=False)
         for term in terms[1:]:
-            row += Rf"    &+& {aslatex(term, **kwargs)} \\" + "\n"
+            row += Rf"    \;&+\; {aslatex(term, **kwargs)} \\" + "\n"
         return row
-    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs, **kwargs)} \\" + "\n"
+    return Rf"  {aslatex(lhs)} \;&=\; {aslatex(rhs, **kwargs)} \\" + "\n"
 
 
 @aslatex.register(abc.Iterable)
