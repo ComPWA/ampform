@@ -65,10 +65,10 @@ class BreakupMomentum(sp.Expr):
     Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
     on :pdg-review:`2021; Resonances; p.5`.
 
-    The Numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane.
-    The square root is defined as the standard
-    sympy sqrt :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    defined as the standard :func:`sympy.sqrt
+    <sympy.functions.elementary.miscellaneous.sqrt>`.
     """
 
     s: Any
@@ -99,10 +99,10 @@ class BreakupMomentumComplex(sp.Expr):
     Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
     on :pdg-review:`2021; Resonances; p.5`.
 
-    The Numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane.
-    The square root is the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have defined
-    behavior for defined for negative input values.
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
     """
 
     s: Any
