@@ -165,8 +165,8 @@ class PhaseSpaceFactorAbs(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q_squared = BreakupMomentum(s, m1, m2)
-        return 2 * sp.Abs(q_squared) / sp.sqrt(s)
+        q = BreakupMomentum(s, m1, m2)
+        return 2 * sp.Abs(q) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -191,8 +191,8 @@ class PhaseSpaceFactorComplex(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q_squared = BreakupMomentumSquared(s, m1, m2)
-        return 2 * ComplexSqrt(q_squared) / sp.sqrt(s)
+        q = BreakupMomentum(s, m1, m2, ComplexSqrt)
+        return 2 * q / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
