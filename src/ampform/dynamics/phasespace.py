@@ -230,8 +230,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
 def chew_mandelstam_s_wave(s, m1, m2):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q_squared = BreakupMomentumSquared(s, m1, m2)
-    q = ComplexSqrt(q_squared)
+    q = BreakupMomentum(s, m1, m2, ComplexSqrt)
     left_term = sp.Mul(
         2 * q / sp.sqrt(s),
         sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
