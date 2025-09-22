@@ -80,7 +80,7 @@ class BreakupMomentum(sp.Expr):
         s, m1, m2 = self.args
         return (
             sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
-        )  # type: ignore[operator]
+        )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -116,7 +116,7 @@ class BreakupMomentumComplex(sp.Expr):
             ComplexSqrt(s - (m1 + m2) ** 2)
             * ComplexSqrt(s - (m1 - m2) ** 2)
             / (2 * sp.sqrt(s))
-        )  # type: ignore[operator]
+        )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -148,7 +148,7 @@ class BreakupMomentumSquared(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)  # type: ignore[operator]
+        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -301,7 +301,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         rho_hat = PhaseSpaceFactorAbs(s, m1, m2)
-        s_threshold = (m1 + m2) ** 2  # type: ignore[operator]
+        s_threshold = (m1 + m2) ** 2
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
