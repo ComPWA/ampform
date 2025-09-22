@@ -85,7 +85,7 @@ class BreakupMomentum(sp.Expr):
         s = self.args[0]
         s_latex = printer._print(self.args[0])
         subscript = _indices_to_subscript(determine_indices(s))
-        name = "q^2" + subscript if self.name is None else self.name
+        name = "q" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
