@@ -67,25 +67,62 @@ class BreakupMomentum(sp.Expr):
 
     The Numerator is represented as two square roots, as it gives a cleaner cut
     structure when the function is continued to the complex plane.
-    The square root definition can be adjusted as needed, but defaults to the standard
+    The square root is defined as the standard
     sympy sqrt :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
     """
 
     s: Any
     m1: Any
     m2: Any
-    sqrt: sp.Function = argument(default=sp.sqrt, sympify=False)
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, sqrt = self.args
-        return sqrt(s - (m1 + m2) ** 2) * sqrt(s - (m1 - m2) ** 2) / (2 * sqrt(s))  # type: ignore[operator]
+        s, m1, m2 = self.args
+        return (
+            sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
+        )  # type: ignore[operator]
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
         s_latex = printer._print(self.args[0])
         subscript = _indices_to_subscript(determine_indices(s))
         name = "q" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class BreakupMomentumComplex(sp.Expr):
+    r"""Two-body break-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
+    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
+    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
+    on :pdg-review:`2021; Resonances; p.5`.
+
+    The Numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane.
+    The square root is the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have defined
+    behavior for defined for negative input values.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return (
+            ComplexSqrt(s - (m1 + m2) ** 2)
+            * ComplexSqrt(s - (m1 - m2) ** 2)
+            / (2 * sp.sqrt(s))
+        )  # type: ignore[operator]
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = self.args[0]
+        s_latex = printer._print(self.args[0])
+        subscript = _indices_to_subscript(determine_indices(s))
+        name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
@@ -191,7 +228,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q = BreakupMomentum(s, m1, m2, ComplexSqrt)
+        q = BreakupMomentumComplex(s, m1, m2)
         return 2 * q / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
