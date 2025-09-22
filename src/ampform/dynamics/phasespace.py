@@ -74,7 +74,7 @@ class BreakupMomentum(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    sqrt: sp.Function = sp.sqrt
+    sqrt: sp.Function = argument(default=sp.sqrt, sympify=False)
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
