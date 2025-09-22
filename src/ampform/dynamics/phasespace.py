@@ -57,6 +57,39 @@ class PhaseSpaceFactorProtocol(Protocol):
 
 
 @unevaluated
+class BreakupMomentum(sp.Expr):
+    r"""Two-body break-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
+    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
+    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
+    on :pdg-review:`2021; Resonances; p.5`.
+
+    The Numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane.
+    The square root definition can be adjusted as needed, but defaults to the standard
+    sympy sqrt :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    sqrt: sp.Function = sp.sqrt
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2, sqrt = self.args
+        return sqrt(s - (m1 + m2) ** 2) * sqrt(s - (m1 - m2) ** 2) / (2 * sqrt(s))  # type: ignore[operator]
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = self.args[0]
+        s_latex = printer._print(self.args[0])
+        subscript = _indices_to_subscript(determine_indices(s))
+        name = "q^2" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
 class BreakupMomentumSquared(sp.Expr):
     r"""Squared value of the two-body break-up momentum.
 
