@@ -152,8 +152,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     r"""Phase space factor square root over the absolute value.
 
     As opposed to `.PhaseSpaceFactor`, this takes the
-    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentumSquared`, then
-    the :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentum`.
 
     This version of the phase space factor is often denoted as :math:`\hat{\rho}` and is
     used in `.EqualMassPhaseSpaceFactor`.
@@ -166,8 +165,8 @@ class PhaseSpaceFactorAbs(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q_squared = BreakupMomentumSquared(s, m1, m2)
-        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
+        q_squared = BreakupMomentum(s, m1, m2)
+        return 2 * sp.Abs(q_squared) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
