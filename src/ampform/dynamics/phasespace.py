@@ -160,7 +160,7 @@ class BreakupMomentumSquared(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactor(sp.Expr):
-    r"""Standard phase-space factor, using :func:`BreakupMomentum`.
+    r"""Standard phase-space factor, using a definition consistent with :func:`BreakupMomentum`.
 
     See :pdg-review:`2021; Resonances; p.6`, Equation (50.9). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`chungPrimerKmatrixFormalism1995`, p.5.
@@ -173,8 +173,7 @@ class PhaseSpaceFactor(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q = BreakupMomentum(s, m1, m2)
-        return 2 * q / sp.sqrt(s)
+        return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
