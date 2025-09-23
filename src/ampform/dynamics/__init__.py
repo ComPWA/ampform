@@ -11,12 +11,9 @@ from warnings import warn
 import sympy as sp
 
 # pyright: reportUnusedImport=false
-from ampform.dynamics.form_factor import (
-    BlattWeisskopfSquared,  # noqa: F401
-    FormFactor,
-)
+from ampform.dynamics.form_factor import BlattWeisskopfSquared, FormFactor
 from ampform.dynamics.phasespace import (
-    BreakupMomentumSquared,  # noqa: F401
+    BreakupMomentumSquared,
     EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,  # noqa: F401
@@ -25,7 +22,12 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorSWave,  # noqa: F401
     _indices_to_subscript,
 )
-from ampform.sympy import argument, determine_indices, unevaluated
+from ampform.sympy import (
+    UnevaluatableIntegral,
+    argument,
+    determine_indices,
+    unevaluated,
+)
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -119,3 +121,59 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
         stacklevel=1,
     )
     return FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
+
+
+class DispersionIntegral(sp.Expr):
+    """Dispersion integral.
+
+    Parameters:
+        s (Any): Mandelstam variable s.
+        m1 (Any): Mass of particle 1.
+        m2 (Any): Mass of particle 2.
+        L (Any): Angular momentum.
+        meson_radius (float, optional): Meson radius, default is 1.
+        s_prime (sp.Symbol, optional): Integration variable defaults to 'x'.
+        epsilon (sp.Symbol, optional): Small imaginary part default is positive epsilon.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    L: Any
+    s_prime: Any = sp.Symbol("x", real=True)
+    name: str | None = argument(default=None, sympify=False)
+    meson_radius = 1
+
+    epsilon = sp.Symbol("epsilon", positive=True)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2, L, s_prime, meson_radius, epsilon = self.args  # noqa: N806
+        s_thr = (m1 + m2) ** 2
+
+        q_squared = BreakupMomentumSquared(s_prime, m1, m2)
+
+        ff_squared = BlattWeisskopfSquared(
+            angular_momentum=L, z=q_squared * meson_radius**2
+        )
+
+        phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
+
+        return sp.Mul(
+            (s - s_thr) / sp.pi,
+            UnevaluatableIntegral(
+                (phsp_factor * ff_squared)
+                / (s_prime - s_thr)
+                / (s_prime - s - sp.I * epsilon),
+                (s_prime, s_thr, sp.oo),
+            ),
+            evaluate=False,
+        )
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        l_symbol = self.args[3]
+        s_latex = printer._print(s_symbol)
+        l_latex = printer._print(l_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = Rf"\Sigma^{l_latex}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
