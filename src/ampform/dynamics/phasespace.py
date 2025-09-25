@@ -201,8 +201,8 @@ class PhaseSpaceFactorAbs(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q = BreakupMomentum(s, m1, m2)
-        return 2 * sp.Abs(q) / sp.sqrt(s)
+        q_squared = BreakupMomentumSquared(s, m1, m2)
+        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
