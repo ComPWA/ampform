@@ -225,6 +225,7 @@
     "bottomness",
     "breit",
     "cayley",
+    "cbar",
     "charmness",
     "clebsch",
     "combi",
@@ -245,6 +246,7 @@
     "helicities",
     "helicity",
     "Hippel",
+    "hlines",
     "htmlcov",
     "imap",
     "ipynb",
@@ -285,6 +287,8 @@
     "unitarity",
     "venv",
     "weisskopf",
-    "Zenodo"
+    "yticklabels",
+    "Zenodo",
+    "zorder"
   ]
 }

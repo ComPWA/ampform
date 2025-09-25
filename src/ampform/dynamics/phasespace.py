@@ -57,6 +57,76 @@ class PhaseSpaceFactorProtocol(Protocol):
 
 
 @unevaluated
+class BreakupMomentum(sp.Expr):
+    r"""Two-body break-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
+    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
+    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
+    on :pdg-review:`2021; Resonances; p.5`.
+
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    defined as the standard :func:`sympy.sqrt
+    <sympy.functions.elementary.miscellaneous.sqrt>`.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return (
+            sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
+        )
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = self.args[0]
+        s_latex = printer._print(self.args[0])
+        subscript = _indices_to_subscript(determine_indices(s))
+        name = "q" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class BreakupMomentumComplex(sp.Expr):
+    r"""Two-body break-up momentum.
+
+    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
+    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
+    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
+    on :pdg-review:`2021; Resonances; p.5`.
+
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return (
+            ComplexSqrt(s - (m1 + m2) ** 2)
+            * ComplexSqrt(s - (m1 - m2) ** 2)
+            / (2 * sp.sqrt(s))
+        )
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = self.args[0]
+        s_latex = printer._print(self.args[0])
+        subscript = _indices_to_subscript(determine_indices(s))
+        name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
 class BreakupMomentumSquared(sp.Expr):
     r"""Squared value of the two-body break-up momentum.
 
@@ -78,7 +148,7 @@ class BreakupMomentumSquared(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)  # type: ignore[operator]
+        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -90,7 +160,7 @@ class BreakupMomentumSquared(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactor(sp.Expr):
-    r"""Standard phase-space factor, using :func:`BreakupMomentumSquared`.
+    r"""Standard phase-space factor, using a definition consistent with :func:`BreakupMomentum`.
 
     See :pdg-review:`2021; Resonances; p.6`, Equation (50.9). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`chungPrimerKmatrixFormalism1995`, p.5.
@@ -103,8 +173,7 @@ class PhaseSpaceFactor(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q_squared = BreakupMomentumSquared(s, m1, m2)
-        return 2 * sp.sqrt(q_squared) / sp.sqrt(s)
+        return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -119,8 +188,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     r"""Phase space factor square root over the absolute value.
 
     As opposed to `.PhaseSpaceFactor`, this takes the
-    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentumSquared`, then
-    the :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentum`.
 
     This version of the phase space factor is often denoted as :math:`\hat{\rho}` and is
     used in `.EqualMassPhaseSpaceFactor`.
@@ -159,8 +227,8 @@ class PhaseSpaceFactorComplex(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q_squared = BreakupMomentumSquared(s, m1, m2)
-        return 2 * ComplexSqrt(q_squared) / sp.sqrt(s)
+        q = BreakupMomentumComplex(s, m1, m2)
+        return 2 * q / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -198,8 +266,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
 def chew_mandelstam_s_wave(s, m1, m2):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q_squared = BreakupMomentumSquared(s, m1, m2)
-    q = ComplexSqrt(q_squared)
+    q = BreakupMomentumComplex(s, m1, m2)
     left_term = sp.Mul(
         2 * q / sp.sqrt(s),
         sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
@@ -233,7 +300,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         rho_hat = PhaseSpaceFactorAbs(s, m1, m2)
-        s_threshold = (m1 + m2) ** 2  # type: ignore[operator]
+        s_threshold = (m1 + m2) ** 2
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
