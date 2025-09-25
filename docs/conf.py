@@ -31,6 +31,7 @@ def _get_excluded_members() -> list[str]:
         "is_extended_real",
         "items",
         "keys",
+        "name",
         "precedence",
         "values",
     }

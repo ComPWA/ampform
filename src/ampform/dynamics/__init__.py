@@ -152,15 +152,11 @@ class DispersionIntegral(sp.Expr):
         meson_radius = rest[1] if len(rest) > 1 else self.meson_radius
         epsilon = rest[2] if len(rest) > 2 else self.epsilon  # noqa: PLR2004
         s_thr = (m1 + m2) ** 2
-
         q_squared = BreakupMomentumSquared(s_prime, m1, m2)
-
         ff_squared = BlattWeisskopfSquared(
             angular_momentum=L, z=q_squared * meson_radius**2
         )
-
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
-
         return sp.Mul(
             (s - s_thr) / sp.pi,
             UnevaluatableIntegral(

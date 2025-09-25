@@ -65,10 +65,10 @@ class BreakupMomentum(sp.Expr):
     Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
     on :pdg-review:`2021; Resonances; p.5`.
 
-    The Numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane.
-    The square root is defined as the standard
-    sympy sqrt :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    defined as the standard :func:`sympy.sqrt
+    <sympy.functions.elementary.miscellaneous.sqrt>`.
     """
 
     s: Any
@@ -80,7 +80,7 @@ class BreakupMomentum(sp.Expr):
         s, m1, m2 = self.args
         return (
             sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
-        )  # type: ignore[operator]
+        )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -99,10 +99,10 @@ class BreakupMomentumComplex(sp.Expr):
     Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
     on :pdg-review:`2021; Resonances; p.5`.
 
-    The Numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane.
-    The square root is the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have defined
-    behavior for defined for negative input values.
+    The numerator is represented as two square roots, as it gives a cleaner cut
+    structure when the function is continued to the complex plane. The square root is
+    the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values.
     """
 
     s: Any
@@ -116,7 +116,7 @@ class BreakupMomentumComplex(sp.Expr):
             ComplexSqrt(s - (m1 + m2) ** 2)
             * ComplexSqrt(s - (m1 - m2) ** 2)
             / (2 * sp.sqrt(s))
-        )  # type: ignore[operator]
+        )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -148,7 +148,7 @@ class BreakupMomentumSquared(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)  # type: ignore[operator]
+        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = self.args[0]
@@ -201,8 +201,8 @@ class PhaseSpaceFactorAbs(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        q = BreakupMomentum(s, m1, m2)
-        return 2 * sp.Abs(q) / sp.sqrt(s)
+        q_squared = BreakupMomentumSquared(s, m1, m2)
+        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -266,7 +266,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
 def chew_mandelstam_s_wave(s, m1, m2):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q = BreakupMomentum(s, m1, m2, ComplexSqrt)
+    q = BreakupMomentumComplex(s, m1, m2)
     left_term = sp.Mul(
         2 * q / sp.sqrt(s),
         sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
@@ -300,7 +300,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         rho_hat = PhaseSpaceFactorAbs(s, m1, m2)
-        s_threshold = (m1 + m2) ** 2  # type: ignore[operator]
+        s_threshold = (m1 + m2) ** 2
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
