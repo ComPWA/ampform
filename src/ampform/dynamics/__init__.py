@@ -142,8 +142,8 @@ class DispersionIntegral(sp.Expr):
     m2: Any
     L: Any
     s_prime: Any = sp.Symbol("x", real=True)
-    epsilon = sp.Symbol("epsilon", positive=True)
-    meson_radius = 1
+    epsilon: Any = sp.Symbol("epsilon", positive=True)
+    meson_radius: Any = 1
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
