@@ -147,16 +147,13 @@ class DispersionIntegral(sp.Expr):
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, *rest = self.args  # noqa: N806
-        s_prime = rest[0] if len(rest) > 0 else self.s_prime
-        meson_radius = rest[1] if len(rest) > 1 else self.meson_radius
-        epsilon = rest[2] if len(rest) > 2 else self.epsilon  # noqa: PLR2004
-        s_thr = (m1 + m2) ** 2
+        s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
         q_squared = BreakupMomentumSquared(s_prime, m1, m2)
         ff_squared = BlattWeisskopfSquared(
             angular_momentum=L, z=q_squared * meson_radius**2
         )
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
+        s_thr = (m1 + m2) ** 2
         return sp.Mul(
             (s - s_thr) / sp.pi,
             UnevaluatableIntegral(
@@ -169,10 +166,8 @@ class DispersionIntegral(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        l_symbol = self.args[3]
-        s_latex = printer._print(s_symbol)
-        l_latex = printer._print(l_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s_latex = printer._print(self.s)
+        l_latex = printer._print(self.L)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = Rf"\Sigma^{l_latex}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
