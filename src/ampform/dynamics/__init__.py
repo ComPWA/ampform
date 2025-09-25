@@ -128,13 +128,13 @@ class DispersionIntegral(sp.Expr):
     """Dispersion integral.
 
     Parameters:
-        s (Any): Mandelstam variable s.
-        m1 (Any): Mass of particle 1.
-        m2 (Any): Mass of particle 2.
-        L (Any): Angular momentum.
-        meson_radius (float, optional): Meson radius, default is 1.
-        s_prime (sp.Symbol, optional): Integration variable defaults to 'x'.
-        epsilon (sp.Symbol, optional): Small imaginary part default is positive epsilon.
+        s: Mandelstam variable s.
+        m1: Mass of particle 1.
+        m2: Mass of particle 2.
+        L: Angular momentum.
+        meson_radius: Meson radius, default is 1 (optional).
+        s_prime: Integration variable defaults to 'x'.
+        epsilon: Small imaginary part default is positive epsilon.
     """
 
     s: Any
