@@ -123,6 +123,7 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
     return FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
 
 
+@unevaluated
 class DispersionIntegral(sp.Expr):
     """Dispersion integral.
 
@@ -141,13 +142,15 @@ class DispersionIntegral(sp.Expr):
     m2: Any
     L: Any
     s_prime: Any = sp.Symbol("x", real=True)
-    name: str | None = argument(default=None, sympify=False)
-    meson_radius = 1
-
     epsilon = sp.Symbol("epsilon", positive=True)
+    meson_radius = 1
+    name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, s_prime, meson_radius, epsilon = self.args  # noqa: N806
+        s, m1, m2, L, *rest = self.args  # noqa: N806
+        s_prime = rest[0] if len(rest) > 0 else self.s_prime
+        meson_radius = rest[1] if len(rest) > 1 else self.meson_radius
+        epsilon = rest[2] if len(rest) > 2 else self.epsilon  # noqa: PLR2004
         s_thr = (m1 + m2) ** 2
 
         q_squared = BreakupMomentumSquared(s_prime, m1, m2)
