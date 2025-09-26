@@ -11,7 +11,8 @@ from warnings import warn
 import sympy as sp
 
 # pyright: reportUnusedImport=false
-from ampform.dynamics.form_factor import BlattWeisskopfSquared, FormFactor
+from ampform.dynamics.form_factor import BlattWeisskopfSquared as BlattWeisskopfSquared
+from ampform.dynamics.form_factor import FormFactor
 from ampform.dynamics.phasespace import BreakupMomentumSquared as BreakupMomentumSquared
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,  # noqa: F401
@@ -148,10 +149,7 @@ class ChewMandelstamIntegral(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
-        q_squared = FormFactor(s_prime, m1, m2) ** 2
-        ff_squared = BlattWeisskopfSquared(
-            angular_momentum=L, z=q_squared * meson_radius**2
-        )
+        ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
         s_thr = (m1 + m2) ** 2
         return sp.Mul(
