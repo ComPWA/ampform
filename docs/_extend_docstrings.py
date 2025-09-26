@@ -191,6 +191,14 @@ def extend_BreakupMomentumSquared() -> None:
     _append_latex_doit_definition(expr, deep=True)
 
 
+def extend_ChewMandelstamIntegral() -> None:
+    from ampform.dynamics.phasespace import ChewMandelstamIntegral
+
+    s, m_a, m_b, ell = sp.symbols(R"s m_a m_b \ell")
+    expr = ChewMandelstamIntegral(s, m_a, m_b, ell)
+    _append_latex_doit_definition(expr)
+
+
 def extend_ComplexSqrt() -> None:
     from ampform.sympy.math import ComplexSqrt
 

@@ -25,12 +25,7 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorSWave,  # noqa: F401
     _indices_to_subscript,
 )
-from ampform.sympy import (
-    UnevaluatableIntegral,
-    argument,
-    determine_indices,
-    unevaluated,
-)
+from ampform.sympy import argument, determine_indices, unevaluated
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -124,50 +119,3 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
         stacklevel=1,
     )
     return FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
-
-
-@unevaluated
-class ChewMandelstamIntegral(sp.Expr):
-    """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
-
-    Parameters:
-        s: Mandelstam variable s.
-        m1: Mass of particle 1.
-        m2: Mass of particle 2.
-        L: Angular momentum.
-        meson_radius: Meson radius, default is 1 (optional).
-        s_prime: Integration variable defaults to 'x'.
-        epsilon: Small imaginary part default is positive epsilon.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    L: Any
-    s_prime: Any = sp.Symbol("x", real=True)
-    epsilon: Any = sp.Symbol("epsilon", positive=True)
-    meson_radius: Any = 1
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
-        ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
-        phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
-        s_thr = (m1 + m2) ** 2
-        return sp.Mul(
-            (s - s_thr) / sp.pi,
-            UnevaluatableIntegral(
-                (phsp_factor * ff_squared)
-                / (s_prime - s_thr)
-                / (s_prime - s - sp.I * epsilon),
-                (s_prime, s_thr, sp.oo),
-            ),
-            evaluate=False,
-        )
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_latex = printer._print(self.s)
-        l_latex = printer._print(self.L)
-        subscript = _indices_to_subscript(determine_indices(self.s))
-        name = Rf"\Sigma_{l_latex}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
