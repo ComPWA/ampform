@@ -121,7 +121,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
 class PhaseSpaceFactorComplex(sp.Expr):
     """Phase-space factor with `.ComplexSqrt`.
 
-    Same as :func:`PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have defined
+    Same as `PhaseSpaceFactor`, but using a `.ComplexSqrt` that does have defined
     behavior for defined for negative input values.
     """
 
@@ -166,6 +166,44 @@ class PhaseSpaceFactorSWave(sp.Expr):
         s_latex = printer._print(s_symbol)
         subscript = _indices_to_subscript(determine_indices(s_symbol))
         name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class PhaseSpaceFactorPWave(sp.Expr):
+    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`L=1`.
+
+    This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
+    `ChewMandelstamIntegral`. As such, you have to be careful when lambdifying this
+    function and evaluating this over an array. In many cases, you want to wrap the
+    resulting lambdified numerical function with :func:`numpy.vectorize`.
+
+    >>> import numpy as np
+    >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
+    >>> s, m1, m2 = sp.symbols("s m_1 m_2")
+    >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
+    >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
+    >>> rho_func = np.vectorize(rho_func)
+    >>> s_values = np.linspace(0.1, 4.0, num=4)
+    >>> rho_func(s_values, 0.14, 0.98).real
+    array([-4.08315014e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        chew_mandelstam = ChewMandelstamIntegral(s, m1, m2, L=1, epsilon=1e-5)
+        return -sp.I * chew_mandelstam
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\rho^\mathrm{CM}_1" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
@@ -235,7 +273,7 @@ class ChewMandelstamIntegral(sp.Expr):
 
 @unevaluated
 class EqualMassPhaseSpaceFactor(sp.Expr):
-    """Analytic continuation for the :func:`PhaseSpaceFactor`.
+    """Analytic continuation for the `PhaseSpaceFactor`.
 
     See :pdg-review:`2018; Resonances; p.9` and
     :doc:`/usage/dynamics/analytic-continuation`.
