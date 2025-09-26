@@ -45,9 +45,8 @@ class BreakupMomentum(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
+        s_latex = printer._print(self.s)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = "q" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -81,9 +80,8 @@ class BreakupMomentumComplex(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
+        s_latex = printer._print(self.s)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
@@ -113,9 +111,8 @@ class BreakupMomentumSquared(sp.Expr):
         return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
+        s_latex = printer._print(self.s)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = "q^2" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
