@@ -11,10 +11,12 @@ from warnings import warn
 import sympy as sp
 
 # pyright: reportUnusedImport=false
-from ampform.dynamics.form_factor import BlattWeisskopfSquared as BlattWeisskopfSquared
-from ampform.dynamics.form_factor import FormFactor
-from ampform.dynamics.phasespace import BreakupMomentumSquared as BreakupMomentumSquared
+from ampform.dynamics.form_factor import (
+    BlattWeisskopfSquared,  # noqa: F401
+    FormFactor,
+)
 from ampform.dynamics.phasespace import (
+    BreakupMomentumSquared,  # noqa: F401
     EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,  # noqa: F401
