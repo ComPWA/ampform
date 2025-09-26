@@ -7,7 +7,7 @@ from typing import Any, Callable
 
 import sympy as sp
 
-from ampform.dynamics.phasespace import BreakupMomentumSquared
+from ampform.kinematics.phasespace import BreakupMomentumSquared
 from ampform.sympy import unevaluated
 
 

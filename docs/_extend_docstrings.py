@@ -168,7 +168,7 @@ def extend_BoostZMatrix() -> None:
 
 
 def extend_BreakupMomentum() -> None:
-    from ampform.dynamics.phasespace import BreakupMomentum
+    from ampform.kinematics.phasespace import BreakupMomentum
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentum(s, m_a, m_b)
@@ -176,7 +176,7 @@ def extend_BreakupMomentum() -> None:
 
 
 def extend_BreakupMomentumComplex() -> None:
-    from ampform.dynamics.phasespace import BreakupMomentumComplex
+    from ampform.kinematics.phasespace import BreakupMomentumComplex
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumComplex(s, m_a, m_b)
@@ -184,7 +184,7 @@ def extend_BreakupMomentumComplex() -> None:
 
 
 def extend_BreakupMomentumSquared() -> None:
-    from ampform.dynamics.phasespace import BreakupMomentumSquared
+    from ampform.kinematics.phasespace import BreakupMomentumSquared
 
     s, m_a, m_b = sp.symbols("s, m_a, m_b")
     expr = BreakupMomentumSquared(s, m_a, m_b)

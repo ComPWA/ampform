@@ -12,19 +12,20 @@ This module provides several parametrizations. They all comply with the
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol  # pragma: no cover
 
 import sympy as sp
 
+from ampform.kinematics.phasespace import (
+    BreakupMomentum,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumComplex,
+    BreakupMomentumSquared,
+    _indices_to_subscript,
+)
 from ampform.sympy import argument, determine_indices, unevaluated
-from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from sympy.printing.latex import LatexPrinter
-
-from typing import Protocol  # pragma: no cover
 
 
 class PhaseSpaceFactorProtocol(Protocol):
@@ -39,7 +40,7 @@ class PhaseSpaceFactorProtocol(Protocol):
     - `PhaseSpaceFactorSWave`
     - `EqualMassPhaseSpaceFactor`
 
-    Even `BreakupMomentumSquared` and :func:`chew_mandelstam_s_wave` comply with this
+    Even `.BreakupMomentumSquared` and :func:`chew_mandelstam_s_wave` comply with this
     protocol, but are technically speaking not phase space factors.
     """
 
@@ -57,110 +58,8 @@ class PhaseSpaceFactorProtocol(Protocol):
 
 
 @unevaluated
-class BreakupMomentum(sp.Expr):
-    r"""Two-body break-up momentum.
-
-    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
-    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
-    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
-    on :pdg-review:`2021; Resonances; p.5`.
-
-    The numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane. The square root is
-    defined as the standard :func:`sympy.sqrt
-    <sympy.functions.elementary.miscellaneous.sqrt>`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (
-            sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
-        )
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumComplex(sp.Expr):
-    r"""Two-body break-up momentum.
-
-    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
-    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
-    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
-    on :pdg-review:`2021; Resonances; p.5`.
-
-    The numerator is represented as two square roots, as it gives a cleaner cut
-    structure when the function is continued to the complex plane. The square root is
-    the same as :func:`BreakupMomentum`, but using a `.ComplexSqrt` that does have
-    defined behavior for defined for negative input values.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (
-            ComplexSqrt(s - (m1 + m2) ** 2)
-            * ComplexSqrt(s - (m1 - m2) ** 2)
-            / (2 * sp.sqrt(s))
-        )
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumSquared(sp.Expr):
-    r"""Squared value of the two-body break-up momentum.
-
-    For a two-body decay :math:`R \to ab`, the *break-up momentum* is the absolute value
-    of the momentum of both :math:`a` and :math:`b` in the rest frame of :math:`R`. See
-    Equation (49.17) on :pdg-review:`2021; Kinematics; p.3`, as well as Equation (50.5)
-    on :pdg-review:`2021; Resonances; p.5`.
-
-    It's up to the caller in which way to take the square root of this break-up
-    momentum, because :math:`q^2` can have negative values for non-zero :math:`m1,m2`.
-    In this case, one may want to use `.ComplexSqrt` instead of the standard
-    :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q^2" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
 class PhaseSpaceFactor(sp.Expr):
-    r"""Standard phase-space factor, using a definition consistent with :func:`BreakupMomentum`.
+    r"""Standard phase-space factor, using a definition consistent with `.BreakupMomentum`.
 
     See :pdg-review:`2021; Resonances; p.6`, Equation (50.9). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`chungPrimerKmatrixFormalism1995`, p.5.
@@ -326,19 +225,3 @@ def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
             True,
         ),
     )
-
-
-def _indices_to_subscript(indices: Sequence[int]) -> str:
-    """Create a LaTeX subscript from a list of indices.
-
-    >>> _indices_to_subscript([])
-    ''
-    >>> _indices_to_subscript([1])
-    '_{1}'
-    >>> _indices_to_subscript([1, 2])
-    '_{1,2}'
-    """
-    if len(indices) == 0:
-        return ""
-    subscript = ",".join(map(str, indices))
-    return "_{" + subscript + "}"
