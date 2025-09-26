@@ -12,8 +12,8 @@ import sympy as sp
 
 # pyright: reportUnusedImport=false
 from ampform.dynamics.form_factor import BlattWeisskopfSquared, FormFactor
+from ampform.dynamics.phasespace import BreakupMomentumSquared as BreakupMomentumSquared
 from ampform.dynamics.phasespace import (
-    BreakupMomentumSquared,
     EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,  # noqa: F401
@@ -148,7 +148,7 @@ class DispersionIntegral(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
-        q_squared = BreakupMomentumSquared(s_prime, m1, m2)
+        q_squared = FormFactor(s_prime, m1, m2) ** 2
         ff_squared = BlattWeisskopfSquared(
             angular_momentum=L, z=q_squared * meson_radius**2
         )
@@ -169,5 +169,5 @@ class DispersionIntegral(sp.Expr):
         s_latex = printer._print(self.s)
         l_latex = printer._print(self.L)
         subscript = _indices_to_subscript(determine_indices(self.s))
-        name = Rf"\Sigma^{l_latex}" + subscript if self.name is None else self.name
+        name = Rf"\Sigma_{l_latex}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
