@@ -124,8 +124,8 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
 
 
 @unevaluated
-class DispersionIntegral(sp.Expr):
-    """Dispersion integral.
+class ChewMandelstamIntegral(sp.Expr):
+    """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
 
     Parameters:
         s: Mandelstam variable s.
