@@ -9,7 +9,7 @@ from __future__ import annotations
 import string
 import sys
 from collections import abc
-from itertools import zip_longest
+from itertools import pairwise, zip_longest
 from typing import TYPE_CHECKING, overload
 
 import sympy as sp
@@ -49,7 +49,7 @@ class ArrayElement(_ArrayExpr):
         parent_shape = get_shape(parent)
         if any(
             (i >= s) == True  # noqa: E712
-            for i, s in zip(sympified_indices, parent_shape)
+            for i, s in zip(sympified_indices, parent_shape, strict=True)
         ):
             msg = "shape is out of bounds"
             raise ValueError(msg)
@@ -63,7 +63,7 @@ class ArrayElement(_ArrayExpr):
                 raise IndexError(msg)
             normalized_indices = [
                 _normalize_index(i, axis_size)
-                for i, axis_size in zip(indices, parent_shape)
+                for i, axis_size in zip(indices, parent_shape, strict=True)
             ]
         else:
             normalized_indices = list(indices)
@@ -452,6 +452,6 @@ class MatrixMultiplication(sp.Expr):
         """
         letters = string.ascii_lowercase[8 : 8 + n_arrays + 1]
         groups = []
-        for i, j in zip(letters, letters[1:]):
+        for i, j in pairwise(letters):
             groups.append(f"...{i}{j}")
         return f"{','.join(groups)}->...i{letters[-1]}"

@@ -201,7 +201,7 @@ class PoolSum(sp.Expr):
     def evaluate(self) -> sp.Expr:
         indices = {symbol: tuple(values) for symbol, values in self.indices}
         return sp.Add(*[
-            self.expression.subs(zip(indices, combi))
+            self.expression.subs(zip(indices, combi, strict=True))
             for combi in itertools.product(*indices.values())
         ])
 
@@ -280,7 +280,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     if len(values) <= 1:
         return False
     sorted_values = sorted(values, key=float)
-    for val, next_val in zip(sorted_values, sorted_values[1:]):
+    for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
         if difference != 1.0:
             return False

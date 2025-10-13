@@ -13,7 +13,7 @@ from dataclasses import field as _create_field
 from dataclasses import fields as _get_fields
 from inspect import isclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypedDict, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar, overload
 
 import sympy as sp
 from sympy.core.basic import _aresame  # noqa: PLC2701
@@ -25,7 +25,7 @@ else:
     from typing_extensions import dataclass_transform
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Iterable
+    from collections.abc import Callable, Hashable, Iterable
 
     from sympy.printing.latex import LatexPrinter
 
@@ -325,14 +325,14 @@ def _extract_field_values(
     """
     fields = _get_fields(cls)
     if len(args) == len(fields):
-        return dict(zip(fields, args)), kwargs
+        return dict(zip(fields, args, strict=True)), kwargs
     if len(args) > len(fields):
         msg = (
             f"Expecting {len(fields)} positional arguments"
             f" ({', '.join(f.name for f in fields)}), but got {len(args)}"
         )
         raise ValueError(msg)
-    fields_with_values = dict(zip(fields, args))
+    fields_with_values = dict(zip(fields, args, strict=False))
     remaining_attrs = fields[len(args) :]
     missing: list[str] = []
     for field in remaining_attrs:

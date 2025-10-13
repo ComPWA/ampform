@@ -12,7 +12,7 @@ import pickle
 import textwrap
 from importlib.metadata import version as get_package_version
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import attrs
 import graphviz  # sphinx.ext.graphviz does not work well on RTD
@@ -26,6 +26,8 @@ from ampform.sympy._array_expressions import ArrayMultiplication
 from ampform.sympy._cache import get_readable_hash, make_hashable
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from qrules.transition import ReactionInfo, SpinFormalism
 
     from ampform.sympy import NumPyPrintable

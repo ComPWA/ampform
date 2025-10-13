@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, no_type_check
+from typing import TYPE_CHECKING, Any, no_type_check
 
 import pytest
 import sympy as sp
@@ -13,6 +13,7 @@ from ipywidgets.widgets.widget_int import IntSlider
 from symplot import RangeDefinition, Slider, SliderKwargs
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from re import Pattern
 
 
