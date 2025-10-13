@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import collections
-import sys
 from functools import cache, singledispatch
 from typing import TYPE_CHECKING
 
@@ -17,15 +16,11 @@ if TYPE_CHECKING:
 
     from qrules.topology import Topology
 
-from typing import Literal
+from typing import Literal, TypeGuard
 
 from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.transition import InteractionProperties
 
-if sys.version_info >= (3, 10):
-    from typing import TypeGuard
-else:
-    from typing_extensions import TypeGuard
 if TYPE_CHECKING:
     from collections.abc import Iterable
 

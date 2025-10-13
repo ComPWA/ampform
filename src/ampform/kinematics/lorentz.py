@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import sys
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import sympy as sp
 
@@ -18,11 +17,9 @@ from ampform.sympy._array_expressions import (
 )
 from ampform.sympy.math import ComplexSqrt
 
-if sys.version_info >= (3, 10):
-    from typing import TypeAlias
-else:
-    from typing_extensions import TypeAlias
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from qrules.topology import Topology
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter

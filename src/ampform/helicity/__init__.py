@@ -15,7 +15,7 @@ import warnings
 from collections import OrderedDict, abc
 from fractions import Fraction
 from functools import reduce, singledispatchmethod
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import attrs
 import sympy as sp
@@ -311,7 +311,7 @@ class ParameterValues(abc.Mapping):
         return self.__parameters.values()
 
 
-ParameterValue = Union[float, complex, int]
+ParameterValue = complex | float | int
 """Allowed value types for parameters."""
 
 

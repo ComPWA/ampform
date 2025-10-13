@@ -34,7 +34,8 @@ if TYPE_CHECKING:
         from typing import ParamSpec
     else:
         from typing_extensions import ParamSpec
-    from typing import Any, Callable, ParamSpec, TypeVar
+    from collections.abc import Callable
+    from typing import Any, ParamSpec, TypeVar
 
     P = ParamSpec("P")
     T = TypeVar("T")
