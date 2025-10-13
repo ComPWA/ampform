@@ -19,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering",
@@ -45,7 +45,7 @@ keywords = [
 license = {file = "LICENSE"}
 maintainers = [{email = "compwa-admin@ep1.rub.de"}]
 name = "ampform"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 scipy = ["scipy"]
@@ -332,11 +332,11 @@ positional = true
 [tool.poe.tasks.test-all]
 help = "Run all tests on each supported Python version"
 sequence = [
-    {ref = "test-py 3.9"},
     {ref = "test-py 3.10"},
     {ref = "test-py 3.11"},
     {ref = "test-py 3.12"},
     {ref = "test-py 3.13"},
+    {ref = "test-py 3.14"},
 ]
 
 [tool.poe.tasks.test-py]
@@ -353,7 +353,7 @@ uv run \
 help = "Run all tests on a specific Python version"
 
 [[tool.poe.tasks.test-py.args]]
-default = "3.12"
+default = "3.13"
 help = "Selected Python version"
 name = "version"
 positional = true

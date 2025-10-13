@@ -8,7 +8,7 @@ from __future__ import annotations
 import functools
 import sys
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 from warnings import warn
 
 import sympy as sp
@@ -18,6 +18,8 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from sympy.printing.latex import LatexPrinter
 
     if sys.version_info >= (3, 11):

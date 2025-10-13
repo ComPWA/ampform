@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from functools import cache, lru_cache
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import sympy as sp
 
 from ampform.kinematics.phasespace import BreakupMomentumSquared
 from ampform.sympy import unevaluated
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @unevaluated

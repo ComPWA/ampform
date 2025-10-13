@@ -77,7 +77,9 @@ class HelicityAdapter:
         for topology in set(self.__topologies):
             final_state_ids = topology.outgoing_edge_ids
             for permutation in itertools.permutations(final_state_ids):
-                id_mapping = dict(zip(topology.outgoing_edge_ids, permutation))
+                id_mapping = dict(
+                    zip(topology.outgoing_edge_ids, permutation, strict=True)
+                )
                 permuted_topology = attrs.evolve(
                     topology,
                     edges={

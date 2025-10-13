@@ -12,7 +12,7 @@ import pickle
 import textwrap
 from importlib.metadata import version as get_package_version
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import attrs
 import graphviz  # sphinx.ext.graphviz does not work well on RTD
@@ -26,6 +26,8 @@ from ampform.sympy._array_expressions import ArrayMultiplication
 from ampform.sympy._cache import get_readable_hash, make_hashable
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from qrules.transition import ReactionInfo, SpinFormalism
 
     from ampform.sympy import NumPyPrintable
@@ -738,6 +740,7 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
 
 
 def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
+    appended_text = textwrap.dedent(appended_text)
     if class_type.__doc__ is None:
         class_type.__doc__ = appended_text
     else:

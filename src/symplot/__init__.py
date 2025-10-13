@@ -16,7 +16,7 @@ from __future__ import annotations
 import inspect
 import logging
 from collections import abc
-from typing import TYPE_CHECKING, Callable, TypeVar, Union
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
@@ -27,24 +27,16 @@ from ampform.sympy import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    import sys
-    from collections.abc import Iterator, Mapping, Sequence
+    from collections.abc import Callable, Iterator, Mapping, Sequence
+    from typing import TypeGuard
 
     from IPython.lib.pretty import PrettyPrinter
 
-    if sys.version_info >= (3, 10):
-        from typing import TypeGuard
-    else:
-        from typing_extensions import TypeGuard
-
 _LOGGER = logging.getLogger(__name__)
 
-Slider = Union[FloatSlider, IntSlider]
+Slider: TypeAlias = FloatSlider | IntSlider
 """Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
-RangeDefinition = Union[
-    tuple[float, float],
-    tuple[float, float, Union[float, int]],
-]
+RangeDefinition = tuple[float, float] | tuple[float, float, float | int]
 """Types of range definitions used in :meth:`.set_ranges`."""
 
 
@@ -266,7 +258,7 @@ def prepare_sliders(
     sliders_mapping = {symbol.name: create_slider(symbol) for symbol in slider_symbols}
     symbols_names = (s.name for s in (*plot_symbols, *slider_symbols))
     arg_names = inspect.signature(lambdified_expression).parameters
-    arg_to_symbol = dict(zip(arg_names, symbols_names))
+    arg_to_symbol = dict(zip(arg_names, symbols_names, strict=True))
     sliders = SliderKwargs(sliders_mapping, arg_to_symbol)
     return lambdified_expression, sliders
 

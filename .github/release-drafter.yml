@@ -19,7 +19,9 @@ categories:
   - title: 📝 Documentation
     label: 📝 Docs
   - title: 🔨 Maintenance
-    label: 🔨 Maintenance
+    labels:
+      - 🔨 Maintenance
+      - ⬆️ Lock
   - title: 🖱️ Developer Experience
     label: 🖱️ DX
 

@@ -76,7 +76,7 @@ def __permutate_final_state_ids(topology: Topology) -> set[Topology]:
     permutated_topologies = set()
     final_state_ids = sorted(topology.outgoing_edge_ids)
     for permutation in itertools.permutations(final_state_ids):
-        renames = dict(zip(permutation, final_state_ids))
+        renames = dict(zip(permutation, final_state_ids, strict=True))
         permutated_topologies.add(topology.relabel_edges(renames))
     return permutated_topologies
 
