@@ -16,7 +16,7 @@ from __future__ import annotations
 import inspect
 import logging
 from collections import abc
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
@@ -34,7 +34,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 _LOGGER = logging.getLogger(__name__)
 
-Slider = FloatSlider | IntSlider
+Slider: TypeAlias = FloatSlider | IntSlider
 """Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
 RangeDefinition = tuple[float, float] | tuple[float, float, float | int]
 """Types of range definitions used in :meth:`.set_ranges`."""
