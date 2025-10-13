@@ -52,7 +52,8 @@ source = { editable = "." }
 dependencies = [
     { name = "attrs" },
     { name = "frozendict" },
-    { name = "qrules" },
+    { name = "qrules", version = "0.10.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "qrules", version = "0.10.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "sympy" },
 ]
 
@@ -3787,18 +3788,44 @@ wheels = [
 name = "qrules"
 version = "0.10.5"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
 dependencies = [
-    { name = "attrs" },
-    { name = "frozendict" },
-    { name = "jsonschema" },
-    { name = "particle" },
-    { name = "python-constraint" },
-    { name = "pyyaml" },
-    { name = "tqdm" },
+    { name = "attrs", marker = "python_full_version < '3.10'" },
+    { name = "frozendict", marker = "python_full_version < '3.10'" },
+    { name = "jsonschema", marker = "python_full_version < '3.10'" },
+    { name = "particle", marker = "python_full_version < '3.10'" },
+    { name = "python-constraint", marker = "python_full_version < '3.10'" },
+    { name = "pyyaml", marker = "python_full_version < '3.10'" },
+    { name = "tqdm", marker = "python_full_version < '3.10'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cf/8e/101313599b3f7db1198491e56f5c746617a6d55c0ad722d06873a1124c75/qrules-0.10.5.tar.gz", hash = "sha256:63dd44cc64962779c0fa3c2506ad7679e450cef847a6db346f9648fa330b6fd7", size = 272633, upload-time = "2025-01-17T17:31:35.119Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/99/a63e865c51106b9371c43b6250b359ceb2d4e5807106cddfac1a9e1c3b3a/qrules-0.10.5-py3-none-any.whl", hash = "sha256:7958a8343cb1e79ec931d416ee3b334a1f40f72109dbb763cf4c8c54892ced52", size = 80335, upload-time = "2025-01-17T17:31:20.906Z" },
+]
+
+[[package]]
+name = "qrules"
+version = "0.10.6"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version >= '3.11' and python_full_version < '3.14'",
+    "python_full_version == '3.10.*'",
+]
+dependencies = [
+    { name = "attrs", marker = "python_full_version >= '3.10'" },
+    { name = "frozendict", marker = "python_full_version >= '3.10'" },
+    { name = "jsonschema", marker = "python_full_version >= '3.10'" },
+    { name = "particle", marker = "python_full_version >= '3.10'" },
+    { name = "python-constraint", marker = "python_full_version >= '3.10'" },
+    { name = "pyyaml", marker = "python_full_version >= '3.10'" },
+    { name = "tqdm", marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5c/2a/b521d475bfb441c89539a557f8fa9fec6d800b5307a70805adb63be0e81a/qrules-0.10.6.tar.gz", hash = "sha256:863137bdfa73daf38f993c2d7d4afe56dd2ef5fa27d9c52d688e33a7403be720", size = 294509, upload-time = "2025-10-13T13:47:25.395Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/a8/24f7375451b2dfa19a97c8503223e8ad369776f50b65067b7f99823f23f1/qrules-0.10.6-py3-none-any.whl", hash = "sha256:ad53798bce95986b57b737fc711a6c9893f848d7f9b7823291b86b4c7a685f99", size = 80753, upload-time = "2025-10-13T13:47:23.843Z" },
 ]
 
 [[package]]
