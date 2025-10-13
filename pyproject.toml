@@ -354,7 +354,7 @@ uv run \
 help = "Run all tests on a specific Python version"
 
 [[tool.poe.tasks.test-py.args]]
-default = "3.12"
+default = "3.13"
 help = "Selected Python version"
 name = "version"
 positional = true
