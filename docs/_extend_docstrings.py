@@ -730,6 +730,7 @@ def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
 
 
 def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
+    appended_text = textwrap.dedent(appended_text)
     if class_type.__doc__ is None:
         class_type.__doc__ = appended_text
     else:
