@@ -281,7 +281,6 @@ intersphinx_mapping = {
         None,
     ),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
-    "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
