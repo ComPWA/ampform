@@ -300,6 +300,11 @@ env = {EXECUTE_NB = "yes"}
 help = "Set up a server to directly preview changes to the HTML pages with cached notebook execution"
 sequence = ["doclive"]
 
+[tool.poe.tasks.lab]
+args = [{name = "paths", default = "", positional = true}]
+cmd = "jupyter lab ${paths}"
+help = "Run Jupyter Lab"
+
 [tool.poe.tasks.linkcheck]
 cmd = """
 sphinx-build \
