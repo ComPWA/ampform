@@ -53,6 +53,7 @@
     "automodule",
     "axhline",
     "axvline",
+    "bbox_to_anchor",
     "bdist",
     "bgcolor",
     "boldsymbol",
