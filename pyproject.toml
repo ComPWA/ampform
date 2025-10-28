@@ -555,6 +555,7 @@ split-on-trailing-comma = false
     "T201",
 ]
 "docs/_extend_docstrings.py" = [
+    "N816",
     "PLC0415",
     "PLC2701",
 ]
