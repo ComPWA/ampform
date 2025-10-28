@@ -282,6 +282,7 @@
     "sympy",
     "tensorflow",
     "tensorwaves",
+    "timeit",
     "toctree",
     "topness",
     "unevaluatable",
