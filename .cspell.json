@@ -277,6 +277,7 @@
     "pytest",
     "qrules",
     "rsplit",
+    "Schwarz",
     "setuptools",
     "spflueger",
     "struct",
