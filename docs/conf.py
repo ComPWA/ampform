@@ -281,7 +281,6 @@ intersphinx_mapping = {
         None,
     ),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
-    "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "sympy": ("https://docs.sympy.org/latest", None),
@@ -325,6 +324,7 @@ nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
+nb_render_markdown_format = "myst"
 nitpick_ignore = [
     ("py:class", "ampform.sympy._decorator.SymPyAssumptions"),
     ("py:class", "ArraySum"),

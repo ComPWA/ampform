@@ -60,6 +60,7 @@ dev = [
     { name = "jupyterlab-git" },
     { name = "jupyterlab-lsp" },
     { name = "jupyterlab-myst" },
+    { name = "jupyterlab-quickopen" },
     { name = "matplotlib" },
     { name = "mpl-interactions" },
     { name = "mypy" },
@@ -123,6 +124,7 @@ jupyter = [
     { name = "jupyterlab-git" },
     { name = "jupyterlab-lsp" },
     { name = "jupyterlab-myst" },
+    { name = "jupyterlab-quickopen" },
     { name = "python-lsp-ruff" },
     { name = "python-lsp-server", extra = ["rope"] },
 ]
@@ -191,10 +193,10 @@ dev = [
     { name = "ipywidgets" },
     { name = "jupyterlab" },
     { name = "jupyterlab-code-formatter" },
-    { name = "jupyterlab-code-formatter", specifier = ">=3.0.0" },
     { name = "jupyterlab-git" },
     { name = "jupyterlab-lsp" },
     { name = "jupyterlab-myst" },
+    { name = "jupyterlab-quickopen" },
     { name = "matplotlib" },
     { name = "matplotlib", specifier = "<3.9.0" },
     { name = "mpl-interactions" },
@@ -253,10 +255,10 @@ doc = [
 jupyter = [
     { name = "jupyterlab" },
     { name = "jupyterlab-code-formatter" },
-    { name = "jupyterlab-code-formatter", specifier = ">=3.0.0" },
     { name = "jupyterlab-git" },
     { name = "jupyterlab-lsp" },
     { name = "jupyterlab-myst" },
+    { name = "jupyterlab-quickopen" },
     { name = "python-lsp-ruff" },
     { name = "python-lsp-server", extras = ["rope"] },
 ]
@@ -1767,6 +1769,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/90/51/9187be60d989df97f5f0aba133fa54e7300f17616e065d1ada7d7646b6d6/jupyterlab_pygments-0.3.0.tar.gz", hash = "sha256:721aca4d9029252b11cfa9d185e5b5af4d54772bb8072f9b7036f4170054d35d", size = 512900, upload-time = "2023-11-23T09:26:37.44Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/dd/ead9d8ea85bf202d90cc513b533f9c363121c7792674f78e0d8a854b63b4/jupyterlab_pygments-0.3.0-py3-none-any.whl", hash = "sha256:841a89020971da1d8693f1a99997aefc5dc424bb1b251fd6322462a1b8842780", size = 15884, upload-time = "2023-11-23T09:26:34.325Z" },
+]
+
+[[package]]
+name = "jupyterlab-quickopen"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-server" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/88/957236e7cabc83c4682c86083901d68cba5153c564090406e6ce4ad94ae3/jupyterlab_quickopen-2.1.0.tar.gz", hash = "sha256:406c9fd510b367f6832bbddda6b63e7923612de7e49d0ab7228be19d15f7bf62", size = 211012, upload-time = "2025-09-02T09:04:41.297Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/da/ca/7bcd912484cb5eadf43f8bfca49fe6b6d2cb16ea6127f3fd646865820ca1/jupyterlab_quickopen-2.1.0-py3-none-any.whl", hash = "sha256:a45609d1c723f5eebb92c60108aba6dbfeec793e30042750cb5bd44daac639cc", size = 23962, upload-time = "2025-09-02T09:04:39.262Z" },
 ]
 
 [[package]]

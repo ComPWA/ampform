@@ -18,7 +18,7 @@ module.
 
 :::
 
-AmpForm aims to automatically formulate {doc}`PWA <pwa:index>` amplitude models for
+AmpForm aims to automatically formulate [PWA](https://pwa.rtfd.io) amplitude models for
 arbitrary particle transitions. All allowed transitions between some initial and final
 state are generated with the {mod}`qrules` package. You can then use {mod}`ampform` to
 formulate these state transitions into an amplitude model with some formalism, like the

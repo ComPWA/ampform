@@ -89,11 +89,11 @@ doc = [
 ]
 jupyter = [
     "jupyterlab",
-    "jupyterlab-code-formatter >=3.0.0",
     "jupyterlab-code-formatter",
     "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
+    "jupyterlab-quickopen",
     "python-lsp-ruff",
     "python-lsp-server[rope]",
 ]
@@ -299,6 +299,11 @@ sequence = ["doc"]
 env = {EXECUTE_NB = "yes"}
 help = "Set up a server to directly preview changes to the HTML pages with cached notebook execution"
 sequence = ["doclive"]
+
+[tool.poe.tasks.lab]
+args = [{name = "paths", default = "", positional = true}]
+cmd = "jupyter lab ${paths}"
+help = "Run Jupyter Lab"
 
 [tool.poe.tasks.linkcheck]
 cmd = """
@@ -550,6 +555,7 @@ split-on-trailing-comma = false
     "T201",
 ]
 "docs/_extend_docstrings.py" = [
+    "N816",
     "PLC0415",
     "PLC2701",
 ]
