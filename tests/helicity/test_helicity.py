@@ -130,14 +130,10 @@ class TestHelicityAmplitudeBuilder:
         if reaction.formalism == "canonical-helicity":
             assert len(coefficient_names) == 4
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
@@ -151,10 +147,8 @@ class TestHelicityAmplitudeBuilder:
         else:
             assert len(coefficient_names) == 2
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980)"
-                R" \to \pi^{0}_{0} \pi^{0}_{0}}",
-                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1};"
-                R" f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1}; f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
