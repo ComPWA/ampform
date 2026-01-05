@@ -26,11 +26,6 @@ repos:
       - id: colab-toc-visible
       - id: fix-nbformat-version
       - id: remove-empty-tags
-      - id: set-nb-cells
-        args:
-          - --add-install-cell
-          - --additional-packages=IPython
-          - --extras-require=doc,viz
       - id: set-nb-display-name
 
   - repo: https://github.com/kynan/nbstripout
