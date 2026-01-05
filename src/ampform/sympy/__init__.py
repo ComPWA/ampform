@@ -24,25 +24,17 @@ from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
-from ._decorator import (
-    ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    argument,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    unevaluated,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .cached import (
-    doit as perform_cached_doit,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .cached import (
-    xreplace as perform_cached_substitution,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .deprecated import (
-    UnevaluatedExpression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    create_expression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_doit_method,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_expr,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-    make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-)
+from ._decorator import ExprClass as ExprClass
+from ._decorator import SymPyAssumptions as SymPyAssumptions
+from ._decorator import argument as argument
+from ._decorator import unevaluated as unevaluated
+from .cached import doit as perform_cached_doit  # noqa: F401
+from .cached import xreplace as perform_cached_substitution  # noqa: F401
+from .deprecated import UnevaluatedExpression as UnevaluatedExpression
+from .deprecated import create_expression as create_expression
+from .deprecated import implement_doit_method as implement_doit_method
+from .deprecated import implement_expr as implement_expr
+from .deprecated import make_commutative as make_commutative
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -140,7 +132,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     [A[1, 0], A[1, 1], A[1, 2]]])
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
-    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])  # pyright:ignore[reportIndexIssue]
+    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
 
 
 class PoolSum(sp.Expr):
@@ -176,23 +168,23 @@ class PoolSum(sp.Expr):
         args = sp.sympify((expression, *converted_indices))
         expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)
         if evaluate:
-            return expr.evaluate()  # type: ignore[return-value]
+            return expr.evaluate()
         return expr
 
     @property
     def expression(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+        return self.args[0]  # ty:ignore[invalid-return-type]
 
     @property
     def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
-        return self.args[1:]  # type: ignore[return-value]
+        return self.args[1:]
 
     @property
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[misc]
+    def doit(self, deep: bool = True) -> sp.Expr:  # ty:ignore[invalid-method-override]
         expr = self.evaluate()
         if deep:
             return expr.doit()
@@ -336,7 +328,7 @@ class UnevaluatableIntegral(sp.Integral):
         return self.func(*args)
 
     @override
-    def _numpycode(self, printer, *args) -> str:  # type:ignore[misc]
+    def _numpycode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
@@ -361,7 +353,7 @@ class UnevaluatableIntegral(sp.Integral):
 
 def _warn_if_scipy_not_installed() -> None:
     try:
-        import scipy  # noqa: F401, PLC0415  # pyright: ignore[reportUnusedImport, reportMissingImports]
+        import scipy  # noqa: F401, PLC0415
     except ImportError:
         warnings.warn(
             "Scipy is not installed. Install with 'pip install scipy' or with 'pip"

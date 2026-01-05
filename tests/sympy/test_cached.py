@@ -47,8 +47,7 @@ def test_simplify():
 @pytest.mark.parametrize("amplitude_idx", list(range(4)))
 def test_simplify_model(amplitude_model: tuple[str, HelicityModel], amplitude_idx: int):
     _, model = amplitude_model
-    amplitudes = [model.amplitudes[k] for k in sorted(model.amplitudes, key=str)]
-    amplitude_expr = amplitudes[amplitude_idx]
+    _, amplitude_expr = min(model.amplitudes.items(), key=lambda item: str(item[0]))
 
     simplified = amplitude_expr.simplify()
     assert simplified != amplitude_expr

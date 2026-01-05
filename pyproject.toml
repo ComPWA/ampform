@@ -63,7 +63,6 @@ Tracker = "https://github.com/ComPWA/ampform/issues"
 
 [dependency-groups]
 dev = [
-    "poethepoet",
     "ruff",
     "sphinx-autobuild",
     {include-group = "doc"},
@@ -108,7 +107,7 @@ notebooks = [
     "rich",
 ]
 style = [
-    "mypy >=0.730",
+    "ty",
     {include-group = "types"},
 ]
 test = [
@@ -129,6 +128,7 @@ types = [
     "pytest",
     "pytest-benchmark",
     "sphinx-api-relink >=0.0.3",
+    {include-group = "notebooks"},
 ]
 
 [tool.setuptools]
@@ -161,45 +161,6 @@ omit = [
     "tests/**/*.py",
 ]
 source = ["src"]
-
-[tool.mypy]
-exclude = "_build"
-show_error_codes = true
-warn_unused_configs = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["sympy.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["graphviz.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["numpy.lib.index_tricks.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["pytest_benchmark.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["ipywidgets.*"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["scipy.*"]
-
-[[tool.mypy.overrides]]
-check_untyped_defs = true
-disallow_incomplete_defs = false
-disallow_untyped_defs = false
-module = ["benchmarks.*", "tests.*"]
-
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["typings.*"]
 
 [tool.poe]
 executor.type = "uv"
@@ -321,7 +282,7 @@ cmd = "pytest --nbmake --nbmake-timeout=0 docs"
 help = "Run all notebooks"
 
 [tool.poe.tasks.style]
-cmd = "uv run --group style --isolated --no-dev pre-commit run --all-files"
+cmd = "uv run --extra scipy --group style --isolated --no-dev pre-commit run --all-files"
 help = "Perform all linting, formatting, and spelling checks"
 
 [tool.poe.tasks.test]
@@ -362,41 +323,6 @@ default = "3.13"
 help = "Selected Python version"
 name = "version"
 positional = true
-
-[tool.pyright]
-reportArgumentType = false
-reportAssignmentType = false
-reportAttributeAccessIssue = false
-reportCallIssue = false
-reportGeneralTypeIssues = false
-reportIncompatibleMethodOverride = false
-reportInconsistentOverload = false
-reportMissingParameterType = false
-reportMissingTypeArgument = false
-reportMissingTypeStubs = false
-reportOperatorIssue = false
-reportOverlappingOverload = false
-reportPrivateImportUsage = false
-reportPrivateUsage = false
-reportReturnType = false
-reportUnboundVariable = false
-reportUnknownArgumentType = false
-reportUnknownLambdaType = false
-reportUnknownMemberType = false
-reportUnknownParameterType = false
-reportUnknownVariableType = false
-reportUnnecessaryComparison = false
-reportUnnecessaryContains = false
-reportUnnecessaryIsInstance = false
-reportUntypedClassDecorator = false
-reportUntypedFunctionDecorator = false
-reportUnusedClass = true
-reportUnusedFunction = true
-reportUnusedImport = true
-reportUnusedVariable = true
-typeCheckingMode = "strict"
-venv = ".venv"
-venvPath = "."
 
 [tool.pytest.ini_options]
 addopts = [
@@ -598,3 +524,44 @@ sort_first = [
 ]
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
+
+[[tool.ty.overrides]]
+include = ["docs/**"]
+
+[tool.ty.overrides.rules]
+possibly-unresolved-reference = "ignore"
+
+[[tool.ty.overrides]]
+include = [
+    "docs/usage/dynamics/analytic-continuation.ipynb",
+    "docs/usage/dynamics/k-matrix.ipynb",
+    "docs/usage/helicity/formalism.ipynb",
+    "docs/usage/interactive.ipynb",
+]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = [
+    "src/ampform/sympy/**",
+    "tests/sympy/**",
+]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = ["tests/external/test_sympy.py"]
+
+[tool.ty.overrides.rules]
+call-non-callable = "ignore"
+
+[tool.ty.rules]
+division-by-zero = "warn"
+invalid-argument-type = "ignore"
+possibly-missing-import = "warn"
+possibly-unresolved-reference = "warn"
+unknown-argument = "ignore"
+unsupported-operator = "ignore"
+unused-ignore-comment = "warn"

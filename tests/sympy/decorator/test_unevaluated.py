@@ -17,7 +17,7 @@ def test_classvar_behavior():
         class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
-            return self.x**self.m  # type: ignore[return-value]
+            return self.x**self.m  # ty:ignore[invalid-return-type]
 
     x_expr = MyExpr(4)
     assert x_expr.x is sp.Integer(4)
@@ -99,7 +99,7 @@ def test_default_argument_with_classvar():
         assert expr.default_return is None
 
     half = sp.Rational(1, 2)
-    FunkyPower.default_return = half
+    FunkyPower.default_return = half  # ty:ignore[invalid-assignment]
     assert exprs[0].doit() == half
     assert exprs[1].doit() == half
     assert exprs[2].doit() == half
@@ -132,7 +132,7 @@ def test_latex_repr_typo_warning():
     ):
 
         @unevaluated(real=False)
-        class MyExpr(sp.Expr):  # pyright: ignore[reportUnusedClass]
+        class MyExpr(sp.Expr):
             x: sp.Symbol
             _latex_repr = "<The attribute name is wrong>"
 
@@ -158,7 +158,7 @@ def test_no_implement_doit():
 
     expr = MySqrt(-1)
     assert expr.is_commutative
-    assert expr.is_complex  # type: ignore[attr-defined]
+    assert expr.is_complex
 
 
 def test_non_symbols_construction():
@@ -171,7 +171,7 @@ def test_non_symbols_construction():
 
         def evaluate(self) -> sp.Expr:
             s, m1, m2 = self.args
-            return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2))  # type: ignore[operator]
+            return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2))
 
     m0, ma, mb = sp.symbols("m0 m_a m_b")
     expr = BreakupMomentum(m0**2, ma, mb)

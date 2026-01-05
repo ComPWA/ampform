@@ -10,7 +10,6 @@ from warnings import warn
 
 import sympy as sp
 
-# pyright: reportUnusedImport=false
 from ampform.dynamics.form_factor import (
     BlattWeisskopfSquared,  # noqa: F401
     FormFactor,
@@ -54,17 +53,18 @@ class EnergyDependentWidth(sp.Expr):
     m_b: Any
     angular_momentum: Any
     meson_radius: Any
-    phsp_factor: PhaseSpaceFactorProtocol = argument(  # type:ignore[assignment]
+    phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
     )
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args
+        m0: sp.Expr
+        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args  # ty:ignore[invalid-assignment]
         ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
-        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)  # type: ignore[operator]
+        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)
         rho = self.phsp_factor(s, m1, m2)
-        rho0 = self.phsp_factor(m0**2, m1, m2)  # type: ignore[operator]
+        rho0 = self.phsp_factor(m0**2, m1, m2)
         return width0 * (ff / ff0) ** 2 * (rho / rho0)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
@@ -92,7 +92,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.FormFactor`.
 
@@ -101,7 +101,14 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     """
     form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(
-        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
+        s,
+        mass0,
+        gamma0,
+        m_a,
+        m_b,
+        angular_momentum,
+        meson_radius,
+        phsp_factor,
     )
     return (mass0 * gamma0 * form_factor) / (
         mass0**2 - s - energy_dependent_width * mass0 * sp.I

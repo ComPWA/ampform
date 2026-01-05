@@ -20,13 +20,13 @@ def test_check_has_implementation():
     with pytest.raises(ValueError, match=r"must have an evaluate\(\) method"):
 
         @_check_has_implementation
-        class MyExpr1:  # pyright: ignore[reportUnusedClass]
+        class MyExpr1:
             pass
 
     with pytest.raises(TypeError, match=r"evaluate\(\) must be a callable method"):
 
         @_check_has_implementation
-        class MyExpr2:  # pyright: ignore[reportUnusedClass]
+        class MyExpr2:
             evaluate = "test"
 
 
@@ -53,9 +53,9 @@ def test_implement_new_method():
     with pytest.raises(
         ValueError, match=r"^Expecting 3 positional arguments \(a, b, c\), but got 4$"
     ):
-        MyExpr(1, 2, 3, 4)  # type: ignore[call-arg]
+        MyExpr(1, 2, 3, 4)  # ty:ignore[too-many-positional-arguments]
     with pytest.raises(ValueError, match=r"^Missing constructor arguments: c$"):
-        MyExpr(1, 2)  # type: ignore[call-arg]
+        MyExpr(1, 2)  # ty:ignore[missing-argument]
     expr = MyExpr(1, 2, 3)
     assert expr.args == (1, 2, 3)
     expr = MyExpr(1, b=2, c=3)
@@ -79,9 +79,9 @@ def test_set_assumptions():
     class MySqrt: ...
 
     expr = MySqrt()
-    assert expr.is_commutative  # type: ignore[attr-defined]
-    assert not expr.is_negative  # type: ignore[attr-defined]
-    assert expr.is_real  # type: ignore[attr-defined]
+    assert expr.is_commutative
+    assert not expr.is_negative
+    assert expr.is_real
 
 
 def test_update_field_metadata():

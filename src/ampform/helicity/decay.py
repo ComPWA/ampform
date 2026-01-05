@@ -127,7 +127,7 @@ def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
             return all(
                 isinstance(i, InteractionProperties) for i in obj.interactions.values()
             )
-    return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)  # type: ignore[misc]
+    return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)
 
 
 @cache
@@ -200,7 +200,7 @@ def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
     spectator_id_candidates = topology.outgoing_edge_ids - decay_products
-    return next(iter(spectator_id_candidates))  # type: ignore[arg-type]
+    return next(iter(spectator_id_candidates))
 
 
 @cache
@@ -209,7 +209,7 @@ def get_decay_product_ids(
 ) -> tuple[Literal[1, 2, 3], Literal[1, 2, 3]]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
-    return tuple(sorted(decay_products))  # type: ignore[return-value]
+    return tuple(sorted(decay_products))  # ty:ignore[invalid-return-type]
 
 
 def get_helicity_info(
@@ -466,9 +466,9 @@ def perform_combinatorics(
     >>> assert len(permutated_transitions) == 2
     """
     if get_qrules_version() < (0, 10):
-        graph = transition.to_graph()  # type: ignore[attr-defined,return-value]
+        graph = transition.to_graph()  # ty:ignore[unresolved-attribute]
         mutable_graphs = perform_external_edge_identical_particle_combinatorics(graph)
-        return [StateTransition.from_graph(g) for g in mutable_graphs]  # type: ignore[attr-defined]
+        return [StateTransition.from_graph(g) for g in mutable_graphs]  # ty:ignore[unresolved-attribute]
     graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
     combinations = perform_external_edge_identical_particle_combinatorics(graph)
     return [g.freeze().convert(lambda s: State(*s)) for g in combinations]

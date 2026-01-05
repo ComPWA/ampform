@@ -22,7 +22,7 @@ source .venv/bin/activate
 Formatting and linting checks are automatically performed when committing changes. This is done with [pre-commit](https://pre-commit.com). To install the hooks in your local repository, run install `pre-commit` with `uv`:
 
 ```shell
-uv tool install pre-commit --with pre-commit-uv --force-reinstall
+uv tool install pre-commit --with pre-commit-uv --force-reinstall --python=3.13
 ```
 
 and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-scripts) **once**:
@@ -31,7 +31,13 @@ and [`pre-commit install`](https://pre-commit.com/#3-install-the-git-hook-script
 pre-commit install --install-hooks
 ```
 
-[Poe the Poet](https://poethepoet.natn.io) is used as a task runner. You can see which local CI checks it defines by running
+[Poe the Poet](https://poethepoet.natn.io) is used as a task runner. Install it globally (within your home folder) with `uv`:
+
+```shell
+uv tool install poethepoet --force-reinstall --python=3.13
+```
+
+You can see which local CI checks it defines by running
 
 ```shell
 poe

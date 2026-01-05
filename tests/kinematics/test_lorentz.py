@@ -416,7 +416,7 @@ def test_compute_invariant_masses(
     np_expr = sp.lambdify(momentum_symbols.values(), expr.doit(), cse=True)
     computed = np.average(np_expr(*momentum_values))
     indices = map(int, mass_name[2:])
-    masses = __compute_mass(sum(data_sample[i] for i in indices))  # type: ignore[arg-type]
+    masses = __compute_mass(sum(data_sample[i] for i in indices))
     expected = np.average(masses)
     assert pytest.approx(computed, abs=1e-8) == expected
 

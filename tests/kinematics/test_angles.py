@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from qrules.topology import Topology
 
 m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
-s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2  # type: ignore[assignment]
-s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2  # type: ignore[assignment]
-s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2  # type: ignore[assignment]
+s1 = cast("sp.Pow", sp.Symbol("m_23", nonnegative=True) ** 2)
+s2 = cast("sp.Pow", sp.Symbol("m_13", nonnegative=True) ** 2)
+s3 = cast("sp.Pow", sp.Symbol("m_12", nonnegative=True) ** 2)
 
 
 @pytest.fixture(scope="session")

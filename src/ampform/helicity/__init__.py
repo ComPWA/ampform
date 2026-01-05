@@ -15,7 +15,7 @@ import warnings
 from collections import OrderedDict, abc
 from fractions import Fraction
 from functools import reduce, singledispatchmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import attrs
 import sympy as sp
@@ -188,7 +188,7 @@ class HelicityModel:
                 for amp, expr in self.amplitudes.items()
             },
             parameter_defaults={
-                symbol_mapping.get(par, par): value  # type: ignore[call-overload]
+                symbol_mapping.get(par, par): value
                 for par, value in self.parameter_defaults.items()
             },
             components={
@@ -202,10 +202,10 @@ class HelicityModel:
         )
 
     def __collect_symbols(self) -> set[sp.Symbol]:
-        symbols: set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
+        symbols = cast("set[sp.Symbol]", self.expression.free_symbols)
         symbols |= set(self.kinematic_variables)
         for expr in self.kinematic_variables.values():
-            symbols |= expr.free_symbols  # type: ignore[arg-type]
+            symbols |= expr.free_symbols
         return symbols
 
 
@@ -249,9 +249,9 @@ class ParameterValues(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}({{"):
                 p.breakable()
                 for par, value in self.items():
-                    p.pretty(par)  # type: ignore[attr-defined]
+                    p.pretty(par)  # ty:ignore[unresolved-attribute]
                     p.text(": ")
-                    p.pretty(value)  # type: ignore[attr-defined]
+                    p.pretty(value)  # ty:ignore[unresolved-attribute]
                     p.text(",")
                     p.breakable()
             p.text("})")
@@ -400,7 +400,7 @@ class HelicityAmplitudeBuilder:
                 for s in sorted(angle_expr.free_symbols, key=str)
                 if isinstance(s, sp.Symbol)
                 if s.name.startswith("m_")
-                if s.is_nonnegative  # type: ignore[attr-defined]
+                if s.is_nonnegative
             ]
             for mass_symbol in remaining_mass_symbols:
                 indices = _get_final_state_ids(mass_symbol)
@@ -463,7 +463,7 @@ class HelicityAmplitudeBuilder:
 
         first_transition = transitions[0]
         symbol = create_amplitude_symbol(first_transition)
-        expression = sum(sequential_expressions)  # type: ignore[assignment]
+        expression = sp.sympify(sum(sequential_expressions))
         self.__ingredients.amplitudes[symbol] = expression
         return expression
 
@@ -603,7 +603,7 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[type-abstract]
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))
     """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
@@ -617,7 +617,7 @@ class BuilderConfiguration:
     """
     stable_final_state_ids: set[int] | None = field(
         converter=_to_optional_set,
-        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
+        validator=optional(deep_iterable(member_validator=instance_of(int))),
     )
     r"""IDs of the final states that should be considered stable.
 

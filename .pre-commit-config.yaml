@@ -4,8 +4,7 @@ ci:
   autoupdate_schedule: quarterly
   skip:
     - check-jsonschema
-    - mypy
-    - pyright
+    - ty
     - uv-lock
 
 repos:
@@ -15,13 +14,14 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.7.5
+    rev: ab21d65a4b8f08c192b449ba69445d8986b6bf0a
     hooks:
       - id: check-dev-files
         args:
           - --doc-apt-packages=graphviz
           - --repo-name=ampform
           - --repo-title=AmpForm
+          - --type-checker=ty
           - --update-lock-files=outsource
       - id: colab-toc-visible
       - id: fix-nbformat-version
@@ -146,18 +146,13 @@ repos:
 
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
+      - id: ty
+        name: ty
+        entry: ty check
+        args: [--output-format=concise]
         require_serial: true
-        types:
-          - python
-
-  - repo: https://github.com/ComPWA/pyright-pre-commit
-    rev: v1.1.407
-    hooks:
-      - id: pyright
+        language: system
+        types_or: [python, pyi, jupyter]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.9.21

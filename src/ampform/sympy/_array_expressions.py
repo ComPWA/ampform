@@ -71,15 +71,15 @@ class ArrayElement(_ArrayExpr):
 
     @property
     def parent(self) -> sp.Expr:
-        return self._args[0]  # type: ignore[return-value]
+        return self._args[0]  # ty:ignore[invalid-return-type]
 
     @property
     def indices(self) -> sp.Tuple:
-        return self._args[1]  # type: ignore[return-value]
+        return self._args[1]  # ty:ignore[invalid-return-type]
 
 
 # required for lambdify
-_ArrayExpr._iterable = False  # type: ignore[attr-defined]  # noqa: SLF001
+_ArrayExpr._iterable = False  # noqa: SLF001
 
 
 @overload
@@ -93,7 +93,7 @@ def _array_symbol_getitem(self: type[ArraySymbol], key: slice) -> ArraySlice: ..
 
 
 @overload
-def _array_symbol_getitem(  # type: ignore[misc]
+def _array_symbol_getitem(
     self: type[ArraySymbol], key: tuple[sp.Basic | int, ...]
 ) -> ArrayElement: ...
 
@@ -114,7 +114,7 @@ def _array_symbol_getitem(self, key):
     return ArrayElement(self, indices)
 
 
-ArraySymbol.__getitem__ = _array_symbol_getitem  # type: ignore[assignment]
+ArraySymbol.__getitem__ = _array_symbol_getitem  # ty:ignore[invalid-assignment]
 
 
 def _normalize_index(idx, axis_size: sp.Expr | None):
@@ -129,8 +129,8 @@ def _normalize_index(idx, axis_size: sp.Expr | None):
 
 
 class ArraySlice(_ArrayExpr):
-    parent: sp.Basic = property(lambda self: self.args[0])  # type: ignore[assignment]
-    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # type: ignore[assignment]
+    parent: sp.Basic = property(lambda self: self.args[0])  # ty:ignore[invalid-assignment]
+    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # ty:ignore[invalid-assignment]
     is_commutative = True
 
     @override
@@ -152,7 +152,7 @@ class ArraySlice(_ArrayExpr):
         return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> tuple[sp.Basic | int, ...]:  # type: ignore[override]
+    def shape(self) -> tuple[sp.Basic | int, ...]:
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)
@@ -201,7 +201,7 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
             raise IndexError
 
     start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
-    return start, stop, step
+    return start, stop, step  # ty:ignore[invalid-return-type]
 
 
 def _print_latex_ArrayElement(  # noqa: N802
@@ -255,10 +255,10 @@ def _slice_to_str(self: Printer, x, dim) -> str:
     return ":".join("" if xi in {none, None} else self._print(xi) for xi in x)
 
 
-LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # type: ignore[assignment]  # noqa: SLF001
-LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # type: ignore[attr-defined]  # noqa: SLF001
-StrPrinter._print_ArrayElement = _print_str_ArrayElement  # type: ignore[assignment]  # noqa: SLF001
-StrPrinter._print_ArraySlice = _print_str_ArraySlice  # type: ignore[attr-defined]  # noqa: SLF001
+LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # noqa: SLF001  # ty:ignore[invalid-assignment]
+LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # noqa: SLF001
+StrPrinter._print_ArrayElement = _print_str_ArrayElement  # noqa: SLF001  # ty:ignore[invalid-assignment]
+StrPrinter._print_ArraySlice = _print_str_ArraySlice  # noqa: SLF001
 
 
 class ArraySum(sp.Expr):
@@ -266,7 +266,7 @@ class ArraySum(sp.Expr):
 
     @override
     def __new__(cls, *terms: sp.Basic, **hints) -> Self:
-        terms = sp.sympify(terms)
+        terms = sp.sympify(terms)  # ty:ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *terms, **hints)
 
     @property
@@ -280,7 +280,7 @@ class ArraySum(sp.Expr):
                 name = next(iter(names))
                 subscript = "".join(map(_get_subscript, self.terms))
                 return f"{{{name}}}_{{{subscript}}}"
-        return printer._print_ArraySum(self)  # type: ignore[attr-defined]  # noqa: SLF001
+        return printer._print_ArraySum(self)  # noqa: SLF001
 
 
 def _print_array_sum(self: Printer, expr: ArraySum) -> str:
@@ -288,7 +288,7 @@ def _print_array_sum(self: Printer, expr: ArraySum) -> str:
     return " + ".join(terms)
 
 
-Printer._print_ArraySum = _print_array_sum  # type: ignore[attr-defined]  # noqa: SLF001
+Printer._print_ArraySum = _print_array_sum  # noqa: SLF001
 
 
 def _get_subscript(symbol: sp.Basic) -> str:
@@ -331,11 +331,11 @@ class ArrayAxisSum(sp.Expr):
 
     @property
     def array(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+        return self.args[0]  # ty:ignore[invalid-return-type]
 
     @property
     def axis(self) -> sp.Integer | None:
-        return self.args[1]  # type: ignore[return-value]
+        return self.args[1]  # ty:ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         array = printer._print(self.array)
@@ -363,12 +363,12 @@ class ArrayMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)
+        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
     def tensors(self) -> list[sp.Expr]:
-        return self.args  # type: ignore[return-value]
+        return self.args  # ty:ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         tensors = map(printer._print, self.tensors)
@@ -418,7 +418,7 @@ class MatrixMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)
+        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property

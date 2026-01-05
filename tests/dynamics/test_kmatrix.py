@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import cast
 
 import pytest
 import sympy as sp
@@ -39,7 +40,7 @@ class TestNonRelativisticKMatrix:
 
 
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
-    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     residue_constants = filter(lambda s: s.name.startswith(R"\gamma_"), free_symbols)
     return expression.xreplace(dict.fromkeys(residue_constants, 1))
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pytest
 import qrules
@@ -114,7 +114,7 @@ class TestEpemToDmD0Pip:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
@@ -200,7 +200,7 @@ class TestD1ToD0PiPi:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",

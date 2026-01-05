@@ -115,12 +115,12 @@ class SphericalHankel1(sp.Expr):
         l, z = self.args  # noqa: E741
         k = sp.Dummy("k", integer=True, nonnegative=True)
         return (
-            (-sp.I) ** (1 + l)  # type:ignore[operator]
+            (-sp.I) ** (1 + l)
             * (sp.exp(z * sp.I) / z)
             * _SymbolicSum(
                 sp.factorial(l + k)
                 / (sp.factorial(l - k) * sp.factorial(k))
-                * (sp.I / (2 * z)) ** k,  # type:ignore[operator]
+                * (sp.I / (2 * z)) ** k,
                 (k, 0, l),
             )
         )

@@ -16,15 +16,13 @@ from __future__ import annotations
 import inspect
 import logging
 from collections import abc
-from typing import TYPE_CHECKING, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast
 
 import sympy as sp
 from ipywidgets.widgets import FloatSlider, IntSlider
 from sympy.printing.latex import translate
 
-from ampform.sympy import (
-    partial_doit,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
+from ampform.sympy import partial_doit as partial_doit
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable, Iterator, Mapping, Sequence
@@ -94,7 +92,7 @@ class SliderKwargs(abc.Mapping):
                 )
                 raise ValueError(msg)
         for name, slider in sliders.items():
-            if not isinstance(slider, Slider.__args__):  # type: ignore[attr-defined]
+            if not isinstance(slider, Slider.__args__):
                 msg = f'Slider "{name}" is not a valid ipywidgets slider'
                 raise TypeError(msg)
 
@@ -134,11 +132,11 @@ class SliderKwargs(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}("):
                 p.breakable()
                 p.text("sliders=")
-                p.pretty(self._sliders)  # type: ignore[attr-defined]
+                p.pretty(self._sliders)  # ty:ignore[unresolved-attribute]
                 p.text(",")
                 p.breakable()
                 p.text("arg_to_symbol=")
-                p.pretty(self._arg_to_symbol)  # type: ignore[attr-defined]
+                p.pretty(self._arg_to_symbol)  # ty:ignore[unresolved-attribute]
                 p.text(",")
             p.breakable()
             p.text(")")
@@ -275,7 +273,7 @@ def create_slider(symbol: sp.Symbol) -> Slider:
     IntSlider(value=0, description='\\(n_{0}\\)')
     """
     description = Rf"\({sp.latex(symbol)}\)"
-    if symbol.is_integer:  # type: ignore[attr-defined]
+    if symbol.is_integer:
         return IntSlider(description=description)
     return FloatSlider(description=description)
 
@@ -286,7 +284,7 @@ def _extract_slider_symbols(
 ) -> tuple[sp.Symbol, ...]:
     """Extract sorted, remaining free symbols of a `sympy` expression."""
     plot_symbols = __safe_wrap_symbols(plot_symbol)
-    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     for symbol in plot_symbols:
         if symbol not in free_symbols:
             msg = f"Expression does not contain a free symbol named {symbol}"
@@ -300,7 +298,7 @@ def __safe_wrap_symbols(
     plot_symbol: sp.Symbol | Sequence[sp.Symbol],
 ) -> tuple[sp.Symbol, ...]:
     if isinstance(plot_symbol, abc.Sequence):
-        return tuple(plot_symbol)
+        return tuple(plot_symbol)  # ty:ignore[invalid-return-type]
     if isinstance(plot_symbol, sp.Symbol):
         return (plot_symbol,)
     msg = f"Wrong plot_symbol input type {type(plot_symbol).__name__}"
@@ -333,7 +331,7 @@ def rename_symbols(
     KeyError: "No symbol with name 'non-existent' in expression"
     """
     substitutions: dict[sp.Symbol, sp.Symbol] = {}
-    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     if callable(renames):
         for old_symbol in free_symbols:
             new_name = renames(old_symbol.name)
