@@ -73,7 +73,8 @@ class TestEpemToDmD0Pip:
 
         amplitude_model = get_builder(reaction).formulate()
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )
@@ -167,7 +168,8 @@ class TestD1ToD0PiPi:
         amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )

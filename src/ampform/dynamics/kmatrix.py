@@ -324,7 +324,8 @@ class RelativisticPVector(TMatrix):
         m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         return (
-            f_vector.xreplace({
+            f_vector
+            .xreplace({
                 k_matrix[i, j]: RelativisticKMatrix.parametrization(
                     i=i,
                     j=j,
