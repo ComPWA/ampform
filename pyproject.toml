@@ -64,7 +64,6 @@ Tracker = "https://github.com/ComPWA/ampform/issues"
 [dependency-groups]
 dev = [
     "ruff",
-    "sphinx-autobuild",
     {include-group = "doc"},
     {include-group = "jupyter"},
     {include-group = "style"},
@@ -113,7 +112,6 @@ style = [
 test = [
     "ampform[scipy]",
     "ipywidgets", # symplot
-    "nbmake",
     "numpy",
     "pytest",
     "pytest-benchmark",
@@ -162,8 +160,10 @@ omit = [
 ]
 source = ["src"]
 
-[tool.poe]
-executor.type = "uv"
+[tool.poe.executor]
+isolated = true
+no-group = "dev"
+type = "uv"
 
 [tool.poe.tasks.all]
 help = "Run all continuous integration (CI) tasks locally"
@@ -179,25 +179,25 @@ sequence = [
 
 [tool.poe.tasks.benchmark]
 cmd = """
-uv run --group test --isolated --no-dev \
-    pytest benchmarks \
-        --benchmark-autosave \
-        --durations=0 \
-        -k benchmark
+pytest benchmarks \
+    --benchmark-autosave \
+    --durations=0 \
+    -k benchmark
 """
+executor = {group = "test"}
 help = "Run benchmark tests and visualize performance"
 
 [tool.poe.tasks.cov]
 cmd = """
-uv run --group test --isolated --no-dev \
-    pytest \
-        --cov=ampform \
-        --cov-fail-under=75 \
-        --cov-report=html \
-        --cov-report=xml \
-        --numprocesses=auto \
-        ${paths}
+pytest \
+    --cov=ampform \
+    --cov-fail-under=75 \
+    --cov-report=html \
+    --cov-report=xml \
+    --numprocesses=auto \
+    ${paths}
 """
+executor = {group = "test"}
 help = "Compute how much of the source code is covered by tests"
 
 [[tool.poe.tasks.cov.args]]
@@ -217,6 +217,7 @@ sphinx-build \
     docs/_build/html/
 """
 env = {PYTHONWARNINGS = ""}
+executor = {group = "doc"}
 help = "Build documentation and API"
 
 [tool.poe.tasks.doclive]
@@ -244,6 +245,7 @@ sphinx-autobuild \
     docs/ \
     docs/_build/html/
 """
+executor = {group = "doc", with = "sphinx-autobuild"}
 help = "Set up a server to directly preview changes to the HTML pages"
 
 [tool.poe.tasks.docnb]
@@ -264,29 +266,41 @@ sequence = ["doclive"]
 [tool.poe.tasks.lab]
 args = [{name = "paths", default = "", positional = true}]
 cmd = "jupyter lab ${paths}"
+executor = {group = ["jupyter", "notebooks"]}
 help = "Run Jupyter Lab"
 
 [tool.poe.tasks.linkcheck]
 cmd = """
 sphinx-build \
     --builder=linkcheck \
+    --fail-on-warning \
     --show-traceback \
     docs/ \
     docs/_build/linkcheck/
 """
 env = {PYTHONWARNINGS = ""}
+executor = {group = "doc"}
 help = "Check external links in the documentation (requires internet connection)"
 
 [tool.poe.tasks.nb]
-cmd = "pytest --nbmake --nbmake-timeout=0 docs"
+cmd = "pytest --nbmake --nbmake-timeout=0 ${paths}"
+executor = {with = "nbmake", group = "notebooks"}
 help = "Run all notebooks"
 
+[[tool.poe.tasks.nb.args]]
+default = "docs"
+multiple = true
+name = "paths"
+positional = true
+
 [tool.poe.tasks.style]
-cmd = "uv run --extra scipy --group style --isolated --no-dev pre-commit run --all-files"
+cmd = "pre-commit run --all-files"
+executor = {extra = "scipy", group = "style"}
 help = "Perform all linting, formatting, and spelling checks"
 
 [tool.poe.tasks.test]
-cmd = "uv run --group test --isolated --no-dev pytest --numprocesses=auto ${paths}"
+cmd = "pytest --numprocesses=auto ${paths}"
+executor = {group = "test"}
 help = "Run all unit tests"
 
 [[tool.poe.tasks.test.args]]
@@ -338,7 +352,7 @@ addopts = [
 filterwarnings = [
     "error",
     "ignore: The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025.:DeprecationWarning",
-    "ignore:.*:pytest_benchmark.logger.PytestBenchmarkWarning",
+    "ignore:.*Benchmarks are automatically disabled.*",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
     "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
     "ignore:.*the @ampform.sympy.unevaluated_expression decorator instead( with commutative=True)?:DeprecationWarning",
