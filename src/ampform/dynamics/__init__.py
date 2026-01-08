@@ -36,7 +36,7 @@ class EnergyDependentWidth(sp.Expr):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
-    :cite:`ParticleDataGroup:2020ssz`, equation (6). Default value for
+    :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
     Note that the `.FormFactor` of AmpForm is normalized in the sense that equal powers
@@ -79,7 +79,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
     See :ref:`usage/dynamics:_Without_ form factor` and
-    :cite:`ParticleDataGroup:2020ssz`.
+    :cite:`ParticleDataGroup:2012pjm`.
     """
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 

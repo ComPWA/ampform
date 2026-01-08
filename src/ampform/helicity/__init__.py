@@ -735,14 +735,14 @@ def formulate_isobar_cg_coefficients(
     In the **canonical basis** (also called **partial wave basis**),
     :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
     the projection of angular momentum is conserved
-    (:cite:`kutschkeAngularDistributionCookbook1996`, p. 4). When calling
+    (:cite:`Kutschke:1996-AngularDistributionCookbook`, p. 4). When calling
     :func:`~qrules.generate_transitions` with :code:`formalism="canonical-helicity"`,
     AmpForm formulates the amplitude in the canonical basis from amplitudes in the
-    helicity basis using the transformation in :cite:`chungSpinFormalismsUpdated2014`,
-    Eq. (4.32). See also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
+    helicity basis using the transformation in :cite:`Chung:2014-SpinFormalismsUpdated`,
+    Eq. (4.32). See also :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (28).
 
     This function produces the two Clebsch-Gordan coefficients in
-    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay :math:`1
+    :cite:`Chung:2014-SpinFormalismsUpdated`, Eq. (4.32). For a two-body decay :math:`1
     \to 2, 3`, we get:
 
     .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
@@ -813,7 +813,7 @@ def formulate_isobar_cg_coefficients(
 def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
-    Following :cite:`chungSpinFormalismsUpdated2014`, `Eq. (4.16)
+    Following :cite:`Chung:2014-SpinFormalismsUpdated`, `Eq. (4.16)
     <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_, but taking the complex
     conjugate by flipping the sign of the azimuthal angle :math:`\phi` (see relation
     between Wigner-:math:`D` and Wigner-:math:`d` in `Eq. (A.1)
@@ -839,7 +839,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     Note that :math:`\lambda_2, \lambda_3` are ordered by their number of children, then
     by their state ID (see :class:`.TwoBodyDecay`).
 
-    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an example of
+    See :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (30) for an example of
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source
     chose :math:`\Omega=(\phi,\theta,-\phi)` as argument to the (conjugated)
     Wigner-:math:`D` function, just like the original paper by Jacob & Wick
