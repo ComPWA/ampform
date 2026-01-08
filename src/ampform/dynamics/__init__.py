@@ -101,14 +101,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     """
     form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(
-        s,
-        mass0,
-        gamma0,
-        m_a,
-        m_b,
-        angular_momentum,
-        meson_radius,
-        phsp_factor,
+        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return (mass0 * gamma0 * form_factor) / (
         mass0**2 - s - energy_dependent_width * mass0 * sp.I
