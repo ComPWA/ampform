@@ -14,7 +14,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.8.0
+    rev: 0.8.1
     hooks:
       - id: check-dev-files
         args:
@@ -26,6 +26,8 @@ repos:
       - id: colab-toc-visible
       - id: fix-nbformat-version
       - id: remove-empty-tags
+      - id: set-nb-cells
+        args: [--autolink-concat]
       - id: set-nb-display-name
 
   - repo: https://github.com/kynan/nbstripout
