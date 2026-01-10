@@ -128,7 +128,7 @@ class HelicityModel:
     (:func:`.natural_sorting`). Values have been extracted from the input
     `~qrules.transition.ReactionInfo`.
     """
-    kinematic_variables: OrderedDict[sp.Symbol, sp.Expr] = field(
+    kinematic_variables: OrderedDict[sp.Basic, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
@@ -718,7 +718,7 @@ class _HelicityModelIngredients:
     parameter_defaults: dict[sp.Basic, ParameterValue] = field(factory=dict)
     amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: dict[str, sp.Expr] = field(factory=dict)
-    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
+    kinematic_variables: dict[sp.Basic, sp.Expr] = field(factory=dict)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
