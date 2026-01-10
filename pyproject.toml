@@ -99,7 +99,6 @@ notebooks = [
     "ampform[scipy,viz]",
     "black",
     "ipympl",
-    "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
     "matplotlib",
     "mpl-interactions",
     "numpy",
@@ -417,6 +416,7 @@ ignore = [
     "PLW2901",
     "PT001",
     "PTH",
+    "RUF067",
     "SIM108",
 ]
 select = ["ALL"]
