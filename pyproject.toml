@@ -266,7 +266,7 @@ sequence = ["doclive"]
 args = [{name = "paths", default = "", positional = true}]
 cmd = "jupyter lab ${paths}"
 executor = {group = ["jupyter", "notebooks"]}
-help = "Run Jupyter Lab"
+help = "Launch Jupyter Lab"
 
 [tool.poe.tasks.linkcheck]
 cmd = """
@@ -311,12 +311,18 @@ positional = true
 [tool.poe.tasks.test-all]
 help = "Run all tests on each supported Python version"
 sequence = [
-    {ref = "test-py310"},
-    {ref = "test-py311"},
-    {ref = "test-py312"},
-    {ref = "test-py313"},
-    {ref = "test-py314"},
+    {ref = "test-py310 ${paths}"},
+    {ref = "test-py311 ${paths}"},
+    {ref = "test-py312 ${paths}"},
+    {ref = "test-py313 ${paths}"},
+    {ref = "test-py314 ${paths}"},
 ]
+
+[[tool.poe.tasks.test-all.args]]
+default = ""
+multiple = true
+name = "paths"
+positional = true
 
 [tool.poe.tasks.test-py310]
 env = {UV_PYTHON = "3.10"}
