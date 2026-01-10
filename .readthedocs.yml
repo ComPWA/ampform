@@ -11,11 +11,7 @@ build:
       pixi global install graphviz uv
     - |-
       export UV_LINK_MODE=copy
-      uv run \
-        --group doc \
-        --no-dev \
-        --with poethepoet \
-        poe doc
+      uvx --from poethepoet poe doc
       mkdir -p $READTHEDOCS_OUTPUT
       mv docs/_build/html $READTHEDOCS_OUTPUT
 

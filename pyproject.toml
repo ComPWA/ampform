@@ -298,7 +298,7 @@ executor = {extra = "scipy", group = "style"}
 help = "Perform all linting, formatting, and spelling checks"
 
 [tool.poe.tasks.test]
-cmd = "pytest --numprocesses=auto ${paths}"
+cmd = "pytest -m 'slow or not slow' --numprocesses=auto ${paths}"
 executor = {group = "test"}
 help = "Run all unit tests"
 
@@ -311,31 +311,32 @@ positional = true
 [tool.poe.tasks.test-all]
 help = "Run all tests on each supported Python version"
 sequence = [
-    {ref = "test-py 3.10"},
-    {ref = "test-py 3.11"},
-    {ref = "test-py 3.12"},
-    {ref = "test-py 3.13"},
-    {ref = "test-py 3.14"},
+    {ref = "test-py310"},
+    {ref = "test-py311"},
+    {ref = "test-py312"},
+    {ref = "test-py313"},
+    {ref = "test-py314"},
 ]
 
-[tool.poe.tasks.test-py]
-cmd = """
-uv run \
-    --group=test \
-    --isolated \
-    --no-dev \
-    --python=${version} \
-    pytest \
-        -m 'slow or not slow' \
-        --numprocesses=auto
-"""
-help = "Run all tests on a specific Python version"
+[tool.poe.tasks.test-py310]
+env = {UV_PYTHON = "3.10"}
+ref = "test"
 
-[[tool.poe.tasks.test-py.args]]
-default = "3.13"
-help = "Selected Python version"
-name = "version"
-positional = true
+[tool.poe.tasks.test-py311]
+env = {UV_PYTHON = "3.11"}
+ref = "test"
+
+[tool.poe.tasks.test-py312]
+env = {UV_PYTHON = "3.12"}
+ref = "test"
+
+[tool.poe.tasks.test-py313]
+env = {UV_PYTHON = "3.13"}
+ref = "test"
+
+[tool.poe.tasks.test-py314]
+env = {UV_PYTHON = "3.14"}
+ref = "test"
 
 [tool.pytest.ini_options]
 addopts = [
