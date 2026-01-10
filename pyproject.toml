@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
-    "qrules >=0.9.6",
+    "qrules>=0.9.6",
     "sympy >=1.10",
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
@@ -283,15 +283,10 @@ executor = {group = "doc"}
 help = "Check external links in the documentation (requires internet connection)"
 
 [tool.poe.tasks.nb]
+args = [{name = "paths", default = "docs", multiple = true, positional = true}]
 cmd = "pytest --nbmake --nbmake-timeout=0 ${paths}"
-executor = {with = "nbmake", group = "notebooks"}
+executor = {group = "notebooks", with = "nbmake"}
 help = "Run all notebooks"
-
-[[tool.poe.tasks.nb.args]]
-default = "docs"
-multiple = true
-name = "paths"
-positional = true
 
 [tool.poe.tasks.style]
 cmd = "pre-commit run --all-files"
@@ -587,3 +582,6 @@ possibly-unresolved-reference = "warn"
 unknown-argument = "ignore"
 unsupported-operator = "ignore"
 unused-ignore-comment = "warn"
+
+[tool.uv.sources]
+qrules = {git = "https://github.com/ComPWA/qrules", rev = "33be556be51fff52869034327bcf6157eb6cf726"}
