@@ -180,6 +180,7 @@ sequence = [
 cmd = """
 pytest benchmarks \
     --benchmark-autosave \
+    --benchmark-json benchmarks/output.json \
     --durations=0 \
     -k benchmark
 """
