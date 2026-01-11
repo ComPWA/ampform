@@ -61,11 +61,7 @@
   "ruff.importStrategy": "fromEnvironment",
   "ruff.organizeImports": true,
   "search.exclude": {
-    "**/.*cache": true,
-    "**/benchmarks/**/__init__.py": true,
-    "**/tests/**/__init__.py": true,
-    "**/uv.lock": true,
-    "typings/**": true
+    "**/uv.lock": true
   },
   "telemetry.telemetryLevel": "off",
   "testing.coverageToolbarEnabled": true,

@@ -17,7 +17,7 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -41,6 +41,8 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
@@ -124,7 +126,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     `~sympy.tensor.indexed.Indexed` instances.
 
     To convert these `~sympy.tensor.indexed.Indexed` instances to a
-    `~sympy.core.symbol.Symbol`, use :func:`symplot.substitute_indexed_symbols`.
+    `~sympy.core.symbol.Symbol`, use :func:`.substitute_indexed_symbols`.
 
     >>> create_symbol_matrix("A", m=2, n=3)
     Matrix([
@@ -309,6 +311,45 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     except SyntaxError:
         return []
     return list(indices)
+
+
+def rename_symbols(
+    expression: sp.Expr, renames: Callable[[str], str] | dict[str, str]
+) -> sp.Expr:
+    r"""Rename symbols in an expression.
+
+    >>> a, b, x = sp.symbols(R"a \beta x")
+    >>> expr = a + b * x
+    >>> rename_symbols(expr, renames={"a": "A", R"\beta": "B"})
+    A + B*x
+    >>> rename_symbols(expr, renames=lambda s: s.replace("\\", ""))
+    a + beta*x
+    >>> rename_symbols(expr, renames={"non-existent": "c"})
+    Traceback (most recent call last):
+        ...
+    KeyError: "No symbol with name 'non-existent' in expression"
+    """
+    substitutions: dict[sp.Symbol, sp.Symbol] = {}
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
+    if callable(renames):
+        for old_symbol in free_symbols:
+            new_name = renames(old_symbol.name)
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    elif isinstance(renames, dict):
+        for old_name, new_name in renames.items():
+            matches = (s for s in free_symbols if s.name == old_name)
+            try:
+                old_symbol = next(matches)
+            except StopIteration as e:
+                msg = f"No symbol with name '{old_name}' in expression"
+                raise KeyError(msg) from e
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    else:
+        msg = f"Cannot rename from type {type(renames).__name__}"
+        raise TypeError(msg)
+    return expression.xreplace(substitutions)
 
 
 class UnevaluatableIntegral(sp.Integral):

@@ -89,6 +89,7 @@ dev = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex" },
+    { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 doc = [
@@ -114,6 +115,7 @@ doc = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex" },
+    { name = "sympy-plot-backends" },
 ]
 jupyter = [
     { name = "jupyterlab" },
@@ -134,6 +136,7 @@ notebooks = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "rich" },
+    { name = "sympy-plot-backends" },
 ]
 style = [
     { name = "ampform", extra = ["scipy", "viz"] },
@@ -150,6 +153,7 @@ style = [
     { name = "pytest-benchmark" },
     { name = "rich" },
     { name = "sphinx-api-relink" },
+    { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 test = [
@@ -178,6 +182,7 @@ types = [
     { name = "pytest-benchmark" },
     { name = "rich" },
     { name = "sphinx-api-relink" },
+    { name = "sympy-plot-backends" },
 ]
 
 [package.metadata]
@@ -230,6 +235,7 @@ dev = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
+    { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 doc = [
@@ -253,6 +259,7 @@ doc = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
+    { name = "sympy-plot-backends" },
 ]
 jupyter = [
     { name = "jupyterlab" },
@@ -272,6 +279,7 @@ notebooks = [
     { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "rich" },
+    { name = "sympy-plot-backends" },
 ]
 style = [
     { name = "ampform", extras = ["scipy", "viz"] },
@@ -286,6 +294,7 @@ style = [
     { name = "pytest-benchmark" },
     { name = "rich" },
     { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=28e1b79191efbba93dbab3aa101003c33ea4fb90" },
+    { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 test = [
@@ -311,6 +320,7 @@ types = [
     { name = "pytest-benchmark" },
     { name = "rich" },
     { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=28e1b79191efbba93dbab3aa101003c33ea4fb90" },
+    { name = "sympy-plot-backends" },
 ]
 
 [[package]]
@@ -325,6 +335,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/96/f0/5eb65b2bb0d09ac6776f2eb54adee6abe8228ea05b20a5ad0e4945de8aac/anyio-4.12.1.tar.gz", hash = "sha256:41cfcc3a4c85d3f05c932da7c26d0201ac36f72abd4435ba90d0464a3ffed703", size = 228685, upload-time = "2026-01-06T11:45:21.246Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/38/0e/27be9fdef66e72d64c0cdc3cc2823101b80585f8119b5c112c2e8f5f7dab/anyio-4.12.1-py3-none-any.whl", hash = "sha256:d405828884fc140aa80a3c667b8beed277f1dfedec42ba031bd6ac3db606ab6c", size = 113592, upload-time = "2026-01-06T11:45:19.497Z" },
+]
+
+[[package]]
+name = "appdirs"
+version = "1.4.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/d8/05696357e0311f5b5c316d7b95f46c669dd9c15aaeecbb48c7d0aeb88c40/appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41", size = 13470, upload-time = "2020-05-11T07:59:51.037Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128", size = 9566, upload-time = "2020-05-11T07:59:49.499Z" },
 ]
 
 [[package]]
@@ -2209,6 +2228,15 @@ wheels = [
 ]
 
 [[package]]
+name = "mergedeep"
+version = "1.3.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/41/580bb4006e3ed0361b8151a01d324fb03f420815446c7def45d02f74c270/mergedeep-1.3.4.tar.gz", hash = "sha256:0096d52e9dad9939c3d975a774666af186eda617e6ca84df4c94dec30004f2a8", size = 4661, upload-time = "2021-02-05T18:55:30.623Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/19/04f9b178c2d8a15b076c8b5140708fa6ffc5601fb6f1e975537072df5b2a/mergedeep-1.3.4-py3-none-any.whl", hash = "sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307", size = 6354, upload-time = "2021-02-05T18:55:29.583Z" },
+]
+
+[[package]]
 name = "mistune"
 version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2561,6 +2589,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/70/6f/3dd4940bbe001c06a65f88e36bad298bc7a0de5036115639926b0c5c0458/pandocfilters-1.5.1.tar.gz", hash = "sha256:002b4a555ee4ebc03f8b66307e287fa492e4a77b4ea14d3f934328297bb4939e", size = 8454, upload-time = "2024-01-18T20:08:13.726Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/af/4fbc8cab944db5d21b7e2a5b8e9211a03a79852b1157e2c102fcc61ac440/pandocfilters-1.5.1-py2.py3-none-any.whl", hash = "sha256:93be382804a9cdb0a7267585f157e5d1731bbe5545a85b268d6f5fe6232de2bc", size = 8663, upload-time = "2024-01-18T20:08:11.28Z" },
+]
+
+[[package]]
+name = "param"
+version = "2.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/bb/ffd1606c28a957fb6444ed3edefe41373cdd7b3e001630b07e3a53a6bea3/param-2.3.1.tar.gz", hash = "sha256:84e59fc3a9bfb0e4c8100eb92d5be529deea3ec9c1f0881a0068c5caf31f21f3", size = 201772, upload-time = "2025-11-25T15:35:54.842Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/da/9d476e9aadfa854719f3cb917e3f7a170a657a182d8d1d6e546594a4872b/param-2.3.1-py3-none-any.whl", hash = "sha256:886b19031438719bbecfd15044dcdd9ed3cb9edb199191294f75600c7081d163", size = 139818, upload-time = "2025-11-25T15:35:53.556Z" },
 ]
 
 [[package]]
@@ -4006,6 +4043,25 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl", hash = "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5", size = 6299353, upload-time = "2025-04-27T18:04:59.103Z" },
+]
+
+[[package]]
+name = "sympy-plot-backends"
+version = "4.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "appdirs" },
+    { name = "matplotlib" },
+    { name = "mergedeep" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "packaging" },
+    { name = "param" },
+    { name = "sympy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/9b/edc6f4ae35cf729809c5eee713433acb9be562e5af920c5fff73a6f73794/sympy_plot_backends-4.1.0.tar.gz", hash = "sha256:bcf4c7ee586bfc96b417bc5c6f54c180c0931a23ee378649e23db672160f0f69", size = 478361, upload-time = "2025-12-13T09:30:30.188Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/24/ce7e9cd3f88fa734ed9e048f00434aea532136e3cc11391f62d999f979f5/sympy_plot_backends-4.1.0-py3-none-any.whl", hash = "sha256:25c47f4ee4aa65f9b074c1b1b8a4905c15b2364c5f675d10fea94ecb34e159b0", size = 383458, upload-time = "2025-12-13T09:30:28.972Z" },
 ]
 
 [[package]]

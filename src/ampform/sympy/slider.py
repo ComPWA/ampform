@@ -1,41 +1,28 @@
-"""Create interactive plots for `sympy` expressions.
-
-The procedure to create interactive plots with for :mod:`sympy` expressions with
-:doc:`mpl-interactions <mpl_interactions:index>` has been extracted to this module.
-
-The module is only available here, under the documentation. If this feature turns out to
-be popular, it can be published as an independent package.
-
-The package also provides other helpful functions, like
-:func:`substitute_indexed_symbols`, that are useful when visualizing `sympy`
-expressions.
-"""
+"""Helper functions for working with `sympy` expressions and `ipywidgets`."""
 
 from __future__ import annotations
 
 import inspect
 import logging
 from collections import abc
-from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 import sympy as sp
-from ipywidgets.widgets import FloatSlider, IntSlider
 from sympy.printing.latex import translate
-
-from ampform.sympy import partial_doit as partial_doit
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable, Iterator, Mapping, Sequence
     from typing import TypeGuard
 
+    import ipywidgets as w
     from IPython.lib.pretty import PrettyPrinter
 
-_LOGGER = logging.getLogger(__name__)
-
-Slider: TypeAlias = FloatSlider | IntSlider
-"""Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
+    Slider = w.FloatSlider | w.IntSlider
+    """Allowed :doc:`ipywidgets <ipywidgets:index>` slider types."""
 RangeDefinition = tuple[float, float] | tuple[float, float, float | int]
 """Types of range definitions used in :meth:`.set_ranges`."""
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SliderKwargs(abc.Mapping):
@@ -74,6 +61,9 @@ class SliderKwargs(abc.Mapping):
     def _verify_arguments(
         sliders: Mapping[str, Slider], arg_to_symbol: Mapping[str, str]
     ) -> None:
+        _assert_ipywidgets_installed()
+        import ipywidgets as w  # noqa: PLC0415
+
         symbol_names = set(arg_to_symbol.values())
         for arg_name in arg_to_symbol:
             if not arg_name.isidentifier():
@@ -92,7 +82,7 @@ class SliderKwargs(abc.Mapping):
                 )
                 raise ValueError(msg)
         for name, slider in sliders.items():
-            if not isinstance(slider, Slider.__args__):
+            if not isinstance(slider, w.ValueWidget):
                 msg = f'Slider "{name}" is not a valid ipywidgets slider'
                 raise TypeError(msg)
 
@@ -132,11 +122,11 @@ class SliderKwargs(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}("):
                 p.breakable()
                 p.text("sliders=")
-                p.pretty(self._sliders)  # ty:ignore[unresolved-attribute]
+                p.pretty(self._sliders)
                 p.text(",")
                 p.breakable()
                 p.text("arg_to_symbol=")
-                p.pretty(self._arg_to_symbol)  # ty:ignore[unresolved-attribute]
+                p.pretty(self._arg_to_symbol)
                 p.text(",")
             p.breakable()
             p.text(")")
@@ -163,6 +153,9 @@ class SliderKwargs(abc.Mapping):
 
         .. tip:: :code:`n_steps` becomes the step **size** if its value is `float`.
         """
+        _assert_ipywidgets_installed()
+        import ipywidgets as w  # noqa: PLC0415
+
         range_definitions = _merge_args_kwargs(*args, **kwargs)
         for slider_name, range_def in range_definitions.items():
             if not isinstance(range_def, tuple):
@@ -193,7 +186,7 @@ class SliderKwargs(abc.Mapping):
             else:
                 slider.min = min_
                 slider.max = max_
-            if isinstance(slider, FloatSlider):
+            if isinstance(slider, w.FloatSlider):
                 slider.step = step_size
 
 
@@ -253,7 +246,7 @@ def prepare_sliders(
         expression,
         modules="numpy",
     )
-    sliders_mapping = {symbol.name: create_slider(symbol) for symbol in slider_symbols}
+    sliders_mapping = {s.name: create_slider(s) for s in slider_symbols}
     symbols_names = (s.name for s in (*plot_symbols, *slider_symbols))
     arg_names = inspect.signature(lambdified_expression).parameters
     arg_to_symbol = dict(zip(arg_names, symbols_names, strict=True))
@@ -261,7 +254,7 @@ def prepare_sliders(
     return lambdified_expression, sliders
 
 
-def create_slider(symbol: sp.Symbol) -> Slider:
+def create_slider(symbol: sp.Symbol, **kwargs) -> Slider:
     r"""Create an `int` or `float` slider, depending on Symbol assumptions.
 
     The description for the slider is rendered as LaTeX from the
@@ -272,10 +265,13 @@ def create_slider(symbol: sp.Symbol) -> Slider:
     >>> create_slider(sp.Symbol("n0", integer=True))
     IntSlider(value=0, description='\\(n_{0}\\)')
     """
+    _assert_ipywidgets_installed()
+    import ipywidgets as w  # noqa: PLC0415
+
     description = Rf"\({sp.latex(symbol)}\)"
     if symbol.is_integer:
-        return IntSlider(description=description)
-    return FloatSlider(description=description)
+        return w.IntSlider(description=description, **kwargs)
+    return w.FloatSlider(description=description, **kwargs)
 
 
 def _extract_slider_symbols(
@@ -305,52 +301,12 @@ def __safe_wrap_symbols(
     raise TypeError(msg)
 
 
-def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
-    base_name, _, _ = str(idx).rpartition("[")
-    subscript = ",".join(map(str, idx.indices))
-    if len(idx.indices) > 1:
-        base_name = translate(base_name)
-        subscript = "_{" + subscript + "}"
-    return sp.Symbol(f"{base_name}{subscript}", **idx.assumptions0)
-
-
-def rename_symbols(
-    expression: sp.Expr, renames: Callable[[str], str] | dict[str, str]
-) -> sp.Expr:
-    r"""Rename symbols in an expression.
-
-    >>> a, b, x = sp.symbols(R"a \beta x")
-    >>> expr = a + b * x
-    >>> rename_symbols(expr, renames={"a": "A", R"\beta": "B"})
-    A + B*x
-    >>> rename_symbols(expr, renames=lambda s: s.replace("\\", ""))
-    a + beta*x
-    >>> rename_symbols(expr, renames={"non-existent": "c"})
-    Traceback (most recent call last):
-        ...
-    KeyError: "No symbol with name 'non-existent' in expression"
-    """
-    substitutions: dict[sp.Symbol, sp.Symbol] = {}
-    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
-    if callable(renames):
-        for old_symbol in free_symbols:
-            new_name = renames(old_symbol.name)
-            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
-            substitutions[old_symbol] = new_symbol
-    elif isinstance(renames, dict):
-        for old_name, new_name in renames.items():
-            matches = (s for s in free_symbols if s.name == old_name)
-            try:
-                old_symbol = next(matches)
-            except StopIteration as e:
-                msg = f"No symbol with name '{old_name}' in expression"
-                raise KeyError(msg) from e
-            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
-            substitutions[old_symbol] = new_symbol
-    else:
-        msg = f"Cannot rename from type {type(renames).__name__}"
-        raise TypeError(msg)
-    return expression.xreplace(substitutions)
+def _assert_ipywidgets_installed() -> None:
+    try:
+        import ipywidgets  # noqa: F401, PLC0415
+    except ImportError as exc:
+        msg = "Please install ipywidgets to use the ampform.sympy.slider module"
+        raise ImportError(msg) from exc
 
 
 def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
@@ -363,3 +319,12 @@ def substitute_indexed_symbols(expression: sp.Expr) -> sp.Expr:
         for s in expression.free_symbols
         if isinstance(s, sp.Indexed)
     })
+
+
+def _indexed_to_symbol(idx: sp.Indexed) -> sp.Symbol:
+    base_name, _, _ = str(idx).rpartition("[")
+    subscript = ",".join(map(str, idx.indices))
+    if len(idx.indices) > 1:
+        base_name = translate(base_name)
+        subscript = "_{" + subscript + "}"
+    return sp.Symbol(f"{base_name}{subscript}", **idx.assumptions0)

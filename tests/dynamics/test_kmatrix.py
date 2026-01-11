@@ -7,7 +7,8 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics.kmatrix import NonRelativisticKMatrix
-from symplot import rename_symbols, substitute_indexed_symbols
+from ampform.sympy import rename_symbols
+from ampform.sympy.slider import substitute_indexed_symbols
 
 
 class TestNonRelativisticKMatrix:

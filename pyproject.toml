@@ -103,6 +103,7 @@ notebooks = [
     "mpl-interactions",
     "numpy",
     "rich",
+    "sympy-plot-backends",
 ]
 style = [
     "ty",
@@ -110,7 +111,7 @@ style = [
 ]
 test = [
     "ampform[scipy]",
-    "ipywidgets", # symplot
+    "ipywidgets",
     "numpy",
     "pytest",
     "pytest-benchmark",
@@ -134,7 +135,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
 ampform = ["py.typed"]
-symplot = ["py.typed"]
 
 [tool.setuptools.packages.find]
 namespaces = false
@@ -474,7 +474,6 @@ split-on-trailing-comma = false
     "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
-"**/docs/usage/symplot.ipynb" = ["RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
     "D",
@@ -567,6 +566,12 @@ include = [
 
 [tool.ty.overrides.rules]
 unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = ["docs/usage/interactive.ipynb"]
+
+[tool.ty.overrides.rules]
+too-many-positional-arguments = "ignore"
 
 [[tool.ty.overrides]]
 include = ["tests/external/test_sympy.py"]
