@@ -80,7 +80,7 @@ set_intersphinx_version_remapping({
         "0.24.1": "0.24.0",
         "0.24.2": "0.24.0",
     },
-    "qrules": {"0.10.7.dev21+g33be556be": "0.10.6"},
+    "qrules": {"0.10.7.dev.*": "0.10.6"},
 })
 
 BRANCH = get_branch_name()

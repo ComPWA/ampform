@@ -581,7 +581,7 @@ possibly-missing-import = "warn"
 possibly-unresolved-reference = "warn"
 unknown-argument = "ignore"
 unsupported-operator = "ignore"
-unused-ignore-comment = "warn"
 
 [tool.uv.sources]
-qrules = {git = "https://github.com/ComPWA/qrules", rev = "33be556be51fff52869034327bcf6157eb6cf726"}
+qrules = {git = "https://github.com/ComPWA/qrules", rev = "75bc682a56ca07b1eadeafeca4fb1676de7281b4"}
+sphinx-api-relink = {git = "https://github.com/ComPWA/sphinx-api-relink", rev = "28e1b79191efbba93dbab3aa101003c33ea4fb90"}

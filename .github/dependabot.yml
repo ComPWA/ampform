@@ -1,0 +1,19 @@
+version: 2
+
+multi-ecosystem-groups:
+  lock:
+    assignees: [redeboer]
+    commit-message: { prefix: MAINT }
+    schedule: { interval: quarterly }
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    labels: [⬆️ Lock]
+    multi-ecosystem-group: lock
+    patterns: ["*"]
+  - package-ecosystem: uv
+    directory: "/"
+    labels: [⬆️ Lock]
+    multi-ecosystem-group: lock
+    patterns: ["*"]

@@ -1,7 +1,6 @@
 ci:
   autofix_commit_msg: "MAINT: implement pre-commit autofixes"
   autoupdate_commit_msg: "MAINT: upgrade lock files"
-  autoupdate_schedule: quarterly
   skip:
     - check-jsonschema
     - ty
@@ -14,7 +13,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.8.2rc5
+    rev: 0.8.2rc9
     hooks:
       - id: check-dev-files
         args:
@@ -22,7 +21,6 @@ repos:
           - --repo-name=ampform
           - --repo-title=AmpForm
           - --type-checker=ty
-          - --update-lock-files=outsource
       - id: colab-toc-visible
       - id: fix-nbformat-version
       - id: remove-empty-tags
