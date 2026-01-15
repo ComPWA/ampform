@@ -13,7 +13,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.8.2rc9
+    rev: f694b94f6427cc2e8cbeff807e16fe4c1f764323
     hooks:
       - id: check-dev-files
         args:
@@ -94,7 +94,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ComPWA/prettier-pre-commit
-    rev: v3.4.2
+    rev: v3.8.0
     hooks:
       - id: prettier
 
@@ -150,6 +150,6 @@ repos:
         types_or: [python, pyi, jupyter]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.24
+    rev: 0.9.25
     hooks:
       - id: uv-lock

@@ -86,14 +86,14 @@ doc = [
     {include-group = "notebooks"},
 ]
 jupyter = [
+    "jupyter-ruff",
     "jupyterlab",
-    "jupyterlab-code-formatter",
     "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
     "jupyterlab-quickopen",
     "python-lsp-ruff",
-    "python-lsp-server[rope]",
+    "python-lsp-server",
 ]
 notebooks = [
     "ampform[scipy,viz]",
@@ -340,7 +340,7 @@ ref = "test"
 env = {UV_PYTHON = "3.14"}
 ref = "test"
 
-[tool.pytest.ini_options]
+[tool.pytest]
 addopts = [
     "--color=yes",
     "--doctest-continue-on-failure",
@@ -366,6 +366,7 @@ filterwarnings = [
     'ignore:Widget\..* is deprecated\.:DeprecationWarning',
 ]
 markers = ["slow: marks tests as slow (select with '-m slow')"]
+minversion = "9.0"
 norecursedirs = [
     ".ipynb_checkpoints",
     ".virtual_documents",
@@ -445,6 +446,7 @@ ignore-names = [
 ]
 
 [tool.ruff.lint.isort]
+known-first-party = ["ampform"]
 known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
