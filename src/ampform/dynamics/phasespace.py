@@ -54,9 +54,9 @@ class PhaseSpaceFactorProtocol(Protocol):
         """Expected `~inspect.signature`.
 
         Args:
-            s: :ref:`Mandelstam variable <pwa:mandelstam-variables>` :math:`s`.
-                Commonly, this is just :math:`s = m_R^2`, with :math:`m_R` the invariant
-                mass of decaying particle :math:`R`.
+            s: `Mandelstam variable <https://pwa.rtfd.io/physics/#mandelstam-variables>`_
+                :math:`s`. Commonly, this is just :math:`s = m_R^2`, with :math:`m_R`
+                the invariant mass of decaying particle :math:`R`.
 
             m1: Mass of decay product :math:`a`.
             m2: Mass of decay product :math:`b`.
@@ -176,7 +176,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
     This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
     `ChewMandelstamIntegral`. As such, you have to be careful when lambdifying this
     function and evaluating this over an array. In many cases, you want to wrap the
-    resulting lambdified numerical function with :func:`numpy.vectorize`.
+    resulting lambdified numerical function with :obj:`numpy.vectorize`.
 
     >>> import numpy as np
     >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave

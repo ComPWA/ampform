@@ -28,7 +28,6 @@ classifiers = [
 dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
-    "plotly>=6.5.2",
     "qrules >=0.9.6",
     "sympy >=1.10",
 ]
@@ -106,6 +105,7 @@ notebooks = [
     "matplotlib",
     "mpl-interactions",
     "numpy",
+    "plotly",
     "rich",
 ]
 style = [
@@ -532,6 +532,7 @@ split-on-trailing-comma = false
     "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
+"**/docs/usage/dynamics/higherl.ipynb" = ["E741"]
 "**/docs/usage/symplot.ipynb" = ["RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
