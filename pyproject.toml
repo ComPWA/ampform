@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
-    "qrules>=0.9.6",
+    "qrules >=0.9.6",
     "sympy >=1.10",
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
@@ -348,6 +348,7 @@ addopts = [
     "--durations=3",
     "--ignore=docs/abbreviate_signature.py",
     "--ignore=docs/conf.py",
+    "--import-mode=importlib",
     "-m not slow",
     "-rS",
 ]
@@ -480,7 +481,6 @@ split-on-trailing-comma = false
 "benchmarks/*" = [
     "D",
     "INP001",
-    "PGH001",
     "PLC2701",
     "PLR2004",
     "PLR6301",
@@ -512,7 +512,6 @@ split-on-trailing-comma = false
     "C408",
     "D",
     "INP001",
-    "PGH001",
     "PLC2701",
     "PLR0914",
     "PLR0917",
@@ -591,4 +590,4 @@ unsupported-operator = "ignore"
 
 [tool.uv.sources]
 qrules = {git = "https://github.com/ComPWA/qrules", rev = "75bc682a56ca07b1eadeafeca4fb1676de7281b4"}
-sphinx-api-relink = {git = "https://github.com/ComPWA/sphinx-api-relink", rev = "28e1b79191efbba93dbab3aa101003c33ea4fb90"}
+sphinx-api-relink = {git = "https://github.com/ComPWA/sphinx-api-relink", rev = "5e18cb0981eb31680926bdb6511078f4308f38e0"}

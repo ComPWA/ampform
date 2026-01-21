@@ -42,7 +42,7 @@ class ComplexSqrt(NumPyPrintable):
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
         args = sp.sympify((x, *args))
-        expr: ComplexSqrt = sp.Expr.__new__(cls, *args, **kwargs)
+        expr: ComplexSqrt = sp.Expr.__new__(cls, *args, **kwargs)  # ty:ignore[not-iterable]
         if isinstance(x, sp.Number):
             return expr.get_definition()
         return expr

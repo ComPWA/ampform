@@ -14,7 +14,7 @@ on:
 jobs:
   cleanup:
     name: Remove caches
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: ComPWA/actions/clean-caches@v4
         with:

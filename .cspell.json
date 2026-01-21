@@ -25,6 +25,7 @@
     "*.ico",
     ".editorconfig",
     ".envrc",
+    ".github/dependabot.yml",
     ".gitignore",
     ".pre-commit-config.yaml",
     ".prettierignore",
@@ -40,7 +41,6 @@
   "ignoreWords": [
     "Autoupdate",
     "Dalitzplot",
-    "MAINT",
     "Minkowski",
     "PYDEVD",
     "adrs",

@@ -327,7 +327,7 @@ class ArrayAxisSum(sp.Expr):
             msg = "Only single digits allowed for axis"
             raise TypeError(msg)
         args = sp.sympify((array, axis))
-        return sp.Expr.__new__(cls, *args, **hints)
+        return sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
 
     @property
     def array(self) -> sp.Expr:

@@ -287,8 +287,8 @@ def create_expression(
     )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
-        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
+        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)  # ty:ignore[not-iterable]
         if evaluate:
             return expr.evaluate()
         return expr
-    return sp.Expr.__new__(cls, *args, **kwargs)
+    return sp.Expr.__new__(cls, *args, **kwargs)  # ty:ignore[not-iterable]

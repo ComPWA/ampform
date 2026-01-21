@@ -168,7 +168,7 @@ class PoolSum(sp.Expr):
                 raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         args = sp.sympify((expression, *converted_indices))
-        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)
+        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
         if evaluate:
             return expr.evaluate()
         return expr
