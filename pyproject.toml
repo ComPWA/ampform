@@ -532,6 +532,7 @@ split-on-trailing-comma = false
     "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
+"**/docs/usage/dynamics/higherl.ipynb" = ["E741", "RUF027"]
 "**/docs/usage/symplot.ipynb" = ["RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
