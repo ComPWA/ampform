@@ -65,6 +65,19 @@ class PhaseSpaceFactor(sp.Expr):
 
     See :pdg-review:`2025; Resonances; p.6`, Equation (50.11). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`chungPrimerKmatrixFormalism1995`, p.5.
+
+    Similarly to `.BreakupMomentum`, this class represents the numerator as a single
+    square root for better numerical performance. This comes at the cost of a :ref:`more
+    complicated cut structure <usage/dynamics/analytic-continuation:Cut structure>` when
+    the function is continued to the complex plane.
+
+    Alternative implementations:
+
+    * `PhaseSpaceFactorAbs`
+    * `PhaseSpaceFactorComplex`
+    * `PhaseSpaceFactorKallen`
+    * `PhaseSpaceFactorSplitSqrt`
+    * `PhaseSpaceFactorSWave`
     """
 
     s: Any
