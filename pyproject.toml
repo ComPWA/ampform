@@ -105,7 +105,6 @@ notebooks = [
     "matplotlib",
     "mpl-interactions",
     "numpy",
-    "plotly",
     "rich",
 ]
 style = [
