@@ -20,8 +20,21 @@ import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
+from ampform.dynamics.phasespace import (
+    PhaseSpaceFactor,
+    PhaseSpaceFactorKallen,
+    PhaseSpaceFactorSplitSqrt,
+    PhaseSpaceFactorSWave,
+)
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
+from ampform.kinematics.phasespace import (
+    BreakupMomentum,
+    BreakupMomentumComplex,
+    BreakupMomentumKallen,
+    BreakupMomentumSplitSqrt,
+    BreakupMomentumSquared,
+)
 from ampform.sympy._array_expressions import ArrayMultiplication
 from ampform.sympy._cache import get_readable_hash, make_hashable
 
@@ -30,9 +43,22 @@ if TYPE_CHECKING:
 
     from qrules.transition import ReactionInfo, SpinFormalism
 
+    from ampform.dynamics.phasespace import PhaseSpaceFactorProtocol
     from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
+
+
+def append_phsp_doit(
+    phsp_factor: PhaseSpaceFactorProtocol,
+    wide: bool = True,
+) -> Callable[[], None]:
+    def _extend() -> None:
+        s, m1, m2 = sp.symbols("s m1 m2", nonnegative=True)
+        expr = phsp_factor(s, m1, m2)
+        _append_latex_doit_definition(expr, full_width=wide)
+
+    return _extend
 
 
 def extend_docstrings() -> None:
@@ -56,6 +82,17 @@ def extend_docstrings() -> None:
             msg = f"Local function {name} should not have a signature"
             raise ValueError(msg)
         definition()
+
+
+extend_BreakupMomentum = append_phsp_doit(BreakupMomentum)  # type:ignore[arg-type]
+extend_BreakupMomentumComplex = append_phsp_doit(BreakupMomentumComplex)  # type:ignore[arg-type]
+extend_BreakupMomentumKallen = append_phsp_doit(BreakupMomentumKallen)  # type:ignore[arg-type]
+extend_BreakupMomentumSplitSqrt = append_phsp_doit(BreakupMomentumSplitSqrt)  # type:ignore[arg-type]
+extend_BreakupMomentumSquared = append_phsp_doit(BreakupMomentumSquared)  # type:ignore[arg-type]
+extend_PhaseSpaceFactor = append_phsp_doit(PhaseSpaceFactor)  # type:ignore[arg-type]
+extend_PhaseSpaceFactorKallen = append_phsp_doit(PhaseSpaceFactorKallen)  # type:ignore[arg-type]
+extend_PhaseSpaceFactorSplitSqrt = append_phsp_doit(PhaseSpaceFactorSplitSqrt)  # type:ignore[arg-type]
+extend_PhaseSpaceFactorSWave = append_phsp_doit(PhaseSpaceFactorSWave, wide=True)  # type:ignore[arg-type]
 
 
 def extend_BlattWeisskopfSquared() -> None:
@@ -167,30 +204,6 @@ def extend_BoostZMatrix() -> None:
     _append_code_rendering(
         multiplication.doit(), use_cse=True, docstring_class=BoostZMatrix
     )
-
-
-def extend_BreakupMomentum() -> None:
-    from ampform.kinematics.phasespace import BreakupMomentum
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = BreakupMomentum(s, m_a, m_b)
-    _append_latex_doit_definition(expr, deep=True)
-
-
-def extend_BreakupMomentumComplex() -> None:
-    from ampform.kinematics.phasespace import BreakupMomentumComplex
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = BreakupMomentumComplex(s, m_a, m_b)
-    _append_latex_doit_definition(expr, deep=True)
-
-
-def extend_BreakupMomentumSquared() -> None:
-    from ampform.kinematics.phasespace import BreakupMomentumSquared
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = BreakupMomentumSquared(s, m_a, m_b)
-    _append_latex_doit_definition(expr, deep=True)
 
 
 def extend_ChewMandelstamIntegral() -> None:
@@ -378,20 +391,6 @@ def extend_is_within_phasespace() -> None:
     )
 
 
-def extend_PhaseSpaceFactor() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactor
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = PhaseSpaceFactor(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    _append_to_docstring(
-        PhaseSpaceFactor,
-        """
-    with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
 def extend_PhaseSpaceFactorAbs() -> None:
     from ampform.dynamics.phasespace import PhaseSpaceFactorAbs
 
@@ -418,14 +417,6 @@ def extend_PhaseSpaceFactorComplex() -> None:
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,
     )
-
-
-def extend_PhaseSpaceFactorSWave() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactorSWave
-
-    s, m_a, m_b = sp.symbols("s m_a m_b")
-    expr = PhaseSpaceFactorSWave(s, m_a, m_b)
-    _append_latex_doit_definition(expr, full_width=True)
 
 
 def extend_Phi() -> None:
