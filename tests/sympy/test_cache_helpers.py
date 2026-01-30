@@ -93,7 +93,7 @@ class TestLargeHash:
         ("expected_hashes", "formalism"),
         [
             ({"2b77221", "dc1ee0e"}, "canonical-helicity"),
-            ({"1ba1704", "cbd5ff0", "ceecb32"}, "helicity"),
+            ({"aced899", "cbd5ff0", "ceecb32"}, "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )

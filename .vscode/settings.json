@@ -59,9 +59,6 @@
   "ruff.enable": true,
   "ruff.importStrategy": "fromEnvironment",
   "ruff.organizeImports": true,
-  "search.exclude": {
-    "**/uv.lock": true
-  },
   "telemetry.telemetryLevel": "off",
   "testing.coverageToolbarEnabled": true,
   "testing.showCoverageInExplorer": true,
