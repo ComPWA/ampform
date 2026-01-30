@@ -21,11 +21,6 @@ import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
 from ampform.dynamics.phasespace import (
-    BreakupMomentum,
-    BreakupMomentumComplex,
-    BreakupMomentumKallen,
-    BreakupMomentumSplitSqrt,
-    BreakupMomentumSquared,
     PhaseSpaceFactor,
     PhaseSpaceFactorKallen,
     PhaseSpaceFactorSplitSqrt,
@@ -33,6 +28,13 @@ from ampform.dynamics.phasespace import (
 )
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
+from ampform.kinematics.phasespace import (
+    BreakupMomentum,
+    BreakupMomentumComplex,
+    BreakupMomentumKallen,
+    BreakupMomentumSplitSqrt,
+    BreakupMomentumSquared,
+)
 from ampform.sympy._array_expressions import ArrayMultiplication
 from ampform.sympy._cache import get_readable_hash, make_hashable
 
@@ -204,18 +206,12 @@ def extend_BoostZMatrix() -> None:
     )
 
 
-def extend_PhaseSpaceFactorComplex() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactorComplex
+def extend_ChewMandelstamIntegral() -> None:
+    from ampform.dynamics.phasespace import ChewMandelstamIntegral
 
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = PhaseSpaceFactorComplex(s, m_a, m_b)
+    s, m_a, m_b, ell = sp.symbols(R"s m_a m_b \ell")
+    expr = ChewMandelstamIntegral(s, m_a, m_b, ell)
     _append_latex_doit_definition(expr)
-    _append_to_docstring(
-        PhaseSpaceFactorComplex,
-        """
-    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
 
 
 def extend_ComplexSqrt() -> None:
@@ -403,6 +399,20 @@ def extend_PhaseSpaceFactorAbs() -> None:
     _append_latex_doit_definition(expr)
     _append_to_docstring(
         PhaseSpaceFactorAbs,
+        """
+    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
+    """,
+    )
+
+
+def extend_PhaseSpaceFactorComplex() -> None:
+    from ampform.dynamics.phasespace import PhaseSpaceFactorComplex
+
+    s, m_a, m_b = sp.symbols("s, m_a, m_b")
+    expr = PhaseSpaceFactorComplex(s, m_a, m_b)
+    _append_latex_doit_definition(expr)
+    _append_to_docstring(
+        PhaseSpaceFactorComplex,
         """
     with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
     """,

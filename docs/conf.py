@@ -288,6 +288,7 @@ intersphinx_mapping = {
 linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
+    "https://citeseerx.ist.psu.edu/document",
     "https://doi.org/10.1002",  # 403 for onlinelibrary.wiley.com
     "https://doi.org/10.1093",  # 403 for PTEP
     "https://doi.org/10.1103",  # 403 for Phys Rev D
@@ -344,6 +345,7 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 suppress_warnings = [
+    "myst.directive_unknown",
     "myst.domains",
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127

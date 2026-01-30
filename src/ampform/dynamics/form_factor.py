@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import sympy as sp
 
-from ampform.dynamics.phasespace import BreakupMomentumSquared
+from ampform.kinematics.phasespace import BreakupMomentumSquared
 from ampform.sympy import unevaluated
 
 if TYPE_CHECKING:

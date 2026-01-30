@@ -16,13 +16,15 @@ from ampform.dynamics.form_factor import (
     FormFactor,
 )
 from ampform.dynamics.phasespace import (
-    BreakupMomentumSquared,  # noqa: F401
     EqualMassPhaseSpaceFactor,  # noqa: F401
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,  # noqa: F401
     PhaseSpaceFactorComplex,  # noqa: F401
     PhaseSpaceFactorProtocol,
     PhaseSpaceFactorSWave,  # noqa: F401
+)
+from ampform.kinematics.phasespace import (
+    BreakupMomentumSquared,  # noqa: F401
     _indices_to_subscript,
 )
 from ampform.sympy import argument, determine_indices, unevaluated
