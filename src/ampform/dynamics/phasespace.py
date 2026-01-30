@@ -12,28 +12,38 @@ This module provides several parametrizations. They all comply with the
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol  # pragma: no cover
 
 import sympy as sp
 
-from ampform.kinematics.phasespace import Kallen
-from ampform.sympy import argument, determine_indices, unevaluated
+from ampform.dynamics.form_factor import FormFactor
+from ampform.kinematics.phasespace import (
+    BreakupMomentum,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumComplex,
+    BreakupMomentumKallen,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumSplitSqrt,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumSquared,
+    Kallen,
+    _indices_to_subscript,
+)
+from ampform.sympy import (
+    UnevaluatableIntegral,
+    argument,
+    determine_indices,
+    unevaluated,
+)
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from sympy.printing.latex import LatexPrinter
-
-from typing import Protocol  # pragma: no cover
 
 
 class PhaseSpaceFactorProtocol(Protocol):
     """Protocol that is used by `.EnergyDependentWidth`.
 
     Follow this `~typing.Protocol` when defining other implementations of a phase space.
-    Even functions like `BreakupMomentum` comply with this protocol, but are technically
-    speaking not phase space factors.
+    Even functions like `.BreakupMomentum` comply with this protocol, but are
+    technically speaking not phase space factors.
     """
 
     def __call__(self, s, m1, m2) -> sp.Expr:
@@ -50,163 +60,13 @@ class PhaseSpaceFactorProtocol(Protocol):
 
 
 @unevaluated
-class BreakupMomentum(sp.Expr):
-    r"""Break-up momentum of a two-body decay.
-
-    For a two-body decay :math:`R \to 12`, the *break-up momentum* is the absolute value
-    of the momentum of both :math:`1` and :math:`2` in the rest frame of :math:`R`. See
-    Equation (50.7) on :pdg-review:`2024; Resonances; p.7`.
-
-    In AmpForm's standard implementation, the numerator is represented as a single
-    square root. This results in :ref:`better computational performance
-    <usage/dynamics/analytic-continuation:Numerical precision and performance>`, as the
-    expression tree has fewer computational nodes, but comes at the cost of a :ref:`more
-    complicated cut structure <usage/dynamics/analytic-continuation:Cut structure>` when
-    the function is continued to the complex plane. The square root itself is defined as
-    the standard :func:`sympy.sqrt <sympy.functions.elementary.miscellaneous.sqrt>`.
-
-    Alternative implementations:
-
-    * `BreakupMomentumComplex`
-    * `BreakupMomentumKallen`
-    * `BreakupMomentumSplitSqrt`
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return sp.sqrt((s - (m1 - m2) ** 2) * (s - (m1 + m2) ** 2)) / (2 * sp.sqrt(s))
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumKallen(sp.Expr):
-    """Two-body break-up momentum with a Källén function.
-
-    This version of the `BreakupMomentum` represents the numerator using the `.Kallen`
-    function. This is common practice in literature (e.g. :pdg-review:`2024; Resonances;
-    p.7`), but results in a :ref:`more complicated cut
-    <usage/dynamics/analytic-continuation:Cut structure>` and :ref:`worse numerical
-    performance <usage/dynamics/analytic-continuation:Numerical precision and
-    performance>` than `BreakupMomentum`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return sp.sqrt(Kallen(s, m1**2, m2**2) / (4 * s))
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumSplitSqrt(sp.Expr):
-    """Two-body break-up momentum with cut structure.
-
-    This version of the `BreakupMomentum` represents the numerator as two separate
-    square roots. This results in a :ref:`cleaner cut structure
-    <usage/dynamics/analytic-continuation:Cut structure>` at the cost of :ref:`slightly
-    worse numerical performance <usage/dynamics/analytic-continuation:Numerical
-    precision and performance>` than `BreakupMomentum`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (
-            sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / (2 * sp.sqrt(s))
-        )
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumComplex(sp.Expr):
-    """Two-body break-up momentum with a square root that is defined on the real axis.
-
-    In this version of the `BreakupMomentumSplitSqrt`, the square roots are replaced by
-    `.ComplexSqrt`, which has a defined behavior for negative input values, so that it
-    can be evaluated on the entire real axis.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (
-            ComplexSqrt(s - (m1 + m2) ** 2)
-            * ComplexSqrt(s - (m1 - m2) ** 2)
-            / (2 * sp.sqrt(s))
-        )
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class BreakupMomentumSquared(sp.Expr):
-    """Squared value of the two-body `BreakupMomentum`.
-
-    It's up to the caller in which way to take the square root of this break-up
-    momentum, because :math:`q^2` can have negative values for non-zero :math:`m_1,m_2`.
-    In this case, one may want to use `.ComplexSqrt` instead of the standard
-    :func:`~sympy.functions.elementary.miscellaneous.sqrt`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q^2" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
 class PhaseSpaceFactor(sp.Expr):
-    r"""Standard phase-space factor, using a definition consistent with `BreakupMomentum`.
+    r"""Standard phase-space factor, using a definition consistent with `.BreakupMomentum`.
 
-    See :pdg-review:`2024; Resonances; p.6`, Equation (50.11). We ignore the factor
+    See :pdg-review:`2025; Resonances; p.6`, Equation (50.11). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`Chung:1995-PrimerKmatrixFormalism`, p.5.
 
-    Similarly to `BreakupMomentum`, this class represents the numerator as a single
+    Similarly to `.BreakupMomentum`, this class represents the numerator as a single
     square root for better numerical performance. This comes at the cost of a :ref:`more
     complicated cut structure <usage/dynamics/analytic-continuation:Cut structure>` when
     the function is continued to the complex plane.
@@ -228,6 +88,109 @@ class PhaseSpaceFactor(sp.Expr):
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
         return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2)) / s
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\rho" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class PhaseSpaceFactorAbs(sp.Expr):
+    r"""Phase space factor with square root over the absolute value.
+
+    As opposed to `.PhaseSpaceFactor`, this takes the square root of the
+    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentumSquared`.
+
+    This version of the phase space factor is often denoted as :math:`\hat{\rho}` and is
+    used in `.EqualMassPhaseSpaceFactor`.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        q_squared = BreakupMomentumSquared(s, m1, m2)
+        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\hat{\rho}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class PhaseSpaceFactorComplex(sp.Expr):
+    """Phase-space factor with `.ComplexSqrt`.
+
+    Same as `PhaseSpaceFactorSplitSqrt`, but using a `.ComplexSqrt` that does have
+    defined behavior for defined for negative input values along the real axis.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return ComplexSqrt(s - (m1 + m2) ** 2) * ComplexSqrt(s - (m1 - m2) ** 2) / s
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class PhaseSpaceFactorKallen(sp.Expr):
+    """Phase-space factor that is the equivalent of `.BreakupMomentumKallen`."""
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return sp.sqrt(Kallen(s, m1**2, m2**2)) / s
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\rho" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
+@unevaluated
+class PhaseSpaceFactorSplitSqrt(sp.Expr):
+    """Phase-space factor that is the equivalent of `.BreakupMomentumSplitSqrt`.
+
+    This version of the `PhaseSpaceFactor` represents the numerator as two separate
+    square roots. This results in a :ref:`cleaner cut structure
+    <usage/dynamics/analytic-continuation:Cut structure>` at the cost of :ref:`slightly
+    worse numerical performance <usage/dynamics/analytic-continuation:Numerical
+    precision and performance>` than `PhaseSpaceFactor`.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s_symbol = self.args[0]
@@ -263,6 +226,44 @@ class PhaseSpaceFactorSWave(sp.Expr):
         return Rf"{name}\left({s_latex}\right)"
 
 
+@unevaluated
+class PhaseSpaceFactorPWave(sp.Expr):
+    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`L=1`.
+
+    This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
+    `ChewMandelstamIntegral`. As such, you have to be careful when lambdifying this
+    function and evaluating this over an array. In many cases, you want to wrap the
+    resulting lambdified numerical function with :obj:`numpy.vectorize`.
+
+    >>> import numpy as np
+    >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
+    >>> s, m1, m2 = sp.symbols("s m_1 m_2")
+    >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
+    >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
+    >>> rho_func = np.vectorize(rho_func)
+    >>> s_values = np.linspace(0.1, 4.0, num=4)
+    >>> rho_func(s_values, 0.14, 0.98).real
+    array([-4.08315014e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        chew_mandelstam = ChewMandelstamIntegral(s, m1, m2, L=1, epsilon=1e-5)
+        return -sp.I * chew_mandelstam
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s_symbol = self.args[0]
+        s_latex = printer._print(s_symbol)
+        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        name = R"\rho^\mathrm{CM}_1" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s_latex}\right)"
+
+
 def chew_mandelstam_s_wave(s, m1, m2):
     """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
     q = BreakupMomentumComplex(s, m1, m2)
@@ -281,105 +282,49 @@ def chew_mandelstam_s_wave(s, m1, m2):
 
 
 @unevaluated
-class PhaseSpaceFactorAbs(sp.Expr):
-    r"""Phase space factor with square root over the absolute value.
+class ChewMandelstamIntegral(sp.Expr):
+    """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
 
-    As opposed to `.PhaseSpaceFactor`, this takes the square root of the
-    `~sympy.functions.elementary.complexes.Abs` value of `.BreakupMomentumSquared`.
-
-    This version of the phase space factor is often denoted as :math:`\hat{\rho}` and is
-    used in `.EqualMassPhaseSpaceFactor`.
+    Parameters:
+        s: Mandelstam variable s.
+        m1: Mass of particle 1.
+        m2: Mass of particle 2.
+        L: Angular momentum.
+        meson_radius: Meson radius, default is 1 (optional).
+        s_prime: Integration variable defaults to 'x'.
+        epsilon: Small imaginary part default is positive epsilon.
     """
 
     s: Any
     m1: Any
     m2: Any
+    L: Any
+    s_prime: Any = sp.Symbol("x", real=True)
+    epsilon: Any = sp.Symbol("epsilon", positive=True)
+    meson_radius: Any = 1
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        q_squared = BreakupMomentumSquared(s, m1, m2)
-        return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
+        s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
+        ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
+        phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
+        s_thr = (m1 + m2) ** 2
+        return sp.Mul(
+            (s - s_thr) / sp.pi,
+            UnevaluatableIntegral(
+                (phsp_factor * ff_squared)
+                / (s_prime - s_thr)
+                / (s_prime - s - sp.I * epsilon),
+                (s_prime, s_thr, sp.oo),
+            ),
+            evaluate=False,
+        )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\hat{\rho}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class PhaseSpaceFactorKallen(sp.Expr):
-    """Phase-space factor that is the equivalent of `BreakupMomentumKallen`."""
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return sp.sqrt(Kallen(s, m1**2, m2**2)) / s
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class PhaseSpaceFactorSplitSqrt(sp.Expr):
-    """Phase-space factor that is the equivalent of `BreakupMomentumSplitSqrt`.
-
-    This version of the `PhaseSpaceFactor` represents the numerator as two separate
-    square roots. This results in a :ref:`cleaner cut structure
-    <usage/dynamics/analytic-continuation:Cut structure>` at the cost of :ref:`slightly
-    worse numerical performance <usage/dynamics/analytic-continuation:Numerical
-    precision and performance>` than `PhaseSpaceFactor`.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-@unevaluated
-class PhaseSpaceFactorComplex(sp.Expr):
-    """Phase-space factor with `.ComplexSqrt`.
-
-    Same as `PhaseSpaceFactorSplitSqrt`, but using a `.ComplexSqrt` that does have
-    defined behavior for defined for negative input values along the real axis.
-    """
-
-    s: Any
-    m1: Any
-    m2: Any
-    name: str | None = argument(default=None, sympify=False)
-
-    def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        return ComplexSqrt(s - (m1 + m2) ** 2) * ComplexSqrt(s - (m1 - m2) ** 2) / s
-
-    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
+        s_latex = printer._print(self.s)
+        l_latex = printer._print(self.L)
+        subscript = _indices_to_subscript(determine_indices(self.s))
+        name = Rf"\Sigma_{l_latex}" + subscript if self.name is None else self.name
         return Rf"{name}\left({s_latex}\right)"
 
 
@@ -428,19 +373,3 @@ def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
             True,
         ),
     )
-
-
-def _indices_to_subscript(indices: Sequence[int]) -> str:
-    """Create a LaTeX subscript from a list of indices.
-
-    >>> _indices_to_subscript([])
-    ''
-    >>> _indices_to_subscript([1])
-    '_{1}'
-    >>> _indices_to_subscript([1, 2])
-    '_{1,2}'
-    """
-    if len(indices) == 0:
-        return ""
-    subscript = ",".join(map(str, indices))
-    return "_{" + subscript + "}"
