@@ -155,6 +155,7 @@ autodoc_typehints_format = "short"
 autosectionlabel_prefix_document = True
 bibtex_bibfiles = ["bibliography.bib"]
 bibtex_default_style = "unsrt_et_al"
+bibtex_use_mathjax = True
 bibtex_reference_style = "author_year"
 codeautolink_concat_default = True
 codeautolink_global_preface = """

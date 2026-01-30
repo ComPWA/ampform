@@ -235,7 +235,7 @@ dev = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-hep-pdgref" },
-    { name = "sphinx-pybtex-etal-style" },
+    { name = "sphinx-pybtex-etal-style", git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
@@ -259,7 +259,7 @@ doc = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-hep-pdgref" },
-    { name = "sphinx-pybtex-etal-style" },
+    { name = "sphinx-pybtex-etal-style", git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
@@ -3976,14 +3976,10 @@ wheels = [
 
 [[package]]
 name = "sphinx-pybtex-etal-style"
-version = "0.0.3"
-source = { registry = "https://pypi.org/simple" }
+version = "0.0.4.dev11+g763f4d99a"
+source = { git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31#763f4d99a68a1789689c5a4f60ee86498f92ed31" }
 dependencies = [
     { name = "pybtex" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/05/cb/c75d1173988344a5fabd9dbeea742e4a8c452953e68f1c25d844733b62a6/sphinx_pybtex_etal_style-0.0.3.tar.gz", hash = "sha256:e43beb55bc33f01d9b4d0ac90b20ad1d7209238d993d3256a973946aeeece262", size = 11855, upload-time = "2024-10-29T10:58:09.749Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/4d/8beb18b2cf347e152899a1a595f85049d691fbcd9a60e38756144742ca8f/sphinx_pybtex_etal_style-0.0.3-py3-none-any.whl", hash = "sha256:51170abd9fcf5ba5d09ffb890c1b722448d8d185b9b9b5a2feb869c57256f2ff", size = 6032, upload-time = "2024-10-29T10:58:07.973Z" },
 ]
 
 [[package]]
