@@ -10,6 +10,7 @@ from warnings import warn
 
 import sympy as sp
 
+from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
     BlattWeisskopfSquared,  # noqa: F401
     FormFactor,

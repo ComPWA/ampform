@@ -32,6 +32,9 @@
   "cSpell.enabled": true,
   "diffEditor.experimental.showMoves": true,
   "editor.formatOnSave": true,
+  "editor.unicodeHighlight.allowedCharacters": {
+    "–": true
+  },
   "git.rebaseWhenSync": true,
   "github-actions.workflows.pinned.refresh.enabled": true,
   "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],

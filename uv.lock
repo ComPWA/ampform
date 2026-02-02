@@ -63,7 +63,6 @@ dev = [
     { name = "jupyterlab-myst" },
     { name = "jupyterlab-quickopen" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "myst-nb" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -99,7 +98,6 @@ doc = [
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "myst-nb" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -136,7 +134,6 @@ notebooks = [
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "rich" },
@@ -150,7 +147,6 @@ style = [
     { name = "ipython", version = "9.10.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "ipywidgets" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
@@ -179,7 +175,6 @@ types = [
     { name = "ipython", version = "9.10.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "ipywidgets" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
@@ -215,7 +210,6 @@ dev = [
     { name = "jupyterlab-myst" },
     { name = "jupyterlab-quickopen" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "myst-nb" },
     { name = "numpy" },
     { name = "pytest" },
@@ -247,7 +241,6 @@ doc = [
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "myst-nb" },
     { name = "numpy" },
     { name = "rich" },
@@ -280,7 +273,6 @@ notebooks = [
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "rich" },
     { name = "sympy-plot-backends" },
@@ -292,7 +284,6 @@ style = [
     { name = "ipython" },
     { name = "ipywidgets" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
@@ -318,7 +309,6 @@ types = [
     { name = "ipython" },
     { name = "ipywidgets" },
     { name = "matplotlib" },
-    { name = "mpl-interactions" },
     { name = "numpy" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
@@ -2289,18 +2279,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9d/55/d01f0c4b45ade6536c51170b9043db8b2ec6ddf4a35c7ea3f5f559ac935b/mistune-3.2.0.tar.gz", hash = "sha256:708487c8a8cdd99c9d90eb3ed4c3ed961246ff78ac82f03418f5183ab70e398a", size = 95467, upload-time = "2025-12-23T11:36:34.994Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9b/f7/4a5e785ec9fbd65146a27b6b70b6cdc161a66f2024e4b04ac06a67f5578b/mistune-3.2.0-py3-none-any.whl", hash = "sha256:febdc629a3c78616b94393c6580551e0e34cc289987ec6c35ed3f4be42d0eee1", size = 53598, upload-time = "2025-12-23T11:36:33.211Z" },
-]
-
-[[package]]
-name = "mpl-interactions"
-version = "0.24.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "matplotlib" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d7/b5/458d2bd9985d939d709769d4604ac5ea0d5eb2d76ed8cfa1746ce2269be3/mpl_interactions-0.24.2.tar.gz", hash = "sha256:2ef91b44bd3fb88395d7ea0bae862b7c987004d87dfb478c8bc1655999a3c2e1", size = 36042395, upload-time = "2024-09-10T20:45:12.463Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/56/947abc9885841744c708d57871c05d381ecb1bb8f12e5d6ec138e4cf99e6/mpl_interactions-0.24.2-py3-none-any.whl", hash = "sha256:bacda7af49007096942d01a4973e7df5b52afaa8385a688a383e34ffee6105d3", size = 45549, upload-time = "2024-09-10T20:45:10.142Z" },
 ]
 
 [[package]]

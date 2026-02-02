@@ -76,10 +76,6 @@ set_intersphinx_version_remapping({
         "8.1.7": "8.1.5",
         "8.1.8": "8.1.5",
     },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
-        "0.24.2": "0.24.0",
-    },
     "qrules": {"0.10.7.dev.*": "0.10.6"},
 })
 
@@ -279,10 +275,6 @@ intersphinx_mapping = {
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
-    "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{pin('mpl-interactions')}",
-        None,
-    ),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),

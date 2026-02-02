@@ -100,7 +100,6 @@ notebooks = [
     "black",
     "ipympl",
     "matplotlib",
-    "mpl-interactions",
     "numpy",
     "rich",
     "sympy-plot-backends",
@@ -394,6 +393,7 @@ docstring-code-format = true
 line-ending = "lf"
 
 [tool.ruff.lint]
+allowed-confusables = ["–"]
 ignore = [
     "ANN",
     "ARG00",
@@ -551,35 +551,27 @@ possibly-unresolved-reference = "ignore"
 
 [[tool.ty.overrides]]
 include = [
+    "docs/usage/dynamics.ipynb",
     "docs/usage/dynamics/analytic-continuation.ipynb",
-    "docs/usage/dynamics/k-matrix.ipynb",
     "docs/usage/helicity/formalism.ipynb",
     "docs/usage/interactive.ipynb",
 ]
-
-[tool.ty.overrides.rules]
-unresolved-attribute = "ignore"
+rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = [
     "src/ampform/sympy/**",
     "tests/sympy/**",
 ]
-
-[tool.ty.overrides.rules]
-unresolved-attribute = "ignore"
+rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = ["docs/usage/interactive.ipynb"]
-
-[tool.ty.overrides.rules]
-too-many-positional-arguments = "ignore"
+rules.too-many-positional-arguments = "ignore"
 
 [[tool.ty.overrides]]
 include = ["tests/external/test_sympy.py"]
-
-[tool.ty.overrides.rules]
-call-non-callable = "ignore"
+rules.call-non-callable = "ignore"
 
 [tool.ty.rules]
 division-by-zero = "warn"
