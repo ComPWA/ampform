@@ -137,7 +137,6 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     ),
 }
 api_target_types: dict[str, str] = {
-    "RangeDefinition": "obj",
     "ampform.helicity.align.dpd.T": "obj",
 }
 author = "Common Partial Wave Analysis"
