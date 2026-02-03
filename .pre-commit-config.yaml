@@ -13,7 +13,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.8.2rc14
+    rev: 0.8.2rc15
     hooks:
       - id: check-dev-files
         args:
@@ -27,6 +27,7 @@ repos:
       - id: set-nb-cells
         args: [--autolink-concat]
       - id: set-nb-display-name
+      - id: strip-nb-whitespace
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.9.0
