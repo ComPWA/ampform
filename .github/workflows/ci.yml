@@ -29,7 +29,7 @@ jobs:
   style:
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/pre-commit.yml@v4.0
+    uses: ComPWA/actions/.github/workflows/style.yml@v4.0
   test:
     uses: ComPWA/actions/.github/workflows/test.yml@v4.0
     secrets:
