@@ -3943,7 +3943,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-hep-pdgref"
-version = "0.2.1"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -3953,9 +3953,9 @@ dependencies = [
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/22/37fed67271c83018cea4c5c8f82b03d658cac6407289dca5a7cb3ed4b600/sphinx_hep_pdgref-0.2.1.tar.gz", hash = "sha256:c7cbae1ea1d7b70a82872a99583ebad7886c3ed217b5610ead8446843699f6d8", size = 17614, upload-time = "2024-10-29T10:57:09.522Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/37/6a0e669bec2089db62e78c51900138fa1ea11cc51c8dc1ce433e1cb261af/sphinx_hep_pdgref-0.2.2.tar.gz", hash = "sha256:1257b50628bca25219112fca2ec3a5ab881c82b0cdc50be73eb56b2400c5ec2e", size = 17339, upload-time = "2026-02-06T12:03:29.602Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/0c/78ba08f0f2c3f8980b07a0b74b411ef6f6ef662f3b0517b1cd922cfc66a4/sphinx_hep_pdgref-0.2.1-py3-none-any.whl", hash = "sha256:4d22a3cd7278b6be8988559acd8c15573cb482a0e686172a25899a53d64a6127", size = 7534, upload-time = "2024-10-29T10:57:08.628Z" },
+    { url = "https://files.pythonhosted.org/packages/72/1e/fbdfe0b6131ac0d2b62052f2f44a48c8f02434ce16cef4383fcaad4fe5cf/sphinx_hep_pdgref-0.2.2-py3-none-any.whl", hash = "sha256:3b990e16ac449f967c2e54cbbeffdc9fda380e4112e9de9aac0fdc0aea285915", size = 7468, upload-time = "2026-02-06T12:03:28.512Z" },
 ]
 
 [[package]]
