@@ -45,8 +45,7 @@ class AxisAngleAlignment(SpinAlignment):
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
 
-    @staticmethod
-    def formulate_amplitude(reaction: ReactionInfo) -> sp.Expr:
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # noqa: PLR6301
         topology_groups = group_by_topology(reaction.transitions)
         outer_state_ids = get_outer_state_ids(reaction)
         amplitude = sp.S.Zero
@@ -66,8 +65,7 @@ class AxisAngleAlignment(SpinAlignment):
             )
         return amplitude
 
-    @staticmethod
-    def define_symbols(reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # noqa: PLR6301
         wigner_angles = {}
         for topology in group_by_topology(reaction.transitions):
             momenta = create_four_momentum_symbols(topology)
@@ -174,7 +172,7 @@ def formulate_helicity_rotation_chain(
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
-        return summation.subs(dangling_idx, helicity_symbol)
+        return summation.subs(dangling_idx, helicity_symbol)  # ty:ignore[invalid-return-type]
     return summation
 
 
@@ -311,8 +309,7 @@ def __rationalize(value: _BasicType) -> _BasicType: ...
 
 
 @overload
-def __rationalize(value) -> sp.Rational:  # type: ignore[misc]
-    ...
+def __rationalize(value) -> sp.Rational: ...
 
 
 def __rationalize(value):

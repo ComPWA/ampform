@@ -3,7 +3,6 @@
 This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 
-# pyright: reportMissingImports=false
 from __future__ import annotations
 
 import inspect
@@ -84,15 +83,15 @@ def extend_docstrings() -> None:
         definition()
 
 
-extend_BreakupMomentum = append_phsp_doit(BreakupMomentum)  # type:ignore[arg-type]
-extend_BreakupMomentumComplex = append_phsp_doit(BreakupMomentumComplex)  # type:ignore[arg-type]
-extend_BreakupMomentumKallen = append_phsp_doit(BreakupMomentumKallen)  # type:ignore[arg-type]
-extend_BreakupMomentumSplitSqrt = append_phsp_doit(BreakupMomentumSplitSqrt)  # type:ignore[arg-type]
-extend_BreakupMomentumSquared = append_phsp_doit(BreakupMomentumSquared)  # type:ignore[arg-type]
-extend_PhaseSpaceFactor = append_phsp_doit(PhaseSpaceFactor)  # type:ignore[arg-type]
-extend_PhaseSpaceFactorKallen = append_phsp_doit(PhaseSpaceFactorKallen)  # type:ignore[arg-type]
-extend_PhaseSpaceFactorSplitSqrt = append_phsp_doit(PhaseSpaceFactorSplitSqrt)  # type:ignore[arg-type]
-extend_PhaseSpaceFactorSWave = append_phsp_doit(PhaseSpaceFactorSWave, wide=True)  # type:ignore[arg-type]
+extend_BreakupMomentum = append_phsp_doit(BreakupMomentum)
+extend_BreakupMomentumComplex = append_phsp_doit(BreakupMomentumComplex)
+extend_BreakupMomentumKallen = append_phsp_doit(BreakupMomentumKallen)
+extend_BreakupMomentumSplitSqrt = append_phsp_doit(BreakupMomentumSplitSqrt)
+extend_BreakupMomentumSquared = append_phsp_doit(BreakupMomentumSquared)
+extend_PhaseSpaceFactor = append_phsp_doit(PhaseSpaceFactor)
+extend_PhaseSpaceFactorKallen = append_phsp_doit(PhaseSpaceFactorKallen)
+extend_PhaseSpaceFactorSplitSqrt = append_phsp_doit(PhaseSpaceFactorSplitSqrt)
+extend_PhaseSpaceFactorSWave = append_phsp_doit(PhaseSpaceFactorSWave, wide=True)
 
 
 def extend_BlattWeisskopfSquared() -> None:
@@ -786,7 +785,7 @@ def _graphviz_to_image(
         options = {}
     global _GRAPHVIZ_COUNTER  # noqa: PLW0603
     output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
-    _GRAPHVIZ_COUNTER += 1  # pyright: ignore[reportConstantRedefinition]
+    _GRAPHVIZ_COUNTER += 1
     graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)
     restructuredtext = "\n"
     if label:

@@ -19,7 +19,7 @@ class TestUnevaluatedExpression:
         assert expr == imported_expr
 
         # Pickle UnevaluatedExpression
-        expr = UnevaluatedExpression()  # type: ignore[abstract]
+        expr = UnevaluatedExpression()
         pickled_obj = pickle.dumps(expr)
         imported_expr = pickle.loads(pickled_obj)  # noqa: S301
         assert expr == imported_expr
@@ -38,7 +38,7 @@ class TestUnevaluatedExpression:
             m_b=m_a,
             angular_momentum=0,
             meson_radius=1,
-            phsp_factor=EqualMassPhaseSpaceFactor,  # type:ignore[arg-type]
+            phsp_factor=EqualMassPhaseSpaceFactor,
             name="Gamma_1",
         )
         pickled_obj = pickle.dumps(expr)

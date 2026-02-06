@@ -35,7 +35,7 @@ class TestSymbol:
         assert x.name == "x; weird-spacing	.,"
         # cspell:ignore srepr
         assert sp.srepr(x) == "Symbol('x; weird-spacing\\t.,')"
-        assert f.name == "  f.^"
+        assert f.name == "  f.^"  # ty:ignore[unresolved-attribute]
         assert g.name == "g"
         x.name = "x"
         assert x.name == "x"

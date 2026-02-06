@@ -17,38 +17,32 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
-from ._decorator import (
-    ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    argument,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    unevaluated,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .cached import (
-    doit as perform_cached_doit,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .cached import (
-    xreplace as perform_cached_substitution,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .deprecated import (
-    UnevaluatedExpression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    create_expression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_doit_method,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_expr,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-    make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-)
+from ._decorator import ExprClass as ExprClass
+from ._decorator import SymPyAssumptions as SymPyAssumptions
+from ._decorator import argument as argument
+from ._decorator import unevaluated as unevaluated
+from .cached import doit as perform_cached_doit  # noqa: F401
+from .cached import xreplace as perform_cached_substitution  # noqa: F401
+from .deprecated import UnevaluatedExpression as UnevaluatedExpression
+from .deprecated import create_expression as create_expression
+from .deprecated import implement_doit_method as implement_doit_method
+from .deprecated import implement_expr as implement_expr
+from .deprecated import make_commutative as make_commutative
 
 if sys.version_info >= (3, 12):
     from typing import override
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
@@ -132,7 +126,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     `~sympy.tensor.indexed.Indexed` instances.
 
     To convert these `~sympy.tensor.indexed.Indexed` instances to a
-    `~sympy.core.symbol.Symbol`, use :func:`symplot.substitute_indexed_symbols`.
+    `~sympy.core.symbol.Symbol`, use :func:`.substitute_indexed_symbols`.
 
     >>> create_symbol_matrix("A", m=2, n=3)
     Matrix([
@@ -140,7 +134,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     [A[1, 0], A[1, 1], A[1, 2]]])
     """
     symbol = sp.IndexedBase(name, shape=(m, n))
-    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])  # pyright:ignore[reportIndexIssue]
+    return sp.Matrix([[symbol[i, j] for j in range(n)] for i in range(m)])
 
 
 class PoolSum(sp.Expr):
@@ -174,25 +168,25 @@ class PoolSum(sp.Expr):
                 raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         args = sp.sympify((expression, *converted_indices))
-        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)
+        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()  # type: ignore[return-value]
+            return expr.evaluate()
         return expr
 
     @property
     def expression(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+        return self.args[0]  # ty:ignore[invalid-return-type]
 
     @property
     def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
-        return self.args[1:]  # type: ignore[return-value]
+        return self.args[1:]
 
     @property
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[misc]
+    def doit(self, deep: bool = True) -> sp.Expr:  # ty:ignore[invalid-method-override]
         expr = self.evaluate()
         if deep:
             return expr.doit()
@@ -319,6 +313,45 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     return list(indices)
 
 
+def rename_symbols(
+    expression: sp.Expr, renames: Callable[[str], str] | dict[str, str]
+) -> sp.Expr:
+    r"""Rename symbols in an expression.
+
+    >>> a, b, x = sp.symbols(R"a \beta x")
+    >>> expr = a + b * x
+    >>> rename_symbols(expr, renames={"a": "A", R"\beta": "B"})
+    A + B*x
+    >>> rename_symbols(expr, renames=lambda s: s.replace("\\", ""))
+    a + beta*x
+    >>> rename_symbols(expr, renames={"non-existent": "c"})
+    Traceback (most recent call last):
+        ...
+    KeyError: "No symbol with name 'non-existent' in expression"
+    """
+    substitutions: dict[sp.Symbol, sp.Symbol] = {}
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
+    if callable(renames):
+        for old_symbol in free_symbols:
+            new_name = renames(old_symbol.name)
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    elif isinstance(renames, dict):
+        for old_name, new_name in renames.items():
+            matches = (s for s in free_symbols if s.name == old_name)
+            try:
+                old_symbol = next(matches)
+            except StopIteration as e:
+                msg = f"No symbol with name '{old_name}' in expression"
+                raise KeyError(msg) from e
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    else:
+        msg = f"Cannot rename from type {type(renames).__name__}"
+        raise TypeError(msg)
+    return expression.xreplace(substitutions)
+
+
 class UnevaluatableIntegral(sp.Integral):
     """See :ref:`usage/sympy:Numerical integrals`.
 
@@ -336,7 +369,7 @@ class UnevaluatableIntegral(sp.Integral):
         return self.func(*args)
 
     @override
-    def _numpycode(self, printer, *args) -> str:  # type:ignore[misc]
+    def _numpycode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
         _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
@@ -361,7 +394,7 @@ class UnevaluatableIntegral(sp.Integral):
 
 def _warn_if_scipy_not_installed() -> None:
     try:
-        import scipy  # noqa: F401, PLC0415  # pyright: ignore[reportUnusedImport, reportMissingImports]
+        import scipy  # noqa: F401, PLC0415
     except ImportError:
         warnings.warn(
             "Scipy is not installed. Install with 'pip install scipy' or with 'pip"

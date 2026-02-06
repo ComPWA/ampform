@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
+from typing import cast
 
 import sympy as sp
 
@@ -50,15 +51,16 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(  # type: ignore[override]  # noqa: D417
+    def formulate(  # noqa: D417
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_t_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
         angular_momentum=0,
         meson_radius=1,
+        **kwargs,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
 
@@ -98,7 +100,7 @@ class RelativisticKMatrix(TMatrix):
             for i in range(n_channels)
             for j in range(n_channels)
         }).xreplace({
-            sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])  # pyright:ignore[reportIndexIssue]
+            sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
             for i in range(n_channels)
         })
 
@@ -116,7 +118,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
@@ -279,7 +281,7 @@ class RelativisticPVector(TMatrix):
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
-        sqrt_rho_conj: sp.MutableDenseMatrix = sp.conjugate(sqrt_rho)
+        sqrt_rho_conj = cast("sp.MutableDenseMatrix", sp.conjugate(sqrt_rho))
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         k_hat = sqrt_rho_conj.inv() * k_matrix * sqrt_rho.inv()
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
@@ -290,15 +292,16 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # type: ignore[override]  # noqa: D417
+    def formulate(  # noqa: D417
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_f_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
         angular_momentum=0,
         meson_radius=1,
+        **kwargs,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.
 
@@ -324,7 +327,8 @@ class RelativisticPVector(TMatrix):
         m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         return (
-            f_vector.xreplace({
+            f_vector
+            .xreplace({
                 k_matrix[i, j]: RelativisticKMatrix.parametrization(
                     i=i,
                     j=j,
@@ -360,7 +364,7 @@ class RelativisticPVector(TMatrix):
                 for i in range(n_channels)
             })
             .xreplace({
-                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])  # pyright:ignore[reportIndexIssue]
+                sp.Symbol(f"rho{i}"): phsp_factor(s, m_a[i], m_b[i])
                 for i in range(n_channels)
             })
         )

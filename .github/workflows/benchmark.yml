@@ -12,45 +12,21 @@ on:
       - main
       - epic/*
   workflow_dispatch:
-    inputs:
-      specific-pip-packages:
-        description: Run benchmarks with specific pip packages
-        required: false
-        type: string
 
 jobs:
   benchmark:
     name: Performance regression
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - uses: astral-sh/setup-uv@v5
-      - id: with
-        if: inputs.specific-pip-packages
-        name: Determine additional packages to install
-        run: |
-          additional_packages=''
-          for package in ${{ inputs.specific-pip-packages }}; do
-            additional_packages="$additional_packages --with $package"
-          done
-          echo "packages=$additional_packages" | tee -a $GITHUB_OUTPUT
+      - uses: astral-sh/setup-uv@v7
       - name: Run pytest-benchmark
-        run: |
-          uv run \
-            --all-extras \
-            --group test \
-            --no-dev \
-            ${{ steps.with.outputs.packages }} \
-            pytest \
-              -k benchmark \
-              --benchmark-json output.json \
-              --durations=0
-        working-directory: benchmarks
+        run: uvx --from poethepoet poe benchmark
       - name: Warn on performance decrease
         if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1

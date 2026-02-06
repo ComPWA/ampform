@@ -31,8 +31,8 @@ if TYPE_CHECKING:
     from sympy.physics.quantum.spin import WignerD
 
 if get_qrules_version() < (0, 10):
-    from qrules.transition import (  # type: ignore[attr-defined]
-        StateTransitionCollection,
+    from qrules.transition import (
+        StateTransitionCollection,  # ty:ignore[unresolved-import]
     )
 
 
@@ -113,26 +113,24 @@ class _DPDAlignmentWignerGenerator:
 
 
 if get_qrules_version() < (0, 10):
-    T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)
+    T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)  # ty:ignore[possibly-unresolved-reference]
     """Allowed types for :func:`relabel_edge_ids`."""
 else:
-    T = TypeVar(  # type: ignore[misc]  # pyright: ignore[reportConstantRedefinition]
-        "T", ReactionInfo, StateTransition, Topology
-    )
+    T = TypeVar("T", ReactionInfo, StateTransition, Topology)
     """Allowed types for :func:`relabel_edge_ids`."""
 
 
 @singledispatch
-def relabel_edge_ids(obj: T) -> T:  # type: ignore[reportInvalidTypeForm]
+def relabel_edge_ids(obj: T) -> T:
     msg = f"Cannot relabel edge IDs of a {type(obj).__name__}"
     raise NotImplementedError(msg)
 
 
 @relabel_edge_ids.register(ReactionInfo)
-def _(obj: ReactionInfo) -> ReactionInfo:  # type: ignore[misc]
+def _(obj: ReactionInfo) -> ReactionInfo:
     if get_qrules_version() < (0, 10):
-        return ReactionInfo(  # type: ignore[call-arg]
-            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # type: ignore[attr-defined]
+        return ReactionInfo(  # ty:ignore[missing-argument]
+            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # ty:ignore[unresolved-attribute]
             formalism=obj.formalism,
         )
     return ReactionInfo(
@@ -144,15 +142,15 @@ def _(obj: ReactionInfo) -> ReactionInfo:  # type: ignore[misc]
 
 if get_qrules_version() < (0, 10):
 
-    def __relabel_stc(obj: StateTransitionCollection) -> StateTransitionCollection:  # type: ignore[misc]
+    def __relabel_stc(obj: StateTransitionCollection) -> StateTransitionCollection:
         return StateTransitionCollection([
             relabel_edge_ids(transition) for transition in obj.transitions
         ])
 
-    relabel_edge_ids.register(StateTransitionCollection)(__relabel_stc)
+    relabel_edge_ids.register(StateTransitionCollection)(__relabel_stc)  # ty:ignore[possibly-unresolved-reference]
 
 
-def __relabel_st(obj: StateTransition) -> StateTransition:  # type: ignore[misc]
+def __relabel_st(obj: StateTransition) -> StateTransition:
     mapping = __get_default_relabel_mapping()
     return attrs.evolve(
         obj,
@@ -170,7 +168,7 @@ else:
 
 
 @relabel_edge_ids.register(Topology)
-def _(obj: Topology) -> Topology:  # type: ignore[misc]
+def _(obj: Topology) -> Topology:
     mapping = __get_default_relabel_mapping()
     return obj.relabel_edges(mapping)
 

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, overload, runtime_checkable
 
 import sympy as sp
 from frozendict import frozendict
@@ -58,36 +58,34 @@ def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
     return sp.trigsimp(expr, *args, **kwargs)
 
 
-def subs(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+def subs(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.subs` and cache the result to disk."""
     return _subs_impl(expr, frozendict(substitutions))
 
 
 @cache
 @cache_to_disk(function_name="subs", dependencies=["sympy"])
-def _subs_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]) -> sp.Expr:
+def _subs_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, Any]) -> sp.Expr:
     return expr.xreplace(substitutions)
 
 
-def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
     """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
     return _xreplace_impl(expr, frozendict(substitutions))
 
 
 @cache
 @cache_to_disk(function_name="xreplace", dependencies=["sympy"])
-def _xreplace_impl(
-    expr: sp.Expr, substitutions: frozendict[sp.Basic, sp.Basic]
-) -> sp.Expr:
+def _xreplace_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, Any]) -> sp.Expr:
     return expr.xreplace(substitutions)
 
 
 @overload
 def unfold(obj: Model) -> sp.Expr: ...
 @overload
-def unfold(obj: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr: ...
+def unfold(obj: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr: ...
 def unfold(
-    obj: sp.Expr | Model, substitutions: Mapping[sp.Basic, sp.Basic] | None = None
+    obj: sp.Expr | Model, substitutions: Mapping[sp.Basic, Any] | None = None
 ) -> sp.Expr:
     """Efficiently perform both substitutions and :code:`doit()`."""
     if isinstance(obj, Model):
@@ -105,7 +103,7 @@ class Model(Protocol):
     def amplitudes(self) -> Mapping[sp.Basic, sp.Basic]: ...
 
 
-def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> sp.Expr:
+def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
     substitutions = _unfold_substitutions(frozendict(substitutions))
     expr = doit(expr)
     return xreplace(expr, substitutions)
@@ -113,6 +111,6 @@ def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, sp.Basic]) -> s
 
 @cache
 def _unfold_substitutions(
-    substitutions: frozendict[sp.Basic, sp.Basic],
-) -> frozendict[sp.Basic, sp.Basic]:
+    substitutions: frozendict[sp.Basic, Any],
+) -> frozendict[sp.Basic, Any]:
     return frozendict({k: doit(v) for k, v in substitutions.items()})

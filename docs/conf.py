@@ -72,12 +72,11 @@ set_intersphinx_version_remapping({
         "8.0.4": "8.0.5",
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
+        "8.1.6": "8.1.5",
         "8.1.7": "8.1.5",
+        "8.1.8": "8.1.5",
     },
-    "mpl-interactions": {
-        "0.24.1": "0.24.0",
-        "0.24.2": "0.24.0",
-    },
+    "qrules": {"0.10.7.dev.*": "0.10.6"},
 })
 
 BRANCH = get_branch_name()
@@ -95,6 +94,8 @@ EXECUTE_NB = get_execution_mode() != "off"
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
+    "ampform.helicity._T": "typing.TypeVar",
+    "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
@@ -102,23 +103,16 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "FourMomentumSymbol": ("obj", "ampform.kinematics.lorentz.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
     "LatexPrinter": "sympy.printing.printer.Printer",
-    "Literal[(-1, 1)]": "typing.Literal",
     "Literal[-1, 1]": "typing.Literal",
+    "Literal[(-1, 1)]": "typing.Literal",
     "NumPyPrintable": ("class", "ampform.sympy.NumPyPrintable"),
     "NumPyPrinter": "sympy.printing.printer.Printer",
     "P": "typing.ParamSpec",
     "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
-    "SympyObject": "typing.TypeVar",
     "ReactionInfo": "qrules.transition.ReactionInfo",
-    "Slider": ("obj", "symplot.Slider"),
-    "State": "qrules.transition.State",
-    "StateTransition": "qrules.topology.Transition",
-    "T": "typing.TypeVar",
-    "Topology": "qrules.topology.Topology",
-    "WignerD": "sympy.physics.quantum.spin.WignerD",
-    "ampform.helicity._T": "typing.TypeVar",
-    "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
+    "Slider": "ipywidgets.widgets.valuewidget.ValueWidget",
+    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
     "sp.Float": "sympy.core.numbers.Float",
@@ -126,15 +120,19 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Rational": "sympy.core.numbers.Rational",
     "sp.Symbol": "sympy.core.symbol.Symbol",
-    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
+    "State": "qrules.transition.State",
+    "StateTransition": "qrules.topology.Transition",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
+    "SympyObject": "typing.TypeVar",
+    "T": "typing.TypeVar",
+    "Topology": "qrules.topology.Topology",
+    "WignerD": "sympy.physics.quantum.spin.WignerD",
     "sympy.tensor.array.expressions.array_expressions.ArraySymbol": (
         "mod",
         "sympy.tensor.array.expressions",
     ),
 }
 api_target_types: dict[str, str] = {
-    "RangeDefinition": "obj",
     "ampform.helicity.align.dpd.T": "obj",
 }
 author = "Common Partial Wave Analysis"
@@ -152,6 +150,7 @@ autodoc_typehints_format = "short"
 autosectionlabel_prefix_document = True
 bibtex_bibfiles = ["bibliography.bib"]
 bibtex_default_style = "unsrt_et_al"
+bibtex_use_mathjax = True
 bibtex_reference_style = "author_year"
 codeautolink_concat_default = True
 codeautolink_global_preface = """
@@ -276,13 +275,13 @@ intersphinx_mapping = {
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
-    "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{pin('mpl-interactions')}",
-        None,
-    ),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
+    "spb": (
+        f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
+        None,
+    ),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
 linkcheck_anchors = False

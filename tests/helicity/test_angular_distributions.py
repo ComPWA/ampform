@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pytest
 import qrules
@@ -73,7 +73,8 @@ class TestEpemToDmD0Pip:
 
         amplitude_model = get_builder(reaction).formulate()
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )
@@ -113,7 +114,7 @@ class TestEpemToDmD0Pip:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
@@ -167,7 +168,8 @@ class TestD1ToD0PiPi:
         amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )
@@ -198,7 +200,7 @@ class TestD1ToD0PiPi:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",

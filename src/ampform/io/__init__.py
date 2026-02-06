@@ -52,7 +52,7 @@ def _(obj: complex, **kwargs) -> str:
 
 
 def __downcast(obj: float, **kwargs) -> float:
-    if obj.is_integer():
+    if isinstance(obj, float) and obj.is_integer():
         return int(obj)
     return obj
 
@@ -136,4 +136,4 @@ def improve_latex_rendering() -> None:
         indices = ", ".join(map(printer._print, self.indices))
         return f"{base}_{{{indices}}}"
 
-    sp.Indexed._latex = _print_Indexed_latex  # type: ignore[attr-defined]
+    sp.Indexed._latex = _print_Indexed_latex  # ty:ignore[unresolved-attribute]

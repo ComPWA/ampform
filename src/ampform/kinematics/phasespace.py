@@ -184,9 +184,9 @@ class Kibble(sp.Expr):
     def evaluate(self) -> Kallen:
         sigma1, sigma2, sigma3, m0, m1, m2, m3 = self.args
         return Kallen(
-            Kallen(sigma2, m2**2, m0**2),  # type: ignore[operator]
-            Kallen(sigma3, m3**2, m0**2),  # type: ignore[operator]
-            Kallen(sigma1, m1**2, m0**2),  # type: ignore[operator]
+            Kallen(sigma2, m2**2, m0**2),
+            Kallen(sigma3, m3**2, m0**2),
+            Kallen(sigma1, m1**2, m0**2),
         )
 
 
@@ -201,7 +201,7 @@ class Kallen(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         x, y, z = self.args
-        return x**2 + y**2 + z**2 - 2 * x * y - 2 * y * z - 2 * z * x  # type: ignore[operator]
+        return x**2 + y**2 + z**2 - 2 * x * y - 2 * y * z - 2 * z * x
 
 
 def is_within_phasespace(

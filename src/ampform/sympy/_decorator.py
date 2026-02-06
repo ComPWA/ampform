@@ -72,11 +72,11 @@ class SymPyAssumptions(TypedDict, total=False):
 
 
 @overload
-def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # type: ignore[assignment]
+def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # ty:ignore[invalid-parameter-default]
 @overload
 def argument(
     *,
-    default_factory: Callable[[], T] = MISSING,  # type: ignore[assignment]
+    default_factory: Callable[[], T] = MISSING,  # ty:ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 def argument(
@@ -204,16 +204,16 @@ def unevaluated(
         assumptions["commutative"] = True
 
     def decorator(cls: type[ExprClass]) -> type[ExprClass]:
-        cls = _implement_new_method(cls)
+        cls = _implement_new_method(cls)  # ty:ignore[invalid-assignment]
         if implement_doit:
-            cls = _implement_doit(cls)
+            cls = _implement_doit(cls)  # ty:ignore[invalid-assignment]
         typos = ["_latex_repr"]
         for typo in typos:
             if hasattr(cls, typo):
                 msg = f"Class defines a {typo} attribute, but it should be _latex_repr_"
                 warnings.warn(msg, category=UserWarning, stacklevel=1)
         if hasattr(cls, "_latex_repr_"):
-            cls = _implement_latex_repr(cls)
+            cls = _implement_latex_repr(cls)  # ty:ignore[invalid-assignment]
         _set_assumptions(**assumptions)(cls)
         return cls
 
@@ -248,11 +248,11 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         frozen=False,
     )(cls)
     cls = _update_field_metadata(cls)
-    non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
-    cls.__slots__ = tuple(f.name for f in non_sympy_fields)  # type: ignore[arg-type]
+    non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))
+    cls.__slots__ = tuple(f.name for f in non_sympy_fields)
 
     @functools.wraps(cls.__new__)
-    @_insert_args_in_signature([f.name for f in _get_fields(cls)], idx=1)  # type:ignore[arg-type]
+    @_insert_args_in_signature([f.name for f in _get_fields(cls)], idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
         fields_with_values, hints = _extract_field_values(cls, *args, **kwargs)
         fields_with_sympified_values = {
@@ -271,18 +271,18 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.evaluate()
         return expr
 
-    cls.__new__ = new_method  # type: ignore[assignment]
-    cls.__getnewargs__ = _get_arguments  # type: ignore[assignment,method-assign]
-    cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
+    cls.__new__ = new_method
+    cls.__getnewargs__ = _get_arguments
+    cls._hashable_content = _hashable_content_method
     if non_sympy_fields:
-        cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
-        cls._xreplace = _xreplace_method  # type: ignore[method-assign]
+        cls._eval_subs = _eval_subs_method
+        cls._xreplace = _xreplace_method
     return cls
 
 
 def _update_field_metadata(cls: T) -> T:
     """Set the :code:`sympify` metadata for all fields of a dataclass-like class."""
-    for field in _get_fields(cls):  # type: ignore[arg-type]
+    for field in _get_fields(cls):
         new_metadata = dict(field.metadata)
         if "sympify" not in new_metadata:
             new_metadata["sympify"] = True
@@ -291,7 +291,7 @@ def _update_field_metadata(cls: T) -> T:
 
 
 @overload
-def _get_hashable_object(obj: type) -> str: ...  # type: ignore[overload-overlap]
+def _get_hashable_object(obj: type) -> str: ...
 @overload
 def _get_hashable_object(obj: H) -> H: ...
 @overload
@@ -351,7 +351,7 @@ def _extract_field_values(
 def _safe_sympify(field: Field, value: dict[Field, Any]) -> dict[Field, Any]:
     if _is_sympify(field):
         try:
-            return sp.sympify(value)
+            return sp.sympify(value)  # ty:ignore[invalid-return-type]
         except (sp.SympifyError, TypeError, SymPyDeprecationWarning) as exc:
             msg = (
                 f"Attribute {field.name} could not be sympified. Did you forget to mark"
@@ -376,7 +376,7 @@ def _implement_latex_repr(cls: type[T]) -> type[T]:
         )
         raise NotImplementedError(msg)
     if callable(_latex_repr_):
-        cls._latex = _latex_repr_  # type: ignore[attr-defined]
+        cls._latex = _latex_repr_
     else:
         attr_names = _get_attribute_names(cls)
 
@@ -384,9 +384,9 @@ def _implement_latex_repr(cls: type[T]) -> type[T]:
             format_kwargs = {
                 name: printer._print(getattr(self, name), *args) for name in attr_names
             }
-            return _latex_repr_.format(**format_kwargs)  # type: ignore[union-attr]
+            return _latex_repr_.format(**format_kwargs)
 
-        cls._latex = latex_method  # type: ignore[attr-defined]
+        cls._latex = latex_method
     return cls
 
 
@@ -401,7 +401,7 @@ def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.doit()
         return expr
 
-    cls.doit = doit_method  # type: ignore[assignment]
+    cls.doit = doit_method  # ty:ignore[invalid-assignment]
     return cls
 
 

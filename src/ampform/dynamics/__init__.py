@@ -10,7 +10,7 @@ from warnings import warn
 
 import sympy as sp
 
-# pyright: reportUnusedImport=false
+from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
     BlattWeisskopfSquared,  # noqa: F401
     FormFactor,
@@ -39,7 +39,7 @@ class EnergyDependentWidth(sp.Expr):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
-    :cite:`ParticleDataGroup:2020ssz`, equation (6). Default value for
+    :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
     Note that the `.FormFactor` of AmpForm is normalized in the sense that equal powers
@@ -56,17 +56,18 @@ class EnergyDependentWidth(sp.Expr):
     m_b: Any
     angular_momentum: Any
     meson_radius: Any
-    phsp_factor: PhaseSpaceFactorProtocol = argument(  # type:ignore[assignment]
+    phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
     )
     name: str | None = argument(default=None, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args
+        m0: sp.Expr
+        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args  # ty:ignore[invalid-assignment]
         ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
-        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)  # type: ignore[operator]
+        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)
         rho = self.phsp_factor(s, m1, m2)
-        rho0 = self.phsp_factor(m0**2, m1, m2)  # type: ignore[operator]
+        rho0 = self.phsp_factor(m0**2, m1, m2)
         return width0 * (ff / ff0) ** 2 * (rho / rho0)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
@@ -81,7 +82,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit-Wigner lineshape.
 
     See :ref:`usage/dynamics:_Without_ form factor` and
-    :cite:`ParticleDataGroup:2020ssz`.
+    :cite:`ParticleDataGroup:2012pjm`.
     """
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
@@ -94,7 +95,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # type:ignore[assignment]
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
 ) -> sp.Expr:
     """Relativistic Breit-Wigner with `.FormFactor`.
 

@@ -14,9 +14,9 @@ on:
 jobs:
   cleanup:
     name: Remove caches
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
-      - uses: ComPWA/actions/clean-caches@v3
+      - uses: ComPWA/actions/clean-caches@v4
         with:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.ref }}

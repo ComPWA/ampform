@@ -98,7 +98,7 @@ class UnevaluatedExpression(sp.Expr):
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
         obj._args = args  # noqa: SLF001
-        obj._assumptions = cls.default_assumptions  # type: ignore[attr-defined]  # noqa: SLF001
+        obj._assumptions = cls.default_assumptions  # noqa: SLF001
         obj._mhash = None  # cspell:ignore mhash  # noqa: SLF001
         obj._name = name  # noqa: SLF001
         return obj
@@ -111,7 +111,7 @@ class UnevaluatedExpression(sp.Expr):
         return args, kwargs
 
     @override
-    def _hashable_content(self) -> tuple:  # type:ignore[misc]
+    def _hashable_content(self) -> tuple:
         # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
         return (*super()._hashable_content(), str(self._name))
@@ -208,13 +208,13 @@ def implement_new_method(
             if len(args) != n_args:
                 msg = f"{n_args} parameters expected, got {len(args)}"
                 raise ValueError(msg)
-            args = sp.sympify(args)
+            args = sp.sympify(args)  # ty:ignore[invalid-assignment]
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return expr.evaluate()  # type: ignore[return-value]
+                return expr.evaluate()
             return expr
 
-        decorated_class.__new__ = new_method  # type: ignore[assignment]
+        decorated_class.__new__ = new_method  # ty:ignore[invalid-assignment]
         return decorated_class
 
     return decorator
@@ -238,14 +238,14 @@ def implement_doit_method(
         stacklevel=1,
     )
 
-    @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
+    @functools.wraps(decorated_class.doit)
     def doit_method(self: UnevaluatedExpression, deep: bool = True) -> sp.Expr:
         expr = self.evaluate()
         if deep:
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method  # type: ignore[assignment]
+    decorated_class.doit = doit_method  # ty:ignore[invalid-assignment]
     return decorated_class
 
 
@@ -266,8 +266,8 @@ def make_commutative(
         category=DeprecationWarning,
         stacklevel=1,
     )
-    decorated_class.is_commutative = True  # type: ignore[attr-defined]
-    decorated_class.is_extended_real = True  # type: ignore[attr-defined]
+    decorated_class.is_commutative = True
+    decorated_class.is_extended_real = True
     return decorated_class
 
 
@@ -287,8 +287,8 @@ def create_expression(
     )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
-        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
+        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)  # ty:ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()  # type: ignore[return-value]
-        return expr  # type: ignore[return-value]
-    return sp.Expr.__new__(cls, *args, **kwargs)  # type: ignore[return-value]
+            return expr.evaluate()
+        return expr
+    return sp.Expr.__new__(cls, *args, **kwargs)  # ty:ignore[not-iterable]

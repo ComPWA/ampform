@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import re
+from typing import cast
 
 import pytest
 import sympy as sp
 
 from ampform.dynamics.kmatrix import NonRelativisticKMatrix
-from symplot import rename_symbols, substitute_indexed_symbols
+from ampform.sympy import rename_symbols
+from ampform.sympy.slider import substitute_indexed_symbols
 
 
 class TestNonRelativisticKMatrix:
@@ -39,7 +41,7 @@ class TestNonRelativisticKMatrix:
 
 
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
-    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     residue_constants = filter(lambda s: s.name.startswith(R"\gamma_"), free_symbols)
     return expression.xreplace(dict.fromkeys(residue_constants, 1))
 

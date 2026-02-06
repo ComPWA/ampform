@@ -67,19 +67,19 @@ class Energy(sp.Expr):
         return ArraySlice(self.momentum, (slice(None), 0))
 
 
-def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
+def _implement_latex_subscript(
     subscript: str,
 ) -> Callable[[type[ExprClass]], type[ExprClass]]:
     def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
         def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
-            momentum = printer._print(self.momentum)  # type: ignore[attr-defined]
-            if printer._needs_mul_brackets(self.momentum):  # type: ignore[attr-defined]  # noqa: SLF001
+            momentum = printer._print(self.momentum)  # ty:ignore[unresolved-attribute]
+            if printer._needs_mul_brackets(self.momentum):  # noqa: SLF001  # ty:ignore[unresolved-attribute]
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"
             return f"{momentum}_{subscript}"
 
-        decorated_class._latex_repr_ = _latex_repr_  # type: ignore[assignment,attr-defined]
+        decorated_class._latex_repr_ = _latex_repr_  # ty:ignore[unresolved-attribute]
         return decorated_class
 
     return decorator
@@ -154,7 +154,7 @@ class EuclideanNormSquared(sp.Expr):
     _latex_repr_ = R"\left|{vector}\right|^{{2}}"
 
     def evaluate(self) -> ArrayAxisSum:
-        return ArrayAxisSum(self.vector**2, axis=1)  # type: ignore[operator]
+        return ArrayAxisSum(self.vector**2, axis=1)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
@@ -236,7 +236,7 @@ class BoostZMatrix(sp.Expr):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         beta = self.beta
-        gamma = 1 / ComplexSqrt(1 - beta**2)  # type: ignore[operator]
+        gamma = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix([
             [gamma, 0, 0, -gamma * beta],
             [0, 1, 0, 0],
@@ -246,7 +246,7 @@ class BoostZMatrix(sp.Expr):
 
     def evaluate(self) -> _BoostZMatrixImplementation:
         beta = self.beta
-        gamma = 1 / sp.sqrt(1 - beta**2)  # type: ignore[operator]
+        gamma = 1 / sp.sqrt(1 - beta**2)
         n_events = self.n_events
         return _BoostZMatrixImplementation(
             beta=beta,

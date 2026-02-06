@@ -100,7 +100,7 @@ class TestHelicityAmplitudeBuilder:
     def test_stable_final_state_ids(self, reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.config.stable_final_state_ids is None
-        builder.config.stable_final_state_ids = (1, 2)  # type: ignore[assignment]
+        builder.config.stable_final_state_ids = (1, 2)  # ty:ignore[invalid-assignment]
         assert builder.config.stable_final_state_ids == {1, 2}
 
     def test_scalar_initial_state(self, reaction: ReactionInfo):
@@ -130,14 +130,10 @@ class TestHelicityAmplitudeBuilder:
         if reaction.formalism == "canonical-helicity":
             assert len(coefficient_names) == 4
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
@@ -151,10 +147,8 @@ class TestHelicityAmplitudeBuilder:
         else:
             assert len(coefficient_names) == 2
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980)"
-                R" \to \pi^{0}_{0} \pi^{0}_{0}}",
-                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1};"
-                R" f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1}; f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
@@ -174,7 +168,7 @@ class TestHelicityModel:
         _, model = amplitude_model
         for symbol, value in model.parameter_defaults.items():
             assert isinstance(symbol, sp.Symbol)
-            assert isinstance(value, ParameterValue.__args__)  # type: ignore[attr-defined]
+            assert isinstance(value, ParameterValue.__args__)
 
     def test_rename_symbols_no_renames(
         self, amplitude_model: tuple[str, HelicityModel]
@@ -303,7 +297,7 @@ class TestParameterValues:
     def test_subs_xreplace(self, subs_method: str):
         base = sp.IndexedBase("b")
         a, x, y = sp.symbols("a x y")
-        b: sp.Indexed = base[1, 2]  # pyright:ignore[reportIndexIssue]
+        b: sp.Indexed = base[1, 2]
         expr: sp.Expr = a * x + b * y
         parameters = ParameterValues({a: 2, b: -3})
         if subs_method == "subs":
@@ -379,7 +373,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     for name in reaction.get_intermediate_particles().names:
         model_builder.dynamics.assign(name, bw_builder)
     model = model_builder.formulate()
-    parameter_names = sorted(s.name for s in model.parameter_defaults)
+    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty:ignore[unresolved-attribute]
     assert parameter_names == [
         R"C_{D^{+} \to \pi^{+}_{0} \rho(770)^{0}_{0}; \rho(770)^{0} \to \pi^{+}_{0} \pi^{-}_{0}}",
         R"\Gamma_{\rho(770)^{0}}",
@@ -390,7 +384,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     assert len(model.amplitudes) == 1
     (amplitude_expr,) = model.amplitudes.values()
     amplitude_expr = amplitude_expr.xreplace({
-        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))
+        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))  # ty:ignore[unresolved-attribute]
         for s in model.parameter_defaults
     })
     amplitude_expr = sp.simplify(amplitude_expr, doit=False)
