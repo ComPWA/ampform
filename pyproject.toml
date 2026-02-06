@@ -58,8 +58,8 @@ file = "README.md"
 [project.urls]
 Changelog = "https://github.com/ComPWA/ampform/releases"
 Documentation = "https://ampform.rtfd.io"
+Issues = "https://github.com/ComPWA/ampform/issues"
 Source = "https://github.com/ComPWA/ampform"
-Tracker = "https://github.com/ComPWA/ampform/issues"
 
 [dependency-groups]
 dev = [
