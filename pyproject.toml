@@ -583,6 +583,3 @@ unsupported-operator = "ignore"
 
 [tool.ty.terminal]
 error-on-warning = true
-
-[tool.uv.sources]
-qrules = {git = "https://github.com/ComPWA/qrules", rev = "75bc682a56ca07b1eadeafeca4fb1676de7281b4"}

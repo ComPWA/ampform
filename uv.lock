@@ -189,7 +189,7 @@ requires-dist = [
     { name = "attrs", specifier = ">=20.1.0" },
     { name = "frozendict" },
     { name = "graphviz", marker = "extra == 'viz'" },
-    { name = "qrules", git = "https://github.com/ComPWA/qrules?rev=75bc682a56ca07b1eadeafeca4fb1676de7281b4" },
+    { name = "qrules", specifier = ">=0.9.6" },
     { name = "scipy", marker = "extra == 'scipy'" },
     { name = "sympy", specifier = ">=1.10" },
 ]
@@ -3305,8 +3305,8 @@ wheels = [
 
 [[package]]
 name = "qrules"
-version = "0.10.7.dev22+g75bc682a5"
-source = { git = "https://github.com/ComPWA/qrules?rev=75bc682a56ca07b1eadeafeca4fb1676de7281b4#75bc682a56ca07b1eadeafeca4fb1676de7281b4" }
+version = "0.10.7"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
     { name = "frozendict" },
@@ -3315,6 +3315,10 @@ dependencies = [
     { name = "python-constraint" },
     { name = "pyyaml" },
     { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/aa/20/9d279bdd140a18959472cd1cc3e689b73e9554bc987a173e35e85ce713c9/qrules-0.10.7.tar.gz", hash = "sha256:bb2ee2957aa3bd55d7eb38bb111823c26d9364d0d16c88730ddc97acf47c31c9", size = 294071, upload-time = "2026-02-06T14:50:50.924Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/5d/c1371af6f81376bebffd055911e355ff5972d2646135d961757ffe0a858f/qrules-0.10.7-py3-none-any.whl", hash = "sha256:a7936995dba23868d8d37319a9250aa4e0d90da9845a89da1ac476ce48abf694", size = 80795, upload-time = "2026-02-06T14:50:49.063Z" },
 ]
 
 [[package]]
