@@ -222,14 +222,15 @@ dev = [
     { name = "rich" },
     { name = "ruff" },
     { name = "sphinx" },
-    { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=5e18cb0981eb31680926bdb6511078f4308f38e0" },
+    { name = "sphinx-api-relink", specifier = ">=0.0.3" },
+    { name = "sphinx-api-relink", specifier = ">=0.0.4" },
     { name = "sphinx-book-theme" },
     { name = "sphinx-codeautolink", extras = ["ipython"] },
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-hep-pdgref" },
-    { name = "sphinx-pybtex-etal-style", git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31" },
+    { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
@@ -245,14 +246,14 @@ doc = [
     { name = "numpy" },
     { name = "rich" },
     { name = "sphinx" },
-    { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=5e18cb0981eb31680926bdb6511078f4308f38e0" },
+    { name = "sphinx-api-relink", specifier = ">=0.0.4" },
     { name = "sphinx-book-theme" },
     { name = "sphinx-codeautolink", extras = ["ipython"] },
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-hep-pdgref" },
-    { name = "sphinx-pybtex-etal-style", git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31" },
+    { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
@@ -288,7 +289,7 @@ style = [
     { name = "pytest" },
     { name = "pytest-benchmark" },
     { name = "rich" },
-    { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=5e18cb0981eb31680926bdb6511078f4308f38e0" },
+    { name = "sphinx-api-relink", specifier = ">=0.0.3" },
     { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
@@ -313,7 +314,7 @@ types = [
     { name = "pytest" },
     { name = "pytest-benchmark" },
     { name = "rich" },
-    { name = "sphinx-api-relink", git = "https://github.com/ComPWA/sphinx-api-relink?rev=5e18cb0981eb31680926bdb6511078f4308f38e0" },
+    { name = "sphinx-api-relink", specifier = ">=0.0.3" },
     { name = "sympy-plot-backends" },
 ]
 
@@ -3833,8 +3834,8 @@ wheels = [
 
 [[package]]
 name = "sphinx-api-relink"
-version = "0.1.1.dev2+g5e18cb098"
-source = { git = "https://github.com/ComPWA/sphinx-api-relink?rev=5e18cb0981eb31680926bdb6511078f4308f38e0#5e18cb0981eb31680926bdb6511078f4308f38e0" }
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama" },
     { name = "docutils", version = "0.21.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -3842,6 +3843,10 @@ dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d3/03/3488c9fa7fcfddb01206aadfd6641ba3f4ba4166a09ad96786c6d8a3be57/sphinx_api_relink-0.1.1.tar.gz", hash = "sha256:91ce49375941742384f30ce8d823eb85d1e1be9bdbda0f7e0441141db3c8cfa5", size = 27117, upload-time = "2026-02-06T12:14:51.332Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/c7/3d049d143c1a102085c90552a4e33867013771419f74f0a297705ff3ba38/sphinx_api_relink-0.1.1-py3-none-any.whl", hash = "sha256:1dcb75777ac4e0d5621c61aceb61cdfbb1d37095481af857676581a68790a466", size = 13753, upload-time = "2026-02-06T12:14:50.294Z" },
 ]
 
 [[package]]
@@ -3960,10 +3965,14 @@ wheels = [
 
 [[package]]
 name = "sphinx-pybtex-etal-style"
-version = "0.0.4.dev11+g763f4d99a"
-source = { git = "https://github.com/ComPWA/sphinx-pybtex-etal-style?rev=763f4d99a68a1789689c5a4f60ee86498f92ed31#763f4d99a68a1789689c5a4f60ee86498f92ed31" }
+version = "0.0.4"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pybtex" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/a0/86a558095a760241042b90357df11844339325a986e5d99c05479f48730f/sphinx_pybtex_etal_style-0.0.4.tar.gz", hash = "sha256:661dd788dd873c53a1171f1f78a017bea40c5b5ca3a1b7d7911ebe9df3e1b527", size = 13847, upload-time = "2026-02-06T10:51:07.988Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cb/95/28633a01ae9c9ec55fcf477878ed6d3e154349a1c529fd4eeefb16663abf/sphinx_pybtex_etal_style-0.0.4-py3-none-any.whl", hash = "sha256:5a42fac509e03756af390aefb10d6195271b1d672d7d95fa2e816a8324955807", size = 7338, upload-time = "2026-02-06T10:51:06.59Z" },
 ]
 
 [[package]]

@@ -586,5 +586,3 @@ error-on-warning = true
 
 [tool.uv.sources]
 qrules = {git = "https://github.com/ComPWA/qrules", rev = "75bc682a56ca07b1eadeafeca4fb1676de7281b4"}
-sphinx-api-relink = {git = "https://github.com/ComPWA/sphinx-api-relink", rev = "5e18cb0981eb31680926bdb6511078f4308f38e0"}
-sphinx-pybtex-etal-style = {git = "https://github.com/ComPWA/sphinx-pybtex-etal-style", rev = "763f4d99a68a1789689c5a4f60ee86498f92ed31"}
