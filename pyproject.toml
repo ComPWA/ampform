@@ -545,9 +545,7 @@ trailing_comma_inline_array = true
 
 [[tool.ty.overrides]]
 include = ["docs/**"]
-
-[tool.ty.overrides.rules]
-possibly-unresolved-reference = "ignore"
+rules.possibly-unresolved-reference = "ignore"
 
 [[tool.ty.overrides]]
 include = [
