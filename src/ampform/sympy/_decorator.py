@@ -473,7 +473,7 @@ def _set_assumptions(
             setattr(cls, f"is_{assumption}", value)
         return cls
 
-    return class_wrapper  # ty:ignore[invalid-return-type]
+    return class_wrapper
 
 
 def _eval_subs_method(self, old, new, **hints):
