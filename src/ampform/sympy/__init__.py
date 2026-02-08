@@ -17,7 +17,7 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -356,12 +356,18 @@ class UnevaluatableIntegral(sp.Integral):
     """See :ref:`usage/sympy:Numerical integrals`.
 
     .. versionadded:: 0.14.10
+
+    .. seealso::
+        The class variables of this class make it possible to configure the numerical
+        integration. They are given as keyword arguments to :func:`scipy.integrate.quad_vec`.
     """
 
-    abs_tolerance = 1e-5
-    rel_tolerance = 1e-5
-    limit = 50
     dummify = True
+
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
+    abs_tolerance: ClassVar[float | None] = 1e-5
+    rel_tolerance: ClassVar[float | None] = 1e-5
+    limit: ClassVar[int | None] = None
 
     @override
     def doit(self, **hints):
@@ -390,11 +396,20 @@ class UnevaluatableIntegral(sp.Integral):
             f"lambda {printer._print(x)}: {printer._print(expr)}",
             printer._print(a),
             printer._print(b),
-            epsabs=self.abs_tolerance,
-            epsrel=self.rel_tolerance,
-            limit=self.limit,
+            **self._get_quad_vec_kwargs(),
         )
         return f"{src}[0]"
+
+    @classmethod
+    def _get_quad_vec_kwargs(cls) -> dict[str, Any]:
+        kwargs = {}
+        if cls.abs_tolerance is not None:
+            kwargs["epsabs"] = cls.abs_tolerance
+        if cls.rel_tolerance is not None:
+            kwargs["epsrel"] = cls.rel_tolerance
+        if cls.limit is not None:
+            kwargs["limit"] = cls.limit
+        return kwargs
 
 
 def _generate_function_call(func_name: str, *args, **kwargs) -> str:

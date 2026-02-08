@@ -7,6 +7,7 @@ import sys
 import warnings
 from dataclasses import is_dataclass
 
+import requests
 from sphinx.deprecation import RemovedInSphinx10Warning
 from sphinx_api_relink.helpers import (
     get_branch_name,
@@ -63,6 +64,14 @@ def _get_dataclasses(module):
         if inspect.isclass(obj) and is_dataclass(obj):
             dataclass_list.append(obj)
     return dataclass_list
+
+
+def _get_scipy_url() -> str:
+    url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
+    r = requests.get(url)
+    if r.status_code != 200:  # noqa: PLR2004
+        return "https://docs.scipy.org/doc/scipy"
+    return url
 
 
 extend_docstrings()
@@ -282,6 +291,7 @@ intersphinx_mapping = {
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
+    "scipy": (_get_scipy_url(), None),
     "spb": (
         f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
         None,
