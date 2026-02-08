@@ -4,8 +4,10 @@ import importlib
 import inspect
 import os
 import sys
+import warnings
 from dataclasses import is_dataclass
 
+from sphinx.deprecation import RemovedInSphinx10Warning
 from sphinx_api_relink.helpers import (
     get_branch_name,
     get_execution_mode,
@@ -19,6 +21,8 @@ from ampform.sympy._decorator import get_sympy_fields  # noqa: PLC2701
 
 sys.path.insert(0, os.path.abspath("."))
 from _extend_docstrings import extend_docstrings  # noqa: PLC2701
+
+warnings.filterwarnings("ignore", category=RemovedInSphinx10Warning)
 
 
 def _get_excluded_members() -> list[str]:
