@@ -243,20 +243,20 @@ class ChewMandelstamSWave(sp.Expr):
 class PhaseSpaceFactorPWave(sp.Expr):
     r"""Phase space factor using `ChewMandelstamIntegral` for :math:`L=1`.
 
-    This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
-    `ChewMandelstamIntegral`. As such, you have to be careful when lambdifying this
-    function and evaluating this over an array. In many cases, you want to wrap the
-    resulting lambdified numerical function with :obj:`numpy.vectorize`.
+    .. warning::
 
-    >>> import numpy as np
-    >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
-    >>> s, m1, m2 = sp.symbols("s m_1 m_2")
-    >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
-    >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
-    >>> rho_func = np.vectorize(rho_func)
-    >>> s_values = np.linspace(0.1, 4.0, num=4)
-    >>> rho_func(s_values, 0.14, 0.98).real
-    array([-4.08315014e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
+        This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
+        `ChewMandelstamIntegral` (via `.UnevaluatableIntegral`). As such, you have to be
+        careful when lambdifying this function and evaluating this over an array.
+
+        >>> import numpy as np
+        >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
+        >>> s, m1, m2 = sp.symbols("s m_1 m_2")
+        >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
+        >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
+        >>> s_values = np.linspace(0.1, 4.0, num=4)
+        >>> rho_func(s_values, 0.14, 0.98).real
+        array([-4.08315012e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
     """
 
     s: Any

@@ -16,7 +16,6 @@ class TestChewMandelstam:
         numerical_cm_expr = ChewMandelstamIntegral(s, m1, m2, L=0, epsilon=ϵ)
         analytic_cm_func = sp.lambdify(s, analytic_cm_expr.doit())
         numerical_cm_func = sp.lambdify(s, numerical_cm_expr.doit())
-        numerical_cm_func = np.vectorize(numerical_cm_func)
         s_values = np.linspace(0.1, 10, num=80)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)

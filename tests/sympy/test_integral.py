@@ -24,7 +24,7 @@ class TestUnevaluatableIntegral:
             ),
         ],
     )
-    def test_vectorized_parameter_function(self, p_value, expected):
+    def test_evaluation_over_arrays(self, p_value, expected):
         x, p = sp.symbols("x,p")
         integral_expr = UnevaluatableIntegral(x**p, (x, 1, 3))
         func = sp.lambdify(args=[p], expr=integral_expr)
