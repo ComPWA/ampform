@@ -382,14 +382,32 @@ class UnevaluatableIntegral(sp.Integral):
             dummy = sp.Dummy()
             expr = expr.xreplace({x: dummy})
             x = dummy
-        integrate_func = "quad_vec"
-        printer.module_imports["scipy.integrate"].add(integrate_func)
-        return (
-            f"{integrate_func}(lambda {printer._print(x)}: {printer._print(expr)},"
-            f" {printer._print(a)}, {printer._print(b)},"
-            f" epsabs={self.abs_tolerance}, epsrel={self.abs_tolerance},"
-            f" limit={self.limit})[0]"
+        integrate_numerically = "quad_vec"
+        printer.module_imports["scipy.integrate"].add(integrate_numerically)
+        src = _generate_function_call(
+            # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
+            integrate_numerically,
+            f"lambda {printer._print(x)}: {printer._print(expr)}",
+            printer._print(a),
+            printer._print(b),
+            epsabs=self.abs_tolerance,
+            epsrel=self.rel_tolerance,
+            limit=self.limit,
         )
+        return f"{src}[0]"
+
+
+def _generate_function_call(func_name: str, *args, **kwargs) -> str:
+    """Generate a function call string with the given function name, arguments, and keyword arguments.
+
+    >>> _generate_function_call("quad_vec", "f", 0, 1, epsabs=1e-5)
+    'quad_vec(f, 0, 1, epsabs=1e-05)'
+    """
+    src = f"{func_name}({', '.join(map(str, args))}"
+    for key, value in kwargs.items():
+        src += f", {key}={value}"
+    src += ")"
+    return src
 
 
 def _warn_if_scipy_not_installed() -> None:
