@@ -290,10 +290,12 @@ intersphinx_mapping = {
     "compwa-report": ("https://compwa.github.io/report", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
+    "jax": ("https://docs.jax.dev/en/latest", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
+    "quadax": ("https://quadax.readthedocs.io/en/stable", None),
     "scipy": (_get_scipy_url(), None),
     "spb": (
         f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
