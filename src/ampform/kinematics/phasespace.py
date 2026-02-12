@@ -51,11 +51,11 @@ class BreakupMomentum(sp.Expr):
         return sp.sqrt((s - (m1 - m2) ** 2) * (s - (m1 + m2) ** 2)) / (2 * sp.sqrt(s))
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = "q" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -79,9 +79,8 @@ class BreakupMomentumKallen(sp.Expr):
         return sp.sqrt(Kallen(s, m1**2, m2**2) / (4 * s))
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
+        s = printer._print(self.s)
+        return Rf"q\left({s}\right)"
 
 
 @unevaluated
@@ -106,9 +105,8 @@ class BreakupMomentumSplitSqrt(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
+        s = printer._print(self.s)
+        return Rf"q\left({s}\right)"
 
 
 @unevaluated
@@ -134,11 +132,10 @@ class BreakupMomentumComplex(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        subscript = _indices_to_subscript(determine_indices(s))
+        s = printer._print(self.s)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -161,11 +158,10 @@ class BreakupMomentumSquared(sp.Expr):
         return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        subscript = _indices_to_subscript(determine_indices(s))
+        s = printer._print(self.s)
+        subscript = _indices_to_subscript(determine_indices(self.s))
         name = "q^2" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated

@@ -71,9 +71,9 @@ class EnergyDependentWidth(sp.Expr):
         return width0 * (ff / ff0) ** 2 * (rho / rho0)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        width0 = self.args[2]
-        subscript = _indices_to_subscript(determine_indices(width0))
+        s = printer._print(self.s)
+        indices = determine_indices(self.gamma0)
+        subscript = _indices_to_subscript(indices)
         name = Rf"\Gamma{subscript}" if self.name is None else self.name
         return Rf"{name}\left({s}\right)"
 

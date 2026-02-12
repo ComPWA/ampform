@@ -90,11 +90,11 @@ class PhaseSpaceFactor(sp.Expr):
         return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2)) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -119,11 +119,11 @@ class PhaseSpaceFactorAbs(sp.Expr):
         return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\hat{\rho}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -144,11 +144,11 @@ class PhaseSpaceFactorComplex(sp.Expr):
         return ComplexSqrt(s - (m1 + m2) ** 2) * ComplexSqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -165,11 +165,11 @@ class PhaseSpaceFactorKallen(sp.Expr):
         return sp.sqrt(Kallen(s, m1**2, m2**2)) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -193,11 +193,11 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
         return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -219,11 +219,11 @@ class PhaseSpaceFactorSWave(sp.Expr):
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -257,11 +257,11 @@ class PhaseSpaceFactorPWave(sp.Expr):
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho^\mathrm{CM}_1" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 def chew_mandelstam_s_wave(s, m1, m2):
@@ -321,11 +321,12 @@ class ChewMandelstamIntegral(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_latex = printer._print(self.s)
-        l_latex = printer._print(self.L)
-        subscript = _indices_to_subscript(determine_indices(self.s))
-        name = Rf"\Sigma_{l_latex}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        L = printer._print(self.L)  # noqa: N806
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
+        name = Rf"\Sigma_{L}" + subscript if self.name is None else self.name
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -351,11 +352,11 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
+        s = printer._print(self.s)
+        indices = determine_indices(self.s)
+        subscript = _indices_to_subscript(indices)
         name = R"\rho^\mathrm{eq}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        return Rf"{name}\left({s}\right)"
 
 
 def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:
