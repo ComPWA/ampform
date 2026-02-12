@@ -118,6 +118,7 @@
     "isinstance",
     "isnan",
     "jpsi",
+    "jslink",
     "jupyterlab",
     "katex",
     "kernelspec",
