@@ -394,7 +394,7 @@ docstring-code-format = true
 line-ending = "lf"
 
 [tool.ruff.lint]
-allowed-confusables = ["µ", "–"]
+allowed-confusables = ["–"]
 ignore = [
     "ANN",
     "ARG00",
@@ -478,6 +478,7 @@ split-on-trailing-comma = false
     "TC00",
 ]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
+"**/docs/usage/dynamics/integration-algorithms.ipynb" = ["RUF001"]
 "**/docs/usage/dynamics/riemann-sheets.ipynb" = ["E741", "RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
