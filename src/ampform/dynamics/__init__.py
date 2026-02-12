@@ -46,7 +46,7 @@ class EnergyDependentWidth(sp.Expr):
     Note that the `.FormFactor` of AmpForm is normalized in the sense that equal powers
     of :math:`z` appear in the nominator and the denominator, while the definition in
     the PDG (as well as some other sources), always have :math:`1` in the nominator of
-    the Blatt-Weisskopf. In that case, one needs an additional factor
+    the Blatt–Weisskopf. In that case, one needs an additional factor
     :math:`\left(q/q_0\right)^{2L}` in the definition for :math:`\Gamma(m)`.
     """
 
@@ -78,7 +78,7 @@ class EnergyDependentWidth(sp.Expr):
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
-    """Relativistic Breit-Wigner lineshape.
+    """Relativistic Breit–Wigner lineshape.
 
     See :ref:`usage/dynamics:_Without_ form factor` and
     :cite:`ParticleDataGroup:2012pjm`.
@@ -96,7 +96,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     meson_radius,
     phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
 ) -> sp.Expr:
-    """Relativistic Breit-Wigner with `.FormFactor`.
+    """Relativistic Breit–Wigner with `.FormFactor`.
 
     See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
     p.9`.
@@ -111,7 +111,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
-    """Formulate a Blatt-Weisskopf form factor.
+    """Formulate a Blatt–Weisskopf form factor.
 
     .. deprecated:: 0.16
     """

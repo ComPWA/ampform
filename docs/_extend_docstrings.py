@@ -645,7 +645,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     _append_to_docstring(
         relativistic_breit_wigner_with_ff,
         Rf"""
-    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form factor is:
+    The general form of a relativistic Breit–Wigner with Blatt–Weisskopf form factor is:
 
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
