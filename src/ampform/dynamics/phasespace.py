@@ -18,10 +18,10 @@ import sympy as sp
 
 from ampform.dynamics.form_factor import FormFactor
 from ampform.kinematics.phasespace import (
-    BreakupMomentum,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentum,  # noqa: F401
     BreakupMomentumComplex,
-    BreakupMomentumKallen,  # noqa: F401  # pyright:ignore[reportUnusedImport]
-    BreakupMomentumSplitSqrt,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumKallen,  # noqa: F401
+    BreakupMomentumSplitSqrt,  # noqa: F401
     BreakupMomentumSquared,
     Kallen,
     _get_subscript,
