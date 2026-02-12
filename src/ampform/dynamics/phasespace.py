@@ -24,14 +24,9 @@ from ampform.kinematics.phasespace import (
     BreakupMomentumSplitSqrt,  # noqa: F401  # pyright:ignore[reportUnusedImport]
     BreakupMomentumSquared,
     Kallen,
-    _indices_to_subscript,
+    _get_subscript,
 )
-from ampform.sympy import (
-    UnevaluatableIntegral,
-    argument,
-    determine_indices,
-    unevaluated,
-)
+from ampform.sympy import UnevaluatableIntegral, argument, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -91,9 +86,7 @@ class PhaseSpaceFactor(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -120,9 +113,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\hat{\rho}" + subscript if self.name is None else self.name
+        name = self.name or Rf"\hat{{\rho}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -145,9 +136,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho^\mathrm{{c}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -166,9 +155,7 @@ class PhaseSpaceFactorKallen(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -194,9 +181,7 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -220,9 +205,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho^\mathrm{{CM}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -258,9 +241,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho^\mathrm{CM}_1" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho^\mathrm{{CM,1}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -323,9 +304,7 @@ class ChewMandelstamIntegral(sp.Expr):
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
         L = printer._print(self.L)  # noqa: N806
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = Rf"\Sigma_{L}" + subscript if self.name is None else self.name
+        name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -353,9 +332,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.s)
-        subscript = _indices_to_subscript(indices)
-        name = R"\rho^\mathrm{eq}" + subscript if self.name is None else self.name
+        name = self.name or Rf"\rho^\mathrm{{eq}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 

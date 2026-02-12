@@ -25,9 +25,10 @@ from ampform.dynamics.phasespace import (
 )
 from ampform.kinematics.phasespace import (
     BreakupMomentumSquared,  # noqa: F401
-    _indices_to_subscript,
+    _get_subscript,
 )
-from ampform.sympy import argument, determine_indices, unevaluated
+from ampform.sympy import argument, unevaluated
+from ampform.sympy import determine_indices as determine_indices
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -72,9 +73,7 @@ class EnergyDependentWidth(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        indices = determine_indices(self.gamma0)
-        subscript = _indices_to_subscript(indices)
-        name = Rf"\Gamma{subscript}" if self.name is None else self.name
+        name = self.name or Rf"\Gamma{_get_subscript(self.gamma0)}"
         return Rf"{name}\left({s}\right)"
 
 
