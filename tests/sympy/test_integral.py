@@ -10,7 +10,7 @@ class TestUnevaluatableIntegral:
         x = sp.symbols("x")
         integral_expr = UnevaluatableIntegral(x**2, (x, 1, 3))
         func = sp.lambdify(args=[], expr=integral_expr)
-        assert func() == 26 / 3
+        assert func() == 26 / 3  # noqa: RUF069
 
     @pytest.mark.parametrize(
         ("p_value", "expected"),

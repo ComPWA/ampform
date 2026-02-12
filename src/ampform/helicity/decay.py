@@ -200,7 +200,7 @@ def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
     spectator_id_candidates = topology.outgoing_edge_ids - decay_products
-    return next(iter(spectator_id_candidates))
+    return next(iter(spectator_id_candidates))  # ty:ignore[invalid-return-type]
 
 
 @cache
