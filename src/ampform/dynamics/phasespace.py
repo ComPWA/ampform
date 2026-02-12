@@ -187,7 +187,7 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactorSWave(sp.Expr):
-    """Phase space factor using :func:`chew_mandelstam_s_wave`.
+    """Phase space factor using :func:`ChewMandelstamSWave`.
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
     both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
@@ -200,12 +200,42 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        chew_mandelstam = chew_mandelstam_s_wave(s, m1, m2)
+        chew_mandelstam = ChewMandelstamSWave(s, m1, m2)
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
         name = self.name or Rf"\rho^\mathrm{{CM}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
+
+
+@unevaluated
+class ChewMandelstamSWave(sp.Expr):
+    """Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+
+    As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
+    function has a well-defined behavior along the negative real axis.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        q = BreakupMomentumComplex(s, m1, m2)
+        left_term = sp.Mul(
+            2 * q / sp.sqrt(s),
+            sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
+            evaluate=False,  # keep same style as PDG
+        )
+        right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
+        return (left_term - right_term) / sp.pi
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = printer._print(self.s)
+        name = self.name or Rf"\hat{{\Sigma}}_0{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -243,23 +273,6 @@ class PhaseSpaceFactorPWave(sp.Expr):
         s = printer._print(self.s)
         name = self.name or Rf"\rho^\mathrm{{CM,1}}{_get_subscript(self.s)}"
         return Rf"{name}\left({s}\right)"
-
-
-def chew_mandelstam_s_wave(s, m1, m2):
-    """Chew–Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q = BreakupMomentumComplex(s, m1, m2)
-    left_term = sp.Mul(
-        2 * q / sp.sqrt(s),
-        sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
-        evaluate=False,
-    )
-    right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
-    # evaluate=False in order to keep same style as PDG
-    return sp.Mul(
-        1 / sp.pi,
-        left_term - right_term,
-        evaluate=False,
-    )
 
 
 @unevaluated

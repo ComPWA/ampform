@@ -22,6 +22,7 @@ from sympy.printing.numpy import NumPyPrinter
 from ampform.dynamics.form_factor import FormFactor
 from ampform.dynamics.phasespace import (
     ChewMandelstamIntegral,
+    ChewMandelstamSWave,
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
     PhaseSpaceFactorAbs,
@@ -29,6 +30,7 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorKallen,
     PhaseSpaceFactorPWave,
     PhaseSpaceFactorSplitSqrt,
+    PhaseSpaceFactorSWave,
 )
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
@@ -139,10 +141,19 @@ append_phsp_doit(PhaseSpaceFactorComplex, subexpression=ComplexSqrt(x))
 append_phsp_doit(PhaseSpaceFactorKallen, subexpression=Kallen(x, y, z))
 append_phsp_doit(PhaseSpaceFactorSplitSqrt)
 append_phsp_doit(
+    ChewMandelstamSWave,
+    subexpression=BreakupMomentumComplex(s, m1, m2),
+    wide=True,
+)
+append_phsp_doit(
     ChewMandelstamIntegral,
     extra_args=[ell],
     subexpression=[FormFactor(x, m1, m2, ell), PhaseSpaceFactor(x, m1, m2)],
     wide=True,
+)
+append_phsp_doit(
+    PhaseSpaceFactorSWave,
+    subexpression=ChewMandelstamSWave(s, m1, m2),
 )
 append_phsp_doit(
     PhaseSpaceFactorPWave,
@@ -526,26 +537,6 @@ def extend_ThreeMomentum() -> None:
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
     _append_code_rendering(expr)
-
-
-def extend_chew_mandelstam_s_wave() -> None:
-    from ampform.dynamics.phasespace import chew_mandelstam_s_wave
-
-    s, m_a, m_b = sp.symbols("s m_a m_b")
-    expr = chew_mandelstam_s_wave(s, m_a, m_b)
-    _append_to_docstring(
-        chew_mandelstam_s_wave,
-        Rf"""
-
-    .. math:: {sp.latex(expr)}
-        :class: full-width
-        :label: chew_mandelstam_s_wave
-
-    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-
-    .. seealso:: :doc:`compwa-report:003/index`
-    """,
-    )
 
 
 def extend_formulate_isobar_cg_coefficients() -> None:
