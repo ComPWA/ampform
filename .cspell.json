@@ -266,6 +266,7 @@
     "isospin",
     "itertools",
     "jupyter",
+    "Kronrod",
     "Källén",
     "lambdification",
     "lambdified",
