@@ -211,7 +211,7 @@ def compute_third_mandelstam(sigma1, sigma2, m0, m1, m2, m3) -> sp.Add:
     return m0**2 + m1**2 + m2**2 + m3**2 - sigma1 - sigma2
 
 
-def _get_subscript(symbol: sp.Basic, *, superscript: bool = False) -> str:
+def _get_subscript(symbol: sp.Basic, /, *, superscript: bool = False) -> str:
     r"""Get the subscript name for a symbol.
 
     >>> _get_subscript(sp.symbols("s"))
