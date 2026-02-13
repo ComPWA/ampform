@@ -14,7 +14,7 @@ import sys
 from collections import OrderedDict, abc
 from fractions import Fraction
 from functools import reduce, singledispatchmethod
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 import attrs
 import sympy as sp
@@ -74,27 +74,24 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+K = TypeVar("K")
+V = TypeVar("V")
 
-def _order_component_mapping(
-    mapping: Mapping[str, sp.Expr],
-) -> OrderedDict[str, sp.Expr]:
+
+def _order_component_mapping(mapping: Mapping[str, V], /) -> OrderedDict[str, V]:
     return collections.OrderedDict([
         (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
     ])
 
 
-def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, sp.Expr],
-) -> OrderedDict[sp.Symbol, sp.Expr]:
+def _order_symbol_mapping(mapping: Mapping[K, V], /) -> OrderedDict[K, V]:
     return collections.OrderedDict([
         (symbol, mapping[symbol])
-        for symbol in sorted(mapping, key=lambda s: natural_sorting(s.name))
+        for symbol in sorted(mapping, key=lambda s: natural_sorting(str(s)))
     ])
 
 
-def _order_amplitudes(
-    mapping: Mapping[sp.Indexed, sp.Expr],
-) -> OrderedDict[sp.Indexed, sp.Expr]:
+def _order_amplitudes(mapping: Mapping[K, V], /) -> OrderedDict[K, V]:
     return collections.OrderedDict([
         (key, mapping[key])
         for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
