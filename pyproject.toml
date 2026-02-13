@@ -29,7 +29,6 @@ dependencies = [
     "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
     "qrules >=0.9.6",
-    "quadax",
     "sympy >=1.10",
 ]
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
@@ -102,6 +101,7 @@ notebooks = [
     "ipympl",
     "matplotlib",
     "numpy",
+    "quadax",
     "rich",
     "sympy-plot-backends",
 ]
