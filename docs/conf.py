@@ -115,6 +115,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "FourMomenta": ("obj", "ampform.kinematics.lorentz.FourMomenta"),
     "FourMomentumSymbol": ("obj", "ampform.kinematics.lorentz.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "K": "typing.TypeVar",
     "LatexPrinter": "sympy.printing.printer.Printer",
     "Literal[-1, 1]": "typing.Literal",
     "Literal[(-1, 1)]": "typing.Literal",
@@ -139,6 +140,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "SympyObject": "typing.TypeVar",
     "T": "typing.TypeVar",
     "Topology": "qrules.topology.Topology",
+    "V": "typing.TypeVar",
     "WignerD": "sympy.physics.quantum.spin.WignerD",
     "sympy.tensor.array.expressions.array_expressions.ArraySymbol": (
         "mod",
