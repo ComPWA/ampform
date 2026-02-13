@@ -39,7 +39,7 @@ class TestComplexSqrt:
         x = sp.Symbol("x", real=real)
         expression = ComplexSqrt(x)
         lambdified = sp.lambdify(x, expression, backend)
-        assert lambdified(np.array(-1)) == 1j
+        assert lambdified(np.array(-1)) == 1j  # noqa: RUF069
 
     @pytest.mark.parametrize(
         ("input_value", "expected"),

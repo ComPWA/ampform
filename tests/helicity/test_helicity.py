@@ -88,14 +88,14 @@ class TestHelicityAmplitudeBuilder:
 
         if reaction.formalism == "canonical-helicity":
             assert (
-                no_dynamics
+                no_dynamics  # noqa: RUF069
                 == 0.8 * sp.sqrt(10) * sp.cos(theta) ** 2
                 + 4.4 * sp.cos(theta) ** 2
                 + 0.8 * sp.sqrt(10)
                 + 4.4
             )
         else:
-            assert no_dynamics == 8.0 - 4.0 * sp.sin(theta) ** 2
+            assert no_dynamics == 8.0 - 4.0 * sp.sin(theta) ** 2  # noqa: RUF069
 
     def test_stable_final_state_ids(self, reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)

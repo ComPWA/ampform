@@ -191,7 +191,7 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
     for node in sp.preorder_traversal(expression):
         if node.free_symbols:
             continue
-        if isinstance(node, sp.Pow) and node.args[1] == 1 / 2:
+        if isinstance(node, sp.Pow) and node.args[1] == 1 / 2:  # noqa: RUF069
             no_sqrt_expr = no_sqrt_expr.xreplace({node: node.n()})
     rounded_expr = no_sqrt_expr
     for node in sp.preorder_traversal(no_sqrt_expr):

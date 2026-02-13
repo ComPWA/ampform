@@ -276,7 +276,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
-        if difference != 1.0:
+        if difference != 1.0:  # noqa: RUF069
             return False
     return True
 

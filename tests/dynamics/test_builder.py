@@ -43,7 +43,7 @@ class TestRelativisticBreitWignerBuilder:
         s = variable_set.incoming_state_mass**2
         m0 = sp.Symbol("m_{N}", nonnegative=True)
         w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
-        assert bw == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)
+        assert bw == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)  # noqa: RUF069
         assert set(parameters) == {m0, w0}
         assert parameters[m0] == particle.mass
         assert parameters[w0] == particle.width
@@ -79,7 +79,7 @@ class TestRelativisticBreitWignerBuilder:
         w = EnergyDependentWidth(
             s, m0, w0, m_a=m1, m_b=m2, angular_momentum=ang_mom, meson_radius=d
         )
-        assert bw == w0 * m0 / (-sp.I * w * m0 - s + m0**2)
+        assert bw == w0 * m0 / (-sp.I * w * m0 - s + m0**2)  # noqa: RUF069
         assert set(parameters) == {m0, w0, d}
         assert parameters[m0] == particle.mass
         assert parameters[w0] == particle.width
