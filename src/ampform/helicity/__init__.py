@@ -553,7 +553,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
         F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
 
-    Here, :math:`C` stands for `Clebsch-Gordan factor
+    Here, :math:`C` stands for `Clebsch–Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
 
     .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
@@ -710,10 +710,10 @@ class _HelicityModelIngredients:
 def formulate_isobar_cg_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    r"""Compute the two Clebsch-Gordan coefficients for an isobar node.
+    r"""Compute the two Clebsch–Gordan coefficients for an isobar node.
 
     In the **canonical basis** (also called **partial wave basis**),
-    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
+    :doc:`Clebsch–Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
     the projection of angular momentum is conserved
     (:cite:`Kutschke:1996-AngularDistributionCookbook`, p. 4). When calling
     :func:`~qrules.generate_transitions` with :code:`formalism="canonical-helicity"`,
@@ -721,7 +721,7 @@ def formulate_isobar_cg_coefficients(
     helicity basis using the transformation in :cite:`Chung:2014-SpinFormalismsUpdated`,
     Eq. (4.32). See also :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (28).
 
-    This function produces the two Clebsch-Gordan coefficients in
+    This function produces the two Clebsch–Gordan coefficients in
     :cite:`Chung:2014-SpinFormalismsUpdated`, Eq. (4.32). For a two-body decay :math:`1
     \to 2, 3`, we get:
 

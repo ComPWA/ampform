@@ -13,8 +13,6 @@ from ampform.sympy import argument, determine_indices, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from sympy.printing.latex import LatexPrinter
 
 
@@ -51,11 +49,9 @@ class BreakupMomentum(sp.Expr):
         return sp.sqrt((s - (m1 - m2) ** 2) * (s - (m1 + m2) ** 2)) / (2 * sp.sqrt(s))
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(self.args[0])
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or f"q{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -79,9 +75,8 @@ class BreakupMomentumKallen(sp.Expr):
         return sp.sqrt(Kallen(s, m1**2, m2**2) / (4 * s))
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
+        s = printer._print(self.s)
+        return Rf"q\left({s}\right)"
 
 
 @unevaluated
@@ -106,9 +101,8 @@ class BreakupMomentumSplitSqrt(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        return Rf"q\left({s_latex}\right)"
+        s = printer._print(self.s)
+        return Rf"q\left({s}\right)"
 
 
 @unevaluated
@@ -134,11 +128,9 @@ class BreakupMomentumComplex(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = R"q^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"q^\mathrm{{c}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -161,11 +153,9 @@ class BreakupMomentumSquared(sp.Expr):
         return (s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2) / (4 * s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = self.args[0]
-        s_latex = printer._print(s)
-        subscript = _indices_to_subscript(determine_indices(s))
-        name = "q^2" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or f"q^2{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -221,16 +211,21 @@ def compute_third_mandelstam(sigma1, sigma2, m0, m1, m2, m3) -> sp.Add:
     return m0**2 + m1**2 + m2**2 + m3**2 - sigma1 - sigma2
 
 
-def _indices_to_subscript(indices: Sequence[int]) -> str:
-    """Create a LaTeX subscript from a list of indices.
+def _get_subscript(symbol: sp.Basic, /, *, superscript: bool = False) -> str:
+    r"""Get the subscript name for a symbol.
 
-    >>> _indices_to_subscript([])
+    >>> _get_subscript(sp.symbols("s"))
     ''
-    >>> _indices_to_subscript([1])
+    >>> _get_subscript(sp.symbols("sigma1"))
     '_{1}'
-    >>> _indices_to_subscript([1, 2])
+    >>> _get_subscript(sp.symbols("x12"))
+    '_{12}'
+    >>> _get_subscript(sp.symbols(R"x^k_{1,2}"))
     '_{1,2}'
+    >>> _get_subscript(sp.symbols(R"\alpha_{i2, 5}"))
+    '_{2,5}'
     """
+    indices = determine_indices(symbol)
     if len(indices) == 0:
         return ""
     subscript = ",".join(map(str, indices))

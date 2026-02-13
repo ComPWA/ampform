@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 @unevaluated
 class FormFactor(sp.Expr):
-    """Formulate a Blatt-Weisskopf form factor.
+    """Formulate a Blatt–Weisskopf form factor.
 
     Returns the production process factor :math:`n_a` from Equation (50.26) in
     :pdg-review:`2021; Resonances; p.9`, which features the
@@ -40,10 +40,10 @@ class FormFactor(sp.Expr):
 
 @unevaluated
 class BlattWeisskopfSquared(sp.Expr):
-    r"""Normalized Blatt-Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.
+    r"""Normalized Blatt–Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.
 
     Args:
-        z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
+        z: Argument of the Blatt–Weisskopf function :math:`B_L^2(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter and
             :math:`q` the breakup-momentum (see `.BreakupMomentumSquared`).
 
@@ -75,7 +75,7 @@ class BlattWeisskopfSquared(sp.Expr):
 
 @lru_cache(maxsize=20)
 def _get_polynomial_blatt_weisskopf(ell: int | sp.Integer) -> Callable[[Any], Any]:
-    """Get the Blatt-Weisskopf factor as a fraction of polynomials.
+    """Get the Blatt–Weisskopf factor as a fraction of polynomials.
 
     See https://github.com/ComPWA/ampform/issues/426.
     """

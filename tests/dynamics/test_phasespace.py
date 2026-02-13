@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import sympy as sp
 
-from ampform.dynamics.phasespace import ChewMandelstamIntegral, chew_mandelstam_s_wave
+from ampform.dynamics.phasespace import ChewMandelstamIntegral, ChewMandelstamSWave
 
 
 class TestChewMandelstam:
@@ -11,7 +11,7 @@ class TestChewMandelstam:
         s = sp.Symbol("s")
         m1 = 0.938
         m2 = 0.140
-        analytic_cm_expr = chew_mandelstam_s_wave(s, m1, m2)
+        analytic_cm_expr = ChewMandelstamSWave(s, m1, m2).evaluate()
         ϵ = 1e-5  # noqa: PLC2401
         numerical_cm_expr = ChewMandelstamIntegral(s, m1, m2, L=0, epsilon=ϵ)
         analytic_cm_func = sp.lambdify(s, analytic_cm_expr.doit())
