@@ -71,7 +71,7 @@ def create_non_dynamic(
 def create_non_dynamic_with_ff(
     resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
 ) -> BuilderReturnType:
-    """Generate (only) a Blatt-Weisskopf form factor for a two-body decay.
+    """Generate (only) a Blatt–Weisskopf form factor for a two-body decay.
 
     See also :class:`.FormFactor`.
     """
@@ -94,17 +94,17 @@ def create_non_dynamic_with_ff(
 
 
 class RelativisticBreitWignerBuilder:
-    """Factory for building relativistic Breit-Wigner expressions.
+    """Factory for building relativistic Breit–Wigner expressions.
 
     The :meth:`__call__` of this builder complies with the `.ResonanceDynamicsBuilder`,
     so instances of this class can be used in :meth:`.DynamicsSelector.assign`.
 
     Args:
-        form_factor: Formulate a relativistic Breit-Wigner function multiplied
-            by a Blatt-Weisskopf form factor (`.FormFactor`), like in Equation (50.26)
+        form_factor: Formulate a relativistic Breit–Wigner function multiplied
+            by a Blatt–Weisskopf form factor (`.FormFactor`), like in Equation (50.26)
             on :pdg-review:`2021; Resonances; p.9`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
-            denominator of the Breit-Wigner.
+            denominator of the Breit–Wigner.
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
             Defaults to `.PhaseSpaceFactor`.
@@ -125,7 +125,7 @@ class RelativisticBreitWignerBuilder:
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
-        """Formulate a relativistic Breit-Wigner for this resonance."""
+        """Formulate a relativistic Breit–Wigner for this resonance."""
         if self.energy_dependent_width:
             expr, parameter_defaults = self.__energy_dependent_breit_wigner(
                 resonance, variable_pool

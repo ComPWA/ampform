@@ -18,20 +18,15 @@ import sympy as sp
 
 from ampform.dynamics.form_factor import FormFactor
 from ampform.kinematics.phasespace import (
-    BreakupMomentum,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentum,  # noqa: F401
     BreakupMomentumComplex,
-    BreakupMomentumKallen,  # noqa: F401  # pyright:ignore[reportUnusedImport]
-    BreakupMomentumSplitSqrt,  # noqa: F401  # pyright:ignore[reportUnusedImport]
+    BreakupMomentumKallen,  # noqa: F401
+    BreakupMomentumSplitSqrt,  # noqa: F401
     BreakupMomentumSquared,
     Kallen,
-    _indices_to_subscript,
+    _get_subscript,
 )
-from ampform.sympy import (
-    UnevaluatableIntegral,
-    argument,
-    determine_indices,
-    unevaluated,
-)
+from ampform.sympy import UnevaluatableIntegral, argument, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -90,11 +85,9 @@ class PhaseSpaceFactor(sp.Expr):
         return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2)) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -119,11 +112,9 @@ class PhaseSpaceFactorAbs(sp.Expr):
         return 2 * sp.sqrt(sp.Abs(q_squared)) / sp.sqrt(s)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\hat{\rho}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\hat{{\rho}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -144,11 +135,9 @@ class PhaseSpaceFactorComplex(sp.Expr):
         return ComplexSqrt(s - (m1 + m2) ** 2) * ComplexSqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho^\mathrm{c}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho^\mathrm{{c}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -165,11 +154,9 @@ class PhaseSpaceFactorKallen(sp.Expr):
         return sp.sqrt(Kallen(s, m1**2, m2**2)) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -193,16 +180,14 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
         return sp.sqrt(s - (m1 + m2) ** 2) * sp.sqrt(s - (m1 - m2) ** 2) / s
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
 class PhaseSpaceFactorSWave(sp.Expr):
-    """Phase space factor using :func:`chew_mandelstam_s_wave`.
+    """Phase space factor using :func:`ChewMandelstamSWave`.
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
     both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
@@ -215,15 +200,43 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        chew_mandelstam = chew_mandelstam_s_wave(s, m1, m2)
+        chew_mandelstam = ChewMandelstamSWave(s, m1, m2)
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho^\mathrm{CM}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho^\mathrm{{CM}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
+
+
+@unevaluated
+class ChewMandelstamSWave(sp.Expr):
+    """Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+
+    As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
+    function has a well-defined behavior along the negative real axis.
+    """
+
+    s: Any
+    m1: Any
+    m2: Any
+    name: str | None = argument(default=None, sympify=False)
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        q = BreakupMomentumComplex(s, m1, m2)
+        left_term = sp.Mul(
+            2 * q / sp.sqrt(s),
+            sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
+            evaluate=False,  # keep same style as PDG
+        )
+        right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
+        return (left_term - right_term) / sp.pi
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s = printer._print(self.s)
+        name = self.name or Rf"\hat{{\Sigma}}_0{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -257,28 +270,9 @@ class PhaseSpaceFactorPWave(sp.Expr):
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho^\mathrm{CM}_1" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
-
-
-def chew_mandelstam_s_wave(s, m1, m2):
-    """Chew-Mandelstam function for :math:`S`-waves (no angular momentum)."""
-    q = BreakupMomentumComplex(s, m1, m2)
-    left_term = sp.Mul(
-        2 * q / sp.sqrt(s),
-        sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2)),
-        evaluate=False,
-    )
-    right_term = (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
-    # evaluate=False in order to keep same style as PDG
-    return sp.Mul(
-        1 / sp.pi,
-        left_term - right_term,
-        evaluate=False,
-    )
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho^\mathrm{{CM,1}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -321,11 +315,10 @@ class ChewMandelstamIntegral(sp.Expr):
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_latex = printer._print(self.s)
-        l_latex = printer._print(self.L)
-        subscript = _indices_to_subscript(determine_indices(self.s))
-        name = Rf"\Sigma_{l_latex}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        L = printer._print(self.L)  # noqa: N806
+        name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
+        return Rf"{name}\left({s}\right)"
 
 
 @unevaluated
@@ -351,11 +344,9 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
         return _analytic_continuation(rho_hat, s, s_threshold)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s_symbol = self.args[0]
-        s_latex = printer._print(s_symbol)
-        subscript = _indices_to_subscript(determine_indices(s_symbol))
-        name = R"\rho^\mathrm{eq}" + subscript if self.name is None else self.name
-        return Rf"{name}\left({s_latex}\right)"
+        s = printer._print(self.s)
+        name = self.name or Rf"\rho^\mathrm{{eq}}{_get_subscript(self.s)}"
+        return Rf"{name}\left({s}\right)"
 
 
 def _analytic_continuation(rho, s, s_threshold) -> sp.Piecewise:

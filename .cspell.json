@@ -35,8 +35,7 @@
     "CITATION.cff",
     "codecov.yml",
     "docs/conf.py",
-    "pyproject.toml",
-    "typings"
+    "pyproject.toml"
   ],
   "ignoreWords": [
     "Autoupdate",

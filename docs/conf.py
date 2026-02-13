@@ -275,6 +275,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "use_download_button": False,
     "use_edit_page_button": True,
+    "use_fullscreen_button": False,
     "use_issues_button": True,
     "use_repository_button": True,
     "use_source_button": True,

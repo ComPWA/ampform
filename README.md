@@ -43,15 +43,16 @@ an overview of **upcoming releases and planned functionality**, see
   - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
   - Canonical formalism
   - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
-    for generic, multi-body decays that feature different decay topologies
+    for generic, multi-body decays that feature different decay topologies. **See also [`ampform-dpd`](https://github.com/ComPWA/ampform-dpd)!**
 - **Dynamics**
-  - [Relativistic Breit-Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),
+  - [Relativistic Breit–Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),
     optionally with form factors and/or
     [energy-dependent width](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.EnergyDependentWidth)
   - [Symbolic _K_-matrix](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#non-relativistic-k-matrix)
     for an arbitrary number of poles and channels
   - [Symbolic _P_-vector](https://ampform.readthedocs.io/en/stable/usage/dynamics/k-matrix.html#p-vector)
     for an arbitrary number of poles and channels
+  - Chew–Mandelstam dispersion integral for a correct treatment of analyticity in the presence of thresholds.
 
 ## Contribute
 
