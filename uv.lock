@@ -171,6 +171,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-profiling" },
     { name = "pytest-xdist" },
+    { name = "quadax" },
 ]
 types = [
     { name = "ampform", extra = ["scipy", "viz"] },
@@ -312,6 +313,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-profiling" },
     { name = "pytest-xdist" },
+    { name = "quadax" },
 ]
 types = [
     { name = "ampform", extras = ["scipy", "viz"] },

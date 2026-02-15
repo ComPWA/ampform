@@ -118,6 +118,7 @@ test = [
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
+    "quadax",
 ]
 types = [
     "IPython",
@@ -365,6 +366,8 @@ filterwarnings = [
     "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:unclosed .*:ResourceWarning",
     'ignore:Widget\..* is deprecated\.:DeprecationWarning',
+    'ignore:atleast_1d requires ndarray or scalar arguments.*:DeprecationWarning',
+    'ignore:jax\.core\.(un)?mapped_aval is deprecated\.:DeprecationWarning',
 ]
 markers = ["slow: marks tests as slow (select with '-m slow')"]
 minversion = "9.0"

@@ -298,12 +298,15 @@ class ChewMandelstamIntegral(sp.Expr):
     meson_radius: Any = 1
     name: str | None = argument(default=None, sympify=False)
     algorithm: tuple[str, str] | None = argument(
-        default=None, sympify=False, kw_only=True
+        default=None, kw_only=True, sympify=False
     )
+    """See :attr:`.NumericalIntegral.algorithm`."""
     configuration: dict[str, Any] | None = argument(
-        default=None, sympify=False, kw_only=True
+        default=None, kw_only=True, sympify=False
     )
-    dummify: bool = argument(default=True, sympify=False, kw_only=True)
+    """See :attr:`.NumericalIntegral.configuration`."""
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
+    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
