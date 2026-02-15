@@ -6,9 +6,16 @@ from ampform.sympy import NumericalIntegral
 
 
 class TestNumericalIntegral:
-    def test_real_value_function(self):
+    @pytest.mark.parametrize("call_doit", [True, False])
+    @pytest.mark.parametrize("configuration", [{}, {"limit": 10}, {"limit": 100}])
+    def test_real_value_function(
+        self, call_doit: bool, configuration: dict[str, int | None]
+    ):
         x = sp.symbols("x")
-        integral_expr = NumericalIntegral(x**2, (x, 1, 3))
+        integral_expr = NumericalIntegral(x**2, (x, 1, 3), configuration=configuration)
+        if call_doit:
+            integral_expr = integral_expr.doit()
+        assert integral_expr.configuration == configuration
         func = sp.lambdify(args=[], expr=integral_expr)
         assert func() == 26 / 3  # noqa: RUF069
 

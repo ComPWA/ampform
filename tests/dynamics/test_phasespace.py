@@ -13,7 +13,9 @@ class TestChewMandelstam:
         m2 = 0.140
         analytic_cm_expr = ChewMandelstamSWave(s, m1, m2).evaluate()
         ϵ = 1e-5  # noqa: PLC2401
-        numerical_cm_expr = ChewMandelstamIntegral(s, m1, m2, L=0, epsilon=ϵ)
+        numerical_cm_expr = ChewMandelstamIntegral(
+            s, m1, m2, L=0, epsilon=ϵ, configuration={"epsrel": 1e-7}
+        ).evaluate()
         analytic_cm_func = sp.lambdify(s, analytic_cm_expr.doit())
         numerical_cm_func = sp.lambdify(s, numerical_cm_expr.doit())
         s_values = np.linspace(0.1, 10, num=80)

@@ -72,17 +72,24 @@ class SymPyAssumptions(TypedDict, total=False):
 
 
 @overload
-def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # ty:ignore[invalid-parameter-default]
+def argument(
+    *,
+    default: T = MISSING,  # ty:ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
+    sympify: bool = True,
+) -> T: ...
 @overload
 def argument(
     *,
     default_factory: Callable[[], T] = MISSING,  # ty:ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 def argument(
     *,
     default=MISSING,
     default_factory=MISSING,
+    kw_only=MISSING,
     sympify=True,
 ):
     """Add qualifiers to fields of `unevaluated` SymPy expression classes.
@@ -95,6 +102,7 @@ def argument(
     return _create_field(
         default=default,
         default_factory=default_factory,
+        kw_only=kw_only,
         metadata={"sympify": sympify},
     )
 
@@ -266,6 +274,9 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         )
         expr = sp.Expr.__new__(cls, *sympy_args, **hints)
         for field, value in fields_with_sympified_values.items():
+            if prop := getattr(type(expr), field.name, None):  # noqa: SIM102
+                if isinstance(prop, property):
+                    continue
             setattr(expr, field.name, value)
         if evaluate:
             return expr.evaluate()
@@ -546,6 +557,10 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
 
 def get_sympy_fields(cls) -> tuple[Field, ...]:
     return tuple(f for f in _get_fields(cls) if _is_sympify(f))
+
+
+def get_non_sympy_fields(cls) -> tuple[Field, ...]:
+    return tuple(f for f in _get_fields(cls) if not _is_sympify(f))
 
 
 def _is_sympify(field: Field) -> bool:

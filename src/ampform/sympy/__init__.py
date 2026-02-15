@@ -17,7 +17,7 @@ import re
 import sys
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -27,6 +27,7 @@ from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 from ._decorator import ExprClass as ExprClass
 from ._decorator import SymPyAssumptions as SymPyAssumptions
 from ._decorator import argument as argument
+from ._decorator import get_non_sympy_fields
 from ._decorator import unevaluated as unevaluated
 from .cached import doit as perform_cached_doit  # noqa: F401
 from .cached import xreplace as perform_cached_substitution  # noqa: F401
@@ -352,6 +353,7 @@ def rename_symbols(
     return expression.xreplace(substitutions)
 
 
+@unevaluated(implement_doit=False)
 class NumericalIntegral(sp.Integral):
     """Expression class representing an integral that should be evaluated numerically.
 
@@ -359,33 +361,41 @@ class NumericalIntegral(sp.Integral):
     is blocked from evaluating symbolically. Instead, it should be lambdified to a
     numerical integration function and evaluated numerically.
 
-    The class variables of this class make it possible to configure the numerical
-    integration. They are given as keyword arguments to
-    :func:`scipy.integrate.quad_vec`.
-
     .. seealso:: :ref:`usage/sympy:Numerical integrals`
 
     .. version-added:: 0.14.10
 
-    .. version-changed:: 0.15.0
-        Renamed from :code:`UnevaluatableIntegral` to `NumericalIntegral`.
+    .. version-changed:: 0.16.0
+
+        * Renamed from :code:`UnevaluatableIntegral` to `NumericalIntegral`.
+        * The integration algorithm is configured through class constructor arguments
+          rather than class variables.
     """
 
-    dummify = True
-
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
-    abs_tolerance: ClassVar[float | None] = 1e-5
-    rel_tolerance: ClassVar[float | None] = 1e-5
-    limit: ClassVar[int | None] = None
+    function: sp.Expr
+    limits: tuple[sp.Symbol, sp.Basic, sp.Basic]
+    algorithm: tuple[str, str] | None = argument(
+        default=None, sympify=False, kw_only=True
+    )
+    configuration: dict[str, Any] | None = argument(
+        default=None, sympify=False, kw_only=True
+    )
+    dummify: bool = argument(default=True, sympify=False, kw_only=True)
 
     @override
     def doit(self, **hints):
         args = [arg.doit(**hints) for arg in self.args]
-        return self.func(*args)
+        kwargs = {
+            field.name: getattr(self, field.name)
+            for field in get_non_sympy_fields(self)
+        }
+        return self.func(*args, **kwargs)
 
     @override
     def _numpycode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        _warn_if_scipy_not_installed()
+        module, algorithm = self.algorithm or ("scipy.integrate", "quad_vec")
+        if module.startswith("scipy"):
+            _warn_if_scipy_not_installed()
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
             msg = f"Cannot handle {len(limits)}-dimensional integrals"
@@ -397,28 +407,17 @@ class NumericalIntegral(sp.Integral):
             dummy = sp.Dummy()
             expr = expr.xreplace({x: dummy})
             x = dummy
-        integrate_numerically = "quad_vec"
-        printer.module_imports["scipy.integrate"].add(integrate_numerically)
+        integrate_numerically = algorithm
+        printer.module_imports[module].add(integrate_numerically)
         src = _generate_function_call(
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
             integrate_numerically,
             f"lambda {printer._print(x)}: {printer._print(expr)}",
             printer._print(a),
             printer._print(b),
-            **self._get_quad_vec_kwargs(),
+            **self.configuration or {},
         )
         return f"{src}[0]"
-
-    @classmethod
-    def _get_quad_vec_kwargs(cls) -> dict[str, Any]:
-        kwargs = {}
-        if cls.abs_tolerance is not None:
-            kwargs["epsabs"] = cls.abs_tolerance
-        if cls.rel_tolerance is not None:
-            kwargs["epsrel"] = cls.rel_tolerance
-        if cls.limit is not None:
-            kwargs["limit"] = cls.limit
-        return kwargs
 
 
 def _generate_function_call(func_name: str, *args, **kwargs) -> str:

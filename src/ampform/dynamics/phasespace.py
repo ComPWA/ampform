@@ -297,6 +297,13 @@ class ChewMandelstamIntegral(sp.Expr):
     epsilon: Any = sp.Symbol("epsilon", positive=True)
     meson_radius: Any = 1
     name: str | None = argument(default=None, sympify=False)
+    algorithm: tuple[str, str] | None = argument(
+        default=None, sympify=False, kw_only=True
+    )
+    configuration: dict[str, Any] | None = argument(
+        default=None, sympify=False, kw_only=True
+    )
+    dummify: bool = argument(default=True, sympify=False, kw_only=True)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
@@ -310,6 +317,9 @@ class ChewMandelstamIntegral(sp.Expr):
                 / (s_prime - s_thr)
                 / (s_prime - s - sp.I * epsilon),
                 (s_prime, s_thr, sp.oo),
+                algorithm=self.algorithm,
+                configuration=self.configuration,
+                dummify=self.dummify,
             ),
             evaluate=False,
         )
