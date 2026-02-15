@@ -1140,7 +1140,8 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jax", version = "0.6.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "jax", version = "0.8.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "jaxtyping" },
+    { name = "jaxtyping", version = "0.3.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "jaxtyping", version = "0.3.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "typing-extensions" },
     { name = "wadler-lindig" },
 ]
@@ -1720,12 +1721,33 @@ wheels = [
 name = "jaxtyping"
 version = "0.3.7"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.11'",
+]
 dependencies = [
-    { name = "wadler-lindig" },
+    { name = "wadler-lindig", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/38/40/a2ea3ce0e3e5f540eb970de7792c90fa58fef1b27d34c83f9fa94fea4729/jaxtyping-0.3.7.tar.gz", hash = "sha256:3bd7d9beb7d3cb01a89f93f90581c6f4fff3e5c5dc3c9307e8f8687a040d10c4", size = 45721, upload-time = "2026-01-30T14:18:47.409Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/78/42/caf65e9a0576a3abadc537e2f831701ba9081f21317fb3be87d64451587a/jaxtyping-0.3.7-py3-none-any.whl", hash = "sha256:303ab8599edf412eeb40bf06c863e3168fa186cf0e7334703fa741ddd7046e66", size = 56101, upload-time = "2026-01-30T14:18:45.954Z" },
+]
+
+[[package]]
+name = "jaxtyping"
+version = "0.3.8"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version == '3.12.*'",
+    "python_full_version == '3.11.*'",
+]
+dependencies = [
+    { name = "wadler-lindig", marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/a1/4ca5e52b4834abedd0815f11ef5a2ec7844fa407586e8eaaa375913c9b7b/jaxtyping-0.3.8.tar.gz", hash = "sha256:169f9d5a001da026d2636b61598ffca1199986dbaa010fc2e416c5238160026f", size = 45800, upload-time = "2026-02-14T21:05:27.447Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/a8/ca69c3d4f7b8230439adb97f8f65ed001192c7fd74701649f06aa332a56e/jaxtyping-0.3.8-py3-none-any.whl", hash = "sha256:e334dad726ce10d0192504f31e383ebebd0a9253c00a23662ef75b2ef9cd7261", size = 56191, upload-time = "2026-02-14T21:05:25.864Z" },
 ]
 
 [[package]]
@@ -3012,11 +3034,11 @@ wheels = [
 
 [[package]]
 name = "platformdirs"
-version = "4.8.0"
+version = "4.9.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/41/9b/20c8288dc591129bf9dd7be2c91aec6ef23e450605c3403716bd6c74833e/platformdirs-4.8.0.tar.gz", hash = "sha256:c1d4a51ab04087041dd602707fbe7ee8b62b64e590f30e336e5c99c2d0c542d2", size = 27607, upload-time = "2026-02-14T01:52:03.451Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/d5/763666321efaded11112de8b7a7f2273dd8d1e205168e73c334e54b0ab9a/platformdirs-4.9.1.tar.gz", hash = "sha256:f310f16e89c4e29117805d8328f7c10876eeff36c94eac879532812110f7d39f", size = 28392, upload-time = "2026-02-14T21:02:44.973Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/f0/227a7d1b8d80ae55c4b47f271c0870dd7a153aa65353bf71921265df2300/platformdirs-4.8.0-py3-none-any.whl", hash = "sha256:1c1328b4d2ea997bbcb904175a9bde14e824a3fa79f751ea3888d63d7d727557", size = 20647, upload-time = "2026-02-14T01:52:01.915Z" },
+    { url = "https://files.pythonhosted.org/packages/70/77/e8c95e95f1d4cdd88c90a96e31980df7e709e51059fac150046ad67fac63/platformdirs-4.9.1-py3-none-any.whl", hash = "sha256:61d8b967d34791c162d30d60737369cbbd77debad5b981c4bfda1842e71e0d66", size = 21307, upload-time = "2026-02-14T21:02:43.492Z" },
 ]
 
 [[package]]
