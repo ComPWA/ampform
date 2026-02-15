@@ -352,14 +352,23 @@ def rename_symbols(
     return expression.xreplace(substitutions)
 
 
-class UnevaluatableIntegral(sp.Integral):
-    """See :ref:`usage/sympy:Numerical integrals`.
+class NumericalIntegral(sp.Integral):
+    """Expression class representing an integral that should be evaluated numerically.
 
-    .. versionadded:: 0.14.10
+    This class inherits from `sympy.Integral <sympy.integrals.integrals.Integral>`, but
+    is blocked from evaluating symbolically. Instead, it should be lambdified to a
+    numerical integration function and evaluated numerically.
 
-    .. seealso::
-        The class variables of this class make it possible to configure the numerical
-        integration. They are given as keyword arguments to :func:`scipy.integrate.quad_vec`.
+    The class variables of this class make it possible to configure the numerical
+    integration. They are given as keyword arguments to
+    :func:`scipy.integrate.quad_vec`.
+
+    .. seealso:: :ref:`usage/sympy:Numerical integrals`
+
+    .. version-added:: 0.14.10
+
+    .. version-changed:: 0.15.0
+        Renamed from :code:`UnevaluatableIntegral` to `NumericalIntegral`.
     """
 
     dummify = True

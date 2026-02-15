@@ -26,7 +26,7 @@ from ampform.kinematics.phasespace import (
     Kallen,
     _get_subscript,
 )
-from ampform.sympy import UnevaluatableIntegral, argument, unevaluated
+from ampform.sympy import NumericalIntegral, argument, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -246,7 +246,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
     .. warning::
 
         This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
-        `ChewMandelstamIntegral` (via `.UnevaluatableIntegral`). As such, you have to be
+        `ChewMandelstamIntegral` (via `.NumericalIntegral`). As such, you have to be
         careful when lambdifying this function and evaluating this over an array.
 
         >>> import numpy as np
@@ -305,7 +305,7 @@ class ChewMandelstamIntegral(sp.Expr):
         s_thr = (m1 + m2) ** 2
         return sp.Mul(
             (s - s_thr) / sp.pi,
-            UnevaluatableIntegral(
+            NumericalIntegral(
                 (phsp_factor * ff_squared)
                 / (s_prime - s_thr)
                 / (s_prime - s - sp.I * epsilon),
