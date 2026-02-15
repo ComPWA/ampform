@@ -97,7 +97,7 @@ def argument(
     Creates a :class:`dataclasses.Field` with additional metadata for
     :func:`unevaluated` by wrapping around :func:`dataclasses.field`.
 
-    .. versionadded:: 0.14.8
+    .. version-added:: 0.14.8
     """
     return _create_field(
         default=default,
@@ -202,8 +202,8 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
-    .. versionadded:: 0.14.8
-    .. versionchanged:: 0.14.7
+    .. version-added:: 0.14.8
+    .. version-changed:: 0.14.7
         Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
     """
     if assumptions is None:
