@@ -297,9 +297,7 @@ class ChewMandelstamIntegral(sp.Expr):
     epsilon: Any = sp.Symbol("epsilon", positive=True)
     meson_radius: Any = 1
     name: str | None = argument(default=None, kw_only=True, sympify=False)
-    algorithm: tuple[str, str] | None = argument(
-        default=None, kw_only=True, sympify=False
-    )
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
     """See :attr:`.NumericalIntegral.algorithm`."""
     configuration: dict[str, Any] | None = argument(
         default=None, kw_only=True, sympify=False
