@@ -13,7 +13,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: b122464266f519d41284e4a51673fb1232d1fd0b
+    rev: 0.8.3
     hooks:
       - id: check-dev-files
         args:
@@ -112,7 +112,7 @@ repos:
           - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.36.1
+    rev: 0.36.2
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
