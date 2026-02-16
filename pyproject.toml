@@ -556,7 +556,6 @@ rules.possibly-unresolved-reference = "ignore"
 include = [
     "docs/amplitude/formalism.ipynb",
     "docs/amplitude/interactive.ipynb",
-    "docs/analyticity/phasespace-factors.ipynb",
     "docs/dynamics.ipynb",
 ]
 rules.unresolved-attribute = "ignore"
