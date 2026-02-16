@@ -241,7 +241,7 @@ class ChewMandelstamSWave(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactorPWave(sp.Expr):
-    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`L=1`.
+    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`\ell=1`.
 
     .. warning::
 
@@ -266,7 +266,9 @@ class PhaseSpaceFactorPWave(sp.Expr):
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
-        chew_mandelstam = ChewMandelstamIntegral(s, m1, m2, L=1, epsilon=1e-5)
+        chew_mandelstam = ChewMandelstamIntegral(
+            s, m1, m2, angular_momentum=1, epsilon=1e-5
+        )
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
@@ -283,7 +285,7 @@ class ChewMandelstamIntegral(sp.Expr):
         s: Mandelstam variable s.
         m1: Mass of particle 1.
         m2: Mass of particle 2.
-        L: Angular momentum.
+        angular_momentum: Angular momentum.
         meson_radius: Meson radius, default is 1 (optional).
         s_prime: Integration variable defaults to 'x'.
         epsilon: Small imaginary part default is positive epsilon.
@@ -292,7 +294,7 @@ class ChewMandelstamIntegral(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    L: Any
+    angular_momentum: Any
     meson_radius: Any = 1
     s_prime: Any = sp.Symbol("x", real=True)
     epsilon: Any = sp.Symbol("epsilon", positive=True)
@@ -327,7 +329,7 @@ class ChewMandelstamIntegral(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        L = printer._print(self.L)  # noqa: N806
+        L = printer._print(self.angular_momentum)  # noqa: N806
         name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
         return Rf"{name}\left({s}\right)"
 
