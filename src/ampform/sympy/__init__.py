@@ -360,7 +360,7 @@ class NumericalIntegral(sp.Integral):
     is blocked from evaluating symbolically. Instead, it should be lambdified to a
     numerical integration function and evaluated numerically.
 
-    .. seealso:: :ref:`usage/sympy:Numerical integrals`
+    .. seealso:: :ref:`sympy:Numerical integrals`
 
     .. version-added:: 0.14.10
 

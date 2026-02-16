@@ -1,6 +1,6 @@
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/analyticity/phasespace-factors`.
+.. seealso:: :doc:`/dynamics` and :doc:`/analyticity/phasespace-factors`.
 """
 
 from __future__ import annotations
@@ -80,8 +80,7 @@ class EnergyDependentWidth(sp.Expr):
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit–Wigner lineshape.
 
-    See :ref:`usage/dynamics:_Without_ form factor` and
-    :cite:`ParticleDataGroup:2012pjm`.
+    See :ref:`dynamics:_Without_ form factor` and :cite:`ParticleDataGroup:2012pjm`.
     """
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
@@ -98,8 +97,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 
-    See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
-    p.9`.
+    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2021; Resonances; p.9`.
     """
     form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     energy_dependent_width = EnergyDependentWidth(

@@ -55,7 +55,7 @@ class BlattWeisskopfSquared(sp.Expr):
     :pdg-review:`2021; Resonances; p.9`. We normalize the form factor such that
     :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
-    .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
+    .. seealso:: :ref:`dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
       and :cite:`Chung:2015-FormulasAngularMomentumBarrier`.
 
     With this, the implementation becomes

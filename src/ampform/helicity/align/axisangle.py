@@ -136,8 +136,8 @@ def formulate_helicity_rotation_chain(
     `~qrules.topology.Topology` starting from the initial state up some
     :code:`rotated_state_id`. Each rotation operates on the spin state and is therefore
     formulated as a `~sympy.physics.quantum.spin.WignerD` function (see
-    :func:`.formulate_helicity_rotation`). See {doc}`/usage/amplitude/spin-alignment`
-    for more info.
+    :func:`.formulate_helicity_rotation`). See {doc}`/amplitude/spin-alignment` for more
+    info.
     """
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
