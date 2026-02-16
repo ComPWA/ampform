@@ -56,7 +56,7 @@ class BlattWeisskopfSquared(sp.Expr):
     :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
     .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
-      and :cite:`chungFormulasAngularMomentumBarrier2015`.
+      and :cite:`Chung:2015-FormulasAngularMomentumBarrier`.
 
     With this, the implementation becomes
     """

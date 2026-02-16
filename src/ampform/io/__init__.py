@@ -31,14 +31,14 @@ def aslatex(obj, **kwargs) -> str:  # noqa: D417
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
 
-    .. versionadded:: 0.14.1
+    .. version-added:: 0.14.1
 
     Args:
         terms_per_line: If set to a non-zero, positive number,
             `sp.Expr <sympy.core.expr.Expr>` objects on the right-hand-side with multiple
             terms are split over multiple lines. The terms are split at the addition.
 
-            .. versionadded:: 0.15.2
+            .. version-added:: 0.15.2
     """
     return str(obj)
 
@@ -128,7 +128,7 @@ def _(obj: Iterable, **kwargs) -> str:
 def improve_latex_rendering() -> None:
     """Improve LaTeX rendering of an `~sympy.tensor.indexed.Indexed` object.
 
-    .. versionadded:: 0.14.2
+    .. version-added:: 0.14.2
     """
 
     def _print_Indexed_latex(self, printer, *args) -> str:  # noqa: N802

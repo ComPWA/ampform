@@ -7,10 +7,6 @@ import sys
 import warnings
 from collections import abc
 from dataclasses import MISSING, Field
-from dataclasses import astuple as _get_arguments
-from dataclasses import dataclass as _create_dataclass
-from dataclasses import field as _create_field
-from dataclasses import fields as _get_fields
 from inspect import isclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar, overload
@@ -72,17 +68,24 @@ class SymPyAssumptions(TypedDict, total=False):
 
 
 @overload
-def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # ty:ignore[invalid-parameter-default]
+def argument(
+    *,
+    default: T = MISSING,  # ty:ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
+    sympify: bool = True,
+) -> T: ...
 @overload
 def argument(
     *,
     default_factory: Callable[[], T] = MISSING,  # ty:ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 def argument(
     *,
     default=MISSING,
     default_factory=MISSING,
+    kw_only=MISSING,
     sympify=True,
 ):
     """Add qualifiers to fields of `unevaluated` SymPy expression classes.
@@ -90,11 +93,12 @@ def argument(
     Creates a :class:`dataclasses.Field` with additional metadata for
     :func:`unevaluated` by wrapping around :func:`dataclasses.field`.
 
-    .. versionadded:: 0.14.8
+    .. version-added:: 0.14.8
     """
-    return _create_field(
+    return dataclasses.field(
         default=default,
         default_factory=default_factory,
+        kw_only=kw_only,
         metadata={"sympify": sympify},
     )
 
@@ -107,7 +111,7 @@ def unevaluated(
     implement_doit: bool = True,
     **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def unevaluated(
     cls: type[ExprClass] | None = None, *, implement_doit=True, **assumptions
 ):
@@ -194,8 +198,8 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
-    .. versionadded:: 0.14.8
-    .. versionchanged:: 0.14.7
+    .. version-added:: 0.14.8
+    .. version-changed:: 0.14.7
         Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
     """
     if assumptions is None:
@@ -222,7 +226,7 @@ def unevaluated(
     return decorator(cls)
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     """Implement :meth:`~object.__new__` for dataclass-like SymPy expression classes.
 
@@ -239,7 +243,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     >>> sp.sqrt(expr)
     sqrt(MyExpr(x**2, y**2))
     """
-    cls = _create_dataclass(
+    cls = dataclasses.dataclass(
         init=False,  # __new__ method through sp.Expr
         repr=False,
         eq=False,
@@ -248,11 +252,11 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         frozen=False,
     )(cls)
     cls = _update_field_metadata(cls)
-    non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))
+    non_sympy_fields = tuple(f for f in dataclasses.fields(cls) if not _is_sympify(f))
     cls.__slots__ = tuple(f.name for f in non_sympy_fields)
 
     @functools.wraps(cls.__new__)
-    @_insert_args_in_signature([f.name for f in _get_fields(cls)], idx=1)
+    @_insert_args_in_signature([f.name for f in dataclasses.fields(cls)], idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
         fields_with_values, hints = _extract_field_values(cls, *args, **kwargs)
         fields_with_sympified_values = {
@@ -266,13 +270,16 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         )
         expr = sp.Expr.__new__(cls, *sympy_args, **hints)
         for field, value in fields_with_sympified_values.items():
+            if prop := getattr(type(expr), field.name, None):  # noqa: SIM102
+                if isinstance(prop, property):
+                    continue
             setattr(expr, field.name, value)
         if evaluate:
             return expr.evaluate()
         return expr
 
     cls.__new__ = new_method
-    cls.__getnewargs__ = _get_arguments
+    cls.__getnewargs__ = dataclasses.astuple
     cls._hashable_content = _hashable_content_method
     if non_sympy_fields:
         cls._eval_subs = _eval_subs_method
@@ -282,7 +289,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
 
 def _update_field_metadata(cls: T) -> T:
     """Set the :code:`sympify` metadata for all fields of a dataclass-like class."""
-    for field in _get_fields(cls):
+    for field in dataclasses.fields(cls):
         new_metadata = dict(field.metadata)
         if "sympify" not in new_metadata:
             new_metadata["sympify"] = True
@@ -323,7 +330,7 @@ def _extract_field_values(
     An attempt is made to get any missing attributes from the type hints in the class
     definition.
     """
-    fields = _get_fields(cls)
+    fields = dataclasses.fields(cls)
     if len(args) == len(fields):
         return dict(zip(fields, args, strict=True)), kwargs
     if len(args) > len(fields):
@@ -365,7 +372,7 @@ class LatexMethod(Protocol):
     def __call__(self, printer: LatexPrinter, *args) -> str: ...
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_latex_repr(cls: type[T]) -> type[T]:
     repr_name = "_latex_repr_"
     _latex_repr_: LatexMethod | str | None = getattr(cls, repr_name, None)
@@ -390,7 +397,7 @@ def _implement_latex_repr(cls: type[T]) -> type[T]:
     return cls
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
     _check_has_implementation(cls)
 
@@ -464,7 +471,7 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     )
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _set_assumptions(
     **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[T]], type[T]]:
@@ -479,7 +486,7 @@ def _set_assumptions(
 def _eval_subs_method(self, old, new, **hints):
     # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1117-L1147
     hit = False
-    old_args = _get_arguments(self)
+    old_args = dataclasses.astuple(self)
     new_args = list(old_args)
     for i, old_arg in enumerate(old_args):
         if not hasattr(old_arg, "_eval_subs"):
@@ -515,7 +522,7 @@ def _hashable_content_method(self) -> tuple:
         return hashable_content
     remaining_content = (
         _get_hashable_object(getattr(self, field.name))
-        for field in _get_fields(self)
+        for field in dataclasses.fields(self)
         if not _is_sympify(field)
     )
     return (*hashable_content, *remaining_content)
@@ -528,7 +535,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     if rule:
         new_args = []
         hit = False
-        for arg in _get_arguments(self):
+        for arg in dataclasses.astuple(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
                 replace_result, is_replaced = arg._xreplace(rule)  # noqa: SLF001
             elif isinstance(rule, abc.Mapping):
@@ -545,7 +552,11 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
 
 
 def get_sympy_fields(cls) -> tuple[Field, ...]:
-    return tuple(f for f in _get_fields(cls) if _is_sympify(f))
+    return tuple(f for f in dataclasses.fields(cls) if _is_sympify(f))
+
+
+def get_non_sympy_fields(cls) -> tuple[Field, ...]:
+    return tuple(f for f in dataclasses.fields(cls) if not _is_sympify(f))
 
 
 def _is_sympify(field: Field) -> bool:

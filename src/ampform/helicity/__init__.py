@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import math
 import operator
 import sys
 from collections import OrderedDict, abc
@@ -527,7 +528,7 @@ class HelicityAmplitudeBuilder:
         self, transition: StateTransition
     ) -> sp.Rational | None:
         prefactor = get_prefactor(transition)
-        if prefactor != 1.0:
+        if not math.isclose(prefactor, 1.0):
             for node_id in transition.topology.nodes:
                 raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id

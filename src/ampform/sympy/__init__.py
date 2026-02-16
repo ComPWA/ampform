@@ -15,9 +15,8 @@ from __future__ import annotations
 import itertools
 import re
 import sys
-import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
@@ -27,6 +26,7 @@ from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 from ._decorator import ExprClass as ExprClass
 from ._decorator import SymPyAssumptions as SymPyAssumptions
 from ._decorator import argument as argument
+from ._decorator import get_non_sympy_fields
 from ._decorator import unevaluated as unevaluated
 from .cached import doit as perform_cached_doit  # noqa: F401
 from .cached import xreplace as perform_cached_substitution  # noqa: F401
@@ -276,7 +276,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
-        if difference != 1.0:
+        if difference != 1.0:  # noqa: RUF069
             return False
     return True
 
@@ -352,85 +352,141 @@ def rename_symbols(
     return expression.xreplace(substitutions)
 
 
-class UnevaluatableIntegral(sp.Integral):
-    """See :ref:`usage/sympy:Numerical integrals`.
+@unevaluated(implement_doit=False)
+class NumericalIntegral(sp.Integral):
+    """Expression class representing an integral that should be evaluated numerically.
 
-    .. versionadded:: 0.14.10
+    This class inherits from `sympy.Integral <sympy.integrals.integrals.Integral>`, but
+    is blocked from evaluating symbolically. Instead, it should be lambdified to a
+    numerical integration function and evaluated numerically.
 
-    .. seealso::
-        The class variables of this class make it possible to configure the numerical
-        integration. They are given as keyword arguments to :func:`scipy.integrate.quad_vec`.
+    .. seealso:: :ref:`usage/sympy:Numerical integrals`
+
+    .. version-added:: 0.14.10
+
+    .. version-changed:: 0.16.0
+
+        * Renamed from :code:`UnevaluatableIntegral` to `NumericalIntegral`.
+        * The integration algorithm is configured through class constructor arguments
+          rather than class variables.
     """
 
-    dummify = True
+    function: sp.Expr
+    """Integrand of the integral."""
+    limits: tuple[sp.Symbol, sp.Basic, sp.Basic]
+    """Integration variable and its limits (can be `~sympy.core.numbers.Infinity`)."""
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
+    """Name of the numerical integration algorithm to use when lambdifying this integral.
 
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
-    abs_tolerance: ClassVar[float | None] = 1e-5
-    rel_tolerance: ClassVar[float | None] = 1e-5
-    limit: ClassVar[int | None] = None
+    The algorithm should be in the format :code:`module.function`, for instance
+    :func:`scipy.integrate.quad_vec` or :func:`quadax.quadgk`. By default, the algorithm
+    is :func:`quadax.romberg` when lambdifying to JAX and
+    :func:`scipy.integrate.quad_vec` when lambdifying to NumPy.
+    """
+    configuration: dict[str, Any] | None = argument(
+        default=None, sympify=False, kw_only=True
+    )
+    """Keyword arguments for the numerical integration algorithm.
+
+    For example, for :func:`scipy.integrate.quad_vec`, one can set the relative
+    tolerance with :code:`configuration={'epsrel': 1e-5}`.
+    """
+    dummify: bool = argument(default=True, sympify=False, kw_only=True)
+    """Replace the integration variable with a dummy symbol before lambdification.
+
+    The integrand expression is lambdified to a :code:`lambda` function. Therefore, when
+    the integrand expresssion contains the integration variable in a non-trivial way,
+    and the expression is lambdified using common sub-expressions, it is better to
+    replace it with a unique `~sympy.core.symbol.Dummy` symbol that does not appear
+    anywhere else in the expression tree, so that is not pulled out of the
+    :code:`lambda` function.
+    """
 
     @override
     def doit(self, **hints):
         args = [arg.doit(**hints) for arg in self.args]
-        return self.func(*args)
+        kwargs = {
+            field.name: getattr(self, field.name)
+            for field in get_non_sympy_fields(self)
+        }
+        return self.func(*args, **kwargs)
+
+    @override
+    def _jaxcode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
+        algorithm = self.algorithm or "quadax.romberg"
+        if algorithm.startswith("quadax"):
+            return self.__to_quadax_like(printer, algorithm)
+        return self.__to_scipy_like(printer, algorithm)
 
     @override
     def _numpycode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        _warn_if_scipy_not_installed()
+        algorithm = self.algorithm or "scipy.integrate.quad_vec"
+        if algorithm.startswith("quadax"):
+            return self.__to_quadax_like(printer, algorithm)
+        return self.__to_scipy_like(printer, algorithm)
+
+    def __to_quadax_like(self, printer, algorithm: str) -> str:
+        """https://quadax.readthedocs.io."""
+        integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
+        src = _generate_function_call(
+            integrate,
+            fun=f"lambda {x}: {integrand}",
+            interval=f"({a}, {b})",
+            **self.configuration or {},
+        )
+        return f"{src}[0]"
+
+    def __to_scipy_like(self, printer, algorithm: str) -> str:
+        """https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html."""
+        integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
+        kwargs = self.configuration or {}
+        src = _generate_function_call(
+            integrate, f"lambda {x}: {integrand}", a, b, **kwargs
+        )
+        return f"{src}[0]"
+
+    def __prepare_components(
+        self, printer, algorithm: str
+    ) -> tuple[str, str, str, str, str]:
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
             msg = f"Cannot handle {len(limits)}-dimensional integrals"
             raise ValueError(msg)
         x = integration_vars[0]
         a, b = limits[0]
-        expr = self.args[0]
+        integrand = self.function
         if self.dummify:
             dummy = sp.Dummy()
-            expr = expr.xreplace({x: dummy})
+            integrand = integrand.xreplace({x: dummy})
             x = dummy
-        integrate_numerically = "quad_vec"
-        printer.module_imports["scipy.integrate"].add(integrate_numerically)
-        src = _generate_function_call(
-            # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html
-            integrate_numerically,
-            f"lambda {printer._print(x)}: {printer._print(expr)}",
+        parts = algorithm.split(".")
+        if len(parts) < 2:  # noqa: PLR2004
+            msg = f"Algorithm should be in format 'module.function', got '{algorithm}'"
+            raise ValueError(msg)
+        module_name = ".".join(parts[:-1])
+        algorithm_name = parts[-1]
+        printer.module_imports[module_name].add(algorithm_name)
+        return (
+            algorithm_name,
+            printer._print(integrand),
+            printer._print(x),
             printer._print(a),
             printer._print(b),
-            **self._get_quad_vec_kwargs(),
         )
-        return f"{src}[0]"
-
-    @classmethod
-    def _get_quad_vec_kwargs(cls) -> dict[str, Any]:
-        kwargs = {}
-        if cls.abs_tolerance is not None:
-            kwargs["epsabs"] = cls.abs_tolerance
-        if cls.rel_tolerance is not None:
-            kwargs["epsrel"] = cls.rel_tolerance
-        if cls.limit is not None:
-            kwargs["limit"] = cls.limit
-        return kwargs
 
 
-def _generate_function_call(func_name: str, *args, **kwargs) -> str:
+def _generate_function_call(func_name: str, /, *args, **kwargs) -> str:
     """Generate a function call string with the given function name, arguments, and keyword arguments.
 
     >>> _generate_function_call("quad_vec", "f", 0, 1, epsabs=1e-5)
     'quad_vec(f, 0, 1, epsabs=1e-05)'
+    >>> _generate_function_call("quadgk", fun="lambda x: x**2", interval=(0, 1))
+    'quadgk(fun=lambda x: x**2, interval=(0, 1))'
     """
-    src = f"{func_name}({', '.join(map(str, args))}"
-    for key, value in kwargs.items():
-        src += f", {key}={value}"
+    src = f"{func_name}("
+    src += ", ".join(map(str, args))
+    if args:
+        src += ", "
+    src += ", ".join(f"{key}={value}" for key, value in kwargs.items())
     src += ")"
     return src
-
-
-def _warn_if_scipy_not_installed() -> None:
-    try:
-        import scipy  # noqa: F401, PLC0415
-    except ImportError:
-        warnings.warn(
-            "Scipy is not installed. Install with 'pip install scipy' or with 'pip"
-            " install ampform[scipy]'",
-            stacklevel=1,
-        )

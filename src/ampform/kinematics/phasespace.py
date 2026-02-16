@@ -42,7 +42,7 @@ class BreakupMomentum(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -117,7 +117,7 @@ class BreakupMomentumComplex(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -146,7 +146,7 @@ class BreakupMomentumSquared(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args

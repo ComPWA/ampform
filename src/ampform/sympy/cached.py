@@ -32,7 +32,7 @@ def doit(expr: SympyObject) -> SympyObject:
         expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
             :meth:`~sympy.core.basic.Basic.doit`.
 
-    .. versionadded:: 0.14.4
+    .. version-added:: 0.14.4
     .. automodule:: ampform.sympy._cache
     """
     return expr.doit()
@@ -43,7 +43,7 @@ def doit(expr: SympyObject) -> SympyObject:
 def simplify(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
     """Perform :func:`~sympy.simplify.simplify.simplify` and cache the result to disk.
 
-    .. versionadded:: 0.15.7
+    .. version-added:: 0.15.7
     """
     return sp.simplify(expr, *args, **kwargs)
 
@@ -53,7 +53,7 @@ def simplify(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
 def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
     """Perform :func:`~sympy.simplify.trigsimp.trigsimp` and cache the result to disk.
 
-    .. versionadded:: 0.15.7
+    .. version-added:: 0.15.7
     """
     return sp.trigsimp(expr, *args, **kwargs)
 

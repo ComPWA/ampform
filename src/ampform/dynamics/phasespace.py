@@ -26,7 +26,7 @@ from ampform.kinematics.phasespace import (
     Kallen,
     _get_subscript,
 )
-from ampform.sympy import UnevaluatableIntegral, argument, unevaluated
+from ampform.sympy import NumericalIntegral, argument, unevaluated
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ class PhaseSpaceFactor(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -104,7 +104,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -128,7 +128,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -147,7 +147,7 @@ class PhaseSpaceFactorKallen(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -173,7 +173,7 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -196,7 +196,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -220,7 +220,7 @@ class ChewMandelstamSWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -241,32 +241,61 @@ class ChewMandelstamSWave(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactorPWave(sp.Expr):
-    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`L=1`.
+    r"""Phase space factor using `ChewMandelstamIntegral` for :math:`\ell=1`.
 
-    This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
-    `ChewMandelstamIntegral`. As such, you have to be careful when lambdifying this
-    function and evaluating this over an array. In many cases, you want to wrap the
-    resulting lambdified numerical function with :obj:`numpy.vectorize`.
+    Parameters:
+        s: Mandelstam variable s.
+        m1: Mass of particle 1.
+        m2: Mass of particle 2.
+        meson_radius: Meson radius, default is 1 (optional).
+        s_prime: Integration variable defaults to 'x' (optional).
+        epsilon: Small imaginary part to offset from the real axis (optional).
+        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
 
-    >>> import numpy as np
-    >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
-    >>> s, m1, m2 = sp.symbols("s m_1 m_2")
-    >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
-    >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
-    >>> rho_func = np.vectorize(rho_func)
-    >>> s_values = np.linspace(0.1, 4.0, num=4)
-    >>> rho_func(s_values, 0.14, 0.98).real
-    array([-4.08315014e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
+    .. warning::
+
+        This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
+        `ChewMandelstamIntegral` (via `.NumericalIntegral`). As such, you have to be
+        careful when lambdifying this function and evaluating this over an array.
+
+        >>> import numpy as np
+        >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
+        >>> s, m1, m2 = sp.symbols("s m_1 m_2")
+        >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2, epsilon=1e-5)
+        >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
+        >>> s_values = np.linspace(0.1, 4.0, num=4)
+        >>> rho_func(s_values, 0.14, 0.98).real
+        array([-4.08315012e-07,  8.05561163e-03,  2.65015019e-01,  5.43083429e-01])
     """
 
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    meson_radius: Any = 1
+    s_prime: Any = sp.Symbol("x", real=True)
+    epsilon: Any = 1e-4
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
+    """See :attr:`.NumericalIntegral.algorithm`."""
+    configuration: dict[str, Any] | None = argument(
+        default=None, kw_only=True, sympify=False
+    )
+    """See :attr:`.NumericalIntegral.configuration`."""
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
+    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
-        chew_mandelstam = ChewMandelstamIntegral(s, m1, m2, L=1, epsilon=1e-5)
+        chew_mandelstam = ChewMandelstamIntegral(
+            s=self.s,
+            m1=self.m1,
+            m2=self.m2,
+            angular_momentum=1,
+            meson_radius=self.meson_radius,
+            epsilon=self.epsilon,
+            algorithm=self.algorithm,
+            configuration=self.configuration,
+            dummify=self.dummify,
+        )
         return -sp.I * chew_mandelstam
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
@@ -283,40 +312,52 @@ class ChewMandelstamIntegral(sp.Expr):
         s: Mandelstam variable s.
         m1: Mass of particle 1.
         m2: Mass of particle 2.
-        L: Angular momentum.
+        angular_momentum: Angular momentum.
         meson_radius: Meson radius, default is 1 (optional).
-        s_prime: Integration variable defaults to 'x'.
-        epsilon: Small imaginary part default is positive epsilon.
+        s_prime: Integration variable defaults to 'x' (optional).
+        epsilon: Small imaginary part to offset from the real axis (optional).
+        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
     """
 
     s: Any
     m1: Any
     m2: Any
-    L: Any
+    angular_momentum: Any
+    meson_radius: Any = 1
     s_prime: Any = sp.Symbol("x", real=True)
     epsilon: Any = sp.Symbol("epsilon", positive=True)
-    meson_radius: Any = 1
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
+    """See :attr:`.NumericalIntegral.algorithm`."""
+    configuration: dict[str, Any] | None = argument(
+        default=None, kw_only=True, sympify=False
+    )
+    """See :attr:`.NumericalIntegral.configuration`."""
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
+    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
+        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # noqa: N806
         ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
         s_thr = (m1 + m2) ** 2
         return sp.Mul(
             (s - s_thr) / sp.pi,
-            UnevaluatableIntegral(
+            NumericalIntegral(
                 (phsp_factor * ff_squared)
                 / (s_prime - s_thr)
                 / (s_prime - s - sp.I * epsilon),
                 (s_prime, s_thr, sp.oo),
+                algorithm=self.algorithm,
+                configuration=self.configuration,
+                dummify=self.dummify,
             ),
             evaluate=False,
         )
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        L = printer._print(self.L)  # noqa: N806
+        L = printer._print(self.angular_momentum)  # noqa: N806
         name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
         return Rf"{name}\left({s}\right)"
 
@@ -335,7 +376,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
