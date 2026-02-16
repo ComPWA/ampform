@@ -293,9 +293,9 @@ class ChewMandelstamIntegral(sp.Expr):
     m1: Any
     m2: Any
     L: Any
+    meson_radius: Any = 1
     s_prime: Any = sp.Symbol("x", real=True)
     epsilon: Any = sp.Symbol("epsilon", positive=True)
-    meson_radius: Any = 1
     name: str | None = argument(default=None, kw_only=True, sympify=False)
     algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
     """See :attr:`.NumericalIntegral.algorithm`."""
@@ -307,7 +307,7 @@ class ChewMandelstamIntegral(sp.Expr):
     """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, s_prime, epsilon, meson_radius, *_ = self.args  # noqa: N806
+        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # noqa: N806
         ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
         s_thr = (m1 + m2) ** 2
