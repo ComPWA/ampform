@@ -480,9 +480,9 @@ split-on-trailing-comma = false
     "T20",
     "TC00",
 ]
+"**/docs/usage/analyticity/integration-algorithms.ipynb" = ["RUF001"]
+"**/docs/usage/analyticity/riemann-sheets.ipynb" = ["E741", "RUF027"]
 "**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
-"**/docs/usage/dynamics/integration-algorithms.ipynb" = ["RUF001"]
-"**/docs/usage/dynamics/riemann-sheets.ipynb" = ["E741", "RUF027"]
 "**/docs/usage/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
     "D",
@@ -554,8 +554,8 @@ rules.possibly-unresolved-reference = "ignore"
 
 [[tool.ty.overrides]]
 include = [
+    "docs/usage/analyticity/phasespace-factors.ipynb",
     "docs/usage/dynamics.ipynb",
-    "docs/usage/dynamics/analytic-continuation.ipynb",
     "docs/usage/helicity/formalism.ipynb",
     "docs/usage/interactive.ipynb",
 ]

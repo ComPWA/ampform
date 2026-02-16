@@ -257,5 +257,5 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
-.. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
+.. seealso:: :doc:`/usage/analyticity/phasespace-factors`.
 """

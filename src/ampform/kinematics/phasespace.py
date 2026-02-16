@@ -26,9 +26,9 @@ class BreakupMomentum(sp.Expr):
 
     In AmpForm's standard implementation, the numerator is represented as a single
     square root. This results in :ref:`better computational performance
-    <usage/dynamics/analytic-continuation:Numerical precision and performance>`, as the
+    <usage/analyticity/phasespace-factors:Numerical precision and performance>`, as the
     expression tree has fewer computational nodes, but comes at the cost of a :ref:`more
-    complicated cut structure <usage/dynamics/analytic-continuation:Cut structure>` when
+    complicated cut structure <usage/analyticity/phasespace-factors:Cut structure>` when
     the function is continued to the complex plane. The square root itself is defined as
     the standard :func:`sympy.sqrt <sympy.functions.elementary.miscellaneous.sqrt>`.
 
@@ -61,8 +61,8 @@ class BreakupMomentumKallen(sp.Expr):
     This version of the `BreakupMomentum` represents the numerator using the `.Kallen`
     function. This is common practice in literature (e.g. :pdg-review:`2024; Resonances;
     p.7`), but results in a :ref:`more complicated cut
-    <usage/dynamics/analytic-continuation:Cut structure>` and :ref:`worse numerical
-    performance <usage/dynamics/analytic-continuation:Numerical precision and
+    <usage/analyticity/phasespace-factors:Cut structure>` and :ref:`worse numerical
+    performance <usage/analyticity/phasespace-factors:Numerical precision and
     performance>` than `BreakupMomentum`.
     """
 
@@ -85,8 +85,8 @@ class BreakupMomentumSplitSqrt(sp.Expr):
 
     This version of the `BreakupMomentum` represents the numerator as two separate
     square roots. This results in a :ref:`cleaner cut structure
-    <usage/dynamics/analytic-continuation:Cut structure>` at the cost of :ref:`slightly
-    worse numerical performance <usage/dynamics/analytic-continuation:Numerical
+    <usage/analyticity/phasespace-factors:Cut structure>` at the cost of :ref:`slightly
+    worse numerical performance <usage/analyticity/phasespace-factors:Numerical
     precision and performance>` than `BreakupMomentum`.
     """
 

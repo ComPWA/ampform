@@ -1,6 +1,6 @@
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
+.. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/analyticity/phasespace-factors`.
 """
 
 from __future__ import annotations
