@@ -78,7 +78,7 @@ class PhaseSpaceFactor(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -104,7 +104,7 @@ class PhaseSpaceFactorAbs(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -128,7 +128,7 @@ class PhaseSpaceFactorComplex(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -147,7 +147,7 @@ class PhaseSpaceFactorKallen(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -173,7 +173,7 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -196,7 +196,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -220,7 +220,7 @@ class ChewMandelstamSWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -262,7 +262,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args
@@ -296,7 +296,7 @@ class ChewMandelstamIntegral(sp.Expr):
     s_prime: Any = sp.Symbol("x", real=True)
     epsilon: Any = sp.Symbol("epsilon", positive=True)
     meson_radius: Any = 1
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
     algorithm: tuple[str, str] | None = argument(
         default=None, kw_only=True, sympify=False
     )
@@ -348,7 +348,7 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     s: Any
     m1: Any
     m2: Any
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2 = self.args

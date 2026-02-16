@@ -60,7 +60,7 @@ class EnergyDependentWidth(sp.Expr):
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
     )
-    name: str | None = argument(default=None, sympify=False)
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         m0: sp.Expr
