@@ -189,7 +189,6 @@ default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
-    "adr/template.md",
     "tests",
 ]
 extensions = [
@@ -213,7 +212,10 @@ extensions = [
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
 graphviz_output_format = "svg"
-html_css_files = ["custom.css"]
+html_css_files = [
+    "custom.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css",
+]
 html_favicon = "_static/favicon.ico"
 html_last_updated_fmt = "%-d %B %Y"
 html_logo = (

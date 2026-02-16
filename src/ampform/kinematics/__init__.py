@@ -72,7 +72,7 @@ class HelicityAdapter:
     def permutate_registered_topologies(self) -> None:
         """Register outgoing edge permutations of all `registered_topologies`.
 
-        See :ref:`usage/amplitude:Extend kinematic variables`.
+        See :ref:`amplitude:Extend kinematic variables`.
         """
         for topology in set(self.__topologies):
             final_state_ids = topology.outgoing_edge_ids

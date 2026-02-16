@@ -63,8 +63,8 @@ class PhaseSpaceFactor(sp.Expr):
 
     Similarly to `.BreakupMomentum`, this class represents the numerator as a single
     square root for better numerical performance. This comes at the cost of a :ref:`more
-    complicated cut structure <usage/dynamics/analytic-continuation:Cut structure>` when
-    the function is continued to the complex plane.
+    complicated cut structure <analyticity/phasespace-factors:Cut structure>` when the
+    function is continued to the complex plane.
 
     Alternative implementations:
 
@@ -165,9 +165,9 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
 
     This version of the `PhaseSpaceFactor` represents the numerator as two separate
     square roots. This results in a :ref:`cleaner cut structure
-    <usage/dynamics/analytic-continuation:Cut structure>` at the cost of :ref:`slightly
-    worse numerical performance <usage/dynamics/analytic-continuation:Numerical
-    precision and performance>` than `PhaseSpaceFactor`.
+    <analyticity/phasespace-factors:Cut structure>` at the cost of :ref:`slightly worse
+    numerical performance <analyticity/phasespace-factors:Numerical precision and
+    performance>` than `PhaseSpaceFactor`.
     """
 
     s: Any
@@ -366,8 +366,7 @@ class ChewMandelstamIntegral(sp.Expr):
 class EqualMassPhaseSpaceFactor(sp.Expr):
     """Analytic continuation for the `PhaseSpaceFactor`.
 
-    See :pdg-review:`2018; Resonances; p.9` and
-    :doc:`/usage/dynamics/analytic-continuation`.
+    See :pdg-review:`2018; Resonances; p.9` and :doc:`/analyticity/phasespace-factors`.
 
     **Warning**: The PDG specifically derives this formula for a two-body decay *with
     equal masses*.

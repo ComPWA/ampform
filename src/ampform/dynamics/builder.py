@@ -25,7 +25,7 @@ class TwoBodyKinematicVariableSet:
 
     This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
     build some lineshape expression from the :mod:`.dynamics` module. It also allows to
-    insert :doc:`custom dynamics </usage/dynamics/custom>` into the amplitude model.
+    insert :doc:`custom dynamics </dynamics/custom>` into the amplitude model.
     """
 
     incoming_state_mass: sp.Symbol = field(validator=instance_of(sp.Symbol))
@@ -53,7 +53,7 @@ class ResonanceDynamicsBuilder(Protocol):
     by `.DynamicsSelector.assign`. For an example, see the source code
     `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
 
-    .. seealso:: :doc:`/usage/dynamics/custom`
+    .. seealso:: :doc:`/dynamics/custom`
     """
 
     def __call__(
@@ -257,5 +257,5 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
-.. seealso:: :doc:`/usage/dynamics/analytic-continuation`.
+.. seealso:: :doc:`/analyticity/phasespace-factors`.
 """

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 class NameGenerator(ABC):
     """Name generator for amplitudes and coefficients in a `.HelicityModel`.
 
-    .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`
+    .. seealso:: :ref:`amplitude/formalism:Coefficient names`
     """
 
     @abstractmethod
@@ -439,7 +439,7 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 def get_helicity_suffix(topology: Topology, state_id: int) -> str:
     """Create an identifier suffix for a topology.
 
-    Used in :doc:`/usage/helicity/spin-alignment`. Comparable to
+    Used in :doc:`/amplitude/spin-alignment`. Comparable to
     :func:`get_boost_chain_suffix`.
     """
     superscript = get_topology_identifier(topology)

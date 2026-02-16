@@ -1,6 +1,6 @@
 r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 
-.. seealso:: :doc:`/usage/dynamics/k-matrix`.
+.. seealso:: :doc:`/dynamics/k-matrix`.
 
 This module is an implementation of :doc:`compwa-report:005/index`,
 :doc:`compwa-report:009/index`, and :doc:`compwa-report:010/index`. It works with classes to

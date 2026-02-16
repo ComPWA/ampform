@@ -156,7 +156,7 @@ class HelicityModel:
 
         Renames all `~sympy.core.symbol.Symbol` instance that appear in `expression`,
         `parameter_defaults`, `components`, and `kinematic_variables`. This method can
-        be used to :ref:`couple parameters <usage/modify:Couple parameters>`.
+        be used to :ref:`couple parameters <amplitude/modify:Couple parameters>`.
 
         Args:
             renames: A mapping from old to new names.
@@ -557,7 +557,7 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     Here, :math:`C` stands for `Clebsch–Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
 
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/amplitude/formalism`.
     """
 
     @override
@@ -585,7 +585,7 @@ class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
     spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))
-    """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
+    """Method for :doc:`aligning spin </amplitude/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
 
@@ -594,7 +594,7 @@ class BuilderConfiguration:
     `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
     with or kinematically fit to a specific initial state energy.
 
-    .. seealso:: :ref:`usage/amplitude:Scalar masses`
+    .. seealso:: :ref:`amplitude:Scalar masses`
     """
     stable_final_state_ids: set[int] | None = field(
         converter=_to_optional_set,

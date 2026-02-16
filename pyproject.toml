@@ -480,10 +480,10 @@ split-on-trailing-comma = false
     "T20",
     "TC00",
 ]
-"**/docs/usage/dynamics.ipynb" = ["FURB118", "RUF027"]
-"**/docs/usage/dynamics/integration-algorithms.ipynb" = ["RUF001"]
-"**/docs/usage/dynamics/riemann-sheets.ipynb" = ["E741", "RUF027"]
-"**/docs/usage/sympy.ipynb" = ["E731"]
+"**/docs/analyticity/integration-algorithms.ipynb" = ["RUF001"]
+"**/docs/analyticity/riemann-sheets.ipynb" = ["E741", "RUF027"]
+"**/docs/dynamics.ipynb" = ["FURB118", "RUF027"]
+"**/docs/sympy.ipynb" = ["E731"]
 "benchmarks/*" = [
     "D",
     "INP001",
@@ -554,10 +554,9 @@ rules.possibly-unresolved-reference = "ignore"
 
 [[tool.ty.overrides]]
 include = [
-    "docs/usage/dynamics.ipynb",
-    "docs/usage/dynamics/analytic-continuation.ipynb",
-    "docs/usage/helicity/formalism.ipynb",
-    "docs/usage/interactive.ipynb",
+    "docs/amplitude/formalism.ipynb",
+    "docs/amplitude/interactive.ipynb",
+    "docs/dynamics.ipynb",
 ]
 rules.unresolved-attribute = "ignore"
 
@@ -569,7 +568,7 @@ include = [
 rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]
-include = ["docs/usage/interactive.ipynb"]
+include = ["docs/amplitude/interactive.ipynb"]
 rules.too-many-positional-arguments = "ignore"
 
 [[tool.ty.overrides]]
