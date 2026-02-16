@@ -554,10 +554,10 @@ rules.possibly-unresolved-reference = "ignore"
 
 [[tool.ty.overrides]]
 include = [
+    "docs/usage/amplitude/formalism.ipynb",
+    "docs/usage/amplitude/interactive.ipynb",
     "docs/usage/analyticity/phasespace-factors.ipynb",
     "docs/usage/dynamics.ipynb",
-    "docs/usage/helicity/formalism.ipynb",
-    "docs/usage/interactive.ipynb",
 ]
 rules.unresolved-attribute = "ignore"
 
@@ -569,7 +569,7 @@ include = [
 rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]
-include = ["docs/usage/interactive.ipynb"]
+include = ["docs/usage/amplitude/interactive.ipynb"]
 rules.too-many-positional-arguments = "ignore"
 
 [[tool.ty.overrides]]

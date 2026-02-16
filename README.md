@@ -40,9 +40,9 @@ an overview of **upcoming releases and planned functionality**, see
   _mathematically expressed_ with [SymPy](https://docs.sympy.org) and can be _converted
   to any backend_ (see [TensorWaves](https://tensorwaves.rtfd.io)).
 - **Spin formalisms**
-  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/helicity/formalism.html)
+  - [Helicity formalism](https://ampform.readthedocs.io/en/stable/usage/amplitude/formalism.html)
   - Canonical formalism
-  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/helicity/spin-alignment.html)
+  - [Spin alignment](https://ampform.readthedocs.io/en/stable/usage/amplitude/spin-alignment.html)
     for generic, multi-body decays that feature different decay topologies. **See also [`ampform-dpd`](https://github.com/ComPWA/ampform-dpd)!**
 - **Dynamics**
   - [Relativistic Breit–Wigner](https://ampform.readthedocs.io/en/stable/api/ampform.dynamics.html#ampform.dynamics.relativistic_breit_wigner_with_ff),

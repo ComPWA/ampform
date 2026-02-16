@@ -51,7 +51,7 @@ helicity formalism.
 - **Use your favorite Python packages**<br> All this functionality is offered in an open
   and transparent style (see {doc}`API </api/ampform>`), so that you can navigate
   AmpForm's output and feed it to whatever other Python packages come in handy for you.
-  For instance, check out {doc}`/usage/interactive` to see how to inspect your model
+  For instance, check out {doc}`usage/amplitude/interactive` to see how to inspect your model
   with an interactive widget.
 
 The {doc}`/usage` pages illustrate how to do some of these things. You can run each of
