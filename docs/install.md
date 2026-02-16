@@ -4,12 +4,29 @@
 [![Conda package](https://anaconda.org/conda-forge/ampform/badges/version.svg)](https://anaconda.org/conda-forge/ampform)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/ampform)](https://pypi.org/project/ampform)
 
-## Quick installation
-
-The fastest way of installing this package is through PyPI or Conda:
+AmpForm is available on [PyPI](https://pypi.org/project/ampform) and [conda-forge](https://anaconda.org/conda-forge/ampform), so you can install it with your favorite package manager:
 
 ::::{tab-set}
+:sync-group: package-manager
+
+:::{tab-item} uv
+:sync: uv
+
+```shell
+uv add ampform
+```
+
+:::
+:::{tab-item} Pixi
+:sync: Pixi
+
+```shell
+pixi add ampform
+```
+
+:::
 :::{tab-item} PyPI
+:sync: PyPI
 
 ```shell
 python3 -m pip install ampform
@@ -17,6 +34,7 @@ python3 -m pip install ampform
 
 :::
 :::{tab-item} Conda
+:sync: Conda
 
 ```shell
 conda install -c conda-forge ampform
@@ -25,23 +43,77 @@ conda install -c conda-forge ampform
 :::
 ::::
 
-This installs the [latest release](https://github.com/ComPWA/ampform/releases) that you
-can find on the [`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
+This installs the [latest release](https://github.com/ComPWA/ampform/releases) that you can find on the [`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
 
-Optionally, you can install the dependencies required for
-{doc}`visualizing topologies <qrules:usage/visualize>` with the following
-{ref}`optional dependency syntax <compwa:develop:Optional dependencies>`:
+Optionally, you can install the dependencies required for {doc}`visualizing topologies <qrules:usage/visualize>` with the following {ref}`optional dependency syntax <compwa:develop:Optional dependencies>`:
+
+::::{tab-set}
+:sync-group: package-manager
+
+:::{tab-item} uv
+:sync: uv
 
 ```shell
-pip install ampform[viz]  # installs ampform with graphviz
+uv add 'ampform[viz]'
 ```
 
-The latest version on the [`main`](https://github.com/ComPWA/ampform/tree/main) branch
-can be installed as follows:
+:::
+:::{tab-item} Pixi
+:sync: Pixi
+
+```shell
+pixi add ampform graphviz python-graphviz
+```
+
+:::
+:::{tab-item} PyPI
+:sync: PyPI
+
+```shell
+pip install 'ampform[viz]'
+```
+
+:::
+:::{tab-item} Conda
+:sync: Conda
+
+```shell
+conda install -c conda-forge ampform graphviz python-graphviz
+```
+
+:::
+::::
+
+The latest version on the [`main`](https://github.com/ComPWA/ampform/tree/main) branch can be installed as follows:
+
+::::{tab-set}
+:sync-group: package-manager
+
+:::{tab-item} uv
+:sync: uv
+
+```shell
+uv add git+https://github.com/ComPWA/ampform --branch main
+```
+
+:::
+:::{tab-item} Pixi
+:sync: Pixi
+
+```shell
+pixi add ampform --git https://github.com/ComPWA/ampform --branch main
+```
+
+:::
+:::{tab-item} PyPI
+:sync: PyPI
 
 ```shell
 python3 -m pip install git+https://github.com/ComPWA/ampform@main
 ```
+
+:::
+::::
 
 ## Developer installation
 
