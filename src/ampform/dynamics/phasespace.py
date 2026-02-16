@@ -243,6 +243,15 @@ class ChewMandelstamSWave(sp.Expr):
 class PhaseSpaceFactorPWave(sp.Expr):
     r"""Phase space factor using `ChewMandelstamIntegral` for :math:`\ell=1`.
 
+    Parameters:
+        s: Mandelstam variable s.
+        m1: Mass of particle 1.
+        m2: Mass of particle 2.
+        meson_radius: Meson radius, default is 1 (optional).
+        s_prime: Integration variable defaults to 'x' (optional).
+        epsilon: Small imaginary part to offset from the real axis (optional).
+        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
+
     .. warning::
 
         This `PhaseSpaceFactor` uses the numerical dispersion integral implemented in
@@ -252,7 +261,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
         >>> import numpy as np
         >>> from ampform.dynamics.phasespace import PhaseSpaceFactorPWave
         >>> s, m1, m2 = sp.symbols("s m_1 m_2")
-        >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2)
+        >>> rho_expr = PhaseSpaceFactorPWave(s, m1, m2, epsilon=1e-5)
         >>> rho_func = sp.lambdify((s, m1, m2), rho_expr.doit())
         >>> s_values = np.linspace(0.1, 4.0, num=4)
         >>> rho_func(s_values, 0.14, 0.98).real
@@ -262,12 +271,30 @@ class PhaseSpaceFactorPWave(sp.Expr):
     s: Any
     m1: Any
     m2: Any
+    meson_radius: Any = 1
+    s_prime: Any = sp.Symbol("x", real=True)
+    epsilon: Any = 1e-4
     name: str | None = argument(default=None, kw_only=True, sympify=False)
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
+    """See :attr:`.NumericalIntegral.algorithm`."""
+    configuration: dict[str, Any] | None = argument(
+        default=None, kw_only=True, sympify=False
+    )
+    """See :attr:`.NumericalIntegral.configuration`."""
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
+    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2 = self.args
         chew_mandelstam = ChewMandelstamIntegral(
-            s, m1, m2, angular_momentum=1, epsilon=1e-5
+            s=self.s,
+            m1=self.m1,
+            m2=self.m2,
+            angular_momentum=1,
+            meson_radius=self.meson_radius,
+            epsilon=self.epsilon,
+            algorithm=self.algorithm,
+            configuration=self.configuration,
+            dummify=self.dummify,
         )
         return -sp.I * chew_mandelstam
 
@@ -287,8 +314,9 @@ class ChewMandelstamIntegral(sp.Expr):
         m2: Mass of particle 2.
         angular_momentum: Angular momentum.
         meson_radius: Meson radius, default is 1 (optional).
-        s_prime: Integration variable defaults to 'x'.
-        epsilon: Small imaginary part default is positive epsilon.
+        s_prime: Integration variable defaults to 'x' (optional).
+        epsilon: Small imaginary part to offset from the real axis (optional).
+        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
     """
 
     s: Any
