@@ -40,7 +40,7 @@ class TestNumericalIntegral:
         assert integral_expr.configuration == configuration
         assert integral_expr.dummify is dummify
         func = sp.lambdify([], integral_expr, backend)
-        assert func() == 26 / 3  # noqa: RUF069
+        assert func() == 26 / 3
 
     @pytest.mark.parametrize(
         ("p_value", "expected"),

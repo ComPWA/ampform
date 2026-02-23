@@ -6,6 +6,7 @@ ci:
     - ty
     - uv-lock
 
+  autoupdate_schedule: quarterly
 repos:
   - repo: meta
     hooks:
@@ -146,7 +147,6 @@ repos:
         name: ty
         entry: ty check
         args: [--no-progress, --output-format=concise]
-        pass_filenames: false
         require_serial: true
         language: system
         types_or: [python, pyi, jupyter]
