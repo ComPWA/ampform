@@ -333,7 +333,7 @@ def rename_symbols(
     free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     if callable(renames):
         for old_symbol in free_symbols:
-            new_name = renames(old_symbol.name)
+            new_name = renames(old_symbol.name)  # ty:ignore[call-top-callable]
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     elif isinstance(renames, dict):
