@@ -117,7 +117,7 @@ class RelativisticBreitWignerBuilder:
         phsp_factor: PhaseSpaceFactorProtocol | None = None,
     ) -> None:
         if phsp_factor is None:
-            phsp_factor = PhaseSpaceFactor
+            phsp_factor = PhaseSpaceFactor  # ty:ignore[invalid-assignment]
         self.phsp_factor = phsp_factor
         self.energy_dependent_width = energy_dependent_width
         self.form_factor = form_factor
@@ -211,7 +211,7 @@ class RelativisticBreitWignerBuilder:
             angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
         )
-        parameter_defaults = {
+        parameter_defaults: dict[sp.Symbol, float | int] = {
             meson_radius: 1,
         }
         return form_factor, parameter_defaults

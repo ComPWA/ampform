@@ -59,7 +59,7 @@ class EnergyDependentWidth(sp.Expr):
     meson_radius: Any
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
-    )
+    )  # ty:ignore[invalid-assignment]
     name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
@@ -93,7 +93,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty:ignore[invalid-parameter-default]
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 

@@ -53,9 +53,9 @@ def test_implement_new_method():
     with pytest.raises(
         ValueError, match=r"^Expecting 3 positional arguments \(a, b, c\), but got 4$"
     ):
-        MyExpr(1, 2, 3, 4)  # ty:ignore[too-many-positional-arguments]
+        MyExpr(1, 2, 3, 4)
     with pytest.raises(ValueError, match=r"^Missing constructor arguments: c$"):
-        MyExpr(1, 2)  # ty:ignore[missing-argument]
+        MyExpr(1, 2)
     expr = MyExpr(1, 2, 3)
     assert expr.args == (1, 2, 3)
     expr = MyExpr(1, b=2, c=3)
