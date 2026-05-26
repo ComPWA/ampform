@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
+from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
@@ -415,14 +416,14 @@ class NumericalIntegral(sp.Integral):
 
     @override
     def _jaxcode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        algorithm = self.algorithm or "quadax.romberg"
+        algorithm = self.algorithm or _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
         return self.__to_scipy_like(printer, algorithm)
 
     @override
     def _numpycode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        algorithm = self.algorithm or "scipy.integrate.quad_vec"
+        algorithm = _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
         return self.__to_scipy_like(printer, algorithm)
@@ -475,6 +476,17 @@ class NumericalIntegral(sp.Integral):
             printer._print(a),
             printer._print(b),
         )
+
+
+def _get_algorithm(algorithm: str, printer: Printer) -> str:
+    if algorithm is not None:
+        return algorithm
+    if isinstance(printer, JaxPrinter) or getattr(printer, "_module", None) in {
+        "jax",
+        "jnp",
+    }:
+        return "quadax.romberg"
+    return "scipy.integrate.quad_vec"
 
 
 def _generate_function_call(func_name: str, /, *args, **kwargs) -> str:

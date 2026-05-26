@@ -1,8 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import sympy as sp
+from sympy.printing.numpy import JaxPrinter, NumPyPrinter
 
-from ampform.sympy import NumericalIntegral
+from ampform.sympy import NumericalIntegral, _get_algorithm
+
+if TYPE_CHECKING:
+    from sympy.printing.printer import Printer
 
 
 class TestNumericalIntegral:
@@ -59,3 +67,25 @@ class TestNumericalIntegral:
         integral_expr = NumericalIntegral(x**p, (x, 1, 3))
         func = sp.lambdify(args=[p], expr=integral_expr)
         assert pytest.approx(func(p=p_value)) == expected
+
+
+class CustomNumPyPrinter(NumPyPrinter):
+    _module = "custom"
+
+
+class CustomJaxPrinter(NumPyPrinter):
+    _module = "jax"
+
+
+@pytest.mark.parametrize(
+    ("printer", "algorithm", "expected"),
+    [
+        (NumPyPrinter(), None, "scipy.integrate.quad_vec"),
+        (NumPyPrinter(), "quadax.romberg", "quadax.romberg"),
+        (CustomNumPyPrinter(), None, "scipy.integrate.quad_vec"),
+        (JaxPrinter(), None, "quadax.romberg"),
+        (CustomJaxPrinter(), None, "quadax.romberg"),
+    ],
+)
+def test_get_algorithm(printer: Printer, algorithm: str, expected: str):
+    assert _get_algorithm(algorithm, printer) == expected
