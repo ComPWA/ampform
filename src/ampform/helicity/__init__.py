@@ -607,7 +607,7 @@ class BuilderConfiguration:
     `~.HelicityModel.kinematic_variables` (which are expressions to compute an event-
     wise array of invariant masses). This is useful if final state particles are stable.
     """
-    use_helicity_couplings: bool = field(validator=instance_of(bool))
+    use_helicity_couplings: bool = field(validator=instance_of(bool))  # ty:ignore[dataclass-field-order]
     """Use helicity couplings instead of amplitude coefficients.
 
     Helicity couplings are a measure for the strength of each partial two-body decay.

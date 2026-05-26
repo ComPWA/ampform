@@ -173,8 +173,8 @@ class PoolSum(sp.Expr):
         args = sp.sympify((expression, *converted_indices))
         expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()
-        return expr
+            return expr.evaluate()  # ty:ignore[invalid-return-type]
+        return expr  # ty:ignore[invalid-return-type]
 
     @property
     def expression(self) -> sp.Expr:
