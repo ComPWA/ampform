@@ -165,49 +165,10 @@ isolated = true
 no-group = "dev"
 type = "uv"
 
-[tool.poe.tasks.all]
-help = "Run all continuous integration (CI) tasks locally"
-ignore_fail = "return_non_zero"
-sequence = [
-    "benchmark",
-    "cov",
-    "docnb-force",
-    "linkcheck",
-    "style",
-    "test-all",
-]
+[tool.poe.groups.doc]
+heading = "Documentation"
 
-[tool.poe.tasks.benchmark]
-cmd = """
-pytest benchmarks \
-    --benchmark-autosave \
-    --benchmark-json benchmarks/output.json \
-    --durations=0 \
-    -k benchmark
-"""
-executor = {group = "test"}
-help = "Run benchmark tests and visualize performance"
-
-[tool.poe.tasks.cov]
-cmd = """
-pytest \
-    --cov=ampform \
-    --cov-fail-under=75 \
-    --cov-report=html \
-    --cov-report=xml \
-    --numprocesses=auto \
-    ${paths}
-"""
-executor = {group = "test"}
-help = "Compute how much of the source code is covered by tests"
-
-[[tool.poe.tasks.cov.args]]
-default = "src tests"
-multiple = true
-name = "paths"
-positional = true
-
-[tool.poe.tasks.doc]
+[tool.poe.groups.doc.tasks.doc]
 cmd = """
 sphinx-build \
     --builder=html \
@@ -221,7 +182,7 @@ env = {PYTHONWARNINGS = ""}
 executor = {group = "doc"}
 help = "Build documentation and API"
 
-[tool.poe.tasks.doclive]
+[tool.poe.groups.doc.tasks.doclive]
 cmd = """
 sphinx-autobuild \
     --builder=html \
@@ -249,28 +210,17 @@ sphinx-autobuild \
 executor = {group = "doc", with = "sphinx-autobuild"}
 help = "Set up a server to directly preview changes to the HTML pages"
 
-[tool.poe.tasks.docnb]
+[tool.poe.groups.doc.tasks.docnb]
 env = {EXECUTE_NB = "yes"}
 help = "Build documentation and API with cached notebook execution"
 sequence = ["doc"]
 
-[tool.poe.tasks.docnb-force]
-env = {FORCE_EXECUTE_NB = "yes"}
-help = "Build documentation and API with notebook execution (no cache)"
-sequence = ["doc"]
-
-[tool.poe.tasks.docnblive]
+[tool.poe.groups.doc.tasks.docnblive]
 env = {EXECUTE_NB = "yes"}
 help = "Set up a server to directly preview changes to the HTML pages with cached notebook execution"
 sequence = ["doclive"]
 
-[tool.poe.tasks.lab]
-args = [{name = "paths", default = "", positional = true}]
-cmd = "jupyter lab ${paths}"
-executor = {group = ["jupyter", "notebooks"]}
-help = "Launch Jupyter Lab"
-
-[tool.poe.tasks.linkcheck]
+[tool.poe.groups.doc.tasks.linkcheck]
 cmd = """
 sphinx-build \
     --builder=linkcheck \
@@ -283,29 +233,60 @@ env = {PYTHONWARNINGS = ""}
 executor = {group = "doc"}
 help = "Check external links in the documentation (requires internet connection)"
 
-[tool.poe.tasks.nb]
+[tool.poe.groups.notebook]
+heading = "Notebooks"
+
+[tool.poe.groups.notebook.tasks.lab]
+args = [{name = "paths", default = "", positional = true}]
+cmd = "jupyter lab ${paths}"
+executor = {group = ["jupyter", "notebooks"]}
+help = "Launch Jupyter Lab"
+
+[tool.poe.groups.notebook.tasks.nb]
 args = [{name = "paths", default = "docs", multiple = true, positional = true}]
 cmd = "pytest --nbmake --nbmake-timeout=0 ${paths}"
 executor = {group = "notebooks", with = "nbmake"}
 help = "Run all notebooks"
 
-[tool.poe.tasks.style]
-cmd = "pre-commit run --all-files"
-executor = {extra = "scipy", group = "style"}
-help = "Perform all linting, formatting, and spelling checks"
+[tool.poe.groups.test]
+heading = "Testing"
 
-[tool.poe.tasks.test]
-cmd = "pytest -m 'slow or not slow' --numprocesses=auto ${paths}"
+[tool.poe.groups.test.tasks.cov]
+cmd = """
+pytest \
+    --cov=ampform \
+    --cov-fail-under=75 \
+    --cov-report=html \
+    --cov-report=xml \
+    --numprocesses=auto \
+    ${paths}
+"""
 executor = {group = "test"}
-help = "Run all unit tests"
+help = "Compute how much of the source code is covered by tests"
 
-[[tool.poe.tasks.test.args]]
+[[tool.poe.groups.test.tasks.cov.args]]
 default = "src tests"
 multiple = true
 name = "paths"
 positional = true
 
-[tool.poe.tasks.test-all]
+[tool.poe.groups.test.tasks.docnb-force]
+env = {FORCE_EXECUTE_NB = "yes"}
+help = "Build documentation and API with notebook execution (no cache)"
+sequence = ["doc"]
+
+[tool.poe.groups.test.tasks.test]
+cmd = "pytest -m 'slow or not slow' --numprocesses=auto ${paths}"
+executor = {group = "test"}
+help = "Run all unit tests"
+
+[[tool.poe.groups.test.tasks.test.args]]
+default = "src tests"
+multiple = true
+name = "paths"
+positional = true
+
+[tool.poe.groups.test.tasks.test-all]
 help = "Run all tests on each supported Python version"
 sequence = [
     {ref = "test-py310 ${paths}"},
@@ -315,31 +296,67 @@ sequence = [
     {ref = "test-py314 ${paths}"},
 ]
 
-[[tool.poe.tasks.test-all.args]]
+[[tool.poe.groups.test.tasks.test-all.args]]
 default = ""
 multiple = true
 name = "paths"
 positional = true
 
-[tool.poe.tasks.test-py310]
+[tool.poe.groups.test.tasks.test-py310]
 env = {UV_PYTHON = "3.10"}
 ref = "test"
 
-[tool.poe.tasks.test-py311]
+[tool.poe.groups.test.tasks.test-py311]
 env = {UV_PYTHON = "3.11"}
 ref = "test"
 
-[tool.poe.tasks.test-py312]
+[tool.poe.groups.test.tasks.test-py312]
 env = {UV_PYTHON = "3.12"}
 ref = "test"
 
-[tool.poe.tasks.test-py313]
+[tool.poe.groups.test.tasks.test-py313]
 env = {UV_PYTHON = "3.13"}
 ref = "test"
 
-[tool.poe.tasks.test-py314]
+[tool.poe.groups.test.tasks.test-py314]
 env = {UV_PYTHON = "3.14"}
 ref = "test"
+
+[tool.poe.tasks.all]
+help = "Run all continuous integration (CI) tasks locally"
+ignore_fail = "return_non_zero"
+sequence = [
+    "benchmark",
+    "cov",
+    "docnb-force",
+    "linkcheck",
+    "style",
+    "test-all",
+]
+
+[tool.poe.tasks.benchmark]
+cmd = """
+pytest benchmarks \
+    --benchmark-autosave \
+    --benchmark-json benchmarks/output.json \
+    --durations=0 \
+    -k benchmark
+"""
+executor = {group = "test"}
+help = "Run benchmark tests and visualize performance"
+
+[tool.poe.tasks.style]
+cmd = "pre-commit run --all-files"
+executor = {extra = "scipy", group = "style"}
+help = "Perform all linting, formatting, and spelling checks"
+
+[tool.poe.tasks.upgrade]
+executor = {type = "simple"}
+help = "Upgrade lock files"
+parallel = [
+    {cmd = "pre-commit autoupdate -j8"},
+    {cmd = "uv lock --upgrade"},
+]
 
 [tool.pytest]
 addopts = [
