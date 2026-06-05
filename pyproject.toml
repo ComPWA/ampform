@@ -591,6 +591,10 @@ include = ["docs/amplitude/interactive.ipynb"]
 rules.too-many-positional-arguments = "ignore"
 
 [[tool.ty.overrides]]
+include = ["docs/dynamics.ipynb"]
+rules.index-out-of-bounds = "ignore"
+
+[[tool.ty.overrides]]
 include = ["tests/external/test_sympy.py"]
 rules.call-non-callable = "ignore"
 
