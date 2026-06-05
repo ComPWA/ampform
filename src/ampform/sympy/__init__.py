@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
+from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
 from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
 
@@ -42,6 +43,8 @@ else:
     from typing_extensions import override
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from sympy.printing.printer import Printer
 
     if sys.version_info >= (3, 11):
         from typing import Self
@@ -170,8 +173,8 @@ class PoolSum(sp.Expr):
         args = sp.sympify((expression, *converted_indices))
         expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()
-        return expr
+            return expr.evaluate()  # ty:ignore[invalid-return-type]
+        return expr  # ty:ignore[invalid-return-type]
 
     @property
     def expression(self) -> sp.Expr:
@@ -384,14 +387,14 @@ class NumericalIntegral(sp.Integral):
     :func:`scipy.integrate.quad_vec` when lambdifying to NumPy.
     """
     configuration: dict[str, Any] | None = argument(
-        default=None, sympify=False, kw_only=True
+        default=None, kw_only=True, sympify=False
     )
     """Keyword arguments for the numerical integration algorithm.
 
     For example, for :func:`scipy.integrate.quad_vec`, one can set the relative
     tolerance with :code:`configuration={'epsrel': 1e-5}`.
     """
-    dummify: bool = argument(default=True, sympify=False, kw_only=True)
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
     """Replace the integration variable with a dummy symbol before lambdification.
 
     The integrand expression is lambdified to a :code:`lambda` function. Therefore, when
@@ -412,20 +415,20 @@ class NumericalIntegral(sp.Integral):
         return self.func(*args, **kwargs)
 
     @override
-    def _jaxcode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        algorithm = self.algorithm or "quadax.romberg"
+    def _jaxcode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
+        algorithm = self.algorithm or _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
         return self.__to_scipy_like(printer, algorithm)
 
     @override
-    def _numpycode(self, printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
-        algorithm = self.algorithm or "scipy.integrate.quad_vec"
+    def _numpycode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
+        algorithm = _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
         return self.__to_scipy_like(printer, algorithm)
 
-    def __to_quadax_like(self, printer, algorithm: str) -> str:
+    def __to_quadax_like(self, printer: Printer, algorithm: str) -> str:
         """https://quadax.readthedocs.io."""
         integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
         src = _generate_function_call(
@@ -436,7 +439,7 @@ class NumericalIntegral(sp.Integral):
         )
         return f"{src}[0]"
 
-    def __to_scipy_like(self, printer, algorithm: str) -> str:
+    def __to_scipy_like(self, printer: Printer, algorithm: str) -> str:
         """https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html."""
         integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
         kwargs = self.configuration or {}
@@ -446,7 +449,7 @@ class NumericalIntegral(sp.Integral):
         return f"{src}[0]"
 
     def __prepare_components(
-        self, printer, algorithm: str
+        self, printer: Printer, algorithm: str
     ) -> tuple[str, str, str, str, str]:
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
@@ -473,6 +476,17 @@ class NumericalIntegral(sp.Integral):
             printer._print(a),
             printer._print(b),
         )
+
+
+def _get_algorithm(algorithm: str, printer: Printer) -> str:
+    if algorithm is not None:
+        return algorithm
+    if isinstance(printer, JaxPrinter) or getattr(printer, "_module", None) in {
+        "jax",
+        "jnp",
+    }:
+        return "quadax.romberg"
+    return "scipy.integrate.quad_vec"
 
 
 def _generate_function_call(func_name: str, /, *args, **kwargs) -> str:

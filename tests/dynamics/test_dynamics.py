@@ -103,14 +103,11 @@ def test_generate(
     total_intensity = total_intensity.subs(model.parameter_defaults)
     assert len(total_intensity.free_symbols) == 5
 
-    angle_value = 0
-    free_symbols: set[sp.Symbol] = total_intensity.free_symbols
-    angle_substitutions = {
-        s: angle_value
-        for s in free_symbols
-        if s.name.startswith("phi") or s.name.startswith("theta")
+    angle_symbols = {
+        s for s in total_intensity.free_symbols if str(s).startswith(("phi", "theta"))
     }
-    total_intensity = total_intensity.subs(angle_substitutions)
+    angle_substitutions = dict.fromkeys(angle_symbols, 0)
+    total_intensity = total_intensity.subs(angle_substitutions)  # ty:ignore[no-matching-overload]
     assert len(total_intensity.free_symbols) == 3
 
     pi0 = particle_database["pi0"]
