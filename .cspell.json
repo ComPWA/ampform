@@ -23,6 +23,7 @@
     "**/*.bib",
     "**/.cspell.json",
     "*.ico",
+    ".claude/*",
     ".editorconfig",
     ".envrc",
     ".github/dependabot.yml",
@@ -32,6 +33,7 @@
     ".readthedocs.yml",
     ".vscode/*",
     "CITATION.cff",
+    "CLAUDE.md",
     "codecov.yml",
     "docs/conf.py",
     "pyproject.toml"
