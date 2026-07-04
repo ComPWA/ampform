@@ -52,8 +52,8 @@ def sections_with_content(body: str) -> set[str]:
 
 
 def gh(*args: str) -> str:
-    result = subprocess.run(  # noqa: S603
-        ["gh", *args],  # noqa: S607
+    result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        ["gh", *args],  # ruff: ignore[start-process-with-partial-path]
         capture_output=True,
         text=True,
         check=True,
