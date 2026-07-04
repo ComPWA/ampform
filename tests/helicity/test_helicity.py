@@ -100,7 +100,7 @@ class TestHelicityAmplitudeBuilder:
     def test_stable_final_state_ids(self, reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.config.stable_final_state_ids is None
-        builder.config.stable_final_state_ids = (1, 2)  # ty:ignore[invalid-assignment]
+        builder.config.stable_final_state_ids = (1, 2)
         assert builder.config.stable_final_state_ids == {1, 2}
 
     def test_scalar_initial_state(self, reaction: ReactionInfo):

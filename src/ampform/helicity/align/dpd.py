@@ -116,7 +116,7 @@ if get_qrules_version() < (0, 10):
     T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)  # ty:ignore[possibly-unresolved-reference]
     """Allowed types for :func:`relabel_edge_ids`."""
 else:
-    T = TypeVar("T", ReactionInfo, StateTransition, Topology)
+    T = TypeVar("T", ReactionInfo, StateTransition, Topology)  # ty:ignore[invalid-legacy-type-variable]
     """Allowed types for :func:`relabel_edge_ids`."""
 
 
