@@ -1,0 +1,14 @@
+particles:
+  - name: Lambda(2000)
+    latex: \Lambda(2000)
+    mass: 2.0
+    width: 0.21
+    pid: 11111111
+    spin: 0.5
+    parity:
+      value: -1
+    strangeness: -1
+    baryon_number: +1
+    isospin:
+      magnitude: 0
+      projection: 0
