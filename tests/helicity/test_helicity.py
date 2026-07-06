@@ -8,6 +8,7 @@ import qrules
 import sympy as sp
 from qrules import ReactionInfo
 
+import ampform.decay
 from ampform import get_builder
 from ampform.dynamics.builder import (
     RelativisticBreitWignerBuilder,
@@ -363,6 +364,21 @@ def test_group_by_spin_projection(reaction: ReactionInfo):
         for transition in transition_iter:
             assert transition.initial_states == first_transition.initial_states
             assert transition.final_states == first_transition.final_states
+
+
+def test_dynamics_assign_with_ampform_particle(d_to_pi_pi_pi: ReactionInfo):
+    builder = HelicityAmplitudeBuilder(d_to_pi_pi_pi)
+    rho = ampform.decay.Particle(
+        name="rho(770)0",
+        latex=R"\rho(770)^{0}",
+        spin=1,
+        parity=-1,
+        mass=0.775,
+        width=0.148,
+    )
+    bw_builder = RelativisticBreitWignerBuilder()
+    builder.dynamics.assign(rho, bw_builder)
+    assert bw_builder in set(builder.dynamics.values())
 
 
 def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):

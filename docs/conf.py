@@ -104,7 +104,6 @@ api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "ampform.helicity._T": "typing.TypeVar",
     "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
-    "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
     "EdgeType": "typing.TypeVar",

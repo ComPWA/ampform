@@ -24,6 +24,7 @@ from attrs.validators import deep_iterable, instance_of, optional
 from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
+import ampform.decay
 from ampform.adapter.transition import (
     TwoBodyDecay,
     get_prefactor,
@@ -358,7 +359,9 @@ class HelicityAmplitudeBuilder:
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
-        kinematic_variables = self.adapter.create_expressions()
+        kinematic_variables: dict[sp.Basic, sp.Expr] = dict(
+            self.adapter.create_expressions().items()
+        )
         if self.config.stable_final_state_ids is not None:
             for state_id in self.config.stable_final_state_ids:
                 mass_symbol = sp.Symbol(f"m_{state_id}", nonnegative=True)
@@ -402,7 +405,8 @@ class HelicityAmplitudeBuilder:
                 kinematic_variables[mass_symbol] = InvariantMass(momentum)
             angle_expr = angle_expr.xreplace(kinematic_variables)
             alignment_symbols[angle_symbol] = angle_expr
-        kinematic_variables.update(alignment_symbols)
+        kinematic_variables.update(alignment_symbols.items())
+        kinematic_variables.update(self.__ingredients.kinematic_variables)
 
         return HelicityModel(
             intensity=main_intensity,
@@ -486,19 +490,20 @@ class HelicityAmplitudeBuilder:
 
         builder = self.dynamics[decay]
         variable_set = _generate_kinematic_variable_set(transition, node_id)
-        expression, parameters = builder(decay.parent.particle, variable_set)
-        for par, value in parameters.items():
+        dynamics = builder(decay.parent.particle, variable_set)
+        for par, value in dynamics.parameters.items():
             if par in self.__ingredients.parameter_defaults:
                 previous_value = self.__ingredients.parameter_defaults[par]
                 if value != previous_value:
                     _LOGGER.warning(
-                        f'New default value {value} for parameter "{par.name}"'
+                        f'New default value {value} for parameter "{par}"'
                         " is inconsistent with existing value"
                         f" {previous_value}"
                     )
             self.__ingredients.parameter_defaults[par] = value
+        self.__ingredients.kinematic_variables.update(dynamics.subexpressions)
 
-        return expression
+        return dynamics.expression
 
     def __generate_amplitude_coefficient(
         self, transition: StateTransition
@@ -587,7 +592,7 @@ class BuilderConfiguration:
     spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))
     """Method for :doc:`aligning spin </amplitude/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
-    r"""Add initial state mass as scalar value to `.parameter_defaults`.
+    r"""Add initial state mass as scalar value to `.HelicityModel.parameter_defaults`.
 
     Put the invariant of the initial state (:math:`m_{012\dots}`) under
     `.HelicityModel.parameter_defaults` (with a *scalar* suggested value) instead of
@@ -635,7 +640,7 @@ class DynamicsSelector(abc.Mapping):
         Currently, the following types of selections are implements:
 
         - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
-          `~qrules.particle.Particle`.
+          particle (`ampform.decay.Particle` or `qrules.particle.Particle`).
         - `.TwoBodyDecay` or `tuple` of a `~qrules.topology.Transition` with a
           node ID: set dynamics for one specific transition node.
         """
@@ -670,6 +675,12 @@ class DynamicsSelector(abc.Mapping):
 
     @assign.register(Particle)
     def _(self, particle: Particle, builder: ResonanceDynamicsBuilder) -> None:
+        return self.assign(particle.name, builder)
+
+    @assign.register(ampform.decay.Particle)
+    def _(
+        self, particle: ampform.decay.Particle, builder: ResonanceDynamicsBuilder
+    ) -> None:
         return self.assign(particle.name, builder)
 
     def __getitem__(

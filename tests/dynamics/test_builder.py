@@ -2,6 +2,8 @@ import pytest
 import sympy as sp
 from qrules.particle import Particle
 
+import ampform.decay
+from ampform.decay import ParticleLike
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import (
     RelativisticBreitWignerBuilder,
@@ -11,8 +13,17 @@ from ampform.dynamics.form_factor import FormFactor
 
 
 class TestRelativisticBreitWignerBuilder:
-    @pytest.fixture(scope="session")
-    def particle(self) -> Particle:
+    @pytest.fixture(scope="session", params=["ampform", "qrules"])
+    def particle(self, request: pytest.FixtureRequest) -> ParticleLike:
+        if request.param == "ampform":
+            return ampform.decay.Particle(
+                name="N",
+                latex="N",
+                spin=1.5,
+                parity=None,
+                mass=1.3,
+                width=0.2,
+            )
         return Particle(
             name="N",
             mass=1.3,
@@ -33,42 +44,42 @@ class TestRelativisticBreitWignerBuilder:
         )
 
     def test_simple_breit_wigner(
-        self, particle: Particle, variable_set: TwoBodyKinematicVariableSet
+        self, particle: ParticleLike, variable_set: TwoBodyKinematicVariableSet
     ):
         builder = RelativisticBreitWignerBuilder()
         builder.energy_dependent_width = False
         builder.form_factor = False
 
-        bw, parameters = builder(particle, variable_set)
+        bw = builder(particle, variable_set)
         s = variable_set.incoming_state_mass**2
         m0 = sp.Symbol("m_{N}", nonnegative=True)
         w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
-        assert bw == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)
-        assert set(parameters) == {m0, w0}
-        assert parameters[m0] == particle.mass
-        assert parameters[w0] == particle.width
+        assert bw.expression == w0 * m0 / (-sp.I * w0 * m0 - s + m0**2)
+        assert set(bw.parameters) == {m0, w0}
+        assert bw.parameters[m0] == particle.mass
+        assert bw.parameters[w0] == particle.width
 
         builder.form_factor = True
-        bw_with_ff, parameters = builder(particle, variable_set)
+        bw_with_ff = builder(particle, variable_set)
         m1 = variable_set.outgoing_state_mass1
         m2 = variable_set.outgoing_state_mass2
         L = variable_set.angular_momentum
         d = sp.Symbol(R"d_{N}", positive=True)
         form_factor = FormFactor(s, m1, m2, angular_momentum=L, meson_radius=d)
-        assert bw_with_ff / bw == form_factor
-        assert set(parameters) == {m0, w0, d}
-        assert parameters[m0] == particle.mass
-        assert parameters[w0] == particle.width
-        assert parameters[d] == 1
+        assert bw_with_ff.expression / bw.expression == form_factor
+        assert set(bw_with_ff.parameters) == {m0, w0, d}
+        assert bw_with_ff.parameters[m0] == particle.mass
+        assert bw_with_ff.parameters[w0] == particle.width
+        assert bw_with_ff.parameters[d] == 1
 
     def test_breit_wigner_with_energy_dependent_width(
-        self, particle: Particle, variable_set: TwoBodyKinematicVariableSet
+        self, particle: ParticleLike, variable_set: TwoBodyKinematicVariableSet
     ):
         builder = RelativisticBreitWignerBuilder()
         builder.energy_dependent_width = True
         builder.form_factor = False
 
-        bw, parameters = builder(particle, variable_set)
+        bw = builder(particle, variable_set)
         s = variable_set.incoming_state_mass**2
         m0 = sp.Symbol("m_{N}", nonnegative=True)
         w0 = sp.Symbol(R"\Gamma_{N}", nonnegative=True)
@@ -79,18 +90,18 @@ class TestRelativisticBreitWignerBuilder:
         w = EnergyDependentWidth(
             s, m0, w0, m_a=m1, m_b=m2, angular_momentum=ang_mom, meson_radius=d
         )
-        assert bw == w0 * m0 / (-sp.I * w * m0 - s + m0**2)
-        assert set(parameters) == {m0, w0, d}
-        assert parameters[m0] == particle.mass
-        assert parameters[w0] == particle.width
-        assert parameters[d] == 1
+        assert bw.expression == w0 * m0 / (-sp.I * w * m0 - s + m0**2)
+        assert set(bw.parameters) == {m0, w0, d}
+        assert bw.parameters[m0] == particle.mass
+        assert bw.parameters[w0] == particle.width
+        assert bw.parameters[d] == 1
 
         builder.form_factor = True
-        bw_with_ff, parameters = builder(particle, variable_set)
+        bw_with_ff = builder(particle, variable_set)
         ang_mom = variable_set.angular_momentum
         form_factor = FormFactor(s, m1, m2, angular_momentum=ang_mom, meson_radius=d)
-        assert bw_with_ff / bw == form_factor
-        assert set(parameters) == {m0, w0, d}
-        assert parameters[m0] == particle.mass
-        assert parameters[w0] == particle.width
-        assert parameters[d] == 1
+        assert bw_with_ff.expression / bw.expression == form_factor
+        assert set(bw_with_ff.parameters) == {m0, w0, d}
+        assert bw_with_ff.parameters[m0] == particle.mass
+        assert bw_with_ff.parameters[w0] == particle.width
+        assert bw_with_ff.parameters[d] == 1
