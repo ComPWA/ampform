@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+import operator
+from functools import wraps
+from typing import TYPE_CHECKING, Any, Protocol
 
 import sympy as sp
-from attrs import field, frozen
+from attrs import define, field, frozen
 from attrs.validators import instance_of
 
 from ampform.dynamics import BreitWigner, FormFactor, SimpleBreitWigner
@@ -16,7 +18,9 @@ from ampform.dynamics.phasespace import (
 )
 
 if TYPE_CHECKING:
-    from qrules.particle import Particle
+    from collections.abc import Callable
+
+    from ampform.decay import ParticleLike
 
 
 @frozen
@@ -24,7 +28,7 @@ class TwoBodyKinematicVariableSet:
     """Data container for the essential variables of a two-body decay.
 
     This data container is inserted into a `.ResonanceDynamicsBuilder`, so that it can
-    build some lineshape expression from the :mod:`.dynamics` module. It also allows to
+    build some lineshape expression from the :mod:`ampform.dynamics` module. It also allows to
     insert :doc:`custom dynamics </dynamics/custom>` into the amplitude model.
     """
 
@@ -36,14 +40,51 @@ class TwoBodyKinematicVariableSet:
     angular_momentum: int | None = field(default=None)
 
 
-BuilderReturnType = tuple[sp.Expr, dict[sp.Symbol, float]]
-"""Type that a `.ResonanceDynamicsBuilder` should return.
+def _binary_operation(op: Callable[[Any, Any], Any]):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self: DefinedExpression, other):
+            if isinstance(other, DefinedExpression):
+                return DefinedExpression(
+                    expression=op(self.expression, other.expression),
+                    parameters=self.parameters | other.parameters,
+                    subexpressions=self.subexpressions | other.subexpressions,
+                )
+            return DefinedExpression(
+                expression=op(self.expression, other),
+                parameters=self.parameters,
+                subexpressions=self.subexpressions,
+            )
 
-The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>` that
-describes the dynamics for the resonance. The second element are suggested parameter
-values (see :attr:`.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances
-that appear in the `sympy.Expr <sympy.core.expr.Expr>`.
-"""
+        return wrapper
+
+    return decorator
+
+
+@define
+class DefinedExpression:
+    """Expression with suggested parameter values and subexpression definitions.
+
+    Every `.ResonanceDynamicsBuilder` returns its lineshape in this form. The
+    `parameters` provide suggested starting values (see
+    :attr:`.HelicityModel.parameter_defaults`) for the `~sympy.core.symbol.Symbol`
+    instances that appear in the `expression`.
+    """
+
+    expression: sp.Expr = field(converter=sp.sympify, default=sp.S.One)  # ty:ignore[invalid-assignment]
+    parameters: dict[sp.Basic, complex | float] = field(factory=dict)
+    subexpressions: dict[sp.Basic, sp.Expr] = field(factory=dict)
+
+    @_binary_operation(operator.mul)
+    def __mul__(self, other) -> DefinedExpression: ...  # ty:ignore[empty-body]
+    @_binary_operation(operator.add)
+    def __add__(self, other) -> DefinedExpression: ...  # ty:ignore[empty-body]
+    @_binary_operation(operator.sub)
+    def __sub__(self, other) -> DefinedExpression: ...  # ty:ignore[empty-body]
+    @_binary_operation(operator.truediv)
+    def __truediv__(self, other) -> DefinedExpression: ...  # ty:ignore[empty-body]
+    @_binary_operation(operator.pow)
+    def __pow__(self, other) -> DefinedExpression: ...  # ty:ignore[empty-body]
 
 
 class ResonanceDynamicsBuilder(Protocol):
@@ -51,26 +92,26 @@ class ResonanceDynamicsBuilder(Protocol):
 
     Follow this `~typing.Protocol` when defining a builder function that is to be used
     by `.DynamicsSelector.assign`. For an example, see the source code
-    `.create_relativistic_breit_wigner`, which creates a `.SimpleBreitWigner`.
+    `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
 
     .. seealso:: :doc:`/dynamics/custom`
     """
 
     def __call__(
-        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> BuilderReturnType:
+        self, resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+    ) -> DefinedExpression:
         """Formulate a dynamics `~sympy.core.expr.Expr` for this resonance."""
 
 
 def create_non_dynamic(
-    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> BuilderReturnType:
-    return (sp.S.One, {})
+    resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+) -> DefinedExpression:
+    return DefinedExpression()
 
 
 def create_non_dynamic_with_ff(
-    resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-) -> BuilderReturnType:
+    resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+) -> DefinedExpression:
     """Generate (only) a Blatt–Weisskopf form factor for a two-body decay.
 
     See also :class:`.FormFactor`.
@@ -87,10 +128,7 @@ def create_non_dynamic_with_ff(
         angular_momentum=variable_pool.angular_momentum,
         meson_radius=meson_radius,
     )
-    return (
-        form_factor,
-        {meson_radius: 1},
-    )
+    return DefinedExpression(form_factor, parameters={meson_radius: 1})
 
 
 class RelativisticBreitWignerBuilder:
@@ -123,78 +161,69 @@ class RelativisticBreitWignerBuilder:
         self.form_factor = form_factor
 
     def __call__(
-        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> BuilderReturnType:
+        self, resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+    ) -> DefinedExpression:
         """Formulate a relativistic Breit–Wigner for this resonance."""
         if self.energy_dependent_width:
-            expr, parameter_defaults = self.__energy_dependent_breit_wigner(
-                resonance, variable_pool
-            )
+            expression = self.__energy_dependent_breit_wigner(resonance, variable_pool)
         else:
-            expr, parameter_defaults = self.__simple_breit_wigner(
-                resonance, variable_pool
-            )
+            expression = self.__simple_breit_wigner(resonance, variable_pool)
         if self.form_factor:
-            form_factor, parameters = self.__create_form_factor(
-                resonance, variable_pool
-            )
-            parameter_defaults.update(parameters)
-            return form_factor * expr, parameter_defaults
-        return expr, parameter_defaults
+            expression *= self.__create_form_factor(resonance, variable_pool)
+        return expression
 
     @staticmethod
     def __simple_breit_wigner(
-        resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> BuilderReturnType:
+        resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+    ) -> DefinedExpression:
         inv_mass = variable_pool.incoming_state_mass
         identifier = resonance.latex or resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
         res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
-        expression = SimpleBreitWigner(
-            s=inv_mass**2,
-            mass=res_mass,
-            width=res_width,
+        return DefinedExpression(
+            expression=SimpleBreitWigner(
+                s=inv_mass**2,
+                mass=res_mass,
+                width=res_width,
+            ),
+            parameters={
+                res_mass: resonance.mass,
+                res_width: resonance.width,
+            },
         )
-        parameter_defaults = {
-            res_mass: resonance.mass,
-            res_width: resonance.width,
-        }
-        return expression, parameter_defaults
 
     def __energy_dependent_breit_wigner(
-        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> BuilderReturnType:
+        self, resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+    ) -> DefinedExpression:
         if variable_pool.angular_momentum is None:
             msg = "Angular momentum is not defined but is required in the form factor!"
             raise ValueError(msg)
 
         inv_mass = variable_pool.incoming_state_mass
-        m_a = variable_pool.outgoing_state_mass1
-        m_b = variable_pool.outgoing_state_mass2
-        angular_momentum = variable_pool.angular_momentum
         res_mass, res_width, meson_radius = self.__create_symbols(resonance)
-
         s = inv_mass**2
-        expression = BreitWigner(
+        breit_wigner_expr = BreitWigner(
             s=s,
             mass=res_mass,
             width=res_width,
-            m1=m_a,
-            m2=m_b,
-            angular_momentum=angular_momentum,
+            m1=variable_pool.outgoing_state_mass1,
+            m2=variable_pool.outgoing_state_mass2,
+            angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
             phsp_factor=self.phsp_factor,
         )
-        parameter_defaults = {
-            res_mass: resonance.mass,
-            res_width: resonance.width,
-            meson_radius: 1,
-        }
-        return expression, parameter_defaults
+        return DefinedExpression(
+            expression=breit_wigner_expr,
+            parameters={
+                res_mass: resonance.mass,
+                res_width: resonance.width,
+                meson_radius: 1,
+            },
+        )
 
     def __create_form_factor(
-        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
-    ) -> BuilderReturnType:
+        self, resonance: ParticleLike, variable_pool: TwoBodyKinematicVariableSet
+    ) -> DefinedExpression:
         if variable_pool.angular_momentum is None:
             msg = "Angular momentum is not defined but is required in the form factor!"
             raise ValueError(msg)
@@ -208,14 +237,11 @@ class RelativisticBreitWignerBuilder:
             angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
         )
-        parameter_defaults: dict[sp.Symbol, float | int] = {
-            meson_radius: 1,
-        }
-        return form_factor, parameter_defaults
+        return DefinedExpression(form_factor, parameters={meson_radius: 1})
 
     @staticmethod
     def __create_symbols(
-        resonance: Particle,
+        resonance: ParticleLike,
     ) -> tuple[sp.Symbol, sp.Symbol, sp.Symbol]:
         identifier = resonance.latex or resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
@@ -227,7 +253,7 @@ class RelativisticBreitWignerBuilder:
 create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
     form_factor=False
 ).__call__
-"""Create a `.SimpleBreitWigner` for a two-body decay.
+"""Create a `.relativistic_breit_wigner` for a two-body decay.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _without_ form
 factor.
