@@ -337,7 +337,7 @@ class ChewMandelstamIntegral(sp.Expr):
     """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # ruff: ignore[non-lowercase-variable-in-function]
+        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args
         ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
         s_thr = (m1 + m2) ** 2
@@ -357,7 +357,7 @@ class ChewMandelstamIntegral(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        L = printer._print(self.angular_momentum)  # ruff: ignore[non-lowercase-variable-in-function]
+        L = printer._print(self.angular_momentum)
         name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
         return Rf"{name}\left({s}\right)"
 
