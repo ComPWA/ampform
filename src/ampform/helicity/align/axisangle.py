@@ -18,8 +18,8 @@ from ampform.adapter.transition import (
     group_by_topology,
     is_opposite_helicity_state,
 )
+from ampform.decay.spin import create_spin_range
 from ampform.helicity import SpinAlignment
-from ampform.helicity.align._spin import create_spin_range
 from ampform.helicity.naming import (
     create_amplitude_base,
     create_helicity_symbol,
@@ -271,7 +271,7 @@ def formulate_helicity_rotation(
     """
     from sympy.physics.quantum.spin import Rotation as Wigner
 
-    helicities = map(sp.Rational, create_spin_range(spin_magnitude, no_zero_spin))
+    helicities = create_spin_range(spin_magnitude, no_zero_spin)
     return PoolSum(
         Wigner.D(
             j=__rationalize(spin_magnitude),
