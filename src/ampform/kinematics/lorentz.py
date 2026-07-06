@@ -10,6 +10,7 @@ from ampform.adapter.transition import (
     determine_attached_final_state,
     list_decay_chain_ids,
 )
+from ampform.decay import Decay, DecayChain, get_edge_ids, to_edge_id
 from ampform.sympy import ExprClass, NumPyPrintable, unevaluated
 from ampform.sympy._array_expressions import (
     ArrayAxisSum,
@@ -21,22 +22,30 @@ from ampform.sympy._array_expressions import (
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     from qrules.topology import Topology
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
 
 
-def create_four_momentum_symbols(topology: Topology) -> FourMomenta:
-    """Create a set of array-symbols for a `~qrules.topology.Topology`.
+def create_four_momentum_symbols(
+    topology: Topology | Decay | DecayChain,
+) -> FourMomenta:
+    """Create an array-symbol for each final state in a decay.
+
+    The final states can be defined through a `~qrules.topology.Topology`, a `.Decay`,
+    or a `.DecayChain`.
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(3)
     >>> create_four_momentum_symbols(topologies[0])
     {0: p0, 1: p1, 2: p2}
     """
-    final_state_ids = sorted(topology.outgoing_edge_ids)
+    if isinstance(topology, (Decay, DecayChain)):
+        final_state_ids = sorted(topology.final_state)
+    else:
+        final_state_ids = sorted(topology.outgoing_edge_ids)
     return {i: create_four_momentum_symbol(i) for i in final_state_ids}
 
 
@@ -578,18 +587,24 @@ def get_four_momentum_sum(
 
 
 def compute_invariant_masses(
-    four_momenta: FourMomenta, topology: Topology
+    four_momenta: FourMomenta, topology: Topology | DecayChain
 ) -> dict[sp.Symbol, sp.Expr]:
     """Compute the invariant masses for all final state combinations."""
-    if topology.outgoing_edge_ids != set(four_momenta):
+    if isinstance(topology, DecayChain):
+        final_state_ids = set(topology.final_state)
+        edge_iterable: Iterable[int | tuple[int, ...]] = get_edge_ids(topology)
+    else:
+        final_state_ids = topology.outgoing_edge_ids
+        edge_iterable = topology.edges
+    if final_state_ids != set(four_momenta):
         msg = (
             f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
-            f" {set(topology.outgoing_edge_ids)}"
+            f" {set(final_state_ids)}"
         )
         raise ValueError(msg)
     invariant_masses: dict[sp.Symbol, sp.Expr] = {}
-    for state_id in topology.edges:
-        attached_state_ids = determine_attached_final_state(topology, state_id)
+    for state_id in edge_iterable:
+        attached_state_ids = _determine_attached_final_state(topology, state_id)
         total_momentum = ArraySum(*[four_momenta[i] for i in attached_state_ids])
         expr = InvariantMass(total_momentum)
         symbol = get_invariant_mass_symbol(topology, state_id)
@@ -597,8 +612,13 @@ def compute_invariant_masses(
     return invariant_masses
 
 
-def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
+def get_invariant_mass_symbol(
+    topology: Topology | DecayChain, state_id: int | tuple[int, ...]
+) -> sp.Symbol:
     """Generate an invariant mass label for a state (edge on a topology).
+
+    The edge can be identified over a `~qrules.topology.Topology` by a state ID or over
+    a `.DecayChain` by its attached final-state IDs (see :func:`.get_final_state_ids`).
 
     Example
     -------
@@ -618,6 +638,23 @@ def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
     >>> get_invariant_mass_symbol(topologies[0], state_id=1)
     m_1
     """
-    final_state_ids = determine_attached_final_state(topology, state_id)
+    final_state_ids = _determine_attached_final_state(topology, state_id)
     mass_name = f"m_{''.join(map(str, sorted(final_state_ids)))}"
     return sp.Symbol(mass_name, nonnegative=True)
+
+
+def _determine_attached_final_state(
+    topology: Topology | DecayChain, state_id: int | tuple[int, ...]
+) -> tuple[int, ...]:
+    if isinstance(topology, DecayChain):
+        edge = to_edge_id(state_id)
+        if edge not in get_edge_ids(topology):
+            msg = f"Decay chain has no edge with final states {edge}"
+            raise KeyError(msg)
+        return edge
+    if not isinstance(state_id, int):
+        msg = (
+            f"Edge identifiers over a {type(topology).__name__} have to be of type int"
+        )
+        raise TypeError(msg)
+    return tuple(determine_attached_final_state(topology, state_id))
