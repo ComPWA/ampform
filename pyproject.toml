@@ -425,6 +425,8 @@ ignore = [
     "missing-section-name-colon",
     "missing-trailing-comma",
     "multi-line-summary-second-line",
+    "no-explicit-stacklevel",
+    "non-ascii-name",
     "non-empty-init-module",
     "pytest-fixture-incorrect-parentheses-style",
     "read-whole-file",
@@ -467,6 +469,19 @@ known-first-party = ["ampform"]
 known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
+[tool.ruff.lint.pep8-naming]
+ignore-names = [
+    "A",
+    "H",
+    "L",
+    "R",
+    "R_dec",
+    "R_prod",
+    "S",
+    "Γ*",
+    "λ*",
+]
+
 [tool.ruff.lint.per-file-ignores]
 ".claude/**" = [
     "suspicious-subprocess-import",
@@ -488,7 +503,6 @@ split-on-trailing-comma = false
     "magic-value-comparison",
     "mixed-case-variable-in-global-scope",
     "module-import-not-at-top-of-file",
-    "non-ascii-name",
     "non-lowercase-variable-in-function",
     "private-member-access",
     "suspicious-pickle-import",
@@ -538,6 +552,7 @@ split-on-trailing-comma = false
     "import-private-name",
     "undocumented-public-module",
 ]
+"src/ampform/decay/__init__.py" = ["import-outside-top-level"]
 "src/ampform/helicity/__init__.py" = ["import-outside-top-level"]
 "src/ampform/helicity/align/axisangle.py" = ["import-outside-top-level"]
 "setup.py" = ["undocumented-public-module"]
