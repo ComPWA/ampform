@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import sympy as sp
 from qrules.transition import ReactionInfo, State, StateTransition
 
-from ampform.helicity.decay import (
+from ampform.adapter.transition import (
     assert_isobar_topology,
     determine_attached_final_state,
     get_helicity_info,

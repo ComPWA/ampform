@@ -7,7 +7,7 @@ import pytest
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
-from ampform.helicity.decay import get_parent_id
+from ampform.adapter.transition import get_parent_id
 from ampform.kinematics.angles import (
     Phi,
     Theta,

@@ -24,19 +24,19 @@ from attrs.validators import deep_iterable, instance_of, optional
 from qrules.particle import Particle
 from qrules.transition import ReactionInfo, StateTransition
 
-from ampform.dynamics.builder import (
-    ResonanceDynamicsBuilder,
-    TwoBodyKinematicVariableSet,
-    create_non_dynamic,
-)
-from ampform.helicity.align import NoAlignment, SpinAlignment
-from ampform.helicity.decay import (
+from ampform.adapter.transition import (
     TwoBodyDecay,
     get_prefactor,
     group_by_spin_projection,
     group_by_topology,
     perform_combinatorics,
 )
+from ampform.dynamics.builder import (
+    ResonanceDynamicsBuilder,
+    TwoBodyKinematicVariableSet,
+    create_non_dynamic,
+)
+from ampform.helicity.align import NoAlignment, SpinAlignment
 from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
