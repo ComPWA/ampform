@@ -29,6 +29,7 @@ from ampform.kinematics.lorentz import (
     _ZerosArray,
     compute_boost_chain,
     compute_invariant_masses,
+    create_four_momentum_symbols,
     three_momentum_norm,
 )
 from ampform.sympy._array_expressions import (
@@ -40,6 +41,7 @@ from ampform.sympy._array_expressions import (
 if TYPE_CHECKING:
     from qrules.topology import Topology
 
+    from ampform.decay import DecayChain
     from ampform.sympy import NumPyPrintable
 
 
@@ -419,6 +421,27 @@ def test_compute_invariant_masses(
     masses = __compute_mass(sum(data_sample[i] for i in indices))
     expected = np.average(masses)
     assert pytest.approx(computed, abs=1e-8) == expected
+
+
+def test_compute_invariant_masses_of_decay_chain(double_cascade_chain: DecayChain):
+    chain = double_cascade_chain
+    momenta = create_four_momentum_symbols(chain)
+    assert {i: str(p) for i, p in momenta.items()} == {
+        1: "p1",
+        2: "p2",
+        3: "p3",
+        4: "p4",
+    }
+    invariant_masses = compute_invariant_masses(momenta, chain)
+    assert {str(symbol): str(expr) for symbol, expr in invariant_masses.items()} == {
+        "m_1234": "InvariantMass(p1 + p2 + p3 + p4)",
+        "m_12": "InvariantMass(p1 + p2)",
+        "m_34": "InvariantMass(p3 + p4)",
+        "m_1": "InvariantMass(p1)",
+        "m_2": "InvariantMass(p2)",
+        "m_3": "InvariantMass(p3)",
+        "m_4": "InvariantMass(p4)",
+    }
 
 
 def __compute_mass(array: np.ndarray) -> np.ndarray:

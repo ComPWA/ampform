@@ -20,6 +20,7 @@ from ampform.adapter.transition import (
     get_sorted_states,
     group_by_spin_projection,
 )
+from ampform.decay import DecayChain, get_final_state_ids, to_edge_id
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -333,7 +334,7 @@ def generate_transition_label(transition: StateTransition) -> str:
 
 
 def get_helicity_angle_symbols(
-    topology: Topology, state_id: int
+    topology: Topology | DecayChain, state_id: int | tuple[int, ...]
 ) -> tuple[sp.Symbol, sp.Symbol]:
     r"""Generate a nested helicity angle label for :math:`\phi,\theta`.
 
@@ -347,8 +348,14 @@ def get_helicity_angle_symbols(
 
 
 @cache
-def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
+def get_boost_chain_suffix(
+    topology: Topology | DecayChain, state_id: int | tuple[int, ...]
+) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
+
+    The boost chain can be defined over a `~qrules.topology.Topology` with a state ID or
+    over a `.DecayChain` with an edge identifier (see :func:`.get_final_state_ids`). A
+    plain `int` edge identifier is interpreted as the edge of that final state.
 
     The generated subscripts describe the decay sequence from the right to the left,
     separated by commas. Resonance edge IDs are expressed as a sum of the final state
@@ -405,6 +412,13 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 
     As noted, the top-most parent (initial state) is not listed in the label.
     """
+    if isinstance(topology, DecayChain):
+        return _get_boost_chain_suffix_of_chain(topology, state_id)
+    if not isinstance(state_id, int):
+        msg = (
+            f"Edge identifiers over a {type(topology).__name__} have to be of type int"
+        )
+        raise TypeError(msg)
     assert_isobar_topology(topology)
 
     def recursive_label(topology: Topology, state_id: int) -> str:
@@ -436,7 +450,38 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     return suffix
 
 
-def get_helicity_suffix(topology: Topology, state_id: int) -> str:
+def _get_boost_chain_suffix_of_chain(
+    chain: DecayChain, state_id: int | tuple[int, ...]
+) -> str:
+    edge = to_edge_id(state_id)
+    parent_edges = _get_parent_edge_ids(chain)
+    initial_state_edge = get_final_state_ids(chain.decay)
+    if edge != initial_state_edge and edge not in parent_edges:
+        msg = f"Decay chain has no edge with final states {edge}"
+        raise KeyError(msg)
+    labels = ["".join(map(str, edge))]
+    parent: tuple[int, ...] | None = parent_edges.get(edge)
+    while parent is not None and parent != initial_state_edge:
+        labels.append("".join(map(str, parent)))
+        parent = parent_edges.get(parent)
+    suffix = f"_{labels[0]}"
+    if len(labels) > 1:
+        suffix += "^" + ",".join(labels[1:])
+    return suffix
+
+
+def _get_parent_edge_ids(
+    chain: DecayChain,
+) -> dict[tuple[int, ...], tuple[int, ...]]:
+    parent_edges = {}
+    for node in chain.nodes:
+        node_edge = get_final_state_ids(node)
+        for child in node.children:
+            parent_edges[get_final_state_ids(child)] = node_edge
+    return parent_edges
+
+
+def get_helicity_suffix(topology: Topology | DecayChain, state_id: int) -> str:
     """Create an identifier suffix for a topology.
 
     Used in :doc:`/amplitude/spin-alignment`. Comparable to
@@ -446,12 +491,17 @@ def get_helicity_suffix(topology: Topology, state_id: int) -> str:
     return f"_{state_id}^{superscript}"
 
 
-def get_topology_identifier(topology: Topology) -> str:
-    """Create an identifier `str` for a `~qrules.topology.Topology`."""
-    resonance_names = [
-        "".join(__get_resonance_identifier(topology, i))
-        for i in topology.intermediate_edge_ids
-    ]
+def get_topology_identifier(topology: Topology | DecayChain) -> str:
+    """Create an identifier `str` for a `~qrules.topology.Topology` or `.DecayChain`."""
+    if isinstance(topology, DecayChain):
+        resonance_names = [
+            "".join(map(str, get_final_state_ids(node))) for node in topology.nodes[1:]
+        ]
+    else:
+        resonance_names = [
+            "".join(__get_resonance_identifier(topology, i))
+            for i in topology.intermediate_edge_ids
+        ]
     return ",".join(sorted(resonance_names, key=natural_sorting))
 
 
@@ -519,7 +569,7 @@ def _render_float(value: float | Fraction) -> str:
 
 
 def create_helicity_symbol(
-    topology: Topology, state_id: int, root: str = "lambda"
+    topology: Topology | DecayChain, state_id: int, root: str = "lambda"
 ) -> sp.Symbol:
     if state_id == -1:  # initial state
         name = "m_A"

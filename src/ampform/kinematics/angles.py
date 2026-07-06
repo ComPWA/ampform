@@ -11,6 +11,7 @@ from ampform.adapter.transition import (
     get_sibling_state_id,
     is_opposite_helicity_state,
 )
+from ampform.decay import DecayChain, IsobarNode, State, get_final_state_ids
 from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
 from ampform.kinematics.lorentz import (
     ArraySize,
@@ -67,14 +68,14 @@ class Theta(sp.Expr):
 
 
 def compute_helicity_angles(
-    four_momenta: Mapping[int, sp.Expr], topology: Topology
+    four_momenta: Mapping[int, sp.Expr], topology: Topology | DecayChain
 ) -> dict[sp.Symbol, sp.Expr]:
     """Formulate expressions for all helicity angles in a topology.
 
     Formulate expressions (`~sympy.core.expr.Expr`) for all helicity angles appearing in
-    a given `~qrules.topology.Topology`. The expressions are given in terms of
-    `.FourMomenta` The expressions returned as values in a `dict`, where the keys are
-    defined by :func:`.get_helicity_angle_symbols`.
+    a given `~qrules.topology.Topology` or `.DecayChain`. The expressions are given in
+    terms of `.FourMomenta` The expressions returned as values in a `dict`, where the
+    keys are defined by :func:`.get_helicity_angle_symbols`.
 
     Example
     -------
@@ -88,6 +89,14 @@ def compute_helicity_angles(
     >>> angles[theta_symbol]
     Theta(p1 + p2)
     """
+    if isinstance(topology, DecayChain):
+        return _compute_helicity_angles_of_chain(four_momenta, topology)
+    return _compute_helicity_angles_of_topology(four_momenta, topology)
+
+
+def _compute_helicity_angles_of_topology(
+    four_momenta: Mapping[int, sp.Expr], topology: Topology
+) -> dict[sp.Symbol, sp.Expr]:
     if topology.outgoing_edge_ids != set(four_momenta):
         msg = (
             f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
@@ -159,6 +168,65 @@ def compute_helicity_angles(
         msg = "Edge does not end in a node"
         raise ValueError(msg)
     return __recursive_helicity_angles(four_momenta, initial_state_edge.ending_node_id)
+
+
+def _compute_helicity_angles_of_chain(
+    four_momenta: Mapping[int, sp.Expr], chain: DecayChain
+) -> dict[sp.Symbol, sp.Expr]:
+    if set(chain.final_state) != set(four_momenta):
+        msg = (
+            f"Momentum IDs {set(four_momenta)} do not match final state edge IDs"
+            f" {set(chain.final_state)}"
+        )
+        raise ValueError(msg)
+
+    n_events = _get_number_of_events(four_momenta)
+
+    def recursive_helicity_angles(
+        four_momenta: Mapping[int, sp.Expr], node: IsobarNode
+    ) -> dict[sp.Symbol, sp.Expr]:
+        helicity_angles: dict[sp.Symbol, sp.Expr] = {}
+        children = sorted(node.children, key=get_final_state_ids)
+        if all(isinstance(child, State) for child in children):
+            helicity_state = children[0]
+            four_momentum: sp.Expr = four_momenta[helicity_state.index]  # ty:ignore[unresolved-attribute]
+            phi, theta = get_helicity_angle_symbols(
+                chain, get_final_state_ids(helicity_state)
+            )
+            helicity_angles[phi] = Phi(four_momentum)
+            helicity_angles[theta] = Theta(four_momentum)
+        for child, sibling in zip(children, reversed(children), strict=True):
+            if isinstance(child, IsobarNode):
+                sub_momenta_ids = get_final_state_ids(child)
+                # add all momenta of the subsystem together and boost into it
+                four_momentum = ArraySum(*[four_momenta[i] for i in sub_momenta_ids])
+                phi_expr = Phi(four_momentum)
+                theta_expr = Theta(four_momentum)
+                p3_norm = three_momentum_norm(four_momentum)
+                beta = p3_norm / Energy(four_momentum)
+                new_momentum_pool: dict[int, sp.Expr] = {
+                    k: ArrayMultiplication(
+                        BoostZMatrix(beta, n_events),
+                        RotationYMatrix(-theta_expr, n_events),
+                        RotationZMatrix(-phi_expr, n_events),
+                        p,
+                    )
+                    for k, p in four_momenta.items()
+                    if k in sub_momenta_ids
+                }
+
+                # register the angles of the smaller (helicity) sibling edge
+                helicity_edge = min(map(get_final_state_ids, (child, sibling)))
+                phi, theta = get_helicity_angle_symbols(chain, helicity_edge)
+                helicity_angles[phi] = Phi(four_momentum)
+                helicity_angles[theta] = Theta(four_momentum)
+
+                angles = recursive_helicity_angles(new_momentum_pool, child)
+                helicity_angles.update(angles)
+
+        return helicity_angles
+
+    return recursive_helicity_angles(four_momenta, chain.decay)
 
 
 def _get_number_of_events(four_momenta: Mapping[int, sp.Expr]) -> ArraySize:

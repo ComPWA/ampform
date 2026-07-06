@@ -17,11 +17,17 @@ from ampform.kinematics.angles import (
     formulate_theta_hat_angle,
     formulate_zeta_angle,
 )
-from ampform.kinematics.lorentz import FourMomenta, FourMomentumSymbol
+from ampform.kinematics.lorentz import (
+    FourMomenta,
+    FourMomentumSymbol,
+    create_four_momentum_symbols,
+)
 from ampform.kinematics.phasespace import Kallen, compute_third_mandelstam
 
 if TYPE_CHECKING:
     from qrules.topology import Topology
+
+    from ampform.decay import DecayChain
 
 m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
 s1 = cast("sp.Pow", sp.Symbol("m_23", nonnegative=True) ** 2)
@@ -183,6 +189,35 @@ def test_compute_helicity_angles(
     computed = np_angle(*four_momenta)
     # cspell:ignore atol
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
+
+
+def test_compute_helicity_angles_of_decay_chain(double_cascade_chain: DecayChain):
+    """A `.DecayChain` input follows the same conventions as a `.Topology` input.
+
+    This includes the convention that sibling subsystems share the angle symbols of the
+    subsystem with the smallest final-state IDs, with the expressions of the subsystem
+    that is processed last.
+    """
+    chain = double_cascade_chain
+    momenta = create_four_momentum_symbols(chain)
+    angles = compute_helicity_angles(momenta, chain)
+    assert {str(symbol) for symbol in angles} == {
+        "phi_12",
+        "theta_12",
+        "phi_1^12",
+        "theta_1^12",
+        "phi_3^34",
+        "theta_3^34",
+    }
+    assert str(angles[sp.Symbol("phi_12", real=True)]) == "Phi(p3 + p4)"
+    assert str(angles[sp.Symbol("theta_12", real=True)]) == "Theta(p3 + p4)"
+    phi_1 = angles[sp.Symbol("phi_1^12", real=True)]
+    boosted_p1 = phi_1.args[0]
+    assert str(boosted_p1.args[-1]) == "p1"
+    assert str(boosted_p1.args[0]) == (
+        "BoostZMatrix(EuclideanNorm(ThreeMomentum(p1 + p2))/Energy(p1 + p2),"
+        " ArraySize(p1))"
+    )
 
 
 @pytest.mark.parametrize(
