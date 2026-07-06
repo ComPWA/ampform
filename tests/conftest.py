@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import sys
 from typing import TYPE_CHECKING
 
 import attrs
@@ -20,6 +22,18 @@ if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
 
 logging.getLogger().setLevel(level=logging.ERROR)
+
+# JAX compresses persistent compilation cache entries with zstd if available and
+# silently falls back to zlib otherwise, without recording the format in the cache
+# entry. Python 3.14 ships zstd in the standard library (compression.zstd), so a cache
+# directory shared between interpreter versions makes JAX fail on entries written by
+# another version. Partition the cache per interpreter so that running the test suite
+# over all supported Python versions (poe test-all) does not poison the cache.
+if _jax_cache_dir := os.environ.get("JAX_COMPILATION_CACHE_DIR"):
+    _python_version = f"py{sys.version_info.major}.{sys.version_info.minor}"
+    os.environ["JAX_COMPILATION_CACHE_DIR"] = os.path.join(
+        _jax_cache_dir, _python_version
+    )
 
 # Ensure consistent test coverage when running pytest multithreaded
 # https://github.com/ComPWA/qrules/issues/11
