@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+import attrs
 import numpy as np
 import pytest
 import qrules
@@ -59,6 +60,45 @@ def amplitude_model(reaction: ReactionInfo) -> tuple[str, HelicityModel]:
         model_builder.dynamics.assign(name, create_relativistic_breit_wigner_with_ff)
     model = model_builder.formulate()
     return reaction.formalism, model
+
+
+@pytest.fixture(scope="session")
+def a2pipipi_reaction() -> ReactionInfo:
+    return qrules.generate_transitions(
+        initial_state="a(1)(1260)0",
+        final_state=["pi0", "pi0", "pi0"],
+        allowed_intermediate_particles=["a(0)(980)0"],
+        formalism="helicity",
+    )
+
+
+@pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
+def jpsi2pksigma_reaction(request: SubRequest) -> ReactionInfo:
+    return qrules.generate_transitions(
+        initial_state=[("J/psi(1S)", [+1])],
+        final_state=["K0", ("Sigma+", [+0.5]), ("p~", [+0.5])],
+        allowed_interaction_types="strong",
+        allowed_intermediate_particles=["N(1700)+", "Sigma(1660)"],
+        formalism=request.param,
+    )
+
+
+@pytest.fixture(scope="session")
+def xib2pkk_reaction() -> ReactionInfo:
+    reaction = qrules.generate_transitions(
+        initial_state="Xi(b)-",
+        final_state=["p", "K-", "K-"],
+        allowed_intermediate_particles=["Lambda(1520)"],
+        formalism="helicity",
+    )
+    swapped_transitions = tuple(
+        attrs.evolve(t, topology=t.topology.swap_edges(1, 2))
+        for t in reaction.transitions
+    )
+    return qrules.transition.ReactionInfo(
+        transitions=reaction.transitions + swapped_transitions,
+        formalism=reaction.formalism,
+    )
 
 
 # https://github.com/ComPWA/tensorwaves/blob/3d0ec44/tests/physics/helicity_formalism/test_helicity_angles.py#L61-L98
