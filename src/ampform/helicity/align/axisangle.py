@@ -11,15 +11,15 @@ from typing import TYPE_CHECKING, TypeVar, overload
 
 import sympy as sp
 
-from ampform.helicity import SpinAlignment
-from ampform.helicity.align._spin import create_spin_range
-from ampform.helicity.decay import (
+from ampform.adapter.transition import (
     get_outer_state_ids,
     get_parent_id,
     get_sibling_state_id,
     group_by_topology,
     is_opposite_helicity_state,
 )
+from ampform.helicity import SpinAlignment
+from ampform.helicity.align._spin import create_spin_range
 from ampform.helicity.naming import (
     create_amplitude_base,
     create_helicity_symbol,

@@ -18,7 +18,7 @@ from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
 
 from ampform._qrules import get_qrules_version
-from ampform.helicity.decay import assert_isobar_topology
+from ampform.adapter.transition import assert_isobar_topology
 from ampform.kinematics.angles import compute_helicity_angles
 from ampform.kinematics.lorentz import (
     compute_invariant_masses,

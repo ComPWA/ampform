@@ -7,7 +7,7 @@ import pytest
 from qrules.topology import Topology, create_isobar_topologies
 
 from ampform._qrules import get_qrules_version
-from ampform.helicity.decay import (
+from ampform.adapter.transition import (
     determine_attached_final_state,
     get_sibling_state_id,
     is_opposite_helicity_state,

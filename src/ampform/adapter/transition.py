@@ -1,4 +1,12 @@
-"""Extract two-body decay info from a `~qrules.topology.Transition`."""
+"""Extract decay info directly from `qrules` transitions and topologies.
+
+Unlike :mod:`ampform.adapter.qrules`, which converts `qrules` objects to the
+:mod:`ampform.decay` structures in one conversion step, the helpers in this module
+operate on `qrules` objects **in place**. They exist for the
+`.HelicityAmplitudeBuilder`, which does not yet formulate its amplitude model in terms
+of the :mod:`ampform.decay` structures (see
+https://github.com/ComPWA/ampform/issues/281).
+"""
 
 from __future__ import annotations
 
@@ -21,7 +29,7 @@ from ampform._qrules import get_qrules_version
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from qrules.topology import Topology
+    from qrules.topology import FrozenTransition, Topology
 
 
 @frozen
@@ -66,7 +74,7 @@ class TwoBodyDecay:
         """Create a `TwoBodyDecay` instance from an arbitrary object.
 
         More implementations of :meth:`create` can be implemented with
-        :func:`@ampform.helicity.decay._create_two_body_decay.register(TYPE)
+        :func:`@ampform.adapter.transition._create_two_body_decay.register(TYPE)
         <functools.singledispatch>`.
         """
         return _create_two_body_decay(obj)

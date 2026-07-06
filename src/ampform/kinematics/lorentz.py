@@ -6,7 +6,10 @@ from typing import TYPE_CHECKING, Any, TypeAlias
 
 import sympy as sp
 
-from ampform.helicity.decay import determine_attached_final_state, list_decay_chain_ids
+from ampform.adapter.transition import (
+    determine_attached_final_state,
+    list_decay_chain_ids,
+)
 from ampform.sympy import ExprClass, NumPyPrintable, unevaluated
 from ampform.sympy._array_expressions import (
     ArrayAxisSum,
