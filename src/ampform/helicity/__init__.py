@@ -185,7 +185,7 @@ class HelicityModel:
                 for amp, expr in self.amplitudes.items()
             },
             parameter_defaults={
-                symbol_mapping.get(par, par): value  # ty:ignore[no-matching-overload]
+                symbol_mapping.get(par, par): value
                 for par, value in self.parameter_defaults.items()
             },
             components={
@@ -193,7 +193,7 @@ class HelicityModel:
                 for name, expr in self.components.items()
             },
             kinematic_variables={
-                symbol_mapping.get(var, var): expr.xreplace(symbol_mapping)  # ty:ignore[no-matching-overload]
+                symbol_mapping.get(var, var): expr.xreplace(symbol_mapping)
                 for var, expr in self.kinematic_variables.items()
             },
         )
@@ -607,7 +607,7 @@ class BuilderConfiguration:
     `~.HelicityModel.kinematic_variables` (which are expressions to compute an event-
     wise array of invariant masses). This is useful if final state particles are stable.
     """
-    use_helicity_couplings: bool = field(validator=instance_of(bool))  # ty:ignore[dataclass-field-order]
+    use_helicity_couplings: bool = field(validator=instance_of(bool))
     """Use helicity couplings instead of amplitude coefficients.
 
     Helicity couplings are a measure for the strength of each partial two-body decay.

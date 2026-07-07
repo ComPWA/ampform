@@ -51,7 +51,8 @@ def normalize(sympy_expression: sp.Expr, variable_names: Sequence[str]) -> sp.Ex
 
 class TestEpemToDmD0Pip:
     @pytest.fixture(scope="class")
-    def sympy_model(self, particle_database: ParticleCollection) -> sp.Expr:
+    @classmethod
+    def sympy_model(cls, particle_database: ParticleCollection) -> sp.Expr:
         epem = Particle(
             name="EpEm",
             pid=12345678,
@@ -145,7 +146,8 @@ class TestEpemToDmD0Pip:
 
 class TestD1ToD0PiPi:
     @pytest.fixture(scope="class")
-    def sympy_model(self) -> sp.Expr:
+    @classmethod
+    def sympy_model(cls) -> sp.Expr:
         reaction = qrules.generate_transitions(
             initial_state=[("D(1)(2420)0", [-1])],
             final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],

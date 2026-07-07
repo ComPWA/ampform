@@ -182,7 +182,7 @@ class PoolSum(sp.Expr):
 
     @property
     def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
-        return self.args[1:]
+        return self.args[1:]  # ty:ignore[invalid-return-type]
 
     @property
     def free_symbols(self) -> set[sp.Basic]:
