@@ -14,21 +14,9 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.8.13
+    rev: 25e781ae72399eead3a5a6c272a601d84fd98f22
     hooks:
       - id: check-dev-files
-        args:
-          - --doc-apt-packages=graphviz
-          - --repo-name=ampform
-          - --repo-title=AmpForm
-          - --type-checker=ty
-      - id: colab-toc-visible
-      - id: fix-nbformat-version
-      - id: remove-empty-tags
-      - id: set-nb-cells
-        args: [--autolink-concat]
-      - id: set-nb-display-name
-      - id: strip-nb-whitespace
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.9.1
@@ -57,6 +45,17 @@ repos:
             metadata.toc-showtags
             metadata.varInspector
             metadata.vscode
+
+  - repo: https://github.com/ComPWA/nbhooks
+    rev: 0.0.1
+    hooks:
+      - id: colab-toc-visible
+      - id: fix-nbformat-version
+      - id: remove-empty-tags
+      - id: set-nb-cells
+        args: [--autolink-concat]
+      - id: set-nb-display-name
+      - id: strip-nb-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.20
@@ -142,15 +141,11 @@ repos:
             .*\.py
           )$
 
-  - repo: local
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.57
     hooks:
       - id: ty
-        name: ty
-        entry: ty check
-        args: [--no-progress, --output-format=concise]
-        require_serial: true
-        language: system
-        types_or: [python, pyi, jupyter]
+        args: [--no-default-groups, --group=types]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.11.28

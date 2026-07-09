@@ -144,6 +144,14 @@ where = ["src"]
 [tool.setuptools_scm]
 write_to = "src/ampform/version.py"
 
+[tool.compwa.policy]
+doc-apt-packages = "graphviz"
+repo-name = "ampform"
+repo-title = "AmpForm"
+
+[tool.compwa.policy.python]
+type-checker = ["ty"]
+
 [tool.coverage.report]
 exclude_also = [
     "if TYPE_CHECKING:",
