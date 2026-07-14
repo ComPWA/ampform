@@ -4,6 +4,8 @@ ci:
   autoupdate_schedule: quarterly
   skip:
     - check-jsonschema
+    - tombi-format
+    - tombi-lint
     - ty
     - uv-lock
 
@@ -14,7 +16,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 25e781ae72399eead3a5a6c272a601d84fd98f22
+    rev: 1a1d5e8a13c4f76cee452121b5bafe2286dec2f4
     hooks:
       - id: check-dev-files
 
@@ -94,22 +96,17 @@ repos:
           )$
       - id: trailing-whitespace
 
+  - repo: https://github.com/tombi-toml/tombi-pre-commit
+    rev: v1.2.0
+    hooks:
+      - id: tombi-format
+      - id: tombi-lint
+        args: [--error-on-warnings]
+
   - repo: https://github.com/ComPWA/prettier-pre-commit
     rev: v3.8.1
     hooks:
       - id: prettier
-
-  - repo: https://github.com/ComPWA/taplo-pre-commit
-    rev: v0.9.3
-    hooks:
-      - id: taplo-format
-
-  - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.4
-    hooks:
-      - id: toml-sort
-        args:
-          - --in-place
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.37.4
@@ -145,7 +142,7 @@ repos:
     rev: v0.0.57
     hooks:
       - id: ty
-        args: [--no-default-groups, --group=types]
+        args: [--group=types, --no-default-groups]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.11.28

@@ -30,7 +30,6 @@
     ".pre-commit-config.yaml",
     ".prettierignore",
     ".readthedocs.yml",
-    ".taplo.toml",
     ".vscode/*",
     "CITATION.cff",
     "codecov.yml",
