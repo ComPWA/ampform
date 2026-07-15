@@ -255,9 +255,9 @@ def _slice_to_str(self: Printer, x, dim) -> str:
     return ":".join("" if xi in {none, None} else self._print(xi) for xi in x)
 
 
-LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # noqa: SLF001  # ty:ignore[invalid-assignment]
+LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # noqa: SLF001
 LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # noqa: SLF001
-StrPrinter._print_ArrayElement = _print_str_ArrayElement  # noqa: SLF001  # ty:ignore[invalid-assignment]
+StrPrinter._print_ArrayElement = _print_str_ArrayElement  # noqa: SLF001
 StrPrinter._print_ArraySlice = _print_str_ArraySlice  # noqa: SLF001
 
 
