@@ -26,6 +26,9 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.rulers": [88]
   },
+  "[toml]": {
+    "editor.defaultFormatter": "tombi-toml.tombi"
+  },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

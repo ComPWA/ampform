@@ -4,9 +4,7 @@ description = "Automatically generate symbolic amplitude models for Partial Wave
 requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-authors = [
-    { name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de" },
-]
+authors = [{ name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de" }]
 maintainers = [{ email = "compwa-admin@ep1.rub.de" }]
 keywords = [
     "HEP",
@@ -138,9 +136,7 @@ repo-title = "AmpForm"
 type-checker = ["ty"]
 
 [tool.coverage.report]
-exclude_also = [
-    "if TYPE_CHECKING:",
-]
+exclude_also = ["if TYPE_CHECKING:"]
 
 [tool.coverage.run]
 branch = true
@@ -564,7 +560,7 @@ where = ["src"]
 version_file = "src/ampform/version.py"
 
 [tool.tombi.files]
-exclude = ["uv.lock"]
+exclude = ["**/uv.lock"]
 
 [tool.tombi.format.rules]
 indent-width = 4
@@ -575,7 +571,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/1a1d5e8a13c4f76cee452121b5bafe2286dec2f4/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.0/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]
