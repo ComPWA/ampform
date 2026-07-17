@@ -24,6 +24,7 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorSWave,  # ruff: ignore[unused-import]
 )
 from ampform.kinematics.phasespace import (
+    BreakupMomentum,
     BreakupMomentumSquared,  # ruff: ignore[unused-import]
     _get_subscript,
 )
@@ -227,6 +228,84 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
     return ff * bw
+
+
+@unevaluated
+class BreitWignerMinL(sp.Expr):
+    s: Any
+    decaying_mass: Any
+    spectator_mass: Any
+    resonance_mass: Any
+    resonance_width: Any
+    child2_mass: Any
+    child1_mass: Any
+    l_dec: Any
+    l_prod: Any
+    R_dec: Any
+    R_prod: Any
+    phsp_factor: PhaseSpaceFactorProtocol = argument(
+        default=PhaseSpaceFactor, sympify=False
+    )  # ty:ignore[invalid-assignment]
+    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{BW}}_{{{l_dec},{l_prod}}}\left({s}\right)"
+
+    def evaluate(self):  # ruff: ignore[too-many-locals]
+        s, m_top, m_spec, m0, Γ0, m1, m2, l_dec, l_prod, R_dec, R_prod = self.args
+        ff_prod = FormFactor(m_top**2, sp.sqrt(s), m_spec, l_prod, R_prod)
+        ff0_prod = FormFactor(m_top**2, m0, m_spec, l_prod, R_prod)
+        ff_dec = FormFactor(s, m1, m2, l_dec, R_dec)
+        ff0_dec = FormFactor(m0**2, m1, m2, l_dec, R_dec)
+        width = EnergyDependentWidth(s, m0, Γ0, m1, m2, l_dec, R_dec, self.phsp_factor)
+        return sp.Mul(
+            ff_prod / ff0_prod,
+            1 / (m0**2 - s - sp.I * m0 * width),
+            ff_dec / ff0_dec,
+            evaluate=False,
+        )
+
+
+@unevaluated
+class BuggBreitWigner(sp.Expr):
+    s: Any
+    m0: Any
+    Γ0: Any
+    m1: Any
+    m2: Any
+    γ: Any
+    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{Bugg}}\left({s}\right)"
+
+    def evaluate(self):
+        s, m0, Γ0, m1, m2, γ = self.args
+        # Adler zero
+        s_A = m1**2 - m2**2 / 2  # ruff: ignore[non-lowercase-variable-in-function]
+        g_squared = sp.Mul(
+            (s - s_A) / (m0**2 - s_A),
+            m0 * Γ0 * sp.exp(-γ * s),
+            evaluate=False,
+        )
+        return 1 / (m0**2 - s - sp.I * g_squared)
+
+
+@unevaluated
+class FlattéSWave(sp.Expr):
+    # https://github.com/ComPWA/polarimetry/blob/34f5330/julia/notebooks/model0.jl#L151-L161
+    s: Any
+    m0: Any
+    widths: tuple[Any, Any]
+    masses1: tuple[Any, Any]
+    masses2: tuple[Any, Any]
+    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{Flatté}}\left({s}\right)"
+
+    def evaluate(self):
+        m0: sp.Expr
+        s, m0, (Γ1, Γ2), (ma1, mb1), (ma2, mb2) = self.args  # ty:ignore[not-iterable, invalid-assignment]
+        p = BreakupMomentum(s, ma1, mb1)
+        p0 = BreakupMomentum(m0**2, ma2, mb2)
+        q = BreakupMomentum(s, ma2, mb2)
+        q0 = BreakupMomentum(m0**2, ma2, mb2)
+        Γ1 *= (p / p0) * m0 / sp.sqrt(s)
+        Γ2 *= (q / q0) * m0 / sp.sqrt(s)
+        Γ = Γ1 + Γ2
+        return 1 / (m0**2 - s - sp.I * m0 * Γ)
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
