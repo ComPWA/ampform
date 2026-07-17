@@ -375,6 +375,34 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
     np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 
+def test_formulate_angles_with_mandelstam_variables():
+    """Mandelstam expressions follow the DPD-paper conventions (sigmas, plain masses)."""
+    mm0, mm1, mm2, mm3 = sp.symbols("m:4", nonnegative=True)
+    σ1, σ2, σ3 = sp.symbols("sigma1:4", nonnegative=True)
+    assert formulate_scattering_angle(2, 3, mandelstam=True)[1] == sp.acos(
+        (
+            2 * σ1 * (-(mm1**2) - mm2**2 + σ3)
+            - (mm0**2 - mm1**2 - σ1) * (mm2**2 - mm3**2 + σ1)
+        )
+        / (sp.sqrt(Kallen(mm0**2, mm1**2, σ1)) * sp.sqrt(Kallen(σ1, mm2**2, mm3**2)))
+    )
+    assert formulate_theta_hat_angle(1, 2, mandelstam=True)[1] == sp.acos(
+        (
+            (mm0**2 + mm1**2 - σ1) * (mm0**2 + mm2**2 - σ2)
+            - 2 * mm0**2 * (σ3 - mm1**2 - mm2**2)
+        )
+        / (sp.sqrt(Kallen(mm0**2, mm2**2, σ2)) * sp.sqrt(Kallen(mm0**2, σ1, mm1**2)))
+    )
+    zeta_expr = formulate_zeta_angle(1, 1, 3, mandelstam=True)[1]
+    assert zeta_expr == sp.acos(
+        (
+            2 * mm1**2 * (σ2 - mm0**2 - mm2**2)
+            + (mm0**2 + mm1**2 - σ1) * (σ3 - mm1**2 - mm2**2)
+        )
+        / (sp.sqrt(Kallen(mm0**2, mm1**2, σ1)) * sp.sqrt(Kallen(σ3, mm1**2, mm2**2)))
+    )
+
+
 def _generate_numpy_code(expr: sp.Expr) -> str:
     # cspell:ignore doprint
     printer = NumPyPrinter()
