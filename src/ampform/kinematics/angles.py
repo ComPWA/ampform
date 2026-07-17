@@ -278,7 +278,7 @@ def compute_wigner_rotation_matrix(
 
 
 def formulate_scattering_angle(
-    state_id: int, sibling_id: int
+    state_id: int, sibling_id: int, *, mandelstam: bool = False
 ) -> tuple[sp.Symbol, sp.acos]:
     r"""Formulate the scattering angle in the rest frame of the resonance.
 
@@ -286,7 +286,14 @@ def formulate_scattering_angle(
     DPD paper <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
     :cite:`Marangotto:2019ucc`. The angle is that between particle :math:`i` and
     spectator particle :math:`k` in the rest frame of the isobar resonance :math:`(ij)`.
+    If :code:`mandelstam` is set, the expression is formulated in terms of Mandelstam
+    variables :math:`\sigma_1, \sigma_2, \sigma_3` and state masses
+    :math:`m_0, m_1, m_2, m_3` instead of invariant masses (see
+    :func:`to_mandelstam_variables`).
     """
+    if mandelstam:
+        symbol, expr = formulate_scattering_angle(state_id, sibling_id)
+        return symbol, to_mandelstam_variables(expr)  # ty:ignore[invalid-return-type]
     if not {state_id, sibling_id} <= {1, 2, 3}:
         msg = "Child IDs need to be one of 1, 2, 3"
         raise ValueError(msg)
@@ -312,9 +319,16 @@ def formulate_scattering_angle(
 
 
 def formulate_theta_hat_angle(
-    isobar_id: int, aligned_subsystem: int
+    isobar_id: int, aligned_subsystem: int, *, mandelstam: bool = False
 ) -> tuple[sp.Symbol, sp.acos]:
-    r"""Formulate an expression for :math:`\hat\theta_{i(j)}`."""
+    r"""Formulate an expression for :math:`\hat\theta_{i(j)}`.
+
+    If :code:`mandelstam` is set, the expression is formulated in terms of Mandelstam
+    variables (see :func:`to_mandelstam_variables`).
+    """
+    if mandelstam:
+        symbol, expr = formulate_theta_hat_angle(isobar_id, aligned_subsystem)
+        return symbol, to_mandelstam_variables(expr)  # ty:ignore[invalid-return-type]
     allowed_ids = {1, 2, 3}
     if not {isobar_id, aligned_subsystem} <= allowed_ids:
         msg = f"Child IDs need to be one of {', '.join(map(str, allowed_ids))}"
@@ -352,8 +366,19 @@ def formulate_zeta_angle(  # ruff: ignore[complex-structure, too-many-return-sta
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
+    *,
+    mandelstam: bool = False,
 ) -> tuple[sp.Symbol, sp.acos]:
-    r"""Formulate expression for the alignment angle :math:`\zeta^i_{j(k)}`."""
+    r"""Formulate expression for the alignment angle :math:`\zeta^i_{j(k)}`.
+
+    If :code:`mandelstam` is set, the expression is formulated in terms of Mandelstam
+    variables (see :func:`to_mandelstam_variables`).
+    """
+    if mandelstam:
+        symbol, expr = formulate_zeta_angle(
+            rotated_state, aligned_subsystem, reference_subsystem
+        )
+        return symbol, to_mandelstam_variables(expr)  # ty:ignore[invalid-return-type]
     zeta_symbol = sp.Symbol(
         Rf"\zeta^{rotated_state}_{{{aligned_subsystem}({reference_subsystem})}}",
         real=True,
@@ -443,6 +468,37 @@ def formulate_zeta_angle(  # ruff: ignore[complex-structure, too-many-return-sta
         f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"
     )
     raise NotImplementedError(msg)
+
+
+def to_mandelstam_variables(expression: sp.Expr) -> sp.Expr:
+    r"""Substitute invariant masses with Mandelstam variables and state masses.
+
+    Rewrite an expression in terms of the Mandelstam variables
+    :math:`\sigma_1, \sigma_2, \sigma_3` and state masses :math:`m_0, m_1, m_2, m_3`,
+    following the conventions of the DPD paper :cite:`Marangotto:2019ucc`.
+
+    >>> m_12, m_3 = sp.symbols("m_12 m_3", nonnegative=True)
+    >>> to_mandelstam_variables(m_12**2 + m_3)
+    m3 + sigma3
+    """
+    return expression.xreplace(_MANDELSTAM_SUBSTITUTIONS)
+
+
+def _create_mandelstam_substitutions() -> dict[sp.Basic, sp.Basic]:
+    mass_substitutions: dict[sp.Basic, sp.Basic] = {
+        sp.Symbol(f"m_{i}", nonnegative=True): sp.Symbol(f"m{i}", nonnegative=True)
+        for i in range(4)
+    }
+    invariant_mass_substitutions: dict[sp.Basic, sp.Basic] = {
+        sp.Symbol(f"m_{jk}", nonnegative=True) ** 2: sp.Symbol(
+            f"sigma{i}", nonnegative=True
+        )
+        for i, jk in enumerate(["23", "13", "12"], start=1)
+    }
+    return mass_substitutions | invariant_mass_substitutions
+
+
+_MANDELSTAM_SUBSTITUTIONS = _create_mandelstam_substitutions()
 
 
 def _create_mass_mandelstam_pair(i: int) -> tuple[sp.Symbol, sp.Pow]:
