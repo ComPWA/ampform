@@ -54,3 +54,4 @@ CLAUDE.md
 !.vscode/*.json
 !.zenodo.json
 !codecov.yml
+!src/ampform/particle-definitions.yml
