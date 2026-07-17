@@ -91,7 +91,7 @@ jupyter = [
     "python-lsp-server",
 ]
 notebooks = [
-    "ampform[scipy]",
+    "ampform[scipy,viz]",
     "black",
     "ipympl",
     "matplotlib",
@@ -621,6 +621,16 @@ include = [
     "docs/amplitude/interactive.ipynb",
     "docs/dynamics.ipynb",
 ]
+rules.unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = [
+    "docs/dpd.ipynb",
+    "docs/dpd/**",
+]
+rules.invalid-assignment = "ignore"
+rules.invalid-key = "ignore"
+rules.invalid-return-type = "ignore"
 rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]

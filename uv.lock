@@ -53,7 +53,7 @@ viz = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "ampform", extra = ["scipy"] },
+    { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -103,7 +103,7 @@ dev = [
     { name = "ty" },
 ]
 doc = [
-    { name = "ampform", extra = ["scipy"] },
+    { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -144,7 +144,7 @@ jupyter = [
     { name = "python-lsp-server" },
 ]
 notebooks = [
-    { name = "ampform", extra = ["scipy"] },
+    { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -157,7 +157,7 @@ notebooks = [
     { name = "sympy-plot-backends" },
 ]
 style = [
-    { name = "ampform", extra = ["scipy"] },
+    { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -191,7 +191,7 @@ test = [
     { name = "quadax" },
 ]
 types = [
-    { name = "ampform", extra = ["scipy"] },
+    { name = "ampform", extra = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -225,6 +225,7 @@ provides-extras = ["scipy", "viz"]
 [package.metadata.requires-dev]
 dev = [
     { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
@@ -267,7 +268,7 @@ dev = [
     { name = "ty" },
 ]
 doc = [
-    { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
@@ -301,7 +302,7 @@ jupyter = [
     { name = "python-lsp-server" },
 ]
 notebooks = [
-    { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
@@ -311,7 +312,7 @@ notebooks = [
     { name = "sympy-plot-backends" },
 ]
 style = [
-    { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
@@ -339,7 +340,7 @@ test = [
     { name = "quadax" },
 ]
 types = [
-    { name = "ampform", extras = ["scipy"] },
+    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
