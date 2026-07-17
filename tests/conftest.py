@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from qrules.transition import SpinFormalism
 
-    from ampform.helicity import HelicityModel
+    from ampform.amplitude.helicity import HelicityModel
 
 logging.getLogger().setLevel(level=logging.ERROR)
 

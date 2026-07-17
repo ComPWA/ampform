@@ -12,7 +12,7 @@ from ampform.sympy._cache import to_bytes
 from ampform.sympy.cached import _sorted_frozendict
 
 if TYPE_CHECKING:
-    from ampform.helicity import HelicityModel
+    from ampform.amplitude.helicity import HelicityModel
 
 
 def test_doit(amplitude_model: tuple[str, HelicityModel]):

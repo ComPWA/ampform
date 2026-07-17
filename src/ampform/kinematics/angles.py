@@ -11,8 +11,11 @@ from ampform.adapter.transition import (
     get_sibling_state_id,
     is_opposite_helicity_state,
 )
+from ampform.amplitude.helicity.naming import (
+    get_helicity_angle_symbols,
+    get_helicity_suffix,
+)
 from ampform.decay import DecayChain, IsobarNode, State, get_final_state_ids
-from ampform.helicity.naming import get_helicity_angle_symbols, get_helicity_suffix
 from ampform.kinematics.lorentz import (
     ArraySize,
     BoostMatrix,

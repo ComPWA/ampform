@@ -8,7 +8,10 @@ from typing import TYPE_CHECKING
 import sympy as sp
 
 from ampform.adapter.transition import get_outer_state_ids, group_by_topology
-from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
+from ampform.amplitude.helicity.naming import (
+    create_amplitude_base,
+    create_spin_projection_symbol,
+)
 
 if TYPE_CHECKING:
     from qrules.transition import ReactionInfo

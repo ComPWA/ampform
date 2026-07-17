@@ -6,7 +6,7 @@ import pytest
 import qrules
 
 import ampform
-from ampform.helicity.align.dpd import (
+from ampform.amplitude.helicity.align.dpd import (
     DalitzPlotDecomposition,
     _collect_outer_state_helicities,
     relabel_edge_ids,

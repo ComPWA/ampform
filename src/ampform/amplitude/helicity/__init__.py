@@ -32,13 +32,8 @@ from ampform.adapter.transition import (
     group_by_topology,
     perform_combinatorics,
 )
-from ampform.dynamics.builder import (
-    ResonanceDynamicsBuilder,
-    TwoBodyKinematicVariableSet,
-    create_non_dynamic,
-)
-from ampform.helicity.align import NoAlignment, SpinAlignment
-from ampform.helicity.naming import (
+from ampform.amplitude.helicity.align import NoAlignment, SpinAlignment
+from ampform.amplitude.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     NameGenerator,
@@ -47,6 +42,11 @@ from ampform.helicity.naming import (
     generate_transition_label,
     get_helicity_angle_symbols,
     natural_sorting,
+)
+from ampform.dynamics.builder import (
+    ResonanceDynamicsBuilder,
+    TwoBodyKinematicVariableSet,
+    create_non_dynamic,
 )
 from ampform.kinematics import HelicityAdapter
 from ampform.kinematics.lorentz import (

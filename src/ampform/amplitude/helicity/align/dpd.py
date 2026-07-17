@@ -22,8 +22,11 @@ from ampform.adapter.transition import (
     get_spectator_id,
     group_by_topology,
 )
-from ampform.helicity.align import SpinAlignment
-from ampform.helicity.naming import create_amplitude_base, create_spin_projection_symbol
+from ampform.amplitude.helicity.align import SpinAlignment
+from ampform.amplitude.helicity.naming import (
+    create_amplitude_base,
+    create_spin_projection_symbol,
+)
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
 

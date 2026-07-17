@@ -93,7 +93,7 @@ EXECUTE_NB = get_execution_mode() != "off"
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
-    "ampform.helicity._T": "typing.TypeVar",
+    "ampform.amplitude.helicity._T": "typing.TypeVar",
     "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
     "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
@@ -113,7 +113,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "NumPyPrintable": ("class", "ampform.sympy.NumPyPrintable"),
     "NumPyPrinter": "sympy.printing.printer.Printer",
     "P": "typing.ParamSpec",
-    "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
+    "ParameterValue": ("obj", "ampform.amplitude.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
     "ReactionInfo": "qrules.transition.ReactionInfo",
     "Slider": "ipywidgets.widgets.valuewidget.ValueWidget",
@@ -139,7 +139,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     ),
 }
 api_target_types: dict[str, str] = {
-    "ampform.helicity.align.dpd.T": "obj",
+    "ampform.amplitude.helicity.align.dpd.T": "obj",
 }
 author = ""
 autodoc_default_options = {

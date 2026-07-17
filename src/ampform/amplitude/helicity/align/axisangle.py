@@ -18,15 +18,15 @@ from ampform.adapter.transition import (
     group_by_topology,
     is_opposite_helicity_state,
 )
-from ampform.decay.spin import create_spin_range
-from ampform.helicity import SpinAlignment
-from ampform.helicity.naming import (
+from ampform.amplitude.helicity import SpinAlignment
+from ampform.amplitude.helicity.naming import (
     create_amplitude_base,
     create_helicity_symbol,
     create_spin_projection_symbol,
     get_helicity_angle_symbols,
     get_helicity_suffix,
 )
+from ampform.decay.spin import create_spin_range
 from ampform.kinematics.angles import compute_wigner_angles
 from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
