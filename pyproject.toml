@@ -626,6 +626,16 @@ rules.unresolved-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = [
+    "docs/dpd.ipynb",
+    "docs/dpd/**",
+]
+rules.invalid-assignment = "ignore"
+rules.invalid-key = "ignore"
+rules.invalid-return-type = "ignore"
+rules.unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = [
     "src/ampform/sympy/**",
     "tests/sympy/**",
 ]
