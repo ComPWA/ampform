@@ -6,7 +6,7 @@ See :cite:`Marangotto:2019ucc`.
 from __future__ import annotations
 
 from functools import cache, singledispatch
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import Literal, TypeVar
 
 import attrs
 import sympy as sp
@@ -14,7 +14,6 @@ from attrs import define, field
 from attrs.validators import in_
 from qrules.topology import Topology
 from qrules.transition import ReactionInfo, StateTransition
-from sympy.physics.quantum.spin import Rotation as Wigner
 
 from ampform._qrules import get_qrules_version
 from ampform.adapter.transition import (
@@ -22,6 +21,7 @@ from ampform.adapter.transition import (
     get_spectator_id,
     group_by_topology,
 )
+from ampform.amplitude.dpd import AlignmentWignerGenerator
 from ampform.amplitude.helicity.align import SpinAlignment
 from ampform.amplitude.helicity.naming import (
     create_amplitude_base,
@@ -29,9 +29,6 @@ from ampform.amplitude.helicity.naming import (
 )
 from ampform.kinematics.angles import formulate_zeta_angle
 from ampform.sympy import PoolSum
-
-if TYPE_CHECKING:
-    from sympy.physics.quantum.spin import WignerD
 
 if get_qrules_version() < (0, 10):
     from qrules.transition import (
@@ -60,7 +57,10 @@ class DalitzPlotDecomposition(SpinAlignment):
 def _formulate_aligned_amplitude(  # ruff: ignore[too-many-locals]
     reaction: ReactionInfo, reference_subsystem: Literal[1, 2, 3]
 ) -> tuple[sp.Expr, dict[sp.Symbol, sp.Expr]]:
-    wigner_generator = _DPDAlignmentWignerGenerator(reference_subsystem)
+    wigner_generator = AlignmentWignerGenerator(
+        reference_subsystem,
+        formulate_zeta_angle=formulate_zeta_angle,
+    )
     outer_state_ids = get_outer_state_ids(reaction)
     λ0, λ1, λ2, λ3 = (create_spin_projection_symbol(i) for i in outer_state_ids)
     _λ0, _λ1, _λ2, _λ3 = sp.symbols(R"\lambda_(:4)^", rational=True)
@@ -89,28 +89,6 @@ def _formulate_aligned_amplitude(  # ruff: ignore[too-many-locals]
         (_λ3, outer_helicities[3]),
     )
     return amp_expr, wigner_generator.angle_definitions
-
-
-class _DPDAlignmentWignerGenerator:
-    def __init__(self, reference_subsystem: Literal[1, 2, 3] = 1) -> None:
-        self.angle_definitions: dict[sp.Symbol, sp.Expr] = {}
-        self.reference_subsystem = reference_subsystem
-
-    def __call__(
-        self,
-        j: sp.Rational | sp.Symbol,
-        m: sp.Rational | sp.Symbol,
-        m_prime: sp.Rational | sp.Symbol,
-        rotated_state: Literal[0, 1, 2, 3],
-        aligned_subsystem: Literal[1, 2, 3],
-    ) -> sp.Rational | WignerD:
-        if j == 0:
-            return sp.Rational(1)
-        zeta, zeta_expr = formulate_zeta_angle(
-            rotated_state, aligned_subsystem, self.reference_subsystem
-        )
-        self.angle_definitions[zeta] = zeta_expr
-        return Wigner.d(j, m, m_prime, zeta)
 
 
 if get_qrules_version() < (0, 10):
