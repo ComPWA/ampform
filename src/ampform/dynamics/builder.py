@@ -10,7 +10,11 @@ import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
 
-from ampform.dynamics import EnergyDependentWidth, FormFactor, relativistic_breit_wigner
+from ampform.dynamics import (
+    FormFactor,
+    RelativisticBreitWigner,
+    relativistic_breit_wigner,
+)
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -201,20 +205,16 @@ class RelativisticBreitWignerBuilder:
 
         inv_mass = variable_pool.incoming_state_mass
         res_mass, res_width, meson_radius = self.__create_symbols(resonance)
-        s = inv_mass**2
-        mass_dependent_width = EnergyDependentWidth(
-            s=s,
+        breit_wigner_expr = RelativisticBreitWigner(
+            s=inv_mass**2,
             mass0=res_mass,
             gamma0=res_width,
-            m_a=variable_pool.outgoing_state_mass1,
-            m_b=variable_pool.outgoing_state_mass2,
+            m1=variable_pool.outgoing_state_mass1,
+            m2=variable_pool.outgoing_state_mass2,
             angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
             phsp_factor=self.phsp_factor,
-        )
-        breit_wigner_expr = (res_mass * res_width) / (
-            res_mass**2 - s - mass_dependent_width * res_mass * sp.I
-        )
+        ).doit(deep=False)
         return DefinedExpression(
             expression=breit_wigner_expr,
             parameters={

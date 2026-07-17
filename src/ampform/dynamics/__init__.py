@@ -15,6 +15,7 @@ from ampform.dynamics.form_factor import (
     BlattWeisskopfSquared,  # ruff: ignore[unused-import]
     FormFactor,
 )
+from ampform.dynamics.phasespace import BreakupMomentum as BreakupMomentum
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,  # ruff: ignore[unused-import]
     PhaseSpaceFactor,
@@ -80,9 +81,11 @@ class EnergyDependentWidth(sp.Expr):
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     """Relativistic Breit–Wigner lineshape.
 
-    See :ref:`dynamics:_Without_ form factor` and :cite:`ParticleDataGroup:2012pjm`.
+    The lineshape is normalized such that its numerator is :code:`mass0 * gamma0`, see
+    `SimpleBreitWigner` for the unnormalized expression class. See also
+    :ref:`dynamics:_Without_ form factor` and :cite:`ParticleDataGroup:2012pjm`.
     """
-    return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
+    return mass0 * gamma0 * SimpleBreitWigner(s, mass0, gamma0).doit(deep=False)
 
 
 def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-arguments]
@@ -97,15 +100,58 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 
-    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2021; Resonances; p.9`.
+    The Breit–Wigner (with energy-dependent width) is defined by
+    `RelativisticBreitWigner`. See also :ref:`dynamics:_With_ form factor` and
+    :pdg-review:`2021; Resonances; p.9`.
     """
     form_factor = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
-    energy_dependent_width = EnergyDependentWidth(
+    breit_wigner = RelativisticBreitWigner(
         s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
     )
-    return (mass0 * gamma0 * form_factor) / (
-        mass0**2 - s - energy_dependent_width * mass0 * sp.I
+    return form_factor * breit_wigner.doit(deep=False)
+
+
+@unevaluated
+class RelativisticBreitWigner(sp.Expr):
+    s: Any
+    mass0: Any
+    gamma0: Any
+    m1: Any
+    m2: Any
+    angular_momentum: Any
+    meson_radius: Any
+    phsp_factor: PhaseSpaceFactorProtocol = argument(
+        default=PhaseSpaceFactor, sympify=False
+    )  # ty:ignore[invalid-assignment]
+    _latex_repr_ = (
+        R"\mathcal{{R}}_{{{angular_momentum}}}\left({s}, {mass0}, {gamma0}\right)"
     )
+
+    def evaluate(self):
+        s, m0, w0, m1, m2, angular_momentum, meson_radius = self.args
+        width = EnergyDependentWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m1,
+            m_b=m2,
+            angular_momentum=angular_momentum,
+            meson_radius=meson_radius,
+            phsp_factor=self.phsp_factor,
+        )
+        return (m0 * w0) / (m0**2 - s - width * m0 * sp.I)
+
+
+@unevaluated
+class SimpleBreitWigner(sp.Expr):
+    s: Any
+    mass: Any
+    width: Any
+    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{BW}}\left({s}; {mass}, {width}\right)"
+
+    def evaluate(self):
+        s, m0, Γ0 = self.args
+        return 1 / (m0**2 - s - m0 * Γ0 * sp.I)
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
