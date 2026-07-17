@@ -1,18 +1,35 @@
-"""Build `~ampform.dynamics` with correct variable names and values."""
+"""Build `~ampform.dynamics` with correct variable names and values.
+
+This module provides two builder interfaces. A `.ResonanceDynamicsBuilder` formulates
+dynamics for a single resonance in a two-body decay node, given a
+`.TwoBodyKinematicVariableSet`. A `.DynamicsBuilder` formulates dynamics over an
+**entire decay chain** and is used by the `.DalitzPlotDecompositionBuilder`.
+"""
 
 from __future__ import annotations
 
 import operator
+from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import Any, Protocol
 
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import instance_of
 
+from ampform.decay import (
+    DecayNode,
+    IsobarNode,
+    Particle,
+    ParticleLike,
+    State,
+    ThreeBodyDecayChain,
+    to_particle,
+)
 from ampform.dynamics import (
     FormFactor,
     RelativisticBreitWigner,
+    SimpleBreitWigner,
     relativistic_breit_wigner,
 )
 from ampform.dynamics.phasespace import (
@@ -20,11 +37,6 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from ampform.decay import ParticleLike
 
 
 @frozen
@@ -69,10 +81,11 @@ def _binary_operation(op: Callable[[Any, Any], Any]):
 class DefinedExpression:
     """Expression with suggested parameter values and subexpression definitions.
 
-    Every `.ResonanceDynamicsBuilder` returns its lineshape in this form. The
-    `parameters` provide suggested starting values (see
-    :attr:`.HelicityModel.parameter_defaults`) for the `~sympy.core.symbol.Symbol`
-    instances that appear in the `expression`.
+    Every dynamics builder returns its lineshape in this form: a
+    `.ResonanceDynamicsBuilder` for a single two-body decay node and a
+    `.DynamicsBuilder` for an entire decay chain. The `parameters` provide suggested
+    starting values (see :attr:`.HelicityModel.parameter_defaults`) for the
+    `~sympy.core.symbol.Symbol` instances that appear in the `expression`.
     """
 
     expression: sp.Expr = field(converter=sp.sympify, default=sp.S.One)  # ty:ignore[invalid-assignment]
@@ -285,3 +298,138 @@ and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
 .. seealso:: :doc:`/analyticity/phasespace-factors`.
 """
+
+
+DynamicsBuilder = Callable[[ThreeBodyDecayChain], DefinedExpression]
+"""Protocol for functions that formulate dynamics expressions for decay chains.
+
+As opposed to a `.ResonanceDynamicsBuilder`, which formulates dynamics for a single
+two-body decay node, a `DynamicsBuilder` defines dynamics over an **entire decay
+chain**. It is used by :meth:`.DalitzPlotDecompositionBuilder.formulate`.
+"""
+
+
+@define
+class BreitWignerBuilder:
+    """Chain-level dynamics builder for (relativistic) Breit–Wigner functions.
+
+    The :meth:`__call__` of this builder complies with the `.DynamicsBuilder` protocol,
+    so instances of this class can be used in
+    :meth:`.DynamicsConfigurator.register_builder`.
+    """
+
+    energy_dependent_width: bool = True
+    decay_form_factor: bool = True
+    production_form_factor: bool = True
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor  # ty:ignore[invalid-assignment]
+
+    def __call__(self, decay_chain: ThreeBodyDecayChain) -> DefinedExpression:
+        """Formulate a (relativistic) Breit-Wigner for this resonance."""
+        decay_node = decay_chain.decay_node
+        s = get_mandelstam_s(decay_node)
+        if self.energy_dependent_width:
+            expression = _create_breit_wigner(s, decay_node, self.phsp_factor)
+        else:
+            expression = _create_simple_breit_wigner(s, decay_node)
+        if self.decay_form_factor:
+            expression *= _create_form_factor(decay_node)
+        if self.production_form_factor:
+            expression *= _create_form_factor(decay_chain.production_node)
+        return expression
+
+
+formulate_breit_wigner_with_form_factor = BreitWignerBuilder()
+
+
+def _create_form_factor(isobar: IsobarNode) -> DefinedExpression:
+    parameter_defaults: dict[sp.Basic, complex | float] = {}
+    if isinstance(isobar.parent, State):
+        inv_mass = sp.Symbol("m0", nonnegative=True)
+        parameter_defaults[inv_mass] = to_particle(isobar).mass
+        s = inv_mass**2
+    else:
+        s = get_mandelstam_s(isobar)
+    outgoing_state_mass1 = create_mass_symbol(isobar.child1)
+    outgoing_state_mass2 = create_mass_symbol(isobar.child2)
+    meson_radius = _create_meson_radius_symbol(isobar)
+    form_factor = FormFactor(
+        s=s,
+        m1=outgoing_state_mass1,
+        m2=outgoing_state_mass2,
+        angular_momentum=_get_angular_momentum(isobar),
+        meson_radius=meson_radius,
+    )
+    parameter_defaults.update({
+        meson_radius: 1,
+        outgoing_state_mass1: to_particle(isobar.child1).mass,
+        outgoing_state_mass2: to_particle(isobar.child2).mass,
+    })
+    return DefinedExpression(form_factor, parameter_defaults)
+
+
+def _create_breit_wigner(
+    s: sp.Symbol, isobar: DecayNode, phsp_factor: PhaseSpaceFactorProtocol
+) -> DefinedExpression:
+    outgoing_state_mass1 = create_mass_symbol(isobar.child1)
+    outgoing_state_mass2 = create_mass_symbol(isobar.child2)
+    angular_momentum = _get_angular_momentum(isobar)
+    res_mass = create_mass_symbol(isobar.parent)
+    res_width = sp.Symbol(Rf"\Gamma_{{{isobar.parent.latex}}}", nonnegative=True)
+    meson_radius = _create_meson_radius_symbol(isobar)
+    breit_wigner_expr = RelativisticBreitWigner(
+        s=s,
+        mass0=res_mass,
+        gamma0=res_width,
+        m1=outgoing_state_mass1,
+        m2=outgoing_state_mass2,
+        angular_momentum=angular_momentum,
+        meson_radius=meson_radius,
+        phsp_factor=phsp_factor,
+    )
+    parameter_defaults: dict[sp.Basic, complex | float] = {
+        res_mass: isobar.parent.mass,
+        res_width: isobar.parent.width,
+        meson_radius: 1,
+    }
+    return DefinedExpression(breit_wigner_expr, parameter_defaults)
+
+
+def _create_simple_breit_wigner(s: sp.Symbol, isobar: DecayNode) -> DefinedExpression:
+    mass = create_mass_symbol(isobar.parent)
+    width = sp.Symbol(Rf"\Gamma_{{{isobar.parent.latex}}}", nonnegative=True)
+    meson_radius = _create_meson_radius_symbol(isobar)
+    return DefinedExpression(
+        expression=SimpleBreitWigner(s, mass, width),
+        parameters={
+            mass: isobar.parent.mass,
+            width: isobar.parent.width,
+            meson_radius: 1,
+        },
+    )
+
+
+def _get_angular_momentum(isobar: IsobarNode) -> int:
+    if isobar.interaction is None:
+        msg = "Need LS couplings to formulate a form factor"
+        raise ValueError(msg)
+    return isobar.interaction.L
+
+
+def _create_meson_radius_symbol(isobar: IsobarNode) -> sp.Symbol:
+    if isinstance(isobar.parent, State):
+        return sp.Symbol(Rf"R_{{{isobar.parent.latex}}}", nonnegative=True)
+    return sp.Symbol(R"R_\mathrm{res}", nonnegative=True)
+
+
+def create_mass_symbol(particle: IsobarNode | Particle | State) -> sp.Symbol:
+    particle = to_particle(particle)
+    if isinstance(particle, State):
+        return sp.Symbol(f"m{particle.index}", nonnegative=True)
+    return sp.Symbol(f"m_{{{particle.latex}}}", nonnegative=True)
+
+
+def get_mandelstam_s(decay: DecayNode) -> sp.Symbol:
+    subsystem_id, *_ = {1, 2, 3} - {
+        s.index for s in decay.children if isinstance(s, State)
+    }
+    return sp.Symbol(f"sigma{subsystem_id}", nonnegative=True)

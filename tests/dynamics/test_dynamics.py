@@ -2,14 +2,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
 import sympy as sp
 
 from ampform.dynamics import (
+    BreitWigner,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    FormFactor,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
+    RelativisticBreitWigner,
+    SimpleBreitWigner,
+    relativistic_breit_wigner,
     relativistic_breit_wigner_with_ff,
 )
 
@@ -195,3 +201,52 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
         if isinstance(node, (float, sp.Float)):
             rounded_expr = rounded_expr.xreplace({node: round(node, n_decimals)})
     return rounded_expr
+
+
+def test_breit_wigner_class_normalizations():
+    """The Breit-Wigner functions and classes agree numerically.
+
+    `.relativistic_breit_wigner` and `.RelativisticBreitWigner` are normalized with a
+    numerator :code:`mass0 * gamma0`, whereas `.SimpleBreitWigner` and `.BreitWigner`
+    have numerator :code:`1`.
+    """
+    s, m0, w0, m1, m2 = sp.symbols("s m0 Gamma0 m1 m2", nonnegative=True)
+    args = sp.Tuple(s, m0, w0, m1, m2)
+    s_threshold = (0.938 + 0.494) ** 2
+    grid = {
+        s: np.linspace(s_threshold + 0.01, 4.0, num=50),
+        m0: 1.519,
+        w0: 0.0156,
+        m1: 0.938,
+        m2: 0.494,
+    }
+
+    simple_bw = sp.lambdify(args, relativistic_breit_wigner(s, m0, w0))
+    normalized_simple_bw = sp.lambdify(
+        args, (m0 * w0 * SimpleBreitWigner(s, m0, w0)).doit()
+    )
+    np.testing.assert_allclose(
+        simple_bw(*grid.values()), normalized_simple_bw(*grid.values())
+    )
+
+    angular_momentum = 2
+    meson_radius = 1.5
+    rel_bw = RelativisticBreitWigner(s, m0, w0, m1, m2, angular_momentum, meson_radius)
+    normalized_bw = (
+        m0 * w0 * BreitWigner(s, m0, w0, m1, m2, angular_momentum, meson_radius)
+    )
+    rel_bw_func = sp.lambdify(args, rel_bw.doit())
+    normalized_bw_func = sp.lambdify(args, normalized_bw.doit())
+    np.testing.assert_allclose(
+        rel_bw_func(*grid.values()), normalized_bw_func(*grid.values())
+    )
+
+    bw_with_ff = relativistic_breit_wigner_with_ff(
+        s, m0, w0, m1, m2, angular_momentum, meson_radius
+    )
+    form_factor = FormFactor(s, m1, m2, angular_momentum, meson_radius)
+    bw_with_ff_func = sp.lambdify(args, bw_with_ff.doit())
+    factorized_func = sp.lambdify(args, (form_factor * rel_bw).doit())
+    np.testing.assert_allclose(
+        bw_with_ff_func(*grid.values()), factorized_func(*grid.values())
+    )
