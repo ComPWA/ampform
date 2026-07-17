@@ -1,4 +1,4 @@
-"""Generate descriptions used in the `~ampform.helicity` formalism."""
+"""Generate descriptions used in the `~ampform.amplitude.helicity` formalism."""
 
 from __future__ import annotations
 

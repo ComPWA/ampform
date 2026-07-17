@@ -38,6 +38,7 @@ dependencies = [
     { name = "frozendict" },
     { name = "qrules" },
     { name = "sympy" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 
 [package.optional-dependencies]
@@ -213,6 +214,7 @@ requires-dist = [
     { name = "qrules", specifier = ">=0.9.6" },
     { name = "scipy", marker = "extra == 'scipy'" },
     { name = "sympy", specifier = ">=1.10" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 provides-extras = ["scipy", "viz"]
 

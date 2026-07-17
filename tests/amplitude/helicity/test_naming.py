@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from ampform import get_builder
-from ampform.decay import DecayChain, IsobarNode, Particle, State
-from ampform.helicity.naming import (
+from ampform.amplitude.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
     HelicityAmplitudeNameGenerator,
     _render_float,
@@ -14,11 +13,12 @@ from ampform.helicity.naming import (
     get_boost_chain_suffix,
     get_topology_identifier,
 )
+from ampform.decay import DecayChain, IsobarNode, Particle, State
 
 if TYPE_CHECKING:
     from qrules import ReactionInfo
 
-    from ampform.helicity import HelicityModel
+    from ampform.amplitude.helicity import HelicityModel
 
 
 def test_generate_transition_label(reaction: ReactionInfo):

@@ -16,7 +16,7 @@ from ampform.dynamics import (
 if TYPE_CHECKING:
     from qrules import ParticleCollection
 
-    from ampform.helicity import HelicityModel
+    from ampform.amplitude.helicity import HelicityModel
 
 
 class TestEnergyDependentWidth:

@@ -540,7 +540,7 @@ def extend_ThreeMomentum() -> None:
 
 
 def extend_formulate_isobar_cg_coefficients() -> None:
-    from ampform.helicity import formulate_isobar_cg_coefficients
+    from ampform.amplitude.helicity import formulate_isobar_cg_coefficients
 
     _append_to_docstring(
         formulate_isobar_cg_coefficients,
@@ -551,7 +551,7 @@ def extend_formulate_isobar_cg_coefficients() -> None:
 
 
 def extend_formulate_isobar_wigner_d() -> None:
-    from ampform.helicity import formulate_isobar_wigner_d
+    from ampform.amplitude.helicity import formulate_isobar_wigner_d
 
     _append_to_docstring(
         formulate_isobar_wigner_d,
@@ -589,7 +589,7 @@ def __get_graphviz_state_transition_example(
 
 
 def extend_get_boost_chain_suffix() -> None:
-    from ampform.helicity.naming import get_boost_chain_suffix
+    from ampform.amplitude.helicity.naming import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
     dot0, dot1, *_ = tuple(

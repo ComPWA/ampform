@@ -23,6 +23,7 @@ from ampform.adapter.qrules import (
     to_decay,
     to_three_body_decay,
 )
+from ampform.amplitude.helicity.naming import get_boost_chain_suffix
 from ampform.decay import (
     DecayChain,
     IsobarNode,
@@ -30,7 +31,6 @@ from ampform.decay import (
     Particle,
     generate_helicity_assignments,
 )
-from ampform.helicity.naming import get_boost_chain_suffix
 from ampform.kinematics.angles import compute_helicity_angles
 from ampform.kinematics.lorentz import (
     compute_invariant_masses,

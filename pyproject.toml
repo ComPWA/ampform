@@ -37,6 +37,7 @@ dependencies = [
     "frozendict",
     "qrules >=0.9.6",
     "sympy >=1.10",
+    'typing-extensions; python_version <"3.11.0"',  # typing.Required
 ]
 dynamic = ["version"]
 
@@ -552,9 +553,9 @@ ignore-names = [
     "import-private-name",
     "undocumented-public-module",
 ]
+"src/ampform/amplitude/helicity/__init__.py" = ["import-outside-top-level"]
+"src/ampform/amplitude/helicity/align/axisangle.py" = ["import-outside-top-level"]
 "src/ampform/decay/__init__.py" = ["import-outside-top-level"]
-"src/ampform/helicity/__init__.py" = ["import-outside-top-level"]
-"src/ampform/helicity/align/axisangle.py" = ["import-outside-top-level"]
 "setup.py" = ["undocumented-public-module"]
 "tests/*" = [
     "D",

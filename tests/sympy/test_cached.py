@@ -9,7 +9,7 @@ import sympy as sp
 from ampform.sympy import cached
 
 if TYPE_CHECKING:
-    from ampform.helicity import HelicityModel
+    from ampform.amplitude.helicity import HelicityModel
 
 
 def test_doit(amplitude_model: tuple[str, HelicityModel]):

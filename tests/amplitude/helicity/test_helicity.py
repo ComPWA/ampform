@@ -10,11 +10,7 @@ from qrules import ReactionInfo
 
 import ampform.decay
 from ampform import get_builder
-from ampform.dynamics.builder import (
-    RelativisticBreitWignerBuilder,
-    create_relativistic_breit_wigner_with_ff,
-)
-from ampform.helicity import (
+from ampform.amplitude.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
     ParameterValue,
@@ -22,6 +18,10 @@ from ampform.helicity import (
     _generate_kinematic_variables,
     formulate_isobar_wigner_d,
     group_by_spin_projection,
+)
+from ampform.dynamics.builder import (
+    RelativisticBreitWignerBuilder,
+    create_relativistic_breit_wigner_with_ff,
 )
 
 if TYPE_CHECKING:
