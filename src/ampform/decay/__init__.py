@@ -3,8 +3,8 @@ r"""Data structures that describe an isobar decay.
 The classes in this module are the interface between decay descriptions from external
 packages (see e.g. the `.adapter.qrules` module) and the amplitude builders provided by
 AmpForm. The structures support :math:`1 \to n` isobar decays of arbitrary decay depth.
-Three-body decays are described by the specializations `ThreeBodyDecay` and
-`ThreeBodyDecayChain`.
+Three-body decays, as required by the `ampform.amplitude.dpd` module, are described by the
+specializations `ThreeBodyDecay` and `ThreeBodyDecayChain`.
 """
 
 from __future__ import annotations
