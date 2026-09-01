@@ -13,7 +13,7 @@ import hashlib
 import inspect
 import logging
 import os
-import pickle  # noqa: S403
+import pickle  # ruff: ignore[suspicious-pickle-import]
 import re
 import sys
 from collections import abc
@@ -49,7 +49,7 @@ def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]: ...
 def cache_to_disk(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
-    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
     dependencies: list[str] | None = None,
     function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
@@ -57,7 +57,7 @@ def cache_to_disk(
     func: Callable[P, T] | None = None,
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
-    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
     dependencies: list[str] | None = None,
     function_name: str | None = None,
 ):
@@ -88,7 +88,7 @@ def cache_to_disk(
 def _cache_to_disk_implementation(
     *,
     dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
-    load_function: Callable[[BufferedReader], Any] = pickle.load,  # noqa: S301
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
     dependencies: list[str] | None = None,
     function_name: str | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
@@ -201,7 +201,7 @@ def get_system_cache_directory() -> str:
     if sys.platform.startswith("darwin"):  # macos
         return os.path.expanduser("~/Library/Caches")
     if sys.platform.startswith("win"):
-        cache_directory = os.getenv("LocalAppData")  # noqa: SIM112
+        cache_directory = os.getenv("LocalAppData")  # ruff: ignore[uncapitalized-environment-variables]
         if cache_directory is not None:
             return cache_directory
         return os.path.expanduser("~/AppData/Local")

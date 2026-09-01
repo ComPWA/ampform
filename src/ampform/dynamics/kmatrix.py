@@ -51,7 +51,7 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
@@ -105,7 +105,7 @@ class RelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -178,7 +178,7 @@ class NonRelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -254,7 +254,7 @@ class NonRelativisticPVector(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -292,7 +292,7 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
@@ -370,7 +370,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,

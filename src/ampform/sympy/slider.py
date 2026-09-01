@@ -26,7 +26,7 @@ def create_slider(symbol: sp.Symbol, **kwargs) -> Slider:
     IntSlider(value=0, description='\\(n_{0}\\)')
     """
     _assert_ipywidgets_installed()
-    import ipywidgets as w  # noqa: PLC0415
+    import ipywidgets as w  # ruff: ignore[import-outside-top-level]
 
     description = Rf"\({sp.latex(symbol)}\)"
     if symbol.is_integer:
@@ -36,7 +36,7 @@ def create_slider(symbol: sp.Symbol, **kwargs) -> Slider:
 
 def _assert_ipywidgets_installed() -> None:
     try:
-        import ipywidgets  # noqa: F401, PLC0415
+        import ipywidgets  # ruff: ignore[unused-import, import-outside-top-level]
     except ImportError as exc:
         msg = "Please install ipywidgets to use the ampform.sympy.slider module"
         raise ImportError(msg) from exc

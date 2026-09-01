@@ -73,7 +73,7 @@ def _implement_latex_subscript(
     def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
         def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
             momentum = printer._print(self.momentum)  # ty:ignore[unresolved-attribute]
-            if printer._needs_mul_brackets(self.momentum):  # noqa: SLF001  # ty:ignore[unresolved-attribute]
+            if printer._needs_mul_brackets(self.momentum):  # ruff: ignore[private-member-access]  # ty:ignore[unresolved-attribute]
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"
@@ -197,7 +197,7 @@ class MinkowskiMetric(NumPyPrintable):
     momentum: sp.Basic
     _latex_repr_ = R"\boldsymbol{\eta}"
 
-    def as_explicit(self) -> sp.MutableDenseMatrix:  # noqa: PLR6301
+    def as_explicit(self) -> sp.MutableDenseMatrix:  # ruff: ignore[no-self-use]
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, -1, 0, 0],

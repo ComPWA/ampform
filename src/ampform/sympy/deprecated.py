@@ -97,10 +97,10 @@ class UnevaluatedExpression(sp.Expr):
         """
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
-        obj._args = args  # noqa: SLF001
-        obj._assumptions = cls.default_assumptions  # noqa: SLF001
-        obj._mhash = None  # cspell:ignore mhash  # noqa: SLF001
-        obj._name = name  # noqa: SLF001
+        obj._args = args  # ruff: ignore[private-member-access]
+        obj._assumptions = cls.default_assumptions  # ruff: ignore[private-member-access]
+        obj._mhash = None  # cspell:ignore mhash  # ruff: ignore[private-member-access]
+        obj._name = name  # ruff: ignore[private-member-access]
         return obj
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:

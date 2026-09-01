@@ -12,19 +12,19 @@ import sympy as sp
 
 from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
-    BlattWeisskopfSquared,  # noqa: F401
+    BlattWeisskopfSquared,  # ruff: ignore[unused-import]
     FormFactor,
 )
 from ampform.dynamics.phasespace import (
-    EqualMassPhaseSpaceFactor,  # noqa: F401
+    EqualMassPhaseSpaceFactor,  # ruff: ignore[unused-import]
     PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,  # noqa: F401
-    PhaseSpaceFactorComplex,  # noqa: F401
+    PhaseSpaceFactorAbs,  # ruff: ignore[unused-import]
+    PhaseSpaceFactorComplex,  # ruff: ignore[unused-import]
     PhaseSpaceFactorProtocol,
-    PhaseSpaceFactorSWave,  # noqa: F401
+    PhaseSpaceFactorSWave,  # ruff: ignore[unused-import]
 )
 from ampform.kinematics.phasespace import (
-    BreakupMomentumSquared,  # noqa: F401
+    BreakupMomentumSquared,  # ruff: ignore[unused-import]
     _get_subscript,
 )
 from ampform.sympy import argument, unevaluated
@@ -85,7 +85,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
+def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-arguments]
     s,
     mass0,
     gamma0,

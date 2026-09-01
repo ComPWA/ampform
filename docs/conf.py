@@ -18,10 +18,10 @@ from sphinx_api_relink.helpers import (
     set_intersphinx_version_remapping,
 )
 
-from ampform.sympy._decorator import get_sympy_fields  # noqa: PLC2701
+from ampform.sympy._decorator import get_sympy_fields
 
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings  # noqa: PLC2701
+from _extend_docstrings import extend_docstrings  # ruff: ignore[import-private-name]
 
 warnings.filterwarnings("ignore", category=RemovedInSphinx10Warning)
 
@@ -69,7 +69,7 @@ def _get_dataclasses(module):
 def _get_scipy_url() -> str:
     url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
     r = requests.get(url)
-    if r.status_code != 200:  # noqa: PLR2004
+    if r.status_code != 200:  # ruff: ignore[magic-value-comparison]
         return "https://docs.scipy.org/doc/scipy"
     return url
 
@@ -156,7 +156,7 @@ autodoc_default_options = {
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
-    "special-members": ", ".join([  # noqa: FLY002
+    "special-members": ", ".join([  # ruff: ignore[static-join-to-f-string]
         "__call__",
     ]),
 }

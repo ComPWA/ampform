@@ -277,7 +277,7 @@ def formulate_theta_hat_angle(
     return symbol, -theta  # ty:ignore[invalid-return-type]
 
 
-def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
+def formulate_zeta_angle(  # ruff: ignore[complex-structure, too-many-return-statements, too-many-locals]
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,

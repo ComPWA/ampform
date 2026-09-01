@@ -25,7 +25,7 @@ class SpinAlignment(ABC):
 class NoAlignment(SpinAlignment):
     """Sum the amplitudes *without* any spin alignment."""
 
-    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # noqa: PLR6301
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # ruff: ignore[no-self-use]
         outer_state_ids = get_outer_state_ids(reaction)
         topology_groups = group_by_topology(reaction.transitions)
         indices = [create_spin_projection_symbol(i) for i in outer_state_ids]
@@ -34,5 +34,5 @@ class NoAlignment(SpinAlignment):
         ]
         return sp.Add(*amplitude_symbols)
 
-    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # noqa: PLR6301
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # ruff: ignore[no-self-use]
         return {}

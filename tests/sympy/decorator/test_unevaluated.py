@@ -21,7 +21,7 @@ def test_classvar_behavior():
 
     x_expr = MyExpr(4)
     assert x_expr.x is sp.Integer(4)
-    assert x_expr.m is 2  # noqa: F632
+    assert x_expr.m is 2  # ruff: ignore[is-literal]
 
     y_expr = MyExpr(5)
     assert x_expr.doit() == 4**2
@@ -50,7 +50,7 @@ def test_construction_non_sympy_attributes():
         sympifiable=3,
         non_sympy=obj,
     )
-    assert expr.sympifiable is not 3  # noqa: F632
+    assert expr.sympifiable is not 3  # ruff: ignore[is-literal]
     assert expr.sympifiable is sp.Integer(3)
     assert expr.non_sympy is obj
 

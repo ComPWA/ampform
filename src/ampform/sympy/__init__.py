@@ -22,15 +22,19 @@ import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
+from sympy.printing.pycode import (
+    _unpack_integral_limits,  # ruff: ignore[import-private-name]
+)
 
 from ._decorator import ExprClass as ExprClass
 from ._decorator import SymPyAssumptions as SymPyAssumptions
 from ._decorator import argument as argument
 from ._decorator import get_non_sympy_fields
 from ._decorator import unevaluated as unevaluated
-from .cached import doit as perform_cached_doit  # noqa: F401
-from .cached import xreplace as perform_cached_substitution  # noqa: F401
+from .cached import doit as perform_cached_doit  # ruff: ignore[unused-import]
+from .cached import (
+    xreplace as perform_cached_substitution,  # ruff: ignore[unused-import]
+)
 from .deprecated import UnevaluatedExpression as UnevaluatedExpression
 from .deprecated import create_expression as create_expression
 from .deprecated import implement_doit_method as implement_doit_method
@@ -174,7 +178,7 @@ class PoolSum(sp.Expr):
         expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
         if evaluate:
             return expr.evaluate()  # ty:ignore[invalid-return-type]
-        return expr  # ty:ignore[invalid-return-type]
+        return expr
 
     @property
     def expression(self) -> sp.Expr:
@@ -279,7 +283,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
-        if difference != 1.0:  # noqa: RUF069
+        if difference != 1.0:  # ruff: ignore[float-equality-comparison]
             return False
     return True
 
@@ -310,7 +314,7 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # noqa: S307
+        indices = eval(subscript)  # ruff: ignore[suspicious-eval-usage]
     except SyntaxError:
         return []
     return list(indices)
@@ -463,7 +467,7 @@ class NumericalIntegral(sp.Integral):
             integrand = integrand.xreplace({x: dummy})
             x = dummy
         parts = algorithm.split(".")
-        if len(parts) < 2:  # noqa: PLR2004
+        if len(parts) < 2:  # ruff: ignore[magic-value-comparison]
             msg = f"Algorithm should be in format 'module.function', got '{algorithm}'"
             raise ValueError(msg)
         module_name = ".".join(parts[:-1])

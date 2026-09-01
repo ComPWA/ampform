@@ -18,10 +18,10 @@ import sympy as sp
 
 from ampform.dynamics.form_factor import FormFactor
 from ampform.kinematics.phasespace import (
-    BreakupMomentum,  # noqa: F401
+    BreakupMomentum,  # ruff: ignore[unused-import]
     BreakupMomentumComplex,
-    BreakupMomentumKallen,  # noqa: F401
-    BreakupMomentumSplitSqrt,  # noqa: F401
+    BreakupMomentumKallen,  # ruff: ignore[unused-import]
+    BreakupMomentumSplitSqrt,  # ruff: ignore[unused-import]
     BreakupMomentumSquared,
     Kallen,
     _get_subscript,
@@ -337,7 +337,7 @@ class ChewMandelstamIntegral(sp.Expr):
     """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
-        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # noqa: N806
+        s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # ruff: ignore[non-lowercase-variable-in-function]
         ff_squared = FormFactor(s_prime, m1, m2, L, meson_radius) ** 2
         phsp_factor = PhaseSpaceFactor(s_prime, m1, m2)
         s_thr = (m1 + m2) ** 2
@@ -357,7 +357,7 @@ class ChewMandelstamIntegral(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        L = printer._print(self.angular_momentum)  # noqa: N806
+        L = printer._print(self.angular_momentum)  # ruff: ignore[non-lowercase-variable-in-function]
         name = self.name or Rf"\Sigma_{{{L}}}{_get_subscript(self.s, superscript=True)}"
         return Rf"{name}\left({s}\right)"
 

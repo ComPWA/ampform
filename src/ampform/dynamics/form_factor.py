@@ -107,12 +107,12 @@ class SphericalHankel1(sp.Expr):
     series:
     """
 
-    l: Any  # noqa: E741
+    l: Any  # ruff: ignore[ambiguous-variable-name]
     z: Any
     _latex_repr_ = R"h_{{{l}}}^{{(1)}}\left({z}\right)"
 
     def evaluate(self) -> sp.Expr:
-        l, z = self.args  # noqa: E741
+        l, z = self.args  # ruff: ignore[ambiguous-variable-name]
         k = sp.Dummy("k", integer=True, nonnegative=True)
         return (
             (-sp.I) ** (1 + l)

@@ -32,7 +32,7 @@ def test_generate_transition_label(reaction: ReactionInfo):
 @pytest.mark.parametrize("parent_helicities", [False, True])
 @pytest.mark.parametrize("child_helicities", [False, True])
 @pytest.mark.parametrize("ls_combinations", [False, True])
-def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
+def test_coefficient_names(  # ruff: ignore[complex-structure, too-many-branches, too-many-statements]
     reaction: ReactionInfo,
     parent_helicities,
     child_helicities,
@@ -56,7 +56,7 @@ def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
                 assert len(coefficients) == 4 * n_resonances
             else:
                 assert len(coefficients) == 2 * n_resonances
-        else:  # noqa: PLR5501
+        else:  # ruff: ignore[collapsible-else-if]
             if child_helicities:
                 assert len(coefficients) == n_resonances
             else:
@@ -68,12 +68,12 @@ def test_coefficient_names(  # noqa: C901, PLR0912, PLR0915
                     assert len(coefficients) == 8 * n_resonances
                 else:
                     assert len(coefficients) == 4 * n_resonances
-            else:  # noqa: PLR5501
+            else:  # ruff: ignore[collapsible-else-if]
                 if child_helicities:
                     assert len(coefficients) == 4 * n_resonances
                 else:
                     assert len(coefficients) == 2 * n_resonances
-        else:  # noqa: PLR5501
+        else:  # ruff: ignore[collapsible-else-if]
             if parent_helicities:
                 if child_helicities:
                     assert len(coefficients) == 4 * n_resonances
