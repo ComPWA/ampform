@@ -4,10 +4,17 @@ from __future__ import annotations
 
 import collections
 from functools import cache, singledispatch
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, TypeGuard
 
 from attrs import frozen
-from qrules.transition import ReactionInfo, State, StateTransition
+from qrules import topology as qrules_topology
+from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
+from qrules.transition import (
+    InteractionProperties,
+    ReactionInfo,
+    State,
+    StateTransition,
+)
 
 from ampform._qrules import get_qrules_version
 
@@ -15,16 +22,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from qrules.topology import Topology
-
-from typing import Literal, TypeGuard
-
-from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
-from qrules.transition import InteractionProperties
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from qrules.topology import FrozenTransition
 
 
 @frozen
@@ -118,15 +115,14 @@ def _(obj: tuple) -> TwoBodyDecay:
 
 
 def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
-    if get_qrules_version() >= (0, 10):
-        from qrules.topology import FrozenTransition
-
-        if isinstance(obj, FrozenTransition):
-            if any(not isinstance(s, State) for s in obj.states.values()):
-                return False
-            return all(
-                isinstance(i, InteractionProperties) for i in obj.interactions.values()
-            )
+    if get_qrules_version() >= (0, 10) and isinstance(
+        obj, qrules_topology.FrozenTransition
+    ):
+        if any(not isinstance(s, State) for s in obj.states.values()):
+            return False
+        return all(
+            isinstance(i, InteractionProperties) for i in obj.interactions.values()
+        )
     return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)
 
 

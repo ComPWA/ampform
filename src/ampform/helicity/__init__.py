@@ -760,7 +760,7 @@ def formulate_isobar_cg_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
-    from sympy.physics.quantum.cg import CG  # ruff: ignore[import-outside-top-level]
+    from sympy.physics.quantum.cg import CG
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
 

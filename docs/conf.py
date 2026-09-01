@@ -21,7 +21,7 @@ from sphinx_api_relink.helpers import (
 from ampform.sympy._decorator import get_sympy_fields
 
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings  # ruff: ignore[import-private-name]
+from _extend_docstrings import extend_docstrings
 
 warnings.filterwarnings("ignore", category=RemovedInSphinx10Warning)
 

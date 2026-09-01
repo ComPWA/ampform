@@ -8,7 +8,7 @@ from __future__ import annotations
 import functools
 import sys
 from abc import abstractmethod
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 from warnings import warn
 
 import sympy as sp
@@ -211,7 +211,7 @@ def implement_new_method(
             args = sp.sympify(args)  # ty:ignore[invalid-assignment]
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return expr.evaluate()
+                return expr.evaluate()  # ty: ignore[invalid-return-type]
             return expr
 
         decorated_class.__new__ = new_method  # ty:ignore[invalid-assignment]
@@ -287,7 +287,10 @@ def create_expression(
     )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
-        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)  # ty:ignore[not-iterable]
+        expr = cast(
+            "DecoratedExpr",
+            UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs),  # ty: ignore[not-iterable]
+        )
         if evaluate:
             return expr.evaluate()
         return expr

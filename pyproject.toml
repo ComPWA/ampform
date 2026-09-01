@@ -527,8 +527,11 @@ split-on-trailing-comma = false
 ]
 "docs/conf.py" = [
     "builtin-variable-shadowing",
+    "import-private-name",
     "undocumented-public-module",
 ]
+"src/ampform/helicity/__init__.py" = ["import-outside-top-level"]
+"src/ampform/helicity/align/axisangle.py" = ["import-outside-top-level"]
 "setup.py" = ["undocumented-public-module"]
 "tests/*" = [
     "D",
