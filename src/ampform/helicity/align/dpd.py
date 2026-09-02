@@ -6,6 +6,7 @@ See :cite:`Marangotto:2019ucc`.
 from __future__ import annotations
 
 from functools import cache, singledispatch
+from math import isclose
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 import attrs
@@ -185,7 +186,7 @@ def _compute_allowed_helicities(reaction: ReactionInfo) -> dict[int, list[sp.Rat
     return {
         i: sorted({
             sp.Rational(helicity)
-            for helicity in create_spin_range(p.spin, no_zero_spin=p.mass == 0.0)
+            for helicity in create_spin_range(p.spin, no_zero_spin=isclose(p.mass, 0.0))
         })
         for i, p in outer_particles.items()
     }
