@@ -472,9 +472,11 @@ split-on-trailing-comma = false
     "T20",
     "TC00",
     "assert",
+    "float-equality-comparison",
     "global-statement",
     "global-variable-not-assigned",
     "invalid-argument-name",
+    "lambda-assignment",
     "late-future-import",
     "magic-value-comparison",
     "mixed-case-variable-in-global-scope",
@@ -497,7 +499,6 @@ split-on-trailing-comma = false
     "missing-f-string-syntax"
 ]
 "**/docs/dynamics.ipynb" = ["reimplemented-operator", "missing-f-string-syntax"]
-"**/docs/sympy.ipynb" = ["lambda-assignment"]
 "benchmarks/*" = [
     "D",
     "T20",
