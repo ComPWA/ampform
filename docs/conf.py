@@ -62,7 +62,10 @@ def _get_dataclasses(module):
 
 def _get_scipy_url() -> str:
     url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
-    r = requests.get(url)
+    try:
+        r = requests.get(url, timeout=10)
+    except requests.RequestException:
+        return "https://docs.scipy.org/doc/scipy"
     if r.status_code != 200:  # ruff: ignore[magic-value-comparison]
         return "https://docs.scipy.org/doc/scipy"
     return url
@@ -189,6 +192,8 @@ default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
+    "AGENTS.md",  # agent instructions, see .gitignore
+    "CLAUDE.md",  # agent instructions, see .gitignore
     "tests",
 ]
 extensions = [
