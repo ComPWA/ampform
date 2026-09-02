@@ -23,6 +23,7 @@ else:
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable, Iterable
 
+    from _typeshed import DataclassInstance
     from sympy.printing.latex import LatexPrinter
 
     if sys.version_info >= (3, 11):
@@ -551,13 +552,17 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     return self, False
 
 
-def get_sympy_fields(cls) -> tuple[Field, ...]:
+def get_sympy_fields(
+    cls: DataclassInstance | type[DataclassInstance],
+) -> tuple[Field[Any], ...]:
     return tuple(f for f in dataclasses.fields(cls) if _is_sympify(f))
 
 
-def get_non_sympy_fields(cls) -> tuple[Field, ...]:
+def get_non_sympy_fields(
+    cls: DataclassInstance | type[DataclassInstance],
+) -> tuple[Field[Any], ...]:
     return tuple(f for f in dataclasses.fields(cls) if not _is_sympify(f))
 
 
-def _is_sympify(field: Field) -> bool:
+def _is_sympify(field: Field[Any]) -> bool:
     return bool(field.metadata.get("sympify"))
