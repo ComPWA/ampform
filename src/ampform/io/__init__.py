@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 @singledispatch
-def aslatex(obj, **kwargs) -> str:  # noqa: D417
+def aslatex(obj, **kwargs) -> str:  # ruff: ignore[undocumented-param]
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
@@ -131,9 +131,9 @@ def improve_latex_rendering() -> None:
     .. version-added:: 0.14.2
     """
 
-    def _print_Indexed_latex(self, printer, *args) -> str:  # noqa: N802
+    def _print_Indexed_latex(self, printer, *args) -> str:  # ruff: ignore[invalid-function-name]
         base = printer._print(self.base)
         indices = ", ".join(map(printer._print, self.indices))
         return f"{base}_{{{indices}}}"
 
-    sp.Indexed._latex = _print_Indexed_latex  # ty:ignore[unresolved-attribute]
+    sp.Indexed._latex = _print_Indexed_latex  # ty: ignore[unresolved-attribute]

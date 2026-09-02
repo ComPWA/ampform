@@ -170,7 +170,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
 
         return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
 
-    def generate_amplitude_name(  # noqa: PLR6301
+    def generate_amplitude_name(  # ruff: ignore[no-self-use]
         self,
         transition: StateTransition,
         node_id: int | None = None,

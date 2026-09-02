@@ -46,7 +46,7 @@ class AxisAngleAlignment(SpinAlignment):
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
 
-    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # noqa: PLR6301
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # ruff: ignore[no-self-use]
         topology_groups = group_by_topology(reaction.transitions)
         outer_state_ids = get_outer_state_ids(reaction)
         amplitude = sp.S.Zero
@@ -66,7 +66,7 @@ class AxisAngleAlignment(SpinAlignment):
             )
         return amplitude
 
-    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # noqa: PLR6301
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # ruff: ignore[no-self-use]
         wigner_angles = {}
         for topology in group_by_topology(reaction.transitions):
             momenta = create_four_momentum_symbols(topology)
@@ -173,7 +173,7 @@ def formulate_helicity_rotation_chain(
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
-        return summation.subs(dangling_idx, helicity_symbol)  # ty:ignore[invalid-return-type]
+        return summation.subs(dangling_idx, helicity_symbol)  # ty: ignore[invalid-return-type]
     return summation
 
 
@@ -269,7 +269,7 @@ def formulate_helicity_rotation(
     >>> formulate_helicity_rotation(1 / 2, -1 / 2, i, a, b, c)
     PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, (-1/2, 1/2)))
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
+    from sympy.physics.quantum.spin import Rotation as Wigner
 
     helicities = map(sp.Rational, create_spin_range(spin_magnitude, no_zero_spin))
     return PoolSum(

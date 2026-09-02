@@ -51,13 +51,13 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_t_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty:ignore[invalid-parameter-default]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
         angular_momentum=0,
         meson_radius=1,
         **kwargs,
@@ -105,7 +105,7 @@ class RelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -118,7 +118,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty:ignore[invalid-parameter-default]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
@@ -178,7 +178,7 @@ class NonRelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -254,7 +254,7 @@ class NonRelativisticPVector(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -292,13 +292,13 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_f_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty:ignore[invalid-parameter-default]
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
         angular_momentum=0,
         meson_radius=1,
         **kwargs,
@@ -370,7 +370,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,

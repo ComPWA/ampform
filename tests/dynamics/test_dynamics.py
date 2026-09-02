@@ -107,7 +107,7 @@ def test_generate(
         s for s in total_intensity.free_symbols if str(s).startswith(("phi", "theta"))
     }
     angle_substitutions = dict.fromkeys(angle_symbols, 0)
-    total_intensity = total_intensity.subs(angle_substitutions)  # ty:ignore[no-matching-overload]
+    total_intensity = total_intensity.subs(angle_substitutions)  # ty: ignore[no-matching-overload]
     assert len(total_intensity.free_symbols) == 3
 
     pi0 = particle_database["pi0"]

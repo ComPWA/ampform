@@ -37,8 +37,13 @@ prof/
 pyvenv*/
 
 # Settings
+/.agents/
+/.claude/
+/.codex/
 .idea/
 **.code-workspace
+AGENTS.md
+CLAUDE.md
 
 # Exceptions
 !.cspell.json

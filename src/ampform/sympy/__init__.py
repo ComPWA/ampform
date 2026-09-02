@@ -22,15 +22,19 @@ import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
+from sympy.printing.pycode import (
+    _unpack_integral_limits,  # ruff: ignore[import-private-name]
+)
 
 from ._decorator import ExprClass as ExprClass
 from ._decorator import SymPyAssumptions as SymPyAssumptions
 from ._decorator import argument as argument
 from ._decorator import get_non_sympy_fields
 from ._decorator import unevaluated as unevaluated
-from .cached import doit as perform_cached_doit  # noqa: F401
-from .cached import xreplace as perform_cached_substitution  # noqa: F401
+from .cached import doit as perform_cached_doit  # ruff: ignore[unused-import]
+from .cached import (
+    xreplace as perform_cached_substitution,  # ruff: ignore[unused-import]
+)
 from .deprecated import UnevaluatedExpression as UnevaluatedExpression
 from .deprecated import create_expression as create_expression
 from .deprecated import implement_doit_method as implement_doit_method
@@ -171,25 +175,25 @@ class PoolSum(sp.Expr):
                 raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         args = sp.sympify((expression, *converted_indices))
-        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
+        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty: ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()  # ty:ignore[invalid-return-type]
-        return expr  # ty:ignore[invalid-return-type]
+            return expr.evaluate()  # ty: ignore[invalid-return-type]
+        return expr
 
     @property
     def expression(self) -> sp.Expr:
-        return self.args[0]  # ty:ignore[invalid-return-type]
+        return self.args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
-        return self.args[1:]  # ty:ignore[invalid-return-type]
+        return self.args[1:]  # ty: ignore[invalid-return-type]
 
     @property
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # ty:ignore[invalid-method-override]
+    def doit(self, deep: bool = True) -> sp.Expr:  # ty: ignore[invalid-method-override]
         expr = self.evaluate()
         if deep:
             return expr.doit()
@@ -279,7 +283,7 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     sorted_values = sorted(values, key=float)
     for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
-        if difference != 1.0:  # noqa: RUF069
+        if difference != 1.0:  # ruff: ignore[float-equality-comparison]
             return False
     return True
 
@@ -310,7 +314,7 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # noqa: S307
+        indices = eval(subscript)  # ruff: ignore[suspicious-eval-usage]
     except SyntaxError:
         return []
     return list(indices)
@@ -336,7 +340,7 @@ def rename_symbols(
     free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     if callable(renames):
         for old_symbol in free_symbols:
-            new_name = renames(old_symbol.name)  # ty:ignore[call-top-callable]
+            new_name = renames(old_symbol.name)  # ty: ignore[call-top-callable]
             new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
             substitutions[old_symbol] = new_symbol
     elif isinstance(renames, dict):
@@ -415,14 +419,14 @@ class NumericalIntegral(sp.Integral):
         return self.func(*args, **kwargs)
 
     @override
-    def _jaxcode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
+    def _jaxcode(self, printer: Printer, *args) -> str:  # ty: ignore[invalid-explicit-override]
         algorithm = self.algorithm or _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
         return self.__to_scipy_like(printer, algorithm)
 
     @override
-    def _numpycode(self, printer: Printer, *args) -> str:  # ty:ignore[invalid-explicit-override]
+    def _numpycode(self, printer: Printer, *args) -> str:  # ty: ignore[invalid-explicit-override]
         algorithm = _get_algorithm(self.algorithm, printer)
         if algorithm.startswith("quadax"):
             return self.__to_quadax_like(printer, algorithm)
@@ -463,7 +467,7 @@ class NumericalIntegral(sp.Integral):
             integrand = integrand.xreplace({x: dummy})
             x = dummy
         parts = algorithm.split(".")
-        if len(parts) < 2:  # noqa: PLR2004
+        if len(parts) < 2:  # ruff: ignore[magic-value-comparison]
             msg = f"Algorithm should be in format 'module.function', got '{algorithm}'"
             raise ValueError(msg)
         module_name = ".".join(parts[:-1])

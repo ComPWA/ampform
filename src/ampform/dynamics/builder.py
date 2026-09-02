@@ -117,7 +117,7 @@ class RelativisticBreitWignerBuilder:
         phsp_factor: PhaseSpaceFactorProtocol | None = None,
     ) -> None:
         if phsp_factor is None:
-            phsp_factor = PhaseSpaceFactor  # ty:ignore[invalid-assignment]
+            phsp_factor = PhaseSpaceFactor  # ty: ignore[invalid-assignment]
         self.phsp_factor = phsp_factor
         self.energy_dependent_width = energy_dependent_width
         self.form_factor = form_factor

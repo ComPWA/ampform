@@ -8,7 +8,7 @@ from __future__ import annotations
 import functools
 import sys
 from abc import abstractmethod
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 from warnings import warn
 
 import sympy as sp
@@ -97,10 +97,10 @@ class UnevaluatedExpression(sp.Expr):
         """
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
-        obj._args = args  # noqa: SLF001
-        obj._assumptions = cls.default_assumptions  # noqa: SLF001
-        obj._mhash = None  # cspell:ignore mhash  # noqa: SLF001
-        obj._name = name  # noqa: SLF001
+        obj._args = args  # ruff: ignore[private-member-access]
+        obj._assumptions = cls.default_assumptions  # ruff: ignore[private-member-access]
+        obj._mhash = None  # cspell:ignore mhash  # ruff: ignore[private-member-access]
+        obj._name = name  # ruff: ignore[private-member-access]
         return obj
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:
@@ -208,13 +208,13 @@ def implement_new_method(
             if len(args) != n_args:
                 msg = f"{n_args} parameters expected, got {len(args)}"
                 raise ValueError(msg)
-            args = sp.sympify(args)  # ty:ignore[invalid-assignment]
+            args = sp.sympify(args)  # ty: ignore[invalid-assignment]
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return expr.evaluate()
+                return expr.evaluate()  # ty: ignore[invalid-return-type]
             return expr
 
-        decorated_class.__new__ = new_method  # ty:ignore[invalid-assignment]
+        decorated_class.__new__ = new_method  # ty: ignore[invalid-assignment]
         return decorated_class
 
     return decorator
@@ -245,7 +245,7 @@ def implement_doit_method(
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method  # ty:ignore[invalid-assignment]
+    decorated_class.doit = doit_method  # ty: ignore[invalid-assignment]
     return decorated_class
 
 
@@ -287,8 +287,11 @@ def create_expression(
     )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
-        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)  # ty:ignore[not-iterable]
+        expr = cast(
+            "DecoratedExpr",
+            UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs),  # ty: ignore[not-iterable]
+        )
         if evaluate:
             return expr.evaluate()
         return expr
-    return sp.Expr.__new__(cls, *args, **kwargs)  # ty:ignore[not-iterable]
+    return sp.Expr.__new__(cls, *args, **kwargs)  # ty: ignore[not-iterable]

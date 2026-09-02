@@ -12,19 +12,19 @@ import sympy as sp
 
 from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
-    BlattWeisskopfSquared,  # noqa: F401
+    BlattWeisskopfSquared,  # ruff: ignore[unused-import]
     FormFactor,
 )
 from ampform.dynamics.phasespace import (
-    EqualMassPhaseSpaceFactor,  # noqa: F401
+    EqualMassPhaseSpaceFactor,  # ruff: ignore[unused-import]
     PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,  # noqa: F401
-    PhaseSpaceFactorComplex,  # noqa: F401
+    PhaseSpaceFactorAbs,  # ruff: ignore[unused-import]
+    PhaseSpaceFactorComplex,  # ruff: ignore[unused-import]
     PhaseSpaceFactorProtocol,
-    PhaseSpaceFactorSWave,  # noqa: F401
+    PhaseSpaceFactorSWave,  # ruff: ignore[unused-import]
 )
 from ampform.kinematics.phasespace import (
-    BreakupMomentumSquared,  # noqa: F401
+    BreakupMomentumSquared,  # ruff: ignore[unused-import]
     _get_subscript,
 )
 from ampform.sympy import argument, unevaluated
@@ -59,12 +59,12 @@ class EnergyDependentWidth(sp.Expr):
     meson_radius: Any
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
-    )  # ty:ignore[invalid-assignment]
+    )  # ty: ignore[invalid-assignment]
     name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
         m0: sp.Expr
-        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args  # ty:ignore[invalid-assignment]
+        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args  # ty: ignore[invalid-assignment]
         ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
         ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)
         rho = self.phsp_factor(s, m1, m2)
@@ -85,7 +85,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     return gamma0 * mass0 / (mass0**2 - s - gamma0 * mass0 * sp.I)
 
 
-def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
+def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-arguments]
     s,
     mass0,
     gamma0,
@@ -93,7 +93,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty:ignore[invalid-parameter-default]
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 

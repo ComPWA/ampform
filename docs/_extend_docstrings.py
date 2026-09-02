@@ -718,7 +718,7 @@ def __generate_transitions_cached(
     file_name.parent.mkdir(exist_ok=True)
     if file_name.exists():
         with open(file_name, "rb") as f:
-            return pickle.load(f)  # noqa: S301
+            return pickle.load(f)  # ruff: ignore[suspicious-pickle-usage]
     reaction = qrules.generate_transitions(
         initial_state,
         final_state,
@@ -744,14 +744,14 @@ _IMAGE_DIR = "_images"
 def _graphviz_to_image(
     dot: str,
     options: dict[str, str] | None = None,
-    format: str = "svg",  # noqa: A002
+    format: str = "svg",  # ruff: ignore[builtin-argument-shadowing]
     indent: int = 0,
     caption: str = "",
     label: str = "",
 ) -> str:
     if options is None:
         options = {}
-    global _GRAPHVIZ_COUNTER  # noqa: PLW0603
+    global _GRAPHVIZ_COUNTER  # ruff: ignore[global-statement]
     output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
     _GRAPHVIZ_COUNTER += 1
     graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)

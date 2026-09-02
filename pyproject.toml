@@ -409,32 +409,33 @@ allowed-confusables = ["–"]
 ignore = [
     "ANN",
     "ARG00",
-    "COM812",
-    "CPY001",
-    "D101",
-    "D102",
-    "D103",
-    "D105",
-    "D107",
-    "D203",
-    "D213",
-    "D407",
-    "D416",
     "DOC",
-    "E501",
     "FBT00",
-    "FURB101",
-    "FURB103",
-    "FURB140",
-    "G004",
-    "ISC001",
-    "PLR0913",
-    "PLW1514",
-    "PLW2901",
-    "PT001",
     "PTH",
-    "RUF067",
-    "SIM108",
+    "any-type",
+    "if-else-block-instead-of-if-exp",
+    "incorrect-blank-line-before-class",
+    "line-too-long",
+    "logging-f-string",
+    "missing-copyright-notice",
+    "missing-dashed-underline-after-section",
+    "missing-section-name-colon",
+    "missing-trailing-comma",
+    "multi-line-summary-second-line",
+    "non-empty-init-module",
+    "pytest-fixture-incorrect-parentheses-style",
+    "read-whole-file",
+    "redefined-loop-name",
+    "reimplemented-starmap",
+    "single-line-implicit-string-concatenation",
+    "too-many-arguments",
+    "undocumented-magic-method",
+    "undocumented-public-class",
+    "undocumented-public-function",
+    "undocumented-public-init",
+    "undocumented-public-method",
+    "unspecified-encoding",
+    "write-whole-file",
 ]
 select = ["ALL"]
 task-tags = ["cspell"]
@@ -465,77 +466,88 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = [
-    "B018",
-    "C408",
     "C90",
     "D",
-    "E303",
-    "E402",
-    "E703",
-    "F404",
-    "N803",
-    "N806",
-    "N816",
-    "PLC2401",
     "PLR09",
-    "PLR2004",
-    "PLW0602",
-    "PLW0603",
-    "S101",
-    "S301",
-    "S403",
-    "SLF001",
     "T20",
     "TC00",
+    "assert",
+    "float-equality-comparison",
+    "global-statement",
+    "global-variable-not-assigned",
+    "invalid-argument-name",
+    "lambda-assignment",
+    "late-future-import",
+    "magic-value-comparison",
+    "mixed-case-variable-in-global-scope",
+    "module-import-not-at-top-of-file",
+    "non-ascii-name",
+    "non-lowercase-variable-in-function",
+    "private-member-access",
+    "suspicious-pickle-import",
+    "suspicious-pickle-usage",
+    "too-many-blank-lines",
+    "unnecessary-collection-call",
+    "useless-expression",
+    "useless-semicolon",
 ]
-"**/docs/analyticity/integration-algorithms.ipynb" = ["RUF001"]
-"**/docs/analyticity/riemann-sheets.ipynb" = ["E741", "RUF027"]
-"**/docs/dynamics.ipynb" = ["FURB118", "RUF027"]
-"**/docs/sympy.ipynb" = ["E731"]
+"**/docs/analyticity/integration-algorithms.ipynb" = [
+    "ambiguous-unicode-character-string"
+]
+"**/docs/analyticity/riemann-sheets.ipynb" = [
+    "ambiguous-variable-name",
+    "missing-f-string-syntax"
+]
+"**/docs/dynamics.ipynb" = ["reimplemented-operator", "missing-f-string-syntax"]
 "benchmarks/*" = [
     "D",
-    "INP001",
-    "PLC2701",
-    "PLR2004",
-    "PLR6301",
-    "RUF069",
-    "S101",
-    "SLF001",
     "T20",
+    "assert",
+    "boolean-type-hint-positional-argument",
+    "float-equality-comparison",
+    "implicit-namespace-package",
+    "import-private-name",
+    "magic-value-comparison",
+    "no-self-use",
+    "private-member-access",
 ]
 "docs/*" = [
-    "E402",
-    "INP001",
-    "N802",
-    "N806",
-    "S101",
-    "S113",
-    "S403",
-    "T201",
+    "assert",
+    "implicit-namespace-package",
+    "invalid-function-name",
+    "module-import-not-at-top-of-file",
+    "non-lowercase-variable-in-function",
+    "print",
+    "request-without-timeout",
+    "suspicious-pickle-import",
 ]
 "docs/_extend_docstrings.py" = [
-    "N816",
-    "PLC0415",
-    "PLC2701",
+    "mixed-case-variable-in-global-scope",
+    "import-outside-top-level",
+    "import-private-name",
 ]
 "docs/conf.py" = [
-    "A001",
-    "D100",
+    "builtin-variable-shadowing",
+    "import-private-name",
+    "undocumented-public-module",
 ]
-"setup.py" = ["D100"]
+"src/ampform/helicity/__init__.py" = ["import-outside-top-level"]
+"src/ampform/helicity/align/axisangle.py" = ["import-outside-top-level"]
+"setup.py" = ["undocumented-public-module"]
 "tests/*" = [
-    "C408",
     "D",
-    "INP001",
-    "PLC2701",
-    "PLR0914",
-    "PLR0917",
-    "PLR2004",
-    "PLR6301",
-    "RUF069",
-    "S101",
-    "SLF001",
     "T20",
+    "assert",
+    "boolean-type-hint-positional-argument",
+    "float-equality-comparison",
+    "implicit-namespace-package",
+    "import-private-name",
+    "magic-value-comparison",
+    "no-self-use",
+    "private-member-access",
+    "too-many-locals",
+    "too-many-positional-arguments",
+    "unnecessary-collection-call",
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -571,7 +583,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.0/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.7/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]

@@ -18,18 +18,18 @@ jobs:
     name: Performance regression
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       - name: Run pytest-benchmark
         run: uvx --from poethepoet poe benchmark
       - name: Warn on performance decrease
         if: github.event_name == 'pull_request'
-        uses: benchmark-action/github-action-benchmark@v1
+        uses: benchmark-action/github-action-benchmark@52576c92bccf6ac60c8223ec7eb2565637cae9ba # v1.22.1
         with:
           benchmark-data-dir-path: ""
           comment-on-alert: true
@@ -41,7 +41,7 @@ jobs:
           tool: pytest
       - name: Create local benchmark data repository
         if: github.event_name != 'pull_request'
-        uses: benchmark-action/github-action-benchmark@v1
+        uses: benchmark-action/github-action-benchmark@52576c92bccf6ac60c8223ec7eb2565637cae9ba # v1.22.1
         with:
           benchmark-data-dir-path: ""
           gh-repository: github.com/ComPWA/ampform-benchmark-results

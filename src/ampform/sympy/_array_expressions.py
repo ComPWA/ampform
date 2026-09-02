@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
-from sympy.core.sympify import _sympify  # noqa: PLC2701
+from sympy.core.sympify import _sympify  # ruff: ignore[import-private-name]
 from sympy.functions.elementary.integers import floor
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.latex import LatexPrinter
@@ -23,7 +23,7 @@ from sympy.printing.printer import Printer
 from sympy.printing.str import StrPrinter
 from sympy.tensor.array.expressions.array_expressions import (
     ArraySymbol,
-    _ArrayExpr,  # noqa: PLC2701
+    _ArrayExpr,  # ruff: ignore[import-private-name]
     get_shape,
 )
 
@@ -48,7 +48,7 @@ class ArrayElement(_ArrayExpr):
         sympified_indices = sp.Tuple(*map(_sympify, indices))
         parent_shape = get_shape(parent)
         if any(
-            (i >= s) == True  # noqa: E712
+            (i >= s) == True  # ruff: ignore[true-false-comparison]
             for i, s in zip(sympified_indices, parent_shape, strict=True)
         ):
             msg = "shape is out of bounds"
@@ -71,15 +71,15 @@ class ArrayElement(_ArrayExpr):
 
     @property
     def parent(self) -> sp.Expr:
-        return self._args[0]  # ty:ignore[invalid-return-type]
+        return self._args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def indices(self) -> sp.Tuple:
-        return self._args[1]  # ty:ignore[invalid-return-type]
+        return self._args[1]  # ty: ignore[invalid-return-type]
 
 
 # required for lambdify
-_ArrayExpr._iterable = False  # noqa: SLF001
+_ArrayExpr._iterable = False  # ruff: ignore[private-member-access]
 
 
 @overload
@@ -114,23 +114,23 @@ def _array_symbol_getitem(self, key):
     return ArrayElement(self, indices)
 
 
-ArraySymbol.__getitem__ = _array_symbol_getitem  # ty:ignore[invalid-assignment]
+ArraySymbol.__getitem__ = _array_symbol_getitem  # ty: ignore[invalid-assignment]
 
 
 def _normalize_index(idx, axis_size: sp.Expr | None):
     if (
         axis_size
         and axis_size.is_Integer
-        and (-axis_size <= idx) == True  # noqa: E712
-        and (idx < 0) == True  # noqa: E712
+        and (-axis_size <= idx) == True  # ruff: ignore[true-false-comparison]
+        and (idx < 0) == True  # ruff: ignore[true-false-comparison]
     ):
         return idx + axis_size
     return idx
 
 
 class ArraySlice(_ArrayExpr):
-    parent: sp.Basic = property(lambda self: self.args[0])  # ty:ignore[invalid-assignment]
-    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # ty:ignore[invalid-assignment]
+    parent: sp.Basic = property(lambda self: self.args[0])  # ty: ignore[invalid-assignment]
+    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # ty: ignore[invalid-assignment]
     is_commutative = True
 
     @override
@@ -171,7 +171,7 @@ def _compute_slice_size(idx, axis_size):
         return None
     size = stop - start
     size = size if step == 1 or step is None else floor(size / step)
-    if axis_size is not None and (size > axis_size) == True:  # noqa: E712
+    if axis_size is not None and (size > axis_size) == True:  # ruff: ignore[true-false-comparison]
         return axis_size
     return size
 
@@ -180,31 +180,31 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
     if isinstance(i, slice):
         i = (i.start, i.stop, i.step)
     if not isinstance(i, (tuple, list, sp.Tuple)):
-        if (i < 0) == True:  # noqa: E712
+        if (i < 0) == True:  # ruff: ignore[true-false-comparison]
             i += parentsize
         i = (i, i + 1, 1)
     i = list(i)
-    if len(i) == 2:  # noqa: PLR2004
+    if len(i) == 2:  # ruff: ignore[magic-value-comparison]
         i.append(1)
     start, stop, step = i
     start = start or 0
     if parentsize is not None:
         if stop is None:
             stop = parentsize
-        if (start < 0) == True:  # noqa: E712
+        if (start < 0) == True:  # ruff: ignore[true-false-comparison]
             start += parentsize
-        if (stop < 0) == True:  # noqa: E712
+        if (stop < 0) == True:  # ruff: ignore[true-false-comparison]
             stop += parentsize
         step = step or 1
 
-        if ((stop - start) * step < 1) == True:  # noqa: E712
+        if ((stop - start) * step < 1) == True:  # ruff: ignore[true-false-comparison]
             raise IndexError
 
     start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
-    return start, stop, step  # ty:ignore[invalid-return-type]
+    return start, stop, step  # ty: ignore[invalid-return-type]
 
 
-def _print_latex_ArrayElement(  # noqa: N802
+def _print_latex_ArrayElement(  # ruff: ignore[invalid-function-name]
     self: LatexPrinter, expr: ArrayElement
 ) -> str:
     parent = self.parenthesize(expr.parent, PRECEDENCE["Func"], True)
@@ -212,7 +212,7 @@ def _print_latex_ArrayElement(  # noqa: N802
     return f"{{{parent}}}_{{{indices}}}"
 
 
-def _print_latex_ArraySlice(self: LatexPrinter, expr: ArraySlice) -> str:  # noqa: N802
+def _print_latex_ArraySlice(self: LatexPrinter, expr: ArraySlice) -> str:  # ruff: ignore[invalid-function-name]
     shape = getattr(expr.parent, "shape", ())
     stringified_indices = []
     for idx, axis_size in zip_longest(expr.indices, shape):
@@ -224,13 +224,13 @@ def _print_latex_ArraySlice(self: LatexPrinter, expr: ArraySlice) -> str:  # noq
     return Rf"{parent}\left[{indices}\right]"
 
 
-def _print_str_ArrayElement(self: StrPrinter, expr: ArrayElement) -> str:  # noqa: N802
+def _print_str_ArrayElement(self: StrPrinter, expr: ArrayElement) -> str:  # ruff: ignore[invalid-function-name]
     parent = self.parenthesize(expr.parent, PRECEDENCE["Func"], True)
     indices = ", ".join(self._print(i) for i in expr.indices)
     return f"{parent}[{indices}]"
 
 
-def _print_str_ArraySlice(self: StrPrinter, expr: ArraySlice) -> str:  # noqa: N802
+def _print_str_ArraySlice(self: StrPrinter, expr: ArraySlice) -> str:  # ruff: ignore[invalid-function-name]
     shape = getattr(expr.parent, "shape", ())
     stringified_indices = []
     for idx, axis_size in zip_longest(expr.indices, shape):
@@ -255,10 +255,10 @@ def _slice_to_str(self: Printer, x, dim) -> str:
     return ":".join("" if xi in {none, None} else self._print(xi) for xi in x)
 
 
-LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # noqa: SLF001
-LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # noqa: SLF001
-StrPrinter._print_ArrayElement = _print_str_ArrayElement  # noqa: SLF001
-StrPrinter._print_ArraySlice = _print_str_ArraySlice  # noqa: SLF001
+LatexPrinter._print_ArrayElement = _print_latex_ArrayElement  # ruff: ignore[private-member-access]
+LatexPrinter._print_ArraySlice = _print_latex_ArraySlice  # ruff: ignore[private-member-access]
+StrPrinter._print_ArrayElement = _print_str_ArrayElement  # ruff: ignore[private-member-access]
+StrPrinter._print_ArraySlice = _print_str_ArraySlice  # ruff: ignore[private-member-access]
 
 
 class ArraySum(sp.Expr):
@@ -266,7 +266,7 @@ class ArraySum(sp.Expr):
 
     @override
     def __new__(cls, *terms: sp.Basic, **hints) -> Self:
-        terms = sp.sympify(terms)  # ty:ignore[invalid-assignment]
+        terms = sp.sympify(terms)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *terms, **hints)
 
     @property
@@ -280,7 +280,7 @@ class ArraySum(sp.Expr):
                 name = next(iter(names))
                 subscript = "".join(map(_get_subscript, self.terms))
                 return f"{{{name}}}_{{{subscript}}}"
-        return printer._print_ArraySum(self)  # noqa: SLF001
+        return printer._print_ArraySum(self)  # ruff: ignore[private-member-access]
 
 
 def _print_array_sum(self: Printer, expr: ArraySum) -> str:
@@ -288,7 +288,7 @@ def _print_array_sum(self: Printer, expr: ArraySum) -> str:
     return " + ".join(terms)
 
 
-Printer._print_ArraySum = _print_array_sum  # noqa: SLF001
+Printer._print_ArraySum = _print_array_sum  # ruff: ignore[private-member-access]
 
 
 def _get_subscript(symbol: sp.Basic) -> str:
@@ -327,15 +327,15 @@ class ArrayAxisSum(sp.Expr):
             msg = "Only single digits allowed for axis"
             raise TypeError(msg)
         args = sp.sympify((array, axis))
-        return sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
+        return sp.Expr.__new__(cls, *args, **hints)  # ty: ignore[not-iterable]
 
     @property
     def array(self) -> sp.Expr:
-        return self.args[0]  # ty:ignore[invalid-return-type]
+        return self.args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def axis(self) -> sp.Integer | None:
-        return self.args[1]  # ty:ignore[invalid-return-type]
+        return self.args[1]  # ty: ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         array = printer._print(self.array)
@@ -363,12 +363,12 @@ class ArrayMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
+        tensors = sp.sympify(tensors)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
     def tensors(self) -> list[sp.Expr]:
-        return self.args  # ty:ignore[invalid-return-type]
+        return self.args  # ty: ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         tensors = map(printer._print, self.tensors)
@@ -418,7 +418,7 @@ class MatrixMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
+        tensors = sp.sympify(tensors)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property

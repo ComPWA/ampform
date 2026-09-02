@@ -20,7 +20,7 @@ on:
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@v4.0
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
     permissions:
       pages: write
       id-token: write
@@ -29,9 +29,9 @@ jobs:
   style:
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/style.yml@v4.0
+    uses: ComPWA/actions/.github/workflows/style.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
   test:
-    uses: ComPWA/actions/.github/workflows/test.yml@v4.0
+    uses: ComPWA/actions/.github/workflows/test.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:

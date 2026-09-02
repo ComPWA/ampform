@@ -373,7 +373,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     for name in reaction.get_intermediate_particles().names:
         model_builder.dynamics.assign(name, bw_builder)
     model = model_builder.formulate()
-    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty:ignore[unresolved-attribute]
+    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty: ignore[unresolved-attribute]
     assert parameter_names == [
         R"C_{D^{+} \to \pi^{+}_{0} \rho(770)^{0}_{0}; \rho(770)^{0} \to \pi^{+}_{0} \pi^{-}_{0}}",
         R"\Gamma_{\rho(770)^{0}}",
@@ -384,7 +384,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     assert len(model.amplitudes) == 1
     (amplitude_expr,) = model.amplitudes.values()
     amplitude_expr = amplitude_expr.xreplace({
-        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))  # ty:ignore[unresolved-attribute]
+        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))  # ty: ignore[unresolved-attribute]
         for s in model.parameter_defaults
     })
     amplitude_expr = sp.simplify(amplitude_expr, doit=False)

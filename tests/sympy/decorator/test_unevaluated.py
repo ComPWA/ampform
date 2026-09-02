@@ -17,11 +17,11 @@ def test_classvar_behavior():
         class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
-            return self.x**self.m  # ty:ignore[invalid-return-type]
+            return self.x**self.m  # ty: ignore[invalid-return-type]
 
     x_expr = MyExpr(4)
     assert x_expr.x is sp.Integer(4)
-    assert x_expr.m is 2  # noqa: F632
+    assert x_expr.m is 2  # ruff: ignore[is-literal]
 
     y_expr = MyExpr(5)
     assert x_expr.doit() == 4**2
@@ -50,7 +50,7 @@ def test_construction_non_sympy_attributes():
         sympifiable=3,
         non_sympy=obj,
     )
-    assert expr.sympifiable is not 3  # noqa: F632
+    assert expr.sympifiable is not 3  # ruff: ignore[is-literal]
     assert expr.sympifiable is sp.Integer(3)
     assert expr.non_sympy is obj
 
@@ -99,7 +99,7 @@ def test_default_argument_with_classvar():
         assert expr.default_return is None
 
     half = sp.Rational(1, 2)
-    FunkyPower.default_return = half  # ty:ignore[invalid-assignment]
+    FunkyPower.default_return = half  # ty: ignore[invalid-assignment]
     assert exprs[0].doit() == half
     assert exprs[1].doit() == half
     assert exprs[2].doit() == half

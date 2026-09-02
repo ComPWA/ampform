@@ -12,7 +12,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar, overload
 
 import sympy as sp
-from sympy.core.basic import _aresame  # noqa: PLC2701
+from sympy.core.basic import _aresame  # ruff: ignore[import-private-name]
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 if sys.version_info >= (3, 11):
@@ -70,15 +70,15 @@ class SymPyAssumptions(TypedDict, total=False):
 @overload
 def argument(
     *,
-    default: T = MISSING,  # ty:ignore[invalid-parameter-default]
-    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
+    default: T = MISSING,  # ty: ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 @overload
 def argument(
     *,
-    default_factory: Callable[[], T] = MISSING,  # ty:ignore[invalid-parameter-default]
-    kw_only: bool = MISSING,  # ty:ignore[invalid-parameter-default]
+    default_factory: Callable[[], T] = MISSING,  # ty: ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 def argument(
@@ -208,16 +208,16 @@ def unevaluated(
         assumptions["commutative"] = True
 
     def decorator(cls: type[ExprClass]) -> type[ExprClass]:
-        cls = _implement_new_method(cls)  # ty:ignore[invalid-assignment]
+        cls = _implement_new_method(cls)  # ty: ignore[invalid-assignment]
         if implement_doit:
-            cls = _implement_doit(cls)  # ty:ignore[invalid-assignment]
+            cls = _implement_doit(cls)  # ty: ignore[invalid-assignment]
         typos = ["_latex_repr"]
         for typo in typos:
             if hasattr(cls, typo):
                 msg = f"Class defines a {typo} attribute, but it should be _latex_repr_"
                 warnings.warn(msg, category=UserWarning, stacklevel=1)
         if hasattr(cls, "_latex_repr_"):
-            cls = _implement_latex_repr(cls)  # ty:ignore[invalid-assignment]
+            cls = _implement_latex_repr(cls)  # ty: ignore[invalid-assignment]
         _set_assumptions(**assumptions)(cls)
         return cls
 
@@ -270,7 +270,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         )
         expr = sp.Expr.__new__(cls, *sympy_args, **hints)
         for field, value in fields_with_sympified_values.items():
-            if prop := getattr(type(expr), field.name, None):  # noqa: SIM102
+            if prop := getattr(type(expr), field.name, None):  # ruff: ignore[collapsible-if]
                 if isinstance(prop, property):
                     continue
             setattr(expr, field.name, value)
@@ -358,7 +358,7 @@ def _extract_field_values(
 def _safe_sympify(field: Field, value: dict[Field, Any]) -> dict[Field, Any]:
     if _is_sympify(field):
         try:
-            return sp.sympify(value)  # ty:ignore[invalid-return-type]
+            return sp.sympify(value)  # ty: ignore[invalid-return-type]
         except (sp.SympifyError, TypeError, SymPyDeprecationWarning) as exc:
             msg = (
                 f"Attribute {field.name} could not be sympified. Did you forget to mark"
@@ -408,7 +408,7 @@ def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.doit()
         return expr
 
-    cls.doit = doit_method  # ty:ignore[invalid-assignment]
+    cls.doit = doit_method  # ty: ignore[invalid-assignment]
     return cls
 
 
@@ -493,7 +493,7 @@ def _eval_subs_method(self, old, new, **hints):
             continue
         if isclass(old_arg):
             continue
-        new_attr = old_arg._subs(old, new, **hints)  # noqa: SLF001
+        new_attr = old_arg._subs(old, new, **hints)  # ruff: ignore[private-member-access]
         if not _aresame(new_attr, old_arg):
             hit = True
             new_args[i] = new_attr
@@ -537,7 +537,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
         hit = False
         for arg in dataclasses.astuple(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
-                replace_result, is_replaced = arg._xreplace(rule)  # noqa: SLF001
+                replace_result, is_replaced = arg._xreplace(rule)  # ruff: ignore[private-member-access]
             elif isinstance(rule, abc.Mapping):
                 is_replaced = bool(arg in rule)
                 replace_result = rule.get(arg, arg)

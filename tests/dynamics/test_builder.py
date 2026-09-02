@@ -52,7 +52,7 @@ class TestRelativisticBreitWignerBuilder:
         bw_with_ff, parameters = builder(particle, variable_set)
         m1 = variable_set.outgoing_state_mass1
         m2 = variable_set.outgoing_state_mass2
-        L = variable_set.angular_momentum  # noqa: N806
+        L = variable_set.angular_momentum  # ruff: ignore[non-lowercase-variable-in-function]
         d = sp.Symbol(R"d_{N}", positive=True)
         form_factor = FormFactor(s, m1, m2, angular_momentum=L, meson_radius=d)
         assert bw_with_ff / bw == form_factor
