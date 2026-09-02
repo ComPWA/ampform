@@ -23,6 +23,7 @@
     "**/*.bib",
     "**/.cspell.json",
     "*.ico",
+    "*.svg",
     ".editorconfig",
     ".envrc",
     ".github/dependabot.yml",
