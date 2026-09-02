@@ -16,6 +16,7 @@ import os
 import pickle  # ruff: ignore[suspicious-pickle-import]
 import re
 import sys
+import tempfile
 from collections import abc
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
@@ -117,14 +118,30 @@ def _cache_to_disk_implementation(
             h = get_readable_hash(hashable_object)
             cache_file = _get_cache_dir() / h[:2] / h[2:]
             if cache_file.exists():
-                with open(cache_file, "rb") as f:
-                    return load_function(f)
+                try:
+                    with open(cache_file, "rb") as f:
+                        return load_function(f)
+                except (EOFError, pickle.UnpicklingError):
+                    _LOGGER.warning("Ignoring corrupt cache file %s", cache_file)
             msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
             result = func(*args, **kwargs)
             cache_file.parent.mkdir(exist_ok=True, parents=True)
-            with open(cache_file, "wb") as f:
-                dump_function(result, f)
+            temporary_file = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    dir=cache_file.parent,
+                    prefix=f".{cache_file.name}.",
+                    suffix=".tmp",
+                    delete=False,
+                ) as f:
+                    temporary_file = Path(f.name)
+                    dump_function(result, f)
+                os.replace(temporary_file, cache_file)
+            except BaseException:
+                if temporary_file is not None:
+                    temporary_file.unlink(missing_ok=True)
+                raise
             return result
 
         return wrapped_function
