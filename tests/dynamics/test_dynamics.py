@@ -6,7 +6,6 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import (
-    BlattWeisskopfSquared,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -20,51 +19,23 @@ if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
 
 
-class TestBlattWeisskopfSquared:
-    def test_max_angular_momentum(self):
-        z = sp.Symbol("z")
-        angular_momentum = sp.Symbol("L", integer=True)
-        form_factor = BlattWeisskopfSquared(z, angular_momentum)
-        form_factor_9 = form_factor.subs(angular_momentum, 8).evaluate()
-        factor, z_power, _ = form_factor_9.args
-        assert factor == 4392846440677
-        assert z_power == z**8
-        assert BlattWeisskopfSquared.max_angular_momentum is None
-        BlattWeisskopfSquared.max_angular_momentum = 1
-        assert form_factor.evaluate() == sp.Piecewise(
-            (1, sp.Eq(angular_momentum, 0)),
-            (2 * z / (z + 1), sp.Eq(angular_momentum, 1)),
-        )
-        BlattWeisskopfSquared.max_angular_momentum = None
-
-    def test_unevaluated_expression(self):
-        z = sp.Symbol("z")
-        ff1 = BlattWeisskopfSquared(z, angular_momentum=1)
-        ff2 = BlattWeisskopfSquared(z, angular_momentum=2)
-        assert ff1.max_angular_momentum is None
-        assert ff2.max_angular_momentum is None
-        BlattWeisskopfSquared.max_angular_momentum = 3
-        assert ff1.max_angular_momentum is 3  # noqa: F632
-        assert ff2.max_angular_momentum is 3  # noqa: F632
-        BlattWeisskopfSquared.max_angular_momentum = None
-
-
 class TestEnergyDependentWidth:
     @staticmethod
     def test_init():
         angular_momentum = sp.Symbol("L", integer=True)
-        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
         width = EnergyDependentWidth(
             s=s,
             mass0=m0,
             gamma0=w0,
-            m_a=m_a,
-            m_b=m_a,
+            m_a=m1,
+            m_b=m1,
             angular_momentum=0,
             meson_radius=1,
         )
-        assert width.doit() == w0 * sp.sqrt(-(m_a**2) + s / 4) * sp.sqrt(m0**2) / (
-            sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2)
+        expr_str = str(width.doit())
+        assert (
+            expr_str == "Gamma0*m0*sqrt(-4*m1**2 + s)/(sqrt(s)*sqrt(m0**2 - 4*m1**2))"
         )
         assert width.phsp_factor is PhaseSpaceFactor
         assert width.name is None
@@ -73,8 +44,8 @@ class TestEnergyDependentWidth:
             s=s,
             mass0=m0,
             gamma0=w0,
-            m_a=m_a,
-            m_b=m_b,
+            m_a=m1,
+            m_b=m2,
             angular_momentum=angular_momentum,
             meson_radius=d,
             phsp_factor=EqualMassPhaseSpaceFactor,
@@ -132,14 +103,11 @@ def test_generate(
     total_intensity = total_intensity.subs(model.parameter_defaults)
     assert len(total_intensity.free_symbols) == 5
 
-    angle_value = 0
-    free_symbols: set[sp.Symbol] = total_intensity.free_symbols  # type: ignore[assignment]
-    angle_substitutions = {
-        s: angle_value
-        for s in free_symbols
-        if s.name.startswith("phi") or s.name.startswith("theta")
+    angle_symbols = {
+        s for s in total_intensity.free_symbols if str(s).startswith(("phi", "theta"))
     }
-    total_intensity = total_intensity.subs(angle_substitutions)
+    angle_substitutions = dict.fromkeys(angle_symbols, 0)
+    total_intensity = total_intensity.subs(angle_substitutions)  # ty: ignore[no-matching-overload]
     assert len(total_intensity.free_symbols) == 3
 
     pi0 = particle_database["pi0"]

@@ -13,48 +13,77 @@
 from __future__ import annotations
 
 import itertools
-import logging
-import pickle  # noqa: S403
 import re
 import sys
-import warnings
 from abc import abstractmethod
-from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Sequence, SupportsFloat
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
 from sympy.printing.conventions import split_super_sub
+from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import _unpack_integral_limits  # noqa: PLC2701
-
-from ._cache import get_readable_hash, get_system_cache_directory
-from ._decorator import (
-    ExprClass,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    SymPyAssumptions,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    argument,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    unevaluated,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-)
-from .deprecated import (
-    UnevaluatedExpression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    create_expression,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_doit_method,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    implement_expr,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-    make_commutative,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+from sympy.printing.pycode import (
+    _unpack_integral_limits,  # ruff: ignore[import-private-name]
 )
 
-if sys.version_info < (3, 8):
-    from importlib_metadata import version
-else:
-    from importlib.metadata import version
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+from ._decorator import ExprClass as ExprClass
+from ._decorator import SymPyAssumptions as SymPyAssumptions
+from ._decorator import argument as argument
+from ._decorator import get_non_sympy_fields
+from ._decorator import unevaluated as unevaluated
+from .cached import doit as perform_cached_doit  # ruff: ignore[unused-import]
+from .cached import (
+    xreplace as perform_cached_substitution,  # ruff: ignore[unused-import]
+)
+from .deprecated import UnevaluatedExpression as UnevaluatedExpression
+from .deprecated import create_expression as create_expression
+from .deprecated import implement_doit_method as implement_doit_method
+from .deprecated import implement_expr as implement_expr
+from .deprecated import make_commutative as make_commutative
+
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from sympy.printing.printer import Printer
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
+    from collections.abc import Iterable, Sequence
+    from typing import SupportsFloat, TypeVar
+
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
 
-_LOGGER = logging.getLogger(__name__)
+    T = TypeVar("T", bound=sp.Basic)
+
+
+def partial_doit(
+    expr: T,
+    types: type[sp.Basic] | tuple[type[sp.Basic], ...],
+    recursive: bool = False,
+) -> T:
+    if recursive:
+        while substitutions := _get_substitutions(expr, types):
+            expr = expr.xreplace(substitutions)
+        return expr
+    substitutions = _get_substitutions(expr, types)
+    return expr.xreplace(substitutions)
+
+
+def _get_substitutions(
+    expr: sp.Basic, types: type[sp.Basic] | tuple[type[sp.Basic], ...]
+) -> dict[sp.Basic, sp.Basic]:
+    return {
+        node: node.doit(deep=False)
+        for node in sp.preorder_traversal(expr)
+        if isinstance(node, types)
+    }
 
 
 class NumPyPrintable(sp.Expr):
@@ -104,7 +133,7 @@ def create_symbol_matrix(name: str, m: int, n: int) -> sp.MutableDenseMatrix:
     `~sympy.tensor.indexed.Indexed` instances.
 
     To convert these `~sympy.tensor.indexed.Indexed` instances to a
-    `~sympy.core.symbol.Symbol`, use :func:`symplot.substitute_indexed_symbols`.
+    `~sympy.core.symbol.Symbol`, use :func:`.substitute_indexed_symbols`.
 
     >>> create_symbol_matrix("A", m=2, n=3)
     Matrix([
@@ -137,7 +166,7 @@ class PoolSum(sp.Expr):
         *indices: tuple[sp.Symbol, Iterable[sp.Basic]],
         evaluate: bool = False,
         **hints,
-    ) -> PoolSum:
+    ) -> Self:
         converted_indices = []
         for idx_symbol, values in indices:
             values = tuple(values)
@@ -146,25 +175,25 @@ class PoolSum(sp.Expr):
                 raise ValueError(msg)
             converted_indices.append((idx_symbol, values))
         args = sp.sympify((expression, *converted_indices))
-        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)
+        expr: PoolSum = sp.Expr.__new__(cls, *args, **hints)  # ty: ignore[not-iterable]
         if evaluate:
-            return expr.evaluate()  # type: ignore[return-value]
+            return expr.evaluate()  # ty: ignore[invalid-return-type]
         return expr
 
     @property
     def expression(self) -> sp.Expr:
-        return self.args[0]  # type: ignore[return-value]
+        return self.args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def indices(self) -> list[tuple[sp.Symbol, tuple[sp.Float, ...]]]:
-        return self.args[1:]  # type: ignore[return-value]
+        return self.args[1:]  # ty: ignore[invalid-return-type]
 
     @property
     def free_symbols(self) -> set[sp.Basic]:
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # type: ignore[override]
+    def doit(self, deep: bool = True) -> sp.Expr:  # ty: ignore[invalid-method-override]
         expr = self.evaluate()
         if deep:
             return expr.doit()
@@ -173,7 +202,7 @@ class PoolSum(sp.Expr):
     def evaluate(self) -> sp.Expr:
         indices = {symbol: tuple(values) for symbol, values in self.indices}
         return sp.Add(*[
-            self.expression.subs(zip(indices, combi))
+            self.expression.subs(zip(indices, combi, strict=True))
             for combi in itertools.product(*indices.values())
         ])
 
@@ -252,9 +281,9 @@ def _is_regular_series(values: Sequence[SupportsFloat]) -> bool:
     if len(values) <= 1:
         return False
     sorted_values = sorted(values, key=float)
-    for val, next_val in zip(sorted_values, sorted_values[1:]):
+    for val, next_val in itertools.pairwise(sorted_values):
         difference = float(next_val) - float(val)
-        if difference != 1.0:
+        if difference != 1.0:  # ruff: ignore[float-equality-comparison]
             return False
     return True
 
@@ -285,101 +314,197 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     subscript = re.sub(r"[^0-9^\,]", "", subscript)
     subscript = f"[{subscript}]"
     try:
-        indices = eval(subscript)  # noqa: PGH001, S307
+        indices = eval(subscript)  # ruff: ignore[suspicious-eval-usage]
     except SyntaxError:
         return []
     return list(indices)
 
 
-class UnevaluatableIntegral(sp.Integral):
-    """See :ref:`usage/sympy:Numerical integrals`.
+def rename_symbols(
+    expression: sp.Expr, renames: Callable[[str], str] | dict[str, str]
+) -> sp.Expr:
+    r"""Rename symbols in an expression.
 
-    .. versionadded:: 0.14.10
+    >>> a, b, x = sp.symbols(R"a \beta x")
+    >>> expr = a + b * x
+    >>> rename_symbols(expr, renames={"a": "A", R"\beta": "B"})
+    A + B*x
+    >>> rename_symbols(expr, renames=lambda s: s.replace("\\", ""))
+    a + beta*x
+    >>> rename_symbols(expr, renames={"non-existent": "c"})
+    Traceback (most recent call last):
+        ...
+    KeyError: "No symbol with name 'non-existent' in expression"
+    """
+    substitutions: dict[sp.Symbol, sp.Symbol] = {}
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
+    if callable(renames):
+        for old_symbol in free_symbols:
+            new_name = renames(old_symbol.name)  # ty: ignore[call-top-callable]
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    elif isinstance(renames, dict):
+        for old_name, new_name in renames.items():
+            matches = (s for s in free_symbols if s.name == old_name)
+            try:
+                old_symbol = next(matches)
+            except StopIteration as e:
+                msg = f"No symbol with name '{old_name}' in expression"
+                raise KeyError(msg) from e
+            new_symbol = sp.Symbol(new_name, **old_symbol.assumptions0)
+            substitutions[old_symbol] = new_symbol
+    else:
+        msg = f"Cannot rename from type {type(renames).__name__}"
+        raise TypeError(msg)
+    return expression.xreplace(substitutions)
+
+
+@unevaluated(implement_doit=False)
+class NumericalIntegral(sp.Integral):
+    """Expression class representing an integral that should be evaluated numerically.
+
+    This class inherits from `sympy.Integral <sympy.integrals.integrals.Integral>`, but
+    is blocked from evaluating symbolically. Instead, it should be lambdified to a
+    numerical integration function and evaluated numerically.
+
+    .. seealso:: :ref:`sympy:Numerical integrals`
+
+    .. version-added:: 0.14.10
+
+    .. version-changed:: 0.16.0
+
+        * Renamed from :code:`UnevaluatableIntegral` to `NumericalIntegral`.
+        * The integration algorithm is configured through class constructor arguments
+          rather than class variables.
     """
 
-    abs_tolerance = 1e-5
-    rel_tolerance = 1e-5
-    limit = 50
-    dummify = True
+    function: sp.Expr
+    """Integrand of the integral."""
+    limits: tuple[sp.Symbol, sp.Basic, sp.Basic]
+    """Integration variable and its limits (can be `~sympy.core.numbers.Infinity`)."""
+    algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
+    """Name of the numerical integration algorithm to use when lambdifying this integral.
+
+    The algorithm should be in the format :code:`module.function`, for instance
+    :func:`scipy.integrate.quad_vec` or :func:`quadax.quadgk`. By default, the algorithm
+    is :func:`quadax.romberg` when lambdifying to JAX and
+    :func:`scipy.integrate.quad_vec` when lambdifying to NumPy.
+    """
+    configuration: dict[str, Any] | None = argument(
+        default=None, kw_only=True, sympify=False
+    )
+    """Keyword arguments for the numerical integration algorithm.
+
+    For example, for :func:`scipy.integrate.quad_vec`, one can set the relative
+    tolerance with :code:`configuration={'epsrel': 1e-5}`.
+    """
+    dummify: bool = argument(default=True, kw_only=True, sympify=False)
+    """Replace the integration variable with a dummy symbol before lambdification.
+
+    The integrand expression is lambdified to a :code:`lambda` function. Therefore, when
+    the integrand expresssion contains the integration variable in a non-trivial way,
+    and the expression is lambdified using common sub-expressions, it is better to
+    replace it with a unique `~sympy.core.symbol.Dummy` symbol that does not appear
+    anywhere else in the expression tree, so that is not pulled out of the
+    :code:`lambda` function.
+    """
 
     @override
     def doit(self, **hints):
         args = [arg.doit(**hints) for arg in self.args]
-        return self.func(*args)
+        kwargs = {
+            field.name: getattr(self, field.name)
+            for field in get_non_sympy_fields(self)
+        }
+        return self.func(*args, **kwargs)
 
     @override
-    def _numpycode(self, printer, *args):
-        _warn_if_scipy_not_installed()
+    def _jaxcode(self, printer: Printer, *args) -> str:  # ty: ignore[invalid-explicit-override]
+        algorithm = self.algorithm or _get_algorithm(self.algorithm, printer)
+        if algorithm.startswith("quadax"):
+            return self.__to_quadax_like(printer, algorithm)
+        return self.__to_scipy_like(printer, algorithm)
+
+    @override
+    def _numpycode(self, printer: Printer, *args) -> str:  # ty: ignore[invalid-explicit-override]
+        algorithm = _get_algorithm(self.algorithm, printer)
+        if algorithm.startswith("quadax"):
+            return self.__to_quadax_like(printer, algorithm)
+        return self.__to_scipy_like(printer, algorithm)
+
+    def __to_quadax_like(self, printer: Printer, algorithm: str) -> str:
+        """https://quadax.readthedocs.io."""
+        integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
+        src = _generate_function_call(
+            integrate,
+            fun=f"lambda {x}: {integrand}",
+            interval=f"({a}, {b})",
+            **self.configuration or {},
+        )
+        return f"{src}[0]"
+
+    def __to_scipy_like(self, printer: Printer, algorithm: str) -> str:
+        """https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad_vec.html."""
+        integrate, integrand, x, a, b = self.__prepare_components(printer, algorithm)
+        kwargs = self.configuration or {}
+        src = _generate_function_call(
+            integrate, f"lambda {x}: {integrand}", a, b, **kwargs
+        )
+        return f"{src}[0]"
+
+    def __prepare_components(
+        self, printer: Printer, algorithm: str
+    ) -> tuple[str, str, str, str, str]:
         integration_vars, limits = _unpack_integral_limits(self)
         if len(limits) != 1 or len(integration_vars) != 1:
             msg = f"Cannot handle {len(limits)}-dimensional integrals"
             raise ValueError(msg)
         x = integration_vars[0]
         a, b = limits[0]
-        expr = self.args[0]
+        integrand = self.function
         if self.dummify:
             dummy = sp.Dummy()
-            expr = expr.xreplace({x: dummy})
+            integrand = integrand.xreplace({x: dummy})
             x = dummy
-        integrate_func = "quad_vec"
-        printer.module_imports["scipy.integrate"].add(integrate_func)
+        parts = algorithm.split(".")
+        if len(parts) < 2:  # ruff: ignore[magic-value-comparison]
+            msg = f"Algorithm should be in format 'module.function', got '{algorithm}'"
+            raise ValueError(msg)
+        module_name = ".".join(parts[:-1])
+        algorithm_name = parts[-1]
+        printer.module_imports[module_name].add(algorithm_name)
         return (
-            f"{integrate_func}(lambda {printer._print(x)}: {printer._print(expr)},"
-            f" {printer._print(a)}, {printer._print(b)},"
-            f" epsabs={self.abs_tolerance}, epsrel={self.abs_tolerance},"
-            f" limit={self.limit})[0]"
+            algorithm_name,
+            printer._print(integrand),
+            printer._print(x),
+            printer._print(a),
+            printer._print(b),
         )
 
 
-def _warn_if_scipy_not_installed() -> None:
-    try:
-        import scipy  # noqa: F401, PLC0415  # pyright: ignore[reportUnusedImport, reportMissingImports]
-    except ImportError:
-        warnings.warn(
-            "Scipy is not installed. Install with 'pip install scipy' or with 'pip"
-            " install ampform[scipy]'",
-            stacklevel=1,
-        )
+def _get_algorithm(algorithm: str, printer: Printer) -> str:
+    if algorithm is not None:
+        return algorithm
+    if isinstance(printer, JaxPrinter) or getattr(printer, "_module", None) in {
+        "jax",
+        "jnp",
+    }:
+        return "quadax.romberg"
+    return "scipy.integrate.quad_vec"
 
 
-def perform_cached_doit(
-    unevaluated_expr: sp.Expr, cache_directory: Path | str | None = None
-) -> sp.Expr:
-    """Perform :meth:`~sympy.core.basic.Basic.doit` and cache the result to disk.
+def _generate_function_call(func_name: str, /, *args, **kwargs) -> str:
+    """Generate a function call string with the given function name, arguments, and keyword arguments.
 
-    The cached result is fetched from disk if the hash of the original expression is the
-    same as the hash embedded in the filename (see :func:`.get_readable_hash`).
-
-    Args:
-        unevaluated_expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
-            :meth:`~sympy.core.basic.Basic.doit`.
-        cache_directory: The directory in which to cache the result. Defaults to
-            :file:`ampform` under the system cache directory (see
-            :func:`.get_system_cache_directory`).
-
-    .. tip:: For a faster cache, set `PYTHONHASHSEED
-        <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ to a
-        fixed value.
-
-    .. versionadded:: 0.14.4
-    .. automodule:: ampform.sympy._cache
+    >>> _generate_function_call("quad_vec", "f", 0, 1, epsabs=1e-5)
+    'quad_vec(f, 0, 1, epsabs=1e-05)'
+    >>> _generate_function_call("quadgk", fun="lambda x: x**2", interval=(0, 1))
+    'quadgk(fun=lambda x: x**2, interval=(0, 1))'
     """
-    if cache_directory is None:
-        system_cache_dir = get_system_cache_directory()
-        sympy_version = version("sympy")
-        cache_directory = Path(system_cache_dir) / "ampform" / f"sympy-v{sympy_version}"
-    if not isinstance(cache_directory, Path):
-        cache_directory = Path(cache_directory)
-    cache_directory.mkdir(exist_ok=True, parents=True)
-    h = get_readable_hash(unevaluated_expr)
-    filename = cache_directory / f"{h}.pkl"
-    if filename.exists():
-        with open(filename, "rb") as f:
-            return pickle.load(f)  # noqa: S301
-    _LOGGER.warning(
-        f"Cached expression file {filename} not found, performing doit()..."
-    )
-    unfolded_expr = unevaluated_expr.doit()
-    with open(filename, "wb") as f:
-        pickle.dump(unfolded_expr, f)
-    return unfolded_expr
+    src = f"{func_name}("
+    src += ", ".join(map(str, args))
+    if args:
+        src += ", "
+    src += ", ".join(f"{key}={value}" for key, value in kwargs.items())
+    src += ")"
+    return src

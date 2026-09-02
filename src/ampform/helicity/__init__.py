@@ -9,37 +9,21 @@ from __future__ import annotations
 
 import collections
 import logging
+import math
 import operator
 import sys
-import warnings
 from collections import OrderedDict, abc
-from functools import reduce
-from typing import (
-    TYPE_CHECKING,
-    ItemsView,
-    Iterable,
-    Iterator,
-    KeysView,
-    Mapping,
-    Sequence,
-    Union,
-    ValuesView,
-)
+from fractions import Fraction
+from functools import reduce, singledispatchmethod
+from typing import TYPE_CHECKING, TypeVar, cast
 
 import attrs
 import sympy as sp
 from attrs import define, field, frozen
 from attrs.validators import deep_iterable, instance_of, optional
-from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
 from qrules.particle import Particle
-from qrules.transition import (
-    InteractionProperties,
-    ReactionInfo,
-    State,
-    StateTransition,
-)
+from qrules.transition import ReactionInfo, StateTransition
 
-from ampform._qrules import get_qrules_version
 from ampform.dynamics.builder import (
     ResonanceDynamicsBuilder,
     TwoBodyKinematicVariableSet,
@@ -51,6 +35,7 @@ from ampform.helicity.decay import (
     get_prefactor,
     group_by_spin_projection,
     group_by_topology,
+    perform_combinatorics,
 )
 from ampform.helicity.naming import (
     CanonicalAmplitudeNameGenerator,
@@ -68,45 +53,46 @@ from ampform.kinematics.lorentz import (
     create_four_momentum_symbols,
     get_invariant_mass_symbol,
 )
-from ampform.sympy import PoolSum, determine_indices
+from ampform.sympy import PoolSum, determine_indices, partial_doit
 from ampform.sympy._array_expressions import ArraySum
 
-if sys.version_info >= (3, 8):
-    from functools import singledispatchmethod
-else:
-    from singledispatchmethod import singledispatchmethod
-
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import (
+        ItemsView,
+        Iterable,
+        Iterator,
+        KeysView,
+        Mapping,
+        Sequence,
+        ValuesView,
+    )
+
     from IPython.lib.pretty import PrettyPrinter
-    from qrules.topology import MutableTransition
 
 _LOGGER = logging.getLogger(__name__)
 
+K = TypeVar("K")
+V = TypeVar("V")
 
-def _order_component_mapping(
-    mapping: Mapping[str, sp.Expr],
-) -> OrderedDict[str, sp.Expr]:
+
+def _order_component_mapping(mapping: Mapping[str, V], /) -> OrderedDict[str, V]:
     return collections.OrderedDict([
         (key, mapping[key]) for key in sorted(mapping, key=natural_sorting)
     ])
 
 
-def _order_symbol_mapping(
-    mapping: Mapping[sp.Symbol, sp.Expr],
-) -> OrderedDict[sp.Symbol, sp.Expr]:
+def _order_symbol_mapping(mapping: Mapping[K, V], /) -> OrderedDict[K, V]:
     return collections.OrderedDict([
         (symbol, mapping[symbol])
-        for symbol in sorted(mapping, key=lambda s: natural_sorting(s.name))
+        for symbol in sorted(mapping, key=lambda s: natural_sorting(str(s)))
     ])
 
 
-def _order_amplitudes(
-    mapping: Mapping[sp.Indexed, sp.Expr],
-) -> OrderedDict[sp.Indexed, sp.Expr]:
+def _order_amplitudes(mapping: Mapping[K, V], /) -> OrderedDict[K, V]:
     return collections.OrderedDict([
         (key, mapping[key])
         for key in sorted(mapping, key=lambda a: natural_sorting(str(a)))
@@ -128,7 +114,7 @@ class HelicityModel:
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
     definitions for each of these. See also
-    :ref:`TR-014 <compwa:tr-014-solution-2>`.
+    :ref:`TR-014 <compwa-report:tr-014-solution-2>`.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
@@ -139,7 +125,7 @@ class HelicityModel:
     (:func:`.natural_sorting`). Values have been extracted from the input
     `~qrules.transition.ReactionInfo`.
     """
-    kinematic_variables: OrderedDict[sp.Symbol, sp.Expr] = field(
+    kinematic_variables: OrderedDict[sp.Basic, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
@@ -160,16 +146,7 @@ class HelicityModel:
         Constructed from `intensity` by substituting its amplitude symbols with the
         definitions with `amplitudes`.
         """
-
-        def unfold_poolsums(expr: sp.Expr) -> sp.Expr:
-            new_expr = expr
-            for node in sp.postorder_traversal(expr):
-                if isinstance(node, PoolSum):
-                    new_expr = new_expr.xreplace({node: node.evaluate()})
-            return new_expr
-
-        intensity = self.intensity.evaluate()
-        intensity = unfold_poolsums(intensity)
+        intensity = partial_doit(self.intensity, PoolSum, recursive=True)
         return intensity.xreplace(self.amplitudes)
 
     def rename_symbols(
@@ -179,7 +156,7 @@ class HelicityModel:
 
         Renames all `~sympy.core.symbol.Symbol` instance that appear in `expression`,
         `parameter_defaults`, `components`, and `kinematic_variables`. This method can
-        be used to :ref:`couple parameters <usage/modify:Couple parameters>`.
+        be used to :ref:`couple parameters <amplitude/modify:Couple parameters>`.
 
         Args:
             renames: A mapping from old to new names.
@@ -208,7 +185,7 @@ class HelicityModel:
                 for amp, expr in self.amplitudes.items()
             },
             parameter_defaults={
-                symbol_mapping.get(par, par): value  # type: ignore[call-overload]
+                symbol_mapping.get(par, par): value
                 for par, value in self.parameter_defaults.items()
             },
             components={
@@ -222,10 +199,10 @@ class HelicityModel:
         )
 
     def __collect_symbols(self) -> set[sp.Symbol]:
-        symbols: set[sp.Symbol] = self.expression.free_symbols  # type: ignore[assignment]
+        symbols = cast("set[sp.Symbol]", self.expression.free_symbols)
         symbols |= set(self.kinematic_variables)
         for expr in self.kinematic_variables.values():
-            symbols |= expr.free_symbols  # type: ignore[arg-type]
+            symbols |= expr.free_symbols
         return symbols
 
 
@@ -269,9 +246,9 @@ class ParameterValues(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}({{"):
                 p.breakable()
                 for par, value in self.items():
-                    p.pretty(par)  # type: ignore[attr-defined]
+                    p.pretty(par)  # ty: ignore[unresolved-attribute]
                     p.text(": ")
-                    p.pretty(value)  # type: ignore[attr-defined]
+                    p.pretty(value)  # ty: ignore[unresolved-attribute]
                     p.text(",")
                     p.breakable()
             p.text("})")
@@ -285,7 +262,7 @@ class ParameterValues(abc.Mapping):
         self.__parameters[par] = value
 
     @singledispatchmethod
-    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:  # noqa: PLR6301
+    def _get_parameter(self, key: sp.Basic | int | str) -> sp.Basic:  # ruff: ignore[no-self-use]
         msg = f"Cannot find parameter for key type {type(key).__name__}"
         raise KeyError(msg)  # no TypeError because of sympy.core.expr.Expr.xreplace
 
@@ -331,7 +308,7 @@ class ParameterValues(abc.Mapping):
         return self.__parameters.values()
 
 
-ParameterValue = Union[float, complex, int]
+ParameterValue = complex | float | int
 """Allowed value types for parameters."""
 
 
@@ -378,22 +355,6 @@ class HelicityAmplitudeBuilder:
     def reaction(self) -> ReactionInfo:
         return self.__reaction
 
-    def set_dynamics(
-        self, particle_name: str, dynamics_builder: ResonanceDynamicsBuilder
-    ) -> None:
-        """Assign a `.ResonanceDynamicsBuilder` for a specific resonance.
-
-        .. deprecated:: 0.16.0
-            Use the `~.DynamicsSelector.assign()` method of the `.dynamics` attribute
-            instead.
-        """
-        warnings.warn(
-            "set_dynamics() will be removed in favor of dynamics.assign()",
-            category=DeprecationWarning,
-            stacklevel=1,
-        )
-        self.dynamics.assign(particle_name, dynamics_builder)
-
     def formulate(self) -> HelicityModel:
         self.__ingredients.reset()
         main_intensity = self.__formulate_top_expression()
@@ -420,7 +381,7 @@ class HelicityAmplitudeBuilder:
                 for s in sorted(angle_expr.free_symbols, key=str)
                 if isinstance(s, sp.Symbol)
                 if s.name.startswith("m_")
-                if s.is_nonnegative  # type: ignore[attr-defined]
+                if s.is_nonnegative
             ]
             for mass_symbol in remaining_mass_symbols:
                 indices = _get_final_state_ids(mass_symbol)
@@ -477,15 +438,13 @@ class HelicityAmplitudeBuilder:
     ) -> sp.Expr:
         sequential_expressions: list[sp.Expr] = []
         for transition in transitions:
-            sequential_graphs = _perform_combinatorics(transition)
-            for graph in sequential_graphs:
-                first_transition = _freeze(graph)
-                expression = self.__formulate_sequential_decay(first_transition)
+            for permutated_transition in perform_combinatorics(transition):
+                expression = self.__formulate_sequential_decay(permutated_transition)
                 sequential_expressions.append(expression)
 
         first_transition = transitions[0]
         symbol = create_amplitude_symbol(first_transition)
-        expression = sum(sequential_expressions)  # type: ignore[assignment]
+        expression = sp.sympify(sum(sequential_expressions))
         self.__ingredients.amplitudes[symbol] = expression
         return expression
 
@@ -569,7 +528,7 @@ class HelicityAmplitudeBuilder:
         self, transition: StateTransition
     ) -> sp.Rational | None:
         prefactor = get_prefactor(transition)
-        if prefactor != 1.0:
+        if not math.isclose(prefactor, 1.0):
             for node_id in transition.topology.nodes:
                 raw_suffix = self.naming.generate_two_body_decay_suffix(
                     transition, node_id
@@ -581,24 +540,6 @@ class HelicityAmplitudeBuilder:
                     if coefficient_suffix != raw_suffix:
                         return sp.Rational(prefactor)
         return None
-
-
-def _perform_combinatorics(
-    transition: StateTransition,
-) -> list[MutableTransition[State, InteractionProperties]]:
-    if get_qrules_version() < (0, 10):
-        return perform_external_edge_identical_particle_combinatorics(
-            transition.to_graph()  # type: ignore[attr-defined]
-        )
-    graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
-    combinations = perform_external_edge_identical_particle_combinatorics(graph)
-    return [g.freeze().convert(lambda s: State(*s)).unfreeze() for g in combinations]
-
-
-def _freeze(graph: MutableTransition[State, InteractionProperties]) -> StateTransition:
-    if get_qrules_version() < (0, 10):
-        return StateTransition.from_graph(graph)  # type: ignore[attr-defined]
-    return graph.freeze()
 
 
 class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
@@ -613,10 +554,10 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
 
         F^J_{\lambda_1,\lambda_2} = \sum_{LS} \mathrm{norm}(A^J_{LS})C^2.
 
-    Here, :math:`C` stands for `Clebsch-Gordan factor
+    Here, :math:`C` stands for `Clebsch–Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
 
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/usage/helicity/formalism`.
+    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/amplitude/formalism`.
     """
 
     @override
@@ -643,8 +584,8 @@ def _to_optional_set(values: Iterable[int] | None) -> set[int] | None:
 class BuilderConfiguration:
     """Configuration class for a `.HelicityAmplitudeBuilder`."""
 
-    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))  # type: ignore[type-abstract]
-    """Method for :doc:`aligning spin </usage/helicity/spin-alignment>`."""
+    spin_alignment: SpinAlignment = field(validator=instance_of(SpinAlignment))
+    """Method for :doc:`aligning spin </amplitude/spin-alignment>`."""
     scalar_initial_state_mass: bool = field(validator=instance_of(bool))
     r"""Add initial state mass as scalar value to `.parameter_defaults`.
 
@@ -653,11 +594,11 @@ class BuilderConfiguration:
     `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
     with or kinematically fit to a specific initial state energy.
 
-    .. seealso:: :ref:`usage/amplitude:Scalar masses`
+    .. seealso:: :ref:`amplitude:Scalar masses`
     """
     stable_final_state_ids: set[int] | None = field(
         converter=_to_optional_set,
-        validator=optional(deep_iterable(member_validator=instance_of(int))),  # type: ignore[arg-type]
+        validator=optional(deep_iterable(member_validator=instance_of(int))),
     )
     r"""IDs of the final states that should be considered stable.
 
@@ -682,14 +623,13 @@ class DynamicsSelector(abc.Mapping):
             transitions = transitions.transitions
         self.__choices: dict[TwoBodyDecay, ResonanceDynamicsBuilder] = {}
         for transition in transitions:
-            for node_id in transition.topology.nodes:
-                decay = TwoBodyDecay.from_transition(transition, node_id)
-                self.__choices[decay] = create_non_dynamic
+            for permutated_transition in perform_combinatorics(transition):
+                for node_id in permutated_transition.topology.nodes:
+                    decay = TwoBodyDecay.from_transition(permutated_transition, node_id)
+                    self.__choices[decay] = create_non_dynamic
 
     @singledispatchmethod
-    def assign(  # noqa: PLR6301
-        self, selection, builder: ResonanceDynamicsBuilder
-    ) -> None:
+    def assign(self, selection, builder: ResonanceDynamicsBuilder) -> None:
         """Assign a `.ResonanceDynamicsBuilder` to a selection of nodes.
 
         Currently, the following types of selections are implements:
@@ -733,10 +673,10 @@ class DynamicsSelector(abc.Mapping):
         return self.assign(particle.name, builder)
 
     def __getitem__(
-        self, __k: TwoBodyDecay | tuple[StateTransition, int]
+        self, k: TwoBodyDecay | tuple[StateTransition, int], /
     ) -> ResonanceDynamicsBuilder:
-        __k = TwoBodyDecay.create(__k)
-        return self.__choices[__k]
+        k = TwoBodyDecay.create(k)
+        return self.__choices[k]
 
     def __len__(self) -> int:
         return len(self.__choices)
@@ -759,7 +699,7 @@ class _HelicityModelIngredients:
     parameter_defaults: dict[sp.Basic, ParameterValue] = field(factory=dict)
     amplitudes: dict[sp.Indexed, sp.Expr] = field(factory=dict)
     components: dict[str, sp.Expr] = field(factory=dict)
-    kinematic_variables: dict[sp.Symbol, sp.Expr] = field(factory=dict)
+    kinematic_variables: dict[sp.Basic, sp.Expr] = field(factory=dict)
 
     def reset(self) -> None:
         self.parameter_defaults = {}
@@ -771,19 +711,19 @@ class _HelicityModelIngredients:
 def formulate_isobar_cg_coefficients(
     transition: StateTransition, node_id: int
 ) -> sp.Expr:
-    r"""Compute the two Clebsch-Gordan coefficients for an isobar node.
+    r"""Compute the two Clebsch–Gordan coefficients for an isobar node.
 
     In the **canonical basis** (also called **partial wave basis**),
-    :doc:`Clebsch-Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
+    :doc:`Clebsch–Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
     the projection of angular momentum is conserved
-    (:cite:`kutschkeAngularDistributionCookbook1996`, p. 4). When calling
+    (:cite:`Kutschke:1996-AngularDistributionCookbook`, p. 4). When calling
     :func:`~qrules.generate_transitions` with :code:`formalism="canonical-helicity"`,
     AmpForm formulates the amplitude in the canonical basis from amplitudes in the
-    helicity basis using the transformation in :cite:`chungSpinFormalismsUpdated2014`,
-    Eq. (4.32). See also :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (28).
+    helicity basis using the transformation in :cite:`Chung:2014-SpinFormalismsUpdated`,
+    Eq. (4.32). See also :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (28).
 
-    This function produces the two Clebsch-Gordan coefficients in
-    :cite:`chungSpinFormalismsUpdated2014`, Eq. (4.32). For a two-body decay :math:`1
+    This function produces the two Clebsch–Gordan coefficients in
+    :cite:`Chung:2014-SpinFormalismsUpdated`, Eq. (4.32). For a two-body decay :math:`1
     \to 2, 3`, we get:
 
     .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
@@ -820,7 +760,7 @@ def formulate_isobar_cg_coefficients(
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
     """
-    from sympy.physics.quantum.cg import CG  # noqa: PLC0415
+    from sympy.physics.quantum.cg import CG
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
 
@@ -854,7 +794,7 @@ def formulate_isobar_cg_coefficients(
 def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.Expr:
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
-    Following :cite:`chungSpinFormalismsUpdated2014`, `Eq. (4.16)
+    Following :cite:`Chung:2014-SpinFormalismsUpdated`, `Eq. (4.16)
     <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_, but taking the complex
     conjugate by flipping the sign of the azimuthal angle :math:`\phi` (see relation
     between Wigner-:math:`D` and Wigner-:math:`d` in `Eq. (A.1)
@@ -880,13 +820,12 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     Note that :math:`\lambda_2, \lambda_3` are ordered by their number of children, then
     by their state ID (see :class:`.TwoBodyDecay`).
 
-    See :cite:`kutschkeAngularDistributionCookbook1996`, Eq. (30) for an example of
+    See :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (30) for an example of
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source
     chose :math:`\Omega=(\phi,\theta,-\phi)` as argument to the (conjugated)
     Wigner-:math:`D` function, just like the original paper by Jacob & Wick
-    :cite:`jacobGeneralTheoryCollisions1959`, Eq. (24). See p.119-120 and p.199 in
-    :cite:`martinElementaryParticleTheory1970` for the two conventions, :math:`\gamma=0`
-    versus :math:`\gamma=-\phi`.
+    :cite:`Jacob:1959at`, Eq. (24). See p.119-120 and p.199 in :cite:`Martin:1970hmp`
+    for the two conventions, :math:`\gamma=0` versus :math:`\gamma=-\phi`.
 
     Example
     -------
@@ -899,7 +838,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     >>> formulate_isobar_wigner_d(transition, node_id=0)
     WignerD(1, 1, -1, -phi_0, theta_0, 0)
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
+    from sympy.physics.quantum.spin import Rotation as Wigner
 
     decay = TwoBodyDecay.from_transition(transition, node_id)
     _, phi, theta = _generate_kinematic_variables(transition, node_id)
@@ -934,13 +873,21 @@ def _get_final_state_ids(mass: sp.Symbol) -> tuple[int, ...]:
 def _generate_kinematic_variable_set(
     transition: StateTransition, node_id: int
 ) -> TwoBodyKinematicVariableSet:
+    def is_integer(spin: float | Fraction) -> bool:
+        if isinstance(spin, float):
+            return spin.is_integer()
+        if isinstance(spin, Fraction):
+            return spin.denominator == 1
+        msg = "spin has to of type float (qrules 0.9) or Fraction (qrules >= 0.10)"
+        raise TypeError(msg)
+
     decay = TwoBodyDecay.from_transition(transition, node_id)
     inv_mass, phi, theta = _generate_kinematic_variables(transition, node_id)
     topology = transition.topology
     child1_mass = get_invariant_mass_symbol(topology, decay.children[0].id)
     child2_mass = get_invariant_mass_symbol(topology, decay.children[1].id)
     angular_momentum: int | None = decay.interaction.l_magnitude
-    if angular_momentum is None and decay.parent.particle.spin.is_integer():
+    if angular_momentum is None and is_integer(decay.parent.particle.spin):
         angular_momentum = int(decay.parent.particle.spin)
     return TwoBodyKinematicVariableSet(
         incoming_state_mass=inv_mass,

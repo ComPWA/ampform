@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import pickle
 from typing import TYPE_CHECKING
 
 import pytest
@@ -9,7 +10,10 @@ import sympy as sp
 from qrules import ReactionInfo
 
 from ampform import get_builder
-from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
+from ampform.dynamics.builder import (
+    RelativisticBreitWignerBuilder,
+    create_relativistic_breit_wigner_with_ff,
+)
 from ampform.helicity import (
     HelicityAmplitudeBuilder,
     HelicityModel,
@@ -22,6 +26,7 @@ from ampform.helicity import (
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
+    from qrules.transition import SpinFormalism
 
 
 class TestHelicityAmplitudeBuilder:
@@ -96,7 +101,7 @@ class TestHelicityAmplitudeBuilder:
     def test_stable_final_state_ids(self, reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.config.stable_final_state_ids is None
-        builder.config.stable_final_state_ids = (1, 2)  # type: ignore[assignment]
+        builder.config.stable_final_state_ids = (1, 2)
         assert builder.config.stable_final_state_ids == {1, 2}
 
     def test_scalar_initial_state(self, reaction: ReactionInfo):
@@ -126,14 +131,10 @@ class TestHelicityAmplitudeBuilder:
         if reaction.formalism == "canonical-helicity":
             assert len(coefficient_names) == 4
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma;"
-                R" f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
-                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma;"
-                R" f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=0} f_{0}(1500) \gamma; f_{0}(1500) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
+                R"C_{J/\psi(1S) \xrightarrow[S=1]{L=2} f_{0}(980) \gamma; f_{0}(980) \xrightarrow[S=0]{L=0} \pi^{0} \pi^{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
@@ -147,10 +148,8 @@ class TestHelicityAmplitudeBuilder:
         else:
             assert len(coefficient_names) == 2
             assert coefficient_names == {
-                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980)"
-                R" \to \pi^{0}_{0} \pi^{0}_{0}}",
-                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1};"
-                R" f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(980)}_{0} \gamma_{+1}; f_{0}(980) \to \pi^{0}_{0} \pi^{0}_{0}}",
+                R"C_{J/\psi(1S) \to {f_{0}(1500)}_{0} \gamma_{+1}; f_{0}(1500) \to \pi^{0}_{0} \pi^{0}_{0}}",
             }
             assert len(coupling_names) == 6
             assert coupling_names == {
@@ -170,7 +169,14 @@ class TestHelicityModel:
         _, model = amplitude_model
         for symbol, value in model.parameter_defaults.items():
             assert isinstance(symbol, sp.Symbol)
-            assert isinstance(value, ParameterValue.__args__)  # type: ignore[attr-defined]
+            assert isinstance(value, ParameterValue.__args__)
+
+    def test_pickle_roundtrip(self, amplitude_model: tuple[str, HelicityModel]):
+        """See https://github.com/ComPWA/ampform/issues/471."""
+        _, model = amplitude_model
+        pickled_model: HelicityModel = pickle.loads(pickle.dumps(model))
+        assert pickled_model.kinematic_variables == model.kinematic_variables
+        assert pickled_model == model
 
     def test_rename_symbols_no_renames(
         self, amplitude_model: tuple[str, HelicityModel]
@@ -267,7 +273,7 @@ class TestHelicityModel:
         assert new_model == model
 
     @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
-    def test_amplitudes(self, formalism: str):
+    def test_amplitudes(self, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=("J/psi(1S)", [-1, +1]),
             final_state=["K0", "Sigma+", "p~"],
@@ -365,3 +371,35 @@ def test_group_by_spin_projection(reaction: ReactionInfo):
         for transition in transition_iter:
             assert transition.initial_states == first_transition.initial_states
             assert transition.final_states == first_transition.final_states
+
+
+def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
+    reaction = d_to_pi_pi_pi
+    assert len(reaction.transitions) == 1
+    bw_builder = RelativisticBreitWignerBuilder()
+    model_builder = HelicityAmplitudeBuilder(reaction)
+    for name in reaction.get_intermediate_particles().names:
+        model_builder.dynamics.assign(name, bw_builder)
+    model = model_builder.formulate()
+    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty: ignore[unresolved-attribute]
+    assert parameter_names == [
+        R"C_{D^{+} \to \pi^{+}_{0} \rho(770)^{0}_{0}; \rho(770)^{0} \to \pi^{+}_{0} \pi^{-}_{0}}",
+        R"\Gamma_{\rho(770)^{0}}",
+        R"m_{\rho(770)^{0}}",
+    ]
+    coefficients = [p for p in parameter_names if p.startswith("C_")]
+    assert len(coefficients) == 1
+    assert len(model.amplitudes) == 1
+    (amplitude_expr,) = model.amplitudes.values()
+    amplitude_expr = amplitude_expr.xreplace({
+        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))  # ty: ignore[unresolved-attribute]
+        for s in model.parameter_defaults
+    })
+    amplitude_expr = sp.simplify(amplitude_expr, doit=False)
+    amplitude_str = str(amplitude_expr).replace("WignerD", "D").replace(" ", "")
+    assert (
+        amplitude_str == "C*m*Γ*("
+        "-(-m**2+I*m*Γ+m_02**2)*D(0,0,0,-phi_0,theta_0,0)*D(1,0,0,-phi_1^12,theta_1^12,0)"
+        "-(-m**2+I*m*Γ+m_12**2)*D(0,0,0,-phi_02,theta_02,0)*D(1,0,0,-phi_0^02,theta_0^02,0))/((-m**2+I*m*Γ+m_02**2)*(-m**2+I*m*Γ+m_12**2)"
+        ")"
+    )

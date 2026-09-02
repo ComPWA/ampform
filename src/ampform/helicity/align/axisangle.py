@@ -1,12 +1,13 @@
 """Spin alignment with the "axis-angle" method.
 
-See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+See :cite:`Marangotto:2019ucc` and `Wigner rotations
 <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator, Sequence, TypeVar, overload
+from math import isclose
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import sympy as sp
 
@@ -31,26 +32,21 @@ from ampform.kinematics.lorentz import create_four_momentum_symbols
 from ampform.sympy import PoolSum
 
 if TYPE_CHECKING:
-    import sys
+    from collections.abc import Generator, Sequence
+    from typing import Literal
 
     from qrules.topology import Topology
     from qrules.transition import ReactionInfo, StateTransition
-
-    if sys.version_info >= (3, 8):
-        from typing import Literal
-    else:
-        from typing_extensions import Literal
 
 
 class AxisAngleAlignment(SpinAlignment):
     """Alignment amplitudes with the "axis-angle" method.
 
-    See :cite:`marangottoHelicityAmplitudesGeneric2020` and `Wigner rotations
+    See :cite:`Marangotto:2019ucc` and `Wigner rotations
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
 
-    @staticmethod
-    def formulate_amplitude(reaction: ReactionInfo) -> sp.Expr:
+    def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:  # ruff: ignore[no-self-use]
         topology_groups = group_by_topology(reaction.transitions)
         outer_state_ids = get_outer_state_ids(reaction)
         amplitude = sp.S.Zero
@@ -70,8 +66,7 @@ class AxisAngleAlignment(SpinAlignment):
             )
         return amplitude
 
-    @staticmethod
-    def define_symbols(reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:
+    def define_symbols(self, reaction: ReactionInfo) -> dict[sp.Symbol, sp.Expr]:  # ruff: ignore[no-self-use]
         wigner_angles = {}
         for topology in group_by_topology(reaction.transitions):
             momenta = create_four_momentum_symbols(topology)
@@ -90,11 +85,11 @@ def formulate_axis_angle_alignment(transition: StateTransition) -> PoolSum:
     """Generate all Wigner-:math:`D` combinations for a spin alignment sum.
 
     Generate all Wigner-:math:`D` function combinations that appear in
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(45), but for a generic
-    multibody decay. Each element in the returned `list` is a `tuple` of
-    Wigner-:math:`D` functions that appear in the summation, for a specific set of
-    helicities were are summing over. To generate the full sum, make a multiply the
-    Wigner-:math:`D` functions in each `tuple` and sum over all these products.
+    :cite:`Marangotto:2019ucc`, Eq.(45), but for a generic multibody decay. Each element
+    in the returned `list` is a `tuple` of Wigner-:math:`D` functions that appear in the
+    summation, for a specific set of helicities were are summing over. To generate the
+    full sum, make a multiply the Wigner-:math:`D` functions in each `tuple` and sum
+    over all these products.
     """
     rotations = PoolSum(1)
     for rotated_state_id in transition.final_states:
@@ -108,10 +103,10 @@ def formulate_rotation_chain(
 ) -> PoolSum:
     """Formulate the spin alignment sum for a specific chain.
 
-    See Eq.(45) from :cite:`marangottoHelicityAmplitudesGeneric2020`. The chain consists
-    of a series of helicity rotations (see :func:`formulate_helicity_rotation_chain`)
-    plus a Wigner rotation (see :func:`.formulate_wigner_rotation`) in case there is
-    more than one helicity rotation.
+    See Eq.(45) from :cite:`Marangotto:2019ucc`. The chain consists of a series of
+    helicity rotations (see :func:`formulate_helicity_rotation_chain`) plus a Wigner
+    rotation (see :func:`.formulate_wigner_rotation`) in case there is more than one
+    helicity rotation.
     """
     helicity_symbol = create_spin_projection_symbol(rotated_state_id)
     helicity_rotations = formulate_helicity_rotation_chain(
@@ -141,8 +136,8 @@ def formulate_helicity_rotation_chain(
     `~qrules.topology.Topology` starting from the initial state up some
     :code:`rotated_state_id`. Each rotation operates on the spin state and is therefore
     formulated as a `~sympy.physics.quantum.spin.WignerD` function (see
-    :func:`.formulate_helicity_rotation`). See {doc}`/usage/helicity/spin-alignment` for
-    more info.
+    :func:`.formulate_helicity_rotation`). See {doc}`/amplitude/spin-alignment` for more
+    info.
     """
     topology = transition.topology
     rotated_state = transition.states[rotated_state_id]
@@ -161,7 +156,7 @@ def formulate_helicity_rotation_chain(
         if is_opposite_helicity_state(topology, state_id):
             state_id = get_sibling_state_id(topology, state_id)
         phi, theta = get_helicity_angle_symbols(topology, state_id)
-        no_zero_spin = transition.states[rotated_state_id].particle.mass == 0.0
+        no_zero_spin = isclose(transition.states[rotated_state_id].particle.mass, 0.0)
         yield formulate_helicity_rotation(
             spin_magnitude,
             spin_projection=sp.Symbol(f"{next_idx_root}{idx_suffix}", rational=True),
@@ -178,7 +173,7 @@ def formulate_helicity_rotation_chain(
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
-        return summation.subs(dangling_idx, helicity_symbol)
+        return summation.subs(dangling_idx, helicity_symbol)  # ty: ignore[invalid-return-type]
     return summation
 
 
@@ -192,7 +187,7 @@ def formulate_wigner_rotation(
 
     A **Wigner rotation** is the 'average' rotation that results form a chain of Lorentz
     boosts to a new reference frame with regard to a direct boost. See
-    :cite:`marangottoHelicityAmplitudesGeneric2020`, p.6, especially Eq.(36).
+    :cite:`Marangotto:2019ucc`, p.6, especially Eq.(36).
 
     Args:
         transition: The `~qrules.topology.Transition` in which you
@@ -207,7 +202,7 @@ def formulate_wigner_rotation(
             summing over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
-    no_zero_spin = state.particle.mass == 0.0
+    no_zero_spin = isclose(state.particle.mass, 0.0)
     suffix = get_helicity_suffix(transition.topology, rotated_state_id)
     if helicity_symbol is None:
         spin_projection = state.spin_projection
@@ -246,11 +241,10 @@ def formulate_helicity_rotation(
         R(\alpha,\beta,\gamma)\left|s,m\right\rangle = \sum^s_{m'=-s}
         D^s_{m',m}\left(\alpha,\beta,\gamma\right) \left|s,m'\right\rangle
 
-    See :cite:`marangottoHelicityAmplitudesGeneric2020`, Eq.(B.5).
+    See :cite:`Marangotto:2019ucc`, Eq.(B.5).
 
     This function gives the summation over these Wigner-:math:`D` functions and can be
-    used for spin alignment following :cite:`marangottoHelicityAmplitudesGeneric2020`,
-    Eq.(45).
+    used for spin alignment following :cite:`Marangotto:2019ucc`, Eq.(45).
 
     Args:
         spin_magnitude: Spin magnitude :math:`s` of spin state that is being
@@ -275,7 +269,7 @@ def formulate_helicity_rotation(
     >>> formulate_helicity_rotation(1 / 2, -1 / 2, i, a, b, c)
     PoolSum(WignerD(1/2, -1/2, i, a, b, c), (i, (-1/2, 1/2)))
     """
-    from sympy.physics.quantum.spin import Rotation as Wigner  # noqa: PLC0415
+    from sympy.physics.quantum.spin import Rotation as Wigner
 
     helicities = map(sp.Rational, create_spin_range(spin_magnitude, no_zero_spin))
     return PoolSum(
@@ -316,8 +310,7 @@ def __rationalize(value: _BasicType) -> _BasicType: ...
 
 
 @overload
-def __rationalize(value) -> sp.Rational:  # type: ignore[misc]
-    ...
+def __rationalize(value) -> sp.Rational: ...
 
 
 def __rationalize(value):

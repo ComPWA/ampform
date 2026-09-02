@@ -1,9 +1,9 @@
 r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 
-.. seealso:: :doc:`/usage/dynamics/k-matrix`.
+.. seealso:: :doc:`/dynamics/k-matrix`.
 
-This module is an implementation of :doc:`compwa:report/005`,
-:doc:`compwa:report/009`, and :doc:`compwa:report/010`. It works with classes to
+This module is an implementation of :doc:`compwa-report:005/index`,
+:doc:`compwa-report:009/index`, and :doc:`compwa-report:010/index`. It works with classes to
 keep the code organized and to enable caching of the matrix multiplications, but this
 might change once these dynamics are implemented into the amplitude builder.
 """
@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
+from typing import cast
 
 import sympy as sp
 
@@ -19,8 +20,8 @@ from ampform.dynamics import (
     EnergyDependentWidth,
     PhaseSpaceFactor,
     PhaseSpaceFactorProtocol,
-    formulate_form_factor,
 )
+from ampform.dynamics.form_factor import FormFactor
 from ampform.sympy import create_symbol_matrix
 
 
@@ -35,7 +36,7 @@ class TMatrix(ABC):
 
 class RelativisticKMatrix(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels, return_t_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -50,15 +51,16 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(  # type: ignore[override]  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_t_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
         angular_momentum=0,
         meson_radius=1,
+        **kwargs,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
 
@@ -103,7 +105,7 @@ class RelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -116,7 +118,7 @@ class RelativisticKMatrix(TMatrix):
         pole_id,
         angular_momentum=0,
         meson_radius=1,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
     ) -> sp.Expr:
         def residue_function(pole_id, i) -> sp.Expr:
             return residue_constant[pole_id, i] * sp.sqrt(
@@ -141,7 +143,7 @@ class RelativisticKMatrix(TMatrix):
 
 class NonRelativisticKMatrix(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels,
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -176,7 +178,7 @@ class NonRelativisticKMatrix(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         j,
         s,
@@ -199,7 +201,7 @@ class NonRelativisticKMatrix(TMatrix):
 
 class NonRelativisticPVector(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels,
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
@@ -252,7 +254,7 @@ class NonRelativisticPVector(TMatrix):
         })
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -272,14 +274,14 @@ class NonRelativisticPVector(TMatrix):
 
 class RelativisticPVector(TMatrix):
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def _create_matrices(
         n_channels, return_f_hat: bool = False
     ) -> tuple[sp.MutableDenseMatrix, sp.MutableDenseMatrix, sp.MutableDenseMatrix]:
         k_matrix = create_symbol_matrix("K", m=n_channels, n=n_channels)
         rho = _create_rho_matrix(n_channels)
         sqrt_rho: sp.MutableDenseMatrix = sp.sqrt(rho).doit()
-        sqrt_rho_conj: sp.MutableDenseMatrix = sp.conjugate(sqrt_rho)
+        sqrt_rho_conj = cast("sp.MutableDenseMatrix", sp.conjugate(sqrt_rho))
         k_matrix = create_symbol_matrix("K", n_channels, n_channels)
         k_hat = sqrt_rho_conj.inv() * k_matrix * sqrt_rho.inv()
         p_vector = create_symbol_matrix("P", m=n_channels, n=1)
@@ -290,15 +292,16 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # type: ignore[override]  # noqa: D417
+    def formulate(  # ruff: ignore[undocumented-param]
         cls,
         n_channels,
         n_poles,
         parametrize: bool = True,
         return_f_hat: bool = False,
-        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+        phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
         angular_momentum=0,
         meson_radius=1,
+        **kwargs,
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.
 
@@ -324,7 +327,8 @@ class RelativisticPVector(TMatrix):
         m_b = sp.IndexedBase("m_b", nonnegative=True)
         pole_id = sp.Symbol("R", integer=True, positive=True)
         return (
-            f_vector.xreplace({
+            f_vector
+            .xreplace({
                 k_matrix[i, j]: RelativisticKMatrix.parametrization(
                     i=i,
                     j=j,
@@ -366,7 +370,7 @@ class RelativisticPVector(TMatrix):
         )
 
     @staticmethod
-    def parametrization(  # noqa: PLR0917
+    def parametrization(  # ruff: ignore[too-many-positional-arguments]
         i,
         s,
         pole_position: sp.IndexedBase,
@@ -384,9 +388,7 @@ class RelativisticPVector(TMatrix):
         gamma = residue_constant[pole_id, i]
         mass0 = pole_position[pole_id]
         width = pole_width[pole_id, i]
-        form_factor = formulate_form_factor(
-            s, m_a[i], m_b[i], angular_momentum, meson_radius
-        )
+        form_factor = FormFactor(s, m_a[i], m_b[i], angular_momentum, meson_radius)
         return sp.Sum(
             beta * gamma * mass0 * width * form_factor / (mass0**2 - s),
             (pole_id, 1, n_poles),

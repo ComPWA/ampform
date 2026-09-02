@@ -14,6 +14,7 @@ from ampform.dynamics.builder import create_relativistic_breit_wigner_with_ff
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
+    from qrules.transition import SpinFormalism
 
     from ampform.helicity import HelicityModel
 
@@ -31,13 +32,23 @@ def particle_database() -> ParticleCollection:
 
 @pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
 def reaction(request: SubRequest) -> ReactionInfo:
-    formalism: str = request.param
+    formalism: SpinFormalism = request.param
     return qrules.generate_transitions(
         initial_state=[("J/psi(1S)", [-1, 1])],
         final_state=["gamma", "pi0", "pi0"],
         allowed_intermediate_particles=["f(0)(980)", "f(0)(1500)"],
         allowed_interaction_types="strong",
         formalism=formalism,
+    )
+
+
+@pytest.fixture(scope="session")
+def d_to_pi_pi_pi() -> ReactionInfo:
+    return qrules.generate_transitions(
+        initial_state="D+",
+        final_state=["pi+", "pi+", "pi-"],
+        allowed_intermediate_particles=["rho(770)0"],
+        formalism="helicity",
     )
 
 

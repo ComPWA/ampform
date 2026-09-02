@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from qrules.topology import Topology
 
 m0, m1, m2, m3 = sp.symbols("m_:4", nonnegative=True)
-s1: sp.Pow = sp.Symbol("m_23", nonnegative=True) ** 2  # type: ignore[assignment]
-s2: sp.Pow = sp.Symbol("m_13", nonnegative=True) ** 2  # type: ignore[assignment]
-s3: sp.Pow = sp.Symbol("m_12", nonnegative=True) ** 2  # type: ignore[assignment]
+s1 = cast("sp.Pow", sp.Symbol("m_23", nonnegative=True) ** 2)
+s2 = cast("sp.Pow", sp.Symbol("m_13", nonnegative=True) ** 2)
+s3 = cast("sp.Pow", sp.Symbol("m_12", nonnegative=True) ** 2)
 
 
 @pytest.fixture(scope="session")
@@ -292,9 +292,9 @@ def test_formulate_zeta_angle_equation_a6():
     """
     for i in [1, 2, 3]:
         for k in [1, 2, 3]:
-            _, ζi_k0 = formulate_zeta_angle(i, k, 0)  # noqa: PLC2401
-            _, ζi_ki = formulate_zeta_angle(i, k, i)  # noqa: PLC2401
-            _, ζi_kk = formulate_zeta_angle(i, k, k)  # noqa: PLC2401
+            _, ζi_k0 = formulate_zeta_angle(i, k, 0)  # ruff: ignore[non-ascii-name]
+            _, ζi_ki = formulate_zeta_angle(i, k, i)  # ruff: ignore[non-ascii-name]
+            _, ζi_kk = formulate_zeta_angle(i, k, k)  # ruff: ignore[non-ascii-name]
             assert ζi_ki == ζi_k0
             assert ζi_kk == 0
 
@@ -334,9 +334,9 @@ def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp
         s2: 3.0,
         s3: s3_expr,
     }
-    ζ1 = float(zeta1.doit().subs(masses))  # noqa: PLC2401
-    ζ2 = float(zeta2.doit().subs(masses))  # noqa: PLC2401
-    ζ3 = float(zeta3.doit().subs(masses))  # noqa: PLC2401
+    ζ1 = float(zeta1.doit().subs(masses))  # ruff: ignore[non-ascii-name]
+    ζ2 = float(zeta2.doit().subs(masses))  # ruff: ignore[non-ascii-name]
+    ζ3 = float(zeta3.doit().subs(masses))  # ruff: ignore[non-ascii-name]
     np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 

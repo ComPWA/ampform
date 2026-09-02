@@ -1,8 +1,10 @@
-from __future__ import annotations
-
+import importlib
+import inspect
 import os
 import sys
+from dataclasses import is_dataclass
 
+import requests
 from sphinx_api_relink.helpers import (
     get_branch_name,
     get_execution_mode,
@@ -12,8 +14,59 @@ from sphinx_api_relink.helpers import (
     set_intersphinx_version_remapping,
 )
 
+from ampform.sympy._decorator import get_sympy_fields
+
 sys.path.insert(0, os.path.abspath("."))
-from _extend_docstrings import extend_docstrings  # noqa: PLC2701
+from _extend_docstrings import extend_docstrings
+
+
+def _get_excluded_members() -> list[str]:
+    default_exclusions = {
+        "as_explicit",
+        "default_assumptions",
+        "doit",
+        "evaluate",
+        "is_commutative",
+        "is_extended_real",
+        "items",
+        "keys",
+        "name",
+        "precedence",
+        "values",
+    }
+    for cls in [
+        *_get_dataclasses_recursive("ampform"),
+    ]:
+        fields = get_sympy_fields(cls)
+        arg_names = {f.name for f in fields}
+        default_exclusions.update(arg_names)
+    return sorted(default_exclusions)
+
+
+def _get_dataclasses_recursive(module_name: str) -> list[type]:
+    module = importlib.import_module(module_name)
+    dataclass_list = _get_dataclasses(module)
+    for _, submodule in inspect.getmembers(module, inspect.ismodule):
+        if submodule.__name__.startswith(module_name):
+            dataclass_list.extend(_get_dataclasses_recursive(submodule.__name__))
+    return dataclass_list
+
+
+def _get_dataclasses(module):
+    dataclass_list = []
+    for _, obj in inspect.getmembers(module):
+        if inspect.isclass(obj) and is_dataclass(obj):
+            dataclass_list.append(obj)
+    return dataclass_list
+
+
+def _get_scipy_url() -> str:
+    url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
+    r = requests.get(url)
+    if r.status_code != 200:  # ruff: ignore[magic-value-comparison]
+        return "https://docs.scipy.org/doc/scipy"
+    return url
+
 
 extend_docstrings()
 set_intersphinx_version_remapping({
@@ -26,8 +79,12 @@ set_intersphinx_version_remapping({
         "8.0.4": "8.0.5",
         "8.0.6": "8.0.5",
         "8.1.1": "8.1.2",
+        "8.1.6": "8.1.5",
+        "8.1.7": "8.1.5",
+        "8.1.8": "8.1.5",
+        "8.1.9": "8.1.5",
     },
-    "mpl-interactions": {"0.24.1": "0.24.0"},
+    "qrules": {"0.10.7.dev.*": "0.10.6"},
 })
 
 BRANCH = get_branch_name()
@@ -36,35 +93,35 @@ PACKAGE = "ampform"
 REPO_NAME = "ampform"
 REPO_TITLE = "AmpForm"
 
-BINDER_LINK = f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs/usage"
+BINDER_LINK = (
+    f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?urlpath=lab/docs"
+)
 EXECUTE_NB = get_execution_mode() != "off"
 
 
 add_module_names = False
 api_github_repo = f"{ORGANIZATION}/{REPO_NAME}"
 api_target_substitutions: dict[str, str | tuple[str, str]] = {
+    "ampform.helicity._T": "typing.TypeVar",
+    "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
     "BuilderReturnType": ("obj", "ampform.dynamics.builder.BuilderReturnType"),
     "DecoratedClass": ("obj", "ampform.sympy.deprecated.DecoratedClass"),
     "DecoratedExpr": ("obj", "ampform.sympy.deprecated.DecoratedExpr"),
     "FourMomenta": ("obj", "ampform.kinematics.lorentz.FourMomenta"),
     "FourMomentumSymbol": ("obj", "ampform.kinematics.lorentz.FourMomentumSymbol"),
     "InteractionProperties": "qrules.quantum_numbers.InteractionProperties",
+    "K": "typing.TypeVar",
     "LatexPrinter": "sympy.printing.printer.Printer",
-    "Literal[(-1, 1)]": "typing.Literal",
     "Literal[-1, 1]": "typing.Literal",
+    "Literal[(-1, 1)]": "typing.Literal",
     "NumPyPrintable": ("class", "ampform.sympy.NumPyPrintable"),
     "NumPyPrinter": "sympy.printing.printer.Printer",
+    "P": "typing.ParamSpec",
     "ParameterValue": ("obj", "ampform.helicity.ParameterValue"),
     "Particle": "qrules.particle.Particle",
     "ReactionInfo": "qrules.transition.ReactionInfo",
-    "Slider": ("obj", "symplot.Slider"),
-    "State": "qrules.transition.State",
-    "StateTransition": "qrules.topology.Transition",
-    "T": "TypeVar",
-    "Topology": "qrules.topology.Topology",
-    "WignerD": "sympy.physics.quantum.spin.WignerD",
-    "ampform.helicity._T": "typing.TypeVar",
-    "ampform.sympy._decorator.ExprClass": ("obj", "ampform.sympy.ExprClass"),
+    "Slider": "ipywidgets.widgets.valuewidget.ValueWidget",
+    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
     "sp.Basic": "sympy.core.basic.Basic",
     "sp.Expr": "sympy.core.expr.Expr",
     "sp.Float": "sympy.core.numbers.Float",
@@ -72,35 +129,29 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
     "sp.IndexedBase": "sympy.tensor.indexed.IndexedBase",
     "sp.Rational": "sympy.core.numbers.Rational",
     "sp.Symbol": "sympy.core.symbol.Symbol",
-    "sp.acos": "sympy.functions.elementary.trigonometric.acos",
+    "State": "qrules.transition.State",
+    "StateTransition": "qrules.topology.Transition",
     "sympy.printing.numpy.NumPyPrinter": "sympy.printing.printer.Printer",
+    "SympyObject": "typing.TypeVar",
+    "T": "typing.TypeVar",
+    "Topology": "qrules.topology.Topology",
+    "V": "typing.TypeVar",
+    "WignerD": "sympy.physics.quantum.spin.WignerD",
     "sympy.tensor.array.expressions.array_expressions.ArraySymbol": (
         "mod",
         "sympy.tensor.array.expressions",
     ),
 }
 api_target_types: dict[str, str] = {
-    "RangeDefinition": "obj",
     "ampform.helicity.align.dpd.T": "obj",
 }
 author = "Common Partial Wave Analysis"
 autodoc_default_options = {
-    "exclude-members": ", ".join([
-        "as_explicit",
-        "default_assumptions",
-        "doit",
-        "evaluate",
-        "is_commutative",
-        "is_extended_real",
-        "items",
-        "keys",
-        "precedence",
-        "values",
-    ]),
+    "exclude-members": ", ".join(_get_excluded_members()),
     "members": True,
     "undoc-members": True,
     "show-inheritance": True,
-    "special-members": ", ".join([
+    "special-members": ", ".join([  # ruff: ignore[static-join-to-f-string]
         "__call__",
     ]),
 }
@@ -109,6 +160,8 @@ autodoc_typehints_format = "short"
 autosectionlabel_prefix_document = True
 bibtex_bibfiles = ["bibliography.bib"]
 bibtex_default_style = "unsrt_et_al"
+bibtex_use_mathjax = True
+bibtex_reference_style = "author_year"
 codeautolink_concat_default = True
 codeautolink_global_preface = """
 import numpy
@@ -131,7 +184,6 @@ default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
-    "adr/template.md",
     "tests",
 ]
 extensions = [
@@ -155,7 +207,10 @@ extensions = [
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
 graphviz_output_format = "svg"
-html_css_files = ["custom.css"]
+html_css_files = [
+    "custom.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css",
+]
 html_favicon = "_static/favicon.ico"
 html_last_updated_fmt = "%-d %B %Y"
 html_logo = (
@@ -192,7 +247,7 @@ html_theme_options = {
         },
         {
             "name": "Launch on Binder",
-            "url": f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?filepath=docs",
+            "url": f"https://mybinder.org/v2/gh/{ORGANIZATION}/{REPO_NAME}/{BRANCH}?urlpath=lab",
             "icon": "https://mybinder.readthedocs.io/en/latest/_static/favicon.png",
             "type": "url",
         },
@@ -219,6 +274,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "use_download_button": False,
     "use_edit_page_button": True,
+    "use_fullscreen_button": False,
     "use_issues_button": True,
     "use_repository_button": True,
     "use_source_button": True,
@@ -228,30 +284,38 @@ intersphinx_mapping = {
     "IPython": (f"https://ipython.readthedocs.io/en/{pin('IPython')}", None),
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa": ("https://compwa.github.io", None),
+    "compwa-report": ("https://compwa.github.io/report", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
+    "jax": ("https://docs.jax.dev/en/latest", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
-    "mpl_interactions": (
-        f"https://mpl-interactions.readthedocs.io/en/{pin('mpl-interactions')}",
-        None,
-    ),
     "numpy": (f"https://numpy.org/doc/{pin_minor('numpy')}", None),
-    "pwa": ("https://pwa.readthedocs.io", None),
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
+    "quadax": ("https://quadax.readthedocs.io/en/stable", None),
+    "scipy": (_get_scipy_url(), None),
+    "spb": (
+        f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
+        None,
+    ),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
 linkcheck_anchors = False
 linkcheck_ignore = [
     "http://www.curtismeyer.com",
-    "https://doi.org/10.1002/andp.19955070504",  # 403 for onlinelibrary.wiley.com
-    "https://doi.org/10.1093/ptep/ptaa104",
+    "https://citeseerx.ist.psu.edu/document",
+    "https://doi.org/10.1002",  # 403 for onlinelibrary.wiley.com
+    "https://doi.org/10.1093",  # 403 for PTEP
+    "https://doi.org/10.1103",  # 403 for Phys Rev D
+    "https://doi.org/10.1155",  # 403 for hindawi.com
     "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
     "https://hss-opus.ub.ruhr-uni-bochum.de",
+    "https://journals.aps.org/prd",  # 403 for Phys Rev D
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
 ]
+linkcheck_timeout = 60
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
@@ -277,11 +341,14 @@ nb_execution_mode = get_execution_mode()
 nb_execution_show_tb = True
 nb_execution_timeout = -1
 nb_output_stderr = "remove"
+nb_render_markdown_format = "myst"
 nitpick_ignore = [
+    ("py:class", "ampform.sympy._decorator.SymPyAssumptions"),
     ("py:class", "ArraySum"),
+    ("py:class", "BufferedReader"),
     ("py:class", "ExprClass"),
     ("py:class", "MatrixMultiplication"),
-    ("py:class", "ampform.sympy._decorator.SymPyAssumptions"),
+    ("py:class", "SupportsWrite"),
 ]
 nitpicky = True
 primary_domain = "py"
@@ -294,6 +361,7 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 suppress_warnings = [
+    "myst.directive_unknown",
     "myst.domains",
     # skipping unknown output mime type: application/json
     # https://github.com/ComPWA/ampform/runs/8132373732?check_suite_focus=true#step:5:127

@@ -6,8 +6,8 @@ import re
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from functools import lru_cache
-from typing import TYPE_CHECKING, Iterable
+from functools import cache
+from typing import TYPE_CHECKING
 
 import sympy as sp
 from qrules.transition import ReactionInfo, State, StateTransition
@@ -21,18 +21,21 @@ from ampform.helicity.decay import (
     group_by_spin_projection,
 )
 
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from fractions import Fraction
+
     from qrules.topology import Topology
 
 
 class NameGenerator(ABC):
     """Name generator for amplitudes and coefficients in a `.HelicityModel`.
 
-    .. seealso:: :ref:`usage/helicity/formalism:Coefficient names`
+    .. seealso:: :ref:`amplitude/formalism:Coefficient names`
     """
 
     @abstractmethod
@@ -167,7 +170,7 @@ class HelicityAmplitudeNameGenerator(NameGenerator):
 
         return (par_name_suffix, pp_par_name_suffix, priority_name_suffix)
 
-    def generate_amplitude_name(  # noqa: PLR6301
+    def generate_amplitude_name(  # ruff: ignore[no-self-use]
         self,
         transition: StateTransition,
         node_id: int | None = None,
@@ -343,7 +346,7 @@ def get_helicity_angle_symbols(
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     """Generate a subscript-superscript to identify a chain of Lorentz boosts.
 
@@ -436,7 +439,7 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 def get_helicity_suffix(topology: Topology, state_id: int) -> str:
     """Create an identifier suffix for a topology.
 
-    Used in :doc:`/usage/helicity/spin-alignment`. Comparable to
+    Used in :doc:`/amplitude/spin-alignment`. Comparable to
     :func:`get_boost_chain_suffix`.
     """
     superscript = get_topology_identifier(topology)
@@ -501,7 +504,7 @@ def _state_to_str(
     return output_string
 
 
-def _render_float(value: float) -> str:
+def _render_float(value: float | Fraction) -> str:
     """Render a `float` nicely as a string.
 
     >>> _render_float(-0.5)

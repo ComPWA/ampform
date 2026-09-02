@@ -5,9 +5,6 @@ concurrency:
   cancel-in-progress: |-
     ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
 
-env:
-  PYTHONHASHSEED: "0"
-
 on:
   push:
     branches:
@@ -20,32 +17,23 @@ on:
       - epic/*
       - "[0-9]+.[0-9]+.x"
   workflow_dispatch:
-    inputs:
-      specific-pip-packages:
-        description: Run CI with specific pip packages
-        required: false
-        type: string
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@v1
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
     permissions:
       pages: write
       id-token: write
     with:
       apt-packages: graphviz
-      python-version: "3.11"
-      specific-pip-packages: ${{ inputs.specific-pip-packages }}
-  pytest:
-    uses: ComPWA/actions/.github/workflows/pytest.yml@v1
-    with:
-      coverage-target: ampform
-      macos-python-version: "3.9"
-      specific-pip-packages: ${{ inputs.specific-pip-packages }}
   style:
-    if: inputs.specific-pip-packages == ''
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/pre-commit.yml@v1
+    uses: ComPWA/actions/.github/workflows/style.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
+  test:
+    uses: ComPWA/actions/.github/workflows/test.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
-      python-version: "3.11"
+      coverage-python-version: "3.13"
+      macos-python-version: "3.10"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+from typing import TYPE_CHECKING, cast
 
 import pytest
 import qrules
@@ -9,6 +9,9 @@ from qrules import ParticleCollection
 from qrules.particle import Particle
 
 from ampform import get_builder
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 
 def calculate_sympy_integral(
@@ -48,7 +51,8 @@ def normalize(sympy_expression: sp.Expr, variable_names: Sequence[str]) -> sp.Ex
 
 class TestEpemToDmD0Pip:
     @pytest.fixture(scope="class")
-    def sympy_model(self, particle_database: ParticleCollection) -> sp.Expr:
+    @classmethod
+    def sympy_model(cls, particle_database: ParticleCollection) -> sp.Expr:
         epem = Particle(
             name="EpEm",
             pid=12345678,
@@ -70,7 +74,8 @@ class TestEpemToDmD0Pip:
 
         amplitude_model = get_builder(reaction).formulate()
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )
@@ -110,7 +115,7 @@ class TestEpemToDmD0Pip:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",
@@ -141,7 +146,8 @@ class TestEpemToDmD0Pip:
 
 class TestD1ToD0PiPi:
     @pytest.fixture(scope="class")
-    def sympy_model(self) -> sp.Expr:
+    @classmethod
+    def sympy_model(cls) -> sp.Expr:
         reaction = qrules.generate_transitions(
             initial_state=[("D(1)(2420)0", [-1])],
             final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
@@ -164,7 +170,8 @@ class TestD1ToD0PiPi:
         amplitude_model.parameter_defaults[coefficient] = 0.5
 
         full_model = sp.simplify(
-            amplitude_model.expression.subs(amplitude_model.parameter_defaults)
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
             .doit()
             .expand(complex=True)
         )
@@ -195,7 +202,7 @@ class TestD1ToD0PiPi:
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,
     ) -> None:
-        free_symbols: set[sp.Symbol] = sympy_model.free_symbols  # type: ignore[assignment]
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
         assert {s.name for s in free_symbols} == {
             "phi_0^02",
             "theta_02",

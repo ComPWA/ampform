@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-import sys
 from functools import lru_cache
-
-if sys.version_info < (3, 8):
-    from importlib_metadata import version
-else:
-    from importlib.metadata import version
+from importlib.metadata import version
 
 
 @lru_cache(maxsize=1)

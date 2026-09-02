@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from decimal import Decimal
 from typing import SupportsFloat
 
@@ -25,8 +26,8 @@ def create_spin_range(
     spin_projections = []
     projection = Decimal(-spin_magnitude_float)
     while projection <= spin_magnitude_float:
-        if projection == -0.0:
-            projection = Decimal(0.0)
+        if math.isclose(float(projection), 0.0):
+            projection = Decimal("0.0")
         spin_projections.append(float(projection))
         projection += 1
     if no_zero_spin and len(spin_projections) > 1:

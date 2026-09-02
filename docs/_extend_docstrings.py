@@ -3,40 +3,162 @@
 This small script is used by ``conf.py`` to dynamically modify docstrings.
 """
 
-# pyright: reportMissingImports=false
 from __future__ import annotations
 
-import hashlib
 import inspect
 import logging
 import pickle
-import sys
 import textwrap
+from importlib.metadata import version as get_package_version
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, cast
 
 import attrs
-
-# sphinx.ext.graphviz does not work well on RTD
-import graphviz
+import graphviz  # sphinx.ext.graphviz does not work well on RTD
 import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
 
+from ampform.dynamics.form_factor import FormFactor
+from ampform.dynamics.phasespace import (
+    ChewMandelstamIntegral,
+    ChewMandelstamSWave,
+    EqualMassPhaseSpaceFactor,
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,
+    PhaseSpaceFactorComplex,
+    PhaseSpaceFactorKallen,
+    PhaseSpaceFactorPWave,
+    PhaseSpaceFactorSplitSqrt,
+    PhaseSpaceFactorSWave,
+)
 from ampform.io import aslatex
 from ampform.kinematics.lorentz import ArraySize, FourMomentumSymbol
+from ampform.kinematics.phasespace import (
+    BreakupMomentum,
+    BreakupMomentumComplex,
+    BreakupMomentumKallen,
+    BreakupMomentumSplitSqrt,
+    BreakupMomentumSquared,
+    Kallen,
+)
 from ampform.sympy._array_expressions import ArrayMultiplication
+from ampform.sympy._cache import get_readable_hash, make_hashable
+from ampform.sympy.math import ComplexSqrt
 
-if sys.version_info < (3, 8):
-    from importlib_metadata import version as get_package_version
-else:
-    from importlib.metadata import version as get_package_version
 if TYPE_CHECKING:
-    from qrules.transition import ReactionInfo
+    from collections.abc import Callable
 
+    from qrules.transition import ReactionInfo, SpinFormalism
+
+    from ampform.dynamics.phasespace import PhaseSpaceFactorProtocol
     from ampform.sympy import NumPyPrintable
 
 logging.getLogger().setLevel(logging.ERROR)
+
+
+def append_phsp_doit(
+    _phsp_factor: PhaseSpaceFactorProtocol,
+    *,
+    extra_args: list[sp.Symbol] | None = None,
+    subexpression: list[sp.Expr] | sp.Expr | None = None,
+    wide: bool = False,
+) -> None:
+    expr = _phsp_factor(s, m1, m2, *(extra_args or []))
+    _append_latex_doit_definition(expr, full_width=wide)
+    if subexpression is not None:
+        if not isinstance(subexpression, list):
+            subexpression = [subexpression]
+        items = []
+        for expr in subexpression:
+            expression_type = f"{type(expr).__name__}"
+            items.append(f":math:`{sp.latex(expr)}` defined by `.{expression_type}`")
+        match len(items):
+            case 1:
+                appended_text = items[0]
+            case 2:
+                appended_text = f"{items[0]} and {items[1]}"
+            case _:
+                appended_text = ", ".join(items[:-1]) + f", and {items[-1]}"
+        _append_to_docstring(_phsp_factor, f"\n\nwith {appended_text}.")
+
+
+def _append_latex_doit_definition(
+    expr: sp.Expr,
+    deep: bool = False,
+    full_width: bool = False,
+    inline: bool = False,
+) -> None:
+    if inline:
+        return _append_to_docstring(
+            type(expr),
+            f":math:`{sp.latex(expr)}={sp.latex(expr.doit(deep=deep))}`",
+        )
+    latex = _create_latex_doit_definition(expr, deep)
+    extras = ""
+    if full_width:
+        extras = """
+        :class: full-width
+        """
+    return _append_to_docstring(
+        type(expr),
+        f"""\n
+    .. math::
+        :label: {type(expr).__name__}{extras}
+
+        {latex}
+    """,
+    )
+
+
+def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
+    appended_text = textwrap.dedent(appended_text)
+    if class_type.__doc__ is None:
+        class_type.__doc__ = appended_text
+    else:
+        class_type.__doc__ += appended_text
+
+
+def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
+    latex = aslatex({expr: expr.doit(deep=deep)})
+    return textwrap.indent(latex, prefix=8 * " ")
+
+
+s, m1, m2, x, y, z = cast("list[sp.Symbol]", sp.symbols("s m1 m2 x:z"))
+ell = sp.Symbol("ell", integer=True, nonnegative=True)
+append_phsp_doit(BreakupMomentum)
+append_phsp_doit(BreakupMomentumComplex, subexpression=ComplexSqrt(x))
+append_phsp_doit(BreakupMomentumKallen, subexpression=Kallen(x, y, z))
+append_phsp_doit(BreakupMomentumSplitSqrt)
+append_phsp_doit(BreakupMomentumSquared)
+append_phsp_doit(
+    EqualMassPhaseSpaceFactor,
+    subexpression=PhaseSpaceFactorAbs(s, m1, m2),
+)
+append_phsp_doit(PhaseSpaceFactor)
+append_phsp_doit(PhaseSpaceFactorAbs, subexpression=BreakupMomentumSquared(s, m1, m2))
+append_phsp_doit(PhaseSpaceFactorComplex, subexpression=ComplexSqrt(x))
+append_phsp_doit(PhaseSpaceFactorKallen, subexpression=Kallen(x, y, z))
+append_phsp_doit(PhaseSpaceFactorSplitSqrt)
+append_phsp_doit(
+    ChewMandelstamSWave,
+    subexpression=BreakupMomentumComplex(s, m1, m2),
+    wide=True,
+)
+append_phsp_doit(
+    ChewMandelstamIntegral,
+    extra_args=[ell],
+    subexpression=[FormFactor(x, m1, m2, ell), PhaseSpaceFactor(x, m1, m2)],
+    wide=True,
+)
+append_phsp_doit(
+    PhaseSpaceFactorSWave,
+    subexpression=ChewMandelstamSWave(s, m1, m2),
+)
+append_phsp_doit(
+    PhaseSpaceFactorPWave,
+    subexpression=ChewMandelstamIntegral(s, m1, m2, ell),
+)
 
 
 def extend_docstrings() -> None:
@@ -63,12 +185,19 @@ def extend_docstrings() -> None:
 
 
 def extend_BlattWeisskopfSquared() -> None:
-    from ampform.dynamics import BlattWeisskopfSquared
+    from ampform.dynamics.form_factor import BlattWeisskopfSquared, SphericalHankel1
 
-    z = sp.Symbol("z", real=True)
-    L = sp.Symbol("L", integer=True)
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    L = sp.Symbol("L", integer=True, nonnegative=True)
     expr = BlattWeisskopfSquared(z, angular_momentum=L)
-    _append_latex_doit_definition(expr, deep=True, full_width=True)
+    h1lz = SphericalHankel1(L, z)
+    _append_latex_doit_definition(expr)
+    _append_to_docstring(
+        BlattWeisskopfSquared,
+        f"""\n
+    where :math:`{sp.latex(h1lz)}` is defined by :eq:`SphericalHankel1`.
+    """,
+    )
 
 
 def extend_BoostMatrix() -> None:
@@ -166,17 +295,7 @@ def extend_BoostZMatrix() -> None:
     )
 
 
-def extend_BreakupMomentumSquared() -> None:
-    from ampform.dynamics.phasespace import BreakupMomentumSquared
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = BreakupMomentumSquared(s, m_a, m_b)
-    _append_latex_doit_definition(expr, deep=True)
-
-
 def extend_ComplexSqrt() -> None:
-    from ampform.sympy.math import ComplexSqrt
-
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
     _append_to_docstring(
@@ -206,25 +325,6 @@ def extend_compute_third_mandelstam() -> None:
     )
 
 
-def extend_EqualMassPhaseSpaceFactor() -> None:
-    from ampform.dynamics.phasespace import (
-        EqualMassPhaseSpaceFactor,
-        PhaseSpaceFactorAbs,
-    )
-
-    s, m_a, m_b = sp.symbols(R"s, m_a, m_b")
-    expr = EqualMassPhaseSpaceFactor(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    rho_hat = PhaseSpaceFactorAbs(s, m_a, m_b)
-    _append_to_docstring(
-        EqualMassPhaseSpaceFactor,
-        f"""
-    with :math:`{sp.latex(rho_hat)}` defined by `.PhaseSpaceFactorAbs`
-    :eq:`PhaseSpaceFactorAbs`.
-    """,
-    )
-
-
 def extend_EnergyDependentWidth() -> None:
     from ampform.dynamics import EnergyDependentWidth
 
@@ -236,8 +336,7 @@ def extend_EnergyDependentWidth() -> None:
     """,
     )
     L = sp.Symbol("L", integer=True)
-    symbols: tuple[sp.Symbol, ...] = sp.symbols("s m0 Gamma0 m_a m_b")
-    s, m0, w0, m_a, m_b = symbols
+    s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b")
     expr = EnergyDependentWidth(
         s=s,
         mass0=m0,
@@ -251,7 +350,7 @@ def extend_EnergyDependentWidth() -> None:
     _append_to_docstring(
         EnergyDependentWidth,
         R"""
-    where :math:`B_L^2` is defined by :eq:`BlattWeisskopfSquared`, :math:`q` is defined
+    where :math:`F_L` is defined by :eq:`FormFactor`, :math:`q` is defined
     by :eq:`BreakupMomentumSquared`, and :math:`\rho` is (by default) defined by
     :eq:`PhaseSpaceFactor`.
     """,
@@ -288,22 +387,13 @@ def extend_EuclideanNorm() -> None:
     _append_code_rendering(expr)
 
 
-def extend_formulate_form_factor() -> None:
-    from ampform.dynamics import formulate_form_factor
-
+def extend_FormFactor() -> None:
     s, m_a, m_b, L, d = sp.symbols("s m_a m_b L d")
-    form_factor = formulate_form_factor(s, m_a, m_b, angular_momentum=L, meson_radius=d)
-    _append_to_docstring(
-        formulate_form_factor,
-        f"""
-    .. math:: {sp.latex(form_factor)}
-        :label: formulate_form_factor
-    """,
-    )
+    form_factor = FormFactor(s, m_a, m_b, angular_momentum=L, meson_radius=d)
+    _append_latex_doit_definition(form_factor)
 
 
 def extend_Kallen() -> None:
-    from ampform.kinematics.phasespace import Kallen
 
     x, y, z = sp.symbols("x:z")
     expr = Kallen(x, y, z)
@@ -355,56 +445,6 @@ def extend_is_within_phasespace() -> None:
     with :math:`\phi` defined by :eq:`Kibble`.
     """,
     )
-
-
-def extend_PhaseSpaceFactor() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactor
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = PhaseSpaceFactor(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    _append_to_docstring(
-        PhaseSpaceFactor,
-        """
-    with :math:`q^2` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
-def extend_PhaseSpaceFactorAbs() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactorAbs
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = PhaseSpaceFactorAbs(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    _append_to_docstring(
-        PhaseSpaceFactorAbs,
-        """
-    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
-def extend_PhaseSpaceFactorComplex() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactorComplex
-
-    s, m_a, m_b = sp.symbols("s, m_a, m_b")
-    expr = PhaseSpaceFactorComplex(s, m_a, m_b)
-    _append_latex_doit_definition(expr)
-    _append_to_docstring(
-        PhaseSpaceFactorComplex,
-        """
-    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-    """,
-    )
-
-
-def extend_PhaseSpaceFactorSWave() -> None:
-    from ampform.dynamics.phasespace import PhaseSpaceFactorSWave
-
-    s, m_a, m_b = sp.symbols("s m_a m_b")
-    expr = PhaseSpaceFactorSWave(s, m_a, m_b)
-    _append_latex_doit_definition(expr, full_width=True)
 
 
 def extend_Phi() -> None:
@@ -472,6 +512,15 @@ def extend_RotationZMatrix() -> None:
     )
 
 
+def extend_SphericalHankel1() -> None:
+    from ampform.dynamics.form_factor import SphericalHankel1
+
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    ell = sp.Symbol(R"\ell", integer=True, nonnegative=True)
+    expr = SphericalHankel1(ell, z)
+    _append_latex_doit_definition(expr)
+
+
 def extend_Theta() -> None:
     from ampform.kinematics.angles import Theta
 
@@ -488,26 +537,6 @@ def extend_ThreeMomentum() -> None:
     _append_to_docstring(type(expr), "\n\n" + 4 * " ")
     _append_latex_doit_definition(expr, deep=False, inline=True)
     _append_code_rendering(expr)
-
-
-def extend_chew_mandelstam_s_wave() -> None:
-    from ampform.dynamics.phasespace import chew_mandelstam_s_wave
-
-    s, m_a, m_b = sp.symbols("s m_a m_b")
-    expr = chew_mandelstam_s_wave(s, m_a, m_b)
-    _append_to_docstring(
-        chew_mandelstam_s_wave,
-        Rf"""
-
-    .. math:: {sp.latex(expr)}
-        :class: full-width
-        :label: chew_mandelstam_s_wave
-
-    with :math:`q^2(s)` defined as :eq:`BreakupMomentumSquared`.
-
-    .. seealso:: :doc:`compwa:report/003`
-    """,
-    )
 
 
 def extend_formulate_isobar_cg_coefficients() -> None:
@@ -531,7 +560,7 @@ def extend_formulate_isobar_wigner_d() -> None:
 
 
 def __get_graphviz_state_transition_example(
-    formalism: str, transition_number: int = 0
+    formalism: SpinFormalism, transition_number: int = 0
 ) -> str:
     reaction = __generate_transitions_cached(
         initial_state=[("J/psi(1S)", [+1])],
@@ -625,7 +654,7 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     _append_to_docstring(
         relativistic_breit_wigner_with_ff,
         Rf"""
-    The general form of a relativistic Breit-Wigner with Blatt-Weisskopf form factor is:
+    The general form of a relativistic Breit–Wigner with Blatt–Weisskopf form factor is:
 
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
@@ -676,58 +705,20 @@ def __get_text_width(text: str) -> int:
     return max(widths)
 
 
-def _append_latex_doit_definition(
-    expr: sp.Expr,
-    deep: bool = False,
-    full_width: bool = False,
-    inline: bool = False,
-) -> None:
-    if inline:
-        return _append_to_docstring(
-            type(expr),
-            f":math:`{sp.latex(expr)}={sp.latex(expr.doit(deep=deep))}`",
-        )
-    latex = _create_latex_doit_definition(expr, deep)
-    extras = ""
-    if full_width:
-        extras = """
-        :class: full-width
-        """
-    return _append_to_docstring(
-        type(expr),
-        f"""\n
-    .. math::
-        :label: {type(expr).__name__}{extras}
-
-        {latex}
-    """,
-    )
-
-
-def _create_latex_doit_definition(expr: sp.Expr, deep: bool = False) -> str:
-    latex = aslatex({expr: expr.doit(deep=deep)})
-    return textwrap.indent(latex, prefix=8 * " ")
-
-
-def _append_to_docstring(class_type: Callable | type, appended_text: str) -> None:
-    assert class_type.__doc__ is not None
-    class_type.__doc__ += appended_text
-
-
 def __generate_transitions_cached(
-    initial_state: list[tuple[str, list[float | int]] | str],
-    final_state: list[tuple[str, list[float | int]] | str],
-    formalism: str,
+    initial_state: list[tuple[str, list[float]] | str],
+    final_state: list[tuple[str, list[float]] | str],
+    formalism: SpinFormalism,
 ) -> ReactionInfo:
     version = get_package_version("qrules")
-    obj = (initial_state, final_state, formalism)
-    h = hashlib.sha256(pickle.dumps(obj)).hexdigest()
+    obj = make_hashable(initial_state, final_state, formalism)
+    h = get_readable_hash(obj)
     docs_dir = Path(__file__).parent
     file_name = docs_dir / ".cache" / f"reaction-qrules-v{version}-{h}.pickle"
     file_name.parent.mkdir(exist_ok=True)
     if file_name.exists():
         with open(file_name, "rb") as f:
-            return pickle.load(f)  # noqa: S301
+            return pickle.load(f)  # ruff: ignore[suspicious-pickle-usage]
     reaction = qrules.generate_transitions(
         initial_state,
         final_state,
@@ -753,16 +744,16 @@ _IMAGE_DIR = "_images"
 def _graphviz_to_image(
     dot: str,
     options: dict[str, str] | None = None,
-    format: str = "svg",  # noqa: A002
+    format: str = "svg",  # ruff: ignore[builtin-argument-shadowing]
     indent: int = 0,
     caption: str = "",
     label: str = "",
 ) -> str:
     if options is None:
         options = {}
-    global _GRAPHVIZ_COUNTER  # noqa: PLW0603
+    global _GRAPHVIZ_COUNTER  # ruff: ignore[global-statement]
     output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
-    _GRAPHVIZ_COUNTER += 1  # pyright: ignore[reportConstantRedefinition]
+    _GRAPHVIZ_COUNTER += 1
     graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)
     restructuredtext = "\n"
     if label:

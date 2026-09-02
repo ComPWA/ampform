@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import cast
 
 import pytest
+import sympy as sp
 
 from ampform.dynamics.kmatrix import NonRelativisticKMatrix
-from symplot import rename_symbols, substitute_indexed_symbols
-
-if TYPE_CHECKING:
-    import sympy as sp
+from ampform.sympy import rename_symbols
+from ampform.sympy.slider import substitute_indexed_symbols
 
 
 class TestNonRelativisticKMatrix:
@@ -35,14 +34,14 @@ class TestNonRelativisticKMatrix:
         expr = substitute_indexed_symbols(expr)
         expr = _remove_residue_constants(expr)
         expr = _rename_widths(expr)
-        denominator, nominator = expr.args
-        term1 = nominator.args[0] * denominator
-        term2 = nominator.args[1] * denominator
+        *rest, denominator, nominator = expr.args
+        term1 = nominator.args[0] * denominator * sp.Mul(*rest)
+        term2 = nominator.args[1] * denominator * sp.Mul(*rest)
         assert str(term1 / term2) == R"m1*w1*(m2**2 - s)/(m2*w2*(m1**2 - s))"
 
 
 def _remove_residue_constants(expression: sp.Expr) -> sp.Expr:
-    free_symbols: set[sp.Symbol] = expression.free_symbols  # type: ignore[assignment]
+    free_symbols = cast("set[sp.Symbol]", expression.free_symbols)
     residue_constants = filter(lambda s: s.name.startswith(R"\gamma_"), free_symbols)
     return expression.xreplace(dict.fromkeys(residue_constants, 1))
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import pickle
 from typing import Any, ClassVar
 
 import pytest
@@ -17,11 +18,11 @@ def test_classvar_behavior():
         class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
-            return self.x**self.m  # type: ignore[return-value]
+            return self.x**self.m  # ty: ignore[invalid-return-type]
 
     x_expr = MyExpr(4)
     assert x_expr.x is sp.Integer(4)
-    assert x_expr.m is 2  # noqa: F632
+    assert x_expr.m is 2  # ruff: ignore[is-literal]
 
     y_expr = MyExpr(5)
     assert x_expr.doit() == 4**2
@@ -50,7 +51,7 @@ def test_construction_non_sympy_attributes():
         sympifiable=3,
         non_sympy=obj,
     )
-    assert expr.sympifiable is not 3  # noqa: F632
+    assert expr.sympifiable is not 3  # ruff: ignore[is-literal]
     assert expr.sympifiable is sp.Integer(3)
     assert expr.non_sympy is obj
 
@@ -99,7 +100,7 @@ def test_default_argument_with_classvar():
         assert expr.default_return is None
 
     half = sp.Rational(1, 2)
-    FunkyPower.default_return = half
+    FunkyPower.default_return = half  # ty: ignore[invalid-assignment]
     assert exprs[0].doit() == half
     assert exprs[1].doit() == half
     assert exprs[2].doit() == half
@@ -132,7 +133,7 @@ def test_latex_repr_typo_warning():
     ):
 
         @unevaluated(real=False)
-        class MyExpr(sp.Expr):  # pyright: ignore[reportUnusedClass]
+        class MyExpr(sp.Expr):
             x: sp.Symbol
             _latex_repr = "<The attribute name is wrong>"
 
@@ -158,7 +159,7 @@ def test_no_implement_doit():
 
     expr = MySqrt(-1)
     assert expr.is_commutative
-    assert expr.is_complex  # type: ignore[attr-defined]
+    assert expr.is_complex
 
 
 def test_non_symbols_construction():
@@ -171,7 +172,7 @@ def test_non_symbols_construction():
 
         def evaluate(self) -> sp.Expr:
             s, m1, m2 = self.args
-            return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2))  # type: ignore[operator]
+            return sp.sqrt((s - (m1 + m2) ** 2) * (s - (m1 - m2) ** 2))
 
     m0, ma, mb = sp.symbols("m0 m_a m_b")
     expr = BreakupMomentum(m0**2, ma, mb)
@@ -188,6 +189,32 @@ def test_non_symbols_construction():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+@unevaluated(implement_doit=False)
+class _Outer(sp.Expr):
+    x: Any
+
+
+@unevaluated(implement_doit=False)
+class _Inner(sp.Expr):
+    x: Any
+    typ: type = argument(default=int, sympify=False)
+
+
+def test_pickle_nested_expressions():
+    x = sp.Symbol("x")
+    expr = _Outer(_Inner(x, typ=float))
+    pickled_expr: _Outer = pickle.loads(pickle.dumps(expr))
+    assert pickled_expr == expr
+    assert isinstance(pickled_expr.x, _Inner)
+    assert pickled_expr.x.x == x
+    assert pickled_expr.x.typ is float
+
+    sympifiable_expr = _Outer(_Outer(x))
+    pickled_expr = pickle.loads(pickle.dumps(sympifiable_expr))
+    assert pickled_expr == sympifiable_expr
+    assert isinstance(pickled_expr.x, _Outer)
 
 
 def test_subs_with_non_sympy_attributes():

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING
 
 import sympy as sp
 
@@ -37,6 +37,8 @@ from ampform.sympy._array_expressions import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from qrules.topology import Topology
 
 
@@ -169,9 +171,9 @@ def compute_wigner_angles(
 ) -> dict[sp.Symbol, sp.Expr]:
     """Create an `~sympy.core.expr.Expr` for each angle in a Wigner rotation.
 
-    Implementation of (B.2-4) in :cite:`marangottoHelicityAmplitudesGeneric2020`, with
-    :math:`x'_z` etc. taken from the result of :func:`compute_wigner_rotation_matrix`.
-    See also `Wigner rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
+    Implementation of (B.2-4) in :cite:`Marangotto:2019ucc`, with :math:`x'_z` etc.
+    taken from the result of :func:`compute_wigner_rotation_matrix`. See also `Wigner
+    rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
     wigner_rotation_matrix = compute_wigner_rotation_matrix(topology, momenta, state_id)
     x_z = ArraySlice(wigner_rotation_matrix, (slice(None), 1, 3))
@@ -195,8 +197,8 @@ def compute_wigner_rotation_matrix(
 ) -> MatrixMultiplication:
     """Compute a Wigner rotation matrix.
 
-    Implementation of Eq. (36) in :cite:`marangottoHelicityAmplitudesGeneric2020`. See
-    also `Wigner rotations <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
+    Implementation of Eq. (36) in :cite:`Marangotto:2019ucc`. See also `Wigner rotations
+    <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
     momentum = momenta[state_id]
     inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
@@ -209,12 +211,10 @@ def formulate_scattering_angle(
 ) -> tuple[sp.Symbol, sp.acos]:
     r"""Formulate the scattering angle in the rest frame of the resonance.
 
-    Compute the :math:`\theta_{ij}` scattering angle as formulated in `Eq (A1)
-    in the DPD paper
-    <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
-    :cite:`mikhasenkoDalitzplotDecompositionThreebody2020`. The angle is that
-    between particle :math:`i` and spectator particle :math:`k` in the rest
-    frame of the isobar resonance :math:`(ij)`.
+    Compute the :math:`\theta_{ij}` scattering angle as formulated in `Eq (A1) in the
+    DPD paper <https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=9>`_
+    :cite:`Marangotto:2019ucc`. The angle is that between particle :math:`i` and
+    spectator particle :math:`k` in the rest frame of the isobar resonance :math:`(ij)`.
     """
     if not {state_id, sibling_id} <= {1, 2, 3}:
         msg = "Child IDs need to be one of 1, 2, 3"
@@ -250,7 +250,7 @@ def formulate_theta_hat_angle(
         raise ValueError(msg)
     symbol = sp.Symbol(Rf"\hat\theta_{isobar_id}({aligned_subsystem})", real=True)
     if isobar_id == aligned_subsystem:
-        return symbol, sp.S.Zero
+        return symbol, sp.S.Zero  # ty: ignore[invalid-return-type]
     if (isobar_id, aligned_subsystem) in {(3, 1), (1, 2), (2, 3)}:
         remaining_id = next(iter(allowed_ids - {isobar_id, aligned_subsystem}))
         m0 = sp.Symbol("m_0", nonnegative=True)
@@ -274,10 +274,10 @@ def formulate_theta_hat_angle(
         isobar_id=aligned_subsystem,
         aligned_subsystem=isobar_id,
     )
-    return symbol, -theta
+    return symbol, -theta  # ty: ignore[invalid-return-type]
 
 
-def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
+def formulate_zeta_angle(  # ruff: ignore[complex-structure, too-many-return-statements, too-many-locals]
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
@@ -296,7 +296,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
         )
         return zeta_symbol, zeta_expr
     if aligned_subsystem == reference_subsystem:
-        return zeta_symbol, sp.S.Zero
+        return zeta_symbol, sp.S.Zero  # ty: ignore[invalid-return-type]
     m0, m1, m2, m3 = sp.symbols("m_(:4)", nonnegative=True)
     s1 = sp.Symbol("m_23", nonnegative=True) ** 2
     s2 = sp.Symbol("m_13", nonnegative=True) ** 2
@@ -366,7 +366,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
             aligned_subsystem=reference_subsystem,
             reference_subsystem=aligned_subsystem,
         )
-        return zeta_symbol, -zeta_expr
+        return zeta_symbol, -zeta_expr  # ty: ignore[invalid-return-type]
     msg = (
         "No expression for"
         f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"

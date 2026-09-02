@@ -8,17 +8,24 @@ from __future__ import annotations
 import functools
 import sys
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 from warnings import warn
 
 import sympy as sp
 
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from sympy.printing.latex import LatexPrinter
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -31,7 +38,7 @@ class UnevaluatedExpression(sp.Expr):
     1. condense the LaTeX representation of an expression tree by providing a custom
        :meth:`_latex` method.
     2. overwrite its printer methods (see `.NumPyPrintable` and e.g.
-       :doc:`compwa:report/001`).
+       :doc:`compwa-report:001/index`).
 
     The `UnevaluatedExpression` base class makes implementations of its derived classes
     more secure by enforcing the developer to provide implementations for these methods,
@@ -64,12 +71,7 @@ class UnevaluatedExpression(sp.Expr):
         super().__init_subclass__(**kwargs)
 
     @override
-    def __new__(
-        cls: type[DecoratedClass],
-        *args,
-        name: str | None = None,
-        **hints,
-    ) -> DecoratedClass:
+    def __new__(cls, *args, name: str | None = None, **hints) -> Self:
         """Constructor for a class derived from `UnevaluatedExpression`.
 
         This :meth:`~object.__new__` method correctly sets the
@@ -95,10 +97,10 @@ class UnevaluatedExpression(sp.Expr):
         """
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
-        obj._args = args
-        obj._assumptions = cls.default_assumptions  # type: ignore[attr-defined]
-        obj._mhash = None  # cspell:ignore mhash
-        obj._name = name
+        obj._args = args  # ruff: ignore[private-member-access]
+        obj._assumptions = cls.default_assumptions  # ruff: ignore[private-member-access]
+        obj._mhash = None  # cspell:ignore mhash  # ruff: ignore[private-member-access]
+        obj._name = name  # ruff: ignore[private-member-access]
         return obj
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:
@@ -206,13 +208,13 @@ def implement_new_method(
             if len(args) != n_args:
                 msg = f"{n_args} parameters expected, got {len(args)}"
                 raise ValueError(msg)
-            args = sp.sympify(args)
+            args = sp.sympify(args)  # ty: ignore[invalid-assignment]
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
-                return expr.evaluate()  # type: ignore[return-value]
+                return expr.evaluate()  # ty: ignore[invalid-return-type]
             return expr
 
-        decorated_class.__new__ = new_method  # type: ignore[assignment]
+        decorated_class.__new__ = new_method  # ty: ignore[invalid-assignment]
         return decorated_class
 
     return decorator
@@ -236,14 +238,14 @@ def implement_doit_method(
         stacklevel=1,
     )
 
-    @functools.wraps(decorated_class.doit)  # type: ignore[attr-defined]
+    @functools.wraps(decorated_class.doit)
     def doit_method(self: UnevaluatedExpression, deep: bool = True) -> sp.Expr:
         expr = self.evaluate()
         if deep:
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method  # type: ignore[assignment]
+    decorated_class.doit = doit_method  # ty: ignore[invalid-assignment]
     return decorated_class
 
 
@@ -264,8 +266,8 @@ def make_commutative(
         category=DeprecationWarning,
         stacklevel=1,
     )
-    decorated_class.is_commutative = True  # type: ignore[attr-defined]
-    decorated_class.is_extended_real = True  # type: ignore[attr-defined]
+    decorated_class.is_commutative = True
+    decorated_class.is_extended_real = True
     return decorated_class
 
 
@@ -285,8 +287,11 @@ def create_expression(
     )
     args = sp.sympify(args)
     if issubclass(cls, UnevaluatedExpression):
-        expr = UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs)
+        expr = cast(
+            "DecoratedExpr",
+            UnevaluatedExpression.__new__(cls, *args, name=name, **kwargs),  # ty: ignore[not-iterable]
+        )
         if evaluate:
-            return expr.evaluate()  # type: ignore[return-value]
-        return expr  # type: ignore[return-value]
-    return sp.Expr.__new__(cls, *args, **kwargs)  # type: ignore[return-value]
+            return expr.evaluate()
+        return expr
+    return sp.Expr.__new__(cls, *args, **kwargs)  # ty: ignore[not-iterable]

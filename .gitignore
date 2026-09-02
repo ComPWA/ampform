@@ -21,12 +21,10 @@ version.py
 
 # Temporary files
 *.pyc
-*condaenv.*
 .coverage
 .coverage.*
 .ipynb_checkpoints/
 .jupyter_ystore.db
-.mypy*/
 .pytest_cache/
 .virtual_documents/
 __pycache__/
@@ -36,22 +34,23 @@ prof/
 
 # Virtual environments
 *venv/
-.tox/
 pyvenv*/
 
 # Settings
+/.agents/
+/.claude/
+/.codex/
 .idea/
 **.code-workspace
+AGENTS.md
+CLAUDE.md
 
 # Exceptions
 !.cspell.json
 !.github/*.yml
 !.github/*/*.yml
-!.gitpod.yml
 !.pre-commit-config.yaml
 !.readthedocs.yml
 !.vscode/*.json
 !.zenodo.json
 !codecov.yml
-!environment.yml
-!pyrightconfig.json
