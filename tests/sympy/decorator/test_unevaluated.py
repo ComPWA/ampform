@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import pickle
 from typing import Any, ClassVar
 
 import pytest
@@ -188,6 +189,32 @@ def test_non_symbols_construction():
     assert isinstance(q_value.s, sp.Integer)
     assert isinstance(q_value.m1, sp.Float)
     assert isinstance(q_value.m2, sp.Float)
+
+
+@unevaluated(implement_doit=False)
+class _Outer(sp.Expr):
+    x: Any
+
+
+@unevaluated(implement_doit=False)
+class _Inner(sp.Expr):
+    x: Any
+    typ: type = argument(default=int, sympify=False)
+
+
+def test_pickle_nested_expressions():
+    x = sp.Symbol("x")
+    expr = _Outer(_Inner(x, typ=float))
+    pickled_expr: _Outer = pickle.loads(pickle.dumps(expr))
+    assert pickled_expr == expr
+    assert isinstance(pickled_expr.x, _Inner)
+    assert pickled_expr.x.x == x
+    assert pickled_expr.x.typ is float
+
+    sympifiable_expr = _Outer(_Outer(x))
+    pickled_expr = pickle.loads(pickle.dumps(sympifiable_expr))
+    assert pickled_expr == sympifiable_expr
+    assert isinstance(pickled_expr.x, _Outer)
 
 
 def test_subs_with_non_sympy_attributes():

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import pickle  # ruff: ignore[suspicious-pickle-import]
+import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
@@ -64,7 +64,7 @@ def test_cache_to_disk_writes_atomically(tmp_path: Path, monkeypatch: MonkeyPatc
     assert not list(tmp_path.rglob("*.tmp"))
     cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
     assert len(cache_files) == 1
-    assert pickle.loads(cache_files[0].read_bytes()) == "result"  # ruff: ignore[suspicious-pickle-usage]
+    assert pickle.loads(cache_files[0].read_bytes()) == "result"
 
 
 @pytest.mark.parametrize("corrupt_data", [b"", b"not a pickle"])

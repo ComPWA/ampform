@@ -1,4 +1,4 @@
-import pickle  # ruff: ignore[suspicious-pickle-import]
+import pickle
 
 import sympy as sp
 
@@ -15,19 +15,19 @@ class TestUnevaluatedExpression:
         # Pickle simple SymPy expression
         expr = z * angular_momentum
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)  # ruff: ignore[suspicious-pickle-usage]
+        imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr
 
         # Pickle UnevaluatedExpression
         expr = UnevaluatedExpression()
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)  # ruff: ignore[suspicious-pickle-usage]
+        imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr
 
         # Pickle classes derived from UnevaluatedExpression
         expr = BlattWeisskopfSquared(z, angular_momentum)
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)  # ruff: ignore[suspicious-pickle-usage]
+        imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr
 
         expr = EnergyDependentWidth(
@@ -42,5 +42,5 @@ class TestUnevaluatedExpression:
             name="Gamma_1",
         )
         pickled_obj = pickle.dumps(expr)
-        imported_expr = pickle.loads(pickled_obj)  # ruff: ignore[suspicious-pickle-usage]
+        imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr
