@@ -280,7 +280,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         return expr
 
     cls.__new__ = new_method
-    cls.__getnewargs__ = dataclasses.astuple
+    cls.__getnewargs__ = _get_field_values
     cls._hashable_content = _hashable_content_method
     if non_sympy_fields:
         cls._eval_subs = _eval_subs_method
@@ -487,7 +487,7 @@ def _set_assumptions(
 def _eval_subs_method(self, old, new, **hints):
     # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1117-L1147
     hit = False
-    old_args = dataclasses.astuple(self)
+    old_args = _get_field_values(self)
     new_args = list(old_args)
     for i, old_arg in enumerate(old_args):
         if not hasattr(old_arg, "_eval_subs"):
@@ -536,7 +536,7 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     if rule:
         new_args = []
         hit = False
-        for arg in dataclasses.astuple(self):
+        for arg in _get_field_values(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
                 replace_result, is_replaced = arg._xreplace(rule)  # ruff: ignore[private-member-access]
             elif isinstance(rule, abc.Mapping):
@@ -550,6 +550,17 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
         if hit:
             return self.func(*new_args), True
     return self, False
+
+
+def _get_field_values(self: DataclassInstance) -> tuple[Any, ...]:
+    """Get the field values of a dataclass-like class without recursing.
+
+    This is a shallow alternative to :func:`dataclasses.astuple`, which recurses into
+    nested dataclasses and converts them to `tuple` as well. Since decorated classes are
+    both dataclasses and `~sympy.core.expr.Expr` instances, that recursion would destroy
+    nested expressions, for instance when pickling.
+    """
+    return tuple(getattr(self, field.name) for field in dataclasses.fields(self))
 
 
 def get_sympy_fields(
