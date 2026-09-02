@@ -126,27 +126,40 @@ def _cache_to_disk_implementation(
             msg = f"No cache file {cache_file}, performing {function_name}()..."
             _LOGGER.warning(msg)
             result = func(*args, **kwargs)
-            cache_file.parent.mkdir(exist_ok=True, parents=True)
-            temporary_file = None
             try:
-                with tempfile.NamedTemporaryFile(
-                    dir=cache_file.parent,
-                    prefix=f".{cache_file.name}.",
-                    suffix=".tmp",
-                    delete=False,
-                ) as f:
-                    temporary_file = Path(f.name)
-                    dump_function(result, f)
-                os.replace(temporary_file, cache_file)
-            except BaseException:
-                if temporary_file is not None:
-                    temporary_file.unlink(missing_ok=True)
-                raise
+                _dump_to_cache_file(result, cache_file, dump_function)
+            except OSError as exception:
+                msg = f"Could not write cache file {cache_file}: {exception}"
+                _LOGGER.warning(msg)
             return result
 
         return wrapped_function
 
     return decorator
+
+
+def _dump_to_cache_file(
+    result: Any,
+    cache_file: Path,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None],
+) -> None:
+    """Dump to a temporary file and rename, so that readers never see a partial file."""
+    cache_file.parent.mkdir(exist_ok=True, parents=True)
+    temporary_file = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=cache_file.parent,
+            prefix=f".{cache_file.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as f:
+            temporary_file = Path(f.name)
+            dump_function(result, f)
+        os.replace(temporary_file, cache_file)
+    except BaseException:
+        if temporary_file is not None:
+            temporary_file.unlink(missing_ok=True)
+        raise
 
 
 def _get_dependency_identifiers(func: Callable, dependencies: list[str]) -> list[str]:
