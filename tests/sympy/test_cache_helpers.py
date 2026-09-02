@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
 def test_cache_to_disk_writes_atomically(tmp_path: Path, monkeypatch: MonkeyPatch):
     monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+    monkeypatch.delenv("NO_CACHE", raising=False)
     first_write_started = Event()
     continue_first_write = Event()
     dump_calls = 0
@@ -71,6 +72,7 @@ def test_cache_to_disk_repairs_corrupt_file(
     corrupt_data: bytes, tmp_path: Path, monkeypatch: MonkeyPatch
 ):
     monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+    monkeypatch.delenv("NO_CACHE", raising=False)
     call_count = 0
 
     @cache_to_disk
