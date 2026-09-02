@@ -32,7 +32,7 @@ def test_generate_transition_label(reaction: ReactionInfo):
 @pytest.mark.parametrize("parent_helicities", [False, True])
 @pytest.mark.parametrize("child_helicities", [False, True])
 @pytest.mark.parametrize("ls_combinations", [False, True])
-def test_coefficient_names(  # ruff: ignore[complex-structure, too-many-branches, too-many-statements]
+def test_coefficient_names(
     reaction: ReactionInfo,
     parent_helicities,
     child_helicities,
@@ -50,37 +50,14 @@ def test_coefficient_names(  # ruff: ignore[complex-structure, too-many-branches
 
     coefficients = get_coefficients(model)
     n_resonances = len(reaction.get_intermediate_particles())
-    if reaction.formalism == "helicity":
-        if parent_helicities:
-            if child_helicities:
-                assert len(coefficients) == 4 * n_resonances
-            else:
-                assert len(coefficients) == 2 * n_resonances
-        else:  # ruff: ignore[collapsible-else-if]
-            if child_helicities:
-                assert len(coefficients) == n_resonances
-            else:
-                assert len(coefficients) == n_resonances
-    elif reaction.formalism == "canonical-helicity":
-        if ls_combinations:
-            if parent_helicities:
-                if child_helicities:
-                    assert len(coefficients) == 8 * n_resonances
-                else:
-                    assert len(coefficients) == 4 * n_resonances
-            else:  # ruff: ignore[collapsible-else-if]
-                if child_helicities:
-                    assert len(coefficients) == 4 * n_resonances
-                else:
-                    assert len(coefficients) == 2 * n_resonances
-        else:  # ruff: ignore[collapsible-else-if]
-            if parent_helicities:
-                if child_helicities:
-                    assert len(coefficients) == 4 * n_resonances
-                else:
-                    assert len(coefficients) == 2 * n_resonances
-            else:
-                assert len(coefficients) == n_resonances
+    multiplicity = 1
+    if parent_helicities:
+        multiplicity *= 2
+    if ls_combinations:
+        multiplicity *= 2
+    if child_helicities and (parent_helicities or ls_combinations):
+        multiplicity *= 2
+    assert len(coefficients) == multiplicity * n_resonances
 
     coefficient_name = coefficients[0]
     if parent_helicities:
