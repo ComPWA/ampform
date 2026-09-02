@@ -1,0 +1,7 @@
+/* Render Mermaid diagrams at their natural size instead of stretching them over
+the full page width (see sphinxcontrib/mermaid/default.css.j2). */
+pre.mermaid > svg {
+  height: auto !important;
+  max-width: 100% !important;
+  width: auto !important;
+}

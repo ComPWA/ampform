@@ -315,6 +315,15 @@ linkcheck_ignore = [
 ]
 linkcheck_timeout = 60
 mermaid_height = "auto"  # do not stretch diagrams to the default 500px
+mermaid_init_config = {
+    "flowchart": {
+        "nodeSpacing": 30,
+        "rankSpacing": 40,
+        "useMaxWidth": False,
+    },
+    "startOnLoad": False,
+    "themeVariables": {"fontSize": "12px"},
+}
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
