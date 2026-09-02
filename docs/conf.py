@@ -4,7 +4,6 @@ import os
 import sys
 from dataclasses import is_dataclass
 
-import requests
 from sphinx_api_relink.helpers import (
     get_branch_name,
     get_execution_mode,
@@ -58,17 +57,6 @@ def _get_dataclasses(module):
         if inspect.isclass(obj) and is_dataclass(obj):
             dataclass_list.append(obj)
     return dataclass_list
-
-
-def _get_scipy_url() -> str:
-    url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
-    try:
-        r = requests.get(url, timeout=10)
-    except requests.RequestException:
-        return "https://docs.scipy.org/doc/scipy"
-    if r.status_code != 200:  # ruff: ignore[magic-value-comparison]
-        return "https://docs.scipy.org/doc/scipy"
-    return url
 
 
 extend_docstrings()
@@ -303,7 +291,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "quadax": ("https://quadax.readthedocs.io/en/stable", None),
-    "scipy": (_get_scipy_url(), None),
+    "scipy": (f"https://docs.scipy.org/doc/scipy-{pin('scipy')}", None),
     "spb": (
         f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
         None,
