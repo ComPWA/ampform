@@ -180,8 +180,8 @@ default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
-    "AGENTS.md",  # agent instructions, see .gitignore
-    "CLAUDE.md",  # agent instructions, see .gitignore
+    "AGENTS.md",
+    "CLAUDE.md",
     "tests",
 ]
 extensions = [
