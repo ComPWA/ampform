@@ -84,7 +84,12 @@ set_intersphinx_version_remapping({
         "8.1.8": "8.1.5",
         "8.1.9": "8.1.5",
     },
-    "qrules": {"0.10.7.dev.*": "0.10.6"},
+    "qrules": {
+        "0.10.7.dev.*": "0.10.6",
+    },
+    "scipy": {
+        "1.18.1": "1.18.0",
+    },
 })
 
 BRANCH = get_branch_name()
