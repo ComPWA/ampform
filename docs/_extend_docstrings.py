@@ -574,34 +574,34 @@ def __get_state_transition_example(
     interactions = dict(transition.interactions)
     interactions[0] = new_interaction
     transition = attrs.evolve(transition, interactions=interactions)
-    source = qrules.io.asmermaid(
+    src = qrules.io.asmermaid(
         transition,
         render_initial_state_id=True,
         render_node=True,
     )
     for state_id in [0, 1, -1]:
-        source = source.replace(
+        src = src.replace(
             f'["$${state_id}: ',
             f'["$${state_id + 2}: ',
         )
-    return _mermaid_to_figure(source, indent=4, options={"align": "center"})
+    return _mermaid_to_figure(src, indent=4, options={"align": "center"})
 
 
 def extend_get_boost_chain_suffix() -> None:
     from ampform.helicity.naming import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
-    source0, source1, *_ = tuple(
+    src0, src1, *_ = tuple(
         qrules.io.asmermaid(t, render_resonance_id=True) for t in topologies
     )
     mermaid0 = _mermaid_to_figure(
-        source0,
+        src0,
         indent=8,
         caption=":code:`topologies[0]`",
         label="one-to-five-topology-0",
     )
     mermaid1 = _mermaid_to_figure(
-        source1,
+        src1,
         indent=8,
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
@@ -737,7 +737,7 @@ def __print_imports(printer: NumPyPrinter) -> str:
 
 
 def _mermaid_to_figure(
-    source: str,
+    src: str,
     options: dict[str, str] | None = None,
     indent: int = 0,
     caption: str = "",
@@ -753,5 +753,5 @@ def _mermaid_to_figure(
         restructuredtext += f"  :{option}: {value}\n"
     if caption:
         restructuredtext += f"  :caption: {caption}\n"
-    restructuredtext += "\n" + textwrap.indent(source, "  ")
+    restructuredtext += "\n" + textwrap.indent(src, "  ")
     return textwrap.indent(restructuredtext, indent * " ")
