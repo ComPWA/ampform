@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 if get_qrules_version() < (0, 10):
     from qrules.transition import (
-        StateTransitionCollection,  # ty:ignore[unresolved-import]
+        StateTransitionCollection,  # ty: ignore[unresolved-import]
     )
 
 
@@ -113,10 +113,10 @@ class _DPDAlignmentWignerGenerator:
 
 
 if get_qrules_version() < (0, 10):
-    T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)  # ty:ignore[possibly-unresolved-reference]
+    T = TypeVar("T", ReactionInfo, StateTransition, StateTransitionCollection, Topology)  # ty: ignore[possibly-unresolved-reference]
     """Allowed types for :func:`relabel_edge_ids`."""
 else:
-    T = TypeVar("T", ReactionInfo, StateTransition, Topology)  # ty:ignore[invalid-legacy-type-variable]
+    T = TypeVar("T", ReactionInfo, StateTransition, Topology)  # ty: ignore[invalid-legacy-type-variable]
     """Allowed types for :func:`relabel_edge_ids`."""
 
 
@@ -129,8 +129,8 @@ def relabel_edge_ids(obj: T) -> T:
 @relabel_edge_ids.register(ReactionInfo)
 def _(obj: ReactionInfo) -> ReactionInfo:
     if get_qrules_version() < (0, 10):
-        return ReactionInfo(  # ty:ignore[missing-argument]
-            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # ty:ignore[unresolved-attribute]
+        return ReactionInfo(  # ty: ignore[missing-argument]
+            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # ty: ignore[unresolved-attribute]
             formalism=obj.formalism,
         )
     return ReactionInfo(
@@ -147,7 +147,7 @@ if get_qrules_version() < (0, 10):
             relabel_edge_ids(transition) for transition in obj.transitions
         ])
 
-    relabel_edge_ids.register(StateTransitionCollection)(__relabel_stc)  # ty:ignore[possibly-unresolved-reference]
+    relabel_edge_ids.register(StateTransitionCollection)(__relabel_stc)  # ty: ignore[possibly-unresolved-reference]
 
 
 def __relabel_st(obj: StateTransition) -> StateTransition:

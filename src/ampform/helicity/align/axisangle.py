@@ -173,7 +173,7 @@ def formulate_helicity_rotation_chain(
     if len(summation.indices) == 1:
         idx_root = __GREEK_INDEX_NAMES[idx_root_counter]
         dangling_idx = sp.Symbol(f"{idx_root}{idx_suffix}", rational=True)
-        return summation.subs(dangling_idx, helicity_symbol)  # ty:ignore[invalid-return-type]
+        return summation.subs(dangling_idx, helicity_symbol)  # ty: ignore[invalid-return-type]
     return summation
 
 

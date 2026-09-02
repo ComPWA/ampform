@@ -208,13 +208,13 @@ def implement_new_method(
             if len(args) != n_args:
                 msg = f"{n_args} parameters expected, got {len(args)}"
                 raise ValueError(msg)
-            args = sp.sympify(args)  # ty:ignore[invalid-assignment]
+            args = sp.sympify(args)  # ty: ignore[invalid-assignment]
             expr = UnevaluatedExpression.__new__(cls, *args)
             if evaluate:
                 return expr.evaluate()  # ty: ignore[invalid-return-type]
             return expr
 
-        decorated_class.__new__ = new_method  # ty:ignore[invalid-assignment]
+        decorated_class.__new__ = new_method  # ty: ignore[invalid-assignment]
         return decorated_class
 
     return decorator
@@ -245,7 +245,7 @@ def implement_doit_method(
             return expr.doit()
         return expr
 
-    decorated_class.doit = doit_method  # ty:ignore[invalid-assignment]
+    decorated_class.doit = doit_method  # ty: ignore[invalid-assignment]
     return decorated_class
 
 
@@ -294,4 +294,4 @@ def create_expression(
         if evaluate:
             return expr.evaluate()
         return expr
-    return sp.Expr.__new__(cls, *args, **kwargs)  # ty:ignore[not-iterable]
+    return sp.Expr.__new__(cls, *args, **kwargs)  # ty: ignore[not-iterable]

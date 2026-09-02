@@ -17,7 +17,7 @@ def test_classvar_behavior():
         class_name = "MyExpr"
 
         def evaluate(self) -> sp.Expr:
-            return self.x**self.m  # ty:ignore[invalid-return-type]
+            return self.x**self.m  # ty: ignore[invalid-return-type]
 
     x_expr = MyExpr(4)
     assert x_expr.x is sp.Integer(4)
@@ -99,7 +99,7 @@ def test_default_argument_with_classvar():
         assert expr.default_return is None
 
     half = sp.Rational(1, 2)
-    FunkyPower.default_return = half  # ty:ignore[invalid-assignment]
+    FunkyPower.default_return = half  # ty: ignore[invalid-assignment]
     assert exprs[0].doit() == half
     assert exprs[1].doit() == half
     assert exprs[2].doit() == half

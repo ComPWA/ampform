@@ -71,11 +71,11 @@ class ArrayElement(_ArrayExpr):
 
     @property
     def parent(self) -> sp.Expr:
-        return self._args[0]  # ty:ignore[invalid-return-type]
+        return self._args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def indices(self) -> sp.Tuple:
-        return self._args[1]  # ty:ignore[invalid-return-type]
+        return self._args[1]  # ty: ignore[invalid-return-type]
 
 
 # required for lambdify
@@ -114,7 +114,7 @@ def _array_symbol_getitem(self, key):
     return ArrayElement(self, indices)
 
 
-ArraySymbol.__getitem__ = _array_symbol_getitem  # ty:ignore[invalid-assignment]
+ArraySymbol.__getitem__ = _array_symbol_getitem  # ty: ignore[invalid-assignment]
 
 
 def _normalize_index(idx, axis_size: sp.Expr | None):
@@ -129,8 +129,8 @@ def _normalize_index(idx, axis_size: sp.Expr | None):
 
 
 class ArraySlice(_ArrayExpr):
-    parent: sp.Basic = property(lambda self: self.args[0])  # ty:ignore[invalid-assignment]
-    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # ty:ignore[invalid-assignment]
+    parent: sp.Basic = property(lambda self: self.args[0])  # ty: ignore[invalid-assignment]
+    indices: tuple[sp.Tuple, ...] = property(lambda self: tuple(self.args[1]))  # ty: ignore[invalid-assignment]
     is_commutative = True
 
     @override
@@ -201,7 +201,7 @@ def normalize(i, parentsize) -> tuple[sp.Basic, sp.Basic, sp.Basic]:
             raise IndexError
 
     start, stop, step = tuple(none if i is None else i for i in (start, stop, step))
-    return start, stop, step  # ty:ignore[invalid-return-type]
+    return start, stop, step  # ty: ignore[invalid-return-type]
 
 
 def _print_latex_ArrayElement(  # ruff: ignore[invalid-function-name]
@@ -266,7 +266,7 @@ class ArraySum(sp.Expr):
 
     @override
     def __new__(cls, *terms: sp.Basic, **hints) -> Self:
-        terms = sp.sympify(terms)  # ty:ignore[invalid-assignment]
+        terms = sp.sympify(terms)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *terms, **hints)
 
     @property
@@ -327,15 +327,15 @@ class ArrayAxisSum(sp.Expr):
             msg = "Only single digits allowed for axis"
             raise TypeError(msg)
         args = sp.sympify((array, axis))
-        return sp.Expr.__new__(cls, *args, **hints)  # ty:ignore[not-iterable]
+        return sp.Expr.__new__(cls, *args, **hints)  # ty: ignore[not-iterable]
 
     @property
     def array(self) -> sp.Expr:
-        return self.args[0]  # ty:ignore[invalid-return-type]
+        return self.args[0]  # ty: ignore[invalid-return-type]
 
     @property
     def axis(self) -> sp.Integer | None:
-        return self.args[1]  # ty:ignore[invalid-return-type]
+        return self.args[1]  # ty: ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         array = printer._print(self.array)
@@ -363,12 +363,12 @@ class ArrayMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
+        tensors = sp.sympify(tensors)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
     def tensors(self) -> list[sp.Expr]:
-        return self.args  # ty:ignore[invalid-return-type]
+        return self.args  # ty: ignore[invalid-return-type]
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
         tensors = map(printer._print, self.tensors)
@@ -418,7 +418,7 @@ class MatrixMultiplication(sp.Expr):
 
     @override
     def __new__(cls, *tensors: sp.Basic, **hints) -> Self:
-        tensors = sp.sympify(tensors)  # ty:ignore[invalid-assignment]
+        tensors = sp.sympify(tensors)  # ty: ignore[invalid-assignment]
         return sp.Expr.__new__(cls, *tensors, **hints)
 
     @property
