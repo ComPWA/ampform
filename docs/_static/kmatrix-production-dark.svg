@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150" width="300" height="150" role="img" aria-label="Feynman diagram of the production process R to a b">
   <title>Production process R → a_i b_i</title>
-  <g fill="none" stroke="#000000" stroke-width="1.6">
+  <g fill="none" stroke="#ffffff" stroke-width="1.6">
     <line x1="34" y1="75" x2="150" y2="75" stroke-width="2.4" />
     <line x1="150" y1="75" x2="256" y2="25" />
     <line x1="150" y1="75" x2="256" y2="125" />
   </g>
-  <g fill="#000000" font-family="Latin Modern Math, Georgia, serif" font-style="italic" font-size="20">
+  <g fill="#ffffff" font-family="Latin Modern Math, Georgia, serif" font-style="italic" font-size="20">
     <text x="24" y="75" text-anchor="end" dominant-baseline="middle">R</text>
     <text x="264" y="25" text-anchor="start" dominant-baseline="middle">a<tspan font-size="14" dy="6">i</tspan></text>
     <text x="264" y="125" text-anchor="start" dominant-baseline="middle">b<tspan font-size="14" dy="6">i</tspan></text>
