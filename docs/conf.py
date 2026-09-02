@@ -214,9 +214,9 @@ extensions = [
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
-graphviz_output_format = "svg"
 html_css_files = [
     "custom.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css",
@@ -333,6 +333,7 @@ myst_enable_extensions = [
     "smartquotes",
     "substitution",
 ]
+myst_fence_as_directive = ["mermaid"]
 myst_heading_anchors = 2
 myst_substitutions = {
     "branch": BRANCH,

@@ -76,6 +76,7 @@ doc = [
     "sphinx-thebe",
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
+    "sphinxcontrib-mermaid",
     { include-group = "notebooks" },
 ]
 jupyter = [
@@ -89,11 +90,12 @@ jupyter = [
     "python-lsp-server",
 ]
 notebooks = [
-    "ampform[scipy,viz]",
+    "ampform[scipy]",
     "black",
     "ipympl",
     "matplotlib",
     "numpy",
+    "qrules >=0.10.11",  # Mermaid diagrams
     "quadax",
     "rich",
     "sympy-plot-backends",
@@ -128,7 +130,6 @@ requires = ["setuptools>=61.2", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.compwa.policy]
-doc-apt-packages = "graphviz"
 repo-name = "ampform"
 repo-title = "AmpForm"
 

@@ -52,7 +52,7 @@ viz = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "ampform", extra = ["scipy", "viz"] },
+    { name = "ampform", extra = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -77,6 +77,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "python-lsp-ruff" },
     { name = "python-lsp-server" },
+    { name = "qrules" },
     { name = "quadax" },
     { name = "rich" },
     { name = "ruff" },
@@ -96,11 +97,12 @@ dev = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex" },
+    { name = "sphinxcontrib-mermaid" },
     { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 doc = [
-    { name = "ampform", extra = ["scipy", "viz"] },
+    { name = "ampform", extra = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -109,6 +111,7 @@ doc = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "qrules" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -127,6 +130,7 @@ doc = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex" },
+    { name = "sphinxcontrib-mermaid" },
     { name = "sympy-plot-backends" },
 ]
 jupyter = [
@@ -140,7 +144,7 @@ jupyter = [
     { name = "python-lsp-server" },
 ]
 notebooks = [
-    { name = "ampform", extra = ["scipy", "viz"] },
+    { name = "ampform", extra = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -148,12 +152,13 @@ notebooks = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "qrules" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sympy-plot-backends" },
 ]
 style = [
-    { name = "ampform", extra = ["scipy", "viz"] },
+    { name = "ampform", extra = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -166,6 +171,7 @@ style = [
     { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
+    { name = "qrules" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx-api-relink" },
@@ -186,7 +192,7 @@ test = [
     { name = "quadax" },
 ]
 types = [
-    { name = "ampform", extra = ["scipy", "viz"] },
+    { name = "ampform", extra = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -199,6 +205,7 @@ types = [
     { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
+    { name = "qrules" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx-api-relink" },
@@ -219,7 +226,6 @@ provides-extras = ["scipy", "viz"]
 [package.metadata.requires-dev]
 dev = [
     { name = "ampform", extras = ["scipy"] },
-    { name = "ampform", extras = ["scipy", "viz"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
@@ -240,6 +246,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "python-lsp-ruff" },
     { name = "python-lsp-server" },
+    { name = "qrules", specifier = ">=0.10.11" },
     { name = "quadax" },
     { name = "rich" },
     { name = "ruff" },
@@ -256,16 +263,18 @@ dev = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
+    { name = "sphinxcontrib-mermaid" },
     { name = "sympy-plot-backends" },
     { name = "ty" },
 ]
 doc = [
-    { name = "ampform", extras = ["scipy", "viz"] },
+    { name = "ampform", extras = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "myst-nb" },
     { name = "numpy" },
+    { name = "qrules", specifier = ">=0.10.11" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx" },
@@ -280,6 +289,7 @@ doc = [
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
     { name = "sphinxcontrib-bibtex", specifier = ">=2" },
+    { name = "sphinxcontrib-mermaid" },
     { name = "sympy-plot-backends" },
 ]
 jupyter = [
@@ -293,17 +303,18 @@ jupyter = [
     { name = "python-lsp-server" },
 ]
 notebooks = [
-    { name = "ampform", extras = ["scipy", "viz"] },
+    { name = "ampform", extras = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "qrules", specifier = ">=0.10.11" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sympy-plot-backends" },
 ]
 style = [
-    { name = "ampform", extras = ["scipy", "viz"] },
+    { name = "ampform", extras = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
@@ -312,6 +323,7 @@ style = [
     { name = "numpy" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
+    { name = "qrules", specifier = ">=0.10.11" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx-api-relink", specifier = ">=0.0.3" },
@@ -330,7 +342,7 @@ test = [
     { name = "quadax" },
 ]
 types = [
-    { name = "ampform", extras = ["scipy", "viz"] },
+    { name = "ampform", extras = ["scipy"] },
     { name = "black" },
     { name = "ipympl" },
     { name = "ipython" },
@@ -339,6 +351,7 @@ types = [
     { name = "numpy" },
     { name = "pytest" },
     { name = "pytest-benchmark" },
+    { name = "qrules", specifier = ">=0.10.11" },
     { name = "quadax" },
     { name = "rich" },
     { name = "sphinx-api-relink", specifier = ">=0.0.3" },
@@ -5120,6 +5133,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b2/e8/9ed3830aeed71f17c026a07a5097edcf44b692850ef215b161b8ad875729/sphinxcontrib-jsmath-1.0.1.tar.gz", hash = "sha256:a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8", size = 5787, upload-time = "2019-01-21T16:10:16.347Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/42/4c8646762ee83602e3fb3fbe774c2fac12f317deb0b5dbeeedd2d3ba4b77/sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl", hash = "sha256:2ec2eaebfb78f3f2078e73666b1415417a116cc848b72e5172e596c871103178", size = 5071, upload-time = "2019-01-21T16:10:14.333Z" },
+]
+
+[[package]]
+name = "sphinxcontrib-mermaid"
+version = "2.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "pyyaml" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8c/87/06537dff20aa57df2d0f2afa87edff4afa85dec6f57f03f7acc24f83ff88/sphinxcontrib_mermaid-2.1.1.tar.gz", hash = "sha256:f8d7f1b2f0ad69b7ebdd5cbf532fb4ee107893b5373bc2d0e9634089c0b2cfee", size = 22353, upload-time = "2026-09-01T16:10:23.671Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/6a/5bf2222b8084c7a7bc3ec23d470c91e3e03e82e4ce0bbacaa61f456ce7c1/sphinxcontrib_mermaid-2.1.1-py3-none-any.whl", hash = "sha256:3b9ac1a8e0b5154dec3c0acf9b5c54dd9ba58540e416f20858c300814c25648f", size = 16368, upload-time = "2026-09-01T16:10:22.377Z" },
 ]
 
 [[package]]
