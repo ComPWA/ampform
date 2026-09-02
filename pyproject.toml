@@ -545,6 +545,8 @@ split-on-trailing-comma = false
     "magic-value-comparison",
     "no-self-use",
     "private-member-access",
+    "suspicious-pickle-import",
+    "suspicious-pickle-usage",
     "too-many-locals",
     "too-many-positional-arguments",
     "unnecessary-collection-call",
