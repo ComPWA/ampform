@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import pickle
 from typing import TYPE_CHECKING
 
 import pytest
@@ -169,6 +170,13 @@ class TestHelicityModel:
         for symbol, value in model.parameter_defaults.items():
             assert isinstance(symbol, sp.Symbol)
             assert isinstance(value, ParameterValue.__args__)
+
+    def test_pickle_roundtrip(self, amplitude_model: tuple[str, HelicityModel]):
+        """See https://github.com/ComPWA/ampform/issues/471."""
+        _, model = amplitude_model
+        pickled_model: HelicityModel = pickle.loads(pickle.dumps(model))
+        assert pickled_model.kinematic_variables == model.kinematic_variables
+        assert pickled_model == model
 
     def test_rename_symbols_no_renames(
         self, amplitude_model: tuple[str, HelicityModel]
