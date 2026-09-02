@@ -314,6 +314,7 @@ linkcheck_ignore = [
     "https://www.bookfinder.com",
 ]
 linkcheck_timeout = 60
+mermaid_height = "auto"  # do not stretch diagrams to the default 500px
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",

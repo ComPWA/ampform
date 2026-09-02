@@ -596,28 +596,21 @@ def extend_get_boost_chain_suffix() -> None:
     )
     mermaid0 = _mermaid_to_figure(
         src0,
-        indent=8,
+        indent=4,
         caption=":code:`topologies[0]`",
         label="one-to-five-topology-0",
     )
     mermaid1 = _mermaid_to_figure(
         src1,
-        indent=8,
+        indent=4,
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
     )
     _append_to_docstring(
         get_boost_chain_suffix,
         f"""
-
-    .. grid:: 1 2 2 2
-      :gutter: 2
-
-      .. grid-item-card::
-        {mermaid0}
-
-      .. grid-item-card::
-        {mermaid1}
+    {mermaid0}
+    {mermaid1}
     """,
     )
 
