@@ -1,0 +1,22 @@
+name: Update
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: |-
+    ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+on:
+  pull_request:
+    branches:
+      - main
+      - epic/*
+    paths:
+      - .pre-commit-config.yaml
+      - uv.lock
+  workflow_dispatch:
+
+jobs:
+  lock:
+    uses: ComPWA/actions/.github/workflows/lock.yml@13f1a3b0c831615fb49c008bcc48113da8a76477 # 4.0.2
+    secrets:
+      token: ${{ secrets.PAT }}

@@ -1,8 +1,9 @@
 *.doctree
+*.gif
 *.inv
 *build/
 _images/*
 api/
 
 !_static/*
-!usage/additional_particles.yml
+!additional_particles.yml

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import sympy as sp
 
@@ -18,6 +18,8 @@ from ampform.sympy._array_expressions import (
 from ampform.sympy.math import ComplexSqrt
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from qrules.topology import Topology
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
@@ -39,13 +41,13 @@ def create_four_momentum_symbol(index: int) -> FourMomentumSymbol:
     return FourMomentumSymbol(f"p{index}", shape=[])
 
 
-FourMomenta = Dict[int, "FourMomentumSymbol"]
+FourMomenta = dict[int, "FourMomentumSymbol"]
 """A mapping of state IDs to their corresponding `.FourMomentumSymbol`.
 
 It's best to create a `dict` of `.FourMomenta` with
 :func:`create_four_momentum_symbols`.
 """
-FourMomentumSymbol = ArraySymbol
+FourMomentumSymbol: TypeAlias = ArraySymbol
 r"""Array-`~sympy.core.symbol.Symbol` that represents an array of four-momenta.
 
 The array is assumed to be of shape :math:`n\times 4` with :math:`n` the number of
@@ -65,19 +67,19 @@ class Energy(sp.Expr):
         return ArraySlice(self.momentum, (slice(None), 0))
 
 
-def _implement_latex_subscript(  # pyright: ignore[reportUnusedFunction]
+def _implement_latex_subscript(
     subscript: str,
 ) -> Callable[[type[ExprClass]], type[ExprClass]]:
     def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
         def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
-            momentum = printer._print(self.momentum)  # type: ignore[attr-defined]
-            if printer._needs_mul_brackets(self.momentum):  # type: ignore[attr-defined]
+            momentum = printer._print(self.momentum)  # ty: ignore[unresolved-attribute]
+            if printer._needs_mul_brackets(self.momentum):  # ruff: ignore[private-member-access]  # ty: ignore[unresolved-attribute]
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"
             return f"{momentum}_{subscript}"
 
-        decorated_class._latex_repr_ = _latex_repr_  # type: ignore[assignment,attr-defined]
+        decorated_class._latex_repr_ = _latex_repr_  # ty: ignore[unresolved-attribute]
         return decorated_class
 
     return decorator
@@ -152,7 +154,7 @@ class EuclideanNormSquared(sp.Expr):
     _latex_repr_ = R"\left|{vector}\right|^{{2}}"
 
     def evaluate(self) -> ArrayAxisSum:
-        return ArrayAxisSum(self.vector**2, axis=1)  # type: ignore[operator]
+        return ArrayAxisSum(self.vector**2, axis=1)
 
     def _numpycode(self, printer: NumPyPrinter, *args) -> str:
         return printer._print(self.evaluate(), *args)
@@ -195,7 +197,7 @@ class MinkowskiMetric(NumPyPrintable):
     momentum: sp.Basic
     _latex_repr_ = R"\boldsymbol{\eta}"
 
-    def as_explicit(self) -> sp.MutableDenseMatrix:  # noqa: PLR6301
+    def as_explicit(self) -> sp.MutableDenseMatrix:  # ruff: ignore[no-self-use]
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, -1, 0, 0],
@@ -234,7 +236,7 @@ class BoostZMatrix(sp.Expr):
 
     def as_explicit(self) -> sp.MutableDenseMatrix:
         beta = self.beta
-        gamma = 1 / ComplexSqrt(1 - beta**2)  # type: ignore[operator]
+        gamma = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix([
             [gamma, 0, 0, -gamma * beta],
             [0, 1, 0, 0],
@@ -244,7 +246,7 @@ class BoostZMatrix(sp.Expr):
 
     def evaluate(self) -> _BoostZMatrixImplementation:
         beta = self.beta
-        gamma = 1 / sp.sqrt(1 - beta**2)  # type: ignore[operator]
+        gamma = 1 / sp.sqrt(1 - beta**2)
         n_events = self.n_events
         return _BoostZMatrixImplementation(
             beta=beta,

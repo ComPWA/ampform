@@ -1,41 +1,11 @@
-[build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-    "setuptools>=61.2",
-    "setuptools_scm",
-]
-
 [project]
-authors = [{name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de"}]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Education",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python",
-    "Topic :: Scientific/Engineering :: Physics",
-    "Topic :: Scientific/Engineering",
-    "Typing :: Typed",
-]
-dependencies = [
-    "attrs >=20.1.0", # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
-    "qrules >=0.9.6",
-    "sympy >=1.10",
-    'importlib-metadata; python_version <"3.8.0"',
-    'singledispatchmethod; python_version <"3.8.0"',
-    'typing-extensions; python_version <"3.8.0"',
-]
+name = "ampform"
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
-dynamic = ["version"]
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de" }]
+maintainers = [{ email = "compwa-admin@ep1.rub.de" }]
 keywords = [
     "HEP",
     "PWA",
@@ -45,36 +15,56 @@ keywords = [
     "particles",
     "physics",
 ]
-license = {text = "GPLv3 or later"}
-maintainers = [{email = "compwa-admin@ep1.rub.de"}]
-name = "ampform"
-requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "attrs >=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
+    "frozendict",
+    "qrules >=0.9.6",
+    "sympy >=1.10",
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Changelog = "https://github.com/ComPWA/ampform/releases"
+Documentation = "https://ampform.rtfd.io"
+Issues = "https://github.com/ComPWA/ampform/issues"
+Source = "https://github.com/ComPWA/ampform"
 
 [project.optional-dependencies]
-all = [
-    "ampform[scipy]",
-    "ampform[viz]",
-]
+scipy = ["scipy"]
+viz = ["graphviz"]
+
+[dependency-groups]
 dev = [
-    "ampform[all]",
-    "ampform[doc]",
-    "ampform[jupyter]",
-    "ampform[sty]",
-    "ampform[test]",
-    "sphinx-autobuild",
-    "tox >=1.9", # for skip_install, use_develop
+    "ruff",
+    { include-group = "doc" },
+    { include-group = "jupyter" },
+    { include-group = "style" },
+    { include-group = "test" },
 ]
 doc = [
-    "Sphinx >=3",
-    "ampform[all]",
-    "black",
-    "ipympl",
-    "matplotlib <3.9.0", # https://github.com/ComPWA/ampform/issues/279
-    "matplotlib",
-    "mpl-interactions",
-    "myst-nb >=0.14", # nb_ configuration prefixes
-    "numpy",
-    "rich",
+    "myst-nb",
+    "sphinx",
     "sphinx-api-relink >=0.0.4",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
@@ -86,144 +76,283 @@ doc = [
     "sphinx-thebe",
     "sphinx-togglebutton",
     "sphinxcontrib-bibtex >=2",
+    { include-group = "notebooks" },
 ]
 jupyter = [
-    "black",
-    "isort",
+    "jupyter-ruff",
     "jupyterlab",
-    "jupyterlab-code-formatter",
     "jupyterlab-git",
     "jupyterlab-lsp",
     "jupyterlab-myst",
+    "jupyterlab-quickopen",
     "python-lsp-ruff",
-    "python-lsp-server[rope]",
+    "python-lsp-server",
 ]
-scipy = ["scipy"]
-sty = [
-    "ampform[types]",
-    "mypy >=0.730",
-    "pre-commit >=1.4.0",
-    "ruff",
+notebooks = [
+    "ampform[scipy,viz]",
+    "black",
+    "ipympl",
+    "matplotlib",
+    "numpy",
+    "quadax",
+    "rich",
+    "sympy-plot-backends",
+]
+style = [
+    "ty",
+    { include-group = "types" },
 ]
 test = [
     "ampform[scipy]",
-    "ipywidgets", # symplot
-    "nbmake",
+    "ipywidgets",
     "numpy",
     "pytest",
+    "pytest-benchmark",
     "pytest-cov",
     "pytest-profiling",
     "pytest-xdist",
+    "quadax",
 ]
 types = [
     "IPython",
     "ipywidgets",
     "numpy",
     "pytest",
+    "pytest-benchmark",
     "sphinx-api-relink >=0.0.3",
+    { include-group = "notebooks" },
 ]
-viz = ["graphviz"]
 
-[project.readme]
-content-type = "text/markdown"
-file = "README.md"
+[build-system]
+requires = ["setuptools>=61.2", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
 
-[project.urls]
-Changelog = "https://github.com/ComPWA/ampform/releases"
-Documentation = "https://ampform.rtfd.io"
-Source = "https://github.com/ComPWA/ampform"
-Tracker = "https://github.com/ComPWA/ampform/issues"
+[tool.compwa.policy]
+doc-apt-packages = "graphviz"
+repo-name = "ampform"
+repo-title = "AmpForm"
 
-[tool.setuptools]
-include-package-data = false
-package-dir = {"" = "src"}
+[tool.compwa.policy.python]
+type-checker = ["ty"]
 
-[tool.setuptools.package-data]
-ampform = ["py.typed"]
-symplot = ["py.typed"]
-
-[tool.setuptools.packages.find]
-namespaces = false
-where = ["src"]
-
-[tool.setuptools_scm]
-write_to = "src/ampform/version.py"
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
 
 [tool.coverage.run]
 branch = true
+omit = [
+    "benchmarks/**/*.py",
+    "docs/**/*.ipynb",
+    "docs/**/*.py",
+    "examples/**/*.py",
+    "tests/**/*.py",
+]
 source = ["src"]
 
-[tool.mypy]
-exclude = "_build"
-show_error_codes = true
-warn_unused_configs = true
+[tool.poe.executor]
+isolated = true
+no-group = "dev"
+type = "uv"
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["graphviz.*"]
+[tool.poe.groups.doc]
+heading = "Documentation"
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["scipy.*"]
+[tool.poe.groups.doc.tasks.doc]
+cmd = """
+sphinx-build \
+    --builder=html \
+    --fail-on-warning \
+    --keep-going \
+    --show-traceback \
+    docs/ \
+    docs/_build/html/
+"""
+env = { PYTHONWARNINGS = "" }
+executor = { group = "doc" }
+help = "Build documentation and API"
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["ipywidgets.*"]
+[tool.poe.groups.doc.tasks.doclive]
+cmd = """
+sphinx-autobuild \
+    --builder=html \
+    --open-browser \
+    --port=0 \
+    --re-ignore=/__pycache__(/.*)?$ \
+    --re-ignore=/_build(/.*)?$ \
+    --re-ignore=/_images(/.*)?$ \
+    --re-ignore=/\\.cache(/.*)?$ \
+    --re-ignore=/\\.egg-info(/.*)?$ \
+    --re-ignore=/\\.ipynb_checkpoints(/.*)?$ \
+    --re-ignore=/\\.virtual_documents(/.*)?$ \
+    --re-ignore=/api(/.*)?$ \
+    --re-ignore=/docs$ \
+    --re-ignore=/version\\.py$ \
+    --re-ignore=\\.egg-info(/.*)?$ \
+    --re-ignore=\\.gif$ \
+    --re-ignore=\\.pickle$ \
+    --re-ignore=\\.png$ \
+    --re-ignore=\\.svg$ \
+    --watch=src \
+    docs/ \
+    docs/_build/html/
+"""
+executor = { group = "doc", with = "sphinx-autobuild" }
+help = "Set up a server to directly preview changes to the HTML pages"
 
-[[tool.mypy.overrides]]
-check_untyped_defs = true
-disallow_incomplete_defs = false
-disallow_untyped_defs = false
-module = ["tests.*"]
+[tool.poe.groups.doc.tasks.docnb]
+env = { EXECUTE_NB = "yes" }
+help = "Build documentation and API with cached notebook execution"
+sequence = ["doc"]
 
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["typings.*"]
+[tool.poe.groups.doc.tasks.docnblive]
+env = { EXECUTE_NB = "yes" }
+help = "Set up a server to directly preview changes to the HTML pages with cached notebook execution"
+sequence = ["doclive"]
 
-[tool.pyright]
-exclude = [
-    "**/.git",
-    "**/.ipynb_checkpoints",
-    "**/.mypy_cache",
-    "**/.pytest_cache",
-    "**/.tox",
-    "**/__pycache__",
-    "**/_build",
-    "**/typings",
+[tool.poe.groups.doc.tasks.linkcheck]
+cmd = """
+sphinx-build \
+    --builder=linkcheck \
+    --fail-on-warning \
+    --show-traceback \
+    docs/ \
+    docs/_build/linkcheck/
+"""
+env = { PYTHONWARNINGS = "" }
+executor = { group = "doc" }
+help = "Check external links in the documentation (requires internet connection)"
+
+[tool.poe.groups.notebook]
+heading = "Notebooks"
+
+[tool.poe.groups.notebook.tasks.lab]
+args = [{ name = "paths", default = "", positional = true }]
+cmd = "jupyter lab ${paths}"
+executor = { group = ["jupyter", "notebooks"] }
+help = "Launch Jupyter Lab"
+
+[tool.poe.groups.notebook.tasks.nb]
+args = [{ name = "paths", default = "docs", multiple = true, positional = true }]
+cmd = "pytest --nbmake --nbmake-timeout=0 ${paths}"
+executor = { group = "notebooks", with = "nbmake" }
+help = "Run all notebooks"
+
+[tool.poe.groups.test]
+heading = "Testing"
+
+[tool.poe.groups.test.tasks.cov]
+cmd = """
+pytest \
+    --cov=ampform \
+    --cov-fail-under=75 \
+    --cov-report=html \
+    --cov-report=xml \
+    --numprocesses=auto \
+    ${paths}
+"""
+executor = { group = "test" }
+help = "Compute how much of the source code is covered by tests"
+
+[[tool.poe.groups.test.tasks.cov.args]]
+default = "src tests"
+multiple = true
+name = "paths"
+positional = true
+
+[tool.poe.groups.test.tasks.docnb-force]
+env = { FORCE_EXECUTE_NB = "yes" }
+help = "Build documentation and API with notebook execution (no cache)"
+sequence = ["doc"]
+
+[tool.poe.groups.test.tasks.test]
+cmd = "pytest -m 'slow or not slow' --numprocesses=auto ${paths}"
+executor = { group = "test" }
+help = "Run all unit tests"
+
+[[tool.poe.groups.test.tasks.test.args]]
+default = "src tests"
+multiple = true
+name = "paths"
+positional = true
+
+[tool.poe.groups.test.tasks.benchmark]
+cmd = """
+pytest benchmarks \
+    --benchmark-autosave \
+    --benchmark-json benchmarks/output.json \
+    --durations=0 \
+    -k benchmark
+"""
+executor = { group = "test" }
+help = "Run benchmark tests and visualize performance"
+
+[tool.poe.groups.test.tasks.test-all]
+help = "Run all tests on each supported Python version"
+sequence = [
+    "test-py310 ${paths}",
+    "test-py311 ${paths}",
+    "test-py312 ${paths}",
+    "test-py313 ${paths}",
+    "test-py314 ${paths}",
 ]
-reportArgumentType = false
-reportAssignmentType = false
-reportAttributeAccessIssue = false
-reportCallIssue = false
-reportGeneralTypeIssues = false
-reportIncompatibleMethodOverride = false
-reportInconsistentOverload = false
-reportMissingParameterType = false
-reportMissingTypeArgument = false
-reportMissingTypeStubs = false
-reportOperatorIssue = false
-reportOverlappingOverload = false
-reportPrivateImportUsage = false
-reportPrivateUsage = false
-reportReturnType = false
-reportUnboundVariable = false
-reportUnknownArgumentType = false
-reportUnknownLambdaType = false
-reportUnknownMemberType = false
-reportUnknownParameterType = false
-reportUnknownVariableType = false
-reportUnnecessaryComparison = false
-reportUnnecessaryContains = false
-reportUnnecessaryIsInstance = false
-reportUntypedClassDecorator = false
-reportUntypedFunctionDecorator = false
-reportUnusedClass = true
-reportUnusedFunction = true
-reportUnusedImport = true
-reportUnusedVariable = true
-typeCheckingMode = "strict"
 
-[tool.pytest.ini_options]
+[[tool.poe.groups.test.tasks.test-all.args]]
+default = ""
+multiple = true
+name = "paths"
+positional = true
+
+[tool.poe.groups.test.tasks.test-py310]
+env = { UV_PYTHON = "3.10" }
+ref = "test"
+
+[tool.poe.groups.test.tasks.test-py311]
+env = { UV_PYTHON = "3.11" }
+ref = "test"
+
+[tool.poe.groups.test.tasks.test-py312]
+env = { UV_PYTHON = "3.12" }
+ref = "test"
+
+[tool.poe.groups.test.tasks.test-py313]
+env = { UV_PYTHON = "3.13" }
+ref = "test"
+
+[tool.poe.groups.test.tasks.test-py314]
+env = { UV_PYTHON = "3.14" }
+ref = "test"
+
+[tool.poe.tasks.all]
+help = "Run all continuous integration (CI) tasks locally"
+ignore_fail = "return_non_zero"
+sequence = [
+    "benchmark",
+    "cov",
+    "docnb-force",
+    "linkcheck",
+    "style",
+    "test-all",
+]
+
+[tool.poe.tasks.style]
+cmd = "pre-commit run --all-files"
+executor = { extra = "scipy", group = "style" }
+help = "Perform all linting, formatting, and spelling checks"
+
+[tool.poe.tasks.upgrade]
+executor = { type = "simple" }
+help = "Upgrade lock files"
+parallel = ["_upgrade-precommit", "_upgrade-uv"]
+
+[tool.poe.tasks._upgrade-precommit]
+cmd = "pre-commit autoupdate -j8"
+executor = { type = "simple" }
+
+[tool.poe.tasks._upgrade-uv]
+cmd = "uv lock --upgrade"
+executor = { type = "simple" }
+
+[tool.pytest]
 addopts = [
     "--color=yes",
     "--doctest-continue-on-failure",
@@ -231,28 +360,35 @@ addopts = [
     "--durations=3",
     "--ignore=docs/abbreviate_signature.py",
     "--ignore=docs/conf.py",
+    "--import-mode=importlib",
     "-m not slow",
     "-rS",
 ]
 filterwarnings = [
     "error",
+    "ignore: The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025.:DeprecationWarning",
+    "ignore:.*Benchmarks are automatically disabled.*",
     "ignore:.*invalid value encountered in sqrt.*:RuntimeWarning",
     "ignore:.*is deprecated and slated for removal in Python 3.14:DeprecationWarning",
     "ignore:.*the @ampform.sympy.unevaluated_expression decorator instead( with commutative=True)?:DeprecationWarning",
     "ignore:Passing a schema to Validator.iter_errors is deprecated.*:DeprecationWarning",
     "ignore:The distutils package is deprecated.*:DeprecationWarning",
     "ignore:The distutils.* module is deprecated.*:DeprecationWarning",
-    "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
-    "ignore:unclosed .*:ResourceWarning",
     'ignore:Widget\..* is deprecated\.:DeprecationWarning',
+    "ignore:atleast_1d requires ndarray or scalar arguments.*:DeprecationWarning",
+    "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
+    'ignore:jax\.core\.(un)?mapped_aval is deprecated\.:DeprecationWarning',
+    "ignore:unclosed .*:ResourceWarning",
 ]
 markers = ["slow: marks tests as slow (select with '-m slow')"]
+minversion = "9.0"
 norecursedirs = [
     ".ipynb_checkpoints",
     ".virtual_documents",
     "_build",
 ]
 testpaths = [
+    "benchmarks",
     "src",
     "tests",
 ]
@@ -262,66 +398,46 @@ extend-exclude = ["typings"]
 extend-include = ["*.ipynb"]
 preview = true
 show-fixes = true
-src = [
-    "src",
-    "tests",
-]
-target-version = "py37"
+src = ["src", "tests"]
 
 [tool.ruff.format]
 docstring-code-format = true
 line-ending = "lf"
 
 [tool.ruff.lint]
-extend-select = [
-    "A",
-    "B",
-    "BLE",
-    "C4",
-    "C90",
-    "D",
-    "EM",
-    "ERA",
-    "FA",
-    "I",
-    "ICN",
-    "INP",
-    "ISC",
-    "N",
-    "NPY",
-    "PGH",
-    "PIE",
-    "PL",
-    "Q",
-    "RET",
-    "RSE",
-    "RUF",
-    "S",
-    "SIM",
-    "T20",
-    "TCH",
-    "TID",
-    "TRY",
-    "UP",
-    "YTT",
-]
+allowed-confusables = ["–"]
 ignore = [
-    "D101",
-    "D102",
-    "D103",
-    "D105",
-    "D107",
-    "D203",
-    "D213",
-    "D407",
-    "D416",
-    "E501",
-    "ISC001",
-    "PLR0913",
-    "PLW1514",
-    "PLW2901",
-    "SIM108",
+    "ANN",
+    "ARG00",
+    "DOC",
+    "FBT00",
+    "PTH",
+    "any-type",
+    "if-else-block-instead-of-if-exp",
+    "incorrect-blank-line-before-class",
+    "line-too-long",
+    "logging-f-string",
+    "missing-copyright-notice",
+    "missing-dashed-underline-after-section",
+    "missing-section-name-colon",
+    "missing-trailing-comma",
+    "multi-line-summary-second-line",
+    "non-empty-init-module",
+    "pytest-fixture-incorrect-parentheses-style",
+    "read-whole-file",
+    "redefined-loop-name",
+    "reimplemented-starmap",
+    "single-line-implicit-string-concatenation",
+    "too-many-arguments",
+    "undocumented-magic-method",
+    "undocumented-public-class",
+    "undocumented-public-function",
+    "undocumented-public-init",
+    "undocumented-public-method",
+    "unspecified-encoding",
+    "write-whole-file",
 ]
+select = ["ALL"]
 task-tags = ["cspell"]
 
 [tool.ruff.lint.flake8-bugbear]
@@ -329,68 +445,111 @@ extend-immutable-calls = [
     "ampform.sympy._decorator.argument",
 ]
 
+[tool.ruff.lint.flake8-builtins]
+ignorelist = ["display"]
+
+[tool.ruff.lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+[tool.ruff.lint.flake8-self]
+ignore-names = [
+    "_latex",
+    "_module",
+    "_numpycode",
+    "_print",
+]
+
 [tool.ruff.lint.isort]
+known-first-party = ["ampform"]
 known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/docs/usage/dynamics.ipynb" = ["RUF027"]
-"**/docs/usage/symplot.ipynb" = ["RUF027"]
-"**/docs/usage/sympy.ipynb" = ["E731"]
 "*.ipynb" = [
-    "B018",
-    "C408",
     "C90",
     "D",
-    "E402",
-    "E703",
-    "F404",
-    "N803",
-    "N806",
-    "N816",
-    "PLC2401",
     "PLR09",
-    "PLR2004",
-    "PLW0602",
-    "PLW0603",
-    "S101",
-    "S301",
-    "S403",
     "T20",
-    "TCH00",
+    "TC00",
+    "assert",
+    "float-equality-comparison",
+    "global-statement",
+    "global-variable-not-assigned",
+    "invalid-argument-name",
+    "lambda-assignment",
+    "late-future-import",
+    "magic-value-comparison",
+    "mixed-case-variable-in-global-scope",
+    "module-import-not-at-top-of-file",
+    "non-ascii-name",
+    "non-lowercase-variable-in-function",
+    "private-member-access",
+    "suspicious-pickle-import",
+    "suspicious-pickle-usage",
+    "too-many-blank-lines",
+    "unnecessary-collection-call",
+    "useless-expression",
+    "useless-semicolon",
+]
+"**/docs/analyticity/integration-algorithms.ipynb" = [
+    "ambiguous-unicode-character-string"
+]
+"**/docs/analyticity/riemann-sheets.ipynb" = [
+    "ambiguous-variable-name",
+    "missing-f-string-syntax"
+]
+"**/docs/dynamics.ipynb" = ["reimplemented-operator", "missing-f-string-syntax"]
+"benchmarks/*" = [
+    "D",
+    "T20",
+    "assert",
+    "boolean-type-hint-positional-argument",
+    "float-equality-comparison",
+    "implicit-namespace-package",
+    "import-private-name",
+    "magic-value-comparison",
+    "no-self-use",
+    "private-member-access",
 ]
 "docs/*" = [
-    "E402",
-    "INP001",
-    "N802",
-    "N806",
-    "S101",
-    "S113",
-    "S403",
-    "T201",
+    "assert",
+    "implicit-namespace-package",
+    "invalid-function-name",
+    "module-import-not-at-top-of-file",
+    "non-lowercase-variable-in-function",
+    "print",
+    "request-without-timeout",
+    "suspicious-pickle-import",
 ]
 "docs/_extend_docstrings.py" = [
-    "PLC0415",
-    "PLC2701",
+    "mixed-case-variable-in-global-scope",
+    "import-outside-top-level",
+    "import-private-name",
 ]
 "docs/conf.py" = [
-    "A001",
-    "D100",
+    "builtin-variable-shadowing",
+    "import-private-name",
+    "undocumented-public-module",
 ]
-"setup.py" = ["D100"]
+"src/ampform/helicity/__init__.py" = ["import-outside-top-level"]
+"src/ampform/helicity/align/axisangle.py" = ["import-outside-top-level"]
+"setup.py" = ["undocumented-public-module"]
 "tests/*" = [
-    "C408",
     "D",
-    "INP001",
-    "PGH001",
-    "PLC2701",
-    "PLR0913",
-    "PLR0914",
-    "PLR0917",
-    "PLR2004",
-    "PLR6301",
-    "S101",
     "T20",
+    "assert",
+    "boolean-type-hint-positional-argument",
+    "float-equality-comparison",
+    "implicit-namespace-package",
+    "import-private-name",
+    "magic-value-comparison",
+    "no-self-use",
+    "private-member-access",
+    "suspicious-pickle-import",
+    "suspicious-pickle-usage",
+    "too-many-locals",
+    "too-many-positional-arguments",
+    "unnecessary-collection-call",
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -400,16 +559,73 @@ convention = "google"
 allow-dunder-method-names = ["_latex_repr_", "_repr_pretty_"]
 max-positional-args = 7
 
-[tool.tomlsort]
-all = false
-ignore_case = true
-in_place = true
-sort_first = [
-    "build-system",
-    "project",
-    "tool.setuptools",
-    "tool.setuptools_scm",
+[tool.setuptools]
+include-package-data = false
+package-dir = { "" = "src" }
+
+[tool.setuptools.package-data]
+ampform = ["py.typed"]
+
+[tool.setuptools.packages.find]
+namespaces = false
+where = ["src"]
+
+[tool.setuptools_scm]
+version_file = "src/ampform/version.py"
+
+[tool.tombi.files]
+exclude = ["**/uv.lock"]
+
+[tool.tombi.format.rules]
+indent-width = 4
+line-width = 88
+
+[tool.tombi.lint.rules]
+key-empty = "off"
+
+[[tool.tombi.schemas]]
+root = "tool.compwa.policy"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.7/compwa-policy.schema.json"
+include = ["pyproject.toml"]
+
+[[tool.ty.overrides]]
+include = ["docs/**"]
+rules.possibly-unresolved-reference = "ignore"
+
+[[tool.ty.overrides]]
+include = [
+    "docs/amplitude/formalism.ipynb",
+    "docs/amplitude/interactive.ipynb",
+    "docs/dynamics.ipynb",
 ]
-sort_table_keys = true
-spaces_indent_inline_array = 4
-trailing_comma_inline_array = true
+rules.unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = [
+    "src/ampform/sympy/**",
+    "tests/sympy/**",
+]
+rules.unresolved-attribute = "ignore"
+
+[[tool.ty.overrides]]
+include = ["docs/amplitude/interactive.ipynb"]
+rules.too-many-positional-arguments = "ignore"
+
+[[tool.ty.overrides]]
+include = ["docs/dynamics.ipynb"]
+rules.index-out-of-bounds = "ignore"
+
+[[tool.ty.overrides]]
+include = ["tests/external/test_sympy.py"]
+rules.call-non-callable = "ignore"
+
+[tool.ty.rules]
+division-by-zero = "warn"
+invalid-argument-type = "ignore"
+possibly-missing-import = "warn"
+possibly-unresolved-reference = "warn"
+unknown-argument = "ignore"
+unsupported-operator = "ignore"
+
+[tool.ty.terminal]
+error-on-warning = true

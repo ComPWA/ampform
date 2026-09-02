@@ -1,18 +1,216 @@
-"""Helper functions for :func:`.perform_cached_doit`."""
+"""Helper functions for :func:`.cached.doit` and related functions.
+
+These methods are private, but can be imported from this module:
+
+.. code-block:: python
+
+   import ampform.sympy._cache
+"""
 
 from __future__ import annotations
 
-import functools
 import hashlib
+import inspect
 import logging
 import os
-import pickle  # noqa: S403
+import pickle  # ruff: ignore[suspicious-pickle-import]
+import re
 import sys
-from textwrap import dedent
+import tempfile
+from collections import abc
+from functools import cache, wraps
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+from typing import TYPE_CHECKING, overload
 
-import sympy as sp
+from frozendict import frozendict
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
+    from io import BufferedReader
+
+    from _typeshed import SupportsWrite
+
+    if sys.version_info >= (3, 11):
+        from typing import ParamSpec
+    else:
+        from typing_extensions import ParamSpec
+    from collections.abc import Callable
+    from typing import Any, ParamSpec, TypeVar
+
+    P = ParamSpec("P")
+    T = TypeVar("T")
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@overload
+def cache_to_disk(func: Callable[P, T]) -> Callable[P, T]: ...
+@overload
+def cache_to_disk(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
+def cache_to_disk(
+    func: Callable[P, T] | None = None,
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+):
+    """Decorator for caching the result of a function to disk.
+
+    This function works similarly to `functools.cache`, but it stores the result of the
+    function to disk as a pickle file.
+
+    .. tip::
+
+        - Caching can be disabled by setting the environment variable :code:`NO_CACHE`.
+          This can be useful to test if caches are correctly invalidated.
+
+        - Set :code:`COMPWA_CACHE_DIR` to change the cache directory. Alternatively,
+          have a look at the implementation of :func:`get_system_cache_directory` to see
+          how the cache directory is determined from system environment variables.
+    """
+    if func is None:
+        return _cache_to_disk_implementation(
+            dump_function=dump_function,
+            load_function=load_function,
+            dependencies=dependencies,
+            function_name=function_name,
+        )
+    return _cache_to_disk_implementation()(func)
+
+
+def _cache_to_disk_implementation(
+    *,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None] = pickle.dump,
+    load_function: Callable[[BufferedReader], Any] = pickle.load,  # ruff: ignore[suspicious-pickle-usage]
+    dependencies: list[str] | None = None,
+    function_name: str | None = None,
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        if "NO_CACHE" in os.environ:
+            _warn_once("AmpForm cache disabled by NO_CACHE environment variable.")
+            return func
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+        function_identifier = f"{func.__module__}.{func.__name__}"
+        src = inspect.getsource(func)
+        dependency_identifiers = _get_dependency_identifiers(func, dependencies or [])
+        nonlocal function_name
+        if function_name is None:
+            function_name = func.__name__
+
+        @wraps(func)
+        def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
+            hashable_object = make_hashable(
+                function_identifier,
+                src,
+                python_version,
+                *dependency_identifiers,
+                args,
+                kwargs,
+            )
+            h = get_readable_hash(hashable_object)
+            cache_file = _get_cache_dir() / h[:2] / h[2:]
+            if cache_file.exists():
+                try:
+                    with open(cache_file, "rb") as f:
+                        return load_function(f)
+                except (EOFError, pickle.UnpicklingError):
+                    _LOGGER.warning("Ignoring corrupt cache file %s", cache_file)
+            msg = f"No cache file {cache_file}, performing {function_name}()..."
+            _LOGGER.warning(msg)
+            result = func(*args, **kwargs)
+            try:
+                _dump_to_cache_file(result, cache_file, dump_function)
+            except OSError as exception:
+                msg = f"Could not write cache file {cache_file}: {exception}"
+                _LOGGER.warning(msg)
+            return result
+
+        return wrapped_function
+
+    return decorator
+
+
+def _dump_to_cache_file(
+    result: Any,
+    cache_file: Path,
+    dump_function: Callable[[Any, SupportsWrite[bytes]], None],
+) -> None:
+    """Dump to a temporary file and rename, so that readers never see a partial file."""
+    cache_file.parent.mkdir(exist_ok=True, parents=True)
+    temporary_file = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=cache_file.parent,
+            prefix=f".{cache_file.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as f:
+            temporary_file = Path(f.name)
+            dump_function(result, f)
+        os.replace(temporary_file, cache_file)
+    except BaseException:
+        if temporary_file is not None:
+            temporary_file.unlink(missing_ok=True)
+        raise
+
+
+def _get_dependency_identifiers(func: Callable, dependencies: list[str]) -> list[str]:
+    dependency_identifiers = []
+    if (function_package := _get_package(func)) is not None:
+        dependency_identifiers.append(function_package)
+    dependency_identifiers.extend(dependencies)
+    return sorted(_package_with_version(p) for p in sorted(dependency_identifiers))
+
+
+def _get_package(func: Callable) -> str | None:
+    if "." not in func.__module__:
+        return None
+    return func.__module__.split(".")[0]
+
+
+@cache
+def _package_with_version(distribution_name: str) -> str:
+    try:
+        v = _remove_dev(version(distribution_name))
+    except PackageNotFoundError:
+        return distribution_name
+    else:
+        return f"{distribution_name}-{v}"
+
+
+def _remove_dev(version: str) -> str:
+    """Remove the ".dev" suffix from a version string.
+
+    >>> _remove_dev("0.15.7.dev15+g3c1b3cec.d20250301")
+    '0.15.7'
+    >>> _remove_dev("0.15.7")
+    '0.15.7'
+    >>> _remove_dev("0.15.7.post1")
+    '0.15.7'
+    """
+    return re.sub(r"(\.(dev|post).*)?$", "", version)
+
+
+@cache
+def _get_cache_dir() -> Path:
+    if compwa_cache_dir := os.getenv("COMPWA_CACHE_DIR"):
+        system_cache_dir = compwa_cache_dir
+    else:
+        system_cache_dir = get_system_cache_directory()
+    return Path(system_cache_dir) / "ampform"
+
+
+@cache
+def _warn_once(msg):
+    _LOGGER.warning(msg)
 
 
 def get_system_cache_directory() -> str:
@@ -33,55 +231,56 @@ def get_system_cache_directory() -> str:
     if sys.platform.startswith("darwin"):  # macos
         return os.path.expanduser("~/Library/Caches")
     if sys.platform.startswith("win"):
-        cache_directory = os.getenv("LocalAppData")  # noqa: SIM112
+        cache_directory = os.getenv("LocalAppData")  # ruff: ignore[uncapitalized-environment-variables]
         if cache_directory is not None:
             return cache_directory
         return os.path.expanduser("~/AppData/Local")
     return os.path.expanduser("~/.cache")
 
 
-def get_readable_hash(obj, ignore_hash_seed: bool = False) -> str:
+@cache
+def get_readable_hash(obj: Hashable) -> str:
     """Get a human-readable hash of any hashable Python object.
-
-    The algorithm is fastest if `PYTHONHASHSEED
-    <https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED>`_ is set.
-    Otherwise, it falls back to computing the hash with :func:`hashlib.sha256()`.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
-        ignore_hash_seed: Ignore the :code:`PYTHONHASHSEED` environment variable. If
-            :code:`True`, the hash seed is ignored and the hash is computed with
-            :func:`hashlib.sha256`.
     """
-    python_hash_seed = _get_python_hash_seed()
-    if ignore_hash_seed or python_hash_seed is None:
-        b = _to_bytes(obj)
-        return hashlib.sha256(b).hexdigest()
-    return f"pythonhashseed-{python_hash_seed}{hash(obj):+}"
+    b = to_bytes(obj)
+    h = hashlib.md5(b, usedforsecurity=False)
+    return h.hexdigest()
 
 
-def _to_bytes(obj) -> bytes:
-    if isinstance(obj, sp.Expr):
-        # Using the str printer is slower and not necessarily unique,
-        # but pickle.dumps() does not always result in the same bytes stream.
-        _warn_about_unsafe_hash()
-        return str(obj).encode()
-    return pickle.dumps(obj)
+def to_bytes(obj) -> bytes:
+    """Convert any Python object to `bytes` using :func:`pickle.dumps`."""
+    if isinstance(obj, (bytes, bytearray)):
+        return obj
+    return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def _get_python_hash_seed() -> int | None:
-    python_hash_seed = os.environ.get("PYTHONHASHSEED", "")
-    if python_hash_seed is not None and python_hash_seed.isdigit():
-        return int(python_hash_seed)
-    return None
+def make_hashable(*args) -> Hashable:
+    """Make a hashable object from any Python object.
 
-
-@functools.lru_cache(maxsize=None)  # warn once
-def _warn_about_unsafe_hash():
-    message = """
-    PYTHONHASHSEED has not been set. For faster and safer hashing of SymPy expressions,
-    set the PYTHONHASHSEED environment variable to a fixed value and rerun the program.
-    See https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED
+    >>> make_hashable("a", 1, {"b": 2}, {3, 4})
+    ('a', 1, frozendict.frozendict({'b': 2}), frozenset({3, 4}))
+    >>> make_hashable({"a": {"sub-key": {1, 2, 3}, "b": [4, 5]}})
+    frozendict.frozendict({'a': frozendict.frozendict({'sub-key': frozenset({1, 2, 3}), 'b': (4, 5)})})
+    >>> make_hashable("already-hashable")
+    'already-hashable'
     """
-    message = dedent(message).replace("\n", " ").strip()
-    _LOGGER.warning(message)
+    if len(args) == 1:
+        return _make_hashable_impl(args[0])
+    return tuple(_make_hashable_impl(x) for x in args)
+
+
+def _make_hashable_impl(obj) -> Hashable:
+    if isinstance(obj, abc.Mapping):
+        return frozendict({k: _make_hashable_impl(v) for k, v in obj.items()})
+    if isinstance(obj, str):
+        return obj
+    if isinstance(obj, abc.Iterable):
+        hashable_items = (_make_hashable_impl(x) for x in obj)
+        if isinstance(obj, abc.Sequence):
+            return tuple(hashable_items)
+        if isinstance(obj, set):
+            return frozenset(hashable_items)
+    return obj

@@ -3,27 +3,25 @@
 from __future__ import annotations
 
 import collections
-import sys
-from functools import lru_cache, singledispatch
-from typing import TYPE_CHECKING, Iterable
+from functools import cache, singledispatch
+from typing import TYPE_CHECKING, Literal, TypeGuard
 
 from attrs import frozen
-from qrules.quantum_numbers import InteractionProperties
-from qrules.transition import ReactionInfo, State, StateTransition
+from qrules import topology as qrules_topology
+from qrules.combinatorics import perform_external_edge_identical_particle_combinatorics
+from qrules.transition import (
+    InteractionProperties,
+    ReactionInfo,
+    State,
+    StateTransition,
+)
 
 from ampform._qrules import get_qrules_version
 
 if TYPE_CHECKING:
-    from qrules.topology import Topology
+    from collections.abc import Iterable
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-if sys.version_info < (3, 10):
-    from typing_extensions import TypeGuard
-else:
-    from typing import TypeGuard
+    from qrules.topology import Topology
 
 
 @frozen
@@ -78,7 +76,7 @@ class TwoBodyDecay:
         topology = transition.topology
         in_state_ids = topology.get_edge_ids_ingoing_to_node(node_id)
         out_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-        if len(in_state_ids) != 1 or len(out_state_ids) != 2:  # noqa: PLR2004
+        if len(in_state_ids) != 1 or len(out_state_ids) != 2:  # ruff: ignore[magic-value-comparison]
             msg = f"Node {node_id} does not represent a 1-to-2 body decay!"
             raise ValueError(msg)
         ingoing_state_id = next(iter(in_state_ids))
@@ -108,7 +106,7 @@ def _(obj: TwoBodyDecay) -> TwoBodyDecay:
 
 @_create_two_body_decay.register(tuple)
 def _(obj: tuple) -> TwoBodyDecay:
-    if len(obj) == 2:  # noqa: PLR2004
+    if len(obj) == 2:  # ruff: ignore[magic-value-comparison]
         transition, node_id = obj
         if _is_qrules_state_transition(transition) and isinstance(node_id, int):
             return TwoBodyDecay.from_transition(transition, node_id)
@@ -117,19 +115,18 @@ def _(obj: tuple) -> TwoBodyDecay:
 
 
 def _is_qrules_state_transition(obj) -> TypeGuard[StateTransition]:
-    if get_qrules_version() >= (0, 10):
-        from qrules.topology import FrozenTransition  # noqa: PLC0415
+    if get_qrules_version() >= (0, 10) and isinstance(
+        obj, qrules_topology.FrozenTransition
+    ):
+        if any(not isinstance(s, State) for s in obj.states.values()):
+            return False
+        return all(
+            isinstance(i, InteractionProperties) for i in obj.interactions.values()
+        )
+    return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)
 
-        if isinstance(obj, FrozenTransition):
-            if any(not isinstance(s, State) for s in obj.states.values()):
-                return False
-            return all(
-                isinstance(i, InteractionProperties) for i in obj.interactions.values()
-            )
-    return get_qrules_version() < (0, 10) and isinstance(obj, StateTransition)  # type: ignore[misc]
 
-
-@lru_cache(maxsize=None)
+@cache
 def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     """Determine if an edge is an "opposite helicity" state.
 
@@ -194,21 +191,21 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     return next(iter(out_state_ids))
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_spectator_id(topology: Topology) -> Literal[1, 2, 3]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
     spectator_id_candidates = topology.outgoing_edge_ids - decay_products
-    return next(iter(spectator_id_candidates))  # type: ignore[arg-type]
+    return next(iter(spectator_id_candidates))  # ty: ignore[invalid-return-type]
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_decay_product_ids(
     topology: Topology,
 ) -> tuple[Literal[1, 2, 3], Literal[1, 2, 3]]:
     assert_three_body_decay(topology)
     decay_products = topology.get_edge_ids_outgoing_from_node(1)
-    return tuple(sorted(decay_products))  # type: ignore[return-value]
+    return tuple(sorted(decay_products))  # ty: ignore[invalid-return-type]
 
 
 def get_helicity_info(
@@ -298,11 +295,11 @@ def assert_isobar_topology(topology: Topology) -> None:
         assert_two_body_decay(topology, node_id)
 
 
-@lru_cache(maxsize=None)
+@cache
 def assert_three_body_decay(topology: Topology) -> None:
     n_initial = len(topology.incoming_edge_ids)
     n_final = len(topology.outgoing_edge_ids)
-    if n_initial != 1 or n_final != 3:  # noqa: PLR2004
+    if n_initial != 1 or n_final != 3:  # ruff: ignore[magic-value-comparison]
         msg = (
             "Only three-body decays are supported. This is a"
             f" {n_initial}-to-{n_final} decay."
@@ -325,7 +322,7 @@ def assert_two_body_decay(topology: Topology, node_id: int) -> None:
         )
         raise ValueError(msg)
     child_state_ids = topology.get_edge_ids_outgoing_from_node(node_id)
-    if len(child_state_ids) != 2:  # noqa: PLR2004
+    if len(child_state_ids) != 2:  # ruff: ignore[magic-value-comparison]
         msg = (
             f"Node {node_id} decays to {len(child_state_ids)} states, so this is not an"
             " isobar decay"
@@ -442,3 +439,32 @@ def group_by_topology(
     for transition in transitions:
         transition_groups[transition.topology].append(transition)
     return dict(transition_groups)
+
+
+def perform_combinatorics(
+    transition: StateTransition,
+) -> list[FrozenTransition[State, InteractionProperties]]:
+    """Perform final-state combinatorics on a state transition for symmetrization.
+
+    QRules returns a :class:`~qrules.transition.ReactionInfo` object where permutations
+    of equal final-state particle have been removed. This function performs the
+    combinatorics on the final-state particles, so that the symmetrization resulting
+    amplitude model is performed correctly.
+
+    >>> import qrules
+    >>> reaction = qrules.generate_transitions(
+    ...     initial_state="D+",
+    ...     final_state=["pi+", "pi+", "pi-"],
+    ...     allowed_intermediate_particles=["rho(770)0"],
+    ... )
+    >>> assert len(reaction.transitions) == 1
+    >>> permutated_transitions = perform_combinatorics(reaction.transitions[0])
+    >>> assert len(permutated_transitions) == 2
+    """
+    if get_qrules_version() < (0, 10):
+        graph = transition.to_graph()  # ty: ignore[unresolved-attribute]
+        mutable_graphs = perform_external_edge_identical_particle_combinatorics(graph)
+        return [StateTransition.from_graph(g) for g in mutable_graphs]  # ty: ignore[unresolved-attribute]
+    graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
+    combinations = perform_external_edge_identical_particle_combinatorics(graph)
+    return [g.freeze().convert(lambda s: State(*s)) for g in combinations]

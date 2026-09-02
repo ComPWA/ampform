@@ -43,6 +43,16 @@ def reaction(request: SubRequest) -> ReactionInfo:
 
 
 @pytest.fixture(scope="session")
+def d_to_pi_pi_pi() -> ReactionInfo:
+    return qrules.generate_transitions(
+        initial_state="D+",
+        final_state=["pi+", "pi+", "pi-"],
+        allowed_intermediate_particles=["rho(770)0"],
+        formalism="helicity",
+    )
+
+
+@pytest.fixture(scope="session")
 def amplitude_model(reaction: ReactionInfo) -> tuple[str, HelicityModel]:
     model_builder = get_builder(reaction)
     for name in reaction.get_intermediate_particles().names:

@@ -4,17 +4,17 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import sympy as sp
 from sympy.plotting.experimental_lambdify import Lambdifier
 
 from ampform.sympy import NumPyPrintable
 
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
+if sys.version_info >= (3, 12):
     from typing import override
+else:
+    from typing_extensions import override
 if TYPE_CHECKING:
     from sympy.printing.numpy import NumPyPrinter
     from sympy.printing.printer import Printer
@@ -26,7 +26,7 @@ class ComplexSqrt(NumPyPrintable):
 
     A special version :func:`~sympy.functions.elementary.miscellaneous.sqrt` that
     renders nicely as LaTeX and and can be used as a handle for lambdify printers. See
-    :doc:`compwa:report/000`, :doc:`compwa:report/001`, and
+    :doc:`compwa-report:000/index`, :doc:`compwa-report:001/index`, and
     :doc:`sympy:modules/printing` for how to implement a custom
     :func:`~sympy.utilities.lambdify.lambdify` printer.
     """
@@ -35,14 +35,14 @@ class ComplexSqrt(NumPyPrintable):
     is_extended_real = True
 
     @overload
-    def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...  # type: ignore[misc]
+    def __new__(cls, x: sp.Number, *args, **kwargs) -> sp.Expr: ...
     @overload
     def __new__(cls, x: sp.Expr, *args, **kwargs) -> ComplexSqrt: ...
     @override
     def __new__(cls, x, *args, **kwargs):
         x = sp.sympify(x)
         args = sp.sympify((x, *args))
-        expr: ComplexSqrt = sp.Expr.__new__(cls, *args, **kwargs)  # type: ignore[annotation-unchecked]
+        expr: ComplexSqrt = sp.Expr.__new__(cls, *args, **kwargs)  # ty: ignore[not-iterable]
         if isinstance(x, sp.Number):
             return expr.get_definition()
         return expr
@@ -70,7 +70,7 @@ class ComplexSqrt(NumPyPrintable):
 
     def get_definition(self) -> sp.Piecewise:
         """Get a symbolic definition for this expression class."""
-        x: sp.Expr = self.args[0]  # type: ignore[assignment]
+        x = cast("sp.Expr", self.args[0])
         return sp.Piecewise(
             (sp.I * sp.sqrt(-x), x < 0),
             (sp.sqrt(x), True),

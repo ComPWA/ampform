@@ -1,6 +1,6 @@
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/usage/dynamics` and :doc:`/usage/dynamics/analytic-continuation`
+.. seealso:: :doc:`/dynamics` and :doc:`/analyticity/phasespace-factors`.
 """
 
 from __future__ import annotations
@@ -11,22 +11,24 @@ from warnings import warn
 import sympy as sp
 from attrs import asdict, frozen
 
-# pyright: reportUnusedImport=false
+from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
-    BlattWeisskopfSquared,  # noqa: F401
+    BlattWeisskopfSquared,  # ruff: ignore[unused-import]
     FormFactor,
 )
 from ampform.dynamics.phasespace import (
-    BreakupMomentumSquared,  # noqa: F401
-    EqualMassPhaseSpaceFactor,  # noqa: F401
+    EqualMassPhaseSpaceFactor,  # ruff: ignore[unused-import]
     PhaseSpaceFactor,
-    PhaseSpaceFactorAbs,  # noqa: F401
-    PhaseSpaceFactorComplex,  # noqa: F401
+    PhaseSpaceFactorAbs,  # ruff: ignore[unused-import]
+    PhaseSpaceFactorComplex,  # ruff: ignore[unused-import]
     PhaseSpaceFactorProtocol,
-    PhaseSpaceFactorSWave,  # noqa: F401
-    _indices_to_subscript,
+    PhaseSpaceFactorSWave,  # ruff: ignore[unused-import]
 )
-from ampform.sympy import argument, determine_indices, unevaluated
+from ampform.kinematics.phasespace import (
+    BreakupMomentumSquared,  # ruff: ignore[unused-import]
+    _get_subscript,
+)
+from ampform.sympy import argument, unevaluated
 
 if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
@@ -34,7 +36,7 @@ if TYPE_CHECKING:
 
 @unevaluated
 class SimpleBreitWigner(sp.Expr):
-    """Simple, non-relativistic Breit-Wigner with :math:`1` in the nominator."""
+    r"""Simple Breit–Wigner with :math:`m_0 \Gamma_0` in the numerator."""
 
     s: Any
     mass: Any
@@ -48,10 +50,10 @@ class SimpleBreitWigner(sp.Expr):
 
 @unevaluated
 class BreitWigner(sp.Expr):
-    """Relativistic Breit-Wigner with :math:`1` in the nominator.
+    r"""Relativistic Breit–Wigner with :math:`m_0 \Gamma_0` in the numerator.
 
-    `SimpleBreitWigner` with `EnergyDependentWidth` as width (see Equations
-    :eq:`SimpleBreitWigner` and :eq:`EnergyDependentWidth`).
+    Uses an `EnergyDependentWidth` in the denominator (see Equations
+    :eq:`BreitWigner` and :eq:`EnergyDependentWidth`).
     """
 
     s: Any
@@ -63,19 +65,18 @@ class BreitWigner(sp.Expr):
     meson_radius: Any = 1
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
-    )
+    )  # ty: ignore[invalid-assignment]
 
     def evaluate(self):
         width = self.energy_dependent_width()
-        expr = SimpleBreitWigner(self.s, self.mass, width)
-        if self.angular_momentum == 0 and self.m1 == 0 and self.m2 == 0:
-            return expr.evaluate()
-        return expr
+        return (
+            self.mass * self.width / (self.mass**2 - self.s - self.mass * width * sp.I)
+        )
 
     def energy_dependent_width(self) -> EnergyDependentWidth | sp.Basic:
         s, m0, w0, m1, m2, ang_mom, d = self.args
         if ang_mom == 0 and m1 == 0 and m2 == 0:
-            return w0  # type:ignore[return-value]
+            return w0
         return EnergyDependentWidth(s, m0, w0, m1, m2, ang_mom, d, self.phsp_factor)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
@@ -95,13 +96,13 @@ class EnergyDependentWidth(sp.Expr):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
     See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
-    :cite:`ParticleDataGroup:2020ssz`, equation (6). Default value for
+    :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
     Note that the `.FormFactor` of AmpForm is normalized in the sense that equal powers
     of :math:`z` appear in the nominator and the denominator, while the definition in
     the PDG (as well as some other sources), always have :math:`1` in the nominator of
-    the Blatt-Weisskopf. In that case, one needs an additional factor
+    the Blatt–Weisskopf. In that case, one needs an additional factor
     :math:`\left(q/q_0\right)^{2L}` in the definition for :math:`\Gamma(m)`.
     """
 
@@ -114,22 +115,21 @@ class EnergyDependentWidth(sp.Expr):
     meson_radius: Any
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
-    )
-    name: str | None = argument(default=None, sympify=False)
+    )  # ty: ignore[invalid-assignment]
+    name: str | None = argument(default=None, kw_only=True, sympify=False)
 
     def evaluate(self) -> sp.Expr:
-        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args
+        m0: sp.Expr
+        s, m0, width0, m1, m2, angular_momentum, meson_radius = self.args  # ty: ignore[invalid-assignment]
         ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
-        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)  # type: ignore[operator]
+        ff0 = FormFactor(m0**2, m1, m2, angular_momentum, meson_radius)
         rho = self.phsp_factor(s, m1, m2)
-        rho0 = self.phsp_factor(m0**2, m1, m2)  # type: ignore[operator]
+        rho0 = self.phsp_factor(m0**2, m1, m2)
         return width0 * (ff / ff0) ** 2 * (rho / rho0)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
-        s = printer._print(self.args[0])
-        width0 = self.args[2]
-        subscript = _indices_to_subscript(determine_indices(width0))
-        name = Rf"\Gamma{subscript}" if self.name is None else self.name
+        s = printer._print(self.s)
+        name = self.name or Rf"\Gamma{_get_subscript(self.gamma0)}"
         return Rf"{name}\left({s}\right)"
 
 
@@ -164,7 +164,7 @@ class ChannelArguments:
     m2: Any = 0
     angular_momentum: Any = 0
     meson_radius: Any = 1
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor  # ty: ignore[invalid-assignment]
 
     def __attrs_post_init__(self) -> None:
         for name, value in asdict(self).items():
@@ -184,19 +184,18 @@ class ChannelArguments:
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
-    """Relativistic Breit-Wigner lineshape.
+    """Relativistic Breit–Wigner lineshape.
 
-    See :ref:`usage/dynamics:_Without_ form factor` and
-    :cite:`ParticleDataGroup:2020ssz`.
+    See :ref:`dynamics:_Without_ form factor` and :cite:`ParticleDataGroup:2012pjm`.
 
-    .. deprecated:: 0.16.0
+    .. deprecated:: 0.17.0
         Use `.SimpleBreitWigner` instead.
     """
-    warn("Use SimpleBreitWigner instead", category=DeprecationWarning, stacklevel=1)
+    warn("Use SimpleBreitWigner instead", category=DeprecationWarning, stacklevel=2)
     return SimpleBreitWigner(s, mass0, gamma0)
 
 
-def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
+def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-arguments]
     s,
     mass0,
     gamma0,
@@ -204,12 +203,11 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
     m_b,
     angular_momentum,
     meson_radius,
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,
+    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
 ) -> sp.Expr:
-    """Relativistic Breit-Wigner with `.FormFactor`.
+    """Relativistic Breit–Wigner with `.FormFactor`.
 
-    See :ref:`usage/dynamics:_With_ form factor` and :pdg-review:`2021; Resonances;
-    p.9`.
+    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2021; Resonances; p.9`.
     """
     ff = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     bw = BreitWigner(
@@ -219,7 +217,7 @@ def relativistic_breit_wigner_with_ff(  # noqa: PLR0917
 
 
 def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Expr:
-    """Formulate a Blatt-Weisskopf form factor.
+    """Formulate a Blatt–Weisskopf form factor.
 
     .. deprecated:: 0.16.0
         Use `.FormFactor` instead.

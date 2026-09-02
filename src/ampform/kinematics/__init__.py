@@ -11,7 +11,7 @@ from __future__ import annotations
 import itertools
 from collections import abc
 from functools import singledispatch
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 import attrs
 from qrules.topology import Topology
@@ -26,6 +26,8 @@ from ampform.kinematics.lorentz import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     import sympy as sp
 
 
@@ -70,12 +72,14 @@ class HelicityAdapter:
     def permutate_registered_topologies(self) -> None:
         """Register outgoing edge permutations of all `registered_topologies`.
 
-        See :ref:`usage/amplitude:Extend kinematic variables`.
+        See :ref:`amplitude:Extend kinematic variables`.
         """
         for topology in set(self.__topologies):
             final_state_ids = topology.outgoing_edge_ids
             for permutation in itertools.permutations(final_state_ids):
-                id_mapping = dict(zip(topology.outgoing_edge_ids, permutation))
+                id_mapping = dict(
+                    zip(topology.outgoing_edge_ids, permutation, strict=True)
+                )
                 permuted_topology = attrs.evolve(
                     topology,
                     edges={

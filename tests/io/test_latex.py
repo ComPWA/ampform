@@ -22,19 +22,19 @@ def test_expr():
     assert aslatex(expr, terms_per_line=3) == "x + y + z"
 
     expected = dedent(R"""
-    \begin{array}{l}
-      x \\
-      \; + \; y \\
-      \; + \; z \\
-    \end{array}
+    \begin{aligned}
+    & x \\
+    & \;+\; y \\
+    & \;+\; z \\
+    \end{aligned}
     """)
-
     assert aslatex(expr, terms_per_line=1) == expected.strip()
+
     expected = dedent(R"""
-    \begin{array}{l}
-      x + y \\
-      \; + \; z \\
-    \end{array}
+    \begin{aligned}
+    & x + y \\
+    & \;+\; z \\
+    \end{aligned}
     """)
     assert aslatex(expr, terms_per_line=2) == expected.strip()
 
@@ -66,21 +66,21 @@ def test_mapping(terms_per_line: int):
     }
     latex = aslatex(definitions, terms_per_line=terms_per_line)
     expected = R"""
-    \begin{array}{rcl}
-      y &=& a x^{2} + b \\
-      a &=& 3.0 \\
-      b &=& 2-1.3i \\
-    \end{array}
+    \begin{aligned}
+      y \;&=\; a x^{2} + b \\
+      a \;&=\; 3.0 \\
+      b \;&=\; 2-1.3i \\
+    \end{aligned}
     """
     assert latex == dedent(expected).strip()
 
     latex = aslatex(definitions, terms_per_line=1)
     expected = R"""
-    \begin{array}{rcl}
-      y &=& a x^{2} \\
-        &+& b \\
-      a &=& 3.0 \\
-      b &=& 2-1.3i \\
-    \end{array}
+    \begin{aligned}
+      y \;&=\; a x^{2} \\
+        \;&+\; b \\
+      a \;&=\; 3.0 \\
+      b \;&=\; 2-1.3i \\
+    \end{aligned}
     """
     assert latex == dedent(expected).strip()

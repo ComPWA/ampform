@@ -55,7 +55,7 @@ class TestDalitzPlotDecomposition:
         if scalar_initial_state_mass:
             assert "m_0" not in str_variables
 
-    @pytest.mark.slow()
+    @pytest.mark.slow
     def test_free_symbols_main_expression(self, jpsi_to_k0_sigma_pbar: ReactionInfo):
         builder = ampform.get_builder(jpsi_to_k0_sigma_pbar)
         builder.config.spin_alignment = DalitzPlotDecomposition(reference_subsystem=1)

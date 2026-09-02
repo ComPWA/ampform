@@ -7,35 +7,29 @@ import sys
 import warnings
 from collections import abc
 from dataclasses import MISSING, Field
-from dataclasses import astuple as _get_arguments
-from dataclasses import dataclass as _create_dataclass
-from dataclasses import field as _create_field
-from dataclasses import fields as _get_fields
 from inspect import isclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Callable, Hashable, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar, overload
 
 import sympy as sp
-from sympy.core.basic import _aresame  # noqa: PLC2701
+from sympy.core.basic import _aresame  # ruff: ignore[import-private-name]
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol, TypedDict
-else:
-    from typing import Protocol, TypedDict
-
-if sys.version_info < (3, 11):
-    from typing_extensions import dataclass_transform
-else:
+if sys.version_info >= (3, 11):
     from typing import dataclass_transform
+else:
+    from typing_extensions import dataclass_transform
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Hashable, Iterable
+
+    from _typeshed import DataclassInstance
     from sympy.printing.latex import LatexPrinter
 
-    if sys.version_info < (3, 11):
-        from typing_extensions import ParamSpec, Unpack
-    else:
+    if sys.version_info >= (3, 11):
         from typing import ParamSpec, Unpack
+    else:
+        from typing_extensions import ParamSpec, Unpack
 
     H = TypeVar("H", bound=Hashable)
     P = ParamSpec("P")
@@ -75,17 +69,24 @@ class SymPyAssumptions(TypedDict, total=False):
 
 
 @overload
-def argument(*, default: T = MISSING, sympify: bool = True) -> T: ...  # type: ignore[assignment]
+def argument(
+    *,
+    default: T = MISSING,  # ty: ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
+    sympify: bool = True,
+) -> T: ...
 @overload
 def argument(
     *,
-    default_factory: Callable[[], T] = MISSING,  # type: ignore[assignment]
+    default_factory: Callable[[], T] = MISSING,  # ty: ignore[invalid-parameter-default]
+    kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
     sympify: bool = True,
 ) -> T: ...
 def argument(
     *,
     default=MISSING,
     default_factory=MISSING,
+    kw_only=MISSING,
     sympify=True,
 ):
     """Add qualifiers to fields of `unevaluated` SymPy expression classes.
@@ -93,11 +94,12 @@ def argument(
     Creates a :class:`dataclasses.Field` with additional metadata for
     :func:`unevaluated` by wrapping around :func:`dataclasses.field`.
 
-    .. versionadded:: 0.14.8
+    .. version-added:: 0.14.8
     """
-    return _create_field(
+    return dataclasses.field(
         default=default,
         default_factory=default_factory,
+        kw_only=kw_only,
         metadata={"sympify": sympify},
     )
 
@@ -110,7 +112,7 @@ def unevaluated(
     implement_doit: bool = True,
     **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[ExprClass]], type[ExprClass]]: ...
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def unevaluated(
     cls: type[ExprClass] | None = None, *, implement_doit=True, **assumptions
 ):
@@ -197,8 +199,8 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
-    .. versionadded:: 0.14.8
-    .. versionchanged:: 0.14.7
+    .. version-added:: 0.14.8
+    .. version-changed:: 0.14.7
         Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
     """
     if assumptions is None:
@@ -207,16 +209,16 @@ def unevaluated(
         assumptions["commutative"] = True
 
     def decorator(cls: type[ExprClass]) -> type[ExprClass]:
-        cls = _implement_new_method(cls)
+        cls = _implement_new_method(cls)  # ty: ignore[invalid-assignment]
         if implement_doit:
-            cls = _implement_doit(cls)
+            cls = _implement_doit(cls)  # ty: ignore[invalid-assignment]
         typos = ["_latex_repr"]
         for typo in typos:
             if hasattr(cls, typo):
                 msg = f"Class defines a {typo} attribute, but it should be _latex_repr_"
                 warnings.warn(msg, category=UserWarning, stacklevel=1)
         if hasattr(cls, "_latex_repr_"):
-            cls = _implement_latex_repr(cls)
+            cls = _implement_latex_repr(cls)  # ty: ignore[invalid-assignment]
         _set_assumptions(**assumptions)(cls)
         return cls
 
@@ -225,7 +227,7 @@ def unevaluated(
     return decorator(cls)
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     """Implement :meth:`~object.__new__` for dataclass-like SymPy expression classes.
 
@@ -242,7 +244,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     >>> sp.sqrt(expr)
     sqrt(MyExpr(x**2, y**2))
     """
-    cls = _create_dataclass(
+    cls = dataclasses.dataclass(
         init=False,  # __new__ method through sp.Expr
         repr=False,
         eq=False,
@@ -251,11 +253,11 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         frozen=False,
     )(cls)
     cls = _update_field_metadata(cls)
-    non_sympy_fields = tuple(f for f in _get_fields(cls) if not _is_sympify(f))  # type: ignore[arg-type]
-    cls.__slots__ = tuple(f.name for f in non_sympy_fields)  # type: ignore[arg-type]
+    non_sympy_fields = tuple(f for f in dataclasses.fields(cls) if not _is_sympify(f))
+    cls.__slots__ = tuple(f.name for f in non_sympy_fields)
 
     @functools.wraps(cls.__new__)
-    @_insert_args_in_signature([f.name for f in _get_fields(cls)], idx=1)  # type:ignore[arg-type]
+    @_insert_args_in_signature([f.name for f in dataclasses.fields(cls)], idx=1)
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
         fields_with_values, hints = _extract_field_values(cls, *args, **kwargs)
         fields_with_sympified_values = {
@@ -269,23 +271,26 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         )
         expr = sp.Expr.__new__(cls, *sympy_args, **hints)
         for field, value in fields_with_sympified_values.items():
+            if prop := getattr(type(expr), field.name, None):  # ruff: ignore[collapsible-if]
+                if isinstance(prop, property):
+                    continue
             setattr(expr, field.name, value)
         if evaluate:
             return expr.evaluate()
         return expr
 
-    cls.__new__ = new_method  # type: ignore[method-assign]
-    cls.__getnewargs__ = _get_arguments  # type: ignore[assignment,method-assign]
-    cls._hashable_content = _hashable_content_method  # type: ignore[method-assign]
+    cls.__new__ = new_method
+    cls.__getnewargs__ = _get_field_values
+    cls._hashable_content = _hashable_content_method
     if non_sympy_fields:
-        cls._eval_subs = _eval_subs_method  # type: ignore[method-assign]
-        cls._xreplace = _xreplace_method  # type: ignore[method-assign]
+        cls._eval_subs = _eval_subs_method
+        cls._xreplace = _xreplace_method
     return cls
 
 
 def _update_field_metadata(cls: T) -> T:
     """Set the :code:`sympify` metadata for all fields of a dataclass-like class."""
-    for field in _get_fields(cls):  # type: ignore[arg-type]
+    for field in dataclasses.fields(cls):
         new_metadata = dict(field.metadata)
         if "sympify" not in new_metadata:
             new_metadata["sympify"] = True
@@ -294,7 +299,7 @@ def _update_field_metadata(cls: T) -> T:
 
 
 @overload
-def _get_hashable_object(obj: type) -> str: ...  # type: ignore[overload-overlap]
+def _get_hashable_object(obj: type) -> str: ...
 @overload
 def _get_hashable_object(obj: H) -> H: ...
 @overload
@@ -326,16 +331,16 @@ def _extract_field_values(
     An attempt is made to get any missing attributes from the type hints in the class
     definition.
     """
-    fields = _get_fields(cls)
+    fields = dataclasses.fields(cls)
     if len(args) == len(fields):
-        return dict(zip(fields, args)), kwargs
+        return dict(zip(fields, args, strict=True)), kwargs
     if len(args) > len(fields):
         msg = (
             f"Expecting {len(fields)} positional arguments"
             f" ({', '.join(f.name for f in fields)}), but got {len(args)}"
         )
         raise ValueError(msg)
-    fields_with_values = dict(zip(fields, args))
+    fields_with_values = dict(zip(fields, args, strict=False))
     remaining_attrs = fields[len(args) :]
     missing: list[str] = []
     for field in remaining_attrs:
@@ -354,7 +359,7 @@ def _extract_field_values(
 def _safe_sympify(field: Field, value: dict[Field, Any]) -> dict[Field, Any]:
     if _is_sympify(field):
         try:
-            return sp.sympify(value)
+            return sp.sympify(value)  # ty: ignore[invalid-return-type]
         except (sp.SympifyError, TypeError, SymPyDeprecationWarning) as exc:
             msg = (
                 f"Attribute {field.name} could not be sympified. Did you forget to mark"
@@ -368,7 +373,7 @@ class LatexMethod(Protocol):
     def __call__(self, printer: LatexPrinter, *args) -> str: ...
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_latex_repr(cls: type[T]) -> type[T]:
     repr_name = "_latex_repr_"
     _latex_repr_: LatexMethod | str | None = getattr(cls, repr_name, None)
@@ -379,7 +384,7 @@ def _implement_latex_repr(cls: type[T]) -> type[T]:
         )
         raise NotImplementedError(msg)
     if callable(_latex_repr_):
-        cls._latex = _latex_repr_  # type: ignore[attr-defined]
+        cls._latex = _latex_repr_
     else:
         attr_names = _get_attribute_names(cls)
 
@@ -387,13 +392,13 @@ def _implement_latex_repr(cls: type[T]) -> type[T]:
             format_kwargs = {
                 name: printer._print(getattr(self, name), *args) for name in attr_names
             }
-            return _latex_repr_.format(**format_kwargs)  # type: ignore[union-attr]
+            return _latex_repr_.format(**format_kwargs)
 
-        cls._latex = latex_method  # type: ignore[attr-defined]
+        cls._latex = latex_method
     return cls
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
     _check_has_implementation(cls)
 
@@ -404,7 +409,7 @@ def _implement_doit(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.doit()
         return expr
 
-    cls.doit = doit_method  # type: ignore[assignment]
+    cls.doit = doit_method  # ty: ignore[invalid-assignment]
     return cls
 
 
@@ -467,7 +472,7 @@ def _get_attribute_names(cls: type) -> tuple[str, ...]:
     )
 
 
-@dataclass_transform(field_specifiers=(argument, _create_field))
+@dataclass_transform(field_specifiers=(argument, dataclasses.field))
 def _set_assumptions(
     **assumptions: Unpack[SymPyAssumptions],
 ) -> Callable[[type[T]], type[T]]:
@@ -482,14 +487,14 @@ def _set_assumptions(
 def _eval_subs_method(self, old, new, **hints):
     # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1117-L1147
     hit = False
-    old_args = _get_arguments(self)
+    old_args = _get_field_values(self)
     new_args = list(old_args)
     for i, old_arg in enumerate(old_args):
         if not hasattr(old_arg, "_eval_subs"):
             continue
         if isclass(old_arg):
             continue
-        new_attr = old_arg._subs(old, new, **hints)
+        new_attr = old_arg._subs(old, new, **hints)  # ruff: ignore[private-member-access]
         if not _aresame(new_attr, old_arg):
             hit = True
             new_args[i] = new_attr
@@ -518,7 +523,7 @@ def _hashable_content_method(self) -> tuple:
         return hashable_content
     remaining_content = (
         _get_hashable_object(getattr(self, field.name))
-        for field in _get_fields(self)
+        for field in dataclasses.fields(self)
         if not _is_sympify(field)
     )
     return (*hashable_content, *remaining_content)
@@ -531,9 +536,9 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     if rule:
         new_args = []
         hit = False
-        for arg in _get_arguments(self):
+        for arg in _get_field_values(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
-                replace_result, is_replaced = arg._xreplace(rule)
+                replace_result, is_replaced = arg._xreplace(rule)  # ruff: ignore[private-member-access]
             elif isinstance(rule, abc.Mapping):
                 is_replaced = bool(arg in rule)
                 replace_result = rule.get(arg, arg)
@@ -547,9 +552,28 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
     return self, False
 
 
-def get_sympy_fields(cls) -> tuple[Field, ...]:
-    return tuple(f for f in _get_fields(cls) if _is_sympify(f))
+def _get_field_values(self: DataclassInstance) -> tuple[Any, ...]:
+    """Get the field values of a dataclass-like class without recursing.
+
+    This is a shallow alternative to :func:`dataclasses.astuple`, which recurses into
+    nested dataclasses and converts them to `tuple` as well. Since decorated classes are
+    both dataclasses and `~sympy.core.expr.Expr` instances, that recursion would destroy
+    nested expressions, for instance when pickling.
+    """
+    return tuple(getattr(self, field.name) for field in dataclasses.fields(self))
 
 
-def _is_sympify(field: Field) -> bool:
+def get_sympy_fields(
+    cls: DataclassInstance | type[DataclassInstance],
+) -> tuple[Field[Any], ...]:
+    return tuple(f for f in dataclasses.fields(cls) if _is_sympify(f))
+
+
+def get_non_sympy_fields(
+    cls: DataclassInstance | type[DataclassInstance],
+) -> tuple[Field[Any], ...]:
+    return tuple(f for f in dataclasses.fields(cls) if not _is_sympify(f))
+
+
+def _is_sympify(field: Field[Any]) -> bool:
     return bool(field.metadata.get("sympify"))

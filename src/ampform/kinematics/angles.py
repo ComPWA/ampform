@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING
 
 import sympy as sp
 
@@ -37,6 +37,8 @@ from ampform.sympy._array_expressions import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from qrules.topology import Topology
 
 
@@ -248,7 +250,7 @@ def formulate_theta_hat_angle(
         raise ValueError(msg)
     symbol = sp.Symbol(Rf"\hat\theta_{isobar_id}({aligned_subsystem})", real=True)
     if isobar_id == aligned_subsystem:
-        return symbol, sp.S.Zero
+        return symbol, sp.S.Zero  # ty: ignore[invalid-return-type]
     if (isobar_id, aligned_subsystem) in {(3, 1), (1, 2), (2, 3)}:
         remaining_id = next(iter(allowed_ids - {isobar_id, aligned_subsystem}))
         m0 = sp.Symbol("m_0", nonnegative=True)
@@ -272,10 +274,10 @@ def formulate_theta_hat_angle(
         isobar_id=aligned_subsystem,
         aligned_subsystem=isobar_id,
     )
-    return symbol, -theta
+    return symbol, -theta  # ty: ignore[invalid-return-type]
 
 
-def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
+def formulate_zeta_angle(  # ruff: ignore[complex-structure, too-many-return-statements, too-many-locals]
     rotated_state: int,
     aligned_subsystem: int,
     reference_subsystem: int,
@@ -294,7 +296,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
         )
         return zeta_symbol, zeta_expr
     if aligned_subsystem == reference_subsystem:
-        return zeta_symbol, sp.S.Zero
+        return zeta_symbol, sp.S.Zero  # ty: ignore[invalid-return-type]
     m0, m1, m2, m3 = sp.symbols("m_(:4)", nonnegative=True)
     s1 = sp.Symbol("m_23", nonnegative=True) ** 2
     s2 = sp.Symbol("m_13", nonnegative=True) ** 2
@@ -364,7 +366,7 @@ def formulate_zeta_angle(  # noqa: C901, PLR0911, PLR0914
             aligned_subsystem=reference_subsystem,
             reference_subsystem=aligned_subsystem,
         )
-        return zeta_symbol, -zeta_expr
+        return zeta_symbol, -zeta_expr  # ty: ignore[invalid-return-type]
     msg = (
         "No expression for"
         f" ζ^{rotated_state}_{aligned_subsystem}({reference_subsystem})"

@@ -34,7 +34,7 @@ keywords:
   - partial wave analysis
   - sympy
   - computer algebra system
-license: GPL-3.0-or-later
+license: Apache-2.0
 repository-code: https://github.com/ComPWA/ampform
 type: software
 url: https://ampform.readthedocs.io

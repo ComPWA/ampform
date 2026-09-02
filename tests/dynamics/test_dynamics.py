@@ -6,13 +6,16 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import (
+    BreitWigner,
+    ChannelArguments,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    MultichannelBreitWigner,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
+    SimpleBreitWigner,
     relativistic_breit_wigner_with_ff,
 )
-from ampform.dynamics.form_factor import BlattWeisskopfSquared
 
 if TYPE_CHECKING:
     from qrules import ParticleCollection
@@ -20,33 +23,23 @@ if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
 
 
-class TestBlattWeisskopfSquared:
-    def test_factorials(self):
-        z = sp.Symbol("z")
-        angular_momentum = sp.Symbol("L", integer=True)
-        form_factor = BlattWeisskopfSquared(z, angular_momentum)
-        form_factor_9 = form_factor.subs(angular_momentum, 8).evaluate()
-        factor, z_power, _ = form_factor_9.args
-        assert factor == 4392846440677
-        assert z_power == z**8
-
-
 class TestEnergyDependentWidth:
     @staticmethod
     def test_init():
         angular_momentum = sp.Symbol("L", integer=True)
-        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
         width = EnergyDependentWidth(
             s=s,
             mass0=m0,
             gamma0=w0,
-            m_a=m_a,
-            m_b=m_a,
+            m_a=m1,
+            m_b=m1,
             angular_momentum=0,
             meson_radius=1,
         )
-        assert width.doit() == w0 * sp.sqrt(-(m_a**2) + s / 4) * sp.sqrt(m0**2) / (
-            sp.sqrt(s) * sp.sqrt(m0**2 / 4 - m_a**2)
+        expr_str = str(width.doit())
+        assert (
+            expr_str == "Gamma0*m0*sqrt(-4*m1**2 + s)/(sqrt(s)*sqrt(m0**2 - 4*m1**2))"
         )
         assert width.phsp_factor is PhaseSpaceFactor
         assert width.name is None
@@ -55,8 +48,8 @@ class TestEnergyDependentWidth:
             s=s,
             mass0=m0,
             gamma0=w0,
-            m_a=m_a,
-            m_b=m_b,
+            m_a=m1,
+            m_b=m2,
             angular_momentum=angular_momentum,
             meson_radius=d,
             phsp_factor=EqualMassPhaseSpaceFactor,
@@ -91,6 +84,30 @@ class TestEnergyDependentWidth:
         assert str(subs_first) == str(doit_first)
 
 
+class TestBreitWigner:
+    @staticmethod
+    def test_simple_limit():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0)
+        assert breit_wigner.doit() == SimpleBreitWigner(s, m0, w0).doit()
+
+    @staticmethod
+    def test_energy_dependent_width_only_appears_in_denominator():
+        s, m0, w0, m1, m2 = sp.symbols("s m0 Gamma0 m1 m2", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, m1, m2)
+        running_width = breit_wigner.energy_dependent_width()
+        expected = m0 * w0 / (m0**2 - s - m0 * running_width * sp.I)
+        assert breit_wigner.doit(deep=False) == expected
+
+    @staticmethod
+    def test_multichannel_width_is_sum_of_channel_widths():
+        s, m0, w1, w2, m1, m2 = sp.symbols("s m0 Gamma1 Gamma2 m1 m2", nonnegative=True)
+        channels = [ChannelArguments(w1, m1, m2), ChannelArguments(w2, m1, m2)]
+        breit_wigner = MultichannelBreitWigner(s, m0, channels)
+        total_width = sum(channel.formulate_width(s, m0) for channel in channels)
+        assert breit_wigner.doit(deep=False) == SimpleBreitWigner(s, m0, total_width)
+
+
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
     return getattr(obj, method)(replacements)
 
@@ -114,14 +131,11 @@ def test_generate(
     total_intensity = total_intensity.subs(model.parameter_defaults)
     assert len(total_intensity.free_symbols) == 5
 
-    angle_value = 0
-    free_symbols: set[sp.Symbol] = total_intensity.free_symbols  # type: ignore[assignment]
-    angle_substitutions = {
-        s: angle_value
-        for s in free_symbols
-        if s.name.startswith("phi") or s.name.startswith("theta")
+    angle_symbols = {
+        s for s in total_intensity.free_symbols if str(s).startswith(("phi", "theta"))
     }
-    total_intensity = total_intensity.subs(angle_substitutions)
+    angle_substitutions = dict.fromkeys(angle_symbols, 0)
+    total_intensity = total_intensity.subs(angle_substitutions)  # ty: ignore[no-matching-overload]
     assert len(total_intensity.free_symbols) == 3
 
     pi0 = particle_database["pi0"]

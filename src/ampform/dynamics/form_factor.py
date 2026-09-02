@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
-from typing import Any
+from functools import cache, lru_cache
+from typing import TYPE_CHECKING, Any
 
 import sympy as sp
 
-from ampform.dynamics.phasespace import BreakupMomentumSquared
+from ampform.kinematics.phasespace import BreakupMomentumSquared
 from ampform.sympy import unevaluated
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @unevaluated
 class FormFactor(sp.Expr):
-    """Formulate a Blatt-Weisskopf form factor.
+    """Formulate a Blatt–Weisskopf form factor.
 
     Returns the production process factor :math:`n_a` from Equation (50.26) in
     :pdg-review:`2021; Resonances; p.9`, which features the
@@ -37,10 +40,10 @@ class FormFactor(sp.Expr):
 
 @unevaluated
 class BlattWeisskopfSquared(sp.Expr):
-    r"""Normalized Blatt-Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.
+    r"""Normalized Blatt–Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.
 
     Args:
-        z: Argument of the Blatt-Weisskopf function :math:`B_L^2(z)`. A usual
+        z: Argument of the Blatt–Weisskopf function :math:`B_L^2(z)`. A usual
             choice is :math:`z = (d q)^2` with :math:`d` the impact parameter and
             :math:`q` the breakup-momentum (see `.BreakupMomentumSquared`).
 
@@ -52,8 +55,8 @@ class BlattWeisskopfSquared(sp.Expr):
     :pdg-review:`2021; Resonances; p.9`. We normalize the form factor such that
     :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
-    .. seealso:: :ref:`usage/dynamics:Form factor`, :doc:`TR-029<compwa:report/029>`,
-      and :cite:`chungFormulasAngularMomentumBarrier2015`.
+    .. seealso:: :ref:`dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
+      and :cite:`Chung:2015-FormulasAngularMomentumBarrier`.
 
     With this, the implementation becomes
     """
@@ -63,23 +66,38 @@ class BlattWeisskopfSquared(sp.Expr):
     _latex_repr_ = R"B_{{{angular_momentum}}}^2\left({z}\right)"
 
     def evaluate(self) -> sp.Expr:
-        ell = self.angular_momentum
-        z = sp.Dummy("z", nonnegative=True, real=True)
-        expr = (
-            sp.Abs(SphericalHankel1(ell, 1)) ** 2
-            / sp.Abs(SphericalHankel1(ell, sp.sqrt(z))) ** 2
-            / z
-        )
-        if not ell.free_symbols:
-            expr = expr.doit().simplify()
-        return expr.xreplace({z: self.z})
+        z, ell = self.args
+        if ell.free_symbols:
+            return _formulate_blatt_weisskopf(ell, z)
+        expr = _get_polynomial_blatt_weisskopf(ell)(z)
+        return sp.sympify(expr)
+
+
+@lru_cache(maxsize=20)
+def _get_polynomial_blatt_weisskopf(ell: int | sp.Integer) -> Callable[[Any], Any]:
+    """Get the Blatt–Weisskopf factor as a fraction of polynomials.
+
+    See https://github.com/ComPWA/ampform/issues/426.
+    """
+    z = sp.Symbol("z", nonnegative=True, real=True)
+    expr = _formulate_blatt_weisskopf(ell, z)
+    expr = expr.doit().simplify()
+    return sp.lambdify(z, expr, "math")
+
+
+def _formulate_blatt_weisskopf(ell, z) -> sp.Expr:
+    return (
+        sp.Abs(SphericalHankel1(ell, 1)) ** 2
+        / sp.Abs(SphericalHankel1(ell, sp.sqrt(z))) ** 2
+        / z
+    )
 
 
 @unevaluated
 class SphericalHankel1(sp.Expr):
     r"""Spherical Hankel function of the first kind for real-valued :math:`z`.
 
-    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa:report/029>`
+    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa-report:029/index>`
     for more info. `This page
     <https://mathworld.wolfram.com/SphericalHankelFunctionoftheFirstKind.html>`_
     explains the difference with the *general* Hankel function of the first kind,
@@ -89,20 +107,20 @@ class SphericalHankel1(sp.Expr):
     series:
     """
 
-    l: Any  # noqa: E741
+    l: Any  # ruff: ignore[ambiguous-variable-name]
     z: Any
     _latex_repr_ = R"h_{{{l}}}^{{(1)}}\left({z}\right)"
 
     def evaluate(self) -> sp.Expr:
-        l, z = self.args  # noqa: E741
+        l, z = self.args  # ruff: ignore[ambiguous-variable-name]
         k = sp.Dummy("k", integer=True, nonnegative=True)
         return (
-            (-sp.I) ** (1 + l)  # type:ignore[operator]
+            (-sp.I) ** (1 + l)
             * (sp.exp(z * sp.I) / z)
             * _SymbolicSum(
                 sp.factorial(l + k)
                 / (sp.factorial(l - k) * sp.factorial(k))
-                * (sp.I / (2 * z)) ** k,  # type:ignore[operator]
+                * (sp.I / (2 * z)) ** k,
                 (k, 0, l),
             )
         )
@@ -119,7 +137,7 @@ class _SymbolicSum(sp.Sum):
         return super().doit(deep=deep, **kwargs)
 
 
-@lru_cache(maxsize=None)
+@cache
 def _get_indices(expr: sp.Sum) -> set[sp.Basic]:
     free_symbols = set()
     for index in expr.args[1:]:

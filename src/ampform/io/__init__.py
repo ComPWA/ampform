@@ -17,25 +17,28 @@ from __future__ import annotations
 
 from collections import abc
 from functools import singledispatch
-from typing import Iterable, Mapping, Sequence
+from typing import TYPE_CHECKING
 
 import sympy as sp
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+
 
 @singledispatch
-def aslatex(obj, **kwargs) -> str:  # noqa: D417
+def aslatex(obj, **kwargs) -> str:  # ruff: ignore[undocumented-param]
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
 
-    .. versionadded:: 0.14.1
+    .. version-added:: 0.14.1
 
     Args:
         terms_per_line: If set to a non-zero, positive number,
             `sp.Expr <sympy.core.expr.Expr>` objects on the right-hand-side with multiple
             terms are split over multiple lines. The terms are split at the addition.
 
-            .. versionadded:: 0.15.2
+            .. version-added:: 0.15.2
     """
     return str(obj)
 
@@ -48,8 +51,8 @@ def _(obj: complex, **kwargs) -> str:
     return f"{real}{plus}{imag}i"
 
 
-def __downcast(obj: float, **kwargs) -> float | int:
-    if obj.is_integer():
+def __downcast(obj: float, **kwargs) -> float:
+    if isinstance(obj, float) and obj.is_integer():
         return int(obj)
     return obj
 
@@ -77,11 +80,11 @@ def _render_broken_expression(
 ) -> str:
     n = terms_per_line
     groups = [sp.Add(*terms[i : i + n]) for i in range(0, len(terms), n)]
-    latex = R"\begin{array}{l}" + "\n"
-    latex += Rf"  {aslatex(groups[0], **kwargs)} \\" + "\n"
+    latex = R"\begin{aligned}" + "\n"
+    latex += Rf"& {aslatex(groups[0], **kwargs)} \\" + "\n"
     for term in groups[1:]:
-        latex += Rf"  \; + \; {aslatex(term, **kwargs)} \\" + "\n"
-    latex += R"\end{array}"
+        latex += Rf"& \;+\; {aslatex(term, **kwargs)} \\" + "\n"
+    latex += R"\end{aligned}"
     return latex
 
 
@@ -90,10 +93,10 @@ def _(obj: Mapping, *, terms_per_line: int = 0, **kwargs) -> str:
     if len(obj) == 0:
         msg = "Need at least one dictionary item"
         raise ValueError(msg)
-    latex = R"\begin{array}{rcl}" + "\n"
+    latex = R"\begin{aligned}" + "\n"
     for lhs, rhs in obj.items():
         latex += _render_row(lhs, rhs, terms_per_line, **kwargs)
-    latex += R"\end{array}"
+    latex += R"\end{aligned}"
     return latex
 
 
@@ -104,9 +107,9 @@ def _render_row(lhs, rhs, terms_per_line: int, **kwargs) -> str:
         terms = [sum(terms[i : i + n]) for i in range(0, len(terms), n)]
         row = _render_row(lhs, terms[0], terms_per_line=False)
         for term in terms[1:]:
-            row += Rf"    &+& {aslatex(term, **kwargs)} \\" + "\n"
+            row += Rf"    \;&+\; {aslatex(term, **kwargs)} \\" + "\n"
         return row
-    return Rf"  {aslatex(lhs)} &=& {aslatex(rhs, **kwargs)} \\" + "\n"
+    return Rf"  {aslatex(lhs)} \;&=\; {aslatex(rhs, **kwargs)} \\" + "\n"
 
 
 @aslatex.register(abc.Iterable)
@@ -125,12 +128,12 @@ def _(obj: Iterable, **kwargs) -> str:
 def improve_latex_rendering() -> None:
     """Improve LaTeX rendering of an `~sympy.tensor.indexed.Indexed` object.
 
-    .. versionadded:: 0.14.2
+    .. version-added:: 0.14.2
     """
 
-    def _print_Indexed_latex(self, printer, *args):  # noqa: N802
+    def _print_Indexed_latex(self, printer, *args) -> str:  # ruff: ignore[invalid-function-name]
         base = printer._print(self.base)
         indices = ", ".join(map(printer._print, self.indices))
         return f"{base}_{{{indices}}}"
 
-    sp.Indexed._latex = _print_Indexed_latex  # type: ignore[attr-defined]
+    sp.Indexed._latex = _print_Indexed_latex  # ty: ignore[unresolved-attribute]
