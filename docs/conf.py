@@ -315,6 +315,7 @@ linkcheck_ignore = [
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
 ]
+linkcheck_timeout = 60
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",

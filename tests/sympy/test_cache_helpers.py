@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
+import pickle  # ruff: ignore[suspicious-pickle-import]
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from typing import TYPE_CHECKING, ClassVar
 
 import pytest
@@ -13,11 +16,79 @@ import ampform
 from ampform._qrules import get_qrules_version
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
-from ampform.sympy._cache import get_readable_hash
+from ampform.sympy import _cache
+from ampform.sympy._cache import cache_to_disk, get_readable_hash
 
 if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
+
     from _pytest.logging import LogCaptureFixture
+    from _pytest.monkeypatch import MonkeyPatch
+    from _typeshed import SupportsWrite
     from qrules.transition import SpinFormalism
+
+
+def test_cache_to_disk_writes_atomically(tmp_path: Path, monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+    monkeypatch.delenv("NO_CACHE", raising=False)
+    first_write_started = Event()
+    continue_first_write = Event()
+    dump_calls = 0
+
+    def dump_in_two_steps(value: Any, stream: SupportsWrite[bytes]) -> None:
+        nonlocal dump_calls
+        dump_calls += 1
+        data = pickle.dumps(value)
+        if dump_calls == 1:
+            stream.write(data[:1])
+            first_write_started.set()
+            continue_first_write.wait(timeout=5)
+            stream.write(data[1:])
+        else:
+            stream.write(data)
+
+    @cache_to_disk(dump_function=dump_in_two_steps)
+    def cached_function():
+        return "result"
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        first_result = executor.submit(cached_function)
+        try:
+            assert first_write_started.wait(timeout=5)
+            assert cached_function() == "result"
+        finally:
+            continue_first_write.set()
+        assert first_result.result(timeout=5) == "result"
+
+    assert not list(tmp_path.rglob("*.tmp"))
+    cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
+    assert len(cache_files) == 1
+    assert pickle.loads(cache_files[0].read_bytes()) == "result"  # ruff: ignore[suspicious-pickle-usage]
+
+
+@pytest.mark.parametrize("corrupt_data", [b"", b"not a pickle"])
+def test_cache_to_disk_repairs_corrupt_file(
+    corrupt_data: bytes, tmp_path: Path, monkeypatch: MonkeyPatch
+):
+    monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+    monkeypatch.delenv("NO_CACHE", raising=False)
+    call_count = 0
+
+    @cache_to_disk
+    def cached_function():
+        nonlocal call_count
+        call_count += 1
+        return "result"
+
+    assert cached_function() == "result"
+    cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
+    assert len(cache_files) == 1
+    cache_files[0].write_bytes(corrupt_data)
+
+    assert cached_function() == "result"
+    assert cached_function() == "result"
+    assert call_count == 2
 
 
 @pytest.mark.parametrize(
