@@ -201,7 +201,8 @@ extensions = [
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
 html_css_files = [
-    "custom.css",
+    "linebreaks-api.css",
+    "mermaid.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css",
 ]
 html_favicon = "_static/favicon.ico"

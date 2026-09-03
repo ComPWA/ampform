@@ -1,0 +1,13 @@
+/* Render Mermaid diagrams at their natural size instead of stretching them over
+the full page width (see sphinxcontrib/mermaid/default.css.j2). */
+pre.mermaid > svg {
+  height: auto !important;
+  max-width: 100% !important;
+  width: auto !important;
+}
+
+/* Hide graph edges behind labels in Sphinx-rendered Mermaid diagrams. Target
+the outer HTML wrapper so multiline labels have one continuous background. */
+pre.mermaid g.edgeLabel foreignObject > div {
+  background-color: var(--pst-color-on-background) !important;
+}
