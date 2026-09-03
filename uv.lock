@@ -3356,11 +3356,11 @@ wheels = [
 
 [[package]]
 name = "param"
-version = "2.4.1"
+version = "2.4.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/79/9d/33f32981c9cda89fe22abff60f7c71ef4af3e566b6af530392f8b938470d/param-2.4.1.tar.gz", hash = "sha256:364a33bd8a968b053d8a49d319af78dc31b3ccb9661ecb95c29a3ea509d7e443", size = 217776, upload-time = "2026-06-09T13:17:33.665Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/17/fc/ec34c6fa440c9b5491ee1820874b8776489756820bba16d55b885d07655a/param-2.4.2.tar.gz", hash = "sha256:40ca94b72c97bf1998325738e002d589ce31a7cfb4cc56549f05daa6ccf98043", size = 225945, upload-time = "2026-09-03T11:02:01.717Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/37/1351bbfabbacbe92cd38774f8779ff680fab48c36b5fed9bcfe0c160009c/param-2.4.1-py3-none-any.whl", hash = "sha256:6cdc0869b3ade232fc6d01691223cf86c2bdb53a6d5ba67a33dba838d8b8cf4c", size = 151874, upload-time = "2026-06-09T13:17:31.996Z" },
+    { url = "https://files.pythonhosted.org/packages/35/94/ff5ad5b758c61c1b33755e02c3a653d1d41c36891329e76a8e6b6e69e8b1/param-2.4.2-py3-none-any.whl", hash = "sha256:56f56e991d11cdf9fa8248ca3b1c7d5badfd6b4da3b3886b764b95823d270b07", size = 155563, upload-time = "2026-09-03T11:02:00.069Z" },
 ]
 
 [[package]]
