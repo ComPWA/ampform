@@ -75,12 +75,7 @@ set_intersphinx_version_remapping({
         "8.1.8": "8.1.5",
         "8.1.9": "8.1.5",
     },
-    "qrules": {
-        "0.10.7.dev.*": "0.10.6",
-    },
-    "scipy": {
-        "1.18.1": "1.18.0",
-    },
+    "qrules": {"0.10.7.dev.*": "0.10.6"},
 })
 
 BRANCH = get_branch_name()
@@ -291,7 +286,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "quadax": ("https://quadax.readthedocs.io/en/stable", None),
-    "scipy": (f"https://docs.scipy.org/doc/scipy-{pin('scipy')}", None),
+    "scipy": (
+        # https://github.com/ComPWA/ampform/issues/512
+        "https://scipy.github.io/devdocs",
+        None,
+    ),
     "spb": (
         f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
         None,
