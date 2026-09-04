@@ -136,7 +136,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
 api_target_types: dict[str, str] = {
     "ampform.helicity.align.dpd.T": "obj",
 }
-author = "Common Partial Wave Analysis"
+author = ""
 autodoc_default_options = {
     "exclude-members": ", ".join(_get_excluded_members()),
     "members": True,
