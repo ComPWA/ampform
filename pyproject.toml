@@ -97,7 +97,6 @@ notebooks = [
     "numpy",
     "qrules >=0.10.12",  # qrules.io.asmermaid
     "quadax",
-    "rich",
     "sympy-plot-backends",
 ]
 style = [
