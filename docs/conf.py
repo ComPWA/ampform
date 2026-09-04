@@ -4,7 +4,6 @@ import os
 import sys
 from dataclasses import is_dataclass
 
-import requests
 from sphinx_api_relink.helpers import (
     get_branch_name,
     get_execution_mode,
@@ -58,14 +57,6 @@ def _get_dataclasses(module):
         if inspect.isclass(obj) and is_dataclass(obj):
             dataclass_list.append(obj)
     return dataclass_list
-
-
-def _get_scipy_url() -> str:
-    url = f"https://docs.scipy.org/doc/scipy-{pin('scipy')}/"
-    r = requests.get(url)
-    if r.status_code != 200:  # ruff: ignore[magic-value-comparison]
-        return "https://docs.scipy.org/doc/scipy"
-    return url
 
 
 extend_docstrings()
@@ -145,7 +136,7 @@ api_target_substitutions: dict[str, str | tuple[str, str]] = {
 api_target_types: dict[str, str] = {
     "ampform.helicity.align.dpd.T": "obj",
 }
-author = "Common Partial Wave Analysis"
+author = ""
 autodoc_default_options = {
     "exclude-members": ", ".join(_get_excluded_members()),
     "members": True,
@@ -184,6 +175,8 @@ default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
     "*build",
+    "AGENTS.md",
+    "CLAUDE.md",
     "tests",
 ]
 extensions = [
@@ -204,11 +197,12 @@ extensions = [
     "sphinx_thebe",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
 ]
 generate_apidoc_package_path = f"../src/{PACKAGE}"
-graphviz_output_format = "svg"
 html_css_files = [
-    "custom.css",
+    "linebreaks-api.css",
+    "mermaid.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css",
 ]
 html_favicon = "_static/favicon.ico"
@@ -220,6 +214,7 @@ html_show_copyright = False
 html_show_sourcelink = False
 html_show_sphinx = False
 html_sourcelink_suffix = ""
+html_static_path = ["_static"]
 html_theme = "sphinx_book_theme"
 html_theme_options = {
     "icon_links": [
@@ -293,7 +288,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "qrules": (f"https://qrules.readthedocs.io/{pin('qrules')}", None),
     "quadax": ("https://quadax.readthedocs.io/en/stable", None),
-    "scipy": (_get_scipy_url(), None),
+    "scipy": (
+        # https://github.com/ComPWA/ampform/issues/512
+        "https://scipy.github.io/devdocs",
+        None,
+    ),
     "spb": (
         f"https://sympy-plot-backends.readthedocs.io/en/v{pin('sympy-plot-backends')}",
         None,
@@ -316,6 +315,16 @@ linkcheck_ignore = [
     "https://www.bookfinder.com",
 ]
 linkcheck_timeout = 60
+mermaid_height = "auto"  # do not stretch diagrams to the default 500px
+mermaid_init_config = {
+    "flowchart": {
+        "nodeSpacing": 30,
+        "rankSpacing": 40,
+        "useMaxWidth": False,
+    },
+    "startOnLoad": False,
+    "themeVariables": {"fontSize": "12px"},
+}
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
@@ -323,6 +332,7 @@ myst_enable_extensions = [
     "smartquotes",
     "substitution",
 ]
+myst_fence_as_directive = ["mermaid"]
 myst_heading_anchors = 2
 myst_substitutions = {
     "branch": BRANCH,

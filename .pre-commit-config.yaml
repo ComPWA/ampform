@@ -60,7 +60,7 @@ repos:
       - id: strip-nb-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.5
+    rev: v0.16.6
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -97,7 +97,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/tombi-toml/tombi-pre-commit
-    rev: v1.5.0
+    rev: v1.5.1
     hooks:
       - id: tombi-format
       - id: tombi-lint
@@ -122,7 +122,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v10.1.0
+    rev: v10.2.0
     hooks:
       - id: cspell
 
@@ -138,7 +138,7 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.77
+    rev: v0.0.78
     hooks:
       - id: ty
         args: [--group=types, --no-default-groups]
