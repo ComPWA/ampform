@@ -22,9 +22,7 @@ import sympy as sp
 from sympy.printing.conventions import split_super_sub
 from sympy.printing.numpy import JaxPrinter
 from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import (
-    _unpack_integral_limits,  # ruff: ignore[import-private-name]
-)
+from sympy.printing.pycode import _unpack_integral_limits  # ruff: ignore[import-private-name]
 
 from ._decorator import ExprClass as ExprClass
 from ._decorator import SymPyAssumptions as SymPyAssumptions
@@ -32,9 +30,7 @@ from ._decorator import argument as argument
 from ._decorator import get_non_sympy_fields
 from ._decorator import unevaluated as unevaluated
 from .cached import doit as perform_cached_doit  # ruff: ignore[unused-import]
-from .cached import (
-    xreplace as perform_cached_substitution,  # ruff: ignore[unused-import]
-)
+from .cached import xreplace as perform_cached_substitution  # ruff: ignore[unused-import]
 from .deprecated import UnevaluatedExpression as UnevaluatedExpression
 from .deprecated import create_expression as create_expression
 from .deprecated import implement_doit_method as implement_doit_method

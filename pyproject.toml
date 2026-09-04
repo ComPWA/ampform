@@ -95,7 +95,7 @@ notebooks = [
     "ipympl",
     "matplotlib",
     "numpy",
-    "qrules >=0.10.11",  # qrules.io.asmermaid
+    "qrules >=0.10.12",  # qrules.io.asmermaid
     "quadax",
     "rich",
     "sympy-plot-backends",
