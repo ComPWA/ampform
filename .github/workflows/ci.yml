@@ -24,8 +24,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    with:
-      apt-packages: graphviz
   style:
     secrets:
       token: ${{ secrets.PAT }}

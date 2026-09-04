@@ -54,3 +54,4 @@ CLAUDE.md
 !.vscode/*.json
 !.zenodo.json
 !codecov.yml
+!docs/_static/*.svg

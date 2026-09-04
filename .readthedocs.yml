@@ -8,7 +8,7 @@ build:
     - |-
       export PIXI_HOME=$READTHEDOCS_VIRTUALENV_PATH
       curl -fsSL https://pixi.sh/install.sh | bash
-      pixi global install graphviz uv
+      pixi global install uv
     - |-
       export UV_LINK_MODE=copy
       uvx --from poethepoet poe doc

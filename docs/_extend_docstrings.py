@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 import attrs
-import graphviz  # sphinx.ext.graphviz does not work well on RTD
 import qrules
 import sympy as sp
 from sympy.printing.numpy import NumPyPrinter
@@ -544,7 +543,7 @@ def extend_formulate_isobar_cg_coefficients() -> None:
 
     _append_to_docstring(
         formulate_isobar_cg_coefficients,
-        __get_graphviz_state_transition_example(
+        __get_state_transition_example(
             formalism="canonical-helicity", transition_number=1
         ),
     )
@@ -555,11 +554,11 @@ def extend_formulate_isobar_wigner_d() -> None:
 
     _append_to_docstring(
         formulate_isobar_wigner_d,
-        __get_graphviz_state_transition_example("helicity"),
+        __get_state_transition_example("helicity"),
     )
 
 
-def __get_graphviz_state_transition_example(
+def __get_state_transition_example(
     formalism: SpinFormalism, transition_number: int = 0
 ) -> str:
     reaction = __generate_transitions_cached(
@@ -575,50 +574,43 @@ def __get_graphviz_state_transition_example(
     interactions = dict(transition.interactions)
     interactions[0] = new_interaction
     transition = attrs.evolve(transition, interactions=interactions)
-    dot = qrules.io.asdot(
+    src = qrules.io.asmermaid(
         transition,
         render_initial_state_id=True,
         render_node=True,
     )
     for state_id in [0, 1, -1]:
-        dot = dot.replace(
-            f'label="{state_id}: ',
-            f'label="{state_id + 2}: ',
+        src = src.replace(
+            f'["$${state_id}: ',
+            f'["$${state_id + 2}: ',
         )
-    return _graphviz_to_image(dot, indent=4, options={"align": "center"})
+    return _mermaid_to_figure(src, indent=4, options={"align": "center"})
 
 
 def extend_get_boost_chain_suffix() -> None:
     from ampform.helicity.naming import get_boost_chain_suffix
 
     topologies = qrules.topology.create_isobar_topologies(5)
-    dot0, dot1, *_ = tuple(
-        qrules.io.asdot(t, render_resonance_id=True) for t in topologies
+    src0, src1, *_ = tuple(
+        qrules.io.asmermaid(t, render_resonance_id=True) for t in topologies
     )
-    graphviz0 = _graphviz_to_image(
-        dot0,
-        indent=8,
+    mermaid0 = _mermaid_to_figure(
+        src0,
+        indent=4,
         caption=":code:`topologies[0]`",
         label="one-to-five-topology-0",
     )
-    graphviz1 = _graphviz_to_image(
-        dot1,
-        indent=8,
+    mermaid1 = _mermaid_to_figure(
+        src1,
+        indent=4,
         caption=":code:`topologies[1]`",
         label="one-to-five-topology-1",
     )
     _append_to_docstring(
         get_boost_chain_suffix,
         f"""
-
-    .. grid:: 1 2 2 2
-      :gutter: 2
-
-      .. grid-item-card::
-        {graphviz0}
-
-      .. grid-item-card::
-        {graphviz1}
+    {mermaid0}
+    {mermaid1}
     """,
     )
 
@@ -737,30 +729,22 @@ def __print_imports(printer: NumPyPrinter) -> str:
     return code
 
 
-_GRAPHVIZ_COUNTER = 0
-_IMAGE_DIR = "_images"
-
-
-def _graphviz_to_image(
-    dot: str,
+def _mermaid_to_figure(
+    src: str,
     options: dict[str, str] | None = None,
-    format: str = "svg",  # ruff: ignore[builtin-argument-shadowing]
     indent: int = 0,
     caption: str = "",
     label: str = "",
 ) -> str:
     if options is None:
         options = {}
-    global _GRAPHVIZ_COUNTER  # ruff: ignore[global-statement]
-    output_file = f"graphviz_{_GRAPHVIZ_COUNTER}"
-    _GRAPHVIZ_COUNTER += 1
-    graphviz.Source(dot).render(f"{_IMAGE_DIR}/{output_file}", format=format)
     restructuredtext = "\n"
     if label:
         restructuredtext += f".. _{label}:\n"
-    restructuredtext += f".. figure:: /{_IMAGE_DIR}/{output_file}.{format}\n"
+    restructuredtext += ".. mermaid::\n"
     for option, value in options.items():
         restructuredtext += f"  :{option}: {value}\n"
     if caption:
-        restructuredtext += f"\n  {caption}\n"
+        restructuredtext += f"  :caption: {caption}\n"
+    restructuredtext += "\n" + textwrap.indent(src, "  ")
     return textwrap.indent(restructuredtext, indent * " ")

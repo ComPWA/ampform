@@ -392,16 +392,17 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 
     Some labels explained:
 
-    - :code:`phi_12`: **edge 6** on the *left* topology, because for this
+    - :code:`phi_12`: **edge 6** on the *top* topology, because for this
       topology, we have :math:`p_6=p_1+p_2`.
-    - :code:`phi_234`: **edge 6** *right*, because for this topology,
-      :math:`p_6=p_2+p_3+p_4`.
-    - :code:`phi_1^12`: **edge 1** *left*, because 1 decays from
-      :math:`p_6=p_1+p_2`.
-    - :code:`phi_1^01`: **edge 1** *right*, because it decays from
-      :math:`p_5=p_0+p_1`.
-    - :code:`phi_4^34,234`: **edge 4** *right*, because it decays from edge 7
-      (:math:`p_7=p_3+p_4`), which comes from edge 6 (:math:`p_7=p_2+p_3+p_4`).
+    - :code:`phi_234`: **edge 6** on the *bottom* topology, because for this
+      topology, :math:`p_6=p_2+p_3+p_4`.
+    - :code:`phi_1^12`: **edge 1** on the *top* topology, because 1 decays
+      from :math:`p_6=p_1+p_2`.
+    - :code:`phi_1^01`: **edge 1** on the *bottom* topology, because it decays
+      from :math:`p_5=p_0+p_1`.
+    - :code:`phi_4^34,234`: **edge 4** on the *bottom* topology, because it
+      decays from edge 7 (:math:`p_7=p_3+p_4`), which comes from edge 6
+      (:math:`p_7=p_2+p_3+p_4`).
 
     As noted, the top-most parent (initial state) is not listed in the label.
     """

@@ -45,7 +45,7 @@ conda install -c conda-forge ampform
 
 This installs the [latest release](https://github.com/ComPWA/ampform/releases) that you can find on the [`stable`](https://github.com/ComPWA/ampform/tree/stable) branch.
 
-Optionally, you can install the dependencies required for {doc}`visualizing topologies <qrules:usage/visualize>` with the following {ref}`optional dependency syntax <compwa:develop:Optional dependencies>`:
+Optionally, you can install the dependencies required for {doc}`visualizing topologies with Graphviz <qrules:usage/visualize>` with the following {ref}`optional dependency syntax <compwa:develop:Optional dependencies>`:
 
 ::::{tab-set}
 :sync-group: package-manager
