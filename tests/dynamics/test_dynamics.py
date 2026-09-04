@@ -6,10 +6,14 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import (
+    BreitWigner,
+    ChannelArguments,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    MultichannelBreitWigner,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
+    SimpleBreitWigner,
     relativistic_breit_wigner_with_ff,
 )
 
@@ -78,6 +82,30 @@ class TestEnergyDependentWidth:
         subs_first = round_nested(subs_first, n_decimals=3)
         doit_first = round_nested(doit_first, n_decimals=3)
         assert str(subs_first) == str(doit_first)
+
+
+class TestBreitWigner:
+    @staticmethod
+    def test_simple_limit():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0)
+        assert breit_wigner.doit() == SimpleBreitWigner(s, m0, w0).doit()
+
+    @staticmethod
+    def test_energy_dependent_width_only_appears_in_denominator():
+        s, m0, w0, m1, m2 = sp.symbols("s m0 Gamma0 m1 m2", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, m1, m2)
+        running_width = breit_wigner.energy_dependent_width()
+        expected = m0 * w0 / (m0**2 - s - m0 * running_width * sp.I)
+        assert breit_wigner.doit(deep=False) == expected
+
+    @staticmethod
+    def test_multichannel_width_is_sum_of_channel_widths():
+        s, m0, w1, w2, m1, m2 = sp.symbols("s m0 Gamma1 Gamma2 m1 m2", nonnegative=True)
+        channels = [ChannelArguments(w1, m1, m2), ChannelArguments(w2, m1, m2)]
+        breit_wigner = MultichannelBreitWigner(s, m0, channels)
+        total_width = sum(channel.formulate_width(s, m0) for channel in channels)
+        assert breit_wigner.doit(deep=False) == SimpleBreitWigner(s, m0, total_width)
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:

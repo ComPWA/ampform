@@ -38,6 +38,7 @@
     "pyproject.toml"
   ],
   "ignoreWords": [
+    "Flatté",
     "Minkowski",
     "arange",
     "aslatex",

@@ -398,8 +398,8 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     amplitude_expr = sp.simplify(amplitude_expr, doit=False)
     amplitude_str = str(amplitude_expr).replace("WignerD", "D").replace(" ", "")
     assert (
-        amplitude_str == "C*m*Γ*("
-        "-(-m**2+I*m*Γ+m_02**2)*D(0,0,0,-phi_0,theta_0,0)*D(1,0,0,-phi_1^12,theta_1^12,0)"
-        "-(-m**2+I*m*Γ+m_12**2)*D(0,0,0,-phi_02,theta_02,0)*D(1,0,0,-phi_0^02,theta_0^02,0))/((-m**2+I*m*Γ+m_02**2)*(-m**2+I*m*Γ+m_12**2)"
+        amplitude_str == "C*("
+        "SimpleBreitWigner(m_02**2,m,Γ)*D(0,0,0,-phi_02,theta_02,0)*D(1,0,0,-phi_0^02,theta_0^02,0)"
+        "+SimpleBreitWigner(m_12**2,m,Γ)*D(0,0,0,-phi_0,theta_0,0)*D(1,0,0,-phi_1^12,theta_1^12,0)"
         ")"
     )
