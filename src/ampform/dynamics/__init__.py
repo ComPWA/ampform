@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import sympy as sp
-from attrs import asdict, frozen
 
 from ampform.dynamics import phasespace as phasespace
 from ampform.dynamics.form_factor import (
@@ -45,7 +44,7 @@ class SimpleBreitWigner(sp.Expr):
 
     def evaluate(self):
         s, m0, w0 = self.args
-        return m0 * w0 / (m0**2 - s - m0 * w0 * sp.I)
+        return m0 * w0 * _formulate_breit_wigner(s, m0, w0)
 
 
 @unevaluated
@@ -70,7 +69,7 @@ class BreitWigner(sp.Expr):
     def evaluate(self):
         width = self.energy_dependent_width()
         return (
-            self.mass * self.width / (self.mass**2 - self.s - self.mass * width * sp.I)
+            self.mass * self.width * _formulate_breit_wigner(self.s, self.mass, width)
         )
 
     def energy_dependent_width(self) -> EnergyDependentWidth | sp.Basic:
@@ -135,52 +134,66 @@ class EnergyDependentWidth(sp.Expr):
 
 @unevaluated
 class MultichannelBreitWigner(sp.Expr):
-    """`BreitWigner` for multiple channels."""
+    r"""Breit–Wigner with a running width summed over several decay channels.
+
+    Each channel is a `ChannelArguments` term :math:`\Gamma_i^\text{ch}(s)`, giving
+
+    .. math::
+
+        \frac{1}{m_0^2 - s - i \sum_i g_i^2 \rho_i(s) F_{L_i}^2(s)},
+
+    where :math:`g_i^2` is the coupling squared, :math:`\rho_i` is a
+    `.PhaseSpaceFactor`, and :math:`F_{L_i}` is a `.FormFactor`. Unlike an
+    `EnergyDependentWidth`, a channel term is not normalized at the pole position.
+    """
 
     s: Any
     mass: Any
-    channels: list[ChannelArguments] = argument(sympify=False)
+    channels: tuple[ChannelArguments, ...]
 
     def evaluate(self):
         s = self.s
         m0 = self.mass
-        width = sum(channel.formulate_width(s, m0) for channel in self.channels)
-        return SimpleBreitWigner(s, m0, width)
+        width = sp.Add(*self.channels)
+        return _formulate_breit_wigner(s, m0, width)
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         latex = R"\mathcal{R}^\mathrm{BW}_\mathrm{multi}\left("
         latex += printer._print(self.s) + "; "
-        latex += ", ".join(printer._print(channel.width) for channel in self.channels)
+        latex += ", ".join(
+            printer._print(channel.coupling_squared) for channel in self.channels
+        )
         latex += R"\right)"
         return latex
 
 
-@frozen
-class ChannelArguments:
-    """Arguments for a channel in a `MultichannelBreitWigner`."""
+@unevaluated
+class ChannelArguments(sp.Expr):
+    r"""One channel term :math:`\Gamma_i^\text{ch}(s)`.
 
-    width: Any
+    .. math::
+
+        \Gamma_i^\text{ch}(s) = \frac{g_i^2}{m_0} \rho_i(s) F_{L_i}^2(s)
+    """
+
+    s: Any
+    mass: Any
+    coupling_squared: Any
     m1: Any = 0
     m2: Any = 0
     angular_momentum: Any = 0
     meson_radius: Any = 1
-    phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor  # ty: ignore[invalid-assignment]
+    _latex_repr_ = R"\Gamma^\text{{ch}}\left({s}; {mass}, {coupling_squared}\right)"
 
-    def __attrs_post_init__(self) -> None:
-        for name, value in asdict(self).items():
-            object.__setattr__(self, name, sp.sympify(value))
+    def evaluate(self) -> sp.Expr:
+        s, m0, coupling_squared, m1, m2, angular_momentum, meson_radius = self.args
+        rho = PhaseSpaceFactor(s, m1, m2)
+        ff = FormFactor(s, m1, m2, angular_momentum, meson_radius)
+        return coupling_squared * rho * ff**2 / m0
 
-    def formulate_width(self, s: Any, m0: Any) -> EnergyDependentWidth:
-        return EnergyDependentWidth(
-            s,
-            m0,
-            self.width,
-            self.m1,
-            self.m2,
-            self.angular_momentum,
-            self.meson_radius,
-            self.phsp_factor,
-        )
+
+def _formulate_breit_wigner(s: Any, mass: Any, width: Any) -> sp.Expr:
+    return 1 / (mass**2 - s - sp.I * mass * width)
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:

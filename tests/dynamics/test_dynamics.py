@@ -101,11 +101,46 @@ class TestBreitWigner:
 
     @staticmethod
     def test_multichannel_width_is_sum_of_channel_widths():
-        s, m0, w1, w2, m1, m2 = sp.symbols("s m0 Gamma1 Gamma2 m1 m2", nonnegative=True)
-        channels = [ChannelArguments(w1, m1, m2), ChannelArguments(w2, m1, m2)]
+        s, m0, g1, g2, m1, m2 = sp.symbols("s m0 g1 g2 m1 m2", nonnegative=True)
+        channels = (
+            ChannelArguments(s, m0, g1, m1, m2),
+            ChannelArguments(s, m0, g2, m1, m2),
+        )
         breit_wigner = MultichannelBreitWigner(s, m0, channels)
-        total_width = sum(channel.formulate_width(s, m0) for channel in channels)
-        assert breit_wigner.doit(deep=False) == SimpleBreitWigner(s, m0, total_width)
+        total_width = sp.Add(*channels)
+        expected = 1 / (m0**2 - s - sp.I * m0 * total_width)
+        assert breit_wigner.doit(deep=False) == expected
+        assert breit_wigner.free_symbols == {s, m0, g1, g2, m1, m2}
+
+    @pytest.mark.parametrize("method", ["subs", "xreplace"])
+    def test_multichannel_substitution(self, method):
+        s, mass, coupling, m1, m2 = sp.symbols("s mass g m1 m2", positive=True)
+        channel = ChannelArguments(s, mass, coupling, m1, m2)
+        expression = MultichannelBreitWigner(s, mass, (channel,))
+        replacements = {coupling: 2, m1: 1, m2: 1}
+        actual = _subs(expression, replacements, method).doit()
+        expected = _subs(expression.doit(), replacements, method)
+        assert sp.simplify(actual - expected) == 0
+
+    @staticmethod
+    def test_multichannel_matches_serialized_l1405():
+        s = sp.Float(2.0)
+        mass = sp.Float(1.4051)
+        channel_definitions = (
+            (0.328725260215546, 0.938272046, 0.493677, 0, 0),
+            (0.328725260215546, 1.18937, 0.13957018, 0, 0),
+        )
+        channels = tuple(
+            ChannelArguments(s, mass, *map(sp.sympify, definition))
+            for definition in channel_definitions
+        )
+        actual = complex(sp.N(MultichannelBreitWigner(s, mass, channels).doit()))
+        mass_width = sum(
+            coupling_squared * sp.sqrt((s - (m1 - m2) ** 2) * (s - (m1 + m2) ** 2)) / s
+            for coupling_squared, m1, m2, _, __ in channel_definitions
+        )
+        expected = complex(1 / (mass**2 - s - sp.I * mass_width))
+        assert actual == pytest.approx(expected)
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
