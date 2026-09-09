@@ -8,74 +8,72 @@ from ampform.io import aslatex
 a, b, x, y = sp.symbols("a b x y")
 
 
-def test_complex():
-    assert aslatex(1.2 - 5.3j) == "1.2-5.3i"
-    assert aslatex(1.2 - 5j) == "1.2-5i"
-    assert aslatex(1 + 1j) == "1+1i"
+def describe_aslatex():
+    def it_formats_complex_numbers():
+        assert aslatex(1.2 - 5.3j) == "1.2-5.3i"
+        assert aslatex(1.2 - 5j) == "1.2-5i"
+        assert aslatex(1 + 1j) == "1+1i"
 
+    def it_formats_expressions_with_configurable_line_breaks():
+        x, y, z = sp.symbols("x:z")
+        expr = x + y + z
+        assert aslatex(expr) == "x + y + z"
+        assert aslatex(expr, terms_per_line=0) == "x + y + z"
+        assert aslatex(expr, terms_per_line=3) == "x + y + z"
 
-def test_expr():
-    x, y, z = sp.symbols("x:z")
-    expr = x + y + z
-    assert aslatex(expr) == "x + y + z"
-    assert aslatex(expr, terms_per_line=0) == "x + y + z"
-    assert aslatex(expr, terms_per_line=3) == "x + y + z"
-
-    expected = dedent(R"""
+        expected = dedent(R"""
     \begin{aligned}
     & x \\
     & \;+\; y \\
     & \;+\; z \\
     \end{aligned}
     """)
-    assert aslatex(expr, terms_per_line=1) == expected.strip()
+        assert aslatex(expr, terms_per_line=1) == expected.strip()
 
-    expected = dedent(R"""
+        expected = dedent(R"""
     \begin{aligned}
     & x + y \\
     & \;+\; z \\
     \end{aligned}
     """)
-    assert aslatex(expr, terms_per_line=2) == expected.strip()
+        assert aslatex(expr, terms_per_line=2) == expected.strip()
 
-
-def test_iterable():
-    items = [
-        a * x**2 + b,
-        3.0,
-        2 - 1.3j,
-    ]
-    iterable = iter(items)
-    latex = aslatex(iterable)
-    expected = R"""
+    def it_formats_iterable_items_as_a_latex_array():
+        items = [
+            a * x**2 + b,
+            3.0,
+            2 - 1.3j,
+        ]
+        iterable = iter(items)
+        latex = aslatex(iterable)
+        expected = R"""
     \begin{array}{c}
       a x^{2} + b \\
       3.0 \\
       2-1.3i \\
     \end{array}
     """
-    assert latex == dedent(expected).strip()
+        assert latex == dedent(expected).strip()
 
-
-@pytest.mark.parametrize("terms_per_line", [0, 2])
-def test_mapping(terms_per_line: int):
-    definitions = {
-        y: a * x**2 + b,
-        a: 3.0,
-        b: 2 - 1.3j,
-    }
-    latex = aslatex(definitions, terms_per_line=terms_per_line)
-    expected = R"""
+    @pytest.mark.parametrize("terms_per_line", [0, 2])
+    def it_formats_mappings_as_aligned_equations(terms_per_line: int):
+        definitions = {
+            y: a * x**2 + b,
+            a: 3.0,
+            b: 2 - 1.3j,
+        }
+        latex = aslatex(definitions, terms_per_line=terms_per_line)
+        expected = R"""
     \begin{aligned}
       y \;&=\; a x^{2} + b \\
       a \;&=\; 3.0 \\
       b \;&=\; 2-1.3i \\
     \end{aligned}
     """
-    assert latex == dedent(expected).strip()
+        assert latex == dedent(expected).strip()
 
-    latex = aslatex(definitions, terms_per_line=1)
-    expected = R"""
+        latex = aslatex(definitions, terms_per_line=1)
+        expected = R"""
     \begin{aligned}
       y \;&=\; a x^{2} \\
         \;&+\; b \\
@@ -83,4 +81,4 @@ def test_mapping(terms_per_line: int):
       b \;&=\; 2-1.3i \\
     \end{aligned}
     """
-    assert latex == dedent(expected).strip()
+        assert latex == dedent(expected).strip()

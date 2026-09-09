@@ -23,37 +23,39 @@ def test_doit(amplitude_model: tuple[str, HelicityModel]):
     assert unfolded_expr_2 == expected_expr
 
 
-def test_simplify():
-    a, b, c, d, x, y, z = sp.symbols("a b c d x y z")
-    expr = (
-        (a * x + b * y + c * z + d) ** 2
-        - (a * x) ** 2
-        - (b * y) ** 2
-        - (c * z) ** 2
-        - 2 * a * b * x * y
-        - 2 * a * c * x * z
-        - 2 * b * c * y * z
-        - 2 * d * (a * x + b * y + c * z)
-    )
+def describe_simplify():
+    def it_matches_uncached_simplification():
+        a, b, c, d, x, y, z = sp.symbols("a b c d x y z")
+        expr = (
+            (a * x + b * y + c * z + d) ** 2
+            - (a * x) ** 2
+            - (b * y) ** 2
+            - (c * z) ** 2
+            - 2 * a * b * x * y
+            - 2 * a * c * x * z
+            - 2 * b * c * y * z
+            - 2 * d * (a * x + b * y + c * z)
+        )
 
-    simplified = expr.simplify()
-    assert simplified != expr
-    assert simplified == d**2
+        simplified = expr.simplify()
+        assert simplified != expr
+        assert simplified == d**2
 
-    cached_simplified = cached.simplify(expr)
-    assert simplified == cached_simplified
+        cached_simplified = cached.simplify(expr)
+        assert simplified == cached_simplified
 
+    @pytest.mark.parametrize("amplitude_idx", list(range(4)))
+    def it_simplifies_amplitude_model(
+        amplitude_model: tuple[str, HelicityModel], amplitude_idx: int
+    ):
+        _, model = amplitude_model
+        _, amplitude_expr = min(model.amplitudes.items(), key=lambda item: str(item[0]))
 
-@pytest.mark.parametrize("amplitude_idx", list(range(4)))
-def test_simplify_model(amplitude_model: tuple[str, HelicityModel], amplitude_idx: int):
-    _, model = amplitude_model
-    _, amplitude_expr = min(model.amplitudes.items(), key=lambda item: str(item[0]))
+        simplified = amplitude_expr.simplify()
+        assert simplified != amplitude_expr
 
-    simplified = amplitude_expr.simplify()
-    assert simplified != amplitude_expr
-
-    cached_simplified = cached.simplify(amplitude_expr)
-    assert simplified == cached_simplified
+        cached_simplified = cached.simplify(amplitude_expr)
+        assert simplified == cached_simplified
 
 
 def test_trigsimp():
@@ -68,12 +70,22 @@ def test_trigsimp():
     assert simplified == cached_simplified
 
 
+def test_unfold(amplitude_model: tuple[str, HelicityModel]):
+    _, model = amplitude_model
+    amplitudes = {k: v.doit() for k, v in model.amplitudes.items()}
+    intensity_expr_direct = model.intensity.doit().xreplace(amplitudes)
+    intensity_expr_unfold = cached.unfold(model.intensity, model.amplitudes)
+    assert intensity_expr_direct == intensity_expr_unfold
+
+
 @pytest.mark.parametrize("substitute", ["subs", "xreplace"])
 @pytest.mark.parametrize(
     "substitution_name", ["parameter_defaults", "kinematic_variables"]
 )
 def test_xreplace(
-    amplitude_model: tuple[str, HelicityModel], substitute: str, substitution_name: str
+    amplitude_model: tuple[str, HelicityModel],
+    substitute: str,
+    substitution_name: str,
 ):
     cached_func = getattr(cached, substitute)
     _, model = amplitude_model
@@ -86,11 +98,3 @@ def test_xreplace(
     assert substituted_expr_1 == expected_expr
     substituted_expr_2 = cached_func(full_expression, substitutions)
     assert substituted_expr_2 == expected_expr
-
-
-def test_unfold(amplitude_model: tuple[str, HelicityModel]):
-    _, model = amplitude_model
-    amplitudes = {k: v.doit() for k, v in model.amplitudes.items()}
-    intensity_expr_direct = model.intensity.doit().xreplace(amplitudes)
-    intensity_expr_unfold = cached.unfold(model.intensity, model.amplitudes)
-    assert intensity_expr_direct == intensity_expr_unfold

@@ -39,30 +39,30 @@ def test_determine_attached_final_state():
     assert determine_attached_final_state(topology, state_id=5) == [2, 3]
 
 
-@pytest.mark.parametrize("n_final_states", [2, 3, 4, 5, 6])
-def test_is_opposite_helicity_state_0_is_never_opposite(n_final_states):
-    topologies = create_isobar_topologies(n_final_states)
-    permutated_topologies = __permutate_topologies(topologies)
-    for topology in permutated_topologies:
-        assert is_opposite_helicity_state(topology, state_id=0) is False
+def describe_is_opposite_helicity_state():
+    @pytest.mark.parametrize("n_final_states", [2, 3, 4, 5, 6])
+    def it_never_marks_state_zero_as_opposite(n_final_states):
+        topologies = create_isobar_topologies(n_final_states)
+        permutated_topologies = __permutate_topologies(topologies)
+        for topology in permutated_topologies:
+            assert is_opposite_helicity_state(topology, state_id=0) is False
 
-
-@pytest.mark.parametrize("n_final_states", [2, 3, 4, 5, 6])
-def test_is_opposite_helicity_state_state_sibling_is_opposite(n_final_states):
-    topologies = create_isobar_topologies(n_final_states)
-    permutated_topologies = __permutate_topologies(topologies)
-    for topology in permutated_topologies:
-        for state_id in topology.edges:
-            if state_id in topology.incoming_edge_ids:
-                continue
-            sibling_id = get_sibling_state_id(topology, state_id)
-            assert is_opposite_helicity_state(
-                topology,
-                state_id,
-            ) != is_opposite_helicity_state(
-                topology,
-                sibling_id,
-            )
+    @pytest.mark.parametrize("n_final_states", [2, 3, 4, 5, 6])
+    def it_assigns_opposite_helicity_conventions_to_siblings(n_final_states):
+        topologies = create_isobar_topologies(n_final_states)
+        permutated_topologies = __permutate_topologies(topologies)
+        for topology in permutated_topologies:
+            for state_id in topology.edges:
+                if state_id in topology.incoming_edge_ids:
+                    continue
+                sibling_id = get_sibling_state_id(topology, state_id)
+                assert is_opposite_helicity_state(
+                    topology,
+                    state_id,
+                ) != is_opposite_helicity_state(
+                    topology,
+                    sibling_id,
+                )
 
 
 def __permutate_topologies(topologies: Iterable[Topology]) -> set[Topology]:
@@ -81,14 +81,14 @@ def __permutate_final_state_ids(topology: Topology) -> set[Topology]:
     return permutated_topologies
 
 
-def test_perform_combinatorics_no_permutations(reaction: ReactionInfo):
-    assert len(reaction.transitions) in {8, 16}
-    for transition in reaction.transitions:
-        permutated_transitions = perform_combinatorics(transition)
-        assert len(permutated_transitions) == 1
+def describe_perform_combinatorics():
+    def it_keeps_transitions_without_additional_permutations(reaction: ReactionInfo):
+        assert len(reaction.transitions) in {8, 16}
+        for transition in reaction.transitions:
+            permutated_transitions = perform_combinatorics(transition)
+            assert len(permutated_transitions) == 1
 
-
-def test_perform_combinatorics_two_permutations(d_to_pi_pi_pi: ReactionInfo):
-    assert len(d_to_pi_pi_pi.transitions) == 1
-    permutated_transitions = perform_combinatorics(d_to_pi_pi_pi.transitions[0])
-    assert len(permutated_transitions) == 2
+    def it_produces_two_permutations_for_identical_pions(d_to_pi_pi_pi: ReactionInfo):
+        assert len(d_to_pi_pi_pi.transitions) == 1
+        permutated_transitions = perform_combinatorics(d_to_pi_pi_pi.transitions[0])
+        assert len(permutated_transitions) == 2

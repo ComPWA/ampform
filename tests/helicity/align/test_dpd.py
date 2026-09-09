@@ -18,9 +18,9 @@ if TYPE_CHECKING:
     from qrules.transition import ReactionInfo, SpinFormalism
 
 
-class TestDalitzPlotDecomposition:
+def describe_DalitzPlotDecomposition():
     @pytest.fixture(scope="session", params=["canonical-helicity", "helicity"])
-    def jpsi_to_k0_sigma_pbar(self, request: SubRequest) -> ReactionInfo:
+    def jpsi_to_k0_sigma_pbar(request: SubRequest) -> ReactionInfo:
         formalism: SpinFormalism = request.param
         reaction = qrules.generate_transitions(
             initial_state=("J/psi(1S)", [-1, +1]),
@@ -33,8 +33,7 @@ class TestDalitzPlotDecomposition:
 
     @pytest.mark.parametrize("scalar_initial_state_mass", [False, True])
     @pytest.mark.parametrize("stable_final_state_ids", [None, {1, 2}, {1, 2, 3}])
-    def test_free_symbols_kinematic_variables(
-        self,
+    def it_expresses_kinematic_variables_in_final_state_momenta(
         jpsi_to_k0_sigma_pbar: ReactionInfo,
         scalar_initial_state_mass: bool,
         stable_final_state_ids: set[int] | None,
@@ -56,7 +55,9 @@ class TestDalitzPlotDecomposition:
             assert "m_0" not in str_variables
 
     @pytest.mark.slow
-    def test_free_symbols_main_expression(self, jpsi_to_k0_sigma_pbar: ReactionInfo):
+    def it_expresses_the_intensity_in_final_state_momenta(
+        jpsi_to_k0_sigma_pbar: ReactionInfo,
+    ):
         builder = ampform.get_builder(jpsi_to_k0_sigma_pbar)
         builder.config.spin_alignment = DalitzPlotDecomposition(reference_subsystem=1)
         model = builder.formulate()

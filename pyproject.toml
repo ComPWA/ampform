@@ -110,6 +110,7 @@ test = [
     "pytest",
     "pytest-benchmark",
     "pytest-cov",
+    "pytest-describe",
     "pytest-profiling",
     "pytest-xdist",
     "quadax",
@@ -464,6 +465,9 @@ known-first-party = ["ampform"]
 known-third-party = ["sympy"]
 split-on-trailing-comma = false
 
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["describe_*"]
+
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = [
     "C90",
@@ -539,6 +543,7 @@ split-on-trailing-comma = false
     "T20",
     "assert",
     "boolean-type-hint-positional-argument",
+    "complex-structure",
     "float-equality-comparison",
     "implicit-namespace-package",
     "import-private-name",
@@ -549,6 +554,7 @@ split-on-trailing-comma = false
     "suspicious-pickle-usage",
     "too-many-locals",
     "too-many-positional-arguments",
+    "too-many-statements",
     "unnecessary-collection-call",
 ]
 

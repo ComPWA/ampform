@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from sympy.printing.printer import Printer
 
 
-class TestNumericalIntegral:
+def describe_NumericalIntegral():
     @pytest.mark.parametrize(
         ("backend", "algorithm", "configuration"),
         [
@@ -26,8 +26,7 @@ class TestNumericalIntegral:
     )
     @pytest.mark.parametrize("call_doit", [False, True])
     @pytest.mark.parametrize("dummify", [False, True])
-    def test_real_value_function(
-        self,
+    def it_integrates_real_functions_with_each_backend(
         algorithm: str | None,
         backend: str,
         call_doit: bool,
@@ -62,7 +61,7 @@ class TestNumericalIntegral:
             ),
         ],
     )
-    def test_evaluation_over_arrays(self, p_value, expected):
+    def it_integrates_for_scalar_and_array_parameters(p_value, expected):
         x, p = sp.symbols("x,p")
         integral_expr = NumericalIntegral(x**p, (x, 1, 3))
         func = sp.lambdify(args=[p], expr=integral_expr)
