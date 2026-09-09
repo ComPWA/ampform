@@ -1,23 +1,37 @@
 from __future__ import annotations
 
 import logging
+import os
 import pickle
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from textwrap import dedent
 from threading import Event
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 import pytest
 import qrules
 import sympy as sp
 from frozendict import frozendict
+from sympy.core.cache import clear_cache
 
 import ampform
 from ampform._qrules import get_qrules_version
-from ampform.dynamics import EnergyDependentWidth
+from ampform.dynamics import BreitWigner, EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
+from ampform.dynamics.phasespace import (
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,
+    PhaseSpaceFactorComplex,
+)
 from ampform.sympy import _cache
-from ampform.sympy._cache import cache_to_disk, get_readable_hash
+from ampform.sympy._cache import (
+    cache_to_disk,
+    get_readable_hash,
+    make_hashable,
+    to_bytes,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,148 +42,244 @@ if TYPE_CHECKING:
     from _typeshed import SupportsWrite
     from qrules.transition import SpinFormalism
 
-
-def test_cache_to_disk_writes_atomically(tmp_path: Path, monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
-    monkeypatch.delenv("NO_CACHE", raising=False)
-    first_write_started = Event()
-    continue_first_write = Event()
-    dump_calls = 0
-
-    def dump_in_two_steps(value: Any, stream: SupportsWrite[bytes]) -> None:
-        nonlocal dump_calls
-        dump_calls += 1
-        data = pickle.dumps(value)
-        if dump_calls == 1:
-            stream.write(data[:1])
-            first_write_started.set()
-            continue_first_write.wait(timeout=5)
-            stream.write(data[1:])
-        else:
-            stream.write(data)
-
-    @cache_to_disk(dump_function=dump_in_two_steps)
-    def cached_function():
-        return "result"
-
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        first_result = executor.submit(cached_function)
-        try:
-            assert first_write_started.wait(timeout=5)
-            assert cached_function() == "result"
-        finally:
-            continue_first_write.set()
-        assert first_result.result(timeout=5) == "result"
-
-    assert not list(tmp_path.rglob("*.tmp"))
-    cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
-    assert len(cache_files) == 1
-    assert pickle.loads(cache_files[0].read_bytes()) == "result"
+    from ampform.dynamics.phasespace import PhaseSpaceFactorProtocol
 
 
-@pytest.mark.parametrize("corrupt_data", [b"", b"not a pickle"])
-def test_cache_to_disk_repairs_corrupt_file(
-    corrupt_data: bytes, tmp_path: Path, monkeypatch: MonkeyPatch
-):
-    monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
-    monkeypatch.delenv("NO_CACHE", raising=False)
-    call_count = 0
+def describe_cache_to_disk():
+    def it_writes_atomically(tmp_path: Path, monkeypatch: MonkeyPatch):
+        monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+        monkeypatch.delenv("NO_CACHE", raising=False)
+        first_write_started = Event()
+        continue_first_write = Event()
+        dump_calls = 0
 
-    @cache_to_disk
-    def cached_function():
-        nonlocal call_count
-        call_count += 1
-        return "result"
+        def dump_in_two_steps(value: Any, stream: SupportsWrite[bytes]) -> None:
+            nonlocal dump_calls
+            dump_calls += 1
+            data = pickle.dumps(value)
+            if dump_calls == 1:
+                stream.write(data[:1])
+                first_write_started.set()
+                continue_first_write.wait(timeout=5)
+                stream.write(data[1:])
+            else:
+                stream.write(data)
 
-    assert cached_function() == "result"
-    cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
-    assert len(cache_files) == 1
-    cache_files[0].write_bytes(corrupt_data)
+        @cache_to_disk(dump_function=dump_in_two_steps)
+        def cached_function():
+            return "result"
 
-    assert cached_function() == "result"
-    assert cached_function() == "result"
-    assert call_count == 2
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            first_result = executor.submit(cached_function)
+            try:
+                assert first_write_started.wait(timeout=5)
+                assert cached_function() == "result"
+            finally:
+                continue_first_write.set()
+            assert first_result.result(timeout=5) == "result"
+
+        assert not list(tmp_path.rglob("*.tmp"))
+        cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
+        assert len(cache_files) == 1
+        assert pickle.loads(cache_files[0].read_bytes()) == "result"
+
+    @pytest.mark.parametrize("corrupt_data", [b"", b"not a pickle"])
+    def it_repairs_corrupt_file(
+        corrupt_data: bytes, tmp_path: Path, monkeypatch: MonkeyPatch
+    ):
+        monkeypatch.setattr(_cache, "_get_cache_dir", lambda: tmp_path)
+        monkeypatch.delenv("NO_CACHE", raising=False)
+        call_count = 0
+
+        @cache_to_disk
+        def cached_function():
+            nonlocal call_count
+            call_count += 1
+            return "result"
+
+        assert cached_function() == "result"
+        cache_files = [path for path in tmp_path.rglob("*") if path.is_file()]
+        assert len(cache_files) == 1
+        cache_files[0].write_bytes(corrupt_data)
+
+        assert cached_function() == "result"
+        assert cached_function() == "result"
+        assert call_count == 2
 
 
-@pytest.mark.parametrize(
-    ("expected_hash", "assumptions"),
-    [
-        ("a7559ca", dict()),
-        ("278bcee", dict(real=True)),
-        ("bc417f2", dict(rational=True)),
-    ],
-    ids=["symbol", "symbol-real", "symbol-rational"],
-)
-def test_get_readable_hash(
-    assumptions: dict, expected_hash: str, caplog: LogCaptureFixture
-):
-    caplog.set_level(logging.WARNING)
-    x, y = sp.symbols("x y", **assumptions)
-    expr = x**2 + y
-    h = get_readable_hash(expr)[:7]
-    assert h == expected_hash
-    assert not caplog.text
+def describe_make_hashable():
+    def it_ignores_set_and_dict_order():
+        forward = make_hashable({"beta": {"b", "a"}, "alpha": {2, 1}})
+        backward = make_hashable({"alpha": {1, 2}, "beta": {"a", "b"}})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_sorts_items_of_mixed_types():
+        forward = make_hashable({1, "a", (2, 3)})
+        backward = make_hashable({(2, 3), "a", 1})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_distinguishes_a_set_from_a_sequence():
+        assert to_bytes(make_hashable({1, 2})) != to_bytes(make_hashable((1, 2)))
+
+    @pytest.mark.parametrize("seed", ["0", "1", "12345"])
+    def it_hashes_string_sets_identically_across_hash_seeds(seed: str):
+        obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+        source = dedent("""
+            from ampform.sympy._cache import get_readable_hash, make_hashable
+
+            obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+            print(get_readable_hash(make_hashable(obj)))
+        """)
+        output = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [sys.executable, "-c", source],
+            capture_output=True,
+            check=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            text=True,
+        )
+        assert output.stdout.strip() == get_readable_hash(make_hashable(obj))
 
 
-def test_get_readable_hash_energy_dependent_width():
-    angular_momentum = sp.Symbol("L", integer=True)
-    s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
-    expr = EnergyDependentWidth(
-        s=s,
-        mass0=m0,
-        gamma0=w0,
-        m_a=m_a,
-        m_b=m_b,
-        angular_momentum=angular_momentum,
-        meson_radius=d,
+def describe_get_readable_hash():
+    @pytest.mark.parametrize(
+        ("expected_hash", "assumptions"),
+        [
+            ("238baa6", dict()),
+            ("72a46dd", dict(real=True)),
+            ("f34cac7", dict(rational=True)),
+        ],
+        ids=["symbol", "symbol-real", "symbol-rational"],
     )
-    h = get_readable_hash(expr)[:7]
-    assert h == "3d076c6"
+    def it_hashes_symbol_assumptions(
+        assumptions: dict, expected_hash: str, caplog: LogCaptureFixture
+    ):
+        caplog.set_level(logging.WARNING)
+        x, y = sp.symbols("x y", **assumptions)
+        expr = x**2 + y
+        h = get_readable_hash(expr)[:7]
+        assert h == expected_hash
+        assert not caplog.text
+
+    def it_hashes_energy_dependent_widths_consistently():
+        angular_momentum = sp.Symbol("L", integer=True)
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        expr = EnergyDependentWidth(
+            s=s,
+            mass0=m0,
+            gamma0=w0,
+            m_a=m_a,
+            m_b=m_b,
+            angular_momentum=angular_momentum,
+            meson_radius=d,
+        )
+        h = get_readable_hash(expr)[:7]
+        assert h == "1b63a45"
+
+    @pytest.mark.parametrize(
+        ("expected_hash", "obj"),
+        [
+            ("a36cb47", b"raw bytes"),
+            ("cb5e378", "a string"),
+            ("dc0dafb", (1, "a", (2, 3))),
+            ("af94f10", frozendict({"b": 2, "a": 1})),
+            ("d7210d2", frozendict({"x": frozenset({1, 2, 3}), "y": (4, 5)})),
+        ],
+        ids=["bytes", "str", "tuple", "frozendict", "nested"],
+    )
+    def it_hashes_containers(expected_hash: str, obj: Any):
+        assert get_readable_hash(obj)[:7] == expected_hash
+
+    def it_ignores_how_sub_expressions_are_shared():
+        """Equal expressions must hash the same, however SymPy shared their parts.
+
+        SymPy returns a cached instance for an equal expression, but its cache is a
+        bounded LRU, so an expression can end up with either one shared sub-expression
+        or two equal ones depending on what was built before it.
+        """
+        x, y = sp.symbols("x y")
+        shared = sp.sqrt(x**2 + y**2)
+        with_one_instance = shared + y * shared
+        clear_cache()
+        duplicate = sp.sqrt(x**2 + y**2)
+        with_two_instances = shared + y * duplicate
+
+        assert with_one_instance == with_two_instances
+        assert to_bytes(with_one_instance) == to_bytes(with_two_instances)
+
+    @pytest.mark.parametrize("expression_type", [EnergyDependentWidth, BreitWigner])
+    def it_distinguishes_phase_space_factors(expression_type):
+        """Arguments that are not sympified must still reach the hash."""
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        angular_momentum = sp.Symbol("L", integer=True)
+
+        def make_width(phsp_factor: PhaseSpaceFactorProtocol) -> sp.Expr:
+            return expression_type(
+                s,
+                m0,
+                w0,
+                m_a,
+                m_b,
+                angular_momentum=angular_momentum,
+                meson_radius=d,
+                phsp_factor=phsp_factor,
+            )
+
+        hashes = {
+            get_readable_hash(make_width(phsp_factor))
+            for phsp_factor in (
+                PhaseSpaceFactor,
+                PhaseSpaceFactorAbs,
+                PhaseSpaceFactorComplex,
+            )
+        }
+        assert len(hashes) == 3
 
 
-class TestLargeHash:
-    initial_state: ClassVar = [("J/psi(1S)", [-1, 1])]
-    final_state: ClassVar = ["gamma", "pi0", "pi0"]
-    allowed_intermediate_particles: ClassVar = ["f(0)(980)", "f(0)(1500)"]
-    allowed_interaction_types: ClassVar = "strong"
+def describe_large_hash():
+    initial_state = [("J/psi(1S)", [-1, 1])]
+    final_state = ["gamma", "pi0", "pi0"]
+    allowed_intermediate_particles = ["f(0)(980)", "f(0)(1500)"]
+    allowed_interaction_types = "strong"
 
     @pytest.mark.parametrize(
         ("expected_hash", "formalism"),
         [
             (
-                "762cc00" if sys.version_info >= (3, 11) else "1f5ac33",
+                "627ee45" if sys.version_info >= (3, 11) else "206587e",
                 "canonical-helicity",
             ),
             (
-                "17fefe5" if sys.version_info >= (3, 11) else "7b5fad1",
+                "422ec6b" if sys.version_info >= (3, 11) else "4c37f61",
                 "helicity",
             ),
         ],
         ids=["canonical-helicity", "helicity"],
     )
-    def test_reaction(self, expected_hash: str, formalism: SpinFormalism):
+    def it_hashes_reactions_consistently(expected_hash: str, formalism: SpinFormalism):
         if get_qrules_version() < (0, 10):
             pytest.skip("Hashes of are not stable in qrules<0.10")
         reaction = qrules.generate_transitions(
-            initial_state=self.initial_state,
-            final_state=self.final_state,
-            allowed_intermediate_particles=self.allowed_intermediate_particles,
-            allowed_interaction_types=self.allowed_interaction_types,
+            initial_state=initial_state,
+            final_state=final_state,
+            allowed_intermediate_particles=allowed_intermediate_particles,
+            allowed_interaction_types=allowed_interaction_types,
             formalism=formalism,
         )
         h = get_readable_hash(reaction)[:7]
         assert h == expected_hash
 
     @pytest.mark.parametrize(
-        ("expected_hashes", "formalism"),
+        ("expected_hash", "formalism"),
         [
-            ({"2b77221", "8397450", "a80fbd1", "dc1ee0e"}, "canonical-helicity"),
-            ({"7be27a6", "8c8c070", "aced899", "cbd5ff0", "ceecb32"}, "helicity"),
+            ("6165ac0", "canonical-helicity"),
+            ("8f6174c", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
     @pytest.mark.slow
-    def test_amplitude_model(self, expected_hashes: set[str], formalism: SpinFormalism):
+    def it_hashes_amplitude_models_consistently(
+        expected_hash: str, formalism: SpinFormalism
+    ):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
             final_state=["p~", "K0", "Sigma+"],
@@ -196,10 +306,9 @@ class TestLargeHash:
         assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
         intensity_hash = get_readable_hash(intensity)[:7]
-        assert intensity_hash in {"c83b853", "d113a38"}
+        assert intensity_hash == "1cd3567"
 
         amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
         unfolded_intensity = intensity.xreplace(amplitudes)
         unfolded_intensity_hash = get_readable_hash(unfolded_intensity)[:7]
-        assert unfolded_intensity_hash in expected_hashes
-        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform-dpd/discussions/163
+        assert unfolded_intensity_hash == expected_hash

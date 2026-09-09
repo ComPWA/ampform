@@ -32,7 +32,7 @@ def test_generate_transition_label(reaction: ReactionInfo):
 @pytest.mark.parametrize("parent_helicities", [False, True])
 @pytest.mark.parametrize("child_helicities", [False, True])
 @pytest.mark.parametrize("ls_combinations", [False, True])
-def test_coefficient_names(
+def test_amplitude_name_generators(
     reaction: ReactionInfo,
     parent_helicities,
     child_helicities,

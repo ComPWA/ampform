@@ -49,10 +49,94 @@ def normalize(sympy_expression: sp.Expr, variable_names: Sequence[str]) -> sp.Ex
     return sp.trigsimp((sympy_expression / normalization).expand(trig=True))
 
 
-class TestEpemToDmD0Pip:
-    @pytest.fixture(scope="class")
-    @classmethod
-    def sympy_model(cls, particle_database: ParticleCollection) -> sp.Expr:
+def describe_d1_to_d0_pi_pi():
+    @pytest.fixture(scope="module")
+    def sympy_model() -> sp.Expr:
+        reaction = qrules.generate_transitions(
+            initial_state=[("D(1)(2420)0", [-1])],
+            final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
+            allowed_intermediate_particles=["D*"],
+            allowed_interaction_types="strong",
+            formalism="helicity",
+        )
+        amplitude_model = get_builder(reaction).formulate()
+
+        coefficient = sp.Symbol(
+            R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "
+            R"D^{*}(2010)^{+} \to D^{0}_{0} \pi^{+}_{0}}"
+        )
+        if coefficient not in amplitude_model.parameter_defaults:
+            msg = (
+                f"Coefficient {coefficient} does not exist in parameter defaults."
+                f" Choose any of {list(amplitude_model.parameter_defaults)}"
+            )
+            raise KeyError(msg)
+        amplitude_model.parameter_defaults[coefficient] = 0.5
+
+        full_model = sp.simplify(
+            amplitude_model.expression
+            .subs(amplitude_model.parameter_defaults)
+            .doit()
+            .expand(complex=True)
+        )
+        assert sp.im(full_model) == 0
+        return sp.re(full_model)
+
+    @pytest.mark.parametrize(
+        ("angular_variables", "expected_distribution_function"),
+        [
+            (  # theta distribution from D1 decay
+                "theta_02",
+                sp.Rational(5, 4)
+                + sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_02", real=True)) ** 2,
+            ),
+            (  # theta distribution from D*
+                "theta_0^02",
+                1 - sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2,
+            ),
+            (  # phi distribution of the D* decay
+                "phi_0^02",
+                1 - sp.Rational(4, 9) * sp.cos(2 * sp.Symbol("phi_0^02", real=True)),
+            ),
+        ],
+    )
+    def it_reproduces_expected_angular_distributions(
+        angular_variables: str | Sequence[str],
+        expected_distribution_function: sp.Expr,
+        sympy_model: sp.Expr,
+    ) -> None:
+        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
+        assert {s.name for s in free_symbols} == {
+            "phi_0^02",
+            "theta_02",
+            "theta_0^02",
+        }
+
+        if isinstance(angular_variables, str):
+            angular_variables = (angular_variables,)
+
+        # remove angular variable
+        integration_variable_set = set(angular_variables)
+        integration_variables = [
+            x for x in free_symbols if x.name not in integration_variable_set
+        ]
+
+        # Note: using nsimplify with rational=True solves assertion failure due
+        # to float point imprecision
+        assert normalize(
+            expected_distribution_function, angular_variables
+        ) == normalize(
+            calculate_sympy_integral(
+                sympy_model,
+                integration_variables,
+            ),
+            angular_variables,
+        )
+
+
+def describe_epem_to_dm_d0_pip():
+    @pytest.fixture(scope="module")
+    def sympy_model(particle_database: ParticleCollection) -> sp.Expr:
         epem = Particle(
             name="EpEm",
             pid=12345678,
@@ -109,95 +193,7 @@ class TestEpemToDmD0Pip:
             ),
         ],
     )
-    def test_angular_distributions(
-        self,
-        angular_variables: str | Sequence[str],
-        expected_distribution_function: sp.Expr,
-        sympy_model: sp.Expr,
-    ) -> None:
-        free_symbols = cast("set[sp.Symbol]", sympy_model.free_symbols)
-        assert {s.name for s in free_symbols} == {
-            "phi_0^02",
-            "theta_02",
-            "theta_0^02",
-        }
-
-        if isinstance(angular_variables, str):
-            angular_variables = (angular_variables,)
-
-        # remove angular variable
-        integration_variable_set = set(angular_variables)
-        integration_variables = [
-            x for x in free_symbols if x.name not in integration_variable_set
-        ]
-
-        # Note: using nsimplify with rational=True solves assertion failure due
-        # to float point imprecision
-        assert normalize(
-            expected_distribution_function, angular_variables
-        ) == normalize(
-            calculate_sympy_integral(
-                sympy_model,
-                integration_variables,
-            ),
-            angular_variables,
-        )
-
-
-class TestD1ToD0PiPi:
-    @pytest.fixture(scope="class")
-    @classmethod
-    def sympy_model(cls) -> sp.Expr:
-        reaction = qrules.generate_transitions(
-            initial_state=[("D(1)(2420)0", [-1])],
-            final_state=[("D0", [0]), ("pi-", [0]), ("pi+", [0])],
-            allowed_intermediate_particles=["D*"],
-            allowed_interaction_types="strong",
-            formalism="helicity",
-        )
-        amplitude_model = get_builder(reaction).formulate()
-
-        coefficient = sp.Symbol(
-            R"C_{D_{1}(2420)^{0} \to D^{*}(2010)^{+}_{0} \pi^{-}_{0}; "
-            R"D^{*}(2010)^{+} \to D^{0}_{0} \pi^{+}_{0}}"
-        )
-        if coefficient not in amplitude_model.parameter_defaults:
-            msg = (
-                f"Coefficient {coefficient} does not exist in parameter defaults."
-                f" Choose any of {list(amplitude_model.parameter_defaults)}"
-            )
-            raise KeyError(msg)
-        amplitude_model.parameter_defaults[coefficient] = 0.5
-
-        full_model = sp.simplify(
-            amplitude_model.expression
-            .subs(amplitude_model.parameter_defaults)
-            .doit()
-            .expand(complex=True)
-        )
-        assert sp.im(full_model) == 0
-        return sp.re(full_model)
-
-    @pytest.mark.parametrize(
-        ("angular_variables", "expected_distribution_function"),
-        [
-            (  # theta distribution from D1 decay
-                "theta_02",
-                sp.Rational(5, 4)
-                + sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_02", real=True)) ** 2,
-            ),
-            (  # theta distribution from D*
-                "theta_0^02",
-                1 - sp.Rational(3, 4) * sp.cos(sp.Symbol("theta_0^02", real=True)) ** 2,
-            ),
-            (  # phi distribution of the D* decay
-                "phi_0^02",
-                1 - sp.Rational(4, 9) * sp.cos(2 * sp.Symbol("phi_0^02", real=True)),
-            ),
-        ],
-    )
-    def test_angular_distributions(
-        self,
+    def it_reproduces_expected_angular_distributions(
         angular_variables: str | Sequence[str],
         expected_distribution_function: sp.Expr,
         sympy_model: sp.Expr,

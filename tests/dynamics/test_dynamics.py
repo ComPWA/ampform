@@ -23,9 +23,8 @@ if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
 
 
-class TestEnergyDependentWidth:
-    @staticmethod
-    def test_init():
+def describe_EnergyDependentWidth():
+    def it_initializes_width_parameters_and_phase_space_factors():
         angular_momentum = sp.Symbol("L", integer=True)
         s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
         width = EnergyDependentWidth(
@@ -59,7 +58,7 @@ class TestEnergyDependentWidth:
         assert width.name == "Gamma_1"
 
     @pytest.mark.parametrize("method", ["subs", "xreplace"])
-    def test_doit_and_subs(self, method: str):
+    def it_commutes_evaluation_with_parameter_substitution(method: str):
         s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b", nonnegative=True)
         parameters = {
             m0: 1.44,
@@ -84,23 +83,20 @@ class TestEnergyDependentWidth:
         assert str(subs_first) == str(doit_first)
 
 
-class TestBreitWigner:
-    @staticmethod
-    def test_simple_limit():
+def describe_BreitWigner():
+    def it_reduces_to_simple_breit_wigner():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
         breit_wigner = BreitWigner(s, m0, w0)
         assert breit_wigner.doit() == SimpleBreitWigner(s, m0, w0).doit()
 
-    @staticmethod
-    def test_energy_dependent_width_only_appears_in_denominator():
+    def it_uses_energy_dependent_width_only_in_denominator():
         s, m0, w0, m1, m2 = sp.symbols("s m0 Gamma0 m1 m2", nonnegative=True)
         breit_wigner = BreitWigner(s, m0, w0, m1, m2)
         running_width = breit_wigner.energy_dependent_width()
         expected = m0 * w0 / (m0**2 - s - m0 * running_width * sp.I)
         assert breit_wigner.doit(deep=False) == expected
 
-    @staticmethod
-    def test_multichannel_width_is_sum_of_channel_widths():
+    def it_sums_multichannel_widths():
         s, m0, g1, g2, m1, m2 = sp.symbols("s m0 g1 g2 m1 m2", nonnegative=True)
         channels = (
             ChannelArguments(s, m0, g1, m1, m2),
@@ -113,7 +109,7 @@ class TestBreitWigner:
         assert breit_wigner.free_symbols == {s, m0, g1, g2, m1, m2}
 
     @pytest.mark.parametrize("method", ["subs", "xreplace"])
-    def test_multichannel_substitution(self, method):
+    def it_preserves_multichannel_substitution(method):
         s, mass, coupling, m1, m2 = sp.symbols("s mass g m1 m2", positive=True)
         channel = ChannelArguments(s, mass, coupling, m1, m2)
         expression = MultichannelBreitWigner(s, mass, (channel,))
@@ -122,8 +118,7 @@ class TestBreitWigner:
         expected = _subs(expression.doit(), replacements, method)
         assert sp.simplify(actual - expected) == 0
 
-    @staticmethod
-    def test_multichannel_matches_serialized_l1405():
+    def it_matches_serialized_l1405():
         s = sp.Float(2.0)
         mass = sp.Float(1.4051)
         channel_definitions = (
@@ -147,7 +142,7 @@ def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
     return getattr(obj, method)(replacements)
 
 
-def test_generate(
+def test_builds_amplitude_with_resonance_dynamics(
     amplitude_model: tuple[str, HelicityModel],
     particle_database: ParticleCollection,
 ):

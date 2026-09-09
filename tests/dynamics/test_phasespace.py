@@ -6,8 +6,8 @@ import sympy as sp
 from ampform.dynamics.phasespace import ChewMandelstamIntegral, ChewMandelstamSWave
 
 
-class TestChewMandelstam:
-    def test_numerical_integral_s_wave(self):
+def describe_chew_mandelstam_s_wave():
+    def it_agrees_with_the_numerical_s_wave_integral():
         s = sp.Symbol("s")
         m1 = 0.938
         m2 = 0.140
