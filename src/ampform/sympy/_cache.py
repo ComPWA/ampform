@@ -24,13 +24,13 @@ from contextlib import suppress
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, NamedTuple, overload
 
 import sympy as sp
 from frozendict import frozendict
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import Hashable, Iterable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -251,8 +251,9 @@ def get_readable_hash(obj: Hashable) -> str:
     matter what was constructed before them or in which process, which is what makes the
     hash usable as a cache key in :func:`.cache_to_disk`.
 
-    Sets and dictionaries are an exception. They are serialized in iteration order,
-    which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`.
+    Sets and dictionaries hash the same whatever order they are iterated or built in, so
+    that a substitution mapping built from something like
+    :attr:`~sympy.core.basic.Basic.free_symbols` gets the same hash in every process.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
@@ -279,7 +280,7 @@ def _dump_deterministically(obj, stream: SupportsWrite[bytes]) -> None:
 
 
 class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-access]
-    """Pickler whose output does not depend on object identity.
+    """Pickler whose output does not depend on object identity or iteration order.
 
     A pickle stores a repeated object as a back-reference to the first time it was
     written, keyed on identity. SymPy hands out a cached instance for equal expressions,
@@ -296,9 +297,17 @@ class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-acc
     full on each occurrence, because whether two equal non-SymPy objects are one shared
     instance depends on caches and string interning elsewhere.
 
+    Sets and dictionaries are written in a sorted order. A `set` iterates in an order
+    that depends on :code:`PYTHONHASHSEED` for `str` elements. A `dict` iterates in
+    insertion order, which is not seed-dependent in itself, but two dictionaries that
+    compare equal can have been built in a different order, and a dictionary built by
+    iterating a `set` inherits that seed-dependent order.
+
     The pure-Python pickler is subclassed because the C accelerator does not dispatch to
     these overrides.
     """
+
+    dispatch = pickle._Pickler.dispatch.copy()  # ruff: ignore[private-member-access]
 
     def __init__(self, stream: SupportsWrite[bytes]) -> None:
         super().__init__(stream, protocol=pickle.HIGHEST_PROTOCOL)
@@ -313,6 +322,34 @@ class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-acc
     def memoize(self, obj) -> None:
         if isinstance(obj, sp.Basic):
             super().memoize(obj)
+
+    def save_set(self, obj) -> None:
+        self.save(_SortedContainer("set", _sorted_deterministically(obj)))
+
+    def save_frozenset(self, obj) -> None:
+        self.save(_SortedContainer("frozenset", _sorted_deterministically(obj)))
+
+    def _batch_setitems(self, items, *args) -> None:
+        # Python 3.14 passes an additional argument
+        super()._batch_setitems(iter(_sorted_deterministically(items)), *args)
+
+    dispatch[set] = save_set  # ty: ignore[invalid-assignment]
+    dispatch[frozenset] = save_frozenset  # ty: ignore[invalid-assignment]
+
+
+class _SortedContainer(NamedTuple):
+    """Sorted stand-in for a set, tagged so that it cannot collide with a `tuple`."""
+
+    kind: str
+    items: list
+
+
+def _sorted_deterministically(items: Iterable) -> list:
+    """Sort items, falling back to their serialization when they are not orderable."""
+    try:
+        return sorted(items)
+    except TypeError:
+        return sorted(items, key=to_bytes)
 
 
 def make_hashable(*args) -> Hashable:
