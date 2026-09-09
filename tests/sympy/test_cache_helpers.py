@@ -11,13 +11,19 @@ import pytest
 import qrules
 import sympy as sp
 from frozendict import frozendict
+from sympy.core.cache import clear_cache
 
 import ampform
 from ampform._qrules import get_qrules_version
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
+from ampform.dynamics.phasespace import (
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,
+    PhaseSpaceFactorComplex,
+)
 from ampform.sympy import _cache
-from ampform.sympy._cache import cache_to_disk, get_readable_hash
+from ampform.sympy._cache import cache_to_disk, get_readable_hash, to_bytes
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,6 +33,8 @@ if TYPE_CHECKING:
     from _pytest.monkeypatch import MonkeyPatch
     from _typeshed import SupportsWrite
     from qrules.transition import SpinFormalism
+
+    from ampform.dynamics.phasespace import PhaseSpaceFactorProtocol
 
 
 def describe_cache_to_disk():
@@ -140,6 +148,50 @@ def describe_get_readable_hash():
     def it_hashes_containers(expected_hash: str, obj: Any):
         """Pin the hashes of the container types that :func:`.to_bytes` is used on."""
         assert get_readable_hash(obj)[:7] == expected_hash
+
+    def it_ignores_how_sub_expressions_are_shared():
+        """Equal expressions must hash the same, however SymPy shared their parts.
+
+        SymPy returns a cached instance for an equal expression, but its cache is a
+        bounded LRU, so an expression can end up with either one shared sub-expression or
+        two equal ones depending on what was built before it.
+        """
+        x, y = sp.symbols("x y")
+        shared = sp.sqrt(x**2 + y**2)
+        with_one_instance = shared + y * shared
+        clear_cache()
+        duplicate = sp.sqrt(x**2 + y**2)
+        with_two_instances = shared + y * duplicate
+
+        assert with_one_instance == with_two_instances
+        assert to_bytes(with_one_instance) == to_bytes(with_two_instances)
+
+    def it_distinguishes_phase_space_factors():
+        """Arguments that are not sympified must still reach the hash."""
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        angular_momentum = sp.Symbol("L", integer=True)
+
+        def make_width(phsp_factor: PhaseSpaceFactorProtocol) -> EnergyDependentWidth:
+            return EnergyDependentWidth(
+                s=s,
+                mass0=m0,
+                gamma0=w0,
+                m_a=m_a,
+                m_b=m_b,
+                angular_momentum=angular_momentum,
+                meson_radius=d,
+                phsp_factor=phsp_factor,
+            )
+
+        hashes = {
+            get_readable_hash(make_width(phsp_factor))
+            for phsp_factor in (
+                PhaseSpaceFactor,
+                PhaseSpaceFactorAbs,
+                PhaseSpaceFactorComplex,
+            )
+        }
+        assert len(hashes) == 3
 
 
 def describe_large_hash():

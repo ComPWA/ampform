@@ -252,7 +252,9 @@ def get_readable_hash(obj: Hashable) -> str:
     hash usable as a cache key in :func:`.cache_to_disk`.
 
     Sets and dictionaries are an exception. They are serialized in iteration order,
-    which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`.
+    which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`. The
+    wrappers in :mod:`~ampform.sympy.cached` sort the substitution mappings they are
+    given, so their cache keys do not depend on the order in which the caller built them.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.

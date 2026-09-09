@@ -5,8 +5,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 import sympy as sp
+from frozendict import frozendict
 
 from ampform.sympy import cached
+from ampform.sympy._cache import to_bytes
+from ampform.sympy.cached import _sorted_frozendict
 
 if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
@@ -98,3 +101,27 @@ def test_xreplace(
     assert substituted_expr_1 == expected_expr
     substituted_expr_2 = cached_func(full_expression, substitutions)
     assert substituted_expr_2 == expected_expr
+
+
+def test_xreplace_ignores_substitution_order():
+    """Substitutions built in a different order must map to the same cache key."""
+    expr = sp.sympify("a*sin(b) + c**2 + d/e + f")
+    forward = {s: sp.Symbol(f"{s}_new") for s in sorted(expr.free_symbols, key=str)}
+    backward = dict(reversed(list(forward.items())))
+    assert tuple(forward) != tuple(backward)
+    assert to_bytes(frozendict(forward)) != to_bytes(frozendict(backward))
+    assert to_bytes(_sorted_frozendict(forward)) == to_bytes(
+        _sorted_frozendict(backward)
+    )
+
+
+def test_xreplace_orders_symbols_with_equal_sort_key():
+    """Symbols that differ only in their assumptions must still get a fixed order."""
+    x = sp.Symbol("x")
+    x_real = sp.Symbol("x", real=True)
+    assert sp.default_sort_key(x) == sp.default_sort_key(x_real)
+    forward = {x: 1, x_real: 2}
+    backward = {x_real: 2, x: 1}
+    assert to_bytes(_sorted_frozendict(forward)) == to_bytes(
+        _sorted_frozendict(backward)
+    )
