@@ -97,7 +97,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/tombi-toml/tombi-pre-commit
-    rev: v1.5.1
+    rev: v1.5.2
     hooks:
       - id: tombi-format
       - id: tombi-lint
@@ -138,12 +138,12 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.78
+    rev: v0.0.79
     hooks:
       - id: ty
         args: [--group=types, --no-default-groups]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.12.9
+    rev: 0.12.11
     hooks:
       - id: uv-lock
