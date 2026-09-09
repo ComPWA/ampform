@@ -6,10 +6,14 @@ import pytest
 import sympy as sp
 
 from ampform.dynamics import (
+    BreitWigner,
+    ChannelArguments,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    MultichannelBreitWigner,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
+    SimpleBreitWigner,
     relativistic_breit_wigner_with_ff,
 )
 
@@ -77,6 +81,61 @@ def describe_EnergyDependentWidth():
         subs_first = round_nested(subs_first, n_decimals=3)
         doit_first = round_nested(doit_first, n_decimals=3)
         assert str(subs_first) == str(doit_first)
+
+
+def describe_BreitWigner():
+    def it_reduces_to_simple_breit_wigner():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0)
+        assert breit_wigner.doit() == SimpleBreitWigner(s, m0, w0).doit()
+
+    def it_uses_energy_dependent_width_only_in_denominator():
+        s, m0, w0, m1, m2 = sp.symbols("s m0 Gamma0 m1 m2", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, m1, m2)
+        running_width = breit_wigner.energy_dependent_width()
+        expected = m0 * w0 / (m0**2 - s - m0 * running_width * sp.I)
+        assert breit_wigner.doit(deep=False) == expected
+
+    def it_sums_multichannel_widths():
+        s, m0, g1, g2, m1, m2 = sp.symbols("s m0 g1 g2 m1 m2", nonnegative=True)
+        channels = (
+            ChannelArguments(s, m0, g1, m1, m2),
+            ChannelArguments(s, m0, g2, m1, m2),
+        )
+        breit_wigner = MultichannelBreitWigner(s, m0, channels)
+        total_width = sp.Add(*channels)
+        expected = 1 / (m0**2 - s - sp.I * m0 * total_width)
+        assert breit_wigner.doit(deep=False) == expected
+        assert breit_wigner.free_symbols == {s, m0, g1, g2, m1, m2}
+
+    @pytest.mark.parametrize("method", ["subs", "xreplace"])
+    def it_preserves_multichannel_substitution(method):
+        s, mass, coupling, m1, m2 = sp.symbols("s mass g m1 m2", positive=True)
+        channel = ChannelArguments(s, mass, coupling, m1, m2)
+        expression = MultichannelBreitWigner(s, mass, (channel,))
+        replacements = {coupling: 2, m1: 1, m2: 1}
+        actual = _subs(expression, replacements, method).doit()
+        expected = _subs(expression.doit(), replacements, method)
+        assert sp.simplify(actual - expected) == 0
+
+    def it_matches_serialized_l1405():
+        s = sp.Float(2.0)
+        mass = sp.Float(1.4051)
+        channel_definitions = (
+            (0.328725260215546, 0.938272046, 0.493677, 0, 0),
+            (0.328725260215546, 1.18937, 0.13957018, 0, 0),
+        )
+        channels = tuple(
+            ChannelArguments(s, mass, *map(sp.sympify, definition))
+            for definition in channel_definitions
+        )
+        actual = complex(sp.N(MultichannelBreitWigner(s, mass, channels).doit()))
+        mass_width = sum(
+            coupling_squared * sp.sqrt((s - (m1 - m2) ** 2) * (s - (m1 + m2) ** 2)) / s
+            for coupling_squared, m1, m2, _, __ in channel_definitions
+        )
+        expected = complex(1 / (mass**2 - s - sp.I * mass_width))
+        assert actual == pytest.approx(expected)
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:

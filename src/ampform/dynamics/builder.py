@@ -8,7 +8,7 @@ import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
 
-from ampform.dynamics import EnergyDependentWidth, FormFactor, relativistic_breit_wigner
+from ampform.dynamics import BreitWigner, FormFactor, SimpleBreitWigner
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -51,7 +51,7 @@ class ResonanceDynamicsBuilder(Protocol):
 
     Follow this `~typing.Protocol` when defining a builder function that is to be used
     by `.DynamicsSelector.assign`. For an example, see the source code
-    `.create_relativistic_breit_wigner`, which creates a `.relativistic_breit_wigner`.
+    `.create_relativistic_breit_wigner`, which creates a `.SimpleBreitWigner`.
 
     .. seealso:: :doc:`/dynamics/custom`
     """
@@ -150,10 +150,10 @@ class RelativisticBreitWignerBuilder:
         identifier = resonance.latex or resonance.name
         res_mass = sp.Symbol(f"m_{{{identifier}}}", nonnegative=True)
         res_width = sp.Symbol(Rf"\Gamma_{{{identifier}}}", nonnegative=True)
-        expression = relativistic_breit_wigner(
+        expression = SimpleBreitWigner(
             s=inv_mass**2,
-            mass0=res_mass,
-            gamma0=res_width,
+            mass=res_mass,
+            width=res_width,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
@@ -175,25 +175,22 @@ class RelativisticBreitWignerBuilder:
         res_mass, res_width, meson_radius = self.__create_symbols(resonance)
 
         s = inv_mass**2
-        mass_dependent_width = EnergyDependentWidth(
+        expression = BreitWigner(
             s=s,
-            mass0=res_mass,
-            gamma0=res_width,
-            m_a=m_a,
-            m_b=m_b,
+            mass=res_mass,
+            width=res_width,
+            m1=m_a,
+            m2=m_b,
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
             phsp_factor=self.phsp_factor,
-        )
-        breit_wigner_expr = (res_mass * res_width) / (
-            res_mass**2 - s - mass_dependent_width * res_mass * sp.I
         )
         parameter_defaults = {
             res_mass: resonance.mass,
             res_width: resonance.width,
             meson_radius: 1,
         }
-        return breit_wigner_expr, parameter_defaults
+        return expression, parameter_defaults
 
     def __create_form_factor(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
@@ -230,7 +227,7 @@ class RelativisticBreitWignerBuilder:
 create_relativistic_breit_wigner = RelativisticBreitWignerBuilder(
     form_factor=False
 ).__call__
-"""Create a `.relativistic_breit_wigner` for a two-body decay.
+"""Create a `.SimpleBreitWigner` for a two-body decay.
 
 This is a convenience function for a `RelativisticBreitWignerBuilder` _without_ form
 factor.

@@ -294,6 +294,15 @@ def extend_BoostZMatrix() -> None:
     )
 
 
+def extend_BreitWigner() -> None:
+    from ampform.dynamics import BreitWigner
+
+    s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
+    L = sp.Symbol("L", integer=True, nonnegative=True)
+    expr = BreitWigner(s, m0, w0, m1, m2, angular_momentum=L, meson_radius=d)
+    _append_latex_doit_definition(expr)
+
+
 def extend_ComplexSqrt() -> None:
     x = sp.Symbol("x", real=True)
     expr = ComplexSqrt(x)
@@ -446,6 +455,22 @@ def extend_is_within_phasespace() -> None:
     )
 
 
+def extend_MultichannelBreitWigner() -> None:
+    from ampform.dynamics import ChannelArguments, MultichannelBreitWigner
+
+    s, m0 = sp.symbols("s m0", nonnegative=True)
+    channels = tuple(
+        ChannelArguments(
+            s,
+            m0,
+            *sp.symbols(f"g{i}sq m_a{i} m_b{i} L{i} d", nonnegative=True),
+        )
+        for i in [1, 2]
+    )
+    expr = MultichannelBreitWigner(s, m0, channels=channels)
+    _append_latex_doit_definition(expr)
+
+
 def extend_Phi() -> None:
     from ampform.kinematics.angles import Phi
 
@@ -509,6 +534,14 @@ def extend_RotationZMatrix() -> None:
     See also the note that comes with Equation :eq:`boost-in-z-direction`.
     """,
     )
+
+
+def extend_SimpleBreitWigner() -> None:
+    from ampform.dynamics import SimpleBreitWigner
+
+    s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+    expr = SimpleBreitWigner(s, m0, w0)
+    _append_latex_doit_definition(expr)
 
 
 def extend_SphericalHankel1() -> None:
@@ -611,20 +644,6 @@ def extend_get_boost_chain_suffix() -> None:
         f"""
     {mermaid0}
     {mermaid1}
-    """,
-    )
-
-
-def extend_relativistic_breit_wigner() -> None:
-    from ampform.dynamics import relativistic_breit_wigner
-
-    s, m0, w0 = sp.symbols("s m0 Gamma0")
-    rel_bw = relativistic_breit_wigner(s, m0, w0)
-    _append_to_docstring(
-        relativistic_breit_wigner,
-        f"""
-    .. math:: {sp.latex(rel_bw)}
-        :label: relativistic_breit_wigner
     """,
     )
 

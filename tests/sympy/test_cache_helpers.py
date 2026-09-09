@@ -18,7 +18,7 @@ from sympy.core.cache import clear_cache
 
 import ampform
 from ampform._qrules import get_qrules_version
-from ampform.dynamics import EnergyDependentWidth
+from ampform.dynamics import BreitWigner, EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
 from ampform.dynamics.phasespace import (
     PhaseSpaceFactor,
@@ -206,18 +206,19 @@ def describe_get_readable_hash():
         assert with_one_instance == with_two_instances
         assert to_bytes(with_one_instance) == to_bytes(with_two_instances)
 
-    def it_distinguishes_phase_space_factors():
+    @pytest.mark.parametrize("expression_type", [EnergyDependentWidth, BreitWigner])
+    def it_distinguishes_phase_space_factors(expression_type):
         """Arguments that are not sympified must still reach the hash."""
         s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
         angular_momentum = sp.Symbol("L", integer=True)
 
-        def make_width(phsp_factor: PhaseSpaceFactorProtocol) -> EnergyDependentWidth:
-            return EnergyDependentWidth(
-                s=s,
-                mass0=m0,
-                gamma0=w0,
-                m_a=m_a,
-                m_b=m_b,
+        def make_width(phsp_factor: PhaseSpaceFactorProtocol) -> sp.Expr:
+            return expression_type(
+                s,
+                m0,
+                w0,
+                m_a,
+                m_b,
                 angular_momentum=angular_momentum,
                 meson_radius=d,
                 phsp_factor=phsp_factor,
