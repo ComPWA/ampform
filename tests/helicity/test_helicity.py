@@ -29,11 +29,10 @@ if TYPE_CHECKING:
     from qrules.transition import SpinFormalism
 
 
-class TestHelicityAmplitudeBuilder:
+def describe_HelicityAmplitudeBuilder():
     @pytest.mark.parametrize("permutate_topologies", [False, True])
     @pytest.mark.parametrize("stable_final_state_ids", [None, (1, 2), (0, 1, 2)])
-    def test_formulate(
-        self,
+    def it_builds_amplitudes_for_configured_topologies_and_masses(
         permutate_topologies,
         reaction: ReactionInfo,
         stable_final_state_ids,
@@ -98,13 +97,13 @@ class TestHelicityAmplitudeBuilder:
         else:
             assert no_dynamics == 8.0 - 4.0 * sp.sin(theta) ** 2
 
-    def test_stable_final_state_ids(self, reaction: ReactionInfo):
+    def it_stores_stable_final_state_ids_as_a_set(reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.config.stable_final_state_ids is None
         builder.config.stable_final_state_ids = (1, 2)
         assert builder.config.stable_final_state_ids == {1, 2}
 
-    def test_scalar_initial_state(self, reaction: ReactionInfo):
+    def it_treats_scalar_initial_state_mass_as_a_parameter(reaction: ReactionInfo):
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         assert builder.config.scalar_initial_state_mass is False
         initial_state_mass = sp.Symbol("m_012", nonnegative=True)
@@ -118,7 +117,9 @@ class TestHelicityAmplitudeBuilder:
         assert initial_state_mass not in model.kinematic_variables
         assert initial_state_mass in model.parameter_defaults
 
-    def test_use_helicity_couplings(self, reaction: ReactionInfo):
+    def it_replaces_amplitude_coefficients_with_helicity_couplings(
+        reaction: ReactionInfo,
+    ):
         # cspell:ignore coeff
         builder: HelicityAmplitudeBuilder = get_builder(reaction)
         builder.config.use_helicity_couplings = False
@@ -162,30 +163,32 @@ class TestHelicityAmplitudeBuilder:
             }
 
 
-class TestHelicityModel:
-    def test_parameter_defaults_item_types(
-        self, amplitude_model: tuple[str, HelicityModel]
+def describe_HelicityModel():
+    def it_maps_symbols_to_supported_parameter_values(
+        amplitude_model: tuple[str, HelicityModel],
     ):
         _, model = amplitude_model
         for symbol, value in model.parameter_defaults.items():
             assert isinstance(symbol, sp.Symbol)
             assert isinstance(value, ParameterValue.__args__)
 
-    def test_pickle_roundtrip(self, amplitude_model: tuple[str, HelicityModel]):
+    def it_survives_a_pickle_roundtrip(amplitude_model: tuple[str, HelicityModel]):
         """See https://github.com/ComPWA/ampform/issues/471."""
         _, model = amplitude_model
         pickled_model: HelicityModel = pickle.loads(pickle.dumps(model))
         assert pickled_model.kinematic_variables == model.kinematic_variables
         assert pickled_model == model
 
-    def test_rename_symbols_no_renames(
-        self, amplitude_model: tuple[str, HelicityModel]
+    def it_remains_unchanged_without_symbol_renames(
+        amplitude_model: tuple[str, HelicityModel],
     ):
         _, model = amplitude_model
         new_model = model.rename_symbols({})
         assert new_model == model
 
-    def test_rename_parameters(self, amplitude_model: tuple[str, HelicityModel]):
+    def it_merges_parameters_renamed_to_the_same_symbol(
+        amplitude_model: tuple[str, HelicityModel],
+    ):
         _, model = amplitude_model
         d1, d2 = sp.symbols("d_{f_{0}(980)} d_{f_{0}(1500)}", positive=True)
         assert {d1, d2} <= set(model.parameter_defaults)
@@ -208,8 +211,7 @@ class TestHelicityModel:
         assert model.expression.xreplace({d1: new_d, d2: new_d}) == new_model.expression
 
     @pytest.mark.parametrize("stable_final_states", [False, True])
-    def test_rename_all_parameters_with_stable_final_state(
-        self,
+    def it_renames_parameters_with_or_without_stable_final_states(
         reaction: ReactionInfo,
         stable_final_states: bool,
     ):
@@ -233,7 +235,9 @@ class TestHelicityModel:
                 continue
             assert str(par).endswith(R"_\mathrm{renamed}")
 
-    def test_rename_variables(self, amplitude_model: tuple[str, HelicityModel]):
+    def it_renames_kinematic_variables_in_the_expression(
+        amplitude_model: tuple[str, HelicityModel],
+    ):
         _, model = amplitude_model
         old_symbol = sp.Symbol("m_12", nonnegative=True)
         assert old_symbol in model.kinematic_variables
@@ -249,7 +253,9 @@ class TestHelicityModel:
             model.expression.xreplace({old_symbol: new_symbol}) == new_model.expression
         )
 
-    def test_assumptions_after_rename(self, amplitude_model: tuple[str, HelicityModel]):
+    def it_preserves_assumptions_when_renaming_symbols(
+        amplitude_model: tuple[str, HelicityModel],
+    ):
         _, model = amplitude_model
         old = "m_{f_{0}(980)}"
         new = "m"
@@ -259,8 +265,7 @@ class TestHelicityModel:
             == model.parameter_defaults._get_parameter(old).assumptions0
         )
 
-    def test_rename_symbols_warnings(
-        self,
+    def it_warns_when_renaming_an_unknown_symbol(
         amplitude_model: tuple[str, HelicityModel],
         caplog: LogCaptureFixture,
     ):
@@ -273,7 +278,7 @@ class TestHelicityModel:
         assert new_model == model
 
     @pytest.mark.parametrize("formalism", ["canonical-helicity", "helicity"])
-    def test_amplitudes(self, formalism: SpinFormalism):
+    def it_creates_an_amplitude_for_each_helicity_combination(formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=("J/psi(1S)", [-1, +1]),
             final_state=["K0", "Sigma+", "p~"],
@@ -300,9 +305,9 @@ class TestHelicityModel:
         assert len(intensity_terms) == len(helicity_combinations)
 
 
-class TestParameterValues:
+def describe_ParameterValues():
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
-    def test_subs_xreplace(self, subs_method: str):
+    def it_substitutes_symbol_and_indexed_parameter_values(subs_method: str):
         base = sp.IndexedBase("b")
         a, x, y = sp.symbols("a x y")
         b: sp.Indexed = base[1, 2]
@@ -315,27 +320,6 @@ class TestParameterValues:
         else:
             raise NotImplementedError
         assert expr == 2 * x - 3 * y
-
-
-@pytest.mark.parametrize(
-    ("node_id", "mass", "phi", "theta"),
-    [
-        (0, "m_012", "phi_0", "theta_0"),
-        (1, "m_12", "phi_1^12", "theta_1^12"),
-    ],
-)
-def test_generate_kinematic_variables(
-    reaction: ReactionInfo,
-    node_id: int,
-    mass: str,
-    phi: str,
-    theta: str,
-):
-    for transition in reaction.transitions:
-        variables = _generate_kinematic_variables(transition, node_id)
-        assert variables[0].name == mass
-        assert variables[1].name == phi
-        assert variables[2].name == theta
 
 
 @pytest.mark.parametrize(
@@ -360,6 +344,27 @@ def test_formulate_isobar_wigner_d(
     some_transition = transitions[transition]
     wigner_d = formulate_isobar_wigner_d(some_transition, node_id)
     assert str(wigner_d) == expected
+
+
+@pytest.mark.parametrize(
+    ("node_id", "mass", "phi", "theta"),
+    [
+        (0, "m_012", "phi_0", "theta_0"),
+        (1, "m_12", "phi_1^12", "theta_1^12"),
+    ],
+)
+def test_generate_kinematic_variables(
+    reaction: ReactionInfo,
+    node_id: int,
+    mass: str,
+    phi: str,
+    theta: str,
+):
+    for transition in reaction.transitions:
+        variables = _generate_kinematic_variables(transition, node_id)
+        assert variables[0].name == mass
+        assert variables[1].name == phi
+        assert variables[2].name == theta
 
 
 def test_group_by_spin_projection(reaction: ReactionInfo):
@@ -392,7 +397,9 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     assert len(model.amplitudes) == 1
     (amplitude_expr,) = model.amplitudes.values()
     amplitude_expr = amplitude_expr.xreplace({
-        s: sp.Symbol(s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ"))  # ty: ignore[unresolved-attribute]
+        s: sp.Symbol(
+            s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ")  # ty: ignore[unresolved-attribute]
+        )
         for s in model.parameter_defaults
     })
     amplitude_expr = sp.simplify(amplitude_expr, doit=False)

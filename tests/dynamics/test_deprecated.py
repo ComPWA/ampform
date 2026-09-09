@@ -7,9 +7,8 @@ from ampform.dynamics.form_factor import BlattWeisskopfSquared
 from ampform.sympy import UnevaluatedExpression
 
 
-class TestUnevaluatedExpression:
-    @staticmethod
-    def test_pickle():
+def describe_UnevaluatedExpression():
+    def it_survives_a_pickle_roundtrip():
         s, m0, w0, m_a, angular_momentum, z = sp.symbols("s m0 Gamma0 m_a L z")
 
         # Pickle simple SymPy expression

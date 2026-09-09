@@ -7,7 +7,7 @@ from ampform.sympy.math import ComplexSqrt
 a, b = sp.symbols("a b")
 
 
-class TestComplexSqrt:
+def describe_ComplexSqrt():
     @pytest.mark.parametrize(
         "arg",
         [
@@ -17,10 +17,10 @@ class TestComplexSqrt:
             a + b**2,
         ],
     )
-    def test_blocked_doit_for_expressions(self, arg):
+    def it_leaves_symbolic_arguments_unevaluated(arg):
         assert ComplexSqrt(arg).doit() == ComplexSqrt(arg)
 
-    def test_get_definition(self):
+    def it_defines_real_and_imaginary_branches_piecewise():
         x = sp.Symbol("x")
         expr = ComplexSqrt(x).get_definition()
         assert expr == sp.Piecewise(
@@ -28,14 +28,14 @@ class TestComplexSqrt:
             (sp.sqrt(x), True),
         )
 
-    def test_latex(self):
+    def it_renders_as_latex():
         x = sp.Symbol("x")
         expr = ComplexSqrt(x)
         assert sp.latex(expr) == R"\sqrt[\mathrm{c}]{x}"
 
     @pytest.mark.parametrize("real", [False, True])
     @pytest.mark.parametrize("backend", ["math", "numpy"])
-    def test_lambdify(self, backend: str, real: bool):
+    def it_returns_imaginary_roots_with_each_backend(backend: str, real: bool):
         x = sp.Symbol("x", real=real)
         expression = ComplexSqrt(x)
         lambdified = sp.lambdify(x, expression, backend)
@@ -50,6 +50,8 @@ class TestComplexSqrt:
             (-4, "2*I"),
         ],
     )
-    def test_new(self, input_value, expected: str):
+    def it_evaluates_numeric_roots_and_preserves_symbolic_arguments(
+        input_value, expected: str
+    ):
         expr = ComplexSqrt(input_value)
         assert str(expr) == expected
