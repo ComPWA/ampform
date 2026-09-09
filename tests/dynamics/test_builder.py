@@ -77,7 +77,13 @@ def describe_RelativisticBreitWignerBuilder():
         ang_mom = variable_set.angular_momentum
         d = sp.Symbol(R"d_{N}", positive=True)
         expected = BreitWigner(
-            s, m0, w0, m1=m1, m2=m2, angular_momentum=ang_mom, meson_radius=d
+            s,
+            mass=m0,
+            width=w0,
+            m1=m1,
+            m2=m2,
+            angular_momentum=ang_mom,
+            meson_radius=d,
         )
         assert bw == expected
         assert set(parameters) == {m0, w0, d}
