@@ -249,12 +249,7 @@ def get_readable_hash(obj: Hashable) -> str:
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
-    digest = hashlib.md5(usedforsecurity=False)
-    if isinstance(obj, (bytes, bytearray)):
-        digest.update(obj)
-    else:
-        _dump_deterministically(obj, stream=_HashStream(digest))
-    return digest.hexdigest()
+    return hashlib.md5(to_bytes(obj), usedforsecurity=False).hexdigest()
 
 
 def to_bytes(obj) -> bytes:
@@ -339,17 +334,6 @@ def _sorted_deterministically(items: Iterable) -> list:
         return sorted(items)
     except TypeError:
         return sorted(items, key=to_bytes)
-
-
-class _HashStream:
-    """Minimal write-only stream that feeds everything written to it into a hash."""
-
-    def __init__(self, digest) -> None:
-        self.digest = digest
-
-    def write(self, data: bytes) -> int:
-        self.digest.update(data)
-        return len(data)
 
 
 def make_hashable(*args) -> Hashable:
