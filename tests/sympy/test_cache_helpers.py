@@ -94,9 +94,9 @@ def test_cache_to_disk_repairs_corrupt_file(
 @pytest.mark.parametrize(
     ("expected_hash", "assumptions"),
     [
-        ("a7559ca", dict()),
-        ("278bcee", dict(real=True)),
-        ("bc417f2", dict(rational=True)),
+        ("238baa6", dict()),
+        ("72a46dd", dict(real=True)),
+        ("f34cac7", dict(rational=True)),
     ],
     ids=["symbol", "symbol-real", "symbol-rational"],
 )
@@ -124,7 +124,7 @@ def test_get_readable_hash_energy_dependent_width():
         meson_radius=d,
     )
     h = get_readable_hash(expr)[:7]
-    assert h == "3d076c6"
+    assert h == "1b63a45"
 
 
 class TestLargeHash:
@@ -137,11 +137,11 @@ class TestLargeHash:
         ("expected_hash", "formalism"),
         [
             (
-                "762cc00" if sys.version_info >= (3, 11) else "1f5ac33",
+                "004ae36" if sys.version_info >= (3, 11) else "b1bd1af",
                 "canonical-helicity",
             ),
             (
-                "17fefe5" if sys.version_info >= (3, 11) else "7b5fad1",
+                "37510e8" if sys.version_info >= (3, 11) else "953baa2",
                 "helicity",
             ),
         ],
@@ -161,15 +161,15 @@ class TestLargeHash:
         assert h == expected_hash
 
     @pytest.mark.parametrize(
-        ("expected_hashes", "formalism"),
+        ("expected_hash", "formalism"),
         [
-            ({"2b77221", "8397450", "dc1ee0e"}, "canonical-helicity"),
-            ({"aced899", "cbd5ff0", "ceecb32"}, "helicity"),
+            ("6165ac0", "canonical-helicity"),
+            ("8f6174c", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
     @pytest.mark.slow
-    def test_amplitude_model(self, expected_hashes: set[str], formalism: SpinFormalism):
+    def test_amplitude_model(self, expected_hash: str, formalism: SpinFormalism):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
             final_state=["p~", "K0", "Sigma+"],
@@ -196,10 +196,9 @@ class TestLargeHash:
         assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
         intensity_hash = get_readable_hash(intensity)[:7]
-        assert intensity_hash in {"c83b853", "d113a38"}
+        assert intensity_hash == "1cd3567"
 
         amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
         unfolded_intensity = intensity.xreplace(amplitudes)
         unfolded_intensity_hash = get_readable_hash(unfolded_intensity)[:7]
-        assert unfolded_intensity_hash in expected_hashes
-        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform-dpd/discussions/163
+        assert unfolded_intensity_hash == expected_hash

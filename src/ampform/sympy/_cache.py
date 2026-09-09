@@ -7,10 +7,12 @@ These methods are private, but can be imported from this module:
    import ampform.sympy._cache
 """
 
+# cspell:ignore pickler
 from __future__ import annotations
 
 import hashlib
 import inspect
+import io
 import logging
 import os
 import pickle  # ruff: ignore[suspicious-pickle-import]
@@ -18,15 +20,17 @@ import re
 import sys
 import tempfile
 from collections import abc
+from contextlib import suppress
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, NamedTuple, overload
 
+import sympy as sp
 from frozendict import frozendict
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import Hashable, Iterable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -245,16 +249,107 @@ def get_readable_hash(obj: Hashable) -> str:
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
-    b = to_bytes(obj)
-    h = hashlib.md5(b, usedforsecurity=False)
-    return h.hexdigest()
+    digest = hashlib.md5(usedforsecurity=False)
+    if isinstance(obj, (bytes, bytearray)):
+        digest.update(obj)
+    else:
+        _dump_deterministically(obj, stream=_HashStream(digest))
+    return digest.hexdigest()
 
 
 def to_bytes(obj) -> bytes:
     """Convert any Python object to `bytes` using :func:`pickle.dumps`."""
     if isinstance(obj, (bytes, bytearray)):
         return obj
-    return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
+    stream = io.BytesIO()
+    _dump_deterministically(obj, stream)
+    return stream.getvalue()
+
+
+def _dump_deterministically(obj, stream: SupportsWrite[bytes]) -> None:
+    """Pickle an object so that the bytes depend on its value alone."""
+    _DeterministicPickler(stream).dump(obj)
+
+
+class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-access]
+    """Pickler whose output does not depend on object identity or iteration order.
+
+    A pickle stores a repeated object as a back-reference to the first time it was
+    written, keyed on identity. SymPy hands out a cached instance for equal expressions,
+    but its cache is a bounded LRU (:code:`SYMPY_CACHE_SIZE`), so which sub-expressions
+    are the *same* instance depends on what was constructed before and in which order.
+    Equal expressions are therefore mapped to one representative here, which makes the
+    back-references depend on the expression rather than on the cache state.
+
+    Two SymPy objects that compare equal always carry the same
+    :code:`_hashable_content()`, which for `.unevaluated` classes includes the arguments
+    that are not sympified, so equal objects also pickle to the same bytes.
+
+    Only those canonicalized SymPy objects are memoized. Anything else is written out in
+    full on each occurrence, because whether two equal non-SymPy objects are one shared
+    instance depends on caches and string interning elsewhere.
+
+    Sets and dictionaries are written in a sorted order, because their iteration order
+    depends on :code:`PYTHONHASHSEED` for `str` keys.
+
+    The pure-Python pickler is subclassed because the C accelerator does not dispatch to
+    these overrides.
+    """
+
+    dispatch = pickle._Pickler.dispatch.copy()  # ruff: ignore[private-member-access]
+
+    def __init__(self, stream: SupportsWrite[bytes]) -> None:
+        super().__init__(stream, protocol=pickle.HIGHEST_PROTOCOL)
+        self._representatives: dict[tuple[type, Any], Any] = {}
+
+    def save(self, obj, *args, **kwargs) -> None:
+        if isinstance(obj, sp.Basic):
+            with suppress(TypeError):
+                obj = self._representatives.setdefault((type(obj), obj), obj)
+        super().save(obj, *args, **kwargs)
+
+    def memoize(self, obj) -> None:
+        if isinstance(obj, sp.Basic):
+            super().memoize(obj)
+
+    def save_set(self, obj) -> None:
+        self.save(_SortedContainer("set", _sorted_deterministically(obj)))
+
+    def save_frozenset(self, obj) -> None:
+        self.save(_SortedContainer("frozenset", _sorted_deterministically(obj)))
+
+    def _batch_setitems(self, items, *args) -> None:
+        # Python 3.14 passes an additional argument
+        super()._batch_setitems(iter(_sorted_deterministically(items)), *args)
+
+    dispatch[set] = save_set  # ty: ignore[invalid-assignment]
+    dispatch[frozenset] = save_frozenset  # ty: ignore[invalid-assignment]
+
+
+class _SortedContainer(NamedTuple):
+    """Sorted stand-in for a set, tagged so that it cannot collide with a `tuple`."""
+
+    kind: str
+    items: list
+
+
+def _sorted_deterministically(items: Iterable) -> list:
+    """Sort items, falling back to their serialization when they are not orderable."""
+    try:
+        return sorted(items)
+    except TypeError:
+        return sorted(items, key=to_bytes)
+
+
+class _HashStream:
+    """Minimal write-only stream that feeds everything written to it into a hash."""
+
+    def __init__(self, digest) -> None:
+        self.digest = digest
+
+    def write(self, data: bytes) -> int:
+        self.digest.update(data)
+        return len(data)
 
 
 def make_hashable(*args) -> Hashable:
