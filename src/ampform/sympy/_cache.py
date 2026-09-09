@@ -24,13 +24,13 @@ from contextlib import suppress
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, NamedTuple, overload
 
 import sympy as sp
 from frozendict import frozendict
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import Hashable, Iterable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -251,11 +251,10 @@ def get_readable_hash(obj: Hashable, /) -> str:
     matter what was constructed before them or in which process, which is what makes the
     hash usable as a cache key in :func:`.cache_to_disk`.
 
-    Sets and dictionaries are an exception. They are serialized in iteration order,
-    which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`. The
-    wrappers in :mod:`~ampform.sympy.cached` sort the substitution mappings they are
-    given, so their cache keys do not depend on the order in which the caller built
-    them.
+    A `set` or `dict` handed to this function directly is serialized in iteration order,
+    which depends on :code:`PYTHONHASHSEED` when its elements or keys are `str`. Pass it
+    through :func:`.make_hashable` first, as :func:`.cache_to_disk` does, to put it in a
+    fixed order.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
@@ -321,10 +320,15 @@ class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-acc
 def make_hashable(*args) -> Hashable:
     """Make a hashable object from any Python object.
 
+    Sets and dictionaries are put in a fixed order, because a `set` iterates in an order
+    that depends on :code:`PYTHONHASHSEED` for `str` elements, and a `dict` built by
+    iterating one inherits that order. A cache key built from them would otherwise
+    differ in every process.
+
     >>> make_hashable("a", 1, {"b": 2}, {3, 4})
-    ('a', 1, frozendict.frozendict({'b': 2}), frozenset({3, 4}))
+    ('a', 1, frozendict.frozendict({'b': 2}), _SortedSet(items=(3, 4)))
     >>> make_hashable({"a": {"sub-key": {1, 2, 3}, "b": [4, 5]}})
-    frozendict.frozendict({'a': frozendict.frozendict({'sub-key': frozenset({1, 2, 3}), 'b': (4, 5)})})
+    frozendict.frozendict({'a': frozendict.frozendict({'b': (4, 5), 'sub-key': _SortedSet(items=(1, 2, 3))})})
     >>> make_hashable("already-hashable")
     'already-hashable'
     """
@@ -335,7 +339,8 @@ def make_hashable(*args) -> Hashable:
 
 def _make_hashable_impl(obj, /) -> Hashable:
     if isinstance(obj, abc.Mapping):
-        return frozendict({k: _make_hashable_impl(v) for k, v in obj.items()})
+        keys = _sorted_deterministically(obj.keys())
+        return frozendict({k: _make_hashable_impl(obj[k]) for k in keys})
     if isinstance(obj, str):
         return obj
     if isinstance(obj, abc.Iterable):
@@ -343,5 +348,19 @@ def _make_hashable_impl(obj, /) -> Hashable:
         if isinstance(obj, abc.Sequence):
             return tuple(hashable_items)
         if isinstance(obj, set):
-            return frozenset(hashable_items)
+            return _SortedSet(_sorted_deterministically(hashable_items))
     return obj
+
+
+class _SortedSet(NamedTuple):
+    """Order-normalized stand-in for a `set`, tagged so it cannot pass for a `tuple`."""
+
+    items: tuple
+
+
+def _sorted_deterministically(items: Iterable[T], /) -> tuple[T, ...]:
+    """Sort items, falling back to their serialization when they cannot be compared."""
+    try:
+        return tuple(sorted(items))
+    except TypeError:
+        return tuple(sorted(items, key=to_bytes))

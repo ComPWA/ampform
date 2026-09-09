@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 import pickle
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from textwrap import dedent
 from threading import Event
 from typing import TYPE_CHECKING
 
@@ -23,7 +26,12 @@ from ampform.dynamics.phasespace import (
     PhaseSpaceFactorComplex,
 )
 from ampform.sympy import _cache
-from ampform.sympy._cache import cache_to_disk, get_readable_hash, to_bytes
+from ampform.sympy._cache import (
+    cache_to_disk,
+    get_readable_hash,
+    make_hashable,
+    to_bytes,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -99,6 +107,39 @@ def describe_cache_to_disk():
         assert call_count == 2
 
 
+def describe_make_hashable():
+    def it_ignores_set_and_dict_order():
+        forward = make_hashable({"beta": {"b", "a"}, "alpha": {2, 1}})
+        backward = make_hashable({"alpha": {1, 2}, "beta": {"a", "b"}})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_sorts_items_of_mixed_types():
+        forward = make_hashable({1, "a", (2, 3)})
+        backward = make_hashable({(2, 3), "a", 1})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_distinguishes_a_set_from_a_sequence():
+        assert to_bytes(make_hashable({1, 2})) != to_bytes(make_hashable((1, 2)))
+
+    @pytest.mark.parametrize("seed", ["0", "1", "12345"])
+    def it_hashes_string_sets_identically_across_hash_seeds(seed: str):
+        obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+        source = dedent("""
+            from ampform.sympy._cache import get_readable_hash, make_hashable
+
+            obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+            print(get_readable_hash(make_hashable(obj)))
+        """)
+        output = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [sys.executable, "-c", source],
+            capture_output=True,
+            check=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            text=True,
+        )
+        assert output.stdout.strip() == get_readable_hash(make_hashable(obj))
+
+
 def describe_get_readable_hash():
     @pytest.mark.parametrize(
         ("expected_hash", "assumptions"),
@@ -146,7 +187,6 @@ def describe_get_readable_hash():
         ids=["bytes", "str", "tuple", "frozendict", "nested"],
     )
     def it_hashes_containers(expected_hash: str, obj: Any):
-        """Pin the hashes of the container types that :func:`.to_bytes` is used on."""
         assert get_readable_hash(obj)[:7] == expected_hash
 
     def it_ignores_how_sub_expressions_are_shared():

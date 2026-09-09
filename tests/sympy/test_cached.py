@@ -105,7 +105,6 @@ def test_xreplace(
 
 def describe_sorted_frozendict():
     def it_ignores_substitution_order():
-        """Substitutions built in a different order must map to the same cache key."""
         expr = sp.sympify("a*sin(b) + c**2 + d/e + f")
         forward = {s: sp.Symbol(f"{s}_new") for s in sorted(expr.free_symbols, key=str)}
         backward = dict(reversed(list(forward.items())))
@@ -116,7 +115,6 @@ def describe_sorted_frozendict():
         )
 
     def it_orders_symbols_with_equal_sort_key():
-        """Symbols that differ only in their assumptions must still get a fixed order."""
         x = sp.Symbol("x")
         x_real = sp.Symbol("x", real=True)
         assert sp.default_sort_key(x) == sp.default_sort_key(x_real)
