@@ -10,9 +10,9 @@ from ampform.dynamics.builder import (
 from ampform.dynamics.form_factor import FormFactor
 
 
-class TestRelativisticBreitWignerBuilder:
+def describe_RelativisticBreitWignerBuilder():
     @pytest.fixture(scope="session")
-    def particle(self) -> Particle:
+    def particle() -> Particle:
         return Particle(
             name="N",
             mass=1.3,
@@ -22,7 +22,7 @@ class TestRelativisticBreitWignerBuilder:
         )
 
     @pytest.fixture(scope="session")
-    def variable_set(self) -> TwoBodyKinematicVariableSet:
+    def variable_set() -> TwoBodyKinematicVariableSet:
         return TwoBodyKinematicVariableSet(
             incoming_state_mass=sp.Symbol("m"),
             outgoing_state_mass1=sp.Symbol("m1"),
@@ -32,8 +32,8 @@ class TestRelativisticBreitWignerBuilder:
             angular_momentum=sp.Symbol("L", integer=True, negative=False),
         )
 
-    def test_simple_breit_wigner(
-        self, particle: Particle, variable_set: TwoBodyKinematicVariableSet
+    def it_builds_a_breit_wigner_with_optional_form_factor(
+        particle: Particle, variable_set: TwoBodyKinematicVariableSet
     ):
         builder = RelativisticBreitWignerBuilder()
         builder.energy_dependent_width = False
@@ -61,8 +61,8 @@ class TestRelativisticBreitWignerBuilder:
         assert parameters[w0] == particle.width
         assert parameters[d] == 1
 
-    def test_breit_wigner_with_energy_dependent_width(
-        self, particle: Particle, variable_set: TwoBodyKinematicVariableSet
+    def it_builds_a_breit_wigner_with_energy_dependent_width(
+        particle: Particle, variable_set: TwoBodyKinematicVariableSet
     ):
         builder = RelativisticBreitWignerBuilder()
         builder.energy_dependent_width = True

@@ -37,34 +37,34 @@ def helicity_angles(
     return compute_helicity_angles(momentum_symbols, topology)
 
 
-class TestPhi:
-    @property
-    def phi(self):
+def describe_Phi():
+    @pytest.fixture
+    def phi():
         p = FourMomentumSymbol("p", shape=[])
         return Phi(p)
 
-    def test_latex(self):
-        latex = sp.latex(self.phi)
+    def it_renders_as_latex(phi):
+        latex = sp.latex(phi)
         assert latex == R"\phi\left(p\right)"
 
-    def test_numpy(self):
-        phi = self.phi.doit()
+    def it_prints_the_azimuthal_angle_as_numpy_code(phi):
+        phi = phi.doit()
         numpy_code = _generate_numpy_code(phi)
         assert numpy_code == "numpy.arctan2(p[:, 2], p[:, 1])"
 
 
-class TestTheta:
-    @property
-    def theta(self):
+def describe_Theta():
+    @pytest.fixture
+    def theta():
         p = FourMomentumSymbol("p", shape=[])
         return Theta(p)
 
-    def test_latex(self):
-        latex = sp.latex(self.theta)
+    def it_renders_as_latex(theta):
+        latex = sp.latex(theta)
         assert latex == R"\theta\left(p\right)"
 
-    def test_numpy(self):
-        theta = self.theta.doit()
+    def it_prints_the_polar_angle_as_numpy_code(theta):
+        theta = theta.doit()
         numpy_code = _generate_numpy_code(theta)
         assert (
             numpy_code == "numpy.arccos(p[:, 3]/numpy.sqrt(sum(p[:, 1:]**2, axis=1)))"
@@ -185,80 +185,80 @@ def test_compute_helicity_angles(
     np.testing.assert_allclose(computed, expected_values, atol=1e-5)
 
 
-@pytest.mark.parametrize(
-    ("state_id", "expected"),
-    [
-        (
+def describe_compute_wigner_rotation_matrix():
+    @pytest.mark.parametrize(
+        ("state_id", "expected"),
+        [
+            (
+                0,
+                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)), BoostMatrix(p0))",
+            ),
+            (
+                1,
+                (
+                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
+                    " BoostMatrix(p1 + p2 + p3),"
+                    " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                    " p1)))"
+                ),
+            ),
+            (
+                2,
+                (
+                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1"
+                    " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
+                    " p3), p2 + p3)),"
+                    " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+                    " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                    " p2))))"
+                ),
+            ),
+            (
+                3,
+                (
+                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1"
+                    " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
+                    " p3), p2 + p3)),"
+                    " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
+                    " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
+                    " p3))))"
+                ),
+            ),
+        ],
+    )
+    def it_matches_symbolic_rotation(
+        state_id: int,
+        expected: str,
+        topology_and_momentum_symbols: tuple[Topology, FourMomenta],
+    ):
+        topology, momenta = topology_and_momentum_symbols
+        expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
+        assert str(expr) == expected
+
+    @pytest.mark.parametrize(
+        "state_id",
+        [
             0,
-            "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)), BoostMatrix(p0))",
-        ),
-        (
-            1,
-            (
-                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
-                " BoostMatrix(p1 + p2 + p3),"
-                " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                " p1)))"
-            ),
-        ),
-        (
-            2,
-            (
-                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1"
-                " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
-                " p3), p2 + p3)),"
-                " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-                " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                " p2))))"
-            ),
-        ),
-        (
-            3,
-            (
-                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1"
-                " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
-                " p3), p2 + p3)),"
-                " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-                " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                " p3))))"
-            ),
-        ),
-    ],
-)
-def test_compute_wigner_rotation_matrix(
-    state_id: int,
-    expected: str,
-    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
-):
-    topology, momenta = topology_and_momentum_symbols
-    expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
-    assert str(expr) == expected
-
-
-@pytest.mark.parametrize(
-    "state_id",
-    [
-        0,
-        pytest.param(2, marks=pytest.mark.slow),
-        pytest.param(3, marks=pytest.mark.slow),
-    ],
-)
-def test_compute_wigner_rotation_matrix_numpy(
-    state_id: int,
-    data_sample: dict[int, np.ndarray],
-    topology_and_momentum_symbols: tuple[Topology, FourMomenta],
-):
-    topology, momenta = topology_and_momentum_symbols
-    expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
-    func = sp.lambdify(momenta.values(), expr.doit(), cse=True)
-    momentum_array = data_sample[state_id]
-    wigner_matrix_array = func(*data_sample.values())
-    assert wigner_matrix_array.shape == (len(momentum_array), 4, 4)
-    if get_parent_id(topology, state_id) == -1:
-        product = np.einsum("...ij,...j->...j", wigner_matrix_array, momentum_array)
-        assert pytest.approx(product) == momentum_array
-    matrix_column_norms = np.linalg.norm(wigner_matrix_array, axis=1)
-    assert pytest.approx(matrix_column_norms) == 1
+            pytest.param(2, marks=pytest.mark.slow),
+            pytest.param(3, marks=pytest.mark.slow),
+        ],
+    )
+    def it_produces_normalized_rotation_matrix_columns(
+        state_id: int,
+        data_sample: dict[int, np.ndarray],
+        topology_and_momentum_symbols: tuple[Topology, FourMomenta],
+    ):
+        topology, momenta = topology_and_momentum_symbols
+        expr = compute_wigner_rotation_matrix(topology, momenta, state_id)
+        func = sp.lambdify(momenta.values(), expr.doit(), cse=True)
+        momentum_array = data_sample[state_id]
+        wigner_matrix_array = func(*data_sample.values())
+        assert wigner_matrix_array.shape == (len(momentum_array), 4, 4)
+        if get_parent_id(topology, state_id) == -1:
+            product = np.einsum("...ij,...j->...j", wigner_matrix_array, momentum_array)
+            assert pytest.approx(product) == momentum_array
+        matrix_column_norms = np.linalg.norm(wigner_matrix_array, axis=1)
+        assert pytest.approx(matrix_column_norms) == 1
 
 
 def test_formulate_scattering_angle():
@@ -285,59 +285,59 @@ def test_formulate_theta_hat_angle():
         assert formulate_theta_hat_angle(i, i)[1] == 0
 
 
-def test_formulate_zeta_angle_equation_a6():
-    """Test Eq.
+def describe_formulate_zeta_angle():
+    def it_satisfies_equation_a6():
+        """Test Eq.
 
-    (A6), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=10.
-    """
-    for i in [1, 2, 3]:
-        for k in [1, 2, 3]:
-            _, ζi_k0 = formulate_zeta_angle(i, k, 0)  # ruff: ignore[non-ascii-name]
-            _, ζi_ki = formulate_zeta_angle(i, k, i)  # ruff: ignore[non-ascii-name]
-            _, ζi_kk = formulate_zeta_angle(i, k, k)  # ruff: ignore[non-ascii-name]
-            assert ζi_ki == ζi_k0
-            assert ζi_kk == 0
+        (A6), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=10.
+        """
+        for i in [1, 2, 3]:
+            for k in [1, 2, 3]:
+                _, ζi_k0 = formulate_zeta_angle(i, k, 0)  # ruff: ignore[non-ascii-name]
+                _, ζi_ki = formulate_zeta_angle(i, k, i)  # ruff: ignore[non-ascii-name]
+                _, ζi_kk = formulate_zeta_angle(i, k, k)  # ruff: ignore[non-ascii-name]
+                assert ζi_ki == ζi_k0
+                assert ζi_kk == 0
 
+    @pytest.mark.parametrize(
+        ("zeta1", "zeta2", "zeta3"),
+        [
+            (
+                formulate_zeta_angle(1, 2, 3)[1],
+                formulate_zeta_angle(1, 2, 1)[1],
+                formulate_zeta_angle(1, 1, 3)[1],
+            ),
+            (
+                formulate_zeta_angle(2, 3, 1)[1],
+                formulate_zeta_angle(2, 3, 2)[1],
+                formulate_zeta_angle(2, 2, 1)[1],
+            ),
+            (
+                formulate_zeta_angle(3, 1, 2)[1],
+                formulate_zeta_angle(3, 1, 3)[1],
+                formulate_zeta_angle(3, 3, 2)[1],
+            ),
+        ],
+    )
+    def it_satisfies_the_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp.Expr):
+        """Test Eq.
 
-@pytest.mark.parametrize(
-    ("zeta1", "zeta2", "zeta3"),
-    [
-        (
-            formulate_zeta_angle(1, 2, 3)[1],
-            formulate_zeta_angle(1, 2, 1)[1],
-            formulate_zeta_angle(1, 1, 3)[1],
-        ),
-        (
-            formulate_zeta_angle(2, 3, 1)[1],
-            formulate_zeta_angle(2, 3, 2)[1],
-            formulate_zeta_angle(2, 2, 1)[1],
-        ),
-        (
-            formulate_zeta_angle(3, 1, 2)[1],
-            formulate_zeta_angle(3, 1, 3)[1],
-            formulate_zeta_angle(3, 3, 2)[1],
-        ),
-    ],
-)
-def test_formulate_zeta_angle_sum_rule(zeta1: sp.Expr, zeta2: sp.Expr, zeta3: sp.Expr):
-    """Test Eq.
-
-    (A9), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=11.
-    """
-    s3_expr = compute_third_mandelstam(s1, s2, m0, m1, m2, m3)
-    masses = {
-        m0: 2.3,
-        m1: 0.94,
-        m2: 0.14,
-        m3: 0.49,
-        s1: 1.2,
-        s2: 3.0,
-        s3: s3_expr,
-    }
-    ζ1 = float(zeta1.doit().subs(masses))  # ruff: ignore[non-ascii-name]
-    ζ2 = float(zeta2.doit().subs(masses))  # ruff: ignore[non-ascii-name]
-    ζ3 = float(zeta3.doit().subs(masses))  # ruff: ignore[non-ascii-name]
-    np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
+        (A9), https://journals.aps.org/prd/pdf/10.1103/PhysRevD.101.034033#page=11.
+        """
+        s3_expr = compute_third_mandelstam(s1, s2, m0, m1, m2, m3)
+        masses = {
+            m0: 2.3,
+            m1: 0.94,
+            m2: 0.14,
+            m3: 0.49,
+            s1: 1.2,
+            s2: 3.0,
+            s3: s3_expr,
+        }
+        ζ1 = float(zeta1.doit().subs(masses))  # ruff: ignore[non-ascii-name]
+        ζ2 = float(zeta2.doit().subs(masses))  # ruff: ignore[non-ascii-name]
+        ζ3 = float(zeta3.doit().subs(masses))  # ruff: ignore[non-ascii-name]
+        np.testing.assert_almost_equal(ζ1, ζ2 + ζ3, decimal=14)
 
 
 def _generate_numpy_code(expr: sp.Expr) -> str:

@@ -19,9 +19,8 @@ if TYPE_CHECKING:
     from ampform.helicity import HelicityModel
 
 
-class TestEnergyDependentWidth:
-    @staticmethod
-    def test_init():
+def describe_EnergyDependentWidth():
+    def it_initializes_width_parameters_and_phase_space_factors():
         angular_momentum = sp.Symbol("L", integer=True)
         s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
         width = EnergyDependentWidth(
@@ -55,7 +54,7 @@ class TestEnergyDependentWidth:
         assert width.name == "Gamma_1"
 
     @pytest.mark.parametrize("method", ["subs", "xreplace"])
-    def test_doit_and_subs(self, method: str):
+    def it_commutes_evaluation_with_parameter_substitution(method: str):
         s, m0, w0, m_a, m_b = sp.symbols("s m0 Gamma0 m_a m_b", nonnegative=True)
         parameters = {
             m0: 1.44,
@@ -84,7 +83,7 @@ def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
     return getattr(obj, method)(replacements)
 
 
-def test_generate(
+def test_builds_amplitude_with_resonance_dynamics(
     amplitude_model: tuple[str, HelicityModel],
     particle_database: ParticleCollection,
 ):

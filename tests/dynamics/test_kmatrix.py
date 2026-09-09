@@ -11,12 +11,12 @@ from ampform.sympy import rename_symbols
 from ampform.sympy.slider import substitute_indexed_symbols
 
 
-class TestNonRelativisticKMatrix:
+def describe_NonRelativisticKMatrix():
     @pytest.mark.parametrize(
         "n_channels",
         [1, 2, pytest.param(3, marks=pytest.mark.slow)],
     )
-    def test_breit_wigner(self, n_channels: int):
+    def it_reduces_to_a_breit_wigner_for_one_pole(n_channels: int):
         k_matrix = NonRelativisticKMatrix.formulate(n_poles=1, n_channels=n_channels)
         breit_wigner = k_matrix[0, 0].doit().simplify()
         breit_wigner = substitute_indexed_symbols(breit_wigner)
@@ -28,7 +28,7 @@ class TestNonRelativisticKMatrix:
             factor += "*"
         assert str(breit_wigner) == Rf"-m1*w1/(-m1**2 + {factor}I*m1*w1 + s)"
 
-    def test_interference_single_channel(self):
+    def it_includes_interference_between_poles_in_one_channel():
         k_matrix = NonRelativisticKMatrix.formulate(n_poles=2, n_channels=1)
         expr = k_matrix[0, 0].doit()
         expr = substitute_indexed_symbols(expr)
