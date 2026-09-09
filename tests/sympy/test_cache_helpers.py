@@ -153,8 +153,8 @@ def describe_get_readable_hash():
         """Equal expressions must hash the same, however SymPy shared their parts.
 
         SymPy returns a cached instance for an equal expression, but its cache is a
-        bounded LRU, so an expression can end up with either one shared sub-expression or
-        two equal ones depending on what was built before it.
+        bounded LRU, so an expression can end up with either one shared sub-expression
+        or two equal ones depending on what was built before it.
         """
         x, y = sp.symbols("x y")
         shared = sp.sqrt(x**2 + y**2)
