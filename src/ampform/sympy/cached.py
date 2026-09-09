@@ -3,6 +3,7 @@
 .. autofunction:: doit
 """
 
+# cspell:ignore srepr
 from __future__ import annotations
 
 from functools import cache
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from typing import TypeVar
 
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
+    V = TypeVar("V")
 
 
 @cache
@@ -59,8 +61,11 @@ def trigsimp(expr: sp.Expr, *args, **kwargs) -> sp.Expr:
 
 
 def subs(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
-    """Call :meth:`~sympy.core.basic.Basic.subs` and cache the result to disk."""
-    return _subs_impl(expr, frozendict(substitutions))
+    """Call :meth:`~sympy.core.basic.Basic.subs` and cache the result to disk.
+
+    The order of the substitutions does not affect the cache key.
+    """
+    return _subs_impl(expr, _sorted_frozendict(substitutions))
 
 
 @cache
@@ -70,8 +75,11 @@ def _subs_impl(expr: sp.Expr, substitutions: frozendict[sp.Basic, Any]) -> sp.Ex
 
 
 def xreplace(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
-    """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk."""
-    return _xreplace_impl(expr, frozendict(substitutions))
+    """Call :meth:`~sympy.core.basic.Basic.xreplace` and cache the result to disk.
+
+    The order of the substitutions does not affect the cache key.
+    """
+    return _xreplace_impl(expr, _sorted_frozendict(substitutions))
 
 
 @cache
@@ -104,7 +112,7 @@ class Model(Protocol):
 
 
 def _unfold_impl(expr: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr:
-    substitutions = _unfold_substitutions(frozendict(substitutions))
+    substitutions = _unfold_substitutions(_sorted_frozendict(substitutions))
     expr = doit(expr)
     return xreplace(expr, substitutions)
 
@@ -114,3 +122,25 @@ def _unfold_substitutions(
     substitutions: frozendict[sp.Basic, Any],
 ) -> frozendict[sp.Basic, Any]:
     return frozendict({k: doit(v) for k, v in substitutions.items()})
+
+
+def _sorted_frozendict(
+    substitutions: Mapping[SympyObject, V], /
+) -> frozendict[SympyObject, V]:
+    """Freeze a substitution mapping in an order that does not depend on the caller.
+
+    The disk cache is keyed on a pickle of the mapping, and a pickled mapping is written
+    in iteration order. A mapping built by iterating over
+    :attr:`~sympy.core.basic.Basic.free_symbols` inherits the order of that `set`, which
+    depends on :code:`PYTHONHASHSEED`, so the same substitutions would otherwise get a
+    different cache key in every process.
+
+    `~sympy.core.sorting.default_sort_key` does not distinguish assumptions, which would
+    leave the order of two otherwise identical symbols to the caller again, so
+    :func:`~sympy.printing.repr.srepr` breaks those ties.
+    """
+    return frozendict(sorted(substitutions.items(), key=lambda kv: _sort_key(kv[0])))
+
+
+def _sort_key(obj: Any) -> tuple[Any, str]:
+    return sp.default_sort_key(obj), sp.srepr(obj)

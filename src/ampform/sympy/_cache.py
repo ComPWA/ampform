@@ -7,10 +7,12 @@ These methods are private, but can be imported from this module:
    import ampform.sympy._cache
 """
 
+# cspell:ignore pickler
 from __future__ import annotations
 
 import hashlib
 import inspect
+import io
 import logging
 import os
 import pickle  # ruff: ignore[suspicious-pickle-import]
@@ -18,15 +20,17 @@ import re
 import sys
 import tempfile
 from collections import abc
+from contextlib import suppress
 from functools import cache, wraps
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, NamedTuple, overload
 
+import sympy as sp
 from frozendict import frozendict
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import Hashable, Iterable
     from io import BufferedReader
 
     from _typeshed import SupportsWrite
@@ -209,7 +213,7 @@ def _get_cache_dir() -> Path:
 
 
 @cache
-def _warn_once(msg):
+def _warn_once(msg, /):
     _LOGGER.warning(msg)
 
 
@@ -239,31 +243,92 @@ def get_system_cache_directory() -> str:
 
 
 @cache
-def get_readable_hash(obj: Hashable) -> str:
+def get_readable_hash(obj: Hashable, /) -> str:
     """Get a human-readable hash of any hashable Python object.
+
+    The hash follows from the value of the object, not from the identity of the parts it
+    is built from. Two SymPy expressions that compare equal therefore hash the same, no
+    matter what was constructed before them or in which process, which is what makes the
+    hash usable as a cache key in :func:`.cache_to_disk`.
+
+    A `set` or `dict` handed to this function directly is serialized in iteration order,
+    which depends on :code:`PYTHONHASHSEED` when its elements or keys are `str`. Pass it
+    through :func:`.make_hashable` first, as :func:`.cache_to_disk` does, to put it in a
+    fixed order.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
-    b = to_bytes(obj)
-    h = hashlib.md5(b, usedforsecurity=False)
-    return h.hexdigest()
+    return hashlib.md5(to_bytes(obj), usedforsecurity=False).hexdigest()
 
 
-def to_bytes(obj) -> bytes:
-    """Convert any Python object to `bytes` using :func:`pickle.dumps`."""
+def to_bytes(obj, /) -> bytes:
+    """Convert any Python object to `bytes` with :mod:`pickle`.
+
+    The bytes depend on the value of the object rather than on which of its parts happen
+    to be the same instance. See :func:`.get_readable_hash` for what that guarantees.
+    """
     if isinstance(obj, (bytes, bytearray)):
         return obj
-    return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
+    stream = io.BytesIO()
+    _dump_deterministically(obj, stream)
+    return stream.getvalue()
+
+
+def _dump_deterministically(obj, /, stream: SupportsWrite[bytes]) -> None:
+    """Pickle an object so that the bytes depend on its value alone."""
+    _DeterministicPickler(stream).dump(obj)
+
+
+class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-access]
+    """Pickler whose output does not depend on object identity.
+
+    A pickle stores a repeated object as a back-reference to the first time it was
+    written, keyed on identity. SymPy hands out a cached instance for equal expressions,
+    but its cache is a bounded LRU (:code:`SYMPY_CACHE_SIZE`), so which sub-expressions
+    are the *same* instance depends on what was constructed before and in which order.
+    Equal expressions are therefore mapped to one representative here, which makes the
+    back-references depend on the expression rather than on the cache state.
+
+    Two SymPy objects that compare equal always carry the same
+    :code:`_hashable_content()`, which for `.unevaluated` classes includes the arguments
+    that are not sympified, so equal objects also pickle to the same bytes.
+
+    Only those canonicalized SymPy objects are memoized. Anything else is written out in
+    full on each occurrence, because whether two equal non-SymPy objects are one shared
+    instance depends on caches and string interning elsewhere.
+
+    The pure-Python pickler is subclassed because the C accelerator does not dispatch to
+    these overrides.
+    """
+
+    def __init__(self, stream: SupportsWrite[bytes]) -> None:
+        super().__init__(stream, protocol=pickle.HIGHEST_PROTOCOL)
+        self._representatives: dict[tuple[type, Any], Any] = {}
+
+    def save(self, obj, *args, **kwargs) -> None:
+        if isinstance(obj, sp.Basic):
+            with suppress(TypeError):
+                obj = self._representatives.setdefault((type(obj), obj), obj)
+        super().save(obj, *args, **kwargs)
+
+    def memoize(self, obj) -> None:
+        if isinstance(obj, sp.Basic):
+            super().memoize(obj)
 
 
 def make_hashable(*args) -> Hashable:
     """Make a hashable object from any Python object.
 
+    Sets and dictionaries are put in a fixed order, because a `set` iterates in an order
+    that depends on :code:`PYTHONHASHSEED` for `str` elements, and a `dict` built by
+    iterating one inherits that order. A cache key built from them would otherwise
+    differ in every process.
+
     >>> make_hashable("a", 1, {"b": 2}, {3, 4})
-    ('a', 1, frozendict.frozendict({'b': 2}), frozenset({3, 4}))
+    ('a', 1, frozendict.frozendict({'b': 2}), _SortedSet(items=(3, 4)))
     >>> make_hashable({"a": {"sub-key": {1, 2, 3}, "b": [4, 5]}})
-    frozendict.frozendict({'a': frozendict.frozendict({'sub-key': frozenset({1, 2, 3}), 'b': (4, 5)})})
+    frozendict.frozendict({'a': frozendict.frozendict({'b': (4, 5), 'sub-key': _SortedSet(items=(1, 2, 3))})})
     >>> make_hashable("already-hashable")
     'already-hashable'
     """
@@ -272,9 +337,10 @@ def make_hashable(*args) -> Hashable:
     return tuple(_make_hashable_impl(x) for x in args)
 
 
-def _make_hashable_impl(obj) -> Hashable:
+def _make_hashable_impl(obj, /) -> Hashable:
     if isinstance(obj, abc.Mapping):
-        return frozendict({k: _make_hashable_impl(v) for k, v in obj.items()})
+        keys = _sorted_deterministically(obj.keys())
+        return frozendict({k: _make_hashable_impl(obj[k]) for k in keys})
     if isinstance(obj, str):
         return obj
     if isinstance(obj, abc.Iterable):
@@ -282,5 +348,19 @@ def _make_hashable_impl(obj) -> Hashable:
         if isinstance(obj, abc.Sequence):
             return tuple(hashable_items)
         if isinstance(obj, set):
-            return frozenset(hashable_items)
+            return _SortedSet(_sorted_deterministically(hashable_items))
     return obj
+
+
+class _SortedSet(NamedTuple):
+    """Order-normalized stand-in for a `set`, tagged so it cannot pass for a `tuple`."""
+
+    items: tuple
+
+
+def _sorted_deterministically(items: Iterable[T], /) -> tuple[T, ...]:
+    """Sort items, falling back to their serialization when they cannot be compared."""
+    try:
+        return tuple(sorted(items))
+    except TypeError:
+        return tuple(sorted(items, key=to_bytes))

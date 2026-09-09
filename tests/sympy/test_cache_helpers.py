@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 import pickle
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from textwrap import dedent
 from threading import Event
 from typing import TYPE_CHECKING
 
@@ -11,13 +14,24 @@ import pytest
 import qrules
 import sympy as sp
 from frozendict import frozendict
+from sympy.core.cache import clear_cache
 
 import ampform
 from ampform._qrules import get_qrules_version
 from ampform.dynamics import EnergyDependentWidth
 from ampform.dynamics.builder import RelativisticBreitWignerBuilder
+from ampform.dynamics.phasespace import (
+    PhaseSpaceFactor,
+    PhaseSpaceFactorAbs,
+    PhaseSpaceFactorComplex,
+)
 from ampform.sympy import _cache
-from ampform.sympy._cache import cache_to_disk, get_readable_hash
+from ampform.sympy._cache import (
+    cache_to_disk,
+    get_readable_hash,
+    make_hashable,
+    to_bytes,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,6 +41,8 @@ if TYPE_CHECKING:
     from _pytest.monkeypatch import MonkeyPatch
     from _typeshed import SupportsWrite
     from qrules.transition import SpinFormalism
+
+    from ampform.dynamics.phasespace import PhaseSpaceFactorProtocol
 
 
 def describe_cache_to_disk():
@@ -91,13 +107,46 @@ def describe_cache_to_disk():
         assert call_count == 2
 
 
+def describe_make_hashable():
+    def it_ignores_set_and_dict_order():
+        forward = make_hashable({"beta": {"b", "a"}, "alpha": {2, 1}})
+        backward = make_hashable({"alpha": {1, 2}, "beta": {"a", "b"}})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_sorts_items_of_mixed_types():
+        forward = make_hashable({1, "a", (2, 3)})
+        backward = make_hashable({(2, 3), "a", 1})
+        assert to_bytes(forward) == to_bytes(backward)
+
+    def it_distinguishes_a_set_from_a_sequence():
+        assert to_bytes(make_hashable({1, 2})) != to_bytes(make_hashable((1, 2)))
+
+    @pytest.mark.parametrize("seed", ["0", "1", "12345"])
+    def it_hashes_string_sets_identically_across_hash_seeds(seed: str):
+        obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+        source = dedent("""
+            from ampform.sympy._cache import get_readable_hash, make_hashable
+
+            obj = {"x": {"a", "b", "c"}, "y": ("d", "e")}
+            print(get_readable_hash(make_hashable(obj)))
+        """)
+        output = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [sys.executable, "-c", source],
+            capture_output=True,
+            check=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            text=True,
+        )
+        assert output.stdout.strip() == get_readable_hash(make_hashable(obj))
+
+
 def describe_get_readable_hash():
     @pytest.mark.parametrize(
         ("expected_hash", "assumptions"),
         [
-            ("a7559ca", dict()),
-            ("278bcee", dict(real=True)),
-            ("bc417f2", dict(rational=True)),
+            ("238baa6", dict()),
+            ("72a46dd", dict(real=True)),
+            ("f34cac7", dict(rational=True)),
         ],
         ids=["symbol", "symbol-real", "symbol-rational"],
     )
@@ -124,7 +173,65 @@ def describe_get_readable_hash():
             meson_radius=d,
         )
         h = get_readable_hash(expr)[:7]
-        assert h == "3d076c6"
+        assert h == "1b63a45"
+
+    @pytest.mark.parametrize(
+        ("expected_hash", "obj"),
+        [
+            ("a36cb47", b"raw bytes"),
+            ("cb5e378", "a string"),
+            ("dc0dafb", (1, "a", (2, 3))),
+            ("af94f10", frozendict({"b": 2, "a": 1})),
+            ("d7210d2", frozendict({"x": frozenset({1, 2, 3}), "y": (4, 5)})),
+        ],
+        ids=["bytes", "str", "tuple", "frozendict", "nested"],
+    )
+    def it_hashes_containers(expected_hash: str, obj: Any):
+        assert get_readable_hash(obj)[:7] == expected_hash
+
+    def it_ignores_how_sub_expressions_are_shared():
+        """Equal expressions must hash the same, however SymPy shared their parts.
+
+        SymPy returns a cached instance for an equal expression, but its cache is a
+        bounded LRU, so an expression can end up with either one shared sub-expression
+        or two equal ones depending on what was built before it.
+        """
+        x, y = sp.symbols("x y")
+        shared = sp.sqrt(x**2 + y**2)
+        with_one_instance = shared + y * shared
+        clear_cache()
+        duplicate = sp.sqrt(x**2 + y**2)
+        with_two_instances = shared + y * duplicate
+
+        assert with_one_instance == with_two_instances
+        assert to_bytes(with_one_instance) == to_bytes(with_two_instances)
+
+    def it_distinguishes_phase_space_factors():
+        """Arguments that are not sympified must still reach the hash."""
+        s, m0, w0, m_a, m_b, d = sp.symbols("s m0 Gamma0 m_a m_b d", nonnegative=True)
+        angular_momentum = sp.Symbol("L", integer=True)
+
+        def make_width(phsp_factor: PhaseSpaceFactorProtocol) -> EnergyDependentWidth:
+            return EnergyDependentWidth(
+                s=s,
+                mass0=m0,
+                gamma0=w0,
+                m_a=m_a,
+                m_b=m_b,
+                angular_momentum=angular_momentum,
+                meson_radius=d,
+                phsp_factor=phsp_factor,
+            )
+
+        hashes = {
+            get_readable_hash(make_width(phsp_factor))
+            for phsp_factor in (
+                PhaseSpaceFactor,
+                PhaseSpaceFactorAbs,
+                PhaseSpaceFactorComplex,
+            )
+        }
+        assert len(hashes) == 3
 
 
 def describe_large_hash():
@@ -137,11 +244,11 @@ def describe_large_hash():
         ("expected_hash", "formalism"),
         [
             (
-                "762cc00" if sys.version_info >= (3, 11) else "1f5ac33",
+                "627ee45" if sys.version_info >= (3, 11) else "206587e",
                 "canonical-helicity",
             ),
             (
-                "17fefe5" if sys.version_info >= (3, 11) else "7b5fad1",
+                "422ec6b" if sys.version_info >= (3, 11) else "4c37f61",
                 "helicity",
             ),
         ],
@@ -161,16 +268,16 @@ def describe_large_hash():
         assert h == expected_hash
 
     @pytest.mark.parametrize(
-        ("expected_hashes", "formalism"),
+        ("expected_hash", "formalism"),
         [
-            ({"2b77221", "8397450", "dc1ee0e"}, "canonical-helicity"),
-            ({"aced899", "cbd5ff0", "ceecb32"}, "helicity"),
+            ("6165ac0", "canonical-helicity"),
+            ("8f6174c", "helicity"),
         ],
         ids=["canonical-helicity", "helicity"],
     )
     @pytest.mark.slow
     def it_hashes_amplitude_models_consistently(
-        expected_hashes: set[str], formalism: SpinFormalism
+        expected_hash: str, formalism: SpinFormalism
     ):
         reaction = qrules.generate_transitions(
             initial_state=[("J/psi(1S)", [-1, 1])],
@@ -198,10 +305,9 @@ def describe_large_hash():
         assert any(isinstance(s, sp.Indexed) for s in intensity.free_symbols)
 
         intensity_hash = get_readable_hash(intensity)[:7]
-        assert intensity_hash in {"c83b853", "d113a38"}
+        assert intensity_hash == "1cd3567"
 
         amplitudes = frozendict({k: v.doit() for k, v in model.amplitudes.items()})
         unfolded_intensity = intensity.xreplace(amplitudes)
         unfolded_intensity_hash = get_readable_hash(unfolded_intensity)[:7]
-        assert unfolded_intensity_hash in expected_hashes
-        # Hash is not fully stable yet! See https://github.com/ComPWA/ampform-dpd/discussions/163
+        assert unfolded_intensity_hash == expected_hash
