@@ -246,6 +246,14 @@ def get_system_cache_directory() -> str:
 def get_readable_hash(obj: Hashable) -> str:
     """Get a human-readable hash of any hashable Python object.
 
+    The hash follows from the value of the object, not from the identity of the parts it
+    is built from. Two SymPy expressions that compare equal therefore hash the same, no
+    matter what was constructed before them or in which process, which is what makes the
+    hash usable as a cache key in :func:`.cache_to_disk`.
+
+    Sets and dictionaries are an exception. They are serialized in iteration order,
+    which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`.
+
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
     """
@@ -253,7 +261,11 @@ def get_readable_hash(obj: Hashable) -> str:
 
 
 def to_bytes(obj) -> bytes:
-    """Convert any Python object to `bytes` using :func:`pickle.dumps`."""
+    """Convert any Python object to `bytes` with :mod:`pickle`.
+
+    The bytes depend on the value of the object rather than on which of its parts happen
+    to be the same instance. See :func:`.get_readable_hash` for what that guarantees.
+    """
     if isinstance(obj, (bytes, bytearray)):
         return obj
     stream = io.BytesIO()
