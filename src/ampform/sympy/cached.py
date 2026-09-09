@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from typing import TypeVar
 
     SympyObject = TypeVar("SympyObject", bound=sp.Basic)
+    V = TypeVar("V")
 
 
 @cache
@@ -124,8 +125,8 @@ def _unfold_substitutions(
 
 
 def _sorted_frozendict(
-    substitutions: Mapping[sp.Basic, Any],
-) -> frozendict[sp.Basic, Any]:
+    substitutions: Mapping[SympyObject, V], /
+) -> frozendict[SympyObject, V]:
     """Freeze a substitution mapping in an order that does not depend on the caller.
 
     The disk cache is keyed on a pickle of the mapping, and a pickled mapping is written

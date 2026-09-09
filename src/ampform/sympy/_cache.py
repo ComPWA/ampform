@@ -213,7 +213,7 @@ def _get_cache_dir() -> Path:
 
 
 @cache
-def _warn_once(msg):
+def _warn_once(msg, /):
     _LOGGER.warning(msg)
 
 
@@ -243,7 +243,7 @@ def get_system_cache_directory() -> str:
 
 
 @cache
-def get_readable_hash(obj: Hashable) -> str:
+def get_readable_hash(obj: Hashable, /) -> str:
     """Get a human-readable hash of any hashable Python object.
 
     The hash follows from the value of the object, not from the identity of the parts it
@@ -254,7 +254,8 @@ def get_readable_hash(obj: Hashable) -> str:
     Sets and dictionaries are an exception. They are serialized in iteration order,
     which depends on :code:`PYTHONHASHSEED` when their elements or keys are `str`. The
     wrappers in :mod:`~ampform.sympy.cached` sort the substitution mappings they are
-    given, so their cache keys do not depend on the order in which the caller built them.
+    given, so their cache keys do not depend on the order in which the caller built
+    them.
 
     Args:
         obj: Any hashable object, mutable or immutable, to be hashed.
@@ -262,7 +263,7 @@ def get_readable_hash(obj: Hashable) -> str:
     return hashlib.md5(to_bytes(obj), usedforsecurity=False).hexdigest()
 
 
-def to_bytes(obj) -> bytes:
+def to_bytes(obj, /) -> bytes:
     """Convert any Python object to `bytes` with :mod:`pickle`.
 
     The bytes depend on the value of the object rather than on which of its parts happen
@@ -275,7 +276,7 @@ def to_bytes(obj) -> bytes:
     return stream.getvalue()
 
 
-def _dump_deterministically(obj, stream: SupportsWrite[bytes]) -> None:
+def _dump_deterministically(obj, /, stream: SupportsWrite[bytes]) -> None:
     """Pickle an object so that the bytes depend on its value alone."""
     _DeterministicPickler(stream).dump(obj)
 
@@ -332,7 +333,7 @@ def make_hashable(*args) -> Hashable:
     return tuple(_make_hashable_impl(x) for x in args)
 
 
-def _make_hashable_impl(obj) -> Hashable:
+def _make_hashable_impl(obj, /) -> Hashable:
     if isinstance(obj, abc.Mapping):
         return frozendict({k: _make_hashable_impl(v) for k, v in obj.items()})
     if isinstance(obj, str):
