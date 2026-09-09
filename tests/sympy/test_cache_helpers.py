@@ -246,3 +246,13 @@ def test_get_readable_hash_independent_of_hash_seed(seed: str):
     assert output.stdout.strip() == get_readable_hash(
         frozendict({"x": frozenset({"a", "b", "c"}), "y": ("d", "e")})
     )
+
+
+def test_get_readable_hash_ignores_dict_insertion_order():
+    """Dictionaries that compare equal must hash the same, whatever their build order."""
+    keys = ("alpha", "beta", "gamma", "delta")
+    forward = frozendict({k: len(k) for k in keys})
+    backward = frozendict({k: len(k) for k in reversed(keys)})
+    assert forward == backward
+    assert tuple(forward) != tuple(backward)
+    assert get_readable_hash(forward) == get_readable_hash(backward)

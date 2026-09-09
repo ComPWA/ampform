@@ -284,8 +284,11 @@ class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-acc
     full on each occurrence, because whether two equal non-SymPy objects are one shared
     instance depends on caches and string interning elsewhere.
 
-    Sets and dictionaries are written in a sorted order, because their iteration order
-    depends on :code:`PYTHONHASHSEED` for `str` keys.
+    Sets and dictionaries are written in a sorted order. A `set` iterates in an order
+    that depends on :code:`PYTHONHASHSEED` for `str` elements. A `dict` iterates in
+    insertion order, which is not seed-dependent in itself, but two dictionaries that
+    compare equal can have been built in a different order, and a dictionary built by
+    iterating a `set` inherits that seed-dependent order.
 
     The pure-Python pickler is subclassed because the C accelerator does not dispatch to
     these overrides.
