@@ -212,6 +212,10 @@ def unevaluated(
     >>> rebuilt == expr
     True
 
+    The constructor compares equal to the expression's class, but repeated accesses to
+    :code:`func` need not return the same object. Use equality rather than identity for
+    class-based dispatch.
+
     The default string and :func:`~sympy.printing.repr.srepr` printers include
     non-default non-sympy attributes as keyword arguments. Parsing these representations
     requires a namespace containing the expression class and any classes used as
@@ -314,16 +318,12 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     return cls
 
 
-def _func_method(self: ExprClass) -> type[ExprClass]:
-    """Return a constructor that reproduces the non-sympy attributes of an instance.
+def _func_method(self: ExprClass) -> type:
+    """Return a class-valued constructor preserving non-sympy arguments.
 
-    SymPy assumes that :code:`expr.func(*expr.args)` reconstructs :code:`expr`, but only
-    sympified fields are part of :code:`args`. If every non-sympy attribute has its
-    default value and follows the sympified fields, the class itself satisfies that
-    assumption. Otherwise, the returned subclass fills in the instance's non-sympy
-    attributes and constructs an instance of the original class. It compares equal to
-    and hashes like the original class, so that class comparisons through
-    :code:`expr.func` keep working.
+    SymPy's type queries require a class, while downstream dispatch compares it with the
+    original class. Constructed instances retain their original type and pickle
+    representation.
     """
     cls = type(self)
     overrides = {
@@ -333,11 +333,19 @@ def _func_method(self: ExprClass) -> type[ExprClass]:
     }
     if not overrides and _has_trailing_non_sympy_fields(cls):
         return cls
-    try:
-        key = tuple((name, type(value), value) for name, value in overrides.items())
-        return _get_cached_constructor(cls, key)
-    except TypeError:  # unhashable attribute values cannot be cached
-        return _create_constructor(cls, overrides)
+    metaclass = _ExpressionConstructor
+    if not issubclass(metaclass, type(cls)):
+        metaclass = type("ExpressionConstructor", (metaclass, type(cls)), {})
+    return metaclass(
+        cls.__name__,
+        (cls,),
+        {
+            "__module__": cls.__module__,
+            "__signature__": inspect.signature(cls),
+            "_base": cls,
+            "_overrides": overrides,
+        },
+    )
 
 
 def _has_default_value(instance: DataclassInstance, field: Field) -> bool:
@@ -368,75 +376,36 @@ def _print_expression(self: ExprClass, printer) -> str:
     return f"{type(self).__name__}({', '.join(arguments)})"
 
 
-@functools.cache
-def _get_cached_constructor(
-    cls: type[ExprClass], overrides: tuple[tuple[str, type, Any], ...]
-) -> type[ExprClass]:
-    return _create_constructor(cls, {name: value for name, _, value in overrides})
+class _ExpressionConstructor(type):
+    """Reconstruct original instances while retaining SymPy's class-based dispatch."""
 
-
-def _create_constructor(
-    cls: type[ExprClass], overrides: dict[str, Any]
-) -> type[ExprClass]:
-    all_fields = dataclasses.fields(cls)
-    sympy_fields = get_sympy_fields(cls)
-
-    def new_method(_, *args, **kwargs):
-        if len(args) == len(sympy_fields) < len(all_fields):
-            keyword_args = {f.name: a for f, a in zip(sympy_fields, args, strict=True)}
-            kwargs = keyword_args | kwargs
+    def __call__(cls, *args, **kwargs):
+        fields = dataclasses.fields(cls._base)
+        sympy_fields = get_sympy_fields(cls._base)
+        if len(args) == len(sympy_fields) < len(fields):
+            kwargs = {
+                f.name: a for f, a in zip(sympy_fields, args, strict=True)
+            } | kwargs
             args = ()
-        covered = {f.name for f in all_fields[: len(args)]} | set(kwargs)
-        missing = {k: v for k, v in overrides.items() if k not in covered}
-        return cls(*args, **missing, **kwargs)
+        covered = {f.name for f in fields[: len(args)]} | set(kwargs)
+        defaults = {k: v for k, v in cls._overrides.items() if k not in covered}
+        return cls._base(*args, **defaults, **kwargs)
 
-    metaclass = _get_constructor_metaclass(type(cls))
-    constructor = metaclass(
-        cls.__name__,
-        (cls,),
-        {
-            "__new__": new_method,
-            "__module__": cls.__module__,
-            "__qualname__": cls.__qualname__,
-            "__doc__": cls.__doc__,
-            "_unevaluated_base": cls,
-            "_unevaluated_overrides": overrides,
-        },
-    )
-    constructor.__signature__ = inspect.signature(cls)
-    return constructor
+    def __eq__(cls, other: object) -> bool:
+        return other is cls._base or (
+            isinstance(other, _ExpressionConstructor) and other._base is cls._base
+        )
 
+    def __hash__(cls) -> int:
+        return hash(cls._base)
 
-@functools.cache
-def _get_constructor_metaclass(metaclass: type) -> type:
-    return type(
-        "ConstructorMeta",
-        (metaclass,),
-        {
-            "__eq__": _constructor_eq,
-            "__hash__": _constructor_hash,
-            "__instancecheck__": _constructor_instancecheck,
-        },
-    )
-
-
-def _constructor_eq(cls: type, other: object) -> bool:
-    base = cls._unevaluated_base
-    return other is base or getattr(other, "_unevaluated_base", None) is base
-
-
-def _constructor_hash(cls: type) -> int:
-    return hash(cls._unevaluated_base)
-
-
-def _constructor_instancecheck(cls: type, instance: object) -> bool:
-    """Treat instances of the base class with matching attributes as instances."""
-    if not isinstance(instance, cls._unevaluated_base):
-        return False
-    return all(
-        _get_hashable_object(getattr(instance, name)) == _get_hashable_object(value)
-        for name, value in cls._unevaluated_overrides.items()
-    )
+    def __instancecheck__(cls, instance: object) -> bool:
+        return isinstance(instance, cls._base) and all(
+            type(getattr(instance, name)) is type(value)
+            and _get_hashable_object(getattr(instance, name))
+            == _get_hashable_object(value)
+            for name, value in cls._overrides.items()
+        )
 
 
 def _update_field_metadata(cls: T) -> T:
