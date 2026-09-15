@@ -35,11 +35,12 @@ if TYPE_CHECKING:
 
 @unevaluated
 class SimpleBreitWigner(sp.Expr):
-    r"""Simple Breit–Wigner with an optional :math:`m_0 \Gamma_0` pole factor.
+    r"""Simple Breit–Wigner, normalized to unit modulus at :math:`s = m_0^2`.
 
-    The :math:`m_0 \Gamma_0` numerator is included by default for backwards
-    compatibility. Set ``multiply_pole_factor=False`` for a unity numerator, which is
-    the dressed propagator of Equation (50.31) in `PDG2026, §Resonances, p.12
+    By default, the propagator is multiplied by :math:`m_0 \Gamma_0`, so that
+    :math:`\left|\hat{\mathcal{R}}^\mathrm{BW}(m_0^2)\right| = 1`. Set
+    ``normalize=False`` for a unity numerator, which is the dressed propagator of
+    Equation (50.31) in `PDG2026, §Resonances, p.12
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
     convention of `MultichannelBreitWigner`.
     """
@@ -47,26 +48,32 @@ class SimpleBreitWigner(sp.Expr):
     s: Any
     mass: Any
     width: Any
-    multiply_pole_factor: bool = argument(default=True, kw_only=True, sympify=False)
-    _latex_repr_ = R"\mathcal{{R}}^\mathrm{{BW}}\left({s}; {mass}, {width}\right)"
+    normalize: bool = argument(default=True, kw_only=True, sympify=False)
 
     def evaluate(self):
         s, m0, w0 = self.args
-        numerator = m0 * w0 if self.multiply_pole_factor else 1
+        numerator = m0 * w0 if self.normalize else 1
         return numerator * _formulate_breit_wigner(s, m0, w0)
+
+    def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
+        s, mass, width = map(printer._print, self.args)
+        function_symbol = _get_breit_wigner_symbol(self.normalize)
+        return Rf"{function_symbol}\left({s}; {mass}, {width}\right)"
 
 
 @unevaluated
 class BreitWigner(sp.Expr):
-    r"""Relativistic Breit–Wigner with an optional :math:`m_0 \Gamma_0` pole factor.
+    r"""Relativistic Breit–Wigner, normalized to unit modulus at :math:`s = m_0^2`.
 
     Uses an `EnergyDependentWidth` in the denominator (see Equations :eq:`BreitWigner`
-    and :eq:`EnergyDependentWidth`). The :math:`m_0 \Gamma_0` numerator is included by
-    default for backwards compatibility. Set ``multiply_pole_factor=False`` for a unity
+    and :eq:`EnergyDependentWidth`). By default, the propagator is multiplied by
+    :math:`m_0 \Gamma_0`, so that :math:`\left|\hat{\mathcal{R}}^\mathrm{BW}(m_0^2)\right|
+    = 1`, because :math:`\Gamma(m_0^2) = \Gamma_0`. Set ``normalize=False`` for a unity
     numerator, which is the dressed propagator of Equation (50.31) in `PDG2026,
     §Resonances, p.12
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
-    convention of `MultichannelBreitWigner`.
+    convention of `MultichannelBreitWigner`. The flag does not affect the `.FormFactor`
+    inside the `EnergyDependentWidth`, where its normalization cancels.
     """
 
     s: Any
@@ -79,11 +86,11 @@ class BreitWigner(sp.Expr):
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
     )  # ty: ignore[invalid-assignment]
-    multiply_pole_factor: bool = argument(default=True, kw_only=True, sympify=False)
+    normalize: bool = argument(default=True, kw_only=True, sympify=False)
 
     def evaluate(self):
         width = self.energy_dependent_width()
-        numerator = self.mass * self.width if self.multiply_pole_factor else 1
+        numerator = self.mass * self.width if self.normalize else 1
         return numerator * _formulate_breit_wigner(self.s, self.mass, width)
 
     def energy_dependent_width(self) -> EnergyDependentWidth | sp.Basic:
@@ -94,7 +101,7 @@ class BreitWigner(sp.Expr):
 
     def _latex_repr_(self, printer: LatexPrinter, *args) -> str:
         s = printer._print(self.s)
-        function_symbol = R"\mathcal{R}^\mathrm{BW}"
+        function_symbol = _get_breit_wigner_symbol(self.normalize)
         mass = printer._print(self.mass)
         width = printer._print(self.width)
         arg = Rf"\left({s}; {mass}, {width}\right)"
@@ -223,6 +230,12 @@ class ChannelArguments(sp.Expr):
 
 def _formulate_breit_wigner(s: Any, mass: Any, width: Any) -> sp.Expr:
     return 1 / (mass**2 - s - sp.I * mass * width)
+
+
+def _get_breit_wigner_symbol(normalize: bool) -> str:
+    if normalize:
+        return R"\hat{\mathcal{R}}^\mathrm{BW}"
+    return R"\mathcal{R}^\mathrm{BW}"
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
