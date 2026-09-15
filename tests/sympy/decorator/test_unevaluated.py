@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# cspell:ignore srepr
 import inspect
 import pickle
 from collections.abc import Mapping
@@ -7,6 +8,7 @@ from typing import Any, ClassVar
 
 import pytest
 import sympy as sp
+from sympy.parsing.sympy_parser import parse_expr
 
 from ampform.sympy._decorator import argument, unevaluated
 
@@ -317,3 +319,59 @@ def describe_unevaluated():
         rebuilt = expr.func(*expr.args)
         assert type(rebuilt) is _Inner
         assert rebuilt == expr
+
+    @pytest.mark.parametrize("value", [False, 0, 0.0, ["unity"]])
+    def it_preserves_the_type_of_constructor_overrides(value):
+        @unevaluated(implement_doit=False)
+        class MyExpr(sp.Expr):
+            x: Any
+            mode: Any = argument(default=None, sympify=False)
+
+        x = sp.Symbol("x")
+        assert MyExpr(x, mode=False).func(x).mode is False
+        rebuilt = MyExpr(x, mode=value).func(x)
+        assert type(rebuilt.mode) is type(value)
+        assert rebuilt.mode == value
+
+    @pytest.mark.parametrize("flag", [True, False])
+    def it_rebuilds_interleaved_fields(flag):
+        @unevaluated(implement_doit=False)
+        class MyExpr(sp.Expr):
+            flag: bool = argument(default=True, sympify=False)
+            x: Any = 0
+
+        expr = MyExpr(flag, sp.Symbol("x"))
+        assert expr.func(*expr.args) == expr
+        assert expr.rewrite(sp.exp) == expr
+        assert parse_expr(str(expr), local_dict={"MyExpr": MyExpr}) == expr
+
+    def it_allows_explicit_constructor_overrides():
+        x = sp.Symbol("x")
+        expr = _Inner(x, typ=float)
+        assert expr.func(x, typ=str).typ is str
+        assert expr.func(x, str).typ is str
+
+    @pytest.mark.parametrize("printer", [str, sp.srepr])
+    @pytest.mark.parametrize("value", [int, float, "unity", False, ["unity"]])
+    def it_round_trips_non_sympy_values_through_printers(printer, value):
+        expr = _Inner(sp.Symbol("x"), typ=value)
+        namespace = {"_Inner": _Inner, "int": int, "float": float}
+        rebuilt = parse_expr(printer(expr), local_dict=namespace)
+        assert rebuilt == expr
+        assert type(rebuilt.typ) is type(value)
+
+    def it_preserves_variants_in_common_subexpression_elimination():
+        x, y = sp.symbols("x y")
+        expressions = [_Inner(x + y, typ=typ) for typ in (int, float, str)]
+        replacements, reduced = sp.cse(expressions)
+        assert replacements
+        restored = [expr.subs(replacements) for expr in reduced]
+        assert restored == expressions
+
+    @pytest.mark.parametrize("protocol", range(2, pickle.HIGHEST_PROTOCOL + 1))
+    def it_pickles_rebuilt_instances_as_the_original_class(protocol):
+        expr = _Inner(sp.Symbol("x"), typ=float)
+        rebuilt = expr.func(*expr.args)
+        restored = pickle.loads(pickle.dumps(rebuilt, protocol=protocol))
+        assert type(restored) is _Inner
+        assert restored == expr

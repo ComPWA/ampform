@@ -141,6 +141,64 @@ def describe_make_hashable():
 
 
 def describe_get_readable_hash():
+    def it_preserves_variant_hashes_across_processes_and_cache_states():
+        script = dedent("""\
+            import pickle
+            import sympy as sp
+            from sympy.core.cache import clear_cache
+            from ampform.dynamics import BreitWigner, EnergyDependentWidth
+            from ampform.dynamics.phasespace import PhaseSpaceFactorSWave
+            from ampform.sympy import argument, unevaluated
+            from ampform.sympy._cache import get_readable_hash, to_bytes
+
+            @unevaluated(implement_doit=False)
+            class ConventionExpr(sp.Expr):
+                x: sp.Expr
+                normalize: bool = argument(default=True, sympify=False)
+                numerator: str = argument(default="mass-width", sympify=False)
+
+            x, y = sp.symbols("x y")
+            expressions = [
+                ConventionExpr(x + y, normalize=normalize, numerator=numerator)
+                for normalize in (True, False)
+                for numerator in ("mass-width", "unity")
+            ]
+            expressions += [
+                cls(x, 1, 1, 0, 0, 0, 1, phsp_factor=PhaseSpaceFactorSWave)
+                for cls in (BreitWigner, EnergyDependentWidth)
+            ]
+            hashes = []
+            for expr in expressions:
+                original = to_bytes(expr)
+                expr.func
+                clear_cache()
+                rebuilt = expr.func(*expr.args)
+                assert type(rebuilt) is type(expr)
+                assert to_bytes(rebuilt) == original
+                assert pickle.loads(original) == expr
+                shared = sp.Tuple(expr, expr)
+                separate = sp.Tuple(expr, rebuilt)
+                assert to_bytes(shared) == to_bytes(separate)
+                hashes.append(get_readable_hash(separate))
+            assert len(set(hashes)) == len(expressions)
+            print(hashes)
+            """)
+        results = []
+        for seed, cache_size in [("0", "1000"), ("1", "1"), ("12345", "0")]:
+            output = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+                [sys.executable, "-c", script],
+                check=True,
+                capture_output=True,
+                text=True,
+                env={
+                    **os.environ,
+                    "PYTHONHASHSEED": seed,
+                    "SYMPY_CACHE_SIZE": cache_size,
+                },
+            )
+            results.append(output.stdout.strip())
+        assert len(set(results)) == 1
+
     @pytest.mark.parametrize(
         ("expected_hash", "assumptions"),
         [
