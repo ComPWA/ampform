@@ -40,7 +40,7 @@ class SimpleBreitWigner(sp.Expr):
     By default, the propagator is multiplied by :math:`m_0 \Gamma_0`, so that
     :math:`\left|\hat{\mathcal{R}}^\mathrm{BW}(m_0^2)\right| = 1`. Set
     ``normalize=False`` for a unity numerator, which is the dressed propagator of
-    Equation (50.31) in `PDG2026, §Resonances, p.12
+    `PDG2026, Eq. (50.31)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
     convention of `MultichannelBreitWigner`.
     """
@@ -67,10 +67,10 @@ class BreitWigner(sp.Expr):
 
     Uses an `EnergyDependentWidth` in the denominator (see Equations :eq:`BreitWigner`
     and :eq:`EnergyDependentWidth`). By default, the propagator is multiplied by
-    :math:`m_0 \Gamma_0`, so that :math:`\left|\hat{\mathcal{R}}^\mathrm{BW}(m_0^2)\right|
-    = 1`, because :math:`\Gamma(m_0^2) = \Gamma_0`. Set ``normalize=False`` for a unity
-    numerator, which is the dressed propagator of Equation (50.31) in `PDG2026,
-    §Resonances, p.12
+    :math:`m_0 \Gamma_0`, so that
+    :math:`\left|\hat{\mathcal{R}}^\mathrm{BW}(m_0^2)\right| = 1`, because
+    :math:`\Gamma(m_0^2) = \Gamma_0`. Set ``normalize=False`` for a unity numerator,
+    which is the dressed propagator of `PDG2026, Eq. (50.31)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
     convention of `MultichannelBreitWigner`. The flag does not affect the `.FormFactor`
     inside the `EnergyDependentWidth`, where its normalization cancels.
@@ -115,7 +115,7 @@ class BreitWigner(sp.Expr):
 class EnergyDependentWidth(sp.Expr):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
-    See Equation (50.28) in `PDG2021, §Resonances, p.9
+    See `PDG2021, Eq. (50.28)
     <https://pdg.lbl.gov/2021/reviews/rpp2021-rev-resonances.pdf#page=9>`__ and
     :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
@@ -176,7 +176,7 @@ class MultichannelBreitWigner(sp.Expr):
     where :math:`g_i^2` is the coupling squared, :math:`\rho_i` is a
     `.PhaseSpaceFactor`, and :math:`F_{L_i}` is a `.FormFactor`. Unlike an
     `EnergyDependentWidth`, a channel term is not normalized at the pole position. See
-    Equations (50.31) and (50.32) in `PDG2026, §Resonances, p.12
+    `PDG2026, Eqs. (50.31) and (50.32)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
     """
 
@@ -208,7 +208,7 @@ class ChannelArguments(sp.Expr):
 
         \Gamma_i^\text{ch}(s) = \frac{g_i^2}{m_0} \rho_i(s) F_{L_i}^2(s)
 
-    See Equation (50.32) in `PDG2026, §Resonances, p.12
+    See `PDG2026, Eq. (50.32)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
     """
 
