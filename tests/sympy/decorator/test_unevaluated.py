@@ -312,13 +312,38 @@ def describe_unevaluated():
         assert hash(expr.func) == hash(_Inner)
         assert len({expr.func, _Inner}) == 1
         assert expr.func.__name__ == _Inner.__name__
-        assert expr.func is _Inner(sp.Symbol("y"), typ=float).func
+        assert expr.func == _Inner(sp.Symbol("y"), typ=float).func
         assert isinstance(expr, expr.func)
         assert not isinstance(_Inner(x), expr.func)
         assert inspect.signature(expr.func) == inspect.signature(_Inner)
         rebuilt = expr.func(*expr.args)
         assert type(rebuilt) is _Inner
         assert rebuilt == expr
+
+    def it_supports_sympy_type_queries_with_the_bound_constructor():
+        x = sp.Symbol("x")
+        expr = _Inner(x, typ=float)
+        assert expr.has(expr.func)
+        assert expr.find(expr.func) == {expr}
+        assert (x + expr).replace(expr.func, lambda _: sp.Integer(1)) == x + 1
+
+    def it_preserves_custom_metaclass_construction():
+        class Meta(type):
+            def __call__(cls, *args, **kwargs):
+                expr = super().__call__(*args, **kwargs)
+                expr.construction_count = getattr(expr, "construction_count", 0) + 1
+                return expr
+
+        @unevaluated(implement_doit=False)
+        class MyExpr(sp.Expr, metaclass=Meta):
+            x: Any
+            mode: str = argument(default="default", sympify=False)
+
+        expr = MyExpr(sp.Symbol("x"), mode="unity")
+        rebuilt = expr.func(*expr.args)
+        assert type(rebuilt) is MyExpr
+        assert rebuilt == expr
+        assert rebuilt.construction_count == 1
 
     @pytest.mark.parametrize("value", [False, 0, 0.0, ["unity"]])
     def it_preserves_the_type_of_constructor_overrides(value):
@@ -332,6 +357,8 @@ def describe_unevaluated():
         rebuilt = MyExpr(x, mode=value).func(x)
         assert type(rebuilt.mode) is type(value)
         assert rebuilt.mode == value
+        if type(value) is not bool:
+            assert not isinstance(rebuilt, MyExpr(x, mode=False).func)
 
     @pytest.mark.parametrize("flag", [True, False])
     def it_rebuilds_interleaved_fields(flag):
