@@ -101,8 +101,8 @@ class RelativisticBreitWignerBuilder:
 
     Args:
         form_factor: Formulate a relativistic Breit–Wigner function multiplied
-            by a Blatt–Weisskopf form factor (`.FormFactor`), like in Equation (50.26)
-            on :pdg-review:`2021; Resonances; p.9`.
+            by a Blatt–Weisskopf form factor (`.FormFactor`), like in Equations (50.33)
+            and (50.37) on :pdg-review:`2026; Resonances; p.12`.
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
             denominator of the Breit–Wigner.
         phsp_factor: A class that complies with the

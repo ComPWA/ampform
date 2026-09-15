@@ -1,8 +1,8 @@
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by
-Equation (49.12) in :pdg-review:`2021; Kinematics; p.2`. See also Equation (50.9) on
-:pdg-review:`2021; Resonances; p.6`. This integral is not always easy to solve, which
+Equation (49.12) in :pdg-review:`2026; Kinematics; p.2`. See also Equation (50.11) on
+:pdg-review:`2026; Resonances; p.9`. This integral is not always easy to solve, which
 leads to different parametrizations.
 
 This module provides several parametrizations. They all comply with the
@@ -58,7 +58,7 @@ class PhaseSpaceFactorProtocol(Protocol):
 class PhaseSpaceFactor(sp.Expr):
     r"""Standard phase-space factor, using a definition consistent with `.BreakupMomentum`.
 
-    See :pdg-review:`2025; Resonances; p.6`, Equation (50.11). We ignore the factor
+    See :pdg-review:`2026; Resonances; p.9`, Equation (50.11). We ignore the factor
     :math:`\frac{1}{16\pi}` as done in :cite:`Chung:1995-PrimerKmatrixFormalism`, p.5.
 
     Similarly to `.BreakupMomentum`, this class represents the numerator as a single
@@ -370,6 +370,11 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
 
     **Warning**: The PDG specifically derives this formula for a two-body decay *with
     equal masses*.
+
+    .. warning:: This formula no longer appears in :pdg-review:`2026; Resonances; p.16`.
+        The PDG now gives the :math:`S`-wave Chew–Mandelstam function for arbitrary
+        masses instead (Equation (50.46)), which is subtracted at the channel threshold.
+        See `.ChewMandelstamSWave`.
     """
 
     s: Any
