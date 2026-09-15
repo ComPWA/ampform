@@ -6,6 +6,7 @@ from ampform.dynamics.form_factor import (
     FormFactor,
     _get_polynomial_blatt_weisskopf,
 )
+from ampform.helicity import ParameterValues
 from ampform.kinematics.phasespace import BreakupMomentumSquared
 
 z = sp.Symbol("z", nonnegative=True, real=True)
@@ -58,6 +59,16 @@ def describe_FormFactor():
         non_normalized = FormFactor(s, m1, m2, angular_momentum=1, normalize=False)
         assert sp.latex(normalized) == R"\hat{\mathcal{F}}" + arguments
         assert sp.latex(non_normalized) == R"\mathcal{F}" + arguments
+
+    def it_keeps_the_normalization_flag_when_substituting_parameter_values():
+        s, m1, m2, d = sp.symbols("s m1 m2 d", nonnegative=True)
+        form_factor = FormFactor(
+            s, m1, m2, angular_momentum=2, meson_radius=d, normalize=False
+        )
+        parameters = ParameterValues({d: 5.0, m1: 0.938, m2: 0.493})
+        substituted = form_factor.xreplace(parameters)
+        assert substituted.normalize is False
+        assert substituted.meson_radius == 5.0
 
 
 @pytest.mark.parametrize(
