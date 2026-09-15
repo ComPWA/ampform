@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# cspell:ignore srepr
 import dataclasses
 import functools
 import inspect
@@ -156,7 +157,8 @@ def unevaluated(
     >>> expr.doit()
     y
 
-    Or, `as a method <https://docs.sympy.org/latest/modules/printing.html#example-of-custom-printing-method>`_:
+    Or, `as a method
+    <https://docs.sympy.org/latest/modules/printing.html#example-of-custom-printing-method>`_:
 
     >>> from sympy.printing.latex import LatexPrinter
     >>> @unevaluated
@@ -198,6 +200,29 @@ def unevaluated(
     True
     >>> expr.functor is Transformation
     True
+
+    Such non-sympy attributes are not part of :code:`args`. They are nonetheless
+    preserved when SymPy rebuilds the expression through :code:`expr.func(*expr.args)`,
+    as it does in :meth:`~sympy.core.basic.Basic.replace`,
+    :meth:`~sympy.core.basic.Basic.rewrite`, and :meth:`~sympy.core.basic.Basic.doit`:
+
+    >>> rebuilt = expr.func(*expr.args)
+    >>> rebuilt.functor is Transformation
+    True
+    >>> rebuilt == expr
+    True
+
+    The constructor compares equal to the expression's class, but repeated accesses to
+    :code:`func` need not return the same object. Use equality rather than identity for
+    class-based dispatch.
+
+    The default string and :func:`~sympy.printing.repr.srepr` printers include
+    non-default non-sympy attributes as keyword arguments. Parsing these representations
+    requires a namespace containing the expression class and any classes used as
+    attribute values. Custom printer methods and LaTeX output are preserved.
+
+    >>> str(expr)
+    'MyExpr(0, 3.14, functor=Transformation)'
 
     .. version-added:: 0.14.8
     .. version-changed:: 0.14.7
@@ -285,7 +310,102 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     if non_sympy_fields:
         cls._eval_subs = _eval_subs_method
         cls._xreplace = _xreplace_method
+        cls.func = property(_func_method)
+        if not hasattr(cls, "_sympystr"):
+            cls._sympystr = _print_expression
+        if not hasattr(cls, "_sympyrepr"):
+            cls._sympyrepr = _print_expression
     return cls
+
+
+def _func_method(self: ExprClass) -> type:
+    """Return a class-valued constructor preserving non-sympy arguments.
+
+    SymPy's type queries require a class, while downstream dispatch compares it with the
+    original class. Constructed instances retain their original type and pickle
+    representation.
+    """
+    cls = type(self)
+    overrides = {
+        field.name: getattr(self, field.name)
+        for field in get_non_sympy_fields(cls)
+        if not _has_default_value(self, field)
+    }
+    if not overrides and _has_trailing_non_sympy_fields(cls):
+        return cls
+    metaclass = _ExpressionConstructor
+    if not issubclass(metaclass, type(cls)):
+        metaclass = type("ExpressionConstructor", (metaclass, type(cls)), {})
+    return metaclass(
+        cls.__name__,
+        (cls,),
+        {
+            "__module__": cls.__module__,
+            "__signature__": inspect.signature(cls),
+            "_base": cls,
+            "_overrides": overrides,
+        },
+    )
+
+
+def _has_default_value(instance: DataclassInstance, field: Field) -> bool:
+    if field.default is MISSING:
+        return False
+    value = getattr(instance, field.name)
+    return type(value) is type(field.default) and _get_hashable_object(
+        value
+    ) == _get_hashable_object(field.default)
+
+
+def _has_trailing_non_sympy_fields(cls: type) -> bool:
+    fields = dataclasses.fields(cls)
+    return all(_is_sympify(field) for field in fields[: len(get_sympy_fields(cls))])
+
+
+def _print_expression(self: ExprClass, printer) -> str:
+    positional = _has_trailing_non_sympy_fields(type(self))
+    arguments = []
+    for field in dataclasses.fields(self):
+        value = getattr(self, field.name)
+        if _is_sympify(field):
+            rendered = printer._print(value)
+            arguments.append(rendered if positional else f"{field.name}={rendered}")
+        elif not _has_default_value(self, field):
+            rendered = value.__name__ if isclass(value) else repr(value)
+            arguments.append(f"{field.name}={rendered}")
+    return f"{type(self).__name__}({', '.join(arguments)})"
+
+
+class _ExpressionConstructor(type):
+    """Reconstruct original instances while retaining SymPy's class-based dispatch."""
+
+    def __call__(cls, *args, **kwargs):
+        fields = dataclasses.fields(cls._base)
+        sympy_fields = get_sympy_fields(cls._base)
+        if len(args) == len(sympy_fields) < len(fields):
+            kwargs = {
+                f.name: a for f, a in zip(sympy_fields, args, strict=True)
+            } | kwargs
+            args = ()
+        covered = {f.name for f in fields[: len(args)]} | set(kwargs)
+        defaults = {k: v for k, v in cls._overrides.items() if k not in covered}
+        return cls._base(*args, **defaults, **kwargs)
+
+    def __eq__(cls, other: object) -> bool:
+        return other is cls._base or (
+            isinstance(other, _ExpressionConstructor) and other._base is cls._base
+        )
+
+    def __hash__(cls) -> int:
+        return hash(cls._base)
+
+    def __instancecheck__(cls, instance: object) -> bool:
+        return isinstance(instance, cls._base) and all(
+            type(getattr(instance, name)) is type(value)
+            and _get_hashable_object(getattr(instance, name))
+            == _get_hashable_object(value)
+            for name, value in cls._overrides.items()
+        )
 
 
 def _update_field_metadata(cls: T) -> T:
@@ -499,7 +619,7 @@ def _eval_subs_method(self, old, new, **hints):
             hit = True
             new_args[i] = new_attr
     if hit:
-        rv = self.func(*new_args)
+        rv = type(self)(*new_args)
         hack2 = hints.get("hack2", False)
         if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
             coefficient = sp.S.One
@@ -539,17 +659,28 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
         for arg in _get_field_values(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
                 replace_result, is_replaced = arg._xreplace(rule)  # ruff: ignore[private-member-access]
-            elif isinstance(rule, abc.Mapping):
-                is_replaced = bool(arg in rule)
-                replace_result = rule.get(arg, arg)
             else:
-                replace_result = arg
-                is_replaced = False
+                replace_result, is_replaced = _replace_non_sympy_value(arg, rule)
             new_args.append(replace_result)
             hit |= is_replaced
         if hit:
-            return self.func(*new_args), True
+            return type(self)(*new_args), True
     return self, False
+
+
+def _replace_non_sympy_value(value: Any, rule: Any) -> tuple[Any, bool]:
+    """Replace a non-sympy attribute only if the rule has a key of the same type.
+
+    A lookup through :code:`value in rule` is too lenient for such attributes: `False`
+    equals :code:`0` and :code:`sympy.Integer(0)`, and mappings like
+    `~ampform.helicity.ParameterValues` also accept integer keys as positions.
+    """
+    if not isinstance(rule, abc.Mapping):
+        return value, False
+    for key, replacement in rule.items():
+        if type(key) is type(value) and key == value:
+            return replacement, True
+    return value, False
 
 
 def _get_field_values(self: DataclassInstance) -> tuple[Any, ...]:

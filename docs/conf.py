@@ -313,6 +313,7 @@ linkcheck_ignore = [
     "https://physique.cuso.ch",
     "https://suchung.web.cern.ch",
     "https://www.bookfinder.com",
+    r"https://zenodo.org/badge/doi/10.5281/zenodo.\d+.svg",
 ]
 linkcheck_timeout = 60
 mermaid_height = "auto"  # do not stretch diagrams to the default 500px
