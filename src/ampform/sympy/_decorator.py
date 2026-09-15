@@ -199,6 +199,17 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
+    Such non-sympy attributes are not part of :code:`args`. They are nonetheless
+    preserved when SymPy rebuilds the expression through :code:`expr.func(*expr.args)`,
+    as it does in :meth:`~sympy.core.basic.Basic.replace`,
+    :meth:`~sympy.core.basic.Basic.rewrite`, and :meth:`~sympy.core.basic.Basic.doit`:
+
+    >>> rebuilt = expr.func(*expr.args)
+    >>> rebuilt.functor is Transformation
+    True
+    >>> rebuilt == expr
+    True
+
     .. version-added:: 0.14.8
     .. version-changed:: 0.14.7
         Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
@@ -285,7 +296,110 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     if non_sympy_fields:
         cls._eval_subs = _eval_subs_method
         cls._xreplace = _xreplace_method
+        cls.func = property(_func_method)
     return cls
+
+
+def _func_method(self: ExprClass) -> type[ExprClass]:
+    """Return a constructor that reproduces the non-sympy attributes of an instance.
+
+    SymPy assumes that :code:`expr.func(*expr.args)` reconstructs :code:`expr`, but
+    only sympified fields are part of :code:`args`. If every non-sympy attribute has its
+    default value, the class itself satisfies that assumption. Otherwise, the returned
+    subclass fills in the instance's non-sympy attributes and constructs an instance of
+    the original class. It compares equal to and hashes like the original class, so that
+    class comparisons through :code:`expr.func` keep working.
+    """
+    cls = type(self)
+    overrides = {
+        field.name: getattr(self, field.name)
+        for field in get_non_sympy_fields(cls)
+        if not _has_default_value(self, field)
+    }
+    if not overrides:
+        return cls
+    try:
+        return _get_cached_constructor(cls, tuple(overrides.items()))
+    except TypeError:  # unhashable attribute values cannot be cached
+        return _create_constructor(cls, overrides)
+
+
+def _has_default_value(instance: DataclassInstance, field: Field) -> bool:
+    if field.default is MISSING:
+        return False
+    value = getattr(instance, field.name)
+    return _get_hashable_object(value) == _get_hashable_object(field.default)
+
+
+@functools.cache
+def _get_cached_constructor(
+    cls: type[ExprClass], overrides: tuple[tuple[str, Any], ...]
+) -> type[ExprClass]:
+    return _create_constructor(cls, dict(overrides))
+
+
+def _create_constructor(
+    cls: type[ExprClass], overrides: dict[str, Any]
+) -> type[ExprClass]:
+    all_fields = dataclasses.fields(cls)
+    sympy_fields = get_sympy_fields(cls)
+
+    def new_method(_, *args, **kwargs):
+        if len(args) == len(sympy_fields) < len(all_fields):
+            keyword_args = {f.name: a for f, a in zip(sympy_fields, args, strict=True)}
+            kwargs = keyword_args | kwargs
+            args = ()
+        covered = {f.name for f in all_fields[: len(args)]} | set(kwargs)
+        missing = {k: v for k, v in overrides.items() if k not in covered}
+        return cls(*args, **missing, **kwargs)
+
+    metaclass = _get_constructor_metaclass(type(cls))
+    constructor = metaclass(
+        cls.__name__,
+        (cls,),
+        {
+            "__new__": new_method,
+            "__module__": cls.__module__,
+            "__qualname__": cls.__qualname__,
+            "__doc__": cls.__doc__,
+            "_unevaluated_base": cls,
+            "_unevaluated_overrides": overrides,
+        },
+    )
+    constructor.__signature__ = inspect.signature(cls)
+    return constructor
+
+
+@functools.cache
+def _get_constructor_metaclass(metaclass: type) -> type:
+    return type(
+        "ConstructorMeta",
+        (metaclass,),
+        {
+            "__eq__": _constructor_eq,
+            "__hash__": _constructor_hash,
+            "__instancecheck__": _constructor_instancecheck,
+        },
+    )
+
+
+def _constructor_eq(cls: type, other: object) -> bool:
+    base = cls._unevaluated_base
+    return other is base or getattr(other, "_unevaluated_base", None) is base
+
+
+def _constructor_hash(cls: type) -> int:
+    return hash(cls._unevaluated_base)
+
+
+def _constructor_instancecheck(cls: type, instance: object) -> bool:
+    """Treat instances of the base class with matching attributes as instances."""
+    if not isinstance(instance, cls._unevaluated_base):
+        return False
+    return all(
+        _get_hashable_object(getattr(instance, name)) == _get_hashable_object(value)
+        for name, value in cls._unevaluated_overrides.items()
+    )
 
 
 def _update_field_metadata(cls: T) -> T:
@@ -499,7 +613,7 @@ def _eval_subs_method(self, old, new, **hints):
             hit = True
             new_args[i] = new_attr
     if hit:
-        rv = self.func(*new_args)
+        rv = type(self)(*new_args)
         hack2 = hints.get("hack2", False)
         if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
             coefficient = sp.S.One
@@ -539,17 +653,28 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
         for arg in _get_field_values(self):
             if hasattr(arg, "_xreplace") and not isclass(arg):
                 replace_result, is_replaced = arg._xreplace(rule)  # ruff: ignore[private-member-access]
-            elif isinstance(rule, abc.Mapping):
-                is_replaced = bool(arg in rule)
-                replace_result = rule.get(arg, arg)
             else:
-                replace_result = arg
-                is_replaced = False
+                replace_result, is_replaced = _replace_non_sympy_value(arg, rule)
             new_args.append(replace_result)
             hit |= is_replaced
         if hit:
-            return self.func(*new_args), True
+            return type(self)(*new_args), True
     return self, False
+
+
+def _replace_non_sympy_value(value: Any, rule: Any) -> tuple[Any, bool]:
+    """Replace a non-sympy attribute only if the rule has a key of the same type.
+
+    A lookup through :code:`value in rule` is too lenient for such attributes: `False`
+    equals :code:`0` and :code:`sympy.Integer(0)`, and mappings like
+    `~ampform.helicity.ParameterValues` also accept integer keys as positions.
+    """
+    if not isinstance(rule, abc.Mapping):
+        return value, False
+    for key, replacement in rule.items():
+        if type(key) is type(value) and key == value:
+            return replacement, True
+    return value, False
 
 
 def _get_field_values(self: DataclassInstance) -> tuple[Any, ...]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import pickle
+from collections.abc import Mapping
 from typing import Any, ClassVar
 
 import pytest
@@ -19,6 +20,24 @@ class _Outer(sp.Expr):
 class _Inner(sp.Expr):
     x: Any
     typ: type = argument(default=int, sympify=False)
+
+
+class _PositionalMapping(Mapping):
+    """Mapping that also accepts integer keys as positions, like `.ParameterValues`."""
+
+    def __init__(self, mapping: dict) -> None:
+        self.__mapping = dict(mapping)
+
+    def __getitem__(self, key: Any) -> Any:
+        if isinstance(key, int):
+            key = list(self.__mapping)[key]
+        return self.__mapping[key]
+
+    def __iter__(self):
+        return iter(self.__mapping)
+
+    def __len__(self) -> int:
+        return len(self.__mapping)
 
 
 def describe_unevaluated():
@@ -243,3 +262,58 @@ def describe_unevaluated():
         assert replaced_expr.x is y
         assert replaced_expr.protocol is not Protocol1
         assert replaced_expr.protocol is Protocol2
+
+    @pytest.mark.parametrize(
+        "rule",
+        [
+            {sp.Symbol("x"): 1, sp.Integer(0): 7},
+            {sp.Symbol("x"): 1, 0: 7},
+            _PositionalMapping({sp.Symbol("x"): 1}),
+        ],
+        ids=["sympy-integer-key", "int-key", "positional-mapping"],
+    )
+    def it_does_not_replace_non_sympy_attributes_by_loose_equality(rule):
+        @unevaluated(implement_doit=False)
+        class MyExpr(sp.Expr):
+            x: Any
+            flag: bool = argument(default=True, sympify=False)
+
+        replaced_expr: MyExpr = MyExpr(sp.Symbol("x"), flag=False).xreplace(rule)
+        assert replaced_expr.x == 1
+        assert replaced_expr.flag is False
+
+    @pytest.mark.parametrize(
+        "rebuild",
+        [
+            lambda expr: expr.func(*expr.args),
+            lambda expr: expr.replace(sp.Symbol("x"), sp.Symbol("y")),
+            lambda expr: expr.rewrite(sp.exp),
+            lambda expr: (2 * expr).doit(),
+        ],
+        ids=["func", "replace", "rewrite", "doit"],
+    )
+    def it_preserves_non_sympy_attributes_when_rebuilt_from_args(rebuild):
+        expr = _Inner(sp.Symbol("x"), typ=float)
+        (rebuilt,) = sp.sympify(rebuild(expr)).atoms(_Inner)
+        assert rebuilt.typ is float
+
+    def it_uses_the_class_as_func_for_default_non_sympy_attributes():
+        expr = _Inner(sp.Symbol("x"))
+        assert expr.func is _Inner
+
+    def it_uses_a_class_like_func_for_other_non_sympy_attributes():
+        x = sp.Symbol("x")
+        expr = _Inner(x, typ=float)
+        assert isinstance(expr.func, type)
+        assert issubclass(expr.func, _Inner)
+        assert expr.func == _Inner
+        assert hash(expr.func) == hash(_Inner)
+        assert len({expr.func, _Inner}) == 1
+        assert expr.func.__name__ == _Inner.__name__
+        assert expr.func is _Inner(sp.Symbol("y"), typ=float).func
+        assert isinstance(expr, expr.func)
+        assert not isinstance(_Inner(x), expr.func)
+        assert inspect.signature(expr.func) == inspect.signature(_Inner)
+        rebuilt = expr.func(*expr.args)
+        assert type(rebuilt) is _Inner
+        assert rebuilt == expr
