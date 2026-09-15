@@ -39,8 +39,9 @@ class SimpleBreitWigner(sp.Expr):
 
     The :math:`m_0 \Gamma_0` numerator is included by default for backwards
     compatibility. Set ``multiply_pole_factor=False`` for a unity numerator, which is
-    the dressed propagator of Equation (50.31) in :pdg-review:`2026; Resonances; p.12`
-    and the convention of `MultichannelBreitWigner`.
+    the dressed propagator of Equation (50.31) in `PDG2026, §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
+    convention of `MultichannelBreitWigner`.
     """
 
     s: Any
@@ -62,8 +63,10 @@ class BreitWigner(sp.Expr):
     Uses an `EnergyDependentWidth` in the denominator (see Equations :eq:`BreitWigner`
     and :eq:`EnergyDependentWidth`). The :math:`m_0 \Gamma_0` numerator is included by
     default for backwards compatibility. Set ``multiply_pole_factor=False`` for a unity
-    numerator, which is the dressed propagator of Equation (50.31) in :pdg-review:`2026;
-    Resonances; p.12` and the convention of `MultichannelBreitWigner`.
+    numerator, which is the dressed propagator of Equation (50.31) in `PDG2026,
+    §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ and the
+    convention of `MultichannelBreitWigner`.
     """
 
     s: Any
@@ -105,12 +108,14 @@ class BreitWigner(sp.Expr):
 class EnergyDependentWidth(sp.Expr):
     r"""Mass-dependent width, coupled to the pole position of the resonance.
 
-    See Equation (50.28) in :pdg-review:`2021; Resonances; p.9` and
+    See Equation (50.28) in `PDG2021, §Resonances, p.9
+    <https://pdg.lbl.gov/2021/reviews/rpp2021-rev-resonances.pdf#page=9>`__ and
     :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
-    .. warning:: Equation (50.28) no longer appears in :pdg-review:`2026; Resonances;
-        p.12`. The width is now defined in terms of bare couplings, :math:`\Gamma_b(s) =
+    .. warning:: Equation (50.28) no longer appears in
+        `PDG2026, §Resonances, p.12 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+        The width is now defined in terms of bare couplings, :math:`\Gamma_b(s) =
         g_b^2 \rho_b(s) n_b^2(s) / m_\mathrm{BW}` (Equation (50.32)), and Equation (50.35)
         trades :math:`g_b` for the partial width :math:`\Gamma_{\mathrm{BW},b}`.
         Combining the two gives the old Equation (50.28), but the PDG stresses that this
@@ -164,7 +169,8 @@ class MultichannelBreitWigner(sp.Expr):
     where :math:`g_i^2` is the coupling squared, :math:`\rho_i` is a
     `.PhaseSpaceFactor`, and :math:`F_{L_i}` is a `.FormFactor`. Unlike an
     `EnergyDependentWidth`, a channel term is not normalized at the pole position. See
-    Equations (50.31) and (50.32) in :pdg-review:`2026; Resonances; p.12`.
+    Equations (50.31) and (50.32) in `PDG2026, §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
     """
 
     s: Any
@@ -195,7 +201,8 @@ class ChannelArguments(sp.Expr):
 
         \Gamma_i^\text{ch}(s) = \frac{g_i^2}{m_0} \rho_i(s) F_{L_i}^2(s)
 
-    See Equation (50.32) in :pdg-review:`2026; Resonances; p.12`.
+    See Equation (50.32) in `PDG2026, §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
     """
 
     s: Any
@@ -242,7 +249,8 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 
-    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2026; Resonances; p.12`.
+    See :ref:`dynamics:_With_ form factor` and `PDG2026, §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
     """
     ff = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     bw = BreitWigner(

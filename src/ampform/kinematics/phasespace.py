@@ -22,7 +22,8 @@ class BreakupMomentum(sp.Expr):
 
     For a two-body decay :math:`R \to 12`, the *break-up momentum* is the absolute value
     of the momentum of both :math:`1` and :math:`2` in the rest frame of :math:`R`. See
-    Equation (50.7) on :pdg-review:`2026; Resonances; p.7`.
+    Equation (50.7) on `PDG2026, §Resonances, p.7
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=7>`__.
 
     In AmpForm's standard implementation, the numerator is represented as a single
     square root. This results in :ref:`better computational performance
@@ -59,11 +60,12 @@ class BreakupMomentumKallen(sp.Expr):
     """Two-body break-up momentum with a Källén function.
 
     This version of the `BreakupMomentum` represents the numerator using the `.Kallen`
-    function. This is common practice in literature (e.g. :pdg-review:`2026; Resonances;
-    p.7`), but results in a :ref:`more complicated cut
-    <analyticity/phasespace-factors:Cut structure>` and :ref:`worse numerical
-    performance <analyticity/phasespace-factors:Numerical precision and performance>`
-    than `BreakupMomentum`.
+    function. This is common practice in literature (e.g. `PDG2026, §Resonances, p.7
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=7>`__), but
+    results in a :ref:`more complicated cut <analyticity/phasespace-factors:Cut
+    structure>` and :ref:`worse numerical performance
+    <analyticity/phasespace-factors:Numerical precision and performance>` than
+    `BreakupMomentum`.
     """
 
     s: Any
@@ -113,7 +115,8 @@ class BreakupMomentumComplex(sp.Expr):
     `.ComplexSqrt`, which has a defined behavior for negative input values, so that it
     can be evaluated on the entire real axis. Between the pseudothreshold and the
     threshold, this reproduces the analytic continuation :math:`q = i\sqrt{-q^2}` of
-    Equation (50.36) in :pdg-review:`2026; Resonances; p.13`.
+    Equation (50.36) in `PDG2026, §Resonances, p.13
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=13>`__.
     """
 
     s: Any
