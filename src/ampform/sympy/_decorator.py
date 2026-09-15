@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# cspell:ignore srepr
 import dataclasses
 import functools
 import inspect
@@ -156,7 +157,8 @@ def unevaluated(
     >>> expr.doit()
     y
 
-    Or, `as a method <https://docs.sympy.org/latest/modules/printing.html#example-of-custom-printing-method>`_:
+    Or, `as a method
+    <https://docs.sympy.org/latest/modules/printing.html#example-of-custom-printing-method>`_:
 
     >>> from sympy.printing.latex import LatexPrinter
     >>> @unevaluated
@@ -209,6 +211,14 @@ def unevaluated(
     True
     >>> rebuilt == expr
     True
+
+    The default string and :func:`~sympy.printing.repr.srepr` printers include
+    non-default non-sympy attributes as keyword arguments. Parsing these representations
+    requires a namespace containing the expression class and any classes used as
+    attribute values. Custom printer methods and LaTeX output are preserved.
+
+    >>> str(expr)
+    'MyExpr(0, 3.14, functor=Transformation)'
 
     .. version-added:: 0.14.8
     .. version-changed:: 0.14.7
@@ -297,18 +307,23 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
         cls._eval_subs = _eval_subs_method
         cls._xreplace = _xreplace_method
         cls.func = property(_func_method)
+        if not hasattr(cls, "_sympystr"):
+            cls._sympystr = _print_expression
+        if not hasattr(cls, "_sympyrepr"):
+            cls._sympyrepr = _print_expression
     return cls
 
 
 def _func_method(self: ExprClass) -> type[ExprClass]:
     """Return a constructor that reproduces the non-sympy attributes of an instance.
 
-    SymPy assumes that :code:`expr.func(*expr.args)` reconstructs :code:`expr`, but
-    only sympified fields are part of :code:`args`. If every non-sympy attribute has its
-    default value, the class itself satisfies that assumption. Otherwise, the returned
-    subclass fills in the instance's non-sympy attributes and constructs an instance of
-    the original class. It compares equal to and hashes like the original class, so that
-    class comparisons through :code:`expr.func` keep working.
+    SymPy assumes that :code:`expr.func(*expr.args)` reconstructs :code:`expr`, but only
+    sympified fields are part of :code:`args`. If every non-sympy attribute has its
+    default value and follows the sympified fields, the class itself satisfies that
+    assumption. Otherwise, the returned subclass fills in the instance's non-sympy
+    attributes and constructs an instance of the original class. It compares equal to
+    and hashes like the original class, so that class comparisons through
+    :code:`expr.func` keep working.
     """
     cls = type(self)
     overrides = {
@@ -316,10 +331,11 @@ def _func_method(self: ExprClass) -> type[ExprClass]:
         for field in get_non_sympy_fields(cls)
         if not _has_default_value(self, field)
     }
-    if not overrides:
+    if not overrides and _has_trailing_non_sympy_fields(cls):
         return cls
     try:
-        return _get_cached_constructor(cls, tuple(overrides.items()))
+        key = tuple((name, type(value), value) for name, value in overrides.items())
+        return _get_cached_constructor(cls, key)
     except TypeError:  # unhashable attribute values cannot be cached
         return _create_constructor(cls, overrides)
 
@@ -328,14 +344,35 @@ def _has_default_value(instance: DataclassInstance, field: Field) -> bool:
     if field.default is MISSING:
         return False
     value = getattr(instance, field.name)
-    return _get_hashable_object(value) == _get_hashable_object(field.default)
+    return type(value) is type(field.default) and _get_hashable_object(
+        value
+    ) == _get_hashable_object(field.default)
+
+
+def _has_trailing_non_sympy_fields(cls: type) -> bool:
+    fields = dataclasses.fields(cls)
+    return all(_is_sympify(field) for field in fields[: len(get_sympy_fields(cls))])
+
+
+def _print_expression(self: ExprClass, printer) -> str:
+    positional = _has_trailing_non_sympy_fields(type(self))
+    arguments = []
+    for field in dataclasses.fields(self):
+        value = getattr(self, field.name)
+        if _is_sympify(field):
+            rendered = printer._print(value)
+            arguments.append(rendered if positional else f"{field.name}={rendered}")
+        elif not _has_default_value(self, field):
+            rendered = value.__name__ if isclass(value) else repr(value)
+            arguments.append(f"{field.name}={rendered}")
+    return f"{type(self).__name__}({', '.join(arguments)})"
 
 
 @functools.cache
 def _get_cached_constructor(
-    cls: type[ExprClass], overrides: tuple[tuple[str, Any], ...]
+    cls: type[ExprClass], overrides: tuple[tuple[str, type, Any], ...]
 ) -> type[ExprClass]:
-    return _create_constructor(cls, dict(overrides))
+    return _create_constructor(cls, {name: value for name, _, value in overrides})
 
 
 def _create_constructor(
