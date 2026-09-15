@@ -37,10 +37,10 @@ if TYPE_CHECKING:
 class SimpleBreitWigner(sp.Expr):
     r"""Simple Breit–Wigner with an optional :math:`m_0 \Gamma_0` pole factor.
 
-    By default, the numerator is :math:`m_0 \Gamma_0`, which normalizes the lineshape as
-    in :pdg-review:`2021; Resonances; p.9`. Set ``multiply_pole_factor=False`` for the
-    bare propagator convention with a unity numerator, as used by
-    `MultichannelBreitWigner`, where the normalization is absorbed into the coupling.
+    The :math:`m_0 \Gamma_0` numerator is included by default for backwards
+    compatibility. Set ``multiply_pole_factor=False`` for a unity numerator, which is
+    the dressed propagator of Equation (50.31) in :pdg-review:`2026; Resonances; p.12`
+    and the convention of `MultichannelBreitWigner`.
     """
 
     s: Any
@@ -60,11 +60,10 @@ class BreitWigner(sp.Expr):
     r"""Relativistic Breit–Wigner with an optional :math:`m_0 \Gamma_0` pole factor.
 
     Uses an `EnergyDependentWidth` in the denominator (see Equations :eq:`BreitWigner`
-    and :eq:`EnergyDependentWidth`). By default, the numerator is :math:`m_0 \Gamma_0`,
-    which normalizes the lineshape as in :pdg-review:`2021; Resonances; p.9`. Set
-    ``multiply_pole_factor=False`` for the bare propagator convention with a unity
-    numerator, as used by `MultichannelBreitWigner`, where the normalization is absorbed
-    into the coupling.
+    and :eq:`EnergyDependentWidth`). The :math:`m_0 \Gamma_0` numerator is included by
+    default for backwards compatibility. Set ``multiply_pole_factor=False`` for a unity
+    numerator, which is the dressed propagator of Equation (50.31) in :pdg-review:`2026;
+    Resonances; p.12` and the convention of `MultichannelBreitWigner`.
     """
 
     s: Any
