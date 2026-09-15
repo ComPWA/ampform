@@ -109,6 +109,31 @@ def describe_EnergyDependentWidth():
 
 
 def describe_BreitWigner():
+    def it_has_unit_modulus_at_the_pole_with_a_mass_width_numerator():
+        m0, w0, m1, m2 = sp.symbols("m0 Gamma0 m1 m2", positive=True)
+        breit_wigner = BreitWigner(m0**2, m0, w0, m1, m2, angular_momentum=1)
+        assert sp.simplify(breit_wigner.doit()) == sp.I
+
+    def it_can_have_a_unity_numerator():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, numerator="unity")
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
+
+    def it_marks_the_mass_width_numerator_with_a_hat():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        arguments = R"_{L=0}\left(s; m_{0}, \Gamma_{0}\right)"
+        mass_width = BreitWigner(s, m0, w0)
+        unity = BreitWigner(s, m0, w0, numerator="unity")
+        assert sp.latex(mass_width) == R"\hat{\mathcal{R}}^\mathrm{BW}" + arguments
+        assert sp.latex(unity) == R"\mathcal{R}^\mathrm{BW}" + arguments
+
+    def it_rejects_unknown_numerators():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, numerator="mass")
+        with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
+            breit_wigner.doit()
+
     def it_reduces_to_simple_breit_wigner():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
         breit_wigner = BreitWigner(s, m0, w0)
@@ -161,6 +186,22 @@ def describe_BreitWigner():
         )
         expected = complex(1 / (mass**2 - s - sp.I * mass_width))
         assert actual == pytest.approx(expected)
+
+
+def describe_SimpleBreitWigner():
+    def it_can_have_a_unity_numerator():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = SimpleBreitWigner(s, m0, w0, numerator="unity")
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
+
+    def it_marks_the_mass_width_numerator_with_a_hat():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        arguments = R"\left(s; m_{0}, \Gamma_{0}\right)"
+        mass_width = SimpleBreitWigner(s, m0, w0)
+        unity = SimpleBreitWigner(s, m0, w0, numerator="unity")
+        assert sp.latex(mass_width) == R"\hat{\mathcal{R}}^\mathrm{BW}" + arguments
+        assert sp.latex(unity) == R"\mathcal{R}^\mathrm{BW}" + arguments
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:

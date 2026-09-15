@@ -92,7 +92,6 @@ dev = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-hep-pdgref" },
     { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
@@ -124,7 +123,6 @@ doc = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-hep-pdgref" },
     { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
@@ -255,7 +253,6 @@ dev = [
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
-    { name = "sphinx-hep-pdgref" },
     { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
@@ -280,7 +277,6 @@ doc = [
     { name = "sphinx-comments" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
-    { name = "sphinx-hep-pdgref" },
     { name = "sphinx-pybtex-etal-style" },
     { name = "sphinx-thebe" },
     { name = "sphinx-togglebutton" },
@@ -5010,23 +5006,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/13/7b/804f311da4663a4aecc6cf7abd83443f3d4ded970826d0c958edc77d4527/sphinx_design-0.7.0.tar.gz", hash = "sha256:d2a3f5b19c24b916adb52f97c5f00efab4009ca337812001109084a740ec9b7a", size = 2203582, upload-time = "2026-01-19T13:12:53.297Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/cf/45dd359f6ca0c3762ce0490f681da242f0530c49c81050c035c016bfdd3a/sphinx_design-0.7.0-py3-none-any.whl", hash = "sha256:f82bf179951d58f55dca78ab3706aeafa496b741a91b1911d371441127d64282", size = 2220350, upload-time = "2026-01-19T13:12:51.077Z" },
-]
-
-[[package]]
-name = "sphinx-hep-pdgref"
-version = "0.2.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "attrs" },
-    { name = "docutils", version = "0.21.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "docutils", version = "0.22.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/37/6a0e669bec2089db62e78c51900138fa1ea11cc51c8dc1ce433e1cb261af/sphinx_hep_pdgref-0.2.2.tar.gz", hash = "sha256:1257b50628bca25219112fca2ec3a5ab881c82b0cdc50be73eb56b2400c5ec2e", size = 17339, upload-time = "2026-02-06T12:03:29.602Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/1e/fbdfe0b6131ac0d2b62052f2f44a48c8f02434ce16cef4383fcaad4fe5cf/sphinx_hep_pdgref-0.2.2-py3-none-any.whl", hash = "sha256:3b990e16ac449f967c2e54cbbeffdc9fda380e4112e9de9aac0fdc0aea285915", size = 7468, upload-time = "2026-02-06T12:03:28.512Z" },
 ]
 
 [[package]]

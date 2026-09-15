@@ -1,9 +1,11 @@
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by
-Equation (49.12) in :pdg-review:`2021; Kinematics; p.2`. See also Equation (50.9) on
-:pdg-review:`2021; Resonances; p.6`. This integral is not always easy to solve, which
-leads to different parametrizations.
+`PDG2026, Eq. (49.12)
+<https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf#page=2>`__. See also
+`PDG2026, Eq. (50.11)
+<https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=9>`__. This integral
+is not always easy to solve, which leads to different parametrizations.
 
 This module provides several parametrizations. They all comply with the
 `PhaseSpaceFactorProtocol`, so that they can be used in parametrizations like
@@ -58,8 +60,10 @@ class PhaseSpaceFactorProtocol(Protocol):
 class PhaseSpaceFactor(sp.Expr):
     r"""Standard phase-space factor, using a definition consistent with `.BreakupMomentum`.
 
-    See :pdg-review:`2025; Resonances; p.6`, Equation (50.11). We ignore the factor
-    :math:`\frac{1}{16\pi}` as done in :cite:`Chung:1995-PrimerKmatrixFormalism`, p.5.
+    See `PDG2026, Eq. (50.11)
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=9>`__. We ignore
+    the factor :math:`\frac{1}{16\pi}` as done in
+    :cite:`Chung:1995-PrimerKmatrixFormalism`, p.5.
 
     Similarly to `.BreakupMomentum`, this class represents the numerator as a single
     square root for better numerical performance. This comes at the cost of a :ref:`more
@@ -187,10 +191,14 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactorSWave(sp.Expr):
-    """Phase space factor using :func:`ChewMandelstamSWave`.
+    r"""Phase space factor using :func:`ChewMandelstamSWave`.
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
-    both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
+    both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`). Following
+    `PDG2026, §50.3.3
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__, the
+    Chew–Mandelstam function :math:`\Sigma(s)` replaces :math:`i\rho(s)`, so this class
+    returns :math:`-i\Sigma(s)`.
     """
 
     s: Any
@@ -211,10 +219,22 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
 @unevaluated
 class ChewMandelstamSWave(sp.Expr):
-    """Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+    r"""Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+
+    See `PDG2021, Eq. (50.40)
+    <https://pdg.lbl.gov/2021/reviews/rpp2021-rev-resonances.pdf#page=13>`__. As in
+    `PhaseSpaceFactor`, we ignore the factor :math:`\frac{1}{16\pi}`.
 
     As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
     function has a well-defined behavior along the negative real axis.
+
+    .. warning:: This function is given as `PDG2026, Eq. (50.46)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__, which
+        contains two apparent typos: the denominator inside the first logarithm reads
+        :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last
+        term contains :math:`1/s_\mathrm{thr}^2` instead of
+        :math:`1/s_\mathrm{thr}=1/(m_1+m_2)^2`. This implementation follows the 2021
+        version.
     """
 
     s: Any
@@ -308,6 +328,10 @@ class PhaseSpaceFactorPWave(sp.Expr):
 class ChewMandelstamIntegral(sp.Expr):
     """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
 
+    See `PDG2026, Eq. (50.45)
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__. The
+    integral is subtracted at the channel threshold.
+
     Parameters:
         s: Mandelstam variable s.
         m1: Mass of particle 1.
@@ -366,10 +390,18 @@ class ChewMandelstamIntegral(sp.Expr):
 class EqualMassPhaseSpaceFactor(sp.Expr):
     """Analytic continuation for the `PhaseSpaceFactor`.
 
-    See :pdg-review:`2018; Resonances; p.9` and :doc:`/analyticity/phasespace-factors`.
+    See `PDG2018, §Resonances, p.9
+    <https://pdg.lbl.gov/2018/reviews/rpp2018-rev-resonances.pdf#page=9>`__ and
+    :doc:`/analyticity/phasespace-factors`.
 
     **Warning**: The PDG specifically derives this formula for a two-body decay *with
     equal masses*.
+
+    .. warning:: This formula no longer appears in
+        `PDG2026, §Resonances, p.16 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__.
+        The PDG now gives the :math:`S`-wave Chew–Mandelstam function for arbitrary
+        masses instead (Equation (50.46)), which is subtracted at the channel threshold.
+        See `.ChewMandelstamSWave`.
     """
 
     s: Any
