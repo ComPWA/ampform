@@ -1,9 +1,9 @@
 """Different parametrizations of phase space factors.
 
 Phase space factors are computed by integrating over the phase space element given by
-Equation (49.12) in `PDG2026, §Kinematics, p.2
+`PDG2026, Eq. (49.12)
 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf#page=2>`__. See also
-Equation (50.11) on `PDG2026, §Resonances, p.9
+`PDG2026, Eq. (50.11)
 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=9>`__. This integral
 is not always easy to solve, which leads to different parametrizations.
 
@@ -60,9 +60,9 @@ class PhaseSpaceFactorProtocol(Protocol):
 class PhaseSpaceFactor(sp.Expr):
     r"""Standard phase-space factor, using a definition consistent with `.BreakupMomentum`.
 
-    See `PDG2026, §Resonances, p.9
-    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=9>`__, Equation
-    (50.11). We ignore the factor :math:`\frac{1}{16\pi}` as done in
+    See `PDG2026, Eq. (50.11)
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=9>`__. We ignore
+    the factor :math:`\frac{1}{16\pi}` as done in
     :cite:`Chung:1995-PrimerKmatrixFormalism`, p.5.
 
     Similarly to `.BreakupMomentum`, this class represents the numerator as a single
@@ -195,7 +195,7 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
     both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`). Following
-    Section 50.3.3 in `PDG2026, §Resonances, p.16
+    `PDG2026, §50.3.3
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__, the
     Chew–Mandelstam function :math:`\Sigma(s)` replaces :math:`i\rho(s)`, so this class
     returns :math:`-i\Sigma(s)`.
@@ -221,18 +221,17 @@ class PhaseSpaceFactorSWave(sp.Expr):
 class ChewMandelstamSWave(sp.Expr):
     r"""Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
 
-    See Equation (50.40) in `PDG2021, §Resonances, p.13
+    See `PDG2021, Eq. (50.40)
     <https://pdg.lbl.gov/2021/reviews/rpp2021-rev-resonances.pdf#page=13>`__. As in
     `PhaseSpaceFactor`, we ignore the factor :math:`\frac{1}{16\pi}`.
 
     As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
     function has a well-defined behavior along the negative real axis.
 
-    .. warning:: In
-        `PDG2026, §Resonances, p.16 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__,
-        this function is given as
-        Equation (50.46), which contains two apparent typos: the denominator inside the
-        first logarithm reads :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last
+    .. warning:: This function is given as `PDG2026, Eq. (50.46)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__, which
+        contains two apparent typos: the denominator inside the first logarithm reads
+        :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last
         term contains :math:`1/s_\mathrm{thr}^2` instead of
         :math:`1/s_\mathrm{thr}=1/(m_1+m_2)^2`. This implementation follows the 2021
         version.
@@ -329,7 +328,7 @@ class PhaseSpaceFactorPWave(sp.Expr):
 class ChewMandelstamIntegral(sp.Expr):
     """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
 
-    See Equation (50.45) in `PDG2026, §Resonances, p.16
+    See `PDG2026, Eq. (50.45)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__. The
     integral is subtracted at the channel threshold.
 
