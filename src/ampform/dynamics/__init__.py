@@ -109,6 +109,14 @@ class EnergyDependentWidth(sp.Expr):
     :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
     :code:`phsp_factor` is `.PhaseSpaceFactor`.
 
+    .. warning:: Equation (50.28) no longer appears in :pdg-review:`2026; Resonances;
+        p.12`. The width is now defined in terms of bare couplings, :math:`\Gamma_b(s) =
+        g_b^2 \rho_b(s) n_b^2(s) / m_\mathrm{BW}` (Equation (50.32)), and Equation (50.35)
+        trades :math:`g_b` for the partial width :math:`\Gamma_{\mathrm{BW},b}`.
+        Combining the two gives the old Equation (50.28), but the PDG stresses that this
+        substitution is only valid for narrow resonances with all channel thresholds
+        below :math:`m_\mathrm{BW}`.
+
     Note that the `.FormFactor` of AmpForm is normalized in the sense that equal powers
     of :math:`z` appear in the nominator and the denominator, while the definition in
     the PDG (as well as some other sources), always have :math:`1` in the nominator of
@@ -231,7 +239,7 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 
-    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2021; Resonances; p.9`.
+    See :ref:`dynamics:_With_ form factor` and :pdg-review:`2026; Resonances; p.12`.
     """
     ff = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
     bw = BreitWigner(

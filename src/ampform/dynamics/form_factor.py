@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 class FormFactor(sp.Expr):
     """Formulate a Blatt–Weisskopf form factor.
 
-    Returns the production process factor :math:`n_a` from Equation (50.26) in
-    :pdg-review:`2021; Resonances; p.9`, which features the
+    Returns the production process factor :math:`n_a` from Equation (50.33) in
+    :pdg-review:`2026; Resonances; p.12`, which features the
     `~sympy.functions.elementary.miscellaneous.sqrt` of a `.BlattWeisskopfSquared`.
     """
 
@@ -68,8 +68,8 @@ class BlattWeisskopfSquared(sp.Expr):
 
     Note that equal powers of :math:`z` appear in the nominator and the denominator,
     while some sources define an *non-normalized* form factor :math:`F_L` with :math:`1`
-    in the nominator, instead of :math:`z^L`. See for instance Equation (50.27) in
-    :pdg-review:`2021; Resonances; p.9`. We normalize the form factor such that
+    in the nominator, instead of :math:`z^L`. See for instance Equation (50.34) in
+    :pdg-review:`2026; Resonances; p.13`. We normalize the form factor such that
     :math:`B_L^2(1)=1` and that :math:`B_L^2` is unitless no matter what :math:`z` is.
 
     .. seealso:: :ref:`dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
