@@ -35,24 +35,32 @@ if TYPE_CHECKING:
 
 @unevaluated
 class SimpleBreitWigner(sp.Expr):
-    r"""Simple Breit–Wigner with :math:`m_0 \Gamma_0` in the numerator."""
+    r"""Simple Breit–Wigner with an optional :math:`m_0 \Gamma_0` pole factor.
+
+    The pole factor is included by default for backwards compatibility. Set
+    ``multiply_pole_factor=False`` for the propagator convention with a unity numerator.
+    """
 
     s: Any
     mass: Any
     width: Any
+    multiply_pole_factor: bool = argument(default=True, kw_only=True, sympify=False)
     _latex_repr_ = R"\mathcal{{R}}^\mathrm{{BW}}\left({s}; {mass}, {width}\right)"
 
     def evaluate(self):
         s, m0, w0 = self.args
-        return m0 * w0 * _formulate_breit_wigner(s, m0, w0)
+        numerator = m0 * w0 if self.multiply_pole_factor else 1
+        return numerator * _formulate_breit_wigner(s, m0, w0)
 
 
 @unevaluated
 class BreitWigner(sp.Expr):
-    r"""Relativistic Breit–Wigner with :math:`m_0 \Gamma_0` in the numerator.
+    r"""Relativistic Breit–Wigner with an optional pole factor.
 
-    Uses an `EnergyDependentWidth` in the denominator (see Equations
-    :eq:`BreitWigner` and :eq:`EnergyDependentWidth`).
+    Uses an `EnergyDependentWidth` in the denominator (see Equations :eq:`BreitWigner`
+    and :eq:`EnergyDependentWidth`). The :math:`m_0 \Gamma_0` pole factor is included by
+    default for backwards compatibility. Set ``multiply_pole_factor=False`` for the
+    propagator convention with a unity numerator.
     """
 
     s: Any
@@ -65,12 +73,12 @@ class BreitWigner(sp.Expr):
     phsp_factor: PhaseSpaceFactorProtocol = argument(
         default=PhaseSpaceFactor, sympify=False
     )  # ty: ignore[invalid-assignment]
+    multiply_pole_factor: bool = argument(default=True, kw_only=True, sympify=False)
 
     def evaluate(self):
         width = self.energy_dependent_width()
-        return (
-            self.mass * self.width * _formulate_breit_wigner(self.s, self.mass, width)
-        )
+        numerator = self.mass * self.width if self.multiply_pole_factor else 1
+        return numerator * _formulate_breit_wigner(self.s, self.mass, width)
 
     def energy_dependent_width(self) -> EnergyDependentWidth | sp.Basic:
         s, m0, w0, m1, m2, ang_mom, d = self.args

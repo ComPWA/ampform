@@ -38,6 +38,23 @@ class FormFactor(sp.Expr):
         return sp.sqrt(ff_squared)
 
 
+def blatt_weisskopf_normalization(angular_momentum: int) -> sp.Expr:
+    r"""Compute the normalization of `.FormFactor` at :math:`z=1`.
+
+    Dividing `.FormFactor` by this value gives the convention with a constant
+    numerator instead of :math:`z^L`.
+
+    >>> blatt_weisskopf_normalization(0)
+    1
+    >>> blatt_weisskopf_normalization(1)
+    sqrt(2)
+    >>> blatt_weisskopf_normalization(2)
+    sqrt(13)
+    """
+    hankel = SphericalHankel1(sp.Integer(angular_momentum), sp.Integer(1))
+    return sp.Abs(hankel.doit())
+
+
 @unevaluated
 class BlattWeisskopfSquared(sp.Expr):
     r"""Normalized Blatt–Weisskopf function :math:`B_L^2(z)`, with :math:`B_L^2(1)=1`.

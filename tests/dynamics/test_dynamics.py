@@ -109,6 +109,12 @@ def describe_EnergyDependentWidth():
 
 
 def describe_BreitWigner():
+    def it_can_omit_the_pole_factor():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, multiply_pole_factor=False)
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
+
     def it_reduces_to_simple_breit_wigner():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
         breit_wigner = BreitWigner(s, m0, w0)
@@ -161,6 +167,14 @@ def describe_BreitWigner():
         )
         expected = complex(1 / (mass**2 - s - sp.I * mass_width))
         assert actual == pytest.approx(expected)
+
+
+def describe_SimpleBreitWigner():
+    def it_can_omit_the_pole_factor():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = SimpleBreitWigner(s, m0, w0, multiply_pole_factor=False)
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
