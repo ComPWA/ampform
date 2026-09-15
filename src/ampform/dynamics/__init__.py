@@ -163,7 +163,8 @@ class MultichannelBreitWigner(sp.Expr):
 
     where :math:`g_i^2` is the coupling squared, :math:`\rho_i` is a
     `.PhaseSpaceFactor`, and :math:`F_{L_i}` is a `.FormFactor`. Unlike an
-    `EnergyDependentWidth`, a channel term is not normalized at the pole position.
+    `EnergyDependentWidth`, a channel term is not normalized at the pole position. See
+    Equations (50.31) and (50.32) in :pdg-review:`2026; Resonances; p.12`.
     """
 
     s: Any
@@ -193,6 +194,8 @@ class ChannelArguments(sp.Expr):
     .. math::
 
         \Gamma_i^\text{ch}(s) = \frac{g_i^2}{m_0} \rho_i(s) F_{L_i}^2(s)
+
+    See Equation (50.32) in :pdg-review:`2026; Resonances; p.12`.
     """
 
     s: Any

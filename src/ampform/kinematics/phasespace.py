@@ -107,11 +107,13 @@ class BreakupMomentumSplitSqrt(sp.Expr):
 
 @unevaluated
 class BreakupMomentumComplex(sp.Expr):
-    """Two-body break-up momentum with a square root that is defined on the real axis.
+    r"""Two-body break-up momentum with a square root that is defined on the real axis.
 
     In this version of the `BreakupMomentumSplitSqrt`, the square roots are replaced by
     `.ComplexSqrt`, which has a defined behavior for negative input values, so that it
-    can be evaluated on the entire real axis.
+    can be evaluated on the entire real axis. Between the pseudothreshold and the
+    threshold, this reproduces the analytic continuation :math:`q = i\sqrt{-q^2}` of
+    Equation (50.36) in :pdg-review:`2026; Resonances; p.13`.
     """
 
     s: Any

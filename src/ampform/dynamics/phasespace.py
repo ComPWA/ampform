@@ -187,10 +187,13 @@ class PhaseSpaceFactorSplitSqrt(sp.Expr):
 
 @unevaluated
 class PhaseSpaceFactorSWave(sp.Expr):
-    """Phase space factor using :func:`ChewMandelstamSWave`.
+    r"""Phase space factor using :func:`ChewMandelstamSWave`.
 
     This `PhaseSpaceFactor` provides an analytic continuation for decay products with
-    both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`).
+    both equal and unequal masses (compare `EqualMassPhaseSpaceFactor`). Following
+    Section 50.3.3 in :pdg-review:`2026; Resonances; p.16`, the Chew–Mandelstam function
+    :math:`\Sigma(s)` replaces :math:`i\rho(s)`, so this class returns
+    :math:`-i\Sigma(s)`.
     """
 
     s: Any
@@ -211,10 +214,20 @@ class PhaseSpaceFactorSWave(sp.Expr):
 
 @unevaluated
 class ChewMandelstamSWave(sp.Expr):
-    """Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+    r"""Chew–Mandelstam class for :math:`S`-waves (no angular momentum).
+
+    See Equation (50.40) in :pdg-review:`2021; Resonances; p.13`. As in
+    `PhaseSpaceFactor`, we ignore the factor :math:`\frac{1}{16\pi}`.
 
     As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
     function has a well-defined behavior along the negative real axis.
+
+    .. warning:: In :pdg-review:`2026; Resonances; p.16`, this function is given as
+        Equation (50.46), which contains two apparent typos: the denominator inside the
+        first logarithm reads :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last
+        term contains :math:`1/s_\mathrm{thr}^2` instead of
+        :math:`1/s_\mathrm{thr}=1/(m_1+m_2)^2`. This implementation follows the 2021
+        version.
     """
 
     s: Any
@@ -307,6 +320,9 @@ class PhaseSpaceFactorPWave(sp.Expr):
 @unevaluated
 class ChewMandelstamIntegral(sp.Expr):
     """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
+
+    See Equation (50.45) in :pdg-review:`2026; Resonances; p.16`. The integral is
+    subtracted at the channel threshold.
 
     Parameters:
         s: Mandelstam variable s.
