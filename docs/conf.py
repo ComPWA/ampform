@@ -192,7 +192,6 @@ extensions = [
     "sphinx_comments",
     "sphinx_copybutton",
     "sphinx_design",
-    "sphinx_hep_pdgref",
     "sphinx_pybtex_etal_style",
     "sphinx_thebe",
     "sphinx_togglebutton",

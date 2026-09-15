@@ -24,10 +24,12 @@ class FormFactor(sp.Expr):
     `.BlattWeisskopfSquared` with :math:`z = q^2 d^2`, where :math:`q^2` is the
     `.BreakupMomentumSquared` and :math:`d` is the meson radius. With
     ``normalize=False``, this is the production process factor :math:`n_a` from Equation
-    (50.33) in :pdg-review:`2026; Resonances; p.12`, with :math:`d = 1/q_0`. The default
-    normalized form factor :math:`\hat{\mathcal{F}}_L` differs from :math:`n_a` by the
-    constant :math:`\left|h_L^{(1)}(1)\right|`. This constant cancels in ratios, such as
-    in `.EnergyDependentWidth`, but not when the form factor is used as a vertex factor.
+    (50.33) in `PDG2026, §Resonances, p.12
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__, with
+    :math:`d = 1/q_0`. The default normalized form factor :math:`\hat{\mathcal{F}}_L`
+    differs from :math:`n_a` by the constant :math:`\left|h_L^{(1)}(1)\right|`. This
+    constant cancels in ratios, such as in `.EnergyDependentWidth`, but not when the
+    form factor is used as a vertex factor.
     """
 
     s: Any
@@ -65,9 +67,9 @@ class BlattWeisskopfSquared(sp.Expr):
         normalize: Set to `False` to omit the normalization constant
             :math:`\left|h_L^{(1)}(1)\right|^2`. The resulting :math:`B_L^2(z)` equals
             :math:`z^L F_L^2(\sqrt{z})`, where :math:`F_L` is the non-normalized
-            Blatt–Weisskopf function of Equation (50.34) in :pdg-review:`2026;
-            Resonances; p.13`. This is the square of the factor :math:`n_L` of Equation
-            (50.33).
+            Blatt–Weisskopf function of Equation (50.34) in `PDG2026, §Resonances, p.13
+            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=13>`__.
+            This is the square of the factor :math:`n_L` of Equation (50.33).
 
     The hat indicates the normalization :math:`\hat{B}_L^2(1)=1`. Both variants have
     equal powers of :math:`z` in the numerator and the denominator, so they are unitless
