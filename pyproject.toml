@@ -343,10 +343,13 @@ help = "Perform all linting, formatting, and spelling checks"
 [tool.poe.tasks.upgrade]
 executor = { type = "simple" }
 help = "Upgrade lock files"
-parallel = ["_upgrade-precommit", "_upgrade-uv"]
+parallel = [
+    "_upgrade-precommit",
+    "_upgrade-uv",
+]
 
 [tool.poe.tasks._upgrade-precommit]
-cmd = "pre-commit autoupdate -j8"
+cmd = "prek autoupdate"
 executor = { type = "simple" }
 
 [tool.poe.tasks._upgrade-uv]
@@ -591,7 +594,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.7/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.8/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]
