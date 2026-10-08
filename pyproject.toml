@@ -625,8 +625,15 @@ include = ["docs/dynamics.ipynb"]
 rules.index-out-of-bounds = "ignore"
 
 [[tool.ty.overrides]]
-include = ["tests/external/test_sympy.py"]
+include = [
+    "tests/dynamics/test_deprecated.py",
+    "tests/external/test_sympy.py",
+]
 rules.call-non-callable = "ignore"
+
+[[tool.ty.overrides]]
+include = ["src/ampform/sympy/**"]
+rules.invalid-method-override = "ignore"
 
 [tool.ty.rules]
 division-by-zero = "warn"

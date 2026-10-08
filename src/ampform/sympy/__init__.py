@@ -189,7 +189,7 @@ class PoolSum(sp.Expr):
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # ty: ignore[invalid-method-override]
+    def doit(self, deep: bool = True) -> sp.Expr:
         expr = self.evaluate()
         if deep:
             return expr.doit()
