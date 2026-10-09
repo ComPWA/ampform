@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Physics",
     "Typing :: Typed",
@@ -295,6 +296,7 @@ sequence = [
     "test-py312 ${paths}",
     "test-py313 ${paths}",
     "test-py314 ${paths}",
+    "test-py315 ${paths}",
 ]
 
 [[tool.poe.groups.test.tasks.test-all.args]]
@@ -323,6 +325,10 @@ ref = "test"
 env = { UV_PYTHON = "3.14" }
 ref = "test"
 
+[tool.poe.groups.test.tasks.test-py315]
+env = { UV_PYTHON = "3.15" }
+ref = "test"
+
 [tool.poe.tasks.all]
 help = "Run all continuous integration (CI) tasks locally"
 ignore_fail = "return_non_zero"
@@ -336,7 +342,7 @@ sequence = [
 ]
 
 [tool.poe.tasks.style]
-cmd = "pre-commit run --all-files"
+cmd = "prek run --all-files"
 executor = { extra = "scipy", group = "style" }
 help = "Perform all linting, formatting, and spelling checks"
 
@@ -594,7 +600,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.9.8/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.0/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]

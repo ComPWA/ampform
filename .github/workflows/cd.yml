@@ -28,5 +28,6 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
   push:
     if: startsWith(github.ref, 'refs/tags') && !github.event.release.prerelease
-    secrets: inherit
+    permissions:
+      contents: write
     uses: ComPWA/actions/.github/workflows/push-to-version-branches.yml@957d1151460aea469a230150b61cc3c99d3f0a0a # 4.1.2

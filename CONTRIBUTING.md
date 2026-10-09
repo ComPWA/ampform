@@ -34,7 +34,7 @@ prek install --prepare-hooks
 [Poe the Poet](https://poethepoet.natn.io) is used as a task runner. Install it globally (within your home folder) with `uv`:
 
 ```shell
-uv tool install poethepoet --force-reinstall --python=3.13
+uv tool install poethepoet --force-reinstall --python=3.14
 ```
 
 You can see which local CI checks it defines by running
