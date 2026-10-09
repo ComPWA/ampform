@@ -1,7 +1,7 @@
 [project]
 name = "ampform"
 description = "Automatically generate symbolic amplitude models for Partial Wave Analysis"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "Common Partial Wave Analysis", email = "compwa-admin@ep1.rub.de" }]
@@ -23,7 +23,6 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -291,7 +290,6 @@ help = "Run benchmark tests and visualize performance"
 [tool.poe.groups.test.tasks.test-all]
 help = "Run all tests on each supported Python version"
 sequence = [
-    "test-py310 ${paths}",
     "test-py311 ${paths}",
     "test-py312 ${paths}",
     "test-py313 ${paths}",
@@ -304,10 +302,6 @@ default = ""
 multiple = true
 name = "paths"
 positional = true
-
-[tool.poe.groups.test.tasks.test-py310]
-env = { UV_PYTHON = "3.10" }
-ref = "test"
 
 [tool.poe.groups.test.tasks.test-py311]
 env = { UV_PYTHON = "3.11" }

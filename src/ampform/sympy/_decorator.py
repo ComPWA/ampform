@@ -3,33 +3,31 @@ from __future__ import annotations
 import dataclasses
 import functools
 import inspect
-import sys
 import warnings
 from collections import abc
 from dataclasses import MISSING, Field
 from inspect import isclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Protocol,
+    TypedDict,
+    TypeVar,
+    dataclass_transform,
+    overload,
+)
 
 import sympy as sp
 from sympy.core.basic import _aresame  # ruff: ignore[import-private-name]
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
-if sys.version_info >= (3, 11):
-    from typing import dataclass_transform
-else:
-    from typing_extensions import dataclass_transform
-
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable, Iterable
+    from typing import ParamSpec, Unpack
 
     from _typeshed import DataclassInstance
     from sympy.printing.latex import LatexPrinter
-
-    if sys.version_info >= (3, 11):
-        from typing import ParamSpec, Unpack
-    else:
-        from typing_extensions import ParamSpec, Unpack
 
     H = TypeVar("H", bound=Hashable)
     P = ParamSpec("P")

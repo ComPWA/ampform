@@ -30,17 +30,11 @@ import sympy as sp
 from frozendict import frozendict
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Iterable
+    from collections.abc import Callable, Hashable, Iterable
     from io import BufferedReader
+    from typing import Any, ParamSpec, TypeVar
 
     from _typeshed import SupportsWrite
-
-    if sys.version_info >= (3, 11):
-        from typing import ParamSpec
-    else:
-        from typing_extensions import ParamSpec
-    from collections.abc import Callable
-    from typing import Any, ParamSpec, TypeVar
 
     P = ParamSpec("P")
     T = TypeVar("T")
