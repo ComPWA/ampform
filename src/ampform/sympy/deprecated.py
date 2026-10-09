@@ -95,7 +95,7 @@ class UnevaluatedExpression(sp.Expr):
         obj = object.__new__(cls)
         obj._args = args
         obj._assumptions = cls.default_assumptions
-        obj._mhash = None  # cspell:ignore mhash  # ruff: ignore[private-member-access]
+        obj._mhash = None  # cspell:ignore mhash
         obj._name = name
         return obj
 
