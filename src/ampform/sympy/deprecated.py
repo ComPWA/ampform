@@ -19,13 +19,9 @@ else:
     from typing_extensions import override
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Self
 
     from sympy.printing.latex import LatexPrinter
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
 
 class UnevaluatedExpression(sp.Expr):
@@ -97,10 +93,10 @@ class UnevaluatedExpression(sp.Expr):
         """
         # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
-        obj._args = args  # ruff: ignore[private-member-access]
-        obj._assumptions = cls.default_assumptions  # ruff: ignore[private-member-access]
-        obj._mhash = None  # cspell:ignore mhash  # ruff: ignore[private-member-access]
-        obj._name = name  # ruff: ignore[private-member-access]
+        obj._args = args
+        obj._assumptions = cls.default_assumptions
+        obj._mhash = None  # cspell:ignore mhash
+        obj._name = name
         return obj
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:

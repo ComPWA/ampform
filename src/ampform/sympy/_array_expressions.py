@@ -10,7 +10,7 @@ import string
 import sys
 from collections import abc
 from itertools import pairwise, zip_longest
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Self, overload
 
 import sympy as sp
 from sympy.codegen.ast import none
@@ -27,10 +27,6 @@ from sympy.tensor.array.expressions.array_expressions import (
     get_shape,
 )
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 if sys.version_info >= (3, 12):
     from typing import override
 else:
@@ -152,7 +148,7 @@ class ArraySlice(_ArrayExpr):
         return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> tuple[sp.Basic | int, ...]:
+    def shape(self) -> tuple[sp.Basic | int, ...]:  # ty: ignore[invalid-property-type-override]
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)

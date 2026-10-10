@@ -60,7 +60,7 @@ def _formulate_aligned_amplitude(  # ruff: ignore[too-many-locals]
     λ0, λ1, λ2, λ3 = (  # ruff: ignore[non-ascii-name]
         create_spin_projection_symbol(i) for i in outer_state_ids
     )
-    _λ0, _λ1, _λ2, _λ3 = sp.symbols(R"\lambda_(:4)^", rational=True)  # ruff: ignore[non-ascii-name]
+    λ0_, λ1_, λ2_, λ3_ = sp.symbols(R"\lambda_(:4)^", rational=True)  # ruff: ignore[non-ascii-name]
     some_transition = reaction.transitions[0]
     j0, j1, j2, j3 = (
         sp.Rational(some_transition.states[i].particle.spin) for i in outer_state_ids
@@ -71,19 +71,19 @@ def _formulate_aligned_amplitude(  # ruff: ignore[too-many-locals]
         spectator_id = get_spectator_id(topology)
         base = create_amplitude_base(topology)
         aligned_amplitudes += [
-            base[_λ0, _λ1, _λ2, _λ3]
-            * wigner_generator(j0, λ0, _λ0, 0, spectator_id)
-            * wigner_generator(j1, _λ1, λ1, 1, spectator_id)
-            * wigner_generator(j2, _λ2, λ2, 2, spectator_id)
-            * wigner_generator(j3, _λ3, λ3, 3, spectator_id)
+            base[λ0_, λ1_, λ2_, λ3_]
+            * wigner_generator(j0, λ0, λ0_, 0, spectator_id)
+            * wigner_generator(j1, λ1_, λ1, 1, spectator_id)
+            * wigner_generator(j2, λ2_, λ2, 2, spectator_id)
+            * wigner_generator(j3, λ3_, λ3, 3, spectator_id)
         ]
     outer_helicities = _collect_outer_state_helicities(reaction)
     amp_expr = PoolSum(
         sp.Add(*aligned_amplitudes),
-        (_λ0, outer_helicities[0]),
-        (_λ1, outer_helicities[1]),
-        (_λ2, outer_helicities[2]),
-        (_λ3, outer_helicities[3]),
+        (λ0_, outer_helicities[0]),
+        (λ1_, outer_helicities[1]),
+        (λ2_, outer_helicities[2]),
+        (λ3_, outer_helicities[3]),
     )
     return amp_expr, wigner_generator.angle_definitions
 
