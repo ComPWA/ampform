@@ -42,19 +42,12 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from sympy.printing.printer import Printer
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
-    from collections.abc import Iterable, Sequence
-    from typing import SupportsFloat, TypeVar
+    from collections.abc import Callable, Iterable, Sequence
+    from typing import Self, SupportsFloat, TypeVar
 
     from sympy.printing.latex import LatexPrinter
     from sympy.printing.numpy import NumPyPrinter
+    from sympy.printing.printer import Printer
 
     T = TypeVar("T", bound=sp.Basic)
 
@@ -189,7 +182,7 @@ class PoolSum(sp.Expr):
         return super().free_symbols - {s for s, _ in self.indices}
 
     @override
-    def doit(self, deep: bool = True) -> sp.Expr:  # ty: ignore[invalid-method-override]
+    def doit(self, deep: bool = True) -> sp.Expr:
         expr = self.evaluate()
         if deep:
             return expr.doit()

@@ -9,7 +9,7 @@
 
 [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ComPWA/ampform/stable?urlpath=lab)
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ComPWA/ampform/blob/stable)
-[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-open-blue?logo=visualstudiocode)](https://open.vscode.dev/ComPWA/ampform)
+[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-open-blue?logo=visualstudiocode)](https://github.dev/ComPWA/ampform)
 
 [![Documentation build status](https://readthedocs.org/projects/ampform/badge/?version=latest)](https://ampform.readthedocs.io)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComPWA/ampform/main.svg)](https://results.pre-commit.ci/latest/github/ComPWA/ampform/main)

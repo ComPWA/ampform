@@ -245,11 +245,11 @@ def describe_large_hash():
         ("expected_hash", "formalism"),
         [
             (
-                "627ee45" if sys.version_info >= (3, 11) else "206587e",
+                "627ee45",
                 "canonical-helicity",
             ),
             (
-                "422ec6b" if sys.version_info >= (3, 11) else "4c37f61",
+                "422ec6b",
                 "helicity",
             ),
         ],
