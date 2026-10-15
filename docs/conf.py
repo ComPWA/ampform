@@ -147,6 +147,7 @@ autodoc_default_options = {
     ]),
 }
 autodoc_member_order = "bysource"
+autodoc_preserve_defaults = True
 autodoc_typehints_format = "short"
 autosectionlabel_prefix_document = True
 bibtex_bibfiles = ["bibliography.bib"]
