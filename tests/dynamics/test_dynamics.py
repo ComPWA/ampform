@@ -156,15 +156,24 @@ def describe_BreitWigner():
         ],
         ids=["func", "replace", "xreplace", "subs"],
     )
-    def it_preserves_the_phase_space_factor_when_rebuilt(operation):
+    def it_preserves_non_sympy_arguments_when_rebuilt(operation):
         s, m0, w0, m1, m2, radius, new_radius = sp.symbols(
             "s m0 Gamma0 m1 m2 R R2", nonnegative=True
         )
         expr = BreitWigner(
-            s, m0, w0, m1, m2, 0, radius, phsp_factor=PhaseSpaceFactorSWave
+            s,
+            m0,
+            w0,
+            m1,
+            m2,
+            0,
+            radius,
+            phsp_factor=PhaseSpaceFactorSWave,
+            numerator="unity",
         )
         rebuilt = operation(expr, radius, new_radius)
         assert rebuilt.phsp_factor is PhaseSpaceFactorSWave
+        assert rebuilt.numerator == "unity"
         point = {s: 1.5, m0: 1.2, w0: 0.1, m1: 0.5, m2: 0.4, radius: 1, new_radius: 1}
         expected = complex(expr.doit().subs(point).n())
         assert complex(rebuilt.doit().subs(point).n()) == pytest.approx(expected)
