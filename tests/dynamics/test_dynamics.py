@@ -166,8 +166,8 @@ def describe_BreitWigner():
             w0,
             m1,
             m2,
-            0,
-            radius,
+            angular_momentum=0,
+            meson_radius=radius,
             phsp_factor=PhaseSpaceFactorSWave,
             numerator="unity",
         )
