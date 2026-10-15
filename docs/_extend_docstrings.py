@@ -670,9 +670,9 @@ def extend_relativistic_breit_wigner_with_ff() -> None:
     .. math:: {sp.latex(rel_bw_with_ff)}
         :label: relativistic_breit_wigner_with_ff
 
-    where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`, :math:`B_L^2` is
-    defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is defined by
-    :eq:`BreakupMomentumSquared`.
+    where :math:`\Gamma(s)` is defined by :eq:`EnergyDependentWidth`,
+    :math:`\hat{{B}}_L^2` is defined by :eq:`BlattWeisskopfSquared`, and :math:`q^2` is
+    defined by :eq:`BreakupMomentumSquared`.
     """,
     )
 

@@ -10,6 +10,7 @@ from ampform.dynamics import (
     ChannelArguments,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    FormFactor,
     MultichannelBreitWigner,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
@@ -109,6 +110,30 @@ def describe_EnergyDependentWidth():
 
 
 def describe_BreitWigner():
+    def it_has_unit_modulus_at_the_pole_with_a_mass_width_numerator():
+        m0, w0, m1, m2 = sp.symbols("m0 Gamma0 m1 m2", positive=True)
+        breit_wigner = BreitWigner(m0**2, m0, w0, m1, m2, angular_momentum=1)
+        assert sp.simplify(breit_wigner.doit()) == sp.I
+
+    def it_can_have_a_unity_numerator():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = BreitWigner(s, m0, w0, numerator="unity")
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
+
+    def it_marks_the_mass_width_numerator_with_a_hat():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        arguments = R"_{L=0}\left(s; m_{0}, \Gamma_{0}\right)"
+        mass_width = BreitWigner(s, m0, w0)
+        unity = BreitWigner(s, m0, w0, numerator="unity")
+        assert sp.latex(mass_width) == R"\hat{\mathcal{R}}^\mathrm{BW}" + arguments
+        assert sp.latex(unity) == R"\mathcal{R}^\mathrm{BW}" + arguments
+
+    def it_rejects_unknown_numerators():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
+            BreitWigner(s, m0, w0, numerator="mass")
+
     def it_reduces_to_simple_breit_wigner():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
         breit_wigner = BreitWigner(s, m0, w0)
@@ -131,15 +156,24 @@ def describe_BreitWigner():
         ],
         ids=["func", "replace", "xreplace", "subs"],
     )
-    def it_preserves_the_phase_space_factor_when_rebuilt(operation):
+    def it_preserves_non_sympy_arguments_when_rebuilt(operation):
         s, m0, w0, m1, m2, radius, new_radius = sp.symbols(
             "s m0 Gamma0 m1 m2 R R2", nonnegative=True
         )
         expr = BreitWigner(
-            s, m0, w0, m1, m2, 0, radius, phsp_factor=PhaseSpaceFactorSWave
+            s,
+            m0,
+            w0,
+            m1,
+            m2,
+            angular_momentum=0,
+            meson_radius=radius,
+            phsp_factor=PhaseSpaceFactorSWave,
+            numerator="unity",
         )
         rebuilt = operation(expr, radius, new_radius)
         assert rebuilt.phsp_factor is PhaseSpaceFactorSWave
+        assert rebuilt.numerator == "unity"
         point = {s: 1.5, m0: 1.2, w0: 0.1, m1: 0.5, m2: 0.4, radius: 1, new_radius: 1}
         expected = complex(expr.doit().subs(point).n())
         assert complex(rebuilt.doit().subs(point).n()) == pytest.approx(expected)
@@ -184,6 +218,27 @@ def describe_BreitWigner():
         )
         expected = complex(1 / (mass**2 - s - sp.I * mass_width))
         assert actual == pytest.approx(expected)
+
+
+def describe_SimpleBreitWigner():
+    def it_can_have_a_unity_numerator():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        breit_wigner = SimpleBreitWigner(s, m0, w0, numerator="unity")
+        expected = 1 / (m0**2 - s - sp.I * m0 * w0)
+        assert breit_wigner.doit() == expected
+
+    def it_marks_the_mass_width_numerator_with_a_hat():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        arguments = R"\left(s; m_{0}, \Gamma_{0}\right)"
+        mass_width = SimpleBreitWigner(s, m0, w0)
+        unity = SimpleBreitWigner(s, m0, w0, numerator="unity")
+        assert sp.latex(mass_width) == R"\hat{\mathcal{R}}^\mathrm{BW}" + arguments
+        assert sp.latex(unity) == R"\mathcal{R}^\mathrm{BW}" + arguments
+
+    def it_rejects_unknown_numerators():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
+            SimpleBreitWigner(s, m0, w0, numerator="mass")
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:
@@ -301,3 +356,22 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
         if isinstance(node, (float, sp.Float)):
             rounded_expr = rounded_expr.xreplace({node: round(node, n_decimals)})
     return rounded_expr
+
+
+def test_relativistic_breit_wigner_with_ff_conventions():
+    s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
+    expr = relativistic_breit_wigner_with_ff(
+        s,
+        m0,
+        w0,
+        m1,
+        m2,
+        angular_momentum=1,
+        meson_radius=d,
+        numerator="unity",
+        normalize_form_factor=False,
+    )
+    (form_factor,) = expr.atoms(FormFactor)
+    (breit_wigner,) = expr.atoms(BreitWigner)
+    assert form_factor.normalize is False
+    assert breit_wigner.numerator == "unity"

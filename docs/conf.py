@@ -147,6 +147,7 @@ autodoc_default_options = {
     ]),
 }
 autodoc_member_order = "bysource"
+autodoc_preserve_defaults = True
 autodoc_typehints_format = "short"
 autosectionlabel_prefix_document = True
 bibtex_bibfiles = ["bibliography.bib"]
@@ -192,7 +193,6 @@ extensions = [
     "sphinx_comments",
     "sphinx_copybutton",
     "sphinx_design",
-    "sphinx_hep_pdgref",
     "sphinx_pybtex_etal_style",
     "sphinx_thebe",
     "sphinx_togglebutton",

@@ -71,7 +71,6 @@ doc = [
     "sphinx-comments",
     "sphinx-copybutton",
     "sphinx-design",
-    "sphinx-hep-pdgref",
     "sphinx-pybtex-etal-style",
     "sphinx-thebe",
     "sphinx-togglebutton",
