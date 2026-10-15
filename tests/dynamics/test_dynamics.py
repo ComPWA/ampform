@@ -130,9 +130,8 @@ def describe_BreitWigner():
 
     def it_rejects_unknown_numerators():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
-        breit_wigner = BreitWigner(s, m0, w0, numerator="mass")
         with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
-            breit_wigner.doit()
+            BreitWigner(s, m0, w0, numerator="mass")
 
     def it_reduces_to_simple_breit_wigner():
         s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
@@ -234,6 +233,11 @@ def describe_SimpleBreitWigner():
         unity = SimpleBreitWigner(s, m0, w0, numerator="unity")
         assert sp.latex(mass_width) == R"\hat{\mathcal{R}}^\mathrm{BW}" + arguments
         assert sp.latex(unity) == R"\mathcal{R}^\mathrm{BW}" + arguments
+
+    def it_rejects_unknown_numerators():
+        s, m0, w0 = sp.symbols("s m0 Gamma0", nonnegative=True)
+        with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
+            SimpleBreitWigner(s, m0, w0, numerator="mass")
 
 
 def _subs(obj: sp.Basic, replacements: dict, method) -> sp.Expr:

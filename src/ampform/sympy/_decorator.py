@@ -73,6 +73,7 @@ def argument(
     default: T = MISSING,  # ty: ignore[invalid-parameter-default]
     kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
     sympify: bool = True,
+    validator: Callable[[T], None] | None = None,
 ) -> T: ...
 @overload
 def argument(
@@ -80,6 +81,7 @@ def argument(
     default_factory: Callable[[], T] = MISSING,  # ty: ignore[invalid-parameter-default]
     kw_only: bool = MISSING,  # ty: ignore[invalid-parameter-default]
     sympify: bool = True,
+    validator: Callable[[T], None] | None = None,
 ) -> T: ...
 def argument(
     *,
@@ -87,19 +89,41 @@ def argument(
     default_factory=MISSING,
     kw_only=MISSING,
     sympify=True,
+    validator=None,
 ):
     """Add qualifiers to fields of `unevaluated` SymPy expression classes.
 
     Creates a :class:`dataclasses.Field` with additional metadata for
     :func:`unevaluated` by wrapping around :func:`dataclasses.field`.
 
+    A :code:`validator` is called with the (sympified) value of the argument whenever an
+    instance is constructed, including when SymPy rebuilds the expression. It should
+    raise an exception if the value is invalid:
+
+    >>> def check_positive(value: int) -> None:
+    ...     if value <= 0:
+    ...         raise ValueError(f"Expected a positive value, got {value}")
+    >>> @unevaluated
+    ... class Power(sp.Expr):
+    ...     x: Any
+    ...     n: int = argument(sympify=False, validator=check_positive)
+    ...
+    ...     def evaluate(self) -> sp.Expr:
+    ...         return self.x**self.n
+    >>> Power(sp.Symbol("x"), n=-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected a positive value, got -1
+
     .. version-added:: 0.14.8
+    .. version-changed:: 0.16.2
+        Added the :code:`validator` argument.
     """
     return dataclasses.field(
         default=default,
         default_factory=default_factory,
         kw_only=kw_only,
-        metadata={"sympify": sympify},
+        metadata={"sympify": sympify, "validator": validator},
     )
 
 
@@ -284,7 +308,7 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
     def new_method(cls, *args, evaluate: bool = False, **kwargs) -> type[ExprClass]:
         fields_with_values, hints = _extract_field_values(cls, *args, **kwargs)
         fields_with_sympified_values = {
-            field: _safe_sympify(field, value)
+            field: _validate(field, _safe_sympify(field, value))
             for field, value in fields_with_values.items()
         }
         sympy_args = tuple(
@@ -484,6 +508,12 @@ def _safe_sympify(field: Field, value: dict[Field, Any]) -> dict[Field, Any]:
                 " it with argument(sympify=False)?"
             )
             raise TypeError(msg) from exc
+    return value
+
+
+def _validate(field: Field, value: T) -> T:
+    if validator := field.metadata.get("validator"):
+        validator(value)
     return value
 
 

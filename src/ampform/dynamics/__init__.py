@@ -33,6 +33,13 @@ if TYPE_CHECKING:
     from sympy.printing.latex import LatexPrinter
 
 
+def _check_numerator(numerator: str) -> None:
+    allowed = ("mass-width", "unity")
+    if numerator not in allowed:
+        msg = f"Unknown numerator {numerator!r}, expected one of {', '.join(map(repr, allowed))}"
+        raise ValueError(msg)
+
+
 @unevaluated
 class SimpleBreitWigner(sp.Expr):
     r"""Simple Breit–Wigner with a configurable numerator.
@@ -49,7 +56,7 @@ class SimpleBreitWigner(sp.Expr):
     mass: Any
     width: Any
     numerator: Literal["mass-width", "unity"] = argument(
-        default="mass-width", kw_only=True, sympify=False
+        default="mass-width", kw_only=True, sympify=False, validator=_check_numerator
     )
 
     def evaluate(self):
@@ -89,7 +96,7 @@ class BreitWigner(sp.Expr):
         default=PhaseSpaceFactor, sympify=False
     )  # ty: ignore[invalid-assignment]
     numerator: Literal["mass-width", "unity"] = argument(
-        default="mass-width", kw_only=True, sympify=False
+        default="mass-width", kw_only=True, sympify=False, validator=_check_numerator
     )
 
     def evaluate(self):
@@ -237,24 +244,15 @@ def _formulate_breit_wigner(s: Any, mass: Any, width: Any) -> sp.Expr:
 
 
 def _formulate_numerator(numerator: str, mass: Any, width: Any) -> Any:
-    _check_numerator(numerator)
     if numerator == "mass-width":
         return mass * width
     return sp.S.One
 
 
 def _get_breit_wigner_symbol(numerator: str) -> str:
-    _check_numerator(numerator)
     if numerator == "mass-width":
         return R"\hat{\mathcal{R}}^\mathrm{BW}"
     return R"\mathcal{R}^\mathrm{BW}"
-
-
-def _check_numerator(numerator: str) -> None:
-    allowed = ("mass-width", "unity")
-    if numerator not in allowed:
-        msg = f"Unknown numerator {numerator!r}, expected one of {', '.join(map(repr, allowed))}"
-        raise ValueError(msg)
 
 
 def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:

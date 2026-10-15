@@ -245,6 +245,29 @@ def describe_unevaluated():
         assert replaced_expr.x is y
         assert replaced_expr.protocol is Protocol
 
+    def it_validates_arguments_on_construction_and_rebuild():
+        validated: list[Any] = []
+
+        def check_label(value: str) -> None:
+            validated.append(value)
+            if value not in {"a", "b"}:
+                msg = f"Invalid label {value!r}"
+                raise ValueError(msg)
+
+        @unevaluated(implement_doit=False)
+        class MyExpr(sp.Expr):
+            x: Any
+            label: str = argument(default="a", sympify=False, validator=check_label)
+
+        x, y = sp.symbols("x y")
+        with pytest.raises(ValueError, match="Invalid label 'c'"):
+            MyExpr(x, label="c")
+        expr = MyExpr(x, label="b")
+        validated.clear()
+        assert expr.subs(x, y).label == "b"
+        assert expr.func(*expr.args).label == "b"
+        assert validated == ["b", "b"]
+
     def it_replaces_symbols_and_non_sympy_attributes():
         class Protocol: ...
 
