@@ -15,6 +15,7 @@ import sys
 from collections import OrderedDict, abc
 from fractions import Fraction
 from functools import reduce, singledispatchmethod
+from itertools import product
 from typing import TYPE_CHECKING, TypeVar, cast
 
 import attrs
@@ -115,6 +116,10 @@ class HelicityModel:
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
     definitions for each of these. See also
     :ref:`TR-014 <compwa-report:tr-014-solution-2>`.
+
+    The builder defines absent topology/helicity combinations as zero within the
+    external spin-projection domains of the reaction. Additional helicities required by
+    spin alignment are not automatically defined as zero.
     """
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
@@ -420,6 +425,11 @@ class HelicityAmplitudeBuilder:
 
         amplitude = self.config.spin_alignment.formulate_amplitude(self.reaction)
         spin_projections = collect_spin_projections(self.reaction)
+        amplitudes = self.__ingredients.amplitudes
+        amplitude_bases = {symbol.base for symbol in amplitudes}
+        for helicities in product(*spin_projections.values()):
+            for base in amplitude_bases:
+                amplitudes.setdefault(base[helicities], sp.S.Zero)
         return PoolSum(sp.Abs(amplitude) ** 2, *spin_projections.items())
 
     def __register_amplitudes(self, transition_group: list[StateTransition]) -> None:

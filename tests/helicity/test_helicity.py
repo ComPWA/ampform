@@ -23,6 +23,8 @@ from ampform.helicity import (
     formulate_isobar_wigner_d,
     group_by_spin_projection,
 )
+from ampform.helicity.align import NoAlignment
+from ampform.helicity.naming import create_amplitude_symbol
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
@@ -30,6 +32,58 @@ if TYPE_CHECKING:
 
 
 def describe_HelicityAmplitudeBuilder():
+    @pytest.mark.parametrize(
+        ("intermediate_particles", "n_zero_amplitudes"),
+        [
+            (["f(0)(980)"], 0),
+            (["rho(1700)"], 0),
+            (["f(0)(980)", "rho(1700)"], 4),
+            (["f(0)(980)", "b(1)(1235)"], 0),
+        ],
+        ids=["scalar", "vector", "scalar-vector", "scalar-axial-vector"],
+    )
+    def it_defines_absent_topology_helicities_as_zero(
+        intermediate_particles: list[str], n_zero_amplitudes: int
+    ):
+        reaction = qrules.generate_transitions(
+            initial_state=("psi(2S)", [-1, 1]),
+            final_state=["phi(1020)", "pi+", "pi-"],
+            allowed_intermediate_particles=intermediate_particles,
+            allowed_interaction_types="strong",
+            mass_conservation_factor=0.1,
+        )
+        model = get_builder(reaction).formulate()
+
+        assert not model.expression.atoms(sp.Indexed)
+        zero_amplitudes = {a for a, expr in model.amplitudes.items() if expr == 0}
+        assert len(zero_amplitudes) == n_zero_amplitudes
+        if n_zero_amplitudes:
+            assert {str(a) for a in zero_amplitudes} == {
+                f"A^{topology}[{projection}, 0, 0, 0]"
+                for topology in ("01", "02")
+                for projection in (-1, 1)
+            }
+        assert model.expression == sum(
+            expr for name, expr in model.components.items() if name.startswith("I_")
+        )
+
+    def it_preserves_undefined_amplitudes_outside_the_external_domain(
+        reaction: ReactionInfo,
+    ):
+        amplitude = create_amplitude_symbol(reaction.transitions[0])
+        missing_amplitude = amplitude.base[0, *amplitude.indices[1:]]
+
+        class ExpandedAlignment(NoAlignment):
+            def formulate_amplitude(self, reaction: ReactionInfo) -> sp.Expr:
+                return super().formulate_amplitude(reaction) + missing_amplitude
+
+        builder = get_builder(reaction)
+        builder.config.spin_alignment = ExpandedAlignment()
+        model = builder.formulate()
+
+        assert missing_amplitude not in model.amplitudes
+        assert missing_amplitude in model.expression.atoms(sp.Indexed)
+
     @pytest.mark.parametrize("permutate_topologies", [False, True])
     @pytest.mark.parametrize("stable_final_state_ids", [None, (1, 2), (0, 1, 2)])
     def it_builds_amplitudes_for_configured_topologies_and_masses(
