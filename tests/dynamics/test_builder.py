@@ -100,3 +100,26 @@ def describe_RelativisticBreitWignerBuilder():
         assert parameters[m0] == particle.mass
         assert parameters[w0] == particle.width
         assert parameters[d] == 1
+
+    @pytest.mark.parametrize("energy_dependent_width", [False, True])
+    def it_forwards_the_numerator_and_form_factor_normalization(
+        particle: Particle,
+        variable_set: TwoBodyKinematicVariableSet,
+        energy_dependent_width: bool,
+    ):
+        builder = RelativisticBreitWignerBuilder(
+            form_factor=True,
+            energy_dependent_width=energy_dependent_width,
+            numerator="unity",
+            normalize_form_factor=False,
+        )
+        expr, _ = builder(particle, variable_set)
+        form_factors = expr.atoms(FormFactor)
+        breit_wigners = expr.atoms(BreitWigner, SimpleBreitWigner)
+        assert len(breit_wigners) == 1
+        assert next(iter(breit_wigners)).numerator == "unity"
+        assert {ff.normalize for ff in form_factors} == {False}
+
+    def it_rejects_unknown_numerators():
+        with pytest.raises(ValueError, match=r"'mass-width', 'unity'"):
+            RelativisticBreitWignerBuilder(numerator="mass")

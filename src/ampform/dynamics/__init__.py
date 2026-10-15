@@ -276,15 +276,30 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
     angular_momentum,
     meson_radius,
     phsp_factor: PhaseSpaceFactorProtocol = PhaseSpaceFactor,  # ty: ignore[invalid-parameter-default]
+    *,
+    numerator: Literal["mass-width", "unity"] = "mass-width",
+    normalize_form_factor: bool = True,
 ) -> sp.Expr:
     """Relativistic Breit–Wigner with `.FormFactor`.
 
     See :ref:`dynamics:_With_ form factor` and `PDG2026, §Resonances, p.12
-    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+    <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__. The
+    :code:`numerator` is passed on to `.BreitWigner` and :code:`normalize_form_factor`
+    to the :code:`normalize` argument of `.FormFactor`.
     """
-    ff = FormFactor(s, m_a, m_b, angular_momentum, meson_radius)
+    ff = FormFactor(
+        s, m_a, m_b, angular_momentum, meson_radius, normalize=normalize_form_factor
+    )
     bw = BreitWigner(
-        s, mass0, gamma0, m_a, m_b, angular_momentum, meson_radius, phsp_factor
+        s,
+        mass0,
+        gamma0,
+        m_a,
+        m_b,
+        angular_momentum,
+        meson_radius,
+        phsp_factor,
+        numerator=numerator,
     )
     return ff * bw
 

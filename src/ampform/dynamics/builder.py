@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
 import sympy as sp
 from attrs import field, frozen
 from attrs.validators import instance_of
 
-from ampform.dynamics import BreitWigner, FormFactor, SimpleBreitWigner
+from ampform.dynamics import (
+    BreitWigner,
+    FormFactor,
+    SimpleBreitWigner,
+    _check_numerator,
+)
 from ampform.dynamics.phasespace import (
     EqualMassPhaseSpaceFactor,
     PhaseSpaceFactor,
@@ -109,6 +114,14 @@ class RelativisticBreitWignerBuilder:
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
             Defaults to `.PhaseSpaceFactor`.
+        numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
+            :code:`"unity"` for the dressed propagator of `PDG2026, Eq. (50.31)
+            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+        normalize_form_factor: Set to `False` to use the non-normalized vertex factor
+            :math:`n_L` of `PDG2026, Eq. (50.33)
+            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for
+            the `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
+            :code:`form_factor`.
     """
 
     def __init__(
@@ -116,12 +129,18 @@ class RelativisticBreitWignerBuilder:
         form_factor: bool = False,
         energy_dependent_width: bool = False,
         phsp_factor: PhaseSpaceFactorProtocol | None = None,
+        *,
+        numerator: Literal["mass-width", "unity"] = "mass-width",
+        normalize_form_factor: bool = True,
     ) -> None:
         if phsp_factor is None:
             phsp_factor = PhaseSpaceFactor  # ty: ignore[invalid-assignment]
+        _check_numerator(numerator)
         self.phsp_factor = phsp_factor
         self.energy_dependent_width = energy_dependent_width
         self.form_factor = form_factor
+        self.numerator = numerator
+        self.normalize_form_factor = normalize_form_factor
 
     def __call__(
         self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
@@ -143,9 +162,8 @@ class RelativisticBreitWignerBuilder:
             return form_factor * expr, parameter_defaults
         return expr, parameter_defaults
 
-    @staticmethod
     def __simple_breit_wigner(
-        resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
+        self, resonance: Particle, variable_pool: TwoBodyKinematicVariableSet
     ) -> BuilderReturnType:
         inv_mass = variable_pool.incoming_state_mass
         identifier = resonance.latex or resonance.name
@@ -155,6 +173,7 @@ class RelativisticBreitWignerBuilder:
             s=inv_mass**2,
             mass=res_mass,
             width=res_width,
+            numerator=self.numerator,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
@@ -185,6 +204,7 @@ class RelativisticBreitWignerBuilder:
             angular_momentum=angular_momentum,
             meson_radius=meson_radius,
             phsp_factor=self.phsp_factor,
+            numerator=self.numerator,
         )
         parameter_defaults = {
             res_mass: resonance.mass,
@@ -208,6 +228,7 @@ class RelativisticBreitWignerBuilder:
             m2=variable_pool.outgoing_state_mass2,
             angular_momentum=variable_pool.angular_momentum,
             meson_radius=meson_radius,
+            normalize=self.normalize_form_factor,
         )
         parameter_defaults: dict[sp.Symbol, float | int] = {
             meson_radius: 1,

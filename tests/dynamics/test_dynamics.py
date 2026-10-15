@@ -10,6 +10,7 @@ from ampform.dynamics import (
     ChannelArguments,
     EnergyDependentWidth,
     EqualMassPhaseSpaceFactor,
+    FormFactor,
     MultichannelBreitWigner,
     PhaseSpaceFactor,
     PhaseSpaceFactorSWave,
@@ -355,3 +356,22 @@ def round_nested(expression: sp.Expr, n_decimals: int) -> sp.Expr:
         if isinstance(node, (float, sp.Float)):
             rounded_expr = rounded_expr.xreplace({node: round(node, n_decimals)})
     return rounded_expr
+
+
+def test_relativistic_breit_wigner_with_ff_conventions():
+    s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
+    expr = relativistic_breit_wigner_with_ff(
+        s,
+        m0,
+        w0,
+        m1,
+        m2,
+        angular_momentum=1,
+        meson_radius=d,
+        numerator="unity",
+        normalize_form_factor=False,
+    )
+    (form_factor,) = expr.atoms(FormFactor)
+    (breit_wigner,) = expr.atoms(BreitWigner)
+    assert form_factor.normalize is False
+    assert breit_wigner.numerator == "unity"
