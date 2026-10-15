@@ -24,6 +24,31 @@ if TYPE_CHECKING:
 
 
 def describe_EnergyDependentWidth():
+    @pytest.mark.parametrize(
+        "operation",
+        [
+            lambda expr, x, y: expr.func(*expr.args).subs(x, y),
+            lambda expr, x, y: expr.replace(x, y),
+            lambda expr, x, y: expr.rewrite(sp.exp).subs(x, y),
+            lambda expr, x, y: expr.xreplace({x: y}),
+            lambda expr, x, y: expr.subs(x, y),
+        ],
+        ids=["func", "replace", "rewrite", "xreplace", "subs"],
+    )
+    def it_preserves_the_analytic_phase_space_value_when_rebuilt(operation):
+        s, m0, w0, m1, m2, radius, new_radius = sp.symbols(
+            "s m0 Gamma0 m1 m2 R R2", nonnegative=True
+        )
+        expr = EnergyDependentWidth(
+            s, m0, w0, m1, m2, 0, radius, phsp_factor=PhaseSpaceFactorSWave
+        )
+        point = {s: 1.5, m0: 1.2, w0: 0.1, m1: 0.5, m2: 0.4, radius: 1, new_radius: 1}
+        rebuilt = operation(expr, radius, new_radius)
+        assert rebuilt.phsp_factor is PhaseSpaceFactorSWave
+        expected = complex(expr.doit().subs(point).n())
+        assert expected == pytest.approx(0.10335005521341 + 0.00158126099409582j)
+        assert complex(rebuilt.doit().subs(point).n()) == pytest.approx(expected)
+
     def it_initializes_width_parameters_and_phase_space_factors():
         angular_momentum = sp.Symbol("L", integer=True)
         s, m0, w0, m1, m2, d = sp.symbols("s m0 Gamma0 m1 m2 d", nonnegative=True)
@@ -95,6 +120,29 @@ def describe_BreitWigner():
         running_width = breit_wigner.energy_dependent_width()
         expected = m0 * w0 / (m0**2 - s - m0 * running_width * sp.I)
         assert breit_wigner.doit(deep=False) == expected
+
+    @pytest.mark.parametrize(
+        "operation",
+        [
+            lambda expr, x, y: expr.func(*expr.args).subs(x, y),
+            lambda expr, x, y: expr.replace(x, y),
+            lambda expr, x, y: expr.xreplace({x: y}),
+            lambda expr, x, y: expr.subs(x, y),
+        ],
+        ids=["func", "replace", "xreplace", "subs"],
+    )
+    def it_preserves_the_phase_space_factor_when_rebuilt(operation):
+        s, m0, w0, m1, m2, radius, new_radius = sp.symbols(
+            "s m0 Gamma0 m1 m2 R R2", nonnegative=True
+        )
+        expr = BreitWigner(
+            s, m0, w0, m1, m2, 0, radius, phsp_factor=PhaseSpaceFactorSWave
+        )
+        rebuilt = operation(expr, radius, new_radius)
+        assert rebuilt.phsp_factor is PhaseSpaceFactorSWave
+        point = {s: 1.5, m0: 1.2, w0: 0.1, m1: 0.5, m2: 0.4, radius: 1, new_radius: 1}
+        expected = complex(expr.doit().subs(point).n())
+        assert complex(rebuilt.doit().subs(point).n()) == pytest.approx(expected)
 
     def it_sums_multichannel_widths():
         s, m0, g1, g2, m1, m2 = sp.symbols("s m0 g1 g2 m1 m2", nonnegative=True)
