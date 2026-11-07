@@ -33,10 +33,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "attrs >=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
+    "attrs>=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
-    "qrules >=0.9.6",
-    "sympy >=1.10",
+    "qrules>=0.9.6",
+    "sympy>=1.10",
 ]
 dynamic = ["version"]
 
@@ -65,7 +65,7 @@ dev = [
 doc = [
     "myst-nb",
     "sphinx",
-    "sphinx-api-relink >=0.0.4",
+    "sphinx-api-relink>=0.0.4",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
     "sphinx-comments",
@@ -74,7 +74,7 @@ doc = [
     "sphinx-pybtex-etal-style",
     "sphinx-thebe",
     "sphinx-togglebutton",
-    "sphinxcontrib-bibtex >=2",
+    "sphinxcontrib-bibtex>=2",
     "sphinxcontrib-mermaid",
     { include-group = "notebooks" },
 ]
@@ -94,7 +94,7 @@ notebooks = [
     "ipympl",
     "matplotlib",
     "numpy",
-    "qrules >=0.10.12",  # qrules.io.asmermaid
+    "qrules>=0.10.12",  # qrules.io.asmermaid
     "quadax",
     "sympy-plot-backends",
 ]
@@ -120,7 +120,7 @@ types = [
     "numpy",
     "pytest",
     "pytest-benchmark",
-    "sphinx-api-relink >=0.0.3",
+    "sphinx-api-relink>=0.0.3",
     { include-group = "notebooks" },
 ]
 
