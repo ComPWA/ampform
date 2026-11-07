@@ -35,7 +35,9 @@ if TYPE_CHECKING:
 class NameGenerator(ABC):
     """Name generator for amplitudes and coefficients in a `.HelicityModel`.
 
-    .. seealso:: :ref:`amplitude/formalism:Coefficient names`
+    .. seealso::
+
+        :ref:`amplitude/formalism:Coefficient names`
     """
 
     @abstractmethod
@@ -355,8 +357,10 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     IDs that lie below them (see :func:`.determine_attached_final_state`). The generated
     label does not state the top-most edge (the initial state).
 
-    Example
-    -------
+    #########
+     Example
+    #########
+
     The following two allowed isobar topologies for a **1-to-5-body** decay illustrates
     how the naming scheme results in a unique label for each of the **eight edges** in
     the decay topology. Note that label only uses final state IDs, but still reflects
@@ -392,17 +396,16 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
 
     Some labels explained:
 
-    - :code:`phi_12`: **edge 6** on the *top* topology, because for this
-      topology, we have :math:`p_6=p_1+p_2`.
-    - :code:`phi_234`: **edge 6** on the *bottom* topology, because for this
-      topology, :math:`p_6=p_2+p_3+p_4`.
-    - :code:`phi_1^12`: **edge 1** on the *top* topology, because 1 decays
-      from :math:`p_6=p_1+p_2`.
-    - :code:`phi_1^01`: **edge 1** on the *bottom* topology, because it decays
-      from :math:`p_5=p_0+p_1`.
-    - :code:`phi_4^34,234`: **edge 4** on the *bottom* topology, because it
-      decays from edge 7 (:math:`p_7=p_3+p_4`), which comes from edge 6
-      (:math:`p_7=p_2+p_3+p_4`).
+    - ``phi_12``: **edge 6** on the *top* topology, because for this topology, we have
+      :math:`p_6=p_1+p_2`.
+    - ``phi_234``: **edge 6** on the *bottom* topology, because for this topology,
+      :math:`p_6=p_2+p_3+p_4`.
+    - ``phi_1^12``: **edge 1** on the *top* topology, because 1 decays from
+      :math:`p_6=p_1+p_2`.
+    - ``phi_1^01``: **edge 1** on the *bottom* topology, because it decays from
+      :math:`p_5=p_0+p_1`.
+    - ``phi_4^34,234``: **edge 4** on the *bottom* topology, because it decays from edge
+      7 (:math:`p_7=p_3+p_4`), which comes from edge 6 (:math:`p_7=p_2+p_3+p_4`).
 
     As noted, the top-most parent (initial state) is not listed in the label.
     """
@@ -464,8 +467,7 @@ def __get_resonance_identifier(topology: Topology, state_id: int) -> str:
 def natural_sorting(text: str) -> list[float | str]:
     """Function that can be used for natural sort order in :func:`sorted`.
 
-    See `natural sort order
-    <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
+    See `natural sort order <https://en.wikipedia.org/wiki/Natural_sort_order>`_.
 
     >>> sorted(["z11", "z2"], key=natural_sorting)
     ['z2', 'z11']

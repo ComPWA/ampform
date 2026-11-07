@@ -1,4 +1,4 @@
-"""Temporary module for SymPy :code:`ArraySlice` and related classes.
+"""Temporary module for SymPy ``ArraySlice`` and related classes.
 
 This module can be removed once `sympy/sympy#22265
 <https://github.com/sympy/sympy/pull/22265>`_ is merged and released.

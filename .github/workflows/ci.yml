@@ -30,8 +30,6 @@ jobs:
     uses: ComPWA/actions/.github/workflows/style.yml@847c8b2dea7471eea5ebe9918f71d7441aa58ca0
   test:
     uses: ComPWA/actions/.github/workflows/test.yml@847c8b2dea7471eea5ebe9918f71d7441aa58ca0
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       coverage-python-version: "3.14"
       macos-python-version: "3.11"

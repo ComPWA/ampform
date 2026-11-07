@@ -35,6 +35,7 @@ def doit(expr: SympyObject) -> SympyObject:
             :meth:`~sympy.core.basic.Basic.doit`.
 
     .. version-added:: 0.14.4
+
     .. automodule:: ampform.sympy._cache
     """
     return expr.doit()
@@ -95,7 +96,7 @@ def unfold(obj: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr: ...
 def unfold(
     obj: sp.Expr | Model, substitutions: Mapping[sp.Basic, Any] | None = None
 ) -> sp.Expr:
-    """Efficiently perform both substitutions and :code:`doit()`."""
+    """Efficiently perform both substitutions and ``doit()``."""
     if isinstance(obj, Model):
         return _unfold_impl(obj.intensity, obj.amplitudes)
     if substitutions is None:
@@ -132,7 +133,7 @@ def _sorted_frozendict(
     The disk cache is keyed on a pickle of the mapping, and a pickled mapping is written
     in iteration order. A mapping built by iterating over
     :attr:`~sympy.core.basic.Basic.free_symbols` inherits the order of that `set`, which
-    depends on :code:`PYTHONHASHSEED`, so the same substitutions would otherwise get a
+    depends on ``PYTHONHASHSEED``, so the same substitutions would otherwise get a
     different cache key in every process.
 
     `~sympy.core.sorting.default_sort_key` does not distinguish assumptions, which would

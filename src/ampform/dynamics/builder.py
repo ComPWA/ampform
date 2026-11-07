@@ -58,7 +58,9 @@ class ResonanceDynamicsBuilder(Protocol):
     by `.DynamicsSelector.assign`. For an example, see the source code
     `.create_relativistic_breit_wigner`, which creates a `.SimpleBreitWigner`.
 
-    .. seealso:: :doc:`/dynamics/custom`
+    .. seealso::
+
+        :doc:`/dynamics/custom`
     """
 
     def __call__(
@@ -109,19 +111,23 @@ class RelativisticBreitWignerBuilder:
             by a Blatt–Weisskopf form factor (`.FormFactor`), like in `PDG2026, Eqs.
             (50.33) and (50.37)
             <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+
         energy_dependent_width: Use an `.EnergyDependentWidth` in the
             denominator of the Breit–Wigner.
+
         phsp_factor: A class that complies with the
             `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
             Defaults to `.PhaseSpaceFactor`.
+
         numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
-            :code:`"unity"` for the dressed propagator of `PDG2026, Eq. (50.31)
+            ``"unity"`` for the dressed propagator of `PDG2026, Eq. (50.31)
             <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+
         normalize_form_factor: Set to `False` to use the non-normalized vertex factor
             :math:`n_L` of `PDG2026, Eq. (50.33)
             <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for
             the `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
-            :code:`form_factor`.
+            ``form_factor``.
     """
 
     def __init__(
@@ -276,5 +282,7 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
-.. seealso:: :doc:`/analyticity/phasespace-factors`.
+.. seealso::
+
+    :doc:`/analyticity/phasespace-factors`.
 """

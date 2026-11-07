@@ -96,7 +96,7 @@ def argument(
     Creates a :class:`dataclasses.Field` with additional metadata for
     :func:`unevaluated` by wrapping around :func:`dataclasses.field`.
 
-    A :code:`validator` is called with the (sympified) value of the argument whenever an
+    A ``validator`` is called with the (sympified) value of the argument whenever an
     instance is constructed, including when SymPy rebuilds the expression. It should
     raise an exception if the value is invalid:
 
@@ -116,8 +116,9 @@ def argument(
     ValueError: Expected a positive value, got -1
 
     .. version-added:: 0.14.8
+
     .. version-changed:: 0.16.2
-        Added the :code:`validator` argument.
+    Added the :code:`validator` argument.
     """
     return dataclasses.field(
         default=default,
@@ -163,7 +164,7 @@ def unevaluated(
 
     A LaTeX representation for the unevaluated state can be provided by providing an
     `f-string <https://docs.python.org/3/reference/lexical_analysis.html#f-strings>`_ or
-    method called :code:`_latex_repr_`:
+    method called ``_latex_repr_``:
 
     >>> @unevaluated
     ... class Function(sp.Expr):
@@ -223,10 +224,10 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
-    Such non-sympy attributes are not part of :code:`args`. They are nonetheless
-    preserved when SymPy rebuilds the expression through :code:`expr.func(*expr.args)`,
-    as it does in :meth:`~sympy.core.basic.Basic.replace`,
-    :meth:`~sympy.core.basic.Basic.rewrite`, and :meth:`~sympy.core.basic.Basic.doit`:
+    Such non-sympy attributes are not part of ``args``. They are nonetheless preserved
+    when SymPy rebuilds the expression through ``expr.func(*expr.args)``, as it does in
+    :meth:`~sympy.core.basic.Basic.replace`, :meth:`~sympy.core.basic.Basic.rewrite`,
+    and :meth:`~sympy.core.basic.Basic.doit`:
 
     >>> rebuilt = expr.func(*expr.args)
     >>> rebuilt.functor is Transformation
@@ -235,7 +236,7 @@ def unevaluated(
     True
 
     The constructor compares equal to the expression's class, but repeated accesses to
-    :code:`func` need not return the same object. Use equality rather than identity for
+    ``func`` need not return the same object. Use equality rather than identity for
     class-based dispatch.
 
     The default string and :func:`~sympy.printing.repr.srepr` printers include
@@ -247,8 +248,9 @@ def unevaluated(
     'MyExpr(0, 3.14, functor=Transformation)'
 
     .. version-added:: 0.14.8
+
     .. version-changed:: 0.14.7
-        Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
+    Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
     """
     if assumptions is None:
         assumptions = {}
@@ -431,7 +433,7 @@ class _ExpressionConstructor(type):
 
 
 def _update_field_metadata(cls: T) -> T:
-    """Set the :code:`sympify` metadata for all fields of a dataclass-like class."""
+    """Set the ``sympify`` metadata for all fields of a dataclass-like class."""
     for field in dataclasses.fields(cls):
         new_metadata = dict(field.metadata)
         if "sympify" not in new_metadata:
@@ -465,10 +467,9 @@ def _extract_field_values(
 
     Returns a `tuple` of:
 
-    1. the values for the dataclass fields extracted from :code:`*args` and
-       :code:`**kwargs`,
+    1. the values for the dataclass fields extracted from ``*args`` and ``**kwargs``,
     2. a `dict` of remaining keyword arguments that can be used hints for the
-       constructed :class:`sp.Expr<sympy.core.expr.Expr>` instance.
+       constructed :class:`sp.Expr <sympy.core.expr.Expr>` instance.
 
     An attempt is made to get any missing attributes from the type hints in the class
     definition.
@@ -699,8 +700,8 @@ def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
 def _replace_non_sympy_value(value: Any, rule: Any) -> tuple[Any, bool]:
     """Replace a non-sympy attribute only if the rule has a key of the same type.
 
-    A lookup through :code:`value in rule` is too lenient for such attributes: `False`
-    equals :code:`0` and :code:`sympy.Integer(0)`, and mappings like
+    A lookup through ``value in rule`` is too lenient for such attributes: `False`
+    equals ``0`` and ``sympy.Integer(0)``, and mappings like
     `~ampform.helicity.ParameterValues` also accept integer keys as positions.
     """
     if not isinstance(rule, abc.Mapping):
