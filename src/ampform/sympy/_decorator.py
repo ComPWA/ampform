@@ -328,17 +328,21 @@ def _implement_new_method(cls: type[ExprClass]) -> type[ExprClass]:
             return expr.evaluate()
         return expr
 
-    cls.__new__ = new_method
-    cls.__getnewargs__ = _get_field_values
-    cls._hashable_content = _hashable_content_method
+    methods: dict[str, object] = {
+        "__new__": new_method,
+        "__getnewargs__": _get_field_values,
+        "_hashable_content": _hashable_content_method,
+    }
     if non_sympy_fields:
-        cls._eval_subs = _eval_subs_method
-        cls._xreplace = _xreplace_method
-        cls.func = property(_func_method)
+        methods["_eval_subs"] = _eval_subs_method
+        methods["_xreplace"] = _xreplace_method
+        methods["func"] = property(_func_method)
         if not hasattr(cls, "_sympystr"):
-            cls._sympystr = _print_expression
+            methods["_sympystr"] = _print_expression
         if not hasattr(cls, "_sympyrepr"):
-            cls._sympyrepr = _print_expression
+            methods["_sympyrepr"] = _print_expression
+    for name, method in methods.items():
+        setattr(cls, name, method)
     return cls
 
 
