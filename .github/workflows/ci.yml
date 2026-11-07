@@ -33,3 +33,5 @@ jobs:
     with:
       coverage-python-version: "3.14"
       macos-python-version: "3.11"
+  linkcheck:
+    uses: ComPWA/actions/.github/workflows/ci-linkcheck.yml@847c8b2dea7471eea5ebe9918f71d7441aa58ca0

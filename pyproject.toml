@@ -137,6 +137,7 @@ type-checker = ["ty"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
+fail_under = 75
 
 [tool.coverage.run]
 branch = true
@@ -148,6 +149,45 @@ omit = [
     "tests/**/*.py",
 ]
 source = ["src"]
+
+[tool.docstrfmt]
+docstring-trailing-line = false
+format-python-code-blocks = false
+
+[tool.lychee]
+extensions = [
+    "css",
+    "htm",
+    "html",
+    "markdown",
+    "md",
+    "mdown",
+    "mdwn",
+    "mdx",
+    "mkd",
+    "mkdn",
+    "mkdown",
+    "txt",
+    "xml",
+    "ipynb",
+]
+remap = ["^(.+)/n$ $1"]
+exclude = [
+    "http://www.curtismeyer.com",
+    "https://citeseerx.ist.psu.edu/document",
+    "https://doi.org/10.1002",
+    "https://doi.org/10.1093",
+    "https://doi.org/10.1103",
+    "https://doi.org/10.1155",
+    "https://doi.org/10.5281/zenodo",
+    "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
+    "https://hss-opus.ub.ruhr-uni-bochum.de",
+    "https://journals.aps.org/prd",
+    "https://physique.cuso.ch",
+    "https://suchung.web.cern.ch",
+    "https://www.bookfinder.com",
+    "https://zenodo.org",
+]
 
 [tool.poe.executor]
 isolated = true
@@ -210,17 +250,9 @@ help = "Set up a server to directly preview changes to the HTML pages with cache
 sequence = ["doclive"]
 
 [tool.poe.groups.doc.tasks.linkcheck]
-cmd = """
-sphinx-build \
-    --builder=linkcheck \
-    --fail-on-warning \
-    --show-traceback \
-    docs/ \
-    docs/_build/linkcheck/
-"""
-env = { PYTHONWARNINGS = "" }
-executor = { group = "doc" }
 help = "Check external links in the documentation (requires internet connection)"
+executor = { with = ["lychee-bin>=0.24.0"] }
+cmd = "lychee ."
 
 [tool.poe.groups.notebook]
 heading = "Notebooks"
@@ -244,7 +276,6 @@ heading = "Testing"
 cmd = """
 pytest \
     --cov=ampform \
-    --cov-fail-under=75 \
     --cov-report=html \
     --cov-report=xml \
     --numprocesses=auto \
