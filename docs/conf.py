@@ -327,7 +327,9 @@ mermaid_init_config = {
     "startOnLoad": False,
     "themeVariables": {"fontSize": "12px"},
 }
+myst_colon_fence_exact_match = True
 myst_enable_extensions = [
+    "alert",
     "amsmath",
     "colon_fence",
     "dollarmath",
