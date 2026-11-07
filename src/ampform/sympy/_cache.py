@@ -249,8 +249,7 @@ def get_readable_hash(obj: Hashable, /) -> str:
     through :func:`.make_hashable` first, as :func:`.cache_to_disk` does, to put it in a
     fixed order.
 
-    Args:
-        obj: Any hashable object, mutable or immutable, to be hashed.
+    :param obj: Any hashable object, mutable or immutable, to be hashed.
     """
     return hashlib.md5(to_bytes(obj), usedforsecurity=False).hexdigest()
 

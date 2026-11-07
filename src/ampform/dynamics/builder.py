@@ -106,28 +106,22 @@ class RelativisticBreitWignerBuilder:
     The :meth:`__call__` of this builder complies with the `.ResonanceDynamicsBuilder`,
     so instances of this class can be used in :meth:`.DynamicsSelector.assign`.
 
-    Args:
-        form_factor: Formulate a relativistic Breit–Wigner function multiplied
-            by a Blatt–Weisskopf form factor (`.FormFactor`), like in `PDG2026, Eqs.
-            (50.33) and (50.37)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
-
-        energy_dependent_width: Use an `.EnergyDependentWidth` in the
-            denominator of the Breit–Wigner.
-
-        phsp_factor: A class that complies with the
-            `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
-            Defaults to `.PhaseSpaceFactor`.
-
-        numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
-            ``"unity"`` for the dressed propagator of `PDG2026, Eq. (50.31)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
-
-        normalize_form_factor: Set to `False` to use the non-normalized vertex factor
-            :math:`n_L` of `PDG2026, Eq. (50.33)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for
-            the `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
-            ``form_factor``.
+    :param form_factor: Formulate a relativistic Breit–Wigner function multiplied by a
+        Blatt–Weisskopf form factor (`.FormFactor`), like in `PDG2026, Eqs. (50.33) and
+        (50.37)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+    :param energy_dependent_width: Use an `.EnergyDependentWidth` in the denominator of
+        the Breit–Wigner.
+    :param phsp_factor: A class that complies with the `.PhaseSpaceFactorProtocol` that
+        is used in the energy-dependent width. Defaults to `.PhaseSpaceFactor`.
+    :param numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
+        ``"unity"`` for the dressed propagator of `PDG2026, Eq. (50.31)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+    :param normalize_form_factor: Set to `False` to use the non-normalized vertex factor
+        :math:`n_L` of `PDG2026, Eq. (50.33)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for the
+        `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
+        ``form_factor``.
     """
 
     def __init__(

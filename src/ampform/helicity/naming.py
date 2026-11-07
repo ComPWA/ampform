@@ -357,9 +357,7 @@ def get_boost_chain_suffix(topology: Topology, state_id: int) -> str:
     IDs that lie below them (see :func:`.determine_attached_final_state`). The generated
     label does not state the top-most edge (the initial state).
 
-    #########
-     Example
-    #########
+    .. rubric:: Example
 
     The following two allowed isobar topologies for a **1-to-5-body** decay illustrates
     how the naming scheme results in a unique label for each of the **eight edges** in

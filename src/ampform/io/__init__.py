@@ -28,20 +28,18 @@ if TYPE_CHECKING:
 
 
 @singledispatch
-def aslatex(obj, **kwargs) -> str:  # ruff: ignore[undocumented-param]
+def aslatex(obj, **kwargs) -> str:
     """Render objects as a LaTeX `str`.
 
     The resulting `str` can for instance be given to `IPython.display.Math`.
 
     .. version-added:: 0.14.1
 
-    Args:
-        terms_per_line: If set to a non-zero, positive number,
-            `sp.Expr <sympy.core.expr.Expr>` objects on the right-hand-side with
-            multiple terms are split over multiple lines. The terms are split at the
-            addition.
+    :param terms_per_line: If set to a non-zero, positive number, `sp.Expr
+        <sympy.core.expr.Expr>` objects on the right-hand-side with multiple terms are
+        split over multiple lines. The terms are split at the addition.
 
-            .. version-added:: 0.15.2
+        .. version-added:: 0.15.2
     """
     return str(obj)
 

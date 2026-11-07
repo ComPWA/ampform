@@ -162,9 +162,7 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     r"""Get the sibling state ID for a state in an isobar decay.
 
-    #########
-     Example
-    #########
+    .. rubric:: Example
 
     .. code-block::
 
@@ -335,9 +333,7 @@ def determine_attached_final_state(topology: Topology, state_id: int) -> list[in
     These are attached downward (forward in time) for a given edge (resembling the
     root).
 
-    #########
-     Example
-    #########
+    .. rubric:: Example
 
     For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
 

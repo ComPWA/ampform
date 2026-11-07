@@ -46,13 +46,12 @@ class PhaseSpaceFactorProtocol(Protocol):
     def __call__(self, s, m1, m2) -> sp.Expr:
         """Expected `~inspect.signature`.
 
-        Args:
-            s: `Mandelstam variable <https://pwa.rtfd.io/physics/#mandelstam-variables>`_
-                :math:`s`. Commonly, this is just :math:`s = m_R^2`, with :math:`m_R`
-                the invariant mass of decaying particle :math:`R`.
-
-            m1: Mass of decay product :math:`a`.
-            m2: Mass of decay product :math:`b`.
+        :param s: `Mandelstam variable
+            <https://pwa.rtfd.io/physics/#mandelstam-variables>`_ :math:`s`. Commonly,
+            this is just :math:`s = m_R^2`, with :math:`m_R` the invariant mass of
+            decaying particle :math:`R`.
+        :param m1: Mass of decay product :math:`a`.
+        :param m2: Mass of decay product :math:`b`.
         """
 
 
@@ -72,11 +71,11 @@ class PhaseSpaceFactor(sp.Expr):
 
     Alternative implementations:
 
-    * `PhaseSpaceFactorAbs`
-    * `PhaseSpaceFactorComplex`
-    * `PhaseSpaceFactorKallen`
-    * `PhaseSpaceFactorSplitSqrt`
-    * `PhaseSpaceFactorSWave`
+    - `PhaseSpaceFactorAbs`
+    - `PhaseSpaceFactorComplex`
+    - `PhaseSpaceFactorKallen`
+    - `PhaseSpaceFactorSplitSqrt`
+    - `PhaseSpaceFactorSWave`
     """
 
     s: Any
@@ -228,13 +227,14 @@ class ChewMandelstamSWave(sp.Expr):
     As a trick, the square root in :math:`q` is defined with `.ComplexSqrt` so that this
     function has a well-defined behavior along the negative real axis.
 
-    .. warning:: This function is given as `PDG2026, Eq. (50.46)
+    .. warning::
+
+        This function is given as `PDG2026, Eq. (50.46)
         <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__, which
         contains two apparent typos: the denominator inside the first logarithm reads
-        :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last
-        term contains :math:`1/s_\mathrm{thr}^2` instead of
-        :math:`1/s_\mathrm{thr}=1/(m_1+m_2)^2`. This implementation follows the 2021
-        version.
+        :math:`2m_1m_1` instead of :math:`2m_1m_2`, and the last term contains
+        :math:`1/s_\mathrm{thr}^2` instead of :math:`1/s_\mathrm{thr}=1/(m_1+m_2)^2`.
+        This implementation follows the 2021 version.
     """
 
     s: Any
@@ -263,14 +263,14 @@ class ChewMandelstamSWave(sp.Expr):
 class PhaseSpaceFactorPWave(sp.Expr):
     r"""Phase space factor using `ChewMandelstamIntegral` for :math:`\ell=1`.
 
-    Parameters:
-        s: Mandelstam variable s.
-        m1: Mass of particle 1.
-        m2: Mass of particle 2.
-        meson_radius: Meson radius, default is 1 (optional).
-        s_prime: Integration variable defaults to 'x' (optional).
-        epsilon: Small imaginary part to offset from the real axis (optional).
-        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
+    :param s: Mandelstam variable s.
+    :param m1: Mass of particle 1.
+    :param m2: Mass of particle 2.
+    :param meson_radius: Meson radius, default is 1 (optional).
+    :param s_prime: Integration variable defaults to 'x' (optional).
+    :param epsilon: Small imaginary part to offset from the real axis (optional).
+    :param \*\*kwargs: See `.NumericalIntegral` for more details on the remaining
+        parameters.
 
     .. warning::
 
@@ -326,21 +326,21 @@ class PhaseSpaceFactorPWave(sp.Expr):
 
 @unevaluated
 class ChewMandelstamIntegral(sp.Expr):
-    """Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
+    r"""Dispersion integral for obtaining the analytic phase space factor for angular momenta L>0.
 
     See `PDG2026, Eq. (50.45)
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__. The
     integral is subtracted at the channel threshold.
 
-    Parameters:
-        s: Mandelstam variable s.
-        m1: Mass of particle 1.
-        m2: Mass of particle 2.
-        angular_momentum: Angular momentum.
-        meson_radius: Meson radius, default is 1 (optional).
-        s_prime: Integration variable defaults to 'x' (optional).
-        epsilon: Small imaginary part to offset from the real axis (optional).
-        **kwargs: See `.NumericalIntegral` for more details on the remaining parameters.
+    :param s: Mandelstam variable s.
+    :param m1: Mass of particle 1.
+    :param m2: Mass of particle 2.
+    :param angular_momentum: Angular momentum.
+    :param meson_radius: Meson radius, default is 1 (optional).
+    :param s_prime: Integration variable defaults to 'x' (optional).
+    :param epsilon: Small imaginary part to offset from the real axis (optional).
+    :param \*\*kwargs: See `.NumericalIntegral` for more details on the remaining
+        parameters.
     """
 
     s: Any
@@ -397,11 +397,13 @@ class EqualMassPhaseSpaceFactor(sp.Expr):
     **Warning**: The PDG specifically derives this formula for a two-body decay *with
     equal masses*.
 
-    .. warning:: This formula no longer appears in
-        `PDG2026, §Resonances, p.16 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__.
-        The PDG now gives the :math:`S`-wave Chew–Mandelstam function for arbitrary
-        masses instead (Equation (50.46)), which is subtracted at the channel threshold.
-        See `.ChewMandelstamSWave`.
+    .. warning::
+
+        This formula no longer appears in `PDG2026, §Resonances, p.16
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=16>`__. The
+        PDG now gives the :math:`S`-wave Chew–Mandelstam function for arbitrary masses
+        instead (Equation (50.46)), which is subtracted at the channel threshold. See
+        `.ChewMandelstamSWave`.
     """
 
     s: Any

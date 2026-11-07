@@ -30,9 +30,8 @@ def doit(expr: SympyObject) -> SympyObject:
     The cached result is fetched from disk if the hash of the original expression is the
     same as the hash embedded in the filename (see :func:`.get_readable_hash`).
 
-    Args:
-        expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
-            :meth:`~sympy.core.basic.Basic.doit`.
+    :param expr: A `sympy.Expr <sympy.core.expr.Expr>` on which to call
+        :meth:`~sympy.core.basic.Basic.doit`.
 
     .. version-added:: 0.14.4
 

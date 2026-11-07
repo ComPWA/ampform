@@ -163,11 +163,9 @@ class HelicityModel:
         `parameter_defaults`, `components`, and `kinematic_variables`. This method can
         be used to :ref:`couple parameters <amplitude/modify:Couple parameters>`.
 
-        Args:
-            renames: A mapping from old to new names.
+        :param renames: A mapping from old to new names.
 
-        Returns:
-            A **new** instance of a `HelicityModel` with symbols in all attributes
+        :returns: A **new** instance of a `HelicityModel` with symbols in all attributes
             renamed accordingly.
         """
         renames = dict(renames)
@@ -761,9 +759,7 @@ def formulate_isobar_cg_coefficients(
     - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle j1,m1;j2,m2|j3,m3\rangle`, as
       in :doc:`sympy:modules/physics/quantum/cg`.
 
-    #########
-     Example
-    #########
+    .. rubric:: Example
 
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
@@ -849,9 +845,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     :cite:`Jacob:1959at`, Eq. (24). See p.119-120 and p.199 in :cite:`Martin:1970hmp`
     for the two conventions, :math:`\gamma=0` versus :math:`\gamma=-\phi`.
 
-    #########
-     Example
-    #########
+    .. rubric:: Example
 
     >>> import qrules
     >>> reaction = qrules.generate_transitions(

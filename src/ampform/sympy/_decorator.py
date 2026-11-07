@@ -118,7 +118,8 @@ def argument(
     .. version-added:: 0.14.8
 
     .. version-changed:: 0.16.2
-    Added the :code:`validator` argument.
+
+        Added the :code:`validator` argument.
     """
     return dataclasses.field(
         default=default,
@@ -250,7 +251,8 @@ def unevaluated(
     .. version-added:: 0.14.8
 
     .. version-changed:: 0.14.7
-    Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.`
+
+        Renamed from :code:`@unevaluated_expression()` to :code:`@unevaluated()`.
     """
     if assumptions is None:
         assumptions = {}
