@@ -76,8 +76,8 @@ def compute_helicity_angles(
     `.FourMomenta` The expressions returned as values in a `dict`, where the keys are
     defined by :func:`.get_helicity_angle_symbols`.
 
-    Example
-    -------
+    .. rubric:: Example
+
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(3)
     >>> topology = topologies[0]

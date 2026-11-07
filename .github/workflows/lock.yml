@@ -17,6 +17,6 @@ on:
 
 jobs:
   lock:
-    uses: ComPWA/actions/.github/workflows/lock.yml@313866498eb92c341d7e6b905e09f33a5979dffb # v4.1.4
+    uses: ComPWA/actions/.github/workflows/lock.yml@826112415aa683bb2d73df87e84444a047f8cad7 # v4.1.8
     secrets:
       token: ${{ secrets.PAT }}

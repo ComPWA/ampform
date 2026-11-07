@@ -225,10 +225,9 @@ class MinkowskiMetric(NumPyPrintable):
 class BoostZMatrix(sp.Expr):
     r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
 
-    Args:
-        beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
-        n_events: Number of events :math:`n` for this matrix array of shape
-            :math:`n\times4\times4`. Defaults to the `len` of :code:`beta`.
+    :param beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
+    :param n_events: Number of events :math:`n` for this matrix array of shape
+        :math:`n\times4\times4`. Defaults to the `len` of ``beta``.
     """
 
     beta: sp.Basic
@@ -373,10 +372,9 @@ class _BoostMatrixImplementation(NumPyPrintable):
 class RotationYMatrix(sp.Expr):
     r"""Rotation matrix around the :math:`y`-axis for a `.FourMomentumSymbol`.
 
-    Args:
-        angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
-        n_events: Number of events :math:`n` for this matrix array of shape
-            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
+    :param angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
+    :param n_events: Number of events :math:`n` for this matrix array of shape
+        :math:`n\times4\times4`. Defaults to the `len` of ``angle``.
     """
 
     angle: sp.Basic
@@ -430,10 +428,9 @@ class _RotationYMatrixImplementation(NumPyPrintable):
 class RotationZMatrix(sp.Expr):
     r"""Rotation matrix around the :math:`z`-axis for a `.FourMomentumSymbol`.
 
-    Args:
-        angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
-        n_events: Number of events :math:`n` for this matrix array of shape
-            :math:`n\times4\times4`. Defaults to the `len` of :code:`angle`.
+    :param angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
+    :param n_events: Number of events :math:`n` for this matrix array of shape
+        :math:`n\times4\times4`. Defaults to the `len` of ``angle``.
     """
 
     angle: sp.Basic
@@ -597,8 +594,8 @@ def compute_invariant_masses(
 def get_invariant_mass_symbol(topology: Topology, state_id: int) -> sp.Symbol:
     """Generate an invariant mass label for a state (edge on a topology).
 
-    Example
-    -------
+    .. rubric:: Example
+
     In the case shown in Figure :ref:`one-to-five-topology-0`, the invariant mass of
     state :math:`5` is :math:`m_{034}`, because :math:`p_5=p_0+p_3+p_4`:
 

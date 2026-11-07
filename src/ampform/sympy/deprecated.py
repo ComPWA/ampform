@@ -48,7 +48,9 @@ class UnevaluatedExpression(sp.Expr):
         from ampform.sympy import UnevaluatedExpression, create_expression
 
     .. automethod:: __new__
+
     .. automethod:: evaluate
+
     .. automethod:: _latex
     """
 
@@ -126,9 +128,11 @@ class UnevaluatedExpression(sp.Expr):
         >>> expr.doit(deep=False)
         (s - (m1 - m2)**2)*(s - (m1 + m2)**2)/(4*s)
 
-        .. note:: When decorating this class with :func:`implement_doit_method`,
-            its :meth:`evaluate` method is equivalent to
-            :meth:`~sympy.core.basic.Basic.doit` with :code:`deep=False`.
+        .. note::
+
+            When decorating this class with :func:`implement_doit_method`, its
+            :meth:`evaluate` method is equivalent to
+            :meth:`~sympy.core.basic.Basic.doit` with ``deep=False``.
         """
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -254,7 +258,9 @@ def make_commutative(
 ) -> type[DecoratedExpr]:
     """Set commutative and 'extended real' assumptions on expression class.
 
-    .. seealso:: :doc:`sympy:guides/assumptions`
+    .. seealso::
+
+        :doc:`sympy:guides/assumptions`
     """
     warn(
         "@make_commutative is deprecated, use the @ampform.sympy.unevaluated_expression"

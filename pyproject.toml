@@ -33,10 +33,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "attrs >=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
+    "attrs>=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
     "frozendict",
-    "qrules >=0.9.6",
-    "sympy >=1.10",
+    "qrules>=0.9.6",
+    "sympy>=1.10",
 ]
 dynamic = ["version"]
 
@@ -65,7 +65,7 @@ dev = [
 doc = [
     "myst-nb",
     "sphinx",
-    "sphinx-api-relink >=0.0.4",
+    "sphinx-api-relink>=0.0.4",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
     "sphinx-comments",
@@ -74,7 +74,7 @@ doc = [
     "sphinx-pybtex-etal-style",
     "sphinx-thebe",
     "sphinx-togglebutton",
-    "sphinxcontrib-bibtex >=2",
+    "sphinxcontrib-bibtex>=2",
     "sphinxcontrib-mermaid",
     { include-group = "notebooks" },
 ]
@@ -94,7 +94,7 @@ notebooks = [
     "ipympl",
     "matplotlib",
     "numpy",
-    "qrules >=0.10.12",  # qrules.io.asmermaid
+    "qrules>=0.10.12",  # qrules.io.asmermaid
     "quadax",
     "sympy-plot-backends",
 ]
@@ -120,7 +120,7 @@ types = [
     "numpy",
     "pytest",
     "pytest-benchmark",
-    "sphinx-api-relink >=0.0.3",
+    "sphinx-api-relink>=0.0.3",
     { include-group = "notebooks" },
 ]
 
@@ -137,6 +137,7 @@ type-checker = ["ty"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
+fail_under = 75
 
 [tool.coverage.run]
 branch = true
@@ -148,6 +149,45 @@ omit = [
     "tests/**/*.py",
 ]
 source = ["src"]
+
+[tool.docstrfmt]
+docstring-trailing-line = false
+format-python-code-blocks = false
+
+[tool.lychee]
+extensions = [
+    "css",
+    "htm",
+    "html",
+    "markdown",
+    "md",
+    "mdown",
+    "mdwn",
+    "mdx",
+    "mkd",
+    "mkdn",
+    "mkdown",
+    "txt",
+    "xml",
+    "ipynb",
+]
+remap = ["^(.+)/n$ $1"]
+exclude = [
+    "http://www.curtismeyer.com",
+    "https://citeseerx.ist.psu.edu/document",
+    "https://doi.org/10.1002",
+    "https://doi.org/10.1093",
+    "https://doi.org/10.1103",
+    "https://doi.org/10.1155",
+    "https://doi.org/10.5281/zenodo",
+    "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
+    "https://hss-opus.ub.ruhr-uni-bochum.de",
+    "https://journals.aps.org/prd",
+    "https://physique.cuso.ch",
+    "https://suchung.web.cern.ch",
+    "https://www.bookfinder.com",
+    "https://zenodo.org",
+]
 
 [tool.poe.executor]
 isolated = true
@@ -210,17 +250,9 @@ help = "Set up a server to directly preview changes to the HTML pages with cache
 sequence = ["doclive"]
 
 [tool.poe.groups.doc.tasks.linkcheck]
-cmd = """
-sphinx-build \
-    --builder=linkcheck \
-    --fail-on-warning \
-    --show-traceback \
-    docs/ \
-    docs/_build/linkcheck/
-"""
-env = { PYTHONWARNINGS = "" }
-executor = { group = "doc" }
 help = "Check external links in the documentation (requires internet connection)"
+executor = { with = ["lychee-bin>=0.24.0"] }
+cmd = "lychee ."
 
 [tool.poe.groups.notebook]
 heading = "Notebooks"
@@ -244,7 +276,6 @@ heading = "Testing"
 cmd = """
 pytest \
     --cov=ampform \
-    --cov-fail-under=75 \
     --cov-report=html \
     --cov-report=xml \
     --numprocesses=auto \
@@ -593,7 +624,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.1/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.3/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]

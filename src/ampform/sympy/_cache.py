@@ -4,7 +4,7 @@ These methods are private, but can be imported from this module:
 
 .. code-block:: python
 
-   import ampform.sympy._cache
+    import ampform.sympy._cache
 """
 
 # cspell:ignore pickler
@@ -67,12 +67,11 @@ def cache_to_disk(
 
     .. tip::
 
-        - Caching can be disabled by setting the environment variable :code:`NO_CACHE`.
-          This can be useful to test if caches are correctly invalidated.
-
-        - Set :code:`COMPWA_CACHE_DIR` to change the cache directory. Alternatively,
-          have a look at the implementation of :func:`get_system_cache_directory` to see
-          how the cache directory is determined from system environment variables.
+        - Caching can be disabled by setting the environment variable ``NO_CACHE``. This
+          can be useful to test if caches are correctly invalidated.
+        - Set ``COMPWA_CACHE_DIR`` to change the cache directory. Alternatively, have a
+          look at the implementation of :func:`get_system_cache_directory` to see how
+          the cache directory is determined from system environment variables.
     """
     if func is None:
         return _cache_to_disk_implementation(
@@ -246,12 +245,11 @@ def get_readable_hash(obj: Hashable, /) -> str:
     hash usable as a cache key in :func:`.cache_to_disk`.
 
     A `set` or `dict` handed to this function directly is serialized in iteration order,
-    which depends on :code:`PYTHONHASHSEED` when its elements or keys are `str`. Pass it
+    which depends on ``PYTHONHASHSEED`` when its elements or keys are `str`. Pass it
     through :func:`.make_hashable` first, as :func:`.cache_to_disk` does, to put it in a
     fixed order.
 
-    Args:
-        obj: Any hashable object, mutable or immutable, to be hashed.
+    :param obj: Any hashable object, mutable or immutable, to be hashed.
     """
     return hashlib.md5(to_bytes(obj), usedforsecurity=False).hexdigest()
 
@@ -279,14 +277,14 @@ class _DeterministicPickler(pickle._Pickler):  # ruff: ignore[private-member-acc
 
     A pickle stores a repeated object as a back-reference to the first time it was
     written, keyed on identity. SymPy hands out a cached instance for equal expressions,
-    but its cache is a bounded LRU (:code:`SYMPY_CACHE_SIZE`), so which sub-expressions
-    are the *same* instance depends on what was constructed before and in which order.
-    Equal expressions are therefore mapped to one representative here, which makes the
+    but its cache is a bounded LRU (``SYMPY_CACHE_SIZE``), so which sub-expressions are
+    the *same* instance depends on what was constructed before and in which order. Equal
+    expressions are therefore mapped to one representative here, which makes the
     back-references depend on the expression rather than on the cache state.
 
-    Two SymPy objects that compare equal always carry the same
-    :code:`_hashable_content()`, which for `.unevaluated` classes includes the arguments
-    that are not sympified, so equal objects also pickle to the same bytes.
+    Two SymPy objects that compare equal always carry the same ``_hashable_content()``,
+    which for `.unevaluated` classes includes the arguments that are not sympified, so
+    equal objects also pickle to the same bytes.
 
     Only those canonicalized SymPy objects are memoized. Anything else is written out in
     full on each occurrence, because whether two equal non-SymPy objects are one shared
@@ -315,7 +313,7 @@ def make_hashable(*args) -> Hashable:
     """Make a hashable object from any Python object.
 
     Sets and dictionaries are put in a fixed order, because a `set` iterates in an order
-    that depends on :code:`PYTHONHASHSEED` for `str` elements, and a `dict` built by
+    that depends on ``PYTHONHASHSEED`` for `str` elements, and a `dict` built by
     iterating one inherits that order. A cache key built from them would otherwise
     differ in every process.
 

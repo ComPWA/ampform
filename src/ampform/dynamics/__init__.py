@@ -1,6 +1,8 @@
 """Lineshape functions that describe the dynamics of an interaction.
 
-.. seealso:: :doc:`/dynamics` and :doc:`/analyticity/phasespace-factors`.
+.. seealso::
+
+    :doc:`/dynamics` and :doc:`/analyticity/phasespace-factors`.
 """
 
 from __future__ import annotations
@@ -128,13 +130,15 @@ class EnergyDependentWidth(sp.Expr):
 
     See `PDG2021, Eq. (50.28)
     <https://pdg.lbl.gov/2021/reviews/rpp2021-rev-resonances.pdf#page=9>`__ and
-    :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for
-    :code:`phsp_factor` is `.PhaseSpaceFactor`.
+    :cite:`ParticleDataGroup:2012pjm`, equation (6). Default value for ``phsp_factor``
+    is `.PhaseSpaceFactor`.
 
-    .. warning:: Equation (50.28) no longer appears in
-        `PDG2026, §Resonances, p.12 <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
-        The width is now defined in terms of bare couplings, :math:`\Gamma_b(s) =
-        g_b^2 \rho_b(s) n_b^2(s) / m_\mathrm{BW}` (Equation (50.32)), and Equation (50.35)
+    .. warning::
+
+        Equation (50.28) no longer appears in `PDG2026, §Resonances, p.12
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__. The
+        width is now defined in terms of bare couplings, :math:`\Gamma_b(s) = g_b^2
+        \rho_b(s) n_b^2(s) / m_\mathrm{BW}` (Equation (50.32)), and Equation (50.35)
         trades :math:`g_b` for the partial width :math:`\Gamma_{\mathrm{BW},b}`.
         Combining the two gives the old Equation (50.28), but the PDG stresses that this
         substitution is only valid for narrow resonances with all channel thresholds
@@ -261,6 +265,7 @@ def relativistic_breit_wigner(s, mass0, gamma0) -> sp.Expr:
     See :ref:`dynamics:_Without_ form factor` and :cite:`ParticleDataGroup:2012pjm`.
 
     .. deprecated:: 0.17.0
+
         Use `.SimpleBreitWigner` instead.
     """
     warn("Use SimpleBreitWigner instead", category=DeprecationWarning, stacklevel=2)
@@ -284,8 +289,8 @@ def relativistic_breit_wigner_with_ff(  # ruff: ignore[too-many-positional-argum
 
     See :ref:`dynamics:_With_ form factor` and `PDG2026, §Resonances, p.12
     <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__. The
-    :code:`numerator` is passed on to `.BreitWigner` and :code:`normalize_form_factor`
-    to the :code:`normalize` argument of `.FormFactor`.
+    ``numerator`` is passed on to `.BreitWigner` and ``normalize_form_factor`` to the
+    ``normalize`` argument of `.FormFactor`.
     """
     ff = FormFactor(
         s, m_a, m_b, angular_momentum, meson_radius, normalize=normalize_form_factor
@@ -308,6 +313,7 @@ def formulate_form_factor(s, m_a, m_b, angular_momentum, meson_radius) -> sp.Exp
     """Formulate a Blatt–Weisskopf form factor.
 
     .. deprecated:: 0.16.0
+
         Use `.FormFactor` instead.
     """
     warn(

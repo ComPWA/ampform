@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from sympy.physics.quantum.spin import WignerD
 
 if get_qrules_version() < (0, 10):
-    from qrules.transition import StateTransitionCollection  # ty: ignore[unresolved-import]
+    from qrules.transition import StateTransitionCollection  # ty: ignore[import-not-found]
 
 
 @define
