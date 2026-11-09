@@ -640,7 +640,7 @@ def _set_assumptions(
 
 
 def _eval_subs_method(self, old, new, **hints):
-    # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1117-L1147
+    # https://github.com/sympy/sympy/blob/sympy-1.12/sympy/core/basic.py#L1117-L1147
     hit = False
     old_args = _get_field_values(self)
     new_args = list(old_args)
@@ -685,7 +685,7 @@ def _hashable_content_method(self) -> tuple:
 
 
 def _xreplace_method(self, rule) -> tuple[sp.Expr, bool]:
-    # https://github.com/sympy/sympy/blob/1.12/sympy/core/basic.py#L1233-L1253
+    # https://github.com/sympy/sympy/blob/sympy-1.12/sympy/core/basic.py#L1233-L1253
     if self in rule:
         return rule[self], True
     if rule:

@@ -159,7 +159,7 @@ class SphericalHankel1(sp.Expr):
 
 
 class _SymbolicSum(sp.Sum):
-    """See [TR-029](https://compwa.github.io/report/029.html) for why this class is needed."""
+    """See [TR-029](https://compwa.github.io/report/029/) for why this class is needed."""
 
     def doit(self, deep: bool = True, **kwargs) -> sp.Expr:
         if _get_indices(self):

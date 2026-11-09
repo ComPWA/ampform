@@ -25,6 +25,7 @@ version.py
 .coverage.*
 .ipynb_checkpoints/
 .jupyter_ystore.db
+.lycheecache
 .pytest_cache/
 .virtual_documents/
 __pycache__/

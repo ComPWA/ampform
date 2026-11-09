@@ -54,7 +54,7 @@ class UnevaluatedExpression(sp.Expr):
     .. automethod:: _latex
     """
 
-    # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
+    # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L74-L77
     __slots__: tuple[str] = ("_name",)
     _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
@@ -93,7 +93,7 @@ class UnevaluatedExpression(sp.Expr):
         >>> expr.evaluate()
         (x + y)**3
         """
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
         obj._args = args
         obj._assumptions = cls.default_assumptions
@@ -103,14 +103,14 @@ class UnevaluatedExpression(sp.Expr):
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:
         # Pickling support, see
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L124-L126
         args = tuple(self.args)
         kwargs = {"name": self._name}
         return args, kwargs
 
     @override
     def _hashable_content(self) -> tuple:
-        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
+        # https://github.com/sympy/sympy/blob/sympy-1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
         return (*super()._hashable_content(), str(self._name))
 
