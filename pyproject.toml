@@ -159,6 +159,9 @@ cache = true
 cache_exclude_status = "400.."
 # [:] keeps Lychee from extracting regex patterns as URLs.
 exclude = [
+    '^https[:]//journals\.aps\.org/prd/abstract/10\.1103/PhysRevD\.101\.034033$',  # APS rejects automated requests from GitHub Actions
+    '^https[:]//journals\.aps\.org/prd/pdf/10\.1103/PhysRevD\.101\.034033#page=9$',  # APS rejects automated requests from GitHub Actions
+    '^https[:]//link\.aps\.org/doi/10\.1103/PhysRevD\.5\.624$',  # APS rejects automated requests from GitHub Actions
     '^http[:]//www\.curtismeyer\.com',  # Preserved from the Sphinx linkcheck configuration
     '^https[:]//citeseerx\.ist\.psu\.edu/document',  # Preserved from the Sphinx linkcheck configuration
     '^https[:]//doi\.org/10\.1002',  # 403 for onlinelibrary.wiley.com
