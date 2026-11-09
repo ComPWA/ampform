@@ -16,7 +16,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.10.4
+    rev: 0.10.5
     hooks:
       - id: check-dev-files
         # Policy 0.10.4 imports TyperChoice from typer.main.
@@ -143,7 +143,7 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.99
+    rev: v0.0.100
     hooks:
       - id: ty
         args: [--group=types, --no-default-groups]
