@@ -2,7 +2,6 @@ version: 2
 
 multi-ecosystem-groups:
   lock:
-    assignees: [redeboer]
     commit-message: { prefix: MAINT }
     schedule: { interval: quarterly }
 

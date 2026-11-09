@@ -57,6 +57,7 @@ viz = ["graphviz"]
 [dependency-groups]
 dev = [
     "ruff",
+    "ty",
     { include-group = "doc" },
     { include-group = "jupyter" },
     { include-group = "style" },
@@ -99,7 +100,6 @@ notebooks = [
     "sympy-plot-backends",
 ]
 style = [
-    "ty",
     { include-group = "types" },
 ]
 test = [
@@ -629,7 +629,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.3/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.4/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]
