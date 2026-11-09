@@ -18,7 +18,7 @@ def describe_UnevaluatedExpression():
         assert expr == imported_expr
 
         # Pickle UnevaluatedExpression
-        expr = UnevaluatedExpression()
+        expr = UnevaluatedExpression()  # ty:ignore[abstract-class-instantiation]
         pickled_obj = pickle.dumps(expr)
         imported_expr = pickle.loads(pickled_obj)
         assert expr == imported_expr

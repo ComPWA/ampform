@@ -148,7 +148,7 @@ class ArraySlice(_ArrayExpr):
         return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> tuple[sp.Basic | int, ...]:  # ty: ignore[invalid-property-type-override]
+    def shape(self) -> tuple[sp.Basic | int, ...]:  # ty: ignore[incompatible-property-override]
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)

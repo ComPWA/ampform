@@ -645,14 +645,14 @@ include = [
     "docs/amplitude/interactive.ipynb",
     "docs/dynamics.ipynb",
 ]
-rules.unresolved-attribute = "ignore"
+rules.missing-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = [
     "src/ampform/sympy/**",
     "tests/sympy/**",
 ]
-rules.unresolved-attribute = "ignore"
+rules.missing-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = ["docs/amplitude/interactive.ipynb"]
@@ -671,7 +671,7 @@ rules.call-non-callable = "ignore"
 
 [[tool.ty.overrides]]
 include = ["src/ampform/sympy/**"]
-rules.invalid-method-override = "ignore"
+rules.incompatible-method-override = "ignore"
 
 [tool.ty.rules]
 division-by-zero = "warn"

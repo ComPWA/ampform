@@ -43,6 +43,7 @@ def describe_NumericalIntegral():
         )
         if call_doit:
             integral_expr = integral_expr.doit()
+        assert isinstance(integral_expr, NumericalIntegral)
         assert integral_expr.algorithm == algorithm
         assert integral_expr.configuration == configuration
         assert integral_expr.dummify is dummify

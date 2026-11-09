@@ -128,7 +128,7 @@ def relabel_edge_ids(obj: T) -> T:
 def _(obj: ReactionInfo) -> ReactionInfo:
     if get_qrules_version() < (0, 10):
         return ReactionInfo(  # ty: ignore[missing-argument]
-            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # ty: ignore[unresolved-attribute]
+            transition_groups=[relabel_edge_ids(g) for g in obj.transition_groups],  # ty: ignore[missing-attribute]
             formalism=obj.formalism,
         )
     return ReactionInfo(

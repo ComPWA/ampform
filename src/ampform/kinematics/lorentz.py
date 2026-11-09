@@ -72,14 +72,14 @@ def _implement_latex_subscript(
 ) -> Callable[[type[ExprClass]], type[ExprClass]]:
     def decorator(decorated_class: type[ExprClass]) -> type[ExprClass]:
         def _latex_repr_(self: sp.Expr, printer: LatexPrinter, *args) -> str:
-            momentum = printer._print(self.momentum)  # ty: ignore[unresolved-attribute]
-            if printer._needs_mul_brackets(self.momentum):  # ruff: ignore[private-member-access]  # ty: ignore[unresolved-attribute]
+            momentum = printer._print(self.momentum)  # ty: ignore[missing-attribute]
+            if printer._needs_mul_brackets(self.momentum):  # ruff: ignore[private-member-access]  # ty: ignore[missing-attribute]
                 momentum = Rf"\left({momentum}\right)"
             else:
                 momentum = Rf"{{{momentum}}}"
             return f"{momentum}_{subscript}"
 
-        decorated_class._latex_repr_ = _latex_repr_  # ty: ignore[unresolved-attribute]
+        decorated_class._latex_repr_ = _latex_repr_  # ty: ignore[missing-attribute]
         return decorated_class
 
     return decorator
