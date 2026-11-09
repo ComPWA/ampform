@@ -20,18 +20,18 @@ on:
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@7c6e43f917c43b95ed9197b2bc3839f2f3139455 # main
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@a024afbb9e182bea4924a73fc60ae59462849ebb # v4.2.0
     permissions:
       pages: write
       id-token: write
   style:
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/style.yml@7c6e43f917c43b95ed9197b2bc3839f2f3139455 # main
+    uses: ComPWA/actions/.github/workflows/style.yml@a024afbb9e182bea4924a73fc60ae59462849ebb # v4.2.0
   test:
-    uses: ComPWA/actions/.github/workflows/test.yml@7c6e43f917c43b95ed9197b2bc3839f2f3139455 # main
+    uses: ComPWA/actions/.github/workflows/test.yml@a024afbb9e182bea4924a73fc60ae59462849ebb # v4.2.0
     with:
       coverage-python-version: "3.14"
       macos-python-version: "3.11"
   linkcheck:
-    uses: ComPWA/actions/.github/workflows/ci-linkcheck.yml@7c6e43f917c43b95ed9197b2bc3839f2f3139455 # main
+    uses: ComPWA/actions/.github/workflows/ci-linkcheck.yml@a024afbb9e182bea4924a73fc60ae59462849ebb # v4.2.0

@@ -16,7 +16,7 @@ jobs:
     name: Remove caches
     runs-on: ubuntu-slim
     steps:
-      - uses: ComPWA/actions/clean-caches@826112415aa683bb2d73df87e84444a047f8cad7 # v4.1.8
+      - uses: ComPWA/actions/clean-caches@a024afbb9e182bea4924a73fc60ae59462849ebb # v4.2.0
         with:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.ref }}
