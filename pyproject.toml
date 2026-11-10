@@ -165,18 +165,9 @@ exclude = [
     '^https[:]//journals\.aps\.org/prd/abstract/10\.1103/PhysRevD\.101\.034033$',  # APS rejects automated requests from GitHub Actions
     '^https[:]//journals\.aps\.org/prd/pdf/10\.1103/PhysRevD\.101\.034033#page=9$',  # APS rejects automated requests from GitHub Actions
     '^https[:]//link\.aps\.org/doi/10\.1103/PhysRevD\.5\.624$',  # APS rejects automated requests from GitHub Actions
-    '^http[:]//www\.curtismeyer\.com',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//citeseerx\.ist\.psu\.edu/document',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//doi\.org/10\.1002',  # 403 for onlinelibrary.wiley.com
-    '^https[:]//doi\.org/10\.1093',  # 403 for PTEP
-    '^https[:]//doi\.org/10\.1103',  # 403 for Phys Rev D
-    '^https[:]//doi\.org/10\.1155',  # 403 for hindawi.com
-    '^https[:]//home\.fnal\.gov/~kutschke/Angdist/angdist\.ps',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//hss-opus\.ub\.ruhr-uni-bochum\.de',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//physique\.cuso\.ch',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//suchung\.web\.cern\.ch',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//www\.bookfinder\.com',  # Preserved from the Sphinx linkcheck configuration
-    '^https[:]//zenodo\.org',  # 403
+    '^https[:]//citeseerx\.ist\.psu\.edu/document\?repid=rep1&type=pdf&doi=88b101a5300736f78293cf10116c32e5d25e3c91$',  # Dead link without an archived copy; needs a replacement source
+    '^https[:]//physique\.cuso\.ch/fileadmin/physique/document/2015_chung_brfactor1\.pdf$',  # Dead link without an archived copy; needs a replacement source
+    '^https[:]//zenodo\.org/schemas/deposits/records/legacyrecord\.json$',  # JSON schema identifier, not a fetchable document
     "%7B[^/]*%7D",  # URL templates are completed at build or runtime
     "^https[:]//x-access-token/$",  # Token-authenticated Git remote placeholder
     '\$(?:NEXT_[A-Z_]+|PREVIOUS_TAG)',  # Release Drafter substitutes these placeholders at runtime

@@ -811,10 +811,11 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
     Following :cite:`Chung:2014-SpinFormalismsUpdated`, `Eq. (4.16)
-    <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_, but taking the complex
-    conjugate by flipping the sign of the azimuthal angle :math:`\phi` (see relation
-    between Wigner-:math:`D` and Wigner-:math:`d` in `Eq. (A.1)
-    <https://suchung.web.cern.ch/spinfm1.pdf#page=83>`_).
+    <https://web.archive.org/web/20240525210806/https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_,
+    but taking the complex conjugate by flipping the sign of the azimuthal angle
+    :math:`\phi` (see relation between Wigner-:math:`D` and Wigner-:math:`d` in `Eq.
+    (A.1)
+    <https://web.archive.org/web/20240525210806/https://suchung.web.cern.ch/spinfm1.pdf#page=83>`_).
 
     For a two-body decay :math:`1 \to 2, 3`, this gives us:
 
