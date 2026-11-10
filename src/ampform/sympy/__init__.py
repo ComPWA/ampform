@@ -1,4 +1,4 @@
-"""Tools that facilitate in building :mod:`sympy` expressions.
+"""Tools that facilitate in building `sympy` expressions.
 
 .. autodecorator:: unevaluated
 

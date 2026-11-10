@@ -255,7 +255,7 @@ def get_readable_hash(obj: Hashable, /) -> str:
 
 
 def to_bytes(obj, /) -> bytes:
-    """Convert any Python object to `bytes` with :mod:`pickle`.
+    """Convert any Python object to `bytes` with `pickle`.
 
     The bytes depend on the value of the object rather than on which of its parts happen
     to be the same instance. See :func:`.get_readable_hash` for what that guarantees.

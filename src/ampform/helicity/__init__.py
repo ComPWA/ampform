@@ -124,23 +124,22 @@ class HelicityModel:
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
-    Keys are `~sympy.core.basic.Basic` instances from the main :attr:`expression` that
-    should be interpreted as parameters (as opposed to `kinematic_variables`). The
-    symbols are ordered alphabetically by name with natural sort order
-    (:func:`.natural_sorting`). Values have been extracted from the input
-    `~qrules.transition.ReactionInfo`.
+    Keys are `~sympy.core.basic.Basic` instances from the main `expression` that should
+    be interpreted as parameters (as opposed to `kinematic_variables`). The symbols are
+    ordered alphabetically by name with natural sort order (:func:`.natural_sorting`).
+    Values have been extracted from the input `~qrules.transition.ReactionInfo`.
     """
     kinematic_variables: OrderedDict[sp.Basic, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
     components: OrderedDict[str, sp.Expr] = field(converter=_order_component_mapping)
-    """A mapping for identifying main components in the :attr:`expression`.
+    """A mapping for identifying main components in the `expression`.
 
     Keys are the component names (`str`), formatted as LaTeX, and values are sub-
-    expressions in the main :attr:`expression`. The mapping is an
-    `~collections.OrderedDict` that orders the component names alphabetically with
-    natural sort order (:func:`.natural_sorting`).
+    expressions in the main `expression`. The mapping is an `~collections.OrderedDict`
+    that orders the component names alphabetically with natural sort order
+    (:func:`.natural_sorting`).
     """
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
 
@@ -212,8 +211,8 @@ class HelicityModel:
 class ParameterValues(abc.Mapping):
     """Ordered mapping to `ParameterValue` with convenient getter and setter.
 
-    This class makes it possible to search through a mapping of :mod:`sympy` symbols to
-    their values (a "parameter mapping") by symbol name or by index in the (ordered)
+    This class makes it possible to search through a mapping of `sympy` symbols to their
+    values (a "parameter mapping") by symbol name or by index in the (ordered)
     dictionary.
 
     >>> a, b, c = sp.symbols("a b c")
@@ -837,7 +836,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
       :func:`.get_helicity_angle_symbols`).
 
     Note that :math:`\lambda_2, \lambda_3` are ordered by their number of children, then
-    by their state ID (see :class:`.TwoBodyDecay`).
+    by their state ID (see `.TwoBodyDecay`).
 
     See :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (30) for an example of
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source

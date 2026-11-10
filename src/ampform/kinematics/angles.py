@@ -1,4 +1,4 @@
-"""Angle computations for (boosted) :mod:`.lorentz` vectors."""
+"""Angle computations for (boosted) `.lorentz` vectors."""
 
 from __future__ import annotations
 

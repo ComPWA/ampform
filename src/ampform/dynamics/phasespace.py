@@ -296,13 +296,13 @@ class PhaseSpaceFactorPWave(sp.Expr):
     epsilon: Any = 1e-4
     name: str | None = argument(default=None, kw_only=True, sympify=False)
     algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
-    """See :attr:`.NumericalIntegral.algorithm`."""
+    """See `.NumericalIntegral.algorithm`."""
     configuration: dict[str, Any] | None = argument(
         default=None, kw_only=True, sympify=False
     )
-    """See :attr:`.NumericalIntegral.configuration`."""
+    """See `.NumericalIntegral.configuration`."""
     dummify: bool = argument(default=True, kw_only=True, sympify=False)
-    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
+    """Whether to dummify the integration variable. See `.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
         chew_mandelstam = ChewMandelstamIntegral(
@@ -352,13 +352,13 @@ class ChewMandelstamIntegral(sp.Expr):
     epsilon: Any = sp.Symbol("epsilon", positive=True)
     name: str | None = argument(default=None, kw_only=True, sympify=False)
     algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
-    """See :attr:`.NumericalIntegral.algorithm`."""
+    """See `.NumericalIntegral.algorithm`."""
     configuration: dict[str, Any] | None = argument(
         default=None, kw_only=True, sympify=False
     )
-    """See :attr:`.NumericalIntegral.configuration`."""
+    """See `.NumericalIntegral.configuration`."""
     dummify: bool = argument(default=True, kw_only=True, sympify=False)
-    """Whether to dummify the integration variable. See :attr:`.NumericalIntegral.dummify`."""
+    """Whether to dummify the integration variable. See `.NumericalIntegral.dummify`."""
 
     def evaluate(self) -> sp.Expr:
         s, m1, m2, L, meson_radius, s_prime, epsilon = self.args  # ruff: ignore[non-lowercase-variable-in-function]

@@ -46,8 +46,8 @@ BuilderReturnType = tuple[sp.Expr, dict[sp.Symbol, float]]
 
 The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>` that
 describes the dynamics for the resonance. The second element are suggested parameter
-values (see :attr:`.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances
-that appear in the `sympy.Expr <sympy.core.expr.Expr>`.
+values (see `.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances that
+appear in the `sympy.Expr <sympy.core.expr.Expr>`.
 """
 
 
@@ -80,7 +80,7 @@ def create_non_dynamic_with_ff(
 ) -> BuilderReturnType:
     """Generate (only) a Blatt–Weisskopf form factor for a two-body decay.
 
-    See also :class:`.FormFactor`.
+    See also `.FormFactor`.
     """
     if variable_pool.angular_momentum is None:
         msg = "Angular momentum is not defined but is required in the form factor!"
