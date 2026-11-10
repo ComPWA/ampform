@@ -4,4 +4,4 @@ coverage:
   status:
     patch:
       default:
-        target: 0
+        informational: true
