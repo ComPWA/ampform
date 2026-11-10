@@ -19,8 +19,6 @@ repos:
     rev: 0.10.5
     hooks:
       - id: check-dev-files
-        # Policy 0.10.4 imports TyperChoice from typer.main.
-        additional_dependencies: ["typer<0.29"]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.9.1
