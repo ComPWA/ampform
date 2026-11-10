@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 import qrules
 import sympy as sp
+from IPython.lib.pretty import pretty
 from qrules import ReactionInfo
 
 from ampform import get_builder
@@ -360,6 +361,11 @@ def describe_HelicityModel():
 
 
 def describe_ParameterValues():
+    def it_displays_parameters_in_insertion_order():
+        a, b = sp.symbols("a b")
+        parameters = ParameterValues({b: -3, a: 2})
+        assert pretty(parameters) == "ParameterValues({ b: -3, a: 2, })"
+
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
     def it_substitutes_symbol_and_indexed_parameter_values(subs_method: str):
         base = sp.IndexedBase("b")
