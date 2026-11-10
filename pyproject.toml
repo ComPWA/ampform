@@ -132,6 +132,9 @@ build-backend = "setuptools.build_meta"
 repo-name = "ampform"
 repo-title = "AmpForm"
 
+[tool.compwa.policy.github]
+dependabot-assignees = ["redeboer"]
+
 [tool.compwa.policy.python]
 type-checker = ["ty"]
 
