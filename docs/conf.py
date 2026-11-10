@@ -175,9 +175,10 @@ copyright = f"2020, {ORGANIZATION}"
 default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
+    "**AGENTS.md",
+    "**CLAUDE.md",
+    "**GEMINI.md",
     "*build",
-    "AGENTS.md",
-    "CLAUDE.md",
     "tests",
 ]
 extensions = [
