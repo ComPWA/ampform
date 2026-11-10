@@ -445,8 +445,8 @@ def perform_combinatorics(
 ) -> list[FrozenTransition[State, InteractionProperties]]:
     """Perform final-state combinatorics on a state transition for symmetrization.
 
-    QRules returns a :class:`~qrules.transition.ReactionInfo` object where permutations
-    of equal final-state particle have been removed. This function performs the
+    QRules returns a `~qrules.transition.ReactionInfo` object where permutations of
+    equal final-state particle have been removed. This function performs the
     combinatorics on the final-state particles, so that the symmetrization resulting
     amplitude model is performed correctly.
 

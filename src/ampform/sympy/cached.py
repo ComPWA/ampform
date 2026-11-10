@@ -95,7 +95,7 @@ def unfold(obj: sp.Expr, substitutions: Mapping[sp.Basic, Any]) -> sp.Expr: ...
 def unfold(
     obj: sp.Expr | Model, substitutions: Mapping[sp.Basic, Any] | None = None
 ) -> sp.Expr:
-    """Efficiently perform both substitutions and ``doit()``."""
+    """Efficiently perform both substitutions and :meth:`~sympy.core.basic.Basic.doit`."""
     if isinstance(obj, Model):
         return _unfold_impl(obj.intensity, obj.amplitudes)
     if substitutions is None:

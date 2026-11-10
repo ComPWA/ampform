@@ -201,9 +201,8 @@ def unevaluated(
     'g\\left(y\\right)'
 
     Attributes to the class are fed to the `~object.__new__` constructor of the
-    :class:`~sympy.core.expr.Expr` class and are therefore also called "arguments". Just
-    like in the :class:`~sympy.core.expr.Expr` class, these arguments are automatically
-    `sympified
+    `~sympy.core.expr.Expr` class and are therefore also called "arguments". Just like
+    in the `~sympy.core.expr.Expr` class, these arguments are automatically `sympified
     <https://docs.sympy.org/latest/modules/core.html#module-sympy.core.sympify>`_.
     Attributes/arguments that should not be sympified with :func:`argument`:
 
@@ -225,10 +224,10 @@ def unevaluated(
     >>> expr.functor is Transformation
     True
 
-    Such non-sympy attributes are not part of ``args``. They are nonetheless preserved
-    when SymPy rebuilds the expression through ``expr.func(*expr.args)``, as it does in
-    :meth:`~sympy.core.basic.Basic.replace`, :meth:`~sympy.core.basic.Basic.rewrite`,
-    and :meth:`~sympy.core.basic.Basic.doit`:
+    Such non-sympy attributes are not part of `~sympy.core.basic.Basic.args`. They are
+    nonetheless preserved when SymPy rebuilds the expression through
+    ``expr.func(*expr.args)``, as it does in :meth:`~sympy.core.basic.Basic.replace`,
+    :meth:`~sympy.core.basic.Basic.rewrite`, and :meth:`~sympy.core.basic.Basic.doit`:
 
     >>> rebuilt = expr.func(*expr.args)
     >>> rebuilt.functor is Transformation
@@ -237,8 +236,8 @@ def unevaluated(
     True
 
     The constructor compares equal to the expression's class, but repeated accesses to
-    ``func`` need not return the same object. Use equality rather than identity for
-    class-based dispatch.
+    `~sympy.core.basic.Basic.func` need not return the same object. Use equality rather
+    than identity for class-based dispatch.
 
     The default string and :func:`~sympy.printing.repr.srepr` printers include
     non-default non-sympy attributes as keyword arguments. Parsing these representations
@@ -707,8 +706,8 @@ def _replace_non_sympy_value(value: Any, rule: Any) -> tuple[Any, bool]:
     """Replace a non-sympy attribute only if the rule has a key of the same type.
 
     A lookup through ``value in rule`` is too lenient for such attributes: `False`
-    equals ``0`` and ``sympy.Integer(0)``, and mappings like
-    `~ampform.helicity.ParameterValues` also accept integer keys as positions.
+    equals ``0`` and ``sympy.Integer(0)``, and mappings like `.ParameterValues` also
+    accept integer keys as positions.
     """
     if not isinstance(rule, abc.Mapping):
         return value, False

@@ -223,7 +223,7 @@ def implement_new_method(
 def implement_doit_method(
     decorated_class: type[DecoratedClass],
 ) -> type[DecoratedClass]:
-    """Implement ``doit()`` method for an `UnevaluatedExpression` class.
+    """Implement :meth:`~sympy.core.basic.Basic.doit` method for an `UnevaluatedExpression` class.
 
     Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that derives
     from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`). A
