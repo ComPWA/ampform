@@ -32,12 +32,6 @@
   "github-actions.workflows.pinned.refresh.enabled": true,
   "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
   "gitlens.telemetry.enabled": false,
-  "json.schemas": [
-    {
-      "fileMatch": [".zenodo.json"],
-      "url": "https://zenodo.org/schemas/deposits/records/legacyrecord.json"
-    }
-  ],
   "livePreview.defaultPreviewPath": "docs/_build/html",
   "notebook.codeActionsOnSave": {
     "notebook.source.organizeImports": "explicit"
