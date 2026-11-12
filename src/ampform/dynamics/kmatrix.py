@@ -1,11 +1,13 @@
 r"""Experimental, symbol :math:`\boldsymbol{K}`-matrix implementations.
 
-.. seealso:: :doc:`/dynamics/k-matrix`.
+.. seealso::
+
+    :doc:`/dynamics/k-matrix`.
 
 This module is an implementation of :doc:`compwa-report:005/index`,
-:doc:`compwa-report:009/index`, and :doc:`compwa-report:010/index`. It works with classes to
-keep the code organized and to enable caching of the matrix multiplications, but this
-might change once these dynamics are implemented into the amplitude builder.
+:doc:`compwa-report:009/index`, and :doc:`compwa-report:010/index`. It works with
+classes to keep the code organized and to enable caching of the matrix multiplications,
+but this might change once these dynamics are implemented into the amplitude builder.
 """
 
 from __future__ import annotations
@@ -51,7 +53,7 @@ class RelativisticKMatrix(TMatrix):
         return t_matrix, k_matrix
 
     @classmethod
-    def formulate(  # ruff: ignore[undocumented-param]
+    def formulate(
         cls,
         n_channels,
         n_poles,
@@ -64,16 +66,14 @@ class RelativisticKMatrix(TMatrix):
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`T-hat-in-terms-of-K-hat`.
 
-        Args:
-            n_channels: Number of coupled channels.
-            n_poles: Number of poles.
-            parametrize: Set to `False` if don't want to parametrize and only get
-                symbols for the matrix multiplication of :math:`\boldsymbol{K}` and
-                :math:`\boldsymbol{\rho}`.
-
-            return_t_hat: Set to `True` if you want to get the Lorentz-invariant
-                :math:`\boldsymbol{\hat{T}}`-matrix instead of the
-                :math:`\boldsymbol{T}`-matrix from Eq. :eq:`K-hat-and-T-hat`.
+        :param n_channels: Number of coupled channels.
+        :param n_poles: Number of poles.
+        :param parametrize: Set to `False` to omit the parametrization and keep symbols
+            for the matrix multiplication of :math:`\boldsymbol{K}` and
+            :math:`\boldsymbol{\rho}`.
+        :param return_t_hat: Set to `True` if you want to get the Lorentz-invariant
+            :math:`\boldsymbol{\hat{T}}`-matrix instead of the
+            :math:`\boldsymbol{T}`-matrix from Eq. :eq:`K-hat-and-T-hat`.
         """
         t_matrix, k_matrix = cls._create_matrices(n_channels, return_t_hat)
         if not parametrize:
@@ -292,7 +292,7 @@ class RelativisticPVector(TMatrix):
         return f_vector, k_matrix, p_vector
 
     @classmethod
-    def formulate(  # ruff: ignore[undocumented-param]
+    def formulate(
         cls,
         n_channels,
         n_poles,
@@ -305,16 +305,14 @@ class RelativisticPVector(TMatrix):
     ) -> sp.MutableDenseMatrix:
         r"""Implementation of :eq:`F-in-terms-of-P`.
 
-        Args:
-            n_channels: Number of coupled channels.
-            n_poles: Number of poles.
-            parametrize: Set to `False` if don't want to parametrize and only get
-                symbols for the matrix multiplication of :math:`\boldsymbol{K}` and
-                :math:`\boldsymbol{\rho}`.
-
-            return_f_hat: Set to `True` if you want to get theLorentz-invariant
-                :math:`\hat{F}`-vector instead of the :math:`T`-vector from Eq.
-                :eq:`invariant-vectors`.
+        :param n_channels: Number of coupled channels.
+        :param n_poles: Number of poles.
+        :param parametrize: Set to `False` to omit the parametrization and keep symbols
+            for the matrix multiplication of :math:`\boldsymbol{K}` and
+            :math:`\boldsymbol{\rho}`.
+        :param return_f_hat: Set to `True` to return the Lorentz-invariant
+            :math:`\hat{F}`-vector instead of the :math:`F`-vector from Eq.
+            :eq:`invariant-vectors`.
         """
         f_vector, k_matrix, p_vector = cls._create_matrices(n_channels, return_f_hat)
         if not parametrize:
@@ -396,7 +394,7 @@ class RelativisticPVector(TMatrix):
 
 
 def _create_rho_matrix(n_channels) -> sp.MutableDenseMatrix:
-    """Create a phase space matrix with :code:`n_channels`.
+    """Create a phase space matrix with ``n_channels``.
 
     >>> _create_rho_matrix(n_channels=2)
     Matrix([

@@ -114,8 +114,8 @@ class HelicityModel:
     The main `intensity` is a sum over amplitudes for each initial and final state
     helicity combination. These amplitudes are indicated with as `sp.Indexed
     <sympy.tensor.indexed.Indexed>` instances and this attribute provides the
-    definitions for each of these. See also
-    :ref:`TR-014 <compwa-report:tr-014-solution-2>`.
+    definitions for each of these. See also :ref:`TR-014
+    <compwa-report:tr-014-solution-2>`.
 
     The builder defines absent topology/helicity combinations as zero within the
     external spin-projection domains of the reaction. Additional helicities required by
@@ -124,23 +124,22 @@ class HelicityModel:
     parameter_defaults: ParameterValues = field(converter=_to_parameter_values)
     """A mapping of suggested parameter values.
 
-    Keys are `~sympy.core.basic.Basic` instances from the main :attr:`expression` that
-    should be interpreted as parameters (as opposed to `kinematic_variables`). The
-    symbols are ordered alphabetically by name with natural sort order
-    (:func:`.natural_sorting`). Values have been extracted from the input
-    `~qrules.transition.ReactionInfo`.
+    Keys are `~sympy.core.basic.Basic` instances from the main `expression` that should
+    be interpreted as parameters (as opposed to `kinematic_variables`). The symbols are
+    ordered alphabetically by name with natural sort order (:func:`.natural_sorting`).
+    Values have been extracted from the input `~qrules.transition.ReactionInfo`.
     """
     kinematic_variables: OrderedDict[sp.Basic, sp.Expr] = field(
         converter=_order_symbol_mapping
     )
     """Expressions for converting four-momenta to kinematic variables."""
     components: OrderedDict[str, sp.Expr] = field(converter=_order_component_mapping)
-    """A mapping for identifying main components in the :attr:`expression`.
+    """A mapping for identifying main components in the `expression`.
 
     Keys are the component names (`str`), formatted as LaTeX, and values are sub-
-    expressions in the main :attr:`expression`. The mapping is an
-    `~collections.OrderedDict` that orders the component names alphabetically with
-    natural sort order (:func:`.natural_sorting`).
+    expressions in the main `expression`. The mapping is an `~collections.OrderedDict`
+    that orders the component names alphabetically with natural sort order
+    (:func:`.natural_sorting`).
     """
     reaction_info: ReactionInfo = field(validator=instance_of(ReactionInfo))
 
@@ -163,11 +162,9 @@ class HelicityModel:
         `parameter_defaults`, `components`, and `kinematic_variables`. This method can
         be used to :ref:`couple parameters <amplitude/modify:Couple parameters>`.
 
-        Args:
-            renames: A mapping from old to new names.
+        :param renames: A mapping from old to new names.
 
-        Returns:
-            A **new** instance of a `HelicityModel` with symbols in all attributes
+        :returns: A **new** instance of a `HelicityModel` with symbols in all attributes
             renamed accordingly.
         """
         renames = dict(renames)
@@ -214,8 +211,8 @@ class HelicityModel:
 class ParameterValues(abc.Mapping):
     """Ordered mapping to `ParameterValue` with convenient getter and setter.
 
-    This class makes it possible to search through a mapping of :mod:`sympy` symbols to
-    their values (a "parameter mapping") by symbol name or by index in the (ordered)
+    This class makes it possible to search through a mapping of `sympy` symbols to their
+    values (a "parameter mapping") by symbol name or by index in the (ordered)
     dictionary.
 
     >>> a, b, c = sp.symbols("a b c")
@@ -234,6 +231,7 @@ class ParameterValues(abc.Mapping):
     3.14
 
     .. automethod:: __getitem__
+
     .. automethod:: __setitem__
     """
 
@@ -251,9 +249,9 @@ class ParameterValues(abc.Mapping):
             with p.group(indent=2, open=f"{class_name}({{"):
                 p.breakable()
                 for par, value in self.items():
-                    p.pretty(par)  # ty: ignore[unresolved-attribute]
+                    p.pretty(par)  # ty: ignore[missing-attribute]
                     p.text(": ")
-                    p.pretty(value)  # ty: ignore[unresolved-attribute]
+                    p.pretty(value)  # ty: ignore[missing-attribute]
                     p.text(",")
                     p.breakable()
             p.text("})")
@@ -567,7 +565,9 @@ class CanonicalAmplitudeBuilder(HelicityAmplitudeBuilder):
     Here, :math:`C` stands for `Clebsch–Gordan factor
     <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_.
 
-    .. seealso:: `HelicityAmplitudeBuilder` and :doc:`/amplitude/formalism`.
+    .. seealso::
+
+        `HelicityAmplitudeBuilder` and :doc:`/amplitude/formalism`.
     """
 
     @override
@@ -604,7 +604,9 @@ class BuilderConfiguration:
     `~.HelicityModel.kinematic_variables`. This is useful if four-momenta were generated
     with or kinematically fit to a specific initial state energy.
 
-    .. seealso:: :ref:`amplitude:Scalar masses`
+    .. seealso::
+
+        :ref:`amplitude:Scalar masses`
     """
     stable_final_state_ids: set[int] | None = field(
         converter=_to_optional_set,
@@ -646,8 +648,8 @@ class DynamicsSelector(abc.Mapping):
 
         - `str`: Select transition nodes by the name of the `~.TwoBodyDecay.parent`
           `~qrules.particle.Particle`.
-        - `.TwoBodyDecay` or `tuple` of a `~qrules.topology.Transition` with a
-          node ID: set dynamics for one specific transition node.
+        - `.TwoBodyDecay` or `tuple` of a `~qrules.topology.Transition` with a node ID:
+          set dynamics for one specific transition node.
         """
         msg = (
             f"Cannot set dynamics builder for selection type {type(selection).__name__}"
@@ -727,7 +729,7 @@ def formulate_isobar_cg_coefficients(
     :doc:`Clebsch–Gordan coefficients <sympy:modules/physics/quantum/cg>` ensure that
     the projection of angular momentum is conserved
     (:cite:`Kutschke:1996-AngularDistributionCookbook`, p. 4). When calling
-    :func:`~qrules.generate_transitions` with :code:`formalism="canonical-helicity"`,
+    :func:`~qrules.generate_transitions` with ``formalism="canonical-helicity"``,
     AmpForm formulates the amplitude in the canonical basis from amplitudes in the
     helicity basis using the transformation in :cite:`Chung:2014-SpinFormalismsUpdated`,
     Eq. (4.32). See also :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (28).
@@ -736,8 +738,10 @@ def formulate_isobar_cg_coefficients(
     :cite:`Chung:2014-SpinFormalismsUpdated`, Eq. (4.32). For a two-body decay :math:`1
     \to 2, 3`, we get:
 
-    .. math:: C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
+    .. math::
         :label: formulate_isobar_cg_coefficients
+
+        C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
 
     with:
 
@@ -754,8 +758,8 @@ def formulate_isobar_cg_coefficients(
     - and :math:`C^{j_3,m_3}_{j_1,m_1,j_2,m_2} = \langle j1,m1;j2,m2|j3,m3\rangle`, as
       in :doc:`sympy:modules/physics/quantum/cg`.
 
-    Example
-    -------
+    .. rubric:: Example
+
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],
@@ -766,6 +770,7 @@ def formulate_isobar_cg_coefficients(
     CG(1, -1, 0, 0, 1, -1)*CG(2, 0, 1, -1, 1, -1)
 
     .. math::
+
         C^{s_1,\lambda}_{L,0,S,\lambda} C^{S,\lambda}_{s_2,\lambda_2,s_3,-\lambda_3}
         = C^{1,(-1-0)}_{2,0,1,(-1-0)} C^{1,(-1-0)}_{1,-1,0,0}
         = C^{1,-1}_{2,0,1,-1} C^{1,-1}_{1,-1,0,0}
@@ -805,15 +810,18 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     r"""Compute `~sympy.physics.quantum.spin.WignerD` for an isobar node.
 
     Following :cite:`Chung:2014-SpinFormalismsUpdated`, `Eq. (4.16)
-    <https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_, but taking the complex
-    conjugate by flipping the sign of the azimuthal angle :math:`\phi` (see relation
-    between Wigner-:math:`D` and Wigner-:math:`d` in `Eq. (A.1)
-    <https://suchung.web.cern.ch/spinfm1.pdf#page=83>`_).
+    <https://web.archive.org/web/20240525210806/https://suchung.web.cern.ch/spinfm1.pdf#page=16>`_,
+    but taking the complex conjugate by flipping the sign of the azimuthal angle
+    :math:`\phi` (see relation between Wigner-:math:`D` and Wigner-:math:`d` in `Eq.
+    (A.1)
+    <https://web.archive.org/web/20240525210806/https://suchung.web.cern.ch/spinfm1.pdf#page=83>`_).
 
     For a two-body decay :math:`1 \to 2, 3`, this gives us:
 
-    .. math:: D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
+    .. math::
         :label: formulate_isobar_wigner_d
+
+        D^{s_1}_{m_1,\lambda_2-\lambda_3}(-\phi,\theta,0)
 
     with:
 
@@ -828,7 +836,7 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
       :func:`.get_helicity_angle_symbols`).
 
     Note that :math:`\lambda_2, \lambda_3` are ordered by their number of children, then
-    by their state ID (see :class:`.TwoBodyDecay`).
+    by their state ID (see `.TwoBodyDecay`).
 
     See :cite:`Kutschke:1996-AngularDistributionCookbook`, Eq. (30) for an example of
     Wigner-:math:`D` functions in a *sequential* two-body decay. Note that this source
@@ -837,8 +845,8 @@ def formulate_isobar_wigner_d(transition: StateTransition, node_id: int) -> sp.E
     :cite:`Jacob:1959at`, Eq. (24). See p.119-120 and p.199 in :cite:`Martin:1970hmp`
     for the two conventions, :math:`\gamma=0` versus :math:`\gamma=-\phi`.
 
-    Example
-    -------
+    .. rubric:: Example
+
     >>> import qrules
     >>> reaction = qrules.generate_transitions(
     ...     initial_state=[("J/psi(1S)", [+1])],

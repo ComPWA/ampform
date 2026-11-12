@@ -48,11 +48,13 @@ class UnevaluatedExpression(sp.Expr):
         from ampform.sympy import UnevaluatedExpression, create_expression
 
     .. automethod:: __new__
+
     .. automethod:: evaluate
+
     .. automethod:: _latex
     """
 
-    # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L74-L77
+    # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L74-L77
     __slots__: tuple[str] = ("_name",)
     _name: str | None
     """Optional instance attribute that can be used in LaTeX representations."""
@@ -91,7 +93,7 @@ class UnevaluatedExpression(sp.Expr):
         >>> expr.evaluate()
         (x + y)**3
         """
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L113-L119
+        # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L113-L119
         obj = object.__new__(cls)
         obj._args = args
         obj._assumptions = cls.default_assumptions
@@ -101,14 +103,14 @@ class UnevaluatedExpression(sp.Expr):
 
     def __getnewargs_ex__(self) -> tuple[tuple, dict]:
         # Pickling support, see
-        # https://github.com/sympy/sympy/blob/1.8/sympy/core/basic.py#L124-L126
+        # https://github.com/sympy/sympy/blob/sympy-1.8/sympy/core/basic.py#L124-L126
         args = tuple(self.args)
         kwargs = {"name": self._name}
         return args, kwargs
 
     @override
     def _hashable_content(self) -> tuple:
-        # https://github.com/sympy/sympy/blob/1.10/sympy/core/basic.py#L157-L165
+        # https://github.com/sympy/sympy/blob/sympy-1.10/sympy/core/basic.py#L157-L165
         # name is converted to string because unstable hash for None
         return (*super()._hashable_content(), str(self._name))
 
@@ -126,9 +128,11 @@ class UnevaluatedExpression(sp.Expr):
         >>> expr.doit(deep=False)
         (s - (m1 - m2)**2)*(s - (m1 + m2)**2)/(4*s)
 
-        .. note:: When decorating this class with :func:`implement_doit_method`,
-            its :meth:`evaluate` method is equivalent to
-            :meth:`~sympy.core.basic.Basic.doit` with :code:`deep=False`.
+        .. note::
+
+            When decorating this class with :func:`implement_doit_method`, its
+            :meth:`evaluate` method is equivalent to
+            :meth:`~sympy.core.basic.Basic.doit` with ``deep=False``.
         """
 
     def _latex(self, printer: LatexPrinter, *args) -> str:
@@ -219,7 +223,7 @@ def implement_new_method(
 def implement_doit_method(
     decorated_class: type[DecoratedClass],
 ) -> type[DecoratedClass]:
-    """Implement ``doit()`` method for an `UnevaluatedExpression` class.
+    """Implement :meth:`~sympy.core.basic.Basic.doit` method for an `UnevaluatedExpression` class.
 
     Implement a :meth:`~sympy.core.basic.Basic.doit` method for a class that derives
     from `~sympy.core.expr.Expr` (via `UnevaluatedExpression`). A
@@ -254,7 +258,9 @@ def make_commutative(
 ) -> type[DecoratedExpr]:
     """Set commutative and 'extended real' assumptions on expression class.
 
-    .. seealso:: :doc:`sympy:guides/assumptions`
+    .. seealso::
+
+        :doc:`sympy:guides/assumptions`
     """
     warn(
         "@make_commutative is deprecated, use the @ampform.sympy.unevaluated_expression"

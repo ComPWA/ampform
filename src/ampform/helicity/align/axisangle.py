@@ -134,7 +134,7 @@ def formulate_helicity_rotation_chain(
 
     The helicity rotations are performed going through the decay
     `~qrules.topology.Topology` starting from the initial state up some
-    :code:`rotated_state_id`. Each rotation operates on the spin state and is therefore
+    ``rotated_state_id``. Each rotation operates on the spin state and is therefore
     formulated as a `~sympy.physics.quantum.spin.WignerD` function (see
     :func:`.formulate_helicity_rotation`). See {doc}`/amplitude/spin-alignment` for more
     info.
@@ -189,17 +189,16 @@ def formulate_wigner_rotation(
     boosts to a new reference frame with regard to a direct boost. See
     :cite:`Marangotto:2019ucc`, p.6, especially Eq.(36).
 
-    Args:
-        transition: The `~qrules.topology.Transition` in which you
-            want to rotate one of the spin states.
-        rotated_state_id: The state ID of a spin `~qrules.transition.State`
-            that you want to rotate.
-        helicity_symbol: Optional `~sympy.core.symbol.Symbol` for :math:`m` in
-            :math:`D^s_{mm'}`. Falls back to the value of
-            `~qrules.transition.State.spin_projection` embedded in the provided
-            :code:`transition`.
-        m_prime: The summation symbol :math:`m'` that should be used when
-            summing over the Wigner-:math:`D` functions for this rotation.
+    :param transition: The `~qrules.topology.Transition` in which you want to rotate one
+        of the spin states.
+    :param rotated_state_id: The state ID of a spin `~qrules.transition.State` that you
+        want to rotate.
+    :param helicity_symbol: Optional `~sympy.core.symbol.Symbol` for :math:`m` in
+        :math:`D^s_{mm'}`. Falls back to the value of
+        `~qrules.transition.State.spin_projection` embedded in the provided
+        ``transition``.
+    :param m_prime: The summation symbol :math:`m'` that should be used when summing
+        over the Wigner-:math:`D` functions for this rotation.
     """
     state = transition.states[rotated_state_id]
     no_zero_spin = isclose(state.particle.mass, 0.0)
@@ -246,23 +245,19 @@ def formulate_helicity_rotation(
     This function gives the summation over these Wigner-:math:`D` functions and can be
     used for spin alignment following :cite:`Marangotto:2019ucc`, Eq.(45).
 
-    Args:
-        spin_magnitude: Spin magnitude :math:`s` of spin state that is being
-            rotated.
-        spin_projection: Spin projection component :math:`m` of the spin state
-            that is being rotated.
-        m_prime: A index `~sympy.core.symbol.Symbol` or `~sympy.core.symbol.Dummy`
-            that represents :math:`m'` helicities in Eq.
-            :eq:`formulate_helicity_rotation`.
+    :param spin_magnitude: Spin magnitude :math:`s` of spin state that is being rotated.
+    :param spin_projection: Spin projection component :math:`m` of the spin state that
+        is being rotated.
+    :param m_prime: An index `~sympy.core.symbol.Symbol` or `~sympy.core.symbol.Dummy`
+        that represents :math:`m'` helicities in Eq. :eq:`formulate_helicity_rotation`.
+    :param alpha: First Euler angle.
+    :param beta: Second Euler angle.
+    :param gamma: Third Euler angle.
+    :param no_zero_spin: Skip value ``0.0`` in the generated spin projection range.
+        Useful for massless particles.
 
-        alpha: First Euler angle.
-        beta: Second Euler angle.
-        gamma: Third Euler angle.
-        no_zero_spin: Skip value :code:`0.0` in the generated spin projection range.
-            Useful for massless particles.
+    .. rubric:: Example
 
-    Example
-    -------
     >>> a, b, c, i = sp.symbols("a b c i")
     >>> formulate_helicity_rotation(0, 0, i, a, b, c)
     PoolSum(WignerD(0, 0, i, a, b, c), (i, (0,)))

@@ -46,13 +46,10 @@ class TwoBodyDecay:
 
     This container class ensures that:
 
-    1. a selected node in a `~qrules.topology.Transition` is indeed a 1-to-2 body
-       decay
-
+    1. a selected node in a `~qrules.topology.Transition` is indeed a 1-to-2 body decay
     2. its two `.children` are sorted by whether they decay further or not (see
        `.get_helicity_angle_symbols`, `.formulate_isobar_wigner_d`, and
        `.formulate_isobar_cg_coefficients`).
-
     3. the `.TwoBodyDecay` is hashable, so that it can be used as a key (see
        `.DynamicsSelector.assign`.)
     """
@@ -134,7 +131,7 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     `~qrules.topology.Topology` as "opposite helicity" vs "helicity" state. It enforces
     that:
 
-    1. state :code:`0` is never an opposite helicity state
+    1. state ``0`` is never an opposite helicity state
     2. the sibling of an opposite helicity state is a helicity state.
 
     >>> from qrules.topology import create_isobar_topologies
@@ -148,13 +145,12 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
     ...         ) != is_opposite_helicity_state(topology, sibling_id)
 
     The Wigner-:math:`D` function for a two-particle state treats one helicity with a
-    negative sign. This sign originates from Eq.(13) in
-    :cite:`Jacob:1959at` (see also Eq.(6) in
-    :cite:`Marangotto:2019ucc`). Following :cite:`Marangotto:2019ucc`, we call the state
-    that gets this minus sign the **"opposite helicity" state**. The other state is
-    called **helicity state**. The choice of (opposite) helicity state affects not only
-    the sign in the Wigner-:math:`D` function, but also the choice of angles: the
-    argument of the Wigner-:math:`D` function returned by
+    negative sign. This sign originates from Eq.(13) in :cite:`Jacob:1959at` (see also
+    Eq.(6) in :cite:`Marangotto:2019ucc`). Following :cite:`Marangotto:2019ucc`, we call
+    the state that gets this minus sign the **"opposite helicity" state**. The other
+    state is called **helicity state**. The choice of (opposite) helicity state affects
+    not only the sign in the Wigner-:math:`D` function, but also the choice of angles:
+    the argument of the Wigner-:math:`D` function returned by
     :func:`.formulate_isobar_wigner_d` are the angles of the helicity state.
     """
     sibling_id = get_sibling_state_id(topology, state_id)
@@ -166,8 +162,8 @@ def is_opposite_helicity_state(topology: Topology, state_id: int) -> bool:
 def get_sibling_state_id(topology: Topology, state_id: int) -> int:
     r"""Get the sibling state ID for a state in an isobar decay.
 
-    Example
-    -------
+    .. rubric:: Example
+
     .. code-block::
 
         -- 3 -- 0
@@ -176,8 +172,7 @@ def get_sibling_state_id(topology: Topology, state_id: int) -> int:
               \
                2
 
-    The sibling state of :code:`1` is :code:`2` and the sibling state of :code:`3` is
-    :code:`4`.
+    The sibling state of ``1`` is ``2`` and the sibling state of ``3`` is ``4``.
     """
     parent_node = topology.edges[state_id].originating_node_id
     if parent_node is None:
@@ -226,7 +221,9 @@ def get_helicity_info(
 def get_parent_id(topology: Topology, state_id: int) -> int | None:
     """Get the edge ID of the edge from which this state decayed.
 
-    .. warning:: This only works on 1-to-:math:`n` isobar topologies.
+    .. warning::
+
+        This only works on 1-to-:math:`n` isobar topologies.
 
     >>> from qrules.topology import create_isobar_topologies
     >>> topologies = create_isobar_topologies(3)
@@ -336,8 +333,8 @@ def determine_attached_final_state(topology: Topology, state_id: int) -> list[in
     These are attached downward (forward in time) for a given edge (resembling the
     root).
 
-    Example
-    -------
+    .. rubric:: Example
+
     For **edge 5** in Figure :ref:`one-to-five-topology-0`, we get:
 
     >>> from qrules.topology import create_isobar_topologies
@@ -383,7 +380,9 @@ def _(reaction: ReactionInfo) -> list[int]:
 def get_prefactor(transition: StateTransition) -> float:
     """Calculate the product of all prefactors defined in this transition.
 
-    .. seealso:: `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
+    .. seealso::
+
+        `qrules.quantum_numbers.InteractionProperties.parity_prefactor`
     """
     prefactor = 1.0
     for node_id in transition.topology.nodes:
@@ -446,8 +445,8 @@ def perform_combinatorics(
 ) -> list[FrozenTransition[State, InteractionProperties]]:
     """Perform final-state combinatorics on a state transition for symmetrization.
 
-    QRules returns a :class:`~qrules.transition.ReactionInfo` object where permutations
-    of equal final-state particle have been removed. This function performs the
+    QRules returns a `~qrules.transition.ReactionInfo` object where permutations of
+    equal final-state particle have been removed. This function performs the
     combinatorics on the final-state particles, so that the symmetrization resulting
     amplitude model is performed correctly.
 
@@ -462,9 +461,9 @@ def perform_combinatorics(
     >>> assert len(permutated_transitions) == 2
     """
     if get_qrules_version() < (0, 10):
-        graph = transition.to_graph()  # ty: ignore[unresolved-attribute]
+        graph = transition.to_graph()  # ty: ignore[missing-attribute]
         mutable_graphs = perform_external_edge_identical_particle_combinatorics(graph)
-        return [StateTransition.from_graph(g) for g in mutable_graphs]  # ty: ignore[unresolved-attribute]
+        return [StateTransition.from_graph(g) for g in mutable_graphs]  # ty: ignore[missing-attribute]
     graph = transition.convert(lambda s: (s.particle, s.spin_projection)).unfreeze()
     combinations = perform_external_edge_identical_particle_combinatorics(graph)
     return [g.freeze().convert(lambda s: State(*s)) for g in combinations]

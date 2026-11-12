@@ -1,4 +1,4 @@
-"""Temporary module for SymPy :code:`ArraySlice` and related classes.
+"""Temporary module for SymPy ``ArraySlice`` and related classes.
 
 This module can be removed once `sympy/sympy#22265
 <https://github.com/sympy/sympy/pull/22265>`_ is merged and released.
@@ -148,7 +148,7 @@ class ArraySlice(_ArrayExpr):
         return sp.Expr.__new__(cls, parent, sp.Tuple(*normalized_indices))
 
     @property
-    def shape(self) -> tuple[sp.Basic | int, ...]:  # ty: ignore[invalid-property-type-override]
+    def shape(self) -> tuple[sp.Basic | int, ...]:  # ty: ignore[incompatible-property-override]
         parent_shape = get_shape(self.parent)
         shape = [
             _compute_slice_size(idx, axis_size)

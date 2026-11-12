@@ -33,10 +33,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "attrs >=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#next-gen
+    "attrs>=20.1.0",  # on_setattr and https://www.attrs.org/en/stable/api.html#attrs.define
     "frozendict",
-    "qrules >=0.9.6",
-    "sympy >=1.10",
+    "qrules>=0.9.6",
+    "sympy>=1.10",
 ]
 dynamic = ["version"]
 
@@ -57,6 +57,7 @@ viz = ["graphviz"]
 [dependency-groups]
 dev = [
     "ruff",
+    "ty",
     { include-group = "doc" },
     { include-group = "jupyter" },
     { include-group = "style" },
@@ -65,7 +66,7 @@ dev = [
 doc = [
     "myst-nb",
     "sphinx",
-    "sphinx-api-relink >=0.0.4",
+    "sphinx-api-relink>=0.0.4",
     "sphinx-book-theme",
     "sphinx-codeautolink[ipython]",
     "sphinx-comments",
@@ -74,7 +75,7 @@ doc = [
     "sphinx-pybtex-etal-style",
     "sphinx-thebe",
     "sphinx-togglebutton",
-    "sphinxcontrib-bibtex >=2",
+    "sphinxcontrib-bibtex>=2",
     "sphinxcontrib-mermaid",
     { include-group = "notebooks" },
 ]
@@ -94,12 +95,11 @@ notebooks = [
     "ipympl",
     "matplotlib",
     "numpy",
-    "qrules >=0.10.12",  # qrules.io.asmermaid
+    "qrules>=0.10.12",  # qrules.io.asmermaid
     "quadax",
     "sympy-plot-backends",
 ]
 style = [
-    "ty",
     { include-group = "types" },
 ]
 test = [
@@ -120,7 +120,7 @@ types = [
     "numpy",
     "pytest",
     "pytest-benchmark",
-    "sphinx-api-relink >=0.0.3",
+    "sphinx-api-relink>=0.0.3",
     { include-group = "notebooks" },
 ]
 
@@ -132,11 +132,15 @@ build-backend = "setuptools.build_meta"
 repo-name = "ampform"
 repo-title = "AmpForm"
 
+[tool.compwa.policy.github]
+dependabot-assignees = ["redeboer"]
+
 [tool.compwa.policy.python]
 type-checker = ["ty"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
+fail_under = 75
 
 [tool.coverage.run]
 branch = true
@@ -148,6 +152,44 @@ omit = [
     "tests/**/*.py",
 ]
 source = ["src"]
+
+[tool.docstrfmt]
+docstring-trailing-line = false
+format-python-code-blocks = false
+
+[tool.lychee]
+cache = true
+cache_exclude_status = "400.."
+# [:] keeps Lychee from extracting regex patterns as URLs.
+exclude = [
+    '^https[:]//journals\.aps\.org/prd/abstract/10\.1103/PhysRevD\.101\.034033$',  # APS rejects automated requests from GitHub Actions
+    '^https[:]//journals\.aps\.org/prd/pdf/10\.1103/PhysRevD\.101\.034033#page=9$',  # APS rejects automated requests from GitHub Actions
+    '^https[:]//link\.aps\.org/doi/10\.1103/PhysRevD\.5\.624$',  # APS rejects automated requests from GitHub Actions
+    '^https[:]//citeseerx\.ist\.psu\.edu/document\?repid=rep1&type=pdf&doi=88b101a5300736f78293cf10116c32e5d25e3c91$',  # Dead link without an archived copy; needs a replacement source
+    '^https[:]//physique\.cuso\.ch/fileadmin/physique/document/2015_chung_brfactor1\.pdf$',  # Dead link without an archived copy; needs a replacement source
+    '^https[:]//zenodo\.org/schemas/deposits/records/legacyrecord\.json$',  # JSON schema identifier, not a fetchable document
+    "%7B[^/]*%7D",  # URL templates are completed at build or runtime
+    "^https[:]//x-access-token/$",  # Token-authenticated Git remote placeholder
+    '\$(?:NEXT_[A-Z_]+|PREVIOUS_TAG)',  # Release Drafter substitutes these placeholders at runtime
+    "^https[:]//compwa/$",  # Organisation placeholder in a configuration example
+    '^http[:]//doi\.wiley\.com/10\.1002/andp\.19955070504$',  # Rejects automated requests with 403
+    '^https[:]//link\.aps\.org/doi/10\.1103/PhysRevD\.110\.030001$',  # Rejects automated requests with 403
+    '^https[:]//www\.hindawi\.com/journals/ahep/2020/6674595/$',  # Rejects automated requests with 403
+    '^https[:]//github\.com/ComPWA/ampform/runs/8132373732\?check_suite_focus=true#step:5:127$',  # Historical CI logs have expired
+    '^https[:]//stackoverflow\.com/a/5967539/13219025$',  # Rejects automated requests with 403
+]
+exclude_path = ["tests"]  # Test fixtures contain dummy URLs
+extensions = ["bib", "css", "ipynb", "json", "md", "py", "toml", "yaml", "yml"]
+hidden = true  # Include the workflows under .github/
+include_fragments = "anchor-only"
+include_verbatim = true
+max_cache_age = "7d"
+remap = [
+    '^git\+(https[:]//[^@]+)(@.*)?$ $1',
+    "^(.+)/n$ $1",
+    '^(https[:]//github\.com/ComPWA/ampform/compare)/\$PREVIOUS_TAG.*$ $1',
+    '^https[:]//pypi\.org/p/\$$ https://pypi.org/project/ampform/',
+]
 
 [tool.poe.executor]
 isolated = true
@@ -210,17 +252,9 @@ help = "Set up a server to directly preview changes to the HTML pages with cache
 sequence = ["doclive"]
 
 [tool.poe.groups.doc.tasks.linkcheck]
-cmd = """
-sphinx-build \
-    --builder=linkcheck \
-    --fail-on-warning \
-    --show-traceback \
-    docs/ \
-    docs/_build/linkcheck/
-"""
-env = { PYTHONWARNINGS = "" }
-executor = { group = "doc" }
-help = "Check external links in the documentation (requires internet connection)"
+cmd = "lychee . --quiet"
+executor = { with = ["lychee-bin>=0.24.0"] }
+help = "Check links and fragments in repository sources (requires internet connection)"
 
 [tool.poe.groups.notebook]
 heading = "Notebooks"
@@ -244,7 +278,6 @@ heading = "Testing"
 cmd = """
 pytest \
     --cov=ampform \
-    --cov-fail-under=75 \
     --cov-report=html \
     --cov-report=xml \
     --numprocesses=auto \
@@ -326,11 +359,11 @@ ref = "test"
 help = "Run all continuous integration (CI) tasks locally"
 ignore_fail = "return_non_zero"
 sequence = [
+    "style",
+    "linkcheck",
     "benchmark",
     "cov",
     "docnb-force",
-    "linkcheck",
-    "style",
     "test-all",
 ]
 
@@ -593,7 +626,7 @@ key-empty = "off"
 
 [[tool.tombi.schemas]]
 root = "tool.compwa.policy"
-path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.1/compwa-policy.schema.json"
+path = "https://raw.githubusercontent.com/ComPWA/policy/0.10.7/compwa-policy.schema.json"
 include = ["pyproject.toml"]
 
 [[tool.ty.overrides]]
@@ -606,14 +639,14 @@ include = [
     "docs/amplitude/interactive.ipynb",
     "docs/dynamics.ipynb",
 ]
-rules.unresolved-attribute = "ignore"
+rules.missing-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = [
     "src/ampform/sympy/**",
     "tests/sympy/**",
 ]
-rules.unresolved-attribute = "ignore"
+rules.missing-attribute = "ignore"
 
 [[tool.ty.overrides]]
 include = ["docs/amplitude/interactive.ipynb"]
@@ -632,7 +665,7 @@ rules.call-non-callable = "ignore"
 
 [[tool.ty.overrides]]
 include = ["src/ampform/sympy/**"]
-rules.invalid-method-override = "ignore"
+rules.incompatible-method-override = "ignore"
 
 [tool.ty.rules]
 division-by-zero = "warn"

@@ -57,19 +57,16 @@ class FormFactor(sp.Expr):
 class BlattWeisskopfSquared(sp.Expr):
     r"""Normalized Blatt–Weisskopf function :math:`\hat{B}_L^2(z)`.
 
-    Args:
-        z: Argument of the Blatt–Weisskopf function. A usual choice is :math:`z = (d
-            q)^2` with :math:`d` the impact parameter and :math:`q` the breakup-momentum
-            (see `.BreakupMomentumSquared`).
-
-        angular_momentum: Angular momentum :math:`L` of the decaying particle.
-
-        normalize: Set to `False` to omit the normalization constant
-            :math:`\left|h_L^{(1)}(1)\right|^2`. The resulting :math:`B_L^2(z)` equals
-            :math:`z^L F_L^2(\sqrt{z})`, where :math:`F_L` is the non-normalized
-            Blatt–Weisskopf function of `PDG2026, Eq. (50.34)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=13>`__.
-            This is the square of the factor :math:`n_L` of Equation (50.33).
+    :param z: Argument of the Blatt–Weisskopf function. A usual choice is :math:`z = (d
+        q)^2` with :math:`d` the impact parameter and :math:`q` the breakup-momentum
+        (see `.BreakupMomentumSquared`).
+    :param angular_momentum: Angular momentum :math:`L` of the decaying particle.
+    :param normalize: Set to `False` to omit the normalization constant
+        :math:`\left|h_L^{(1)}(1)\right|^2`. The resulting :math:`B_L^2(z)` equals
+        :math:`z^L F_L^2(\sqrt{z})`, where :math:`F_L` is the non-normalized
+        Blatt–Weisskopf function of `PDG2026, Eq. (50.34)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=13>`__. This
+        is the square of the factor :math:`n_L` of Equation (50.33).
 
     The hat indicates the normalization :math:`\hat{B}_L^2(1)=1`. Both variants have
     equal powers of :math:`z` in the numerator and the denominator, so they are unitless
@@ -82,8 +79,10 @@ class BlattWeisskopfSquared(sp.Expr):
     >>> BlattWeisskopfSquared(z, angular_momentum=2, normalize=False).doit()
     z**2/(z**2 + 3*z + 9)
 
-    .. seealso:: :ref:`dynamics:Form factor`, :doc:`TR-029<compwa-report:029/index>`,
-      and :cite:`Chung:2015-FormulasAngularMomentumBarrier`.
+    .. seealso::
+
+        :ref:`dynamics:Form factor`, :doc:`TR-029 <compwa-report:029/index>`, and
+        :cite:`Chung:2015-FormulasAngularMomentumBarrier`.
 
     With this, the implementation becomes
     """
@@ -130,8 +129,8 @@ def _formulate_blatt_weisskopf(ell, z, normalize: bool = True) -> sp.Expr:
 class SphericalHankel1(sp.Expr):
     r"""Spherical Hankel function of the first kind for real-valued :math:`z`.
 
-    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029<compwa-report:029/index>`
-    for more info. `This page
+    See :cite:`VonHippel:1972fg`, Equation (A12), and :doc:`TR-029
+    <compwa-report:029/index>` for more info. `This page
     <https://mathworld.wolfram.com/SphericalHankelFunctionoftheFirstKind.html>`_
     explains the difference with the *general* Hankel function of the first kind,
     :math:`H_\ell^{(1)}`.
@@ -160,7 +159,7 @@ class SphericalHankel1(sp.Expr):
 
 
 class _SymbolicSum(sp.Sum):
-    """See [TR-029](https://compwa.github.io/report/029.html) for why this class is needed."""
+    """See [TR-029](https://compwa.github.io/report/029/) for why this class is needed."""
 
     def doit(self, deep: bool = True, **kwargs) -> sp.Expr:
         if _get_indices(self):

@@ -1,6 +1,8 @@
 """Functions for determining phase space boundaries.
 
-.. seealso:: :doc:`/kinematics`
+.. seealso::
+
+    :doc:`/kinematics`
 """
 
 from __future__ import annotations
@@ -35,9 +37,9 @@ class BreakupMomentum(sp.Expr):
 
     Alternative implementations:
 
-    * `BreakupMomentumComplex`
-    * `BreakupMomentumKallen`
-    * `BreakupMomentumSplitSqrt`
+    - `BreakupMomentumComplex`
+    - `BreakupMomentumKallen`
+    - `BreakupMomentumSplitSqrt`
     """
 
     s: Any

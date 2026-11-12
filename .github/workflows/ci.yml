@@ -20,18 +20,16 @@ on:
 
 jobs:
   doc:
-    uses: ComPWA/actions/.github/workflows/ci-docs.yml@313866498eb92c341d7e6b905e09f33a5979dffb # v4.1.4
+    uses: ComPWA/actions/.github/workflows/ci-docs.yml@eadda724984c78a55a6acb4dcdbb2167fb5eba03 # v4.2.1
     permissions:
       pages: write
       id-token: write
   style:
     secrets:
       token: ${{ secrets.PAT }}
-    uses: ComPWA/actions/.github/workflows/style.yml@313866498eb92c341d7e6b905e09f33a5979dffb # v4.1.4
+    uses: ComPWA/actions/.github/workflows/style.yml@eadda724984c78a55a6acb4dcdbb2167fb5eba03 # v4.2.1
   test:
-    uses: ComPWA/actions/.github/workflows/test.yml@313866498eb92c341d7e6b905e09f33a5979dffb # v4.1.4
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    uses: ComPWA/actions/.github/workflows/test.yml@eadda724984c78a55a6acb4dcdbb2167fb5eba03 # v4.2.1
     with:
       coverage-python-version: "3.14"
       macos-python-version: "3.11"

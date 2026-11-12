@@ -6,4 +6,3 @@ _images/*
 api/
 
 !_static/*
-!additional_particles.yml

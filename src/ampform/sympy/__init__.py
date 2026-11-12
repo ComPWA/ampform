@@ -1,13 +1,13 @@
-"""Tools that facilitate in building :mod:`sympy` expressions.
+"""Tools that facilitate in building `sympy` expressions.
 
 .. autodecorator:: unevaluated
+
 .. autofunction:: argument
 
 .. dropdown:: SymPy assumptions
 
     .. autodata:: ExprClass
     .. autoclass:: SymPyAssumptions
-
 """
 
 from __future__ import annotations
@@ -91,13 +91,16 @@ class NumPyPrintable(sp.Expr):
     :func:`~sympy.utilities.lambdify.lambdify` SymPy expressions to these different
     backends with the same lambdification code.
 
-    .. warning:: If you decorate this class with :func:`unevaluated`, you usually want
-        to do so with :code:`implement_doit=False`, because you do not want the class
-        to be 'unfolded' with :meth:`~sympy.core.basic.Basic.doit` before lambdification.
+    .. warning::
 
+        If you decorate this class with :func:`unevaluated`, you usually want to do so
+        with ``implement_doit=False``, because you do not want the class to be
+        'unfolded' with :meth:`~sympy.core.basic.Basic.doit` before lambdification.
 
-    .. warning:: The implemented :meth:`_numpycode` method should countain as little
-        SymPy computations as possible. Instead, it should get most information from its
+    .. warning::
+
+        The implemented :meth:`_numpycode` method should countain as little SymPy
+        computations as possible. Instead, it should get most information from its
         construction `~sympy.core.basic.Basic.args`, so that SymPy can use printer
         tricks like :func:`~sympy.simplify.cse_main.cse`, prior expanding with
         :meth:`~sympy.core.basic.Basic.doit`, and other simplifications that can make
@@ -291,10 +294,8 @@ def determine_indices(symbol: sp.Basic) -> list[int]:
     >>> determine_indices(sp.Symbol("m"))
     []
 
-    `~sympy.tensor.indexed.Indexed` instances can also be handled:
-    >>> m_a = sp.IndexedBase("m_a")
-    >>> determine_indices(m_a[0])
-    [0]
+    `~sympy.tensor.indexed.Indexed` instances can also be handled: >>> m_a =
+    sp.IndexedBase("m_a") >>> determine_indices(m_a[0]) [0]
     """
     _, _, subscripts = split_super_sub(sp.latex(symbol))
     if not subscripts:
@@ -356,7 +357,9 @@ class NumericalIntegral(sp.Integral):
     is blocked from evaluating symbolically. Instead, it should be lambdified to a
     numerical integration function and evaluated numerically.
 
-    .. seealso:: :ref:`sympy:Numerical integrals`
+    .. seealso::
+
+        :ref:`sympy:Numerical integrals`
 
     .. version-added:: 0.14.10
 
@@ -374,7 +377,7 @@ class NumericalIntegral(sp.Integral):
     algorithm: str | None = argument(default=None, kw_only=True, sympify=False)
     """Name of the numerical integration algorithm to use when lambdifying this integral.
 
-    The algorithm should be in the format :code:`module.function`, for instance
+    The algorithm should be in the format ``module.function``, for instance
     :func:`scipy.integrate.quad_vec` or :func:`quadax.quadgk`. By default, the algorithm
     is :func:`quadax.romberg` when lambdifying to JAX and
     :func:`scipy.integrate.quad_vec` when lambdifying to NumPy.
@@ -385,17 +388,16 @@ class NumericalIntegral(sp.Integral):
     """Keyword arguments for the numerical integration algorithm.
 
     For example, for :func:`scipy.integrate.quad_vec`, one can set the relative
-    tolerance with :code:`configuration={'epsrel': 1e-5}`.
+    tolerance with ``configuration={'epsrel': 1e-5}``.
     """
     dummify: bool = argument(default=True, kw_only=True, sympify=False)
     """Replace the integration variable with a dummy symbol before lambdification.
 
-    The integrand expression is lambdified to a :code:`lambda` function. Therefore, when
-    the integrand expresssion contains the integration variable in a non-trivial way,
-    and the expression is lambdified using common sub-expressions, it is better to
-    replace it with a unique `~sympy.core.symbol.Dummy` symbol that does not appear
-    anywhere else in the expression tree, so that is not pulled out of the
-    :code:`lambda` function.
+    The integrand expression is lambdified to a ``lambda`` function. Therefore, when the
+    integrand expresssion contains the integration variable in a non-trivial way, and
+    the expression is lambdified using common sub-expressions, it is better to replace
+    it with a unique `~sympy.core.symbol.Dummy` symbol that does not appear anywhere
+    else in the expression tree, so that is not pulled out of the ``lambda`` function.
     """
 
     @override

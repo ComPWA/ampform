@@ -16,7 +16,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/ComPWA/policy
-    rev: 0.10.1
+    rev: 0.10.7
     hooks:
       - id: check-dev-files
 
@@ -60,13 +60,11 @@ repos:
       - id: strip-nb-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.0
+    rev: v0.17.4
     hooks:
       - id: ruff-check
         args: [--fix]
-        types_or: [python, pyi, jupyter]
       - id: ruff-format
-        types_or: [python, pyi, jupyter]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -97,19 +95,19 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/tombi-toml/tombi-pre-commit
-    rev: v1.8.2
+    rev: v1.11.2
     hooks:
       - id: tombi-format
       - id: tombi-lint
         args: [--error-on-warnings]
 
   - repo: https://github.com/ComPWA/prettier-pre-commit
-    rev: v3.8.1
+    rev: v3.9.10
     hooks:
       - id: prettier
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.38.2
+    rev: 0.39.0
     hooks:
       - id: check-jsonschema
         name: Check CITATION.cff
@@ -122,9 +120,14 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v10.3.0
+    rev: v10.4.0
     hooks:
       - id: cspell
+
+  - repo: https://github.com/LilSpazJoekp/docstrfmt
+    rev: v2.2.1
+    hooks:
+      - id: docstrfmt
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: 3.11.1
@@ -138,12 +141,12 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.86
+    rev: v0.0.101
     hooks:
       - id: ty
         args: [--group=types, --no-default-groups]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.0
+    rev: 0.13.7
     hooks:
       - id: uv-lock

@@ -175,9 +175,10 @@ copyright = f"2020, {ORGANIZATION}"
 default_role = "py:obj"
 exclude_patterns = [
     "**.ipynb_checkpoints",
+    "**AGENTS.md",
+    "**CLAUDE.md",
+    "**GEMINI.md",
     "*build",
-    "AGENTS.md",
-    "CLAUDE.md",
     "tests",
 ]
 extensions = [
@@ -280,7 +281,6 @@ intersphinx_mapping = {
     "attrs": (f"https://www.attrs.org/en/{pin('attrs')}", None),
     "compwa": ("https://compwa.github.io", None),
     "compwa-report": ("https://compwa.github.io/report", None),
-    "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "ipywidgets": (f"https://ipywidgets.readthedocs.io/en/{pin('ipywidgets')}", None),
     "jax": ("https://docs.jax.dev/en/latest", None),
     "matplotlib": (f"https://matplotlib.org/{pin('matplotlib')}", None),
@@ -299,24 +299,6 @@ intersphinx_mapping = {
     ),
     "sympy": ("https://docs.sympy.org/latest", None),
 }
-linkcheck_anchors = False
-linkcheck_ignore = [
-    "http://www.curtismeyer.com",
-    "https://citeseerx.ist.psu.edu/document",
-    "https://doi.org/10.1002",  # 403 for onlinelibrary.wiley.com
-    "https://doi.org/10.1093",  # 403 for PTEP
-    "https://doi.org/10.1103",  # 403 for Phys Rev D
-    "https://doi.org/10.1155",  # 403 for hindawi.com
-    "https://doi.org/10.5281/zenodo",  # 403 for zenodo.org
-    "https://home.fnal.gov/~kutschke/Angdist/angdist.ps",
-    "https://hss-opus.ub.ruhr-uni-bochum.de",
-    "https://journals.aps.org/prd",  # 403 for Phys Rev D
-    "https://physique.cuso.ch",
-    "https://suchung.web.cern.ch",
-    "https://www.bookfinder.com",
-    "https://zenodo.org",  # 403
-]
-linkcheck_timeout = 60
 mermaid_height = "auto"  # do not stretch diagrams to the default 500px
 mermaid_init_config = {
     "flowchart": {
@@ -327,7 +309,9 @@ mermaid_init_config = {
     "startOnLoad": False,
     "themeVariables": {"fontSize": "12px"},
 }
+myst_colon_fence_exact_match = True
 myst_enable_extensions = [
+    "alert",
     "amsmath",
     "colon_fence",
     "dollarmath",

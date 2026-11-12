@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 import qrules
 import sympy as sp
+from IPython.lib.pretty import pretty
 from qrules import ReactionInfo
 
 from ampform import get_builder
@@ -360,6 +361,11 @@ def describe_HelicityModel():
 
 
 def describe_ParameterValues():
+    def it_displays_parameters_in_insertion_order():
+        a, b = sp.symbols("a b")
+        parameters = ParameterValues({b: -3, a: 2})
+        assert pretty(parameters) == "ParameterValues({ b: -3, a: 2, })"
+
     @pytest.mark.parametrize("subs_method", ["subs", "xreplace"])
     def it_substitutes_symbol_and_indexed_parameter_values(subs_method: str):
         base = sp.IndexedBase("b")
@@ -440,7 +446,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     for name in reaction.get_intermediate_particles().names:
         model_builder.dynamics.assign(name, bw_builder)
     model = model_builder.formulate()
-    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty: ignore[unresolved-attribute]
+    parameter_names = sorted(s.name for s in model.parameter_defaults)  # ty: ignore[missing-attribute]
     assert parameter_names == [
         R"C_{D^{+} \to \pi^{+}_{0} \rho(770)^{0}_{0}; \rho(770)^{0} \to \pi^{+}_{0} \pi^{-}_{0}}",
         R"\Gamma_{\rho(770)^{0}}",
@@ -452,7 +458,7 @@ def test_symmetrization(d_to_pi_pi_pi: ReactionInfo):
     (amplitude_expr,) = model.amplitudes.values()
     amplitude_expr = amplitude_expr.xreplace({
         s: sp.Symbol(
-            s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ")  # ty: ignore[unresolved-attribute]
+            s.name.split("_", maxsplit=1)[0].strip("\\").replace("Gamma", "Γ")  # ty: ignore[missing-attribute]
         )
         for s in model.parameter_defaults
     })

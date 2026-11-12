@@ -46,8 +46,8 @@ BuilderReturnType = tuple[sp.Expr, dict[sp.Symbol, float]]
 
 The first element in this `tuple` is the `sympy.Expr <sympy.core.expr.Expr>` that
 describes the dynamics for the resonance. The second element are suggested parameter
-values (see :attr:`.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances
-that appear in the `sympy.Expr <sympy.core.expr.Expr>`.
+values (see `.parameter_defaults`) for the `~sympy.core.symbol.Symbol` instances that
+appear in the `sympy.Expr <sympy.core.expr.Expr>`.
 """
 
 
@@ -58,7 +58,9 @@ class ResonanceDynamicsBuilder(Protocol):
     by `.DynamicsSelector.assign`. For an example, see the source code
     `.create_relativistic_breit_wigner`, which creates a `.SimpleBreitWigner`.
 
-    .. seealso:: :doc:`/dynamics/custom`
+    .. seealso::
+
+        :doc:`/dynamics/custom`
     """
 
     def __call__(
@@ -78,7 +80,7 @@ def create_non_dynamic_with_ff(
 ) -> BuilderReturnType:
     """Generate (only) a Blatt–Weisskopf form factor for a two-body decay.
 
-    See also :class:`.FormFactor`.
+    See also `.FormFactor`.
     """
     if variable_pool.angular_momentum is None:
         msg = "Angular momentum is not defined but is required in the form factor!"
@@ -104,24 +106,22 @@ class RelativisticBreitWignerBuilder:
     The :meth:`__call__` of this builder complies with the `.ResonanceDynamicsBuilder`,
     so instances of this class can be used in :meth:`.DynamicsSelector.assign`.
 
-    Args:
-        form_factor: Formulate a relativistic Breit–Wigner function multiplied
-            by a Blatt–Weisskopf form factor (`.FormFactor`), like in `PDG2026, Eqs.
-            (50.33) and (50.37)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
-        energy_dependent_width: Use an `.EnergyDependentWidth` in the
-            denominator of the Breit–Wigner.
-        phsp_factor: A class that complies with the
-            `.PhaseSpaceFactorProtocol` that is used in the energy-dependent width.
-            Defaults to `.PhaseSpaceFactor`.
-        numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
-            :code:`"unity"` for the dressed propagator of `PDG2026, Eq. (50.31)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
-        normalize_form_factor: Set to `False` to use the non-normalized vertex factor
-            :math:`n_L` of `PDG2026, Eq. (50.33)
-            <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for
-            the `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
-            :code:`form_factor`.
+    :param form_factor: Formulate a relativistic Breit–Wigner function multiplied by a
+        Blatt–Weisskopf form factor (`.FormFactor`), like in `PDG2026, Eqs. (50.33) and
+        (50.37)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+    :param energy_dependent_width: Use an `.EnergyDependentWidth` in the denominator of
+        the Breit–Wigner.
+    :param phsp_factor: A class that complies with the `.PhaseSpaceFactorProtocol` that
+        is used in the energy-dependent width. Defaults to `.PhaseSpaceFactor`.
+    :param numerator: Numerator of the `.SimpleBreitWigner` or `.BreitWigner`. Use
+        ``"unity"`` for the dressed propagator of `PDG2026, Eq. (50.31)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__.
+    :param normalize_form_factor: Set to `False` to use the non-normalized vertex factor
+        :math:`n_L` of `PDG2026, Eq. (50.33)
+        <https://pdg.lbl.gov/2026/reviews/rpp2026-rev-resonances.pdf#page=12>`__ for the
+        `.FormFactor` that multiplies the Breit–Wigner. Has no effect without
+        ``form_factor``.
     """
 
     def __init__(
@@ -276,5 +276,7 @@ create_analytic_breit_wigner = RelativisticBreitWignerBuilder(
 This is a convenience function for a `RelativisticBreitWignerBuilder` _with_ form factor
 and a 'analytic' phase space factor (see `.EqualMassPhaseSpaceFactor`).
 
-.. seealso:: :doc:`/analyticity/phasespace-factors`.
+.. seealso::
+
+    :doc:`/analyticity/phasespace-factors`.
 """
