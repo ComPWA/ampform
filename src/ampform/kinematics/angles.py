@@ -21,7 +21,6 @@ from ampform.kinematics.lorentz import (
     FourMomentumX,
     FourMomentumY,
     FourMomentumZ,
-    NegativeMomentum,
     RotationYMatrix,
     RotationZMatrix,
     compute_boost_chain,
@@ -128,7 +127,7 @@ def compute_helicity_angles(
                     beta = p3_norm / Energy(four_momentum)
                     new_momentum_pool: dict[int, sp.Expr] = {
                         k: ArrayMultiplication(
-                            BoostZMatrix(beta, n_events),
+                            BoostZMatrix(-beta, n_events),
                             RotationYMatrix(-theta_expr, n_events),
                             RotationZMatrix(-phi_expr, n_events),
                             p,
@@ -201,7 +200,7 @@ def compute_wigner_rotation_matrix(
     <https://en.wikipedia.org/wiki/Wigner_rotation>`_.
     """
     momentum = momenta[state_id]
-    inverted_direct_boost = BoostMatrix(NegativeMomentum(momentum))
+    inverted_direct_boost = BoostMatrix(momentum)
     boost_chain = compute_boost_chain(topology, momenta, state_id)
     return MatrixMultiplication(inverted_direct_boost, *boost_chain)
 

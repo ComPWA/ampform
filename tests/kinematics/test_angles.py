@@ -191,37 +191,41 @@ def describe_compute_wigner_rotation_matrix():
         [
             (
                 0,
-                "MatrixMultiplication(BoostMatrix(NegativeMomentum(p0)), BoostMatrix(p0))",
+                (
+                    "MatrixMultiplication(BoostMatrix(p0), BoostMatrix(NegativeMomentum(p0)))"
+                ),
             ),
             (
                 1,
                 (
-                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p1)),"
-                    " BoostMatrix(p1 + p2 + p3),"
-                    " BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                    " p1)))"
+                    "MatrixMultiplication(BoostMatrix(p1), BoostMatrix(NegativeMomentum(p1 + "
+                    "p2 + p3)), "
+                    "BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 "
+                    "+ p2 + p3)), p1))))"
                 ),
             ),
             (
                 2,
                 (
-                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p2)), BoostMatrix(p1"
-                    " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
-                    " p3), p2 + p3)),"
-                    " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-                    " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                    " p2))))"
+                    "MatrixMultiplication(BoostMatrix(p2), BoostMatrix(NegativeMomentum(p1 + "
+                    "p2 + p3)), "
+                    "BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 "
+                    "+ p2 + p3)), p2 + p3))), "
+                    "BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 "
+                    "+ p2 + p3)), p2 + p3))), "
+                    "ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 + p2 + p3)), p2)))))"
                 ),
             ),
             (
                 3,
                 (
-                    "MatrixMultiplication(BoostMatrix(NegativeMomentum(p3)), BoostMatrix(p1"
-                    " + p2 + p3), BoostMatrix(ArrayMultiplication(BoostMatrix(p1 + p2 +"
-                    " p3), p2 + p3)),"
-                    " BoostMatrix(ArrayMultiplication(BoostMatrix(ArrayMultiplication(BoostMatrix(p1"
-                    " + p2 + p3), p2 + p3)), ArrayMultiplication(BoostMatrix(p1 + p2 + p3),"
-                    " p3))))"
+                    "MatrixMultiplication(BoostMatrix(p3), BoostMatrix(NegativeMomentum(p1 + "
+                    "p2 + p3)), "
+                    "BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 "
+                    "+ p2 + p3)), p2 + p3))), "
+                    "BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 "
+                    "+ p2 + p3)), p2 + p3))), "
+                    "ArrayMultiplication(BoostMatrix(NegativeMomentum(p1 + p2 + p3)), p3)))))"
                 ),
             ),
         ],

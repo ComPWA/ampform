@@ -1,4 +1,13 @@
-"""Symbolic implementations for Lorentz vectors and boosts."""
+r"""Symbolic implementations for Lorentz vectors and boosts.
+
+All boost and rotation matrices in this module are **active** transformations, as in the
+helicity formalism: they transform the four-vector itself within a fixed reference
+frame. A boost with velocity :math:`\beta` gives the vector an additional velocity
+:math:`\beta` and a rotation by an angle rotates the vector by that angle. The inverse
+is obtained by negating the velocity or angle, so the rest frame of a momentum :math:`p`
+is reached with `.BoostMatrix` of :math:`-p` (`.NegativeMomentum`) or with
+`.BoostZMatrix` of :math:`-\beta`.
+"""
 
 from __future__ import annotations
 
@@ -223,7 +232,7 @@ class MinkowskiMetric(NumPyPrintable):
 
 @unevaluated(commutative=False)
 class BoostZMatrix(sp.Expr):
-    r"""Represents a Lorentz boost matrix in the :math:`z`-direction.
+    r"""Active Lorentz boost with velocity :math:`\beta` in the :math:`z`-direction.
 
     :param beta: Velocity in the :math:`z`-direction, :math:`\beta=p_z/E`.
     :param n_events: Number of events :math:`n` for this matrix array of shape
@@ -237,10 +246,10 @@ class BoostZMatrix(sp.Expr):
         beta = self.beta
         gamma = 1 / ComplexSqrt(1 - beta**2)
         return sp.Matrix([
-            [gamma, 0, 0, -gamma * beta],
+            [gamma, 0, 0, gamma * beta],
             [0, 1, 0, 0],
             [0, 0, 1, 0],
-            [-gamma * beta, 0, 0, gamma],
+            [gamma * beta, 0, 0, gamma],
         ])
 
     def evaluate(self) -> _BoostZMatrixImplementation:
@@ -273,17 +282,17 @@ class _BoostZMatrixImplementation(NumPyPrintable):
         _, gamma, gamma_beta, ones, zeros = map(printer._print, self.args)
         return f"""array(
             [
-                [{gamma}, {zeros}, {zeros}, -{gamma_beta}],
+                [{gamma}, {zeros}, {zeros}, {gamma_beta}],
                 [{zeros}, {ones}, {zeros}, {zeros}],
                 [{zeros}, {zeros}, {ones}, {zeros}],
-                [-{gamma_beta}, {zeros}, {zeros}, {gamma}],
+                [{gamma_beta}, {zeros}, {zeros}, {gamma}],
             ]
         ).transpose((2, 0, 1))"""
 
 
 @unevaluated(commutative=False)
 class BoostMatrix(sp.Expr):
-    r"""Compute a rank-3 Lorentz boost matrix from a `.FourMomentumSymbol`."""
+    r"""Active Lorentz boost with the velocity of a `.FourMomentumSymbol`."""
 
     momentum: sp.Basic
     _latex_repr_ = R"\boldsymbol{{B}}\left({momentum}\right)"
@@ -297,21 +306,21 @@ class BoostMatrix(sp.Expr):
         beta_z = FourMomentumZ(momentum) / energy
         g = 1 / sp.sqrt(1 - beta_sq)
         return sp.Matrix([
-            [g, -g * beta_x, -g * beta_y, -g * beta_z],
+            [g, g * beta_x, g * beta_y, g * beta_z],
             [
-                -g * beta_x,
+                g * beta_x,
                 1 + (g - 1) * beta_x**2 / beta_sq,
                 (g - 1) * beta_y * beta_x / beta_sq,
                 (g - 1) * beta_z * beta_x / beta_sq,
             ],
             [
-                -g * beta_y,
+                g * beta_y,
                 (g - 1) * beta_x * beta_y / beta_sq,
                 1 + (g - 1) * beta_y**2 / beta_sq,
                 (g - 1) * beta_z * beta_y / beta_sq,
             ],
             [
-                -g * beta_z,
+                g * beta_z,
                 (g - 1) * beta_x * beta_z / beta_sq,
                 (g - 1) * beta_y * beta_z / beta_sq,
                 1 + (g - 1) * beta_z**2 / beta_sq,
@@ -329,9 +338,9 @@ class BoostMatrix(sp.Expr):
         return _BoostMatrixImplementation(
             momentum=p,
             b00=gamma,
-            b01=-gamma * beta_x,
-            b02=-gamma * beta_y,
-            b03=-gamma * beta_z,
+            b01=gamma * beta_x,
+            b02=gamma * beta_y,
+            b03=gamma * beta_z,
             b11=1 + (gamma - 1) * beta_x**2 / beta_sq,
             b12=(gamma - 1) * beta_x * beta_y / beta_sq,
             b13=(gamma - 1) * beta_x * beta_z / beta_sq,
@@ -370,7 +379,7 @@ class _BoostMatrixImplementation(NumPyPrintable):
 
 @unevaluated(commutative=False)
 class RotationYMatrix(sp.Expr):
-    r"""Rotation matrix around the :math:`y`-axis for a `.FourMomentumSymbol`.
+    r"""Active rotation around the :math:`y`-axis for a `.FourMomentumSymbol`.
 
     :param angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
     :param n_events: Number of events :math:`n` for this matrix array of shape
@@ -426,7 +435,7 @@ class _RotationYMatrixImplementation(NumPyPrintable):
 
 @unevaluated(commutative=False)
 class RotationZMatrix(sp.Expr):
-    r"""Rotation matrix around the :math:`z`-axis for a `.FourMomentumSymbol`.
+    r"""Active rotation around the :math:`z`-axis for a `.FourMomentumSymbol`.
 
     :param angle: Angle with which to rotate, see e.g. `.Phi` and `.Theta`.
     :param n_events: Number of events :math:`n` for this matrix array of shape
@@ -522,7 +531,7 @@ def compute_boost_chain(
     }
     for current_state_id in decay_chain_state_ids:
         current_momentum = boosted_momenta[current_state_id]
-        boost = BoostMatrix(current_momentum)
+        boost = BoostMatrix(NegativeMomentum(current_momentum))
         boosted_momenta = {
             i: ArrayMultiplication(boost, p) for i, p in boosted_momenta.items()
         }
