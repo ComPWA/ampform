@@ -51,10 +51,10 @@ def describe_BoostMatrix():
         p_array = np.array([[5, 0, 0, 1]])
         matrix = func(p_array)[0]
         assert pytest.approx(matrix) == np.array([
-            [1.02062073, 0, 0, -0.20412415],
+            [1.02062073, 0, 0, 0.20412415],
             [0, 1, 0, 0],
             [0, 0, 1, 0],
-            [-0.20412415, 0, 0, 1.02062073],
+            [0.20412415, 0, 0, 1.02062073],
         ])
 
         beta = three_momentum_norm(p) / Energy(p)
@@ -74,7 +74,7 @@ def describe_BoostMatrix():
         _, momenta = topology_and_momentum_symbols
         momentum = momenta[state_id]
         momentum_array = data_sample[state_id]
-        boost = BoostMatrix(momentum)
+        boost = BoostMatrix(NegativeMomentum(momentum))
         expr = ArrayMultiplication(boost, momentum)
         func = sp.lambdify(momentum, expr.doit(), cse=True)
         boosted_array: np.ndarray = func(momentum_array)
@@ -105,7 +105,7 @@ def describe_BoostZMatrix():
         p = FourMomentumSymbol("p", shape=[])
         n_events = ArraySize(p)
         beta = three_momentum_norm(p) / Energy(p)
-        expr = BoostZMatrix(beta, n_events)
+        expr = BoostZMatrix(-beta, n_events)
         func = sp.lambdify(p, expr.doit(), cse=True)
         p_array = np.array([[5, 0, 0, 1]])
         boost_z = func(p_array)[0]
@@ -136,10 +136,10 @@ def describe_BoostZMatrix():
             x3 = zeros(x1)
             return (einsum("...ij,...jk,...kl,...l->...i", array(
                     [
-                        [x0, x3, x3, -beta*x0],
+                        [x0, x3, x3, beta*x0],
                         [x3, x2, x3, x3],
                         [x3, x3, x2, x3],
-                        [-beta*x0, x3, x3, x0],
+                        [beta*x0, x3, x3, x0],
                     ]
                 ).transpose((2, 0, 1)), array(
                     [
@@ -435,29 +435,31 @@ def __compute_mass(array: np.ndarray) -> np.ndarray:
     [
         (
             0,
-            ["B(p0)"],
+            [
+                "B(neg(p0))",
+            ],
         ),
         (
             1,
             [
-                "B(p1+p2+p3)",
-                "B(mul(B(p1+p2+p3), p1))",
+                "B(neg(p1+p2+p3))",
+                "B(neg(mul(B(neg(p1+p2+p3)), p1)))",
             ],
         ),
         (
             2,
             [
-                "B(p1+p2+p3)",
-                "B(mul(B(p1+p2+p3), p2+p3))",
-                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p2)))",
+                "B(neg(p1+p2+p3))",
+                "B(neg(mul(B(neg(p1+p2+p3)), p2+p3)))",
+                "B(neg(mul(B(neg(mul(B(neg(p1+p2+p3)), p2+p3))), mul(B(neg(p1+p2+p3)), p2))))",
             ],
         ),
         (
             3,
             [
-                "B(p1+p2+p3)",
-                "B(mul(B(p1+p2+p3), p2+p3))",
-                "B(mul(B(mul(B(p1+p2+p3), p2+p3)), mul(B(p1+p2+p3), p3)))",
+                "B(neg(p1+p2+p3))",
+                "B(neg(mul(B(neg(p1+p2+p3)), p2+p3)))",
+                "B(neg(mul(B(neg(mul(B(neg(p1+p2+p3)), p2+p3))), mul(B(neg(p1+p2+p3)), p3))))",
             ],
         ),
     ],
@@ -473,6 +475,7 @@ def test_compute_boost_chain(
         str(expr)
         .replace("BoostMatrix", "B")
         .replace("ArrayMultiplication", "mul")
+        .replace("NegativeMomentum", "neg")
         .replace(" + ", "+")
         for expr in boost_chain
     ]
